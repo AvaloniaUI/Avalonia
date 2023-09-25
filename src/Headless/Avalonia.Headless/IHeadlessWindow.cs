@@ -1,16 +1,14 @@
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
     internal interface IHeadlessWindow
     {
         WriteableBitmap? GetLastRenderedFrame();
-        void KeyPress(Key key, RawInputModifiers modifiers);
-        void KeyRelease(Key key, RawInputModifiers modifiers);
+        void KeyPress(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol);
+        void KeyRelease(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol);
         void TextInput(string text);
         void MouseDown(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseMove(Point point, RawInputModifiers modifiers = RawInputModifiers.None);

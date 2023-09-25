@@ -177,35 +177,6 @@ namespace Avalonia.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
-            TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string?)e.NewValue));
-            ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue!));
-
-            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon?)e.NewValue)?.PlatformImpl));
-
-            CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue!));
-
-            WindowStateProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue!; });
-
-            ExtendClientAreaToDecorationsHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaToDecorationsHint((bool)e.NewValue!); });
-
-            ExtendClientAreaChromeHintsProperty.Changed.AddClassHandler<Window>(
-                (w, e) =>
-                {
-                    if (w.PlatformImpl != null)
-                    {
-                        w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue!);
-                    }
-                });
-
-            ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaTitleBarHeightHint((double)e.NewValue!); });
-
-            MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue!, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
-            MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue!), new Size(w.MaxWidth, w.MaxHeight)));
-            MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue!, w.MaxHeight)));
-            MaxHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue!)));
         }
 
         /// <summary>
@@ -230,7 +201,21 @@ namespace Avalonia.Controls
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
-            PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
+            CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
+            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon(icon?.PlatformImpl));
+            CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
+            CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
+
+            CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
+            CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
+            CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, hint => PlatformImpl!.SetExtendClientAreaChromeHints(hint));
+
+            CreatePlatformImplBinding(MinWidthProperty, UpdateMinMaxSize);
+            CreatePlatformImplBinding(MaxWidthProperty, UpdateMinMaxSize);
+            CreatePlatformImplBinding(MinHeightProperty, UpdateMinMaxSize);
+            CreatePlatformImplBinding(MaxHeightProperty, UpdateMinMaxSize);
+
+            void UpdateMinMaxSize(double _) => PlatformImpl!.SetMinMaxSize(new Size(MinWidth, MinHeight), new Size(MaxWidth, MaxHeight));
         }
 
         /// <summary>

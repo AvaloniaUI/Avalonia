@@ -29,7 +29,7 @@ namespace Avalonia.Data.Core
         /// <param name="inner">The <see cref="ExpressionObserver"/>.</param>
         /// <param name="targetType">The type to convert the value to.</param>
         public BindingExpression(ExpressionObserver inner, Type targetType)
-            : this(inner, targetType, DefaultValueConverter.Instance)
+            : this(inner, targetType, DefaultValueConverter.Instance, CultureInfo.InvariantCulture)
         {
         }
 
@@ -39,6 +39,7 @@ namespace Avalonia.Data.Core
         /// <param name="inner">The <see cref="ExpressionObserver"/>.</param>
         /// <param name="targetType">The type to convert the value to.</param>
         /// <param name="converter">The value converter to use.</param>
+        /// <param name="converterCulture">The converter culture to use.</param>
         /// <param name="converterParameter">
         /// A parameter to pass to <paramref name="converter"/>.
         /// </param>
@@ -47,9 +48,17 @@ namespace Avalonia.Data.Core
             ExpressionObserver inner,
             Type targetType,
             IValueConverter converter,
+            CultureInfo converterCulture,
             object? converterParameter = null,
             BindingPriority priority = BindingPriority.LocalValue)
-            : this(inner, targetType, AvaloniaProperty.UnsetValue, AvaloniaProperty.UnsetValue, converter, converterParameter, priority)
+            : this(
+                inner,
+                targetType,
+                AvaloniaProperty.UnsetValue,
+                AvaloniaProperty.UnsetValue,
+                converter,
+                converterCulture,
+                converterParameter, priority)
         {
         }
 
@@ -65,6 +74,7 @@ namespace Avalonia.Data.Core
         /// The value to use when the binding result is null.
         /// </param>
         /// <param name="converter">The value converter to use.</param>
+        /// <param name="converterCulture">The converter culture to use.</param>
         /// <param name="converterParameter">
         /// A parameter to pass to <paramref name="converter"/>.
         /// </param>
@@ -75,6 +85,7 @@ namespace Avalonia.Data.Core
             object? fallbackValue,
             object? targetNullValue,
             IValueConverter converter,
+            CultureInfo converterCulture,
             object? converterParameter = null,
             BindingPriority priority = BindingPriority.LocalValue)
         {
@@ -85,6 +96,7 @@ namespace Avalonia.Data.Core
             _inner = inner;
             _targetType = targetType;
             Converter = converter;
+            ConverterCulture = converterCulture;
             ConverterParameter = converterParameter;
             _fallbackValue = fallbackValue;
             _targetNullValue = targetNullValue;
@@ -95,6 +107,11 @@ namespace Avalonia.Data.Core
         /// Gets the converter to use on the expression.
         /// </summary>
         public IValueConverter Converter { get; }
+
+        /// <summary>
+        /// Gets or sets the culture in which to evaluate the converter.
+        /// </summary>
+        public CultureInfo ConverterCulture { get; set; }
 
         /// <summary>
         /// Gets a parameter to pass to <see cref="Converter"/>.
@@ -132,7 +149,7 @@ namespace Avalonia.Data.Core
                         value,
                         type,
                         ConverterParameter,
-                        CultureInfo.CurrentCulture);
+                        ConverterCulture);
 
                     if (converted == BindingOperations.DoNothing)
                     {
@@ -159,7 +176,7 @@ namespace Avalonia.Data.Core
                             if (TypeUtilities.TryConvert(
                                 type,
                                 _fallbackValue,
-                                CultureInfo.InvariantCulture,
+                                ConverterCulture,
                                 out converted))
                             {
                                 _inner.SetValue(converted, _priority);
@@ -214,7 +231,7 @@ namespace Avalonia.Data.Core
                     value,
                     _targetType,
                     ConverterParameter,
-                    CultureInfo.CurrentCulture);
+                    ConverterCulture);
 
                 if (converted == BindingOperations.DoNothing)
                 {
@@ -271,7 +288,7 @@ namespace Avalonia.Data.Core
             if (TypeUtilities.TryConvert(
                 _targetType,
                 _fallbackValue,
-                CultureInfo.InvariantCulture,
+                ConverterCulture,
                 out converted))
             {
                 return new BindingNotification(converted);

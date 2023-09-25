@@ -36,20 +36,17 @@ namespace Avalonia.Controls
         private bool _isActive;
         private int _ignoreVisibilityChanges;
         private WindowBase? _owner;
-
-        protected bool IgnoreVisibilityChanges => _ignoreVisibilityChanges > 0; 
+        
+        protected bool IgnoreVisibilityChanges => _ignoreVisibilityChanges > 0;
 
         static WindowBase()
         {
             IsVisibleProperty.OverrideDefaultValue<WindowBase>(false);
-            IsVisibleProperty.Changed.AddClassHandler<WindowBase>((x,e) => x.IsVisibleChanged(e));
-
-            
-            TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue!));
         }
 
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
+            CreatePlatformImplBinding(TopmostProperty, topmost => PlatformImpl!.SetTopmost(topmost));
         }
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
@@ -189,6 +186,16 @@ namespace Avalonia.Controls
                 var init = (ISupportInitialize)this;
                 init.BeginInit();
                 init.EndInit();
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsVisibleProperty)
+            {
+                IsVisibleChanged(change);
             }
         }
 
