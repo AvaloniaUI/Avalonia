@@ -2,19 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
-    public class BindingExpressionTests : IClassFixture<InvariantCultureFixture>
+    [InvariantCulture]
+    public class BindingExpressionTests
     {
         [Fact]
         public async Task Should_Get_Simple_Property_Value()
