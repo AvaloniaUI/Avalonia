@@ -269,8 +269,8 @@ namespace Avalonia.Controls
         /// </value>
         public DayOfWeek FirstDayOfWeek
         {
-            get { return GetValue(FirstDayOfWeekProperty); }
-            set { SetValue(FirstDayOfWeekProperty, value); }
+            get => GetValue(FirstDayOfWeekProperty);
+            set => SetValue(FirstDayOfWeekProperty, value);
         }
 
         /// <summary>
@@ -323,8 +323,8 @@ namespace Avalonia.Controls
         /// </value>
         public bool IsTodayHighlighted
         {
-            get { return GetValue(IsTodayHighlightedProperty); }
-            set { SetValue(IsTodayHighlightedProperty, value); }
+            get => GetValue(IsTodayHighlightedProperty);
+            set => SetValue(IsTodayHighlightedProperty, value);
         }
 
         /// <summary>
@@ -346,8 +346,8 @@ namespace Avalonia.Controls
 
         public IBrush? HeaderBackground
         {
-            get { return GetValue(HeaderBackgroundProperty); }
-            set { SetValue(HeaderBackgroundProperty, value); }
+            get => GetValue(HeaderBackgroundProperty);
+            set => SetValue(HeaderBackgroundProperty, value);
         }
 
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
@@ -365,8 +365,8 @@ namespace Avalonia.Controls
         /// </value>
         public CalendarMode DisplayMode
         {
-            get { return GetValue(DisplayModeProperty); }
-            set { SetValue(DisplayModeProperty, value); }
+            get => GetValue(DisplayModeProperty);
+            set => SetValue(DisplayModeProperty, value);
         }
 
         /// <summary>
@@ -458,8 +458,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public CalendarSelectionMode SelectionMode
         {
-            get { return GetValue(SelectionModeProperty); }
-            set { SetValue(SelectionModeProperty, value); }
+            get => GetValue(SelectionModeProperty);
+            set => SetValue(SelectionModeProperty, value);
         }
 
         private void OnSelectionModeChanged(AvaloniaPropertyChangedEventArgs e)
@@ -649,7 +649,7 @@ namespace Avalonia.Controls
         internal DateTime? LastSelectedDateInternal { get; set; }
         internal DateTime? LastSelectedDate
         {
-            get { return LastSelectedDateInternal; }
+            get => LastSelectedDateInternal;
             set
             {
                 LastSelectedDateInternal = value;
@@ -671,7 +671,7 @@ namespace Avalonia.Controls
 
         internal DateTime SelectedMonth
         {
-            get { return _selectedMonth; }
+            get => _selectedMonth;
             set
             {
                 int monthDifferenceStart = DateTimeHelper.CompareYearMonth(value, DisplayDateRangeStart);
@@ -697,7 +697,7 @@ namespace Avalonia.Controls
         }
         internal DateTime SelectedYear
         {
-            get { return _selectedYear; }
+            get => _selectedYear;
             set
             {
                 if (value.Year < DisplayDateRangeStart.Year)
@@ -888,7 +888,7 @@ namespace Avalonia.Controls
         }
         internal DateTime DisplayDateRangeStart
         {
-            get { return DisplayDateStart.GetValueOrDefault(DateTime.MinValue); }
+            get => DisplayDateStart.GetValueOrDefault(DateTime.MinValue);
         }
 
         public static readonly StyledProperty<DateTime?> DisplayDateEndProperty =
@@ -973,7 +973,7 @@ namespace Avalonia.Controls
         }
         internal DateTime DisplayDateRangeEnd
         {
-            get { return DisplayDateEnd.GetValueOrDefault(DateTime.MaxValue); }
+            get => DisplayDateEnd.GetValueOrDefault(DateTime.MaxValue);
         }
 
         internal DateTime? HoverStart { get; set; }
@@ -981,7 +981,7 @@ namespace Avalonia.Controls
         internal DateTime? HoverEndInternal { get; set; }
         internal DateTime? HoverEnd
         {
-            get { return HoverEndInternal; }
+            get => HoverEndInternal;
             set
             {
                 HoverEndInternal = value;

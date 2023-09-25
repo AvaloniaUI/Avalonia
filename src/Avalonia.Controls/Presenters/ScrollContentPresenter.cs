@@ -147,8 +147,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public Size Extent
         {
-            get { return _extent; }
-            private set { SetAndRaise(ExtentProperty, ref _extent, value); }
+            get => _extent;
+            private set => SetAndRaise(ExtentProperty, ref _extent, value);
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public Size Viewport
         {
-            get { return _viewport; }
-            private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+            get => _viewport;
+            private set => SetAndRaise(ViewportProperty, ref _viewport, value);
         }
 
         /// <summary>
