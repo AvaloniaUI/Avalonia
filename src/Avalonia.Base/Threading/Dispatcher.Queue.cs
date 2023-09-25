@@ -11,7 +11,7 @@ public partial class Dispatcher
     private bool _explicitBackgroundProcessingRequested;
     private const int MaximumInputStarvationTimeInFallbackMode = 50;
     private const int MaximumInputStarvationTimeInExplicitProcessingExplicitMode = 50;
-    private int _maximumInputStarvationTime;
+    private readonly int _maximumInputStarvationTime;
     
     void RequestBackgroundProcessing()
     {

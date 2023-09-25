@@ -4,9 +4,9 @@ namespace Avalonia.Animation.Animators
 {
     internal class BoxShadowAnimator : Animator<BoxShadow>
     {
-        static ColorAnimator s_colorAnimator = new ColorAnimator();
-        static DoubleAnimator s_doubleAnimator = new DoubleAnimator();
-        static BoolAnimator s_boolAnimator = new BoolAnimator();
+        static readonly ColorAnimator s_colorAnimator = new ColorAnimator();
+        static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
+        static readonly BoolAnimator s_boolAnimator = new BoolAnimator();
         public override BoxShadow Interpolate(double progress, BoxShadow oldValue, BoxShadow newValue)
         {
             return new BoxShadow

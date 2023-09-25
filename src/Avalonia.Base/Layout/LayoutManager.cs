@@ -29,7 +29,7 @@ namespace Avalonia.Layout
         private bool _queued;
         private bool _running;
         private int _totalPassCount;
-        private Action _invokeOnRender;
+        private readonly Action _invokeOnRender;
 
         public LayoutManager(ILayoutRoot owner)
         {

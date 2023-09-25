@@ -294,7 +294,7 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
         private readonly KeyValuePair[]? _arr;
         private KeyValuePair<TKey, TValue> _first;
         private int _index;
-        private Type _type;
+        private readonly Type _type;
         enum Type
         {
             Empty, Single, Array, Dictionary

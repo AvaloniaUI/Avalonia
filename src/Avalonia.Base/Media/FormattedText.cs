@@ -23,11 +23,11 @@ namespace Avalonia.Media
         private const double MaxFontEmSize = RealInfiniteWidth / GreatestMultiplierOfEm;
 
         // properties and format runs
-        private string _text;
+        private readonly string _text;
         private readonly SpanVector _formatRuns = new SpanVector(null);
         private SpanPosition _latestPosition;
 
-        private GenericTextParagraphProperties _defaultParaProps;
+        private readonly GenericTextParagraphProperties _defaultParaProps;
 
         private double _maxTextWidth = double.PositiveInfinity;
         private double[]? _maxTextWidths;
