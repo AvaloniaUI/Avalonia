@@ -8,7 +8,7 @@ namespace Avalonia.Data.Core
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
     internal class StreamNode : ExpressionNode
     {
-        private IStreamPlugin? _customPlugin = null;
+        private readonly IStreamPlugin? _customPlugin = null;
         private IDisposable? _subscription;
 
         public override string Description => "^";

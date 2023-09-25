@@ -26,7 +26,7 @@ internal partial class MediaContext : ICompositorScheduler
     private List<Action>? _invokeOnRenderCallbacks;
     private readonly Stack<List<Action>> _invokeOnRenderCallbackListPool = new();
 
-    private DispatcherTimer _animationsTimer = new(DispatcherPriority.Render)
+    private readonly DispatcherTimer _animationsTimer = new(DispatcherPriority.Render)
     {
         // Since this timer is used to drive animations that didn't contribute to the previous frame at all
         // We can safely use 16ms interval until we fix our animation system to actually report the next expected 
@@ -34,7 +34,7 @@ internal partial class MediaContext : ICompositorScheduler
         Interval = TimeSpan.FromMilliseconds(16)
     };
 
-    private Dictionary<object, TopLevelInfo> _topLevels = new();
+    private readonly Dictionary<object, TopLevelInfo> _topLevels = new();
 
     private MediaContext(Dispatcher dispatcher)
     {

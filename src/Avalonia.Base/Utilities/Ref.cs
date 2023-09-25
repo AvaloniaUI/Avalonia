@@ -105,8 +105,8 @@ namespace Avalonia.Utilities
         class Ref<T> : CriticalFinalizerObject, IRef<T> where T : class
         {
             private T? _item;
-            private RefCounter _counter;
-            private object _lock = new object();
+            private readonly RefCounter _counter;
+            private readonly object _lock = new object();
 
             public Ref(T item, RefCounter counter)
             {
