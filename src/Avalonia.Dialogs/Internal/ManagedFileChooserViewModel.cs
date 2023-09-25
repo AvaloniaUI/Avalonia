@@ -33,7 +33,7 @@ namespace Avalonia.Dialogs.Internal
 
         string _location;
         string _fileName;
-        private readonly bool _showHiddenFiles;
+        private bool _showHiddenFiles;
         private ManagedFileChooserFilterViewModel _selectedFilter;
         private readonly bool _selectingDirectory;
         private readonly bool _savingFile;
