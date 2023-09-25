@@ -144,10 +144,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void OpenFlyout()
         {
-            if (Flyout != null)
-            {
-                Flyout.ShowAt(this);
-            }
+            Flyout?.ShowAt(this);
         }
 
         /// <summary>
@@ -155,10 +152,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void CloseFlyout()
         {
-            if (Flyout != null)
-            {
-                Flyout.Hide();
-            }
+            Flyout?.Hide();
         }
 
         /// <summary>

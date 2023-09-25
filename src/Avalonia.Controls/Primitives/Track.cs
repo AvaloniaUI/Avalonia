@@ -229,18 +229,12 @@ namespace Avalonia.Controls.Primitives
                 offset = offset.WithY(isDirectionReversed ? decreaseButtonLength + thumbLength : 0.0);
                 pieceSize = pieceSize.WithHeight(increaseButtonLength);
 
-                if (IncreaseButton != null)
-                {
-                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                IncreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithY(isDirectionReversed ? 0.0 : increaseButtonLength + thumbLength);
                 pieceSize = pieceSize.WithHeight(decreaseButtonLength);
 
-                if (DecreaseButton != null)
-                {
-                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                DecreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithY(isDirectionReversed ? decreaseButtonLength : increaseButtonLength);
                 pieceSize = pieceSize.WithHeight(thumbLength);
@@ -264,18 +258,12 @@ namespace Avalonia.Controls.Primitives
                 offset = offset.WithX(isDirectionReversed ? increaseButtonLength + thumbLength : 0.0);
                 pieceSize = pieceSize.WithWidth(decreaseButtonLength);
 
-                if (DecreaseButton != null)
-                {
-                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                DecreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithX(isDirectionReversed ? 0.0 : decreaseButtonLength + thumbLength);
                 pieceSize = pieceSize.WithWidth(increaseButtonLength);
 
-                if (IncreaseButton != null)
-                {
-                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                IncreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithX(isDirectionReversed ? increaseButtonLength : decreaseButtonLength);
                 pieceSize = pieceSize.WithWidth(thumbLength);
