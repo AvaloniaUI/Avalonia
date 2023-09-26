@@ -13,7 +13,7 @@
                 CornerRadius="{TemplateBinding CornerRadius}"
                 Background="{TemplateBinding Background}"
                 Padding="{TemplateBinding Padding}">
-          <StackPanel Orientation="Vertical">
+          <Grid RowDefinitions="auto *">
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
                               RecognizesAccessKey="True"
@@ -23,7 +23,8 @@
                               FontSize="{TemplateBinding FontSize}"
                               FontWeight="{TemplateBinding FontWeight}"
                               FontFamily="{TemplateBinding FontFamily}"
-                              FontStyle="{TemplateBinding FontStyle}" />
+                              FontStyle="{TemplateBinding FontStyle}"
+                              Grid.Row="0" />
             <ContentPresenter Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
@@ -33,8 +34,9 @@
                               FontSize="{TemplateBinding FontSize}"
                               FontWeight="{TemplateBinding FontWeight}"
                               FontFamily="{TemplateBinding FontFamily}"
-                              FontStyle="{TemplateBinding FontStyle}" />
-          </StackPanel>
+                              FontStyle="{TemplateBinding FontStyle}"
+                              Grid.Row="1" />
+          </Grid>
         </Border>
       </ControlTemplate>
     </Setter>
