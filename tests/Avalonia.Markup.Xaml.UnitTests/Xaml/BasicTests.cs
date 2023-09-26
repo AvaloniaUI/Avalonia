@@ -990,7 +990,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             public IList SelectedItems
             {
-                get { return _selectedItems; }
+                get => _selectedItems;
                 set
                 {
                     _selectedItems = value;

@@ -19,18 +19,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
         }
 
-        private string BitmapPath
-        {
-            get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
-        }
+        private string BitmapPath => System.IO.Path.Combine(OutputPath, "github_icon.png");
 
-        private Control Visual
+        private Control Visual => new Panel
         {
-            get
-            {
-                return new Panel
-                {
-                    Children =
+            Children =
                     {
                         new Image
                         {
@@ -50,9 +43,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             }
                         }
                     }
-                };
-            }
-        }
+        };
 
         [Fact]
         public async Task VisualBrush_NoStretch_NoTile_Alignment_TopLeft()

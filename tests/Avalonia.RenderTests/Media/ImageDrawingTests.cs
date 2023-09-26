@@ -17,10 +17,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
         }
 
-        private string BitmapPath
-        {
-            get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
-        }
+        private string BitmapPath => System.IO.Path.Combine(OutputPath, "github_icon.png");
 
         [Fact]
         public async Task ImageDrawing_Fill()
