@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Server;
 internal class CompositorDrawingContextProxy : IDrawingContextImpl,
     IDrawingContextWithAcrylicLikeSupport, IDrawingContextImplWithEffects
 {
-    private IDrawingContextImpl _impl;
+    private readonly IDrawingContextImpl _impl;
 
     public CompositorDrawingContextProxy(IDrawingContextImpl impl)
     {

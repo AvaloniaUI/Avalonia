@@ -19,8 +19,8 @@ namespace Avalonia.Rendering.Composition.Animations
     /// </remarks>
     public class ImplicitAnimationCollection : CompositionObject, IDictionary<string, ICompositionAnimationBase>
     {
-        private Dictionary<string, ICompositionAnimationBase> _inner = new Dictionary<string, ICompositionAnimationBase>();
-        private IDictionary<string, ICompositionAnimationBase> _innerface;
+        private readonly Dictionary<string, ICompositionAnimationBase> _inner = new Dictionary<string, ICompositionAnimationBase>();
+        private readonly IDictionary<string, ICompositionAnimationBase> _innerface;
         internal ImplicitAnimationCollection(Compositor compositor) : base(compositor, null)
         {
             _innerface = _inner;
