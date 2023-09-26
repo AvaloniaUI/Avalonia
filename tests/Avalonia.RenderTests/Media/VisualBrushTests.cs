@@ -19,7 +19,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
         }
 
-        private string BitmapPath => System.IO.Path.Combine(OutputPath, "github_icon.png");
+        private string BitmapPath
+        {
+            get
+            {
+                return System.IO.Path.Combine(OutputPath, "github_icon.png");
+            }
+        }
 
         private Control Visual
         {
