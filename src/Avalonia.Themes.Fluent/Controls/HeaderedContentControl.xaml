@@ -7,8 +7,7 @@
     <Setter Property="Padding" Value="3" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Name="PART_Border"
-                BorderBrush="{TemplateBinding BorderBrush}"
+        <Border BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}"
                 Background="{TemplateBinding Background}"
