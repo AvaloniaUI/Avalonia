@@ -914,6 +914,26 @@ namespace Avalonia.Win32
         {
             if (fullscreen)
             {
+                GetWindowRect(_hwnd, out var windowRect);
+                GetClientRect(_hwnd, out var clientRect);
+
+                clientRect.left += windowRect.left;
+                clientRect.right += windowRect.left;
+                clientRect.top += windowRect.top;
+                clientRect.bottom += windowRect.top;
+
+                _savedWindowInfo.WindowRect = clientRect;
+
+                var current = GetStyle();
+                var currentEx = GetExtendedStyle();
+
+                _savedWindowInfo.Style = current;
+                _savedWindowInfo.ExStyle = currentEx;
+
+                // Set new window style and size.
+                SetStyle(current & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME), false);
+                SetExtendedStyle(currentEx & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE), false);
+
                 // On expand, if we're given a window_rect, grow to it, otherwise do
                 // not resize.
                 MONITORINFO monitor_info = MONITORINFO.Create();
@@ -932,6 +952,10 @@ namespace Avalonia.Win32
                 // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
                 // repainted.  Better-looking methods welcome.
                 _isFullScreenActive = false;
+
+                var windowStates = GetWindowStateStyles();
+                SetStyle((_savedWindowInfo.Style & ~WindowStateMask) | windowStates, false);
+                SetExtendedStyle(_savedWindowInfo.ExStyle, false);
 
                 // On restore, resize to the previous saved rect size.
                 var newClientRect = _savedWindowInfo.WindowRect.ToPixelRect();
@@ -1248,133 +1272,113 @@ namespace Avalonia.Win32
             // according to the new values already.
             _windowProperties = newProperties;
 
-            var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (_isUsingComposition ? WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0);
-
-            if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
+            if (oldProperties.IsFullScreen == newProperties.IsFullScreen)
             {
+                var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (_isUsingComposition ? WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0);
+
+                if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
+                {
+                    if (newProperties.ShowInTaskbar)
+                    {
+                        exStyle |= WindowStyles.WS_EX_APPWINDOW;
+
+                        if (_hiddenWindowIsParent)
+                        {
+                            // Can't enable the taskbar icon by clearing the parent window unless the window
+                            // is hidden. Hide the window and show it again with the same activation state
+                            // when we've finished. Interestingly it seems to work fine the other way.
+                            var shown = IsWindowVisible(_hwnd);
+                            var activated = GetActiveWindow() == _hwnd;
+
+                            if (shown)
+                                Hide();
+
+                            _hiddenWindowIsParent = false;
+                            SetParent(null);
+
+                            if (shown)
+                                Show(activated, false);
+                        }
+                    }
+                    else
+                    {
+                        // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
+                        if (_parent is null)
+                        {
+                            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                            _hiddenWindowIsParent = true;
+                        }
+
+                        exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    }
+                }
+
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
-
-                    if (_hiddenWindowIsParent)
-                    {
-                        // Can't enable the taskbar icon by clearing the parent window unless the window
-                        // is hidden. Hide the window and show it again with the same activation state
-                        // when we've finished. Interestingly it seems to work fine the other way.
-                        var shown = IsWindowVisible(_hwnd);
-                        var activated = GetActiveWindow() == _hwnd;
-
-                        if (shown)
-                            Hide();
-
-                        _hiddenWindowIsParent = false;
-                        SetParent(null);
-
-                        if (shown)
-                            Show(activated, false);
-                    }
                 }
                 else
                 {
-                    // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
-                    if (_parent is null)
-                    {
-                        SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
-                        _hiddenWindowIsParent = true;
-                    }
-
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
-            }
 
-            if (newProperties.ShowInTaskbar)
-            {
-                exStyle |= WindowStyles.WS_EX_APPWINDOW;
-            }
-            else
-            {
-                exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
-            }
+                WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
 
-            WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
+                if (IsWindowVisible(_hwnd))
+                    style |= WindowStyles.WS_VISIBLE;
 
-            if (IsWindowVisible(_hwnd))
-                style |= WindowStyles.WS_VISIBLE;
-
-            if (newProperties.IsResizable)
-            {
-                style |= WindowStyles.WS_SIZEFRAME;
-                style |= WindowStyles.WS_MAXIMIZEBOX;
-            }
-            else
-            {
-                style &= ~WindowStyles.WS_SIZEFRAME;
-                style &= ~WindowStyles.WS_MAXIMIZEBOX;
-            }
-
-            const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
-
-            if (newProperties.Decorations == SystemDecorations.Full)
-            {
-                style |= fullDecorationFlags;
-            }
-            else
-            {
-                style &= ~fullDecorationFlags;
-
-                if (newProperties.Decorations == SystemDecorations.BorderOnly)
+                if (newProperties.IsResizable)
                 {
-                    style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                    style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
-            }
-
-            if (newProperties.IsFullScreen)
-            {
-                // Apply styles here, then save the client rect for when we resume from full screen
-                if (!oldProperties.IsFullScreen)
+                else
                 {
-                    SetStyle(style);
-                    SetExtendedStyle(exStyle);
-                    GetWindowRect(_hwnd, out var windowRect);
-                    GetClientRect(_hwnd, out var clientRect);
-
-                    clientRect.left += windowRect.left;
-                    clientRect.right += windowRect.left;
-                    clientRect.top += windowRect.top;
-                    clientRect.bottom += windowRect.top;
-
-                    _savedWindowInfo.WindowRect = clientRect;
+                    style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
-                style &= ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME);
-                exStyle &= ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE);
-            }
-            else
-            {
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
+
+                if (newProperties.Decorations == SystemDecorations.Full)
+                {
+                    style |= fullDecorationFlags;
+                }
+                else
+                {
+                    style &= ~fullDecorationFlags;
+
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly)
+                    {
+                        style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                    }
+                }
+
                 var windowStates = GetWindowStateStyles();
                 style &= ~WindowStateMask;
                 style |= windowStates;
 
                 _savedWindowInfo.Style = style;
                 _savedWindowInfo.ExStyle = exStyle;
+
+                if (WindowStylesCallback is { } callback)
+                {
+                    var (s, e) = callback((uint)style, (uint)exStyle);
+
+                    style = (WindowStyles)s;
+                    exStyle = (WindowStyles)e;
+                }
+
+                SetStyle(style);
+                SetExtendedStyle(exStyle);
             }
-
-            if (WindowStylesCallback is { } callback)
-            {
-                var (s, e) = callback((uint)style, (uint)exStyle);
-
-                style = (WindowStyles)s;
-                exStyle = (WindowStyles)e;
-            }
-
-            SetStyle(style);
-            SetExtendedStyle(exStyle);
-
-            if (oldProperties.IsFullScreen != newProperties.IsFullScreen)
+            else
                 SetFullScreen(newProperties.IsFullScreen);
 
             if (!_isFullScreenActive)
             {
+                var style = GetStyle();
+
                 var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
 
                 var margins = new MARGINS
