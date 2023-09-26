@@ -67,7 +67,7 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Delete n elements of vector
         /// </summary>
-        internal virtual void Delete(int index, int count, ref SpanPosition latestPosition)
+        internal void Delete(int index, int count, ref SpanPosition latestPosition)
         {
             DeleteInternal(index, count);
 
