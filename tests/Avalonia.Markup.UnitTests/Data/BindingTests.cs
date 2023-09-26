@@ -765,10 +765,8 @@ namespace Avalonia.Markup.UnitTests.Data
                         if (SetterInvokedCount < MaxInvokedCount)
                         {
                             _value = (int)value;
-                            if (_value > 75)
-                                _value = 75;
-                            if (_value < 25)
-                                _value = 25;
+                            if (_value > 75) _value = 75;
+                            if (_value < 25) _value = 25;
                         }
                         else
                         {

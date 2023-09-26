@@ -19,9 +19,21 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
         }
 
-        private string BitmapPath => System.IO.Path.Combine(OutputPath, "github_icon.png");
+        private string BitmapPath
+        {
+            get
+            {
+                return System.IO.Path.Combine(OutputPath, "github_icon.png");
+            }
+        }
 
-        private string SmallBitmapPath => System.IO.Path.Combine(OutputPath, "github_icon_small.png");
+        private string SmallBitmapPath
+        {
+            get
+            {
+                return System.IO.Path.Combine(OutputPath, "github_icon_small.png");
+            }
+        }
 
         [Fact]
         public async Task ImageBrush_NullSource()

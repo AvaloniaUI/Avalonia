@@ -115,7 +115,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>("Foo");
 
-            public ThemeVariant ThemeVariant => throw new NotImplementedException();
+            public ThemeVariant ThemeVariant
+            {
+                get => throw new NotImplementedException();
+            }
 
             public event EventHandler ThemeVariantChanged;
         }
