@@ -100,7 +100,7 @@ namespace Avalonia.iOS
                 _insetsManager = new InsetsManager(view);
                 _insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
                 {
-                    view._topLevel.Padding = b ? default : _insetsManager.SafeAreaPadding;
+                    view._topLevel.Padding = b ? default : view._controller.SafeAreaPadding;
                 };
                 _clipboard = new ClipboardImpl();
             }
