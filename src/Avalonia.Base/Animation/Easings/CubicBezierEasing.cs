@@ -2,7 +2,7 @@ using System;
 
 namespace Avalonia.Animation.Easings;
 
-public class CubicBezierEasing : IEasing
+public sealed class CubicBezierEasing : IEasing
 {
     private CubicBezier _bezier;
     //cubic-bezier(0.25, 0.1, 0.25, 1.0)
