@@ -12,7 +12,7 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class Bitmap : IBitmap, IImageBrushSource
     {
-        private bool _isTranscoded;
+        private readonly bool _isTranscoded;
         /// <summary>
         /// Loads a Bitmap from a stream and decodes at the desired width. Aspect ratio is maintained.
         /// This is more efficient than loading and then resizing.

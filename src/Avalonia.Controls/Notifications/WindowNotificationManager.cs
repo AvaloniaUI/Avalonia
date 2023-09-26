@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Notifications
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
     [TemplatePart("PART_Items", typeof(Panel))]
-    [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright")]
+    [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright", ":topcenter", ":bottomcenter")]
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
@@ -31,8 +31,8 @@ namespace Avalonia.Controls.Notifications
         /// <seealso cref="NotificationPosition"/>
         public NotificationPosition Position
         {
-            get { return GetValue(PositionProperty); }
-            set { SetValue(PositionProperty, value); }
+            get => GetValue(PositionProperty);
+            set => SetValue(PositionProperty, value);
         }
 
         /// <summary>
@@ -46,10 +46,10 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         public int MaxItems
         {
-            get { return GetValue(MaxItemsProperty); }
-            set { SetValue(MaxItemsProperty, value); }
+            get => GetValue(MaxItemsProperty);
+            set => SetValue(MaxItemsProperty, value);
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
@@ -215,6 +215,8 @@ namespace Avalonia.Controls.Notifications
             PseudoClasses.Set(":topright", position == NotificationPosition.TopRight);
             PseudoClasses.Set(":bottomleft", position == NotificationPosition.BottomLeft);
             PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
+            PseudoClasses.Set(":topcenter", position == NotificationPosition.TopCenter);
+            PseudoClasses.Set(":bottomcenter", position == NotificationPosition.BottomCenter);
         }
     }
 }

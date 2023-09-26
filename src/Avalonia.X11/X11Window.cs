@@ -297,19 +297,30 @@ namespace Avalonia.X11
 
         private void UpdateSizeHints(PixelSize? preResize)
         {
-            if(_overrideRedirect)
+            if (_overrideRedirect)
                 return;
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
             if (!_canResize)
-                max = min = _realSize;
-            
-            if (preResize.HasValue)
             {
-                var desired = preResize.Value;
-                max = new PixelSize(Math.Max(desired.Width, max.Width), Math.Max(desired.Height, max.Height));
-                min = new PixelSize(Math.Min(desired.Width, min.Width), Math.Min(desired.Height, min.Height));
+                if (preResize.HasValue)
+                {
+                    max = min = preResize.Value;
+                }
+                else
+                {
+                    max = min = _realSize;
+                }
+            }
+            else
+            {
+                if (preResize.HasValue)
+                {
+                    var desired = preResize.Value;
+                    max = new PixelSize(Math.Max(desired.Width, max.Width), Math.Max(desired.Height, max.Height));
+                    min = new PixelSize(Math.Min(desired.Width, min.Width), Math.Min(desired.Height, min.Height));
+                }
             }
 
             var hints = new XSizeHints
@@ -1001,8 +1012,10 @@ namespace Avalonia.X11
 
         private void Resize(Size clientSize, bool force, WindowResizeReason reason)
         {
-            if (!force && clientSize == ClientSize)
+            if (!force && (clientSize == ClientSize))
+            {
                 return;
+            }
             
             var needImmediatePopupResize = clientSize != ClientSize;
 

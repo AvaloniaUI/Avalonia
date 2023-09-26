@@ -35,28 +35,19 @@ namespace Avalonia.Controls.Automation.Peers
         ///returns True if the control is read-only</summary>
         bool IRangeValueProvider.IsReadOnly
         {
-            get
-            {
-                return true;
-            }
+            get => true;
         }
 
         ///<summary>Value of a Large Change</summary>
         double IRangeValueProvider.LargeChange
         {
-            get
-            {
-                return double.NaN;
-            }
+            get => double.NaN;
         }
 
         ///<summary>Value of a Small Change</summary>
         double IRangeValueProvider.SmallChange
         {
-            get
-            {
-                return double.NaN;
-            }
+            get => double.NaN;
         }
     }
 }

@@ -48,8 +48,8 @@ namespace Avalonia.Data.Core
                 new ObservableStreamPlugin(),
             };
         private readonly ExpressionNode _node;
-        private object? _root;
-        private Func<object?>? _rootGetter;
+        private readonly object? _root;
+        private readonly Func<object?>? _rootGetter;
         private IDisposable? _rootSubscription;
         private WeakReference<object?>? _value;
         private IReadOnlyList<ITransformNode>? _transformNodes;
