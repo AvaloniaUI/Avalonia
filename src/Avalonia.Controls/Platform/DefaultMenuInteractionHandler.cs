@@ -156,8 +156,8 @@ namespace Avalonia.Controls.Platform
 
             var point = e.GetCurrentPoint(null);
 
-             if (point.Properties.IsLeftButtonPressed
-                    && transformedBounds.Value.Contains(point.Position) == false)
+            if (point.Properties.IsLeftButtonPressed
+                   && transformedBounds.Value.Contains(point.Position) == false)
             {
                 e.Pointer.Capture(null);
             }
