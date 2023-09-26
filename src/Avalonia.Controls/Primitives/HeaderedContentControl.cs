@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A <see cref="ContentControl"/> with a header.
     /// </summary>
-    [TemplatePart("PART_HeaderPresenter", typeof(HeaderedContentControl))]
+    [TemplatePart("PART_HeaderPresenter", typeof(ContentPresenter))]
     public class HeaderedContentControl : ContentControl, IHeadered
     {
         /// <summary>
