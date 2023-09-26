@@ -640,7 +640,10 @@ namespace Avalonia.Controls
                 if (child.GetValue(AutoSafeAreaPaddingProperty))
                 {
                     insetsManager.SafeAreaChanged += InsetsManagerOnSafeAreaChanged;
-                    _insetsPaddings = child.SetValue(PaddingProperty, insetsManager.SafeAreaPadding);
+                    _insetsPaddings = child.SetValue(
+                        PaddingProperty,
+                        insetsManager.SafeAreaPadding,
+                        BindingPriority.Style); // lower priority, so it can be redefined by user
                 }
 
                 void InsetsManagerOnSafeAreaChanged(object? sender, SafeAreaChangedArgs e)
