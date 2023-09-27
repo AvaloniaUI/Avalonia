@@ -438,8 +438,9 @@ private:
                 if (filters->IsAnyType(i)) {
                     UTType* type = [UTType typeWithIdentifier:@"public.item"];
                     [file_uttype_array addObject:type];
+                    typeCompleted = true;
                 }
-                else if (filters->GetExtensions(i, &array) == 0) {
+                if (!typeCompleted && filters->GetExtensions(i, &array) == 0) {
                     for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
                     {
                         UTType* type = [UTType typeWithFilenameExtension:ext];
@@ -488,6 +489,9 @@ private:
             }
         }
         
+        if ([file_uttype_lists count] == 0 && [file_type_lists count] == 0)
+            return;
+
         if (@available(macOS 11, *))
             _extension_dropdown_handler = [[ExtensionDropdownHandler alloc] initWithDialog:panel
                                                                           fileUTTypeLists:file_uttype_lists];
