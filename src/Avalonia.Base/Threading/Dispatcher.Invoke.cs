@@ -619,4 +619,16 @@ public partial class Dispatcher
         _ = action ?? throw new ArgumentNullException(nameof(action));
         InvokeAsyncImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true), CancellationToken.None);
     }
+
+    /// <summary>
+    /// Returns a task awaitable that would invoke continuation on specified dispatcher priority
+    /// </summary>
+    public DispatcherPriorityAwaitable AwaitWithPriority(Task task, DispatcherPriority priority) =>
+        new(this, task, priority);
+    
+    /// <summary>
+    /// Returns a task awaitable that would invoke continuation on specified dispatcher priority
+    /// </summary>
+    public DispatcherPriorityAwaitable<T> AwaitWithPriority<T>(Task<T> task, DispatcherPriority priority) =>
+        new(this, task, priority);
 }

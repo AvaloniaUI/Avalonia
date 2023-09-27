@@ -26,13 +26,13 @@ namespace Avalonia.Rendering.Composition.Server
         private FrameTimeGraph? _renderTimeGraph;
         private FrameTimeGraph? _layoutTimeGraph;
         private Rect _dirtyRect;
-        private Random _random = new();
+        private readonly Random _random = new();
         private Size _layerSize;
         private IDrawingContextLayerImpl? _layer;
         private bool _redrawRequested;
         private bool _disposed;
-        private HashSet<ServerCompositionVisual> _attachedVisuals = new();
-        private Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
+        private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
+        private readonly Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
 
         public long Id { get; }
         public ulong Revision { get; private set; }

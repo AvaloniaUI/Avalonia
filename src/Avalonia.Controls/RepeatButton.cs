@@ -28,8 +28,8 @@ namespace Avalonia.Controls
         /// </summary>
         public int Interval
         {
-            get { return GetValue(IntervalProperty); }
-            set { SetValue(IntervalProperty, value); }
+            get => GetValue(IntervalProperty);
+            set => SetValue(IntervalProperty, value);
         }
 
         /// <summary>
@@ -37,8 +37,8 @@ namespace Avalonia.Controls
         /// </summary>
         public int Delay
         {
-            get { return GetValue(DelayProperty); }
-            set { SetValue(DelayProperty, value); }
+            get => GetValue(DelayProperty);
+            set => SetValue(DelayProperty, value);
         }
 
         private void StartTimer()

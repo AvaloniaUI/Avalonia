@@ -205,10 +205,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Size Extent
         {
-            get
-            {
-                return _extent;
-            }
+            get => _extent;
 
             internal set
             {
@@ -233,10 +230,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Size Viewport
         {
-            get
-            {
-                return _viewport;
-            }
+            get => _viewport;
 
             internal set
             {
@@ -262,8 +256,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ScrollBarVisibility HorizontalScrollBarVisibility
         {
-            get { return GetValue(HorizontalScrollBarVisibilityProperty); }
-            set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
+            get => GetValue(HorizontalScrollBarVisibilityProperty);
+            set => SetValue(HorizontalScrollBarVisibilityProperty, value);
         }
 
         /// <summary>
@@ -271,8 +265,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ScrollBarVisibility VerticalScrollBarVisibility
         {
-            get { return GetValue(VerticalScrollBarVisibilityProperty); }
-            set { SetValue(VerticalScrollBarVisibilityProperty, value); }
+            get => GetValue(VerticalScrollBarVisibilityProperty);
+            set => SetValue(VerticalScrollBarVisibilityProperty, value);
         }
 
         /// <summary>
@@ -280,7 +274,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected bool CanHorizontallyScroll
         {
-            get { return HorizontalScrollBarVisibility != ScrollBarVisibility.Disabled; }
+            get => HorizontalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
 
         /// <summary>
@@ -288,7 +282,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected bool CanVerticallyScroll
         {
-            get { return VerticalScrollBarVisibility != ScrollBarVisibility.Disabled; }
+            get => VerticalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
 
         /// <inheritdoc/>

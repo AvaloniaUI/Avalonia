@@ -1,5 +1,8 @@
+using System;
+using System.Globalization;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -402,13 +405,49 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact]
+        public void ConverterCulture_Can_Be_Specified_By_Ietf_Language_Tag()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+  <TextBlock Name='textBlock' Text='{Binding Greeting1, Converter={x:Static local:BindingTests+CultureAppender.Instance}, ConverterCulture=ar-SA}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = Assert.IsType<TextBlock>(window.Content);
+
+                window.DataContext = new WindowViewModel();
+                window.ApplyTemplate();
+
+                Assert.Equal("Hello+ar-SA", textBlock.Text);
+            }
+        }
+
         private class WindowViewModel
         {
             public bool ShowInTaskbar { get; set; }
             public string Greeting1 { get; set; } = "Hello";
             public string Greeting2 { get; set; } = "World";
         }
-        
+
+        public class CultureAppender : IValueConverter
+        {
+            public static CultureAppender Instance { get; } = new CultureAppender();
+
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                return $"{value}+{culture}";
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         [Fact]
         public void Binding_Classes_Works()
         {

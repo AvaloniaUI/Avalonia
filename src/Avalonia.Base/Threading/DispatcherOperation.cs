@@ -224,8 +224,8 @@ public class DispatcherOperation
 
         private void OnCompletedOrAborted(object? sender, EventArgs e) => Exit();
 
-        private DispatcherOperation _operation;
-        private Timer? _waitTimer;
+        private readonly DispatcherOperation _operation;
+        private readonly Timer? _waitTimer;
     }
 
     public Task GetTask() => GetTaskCore();

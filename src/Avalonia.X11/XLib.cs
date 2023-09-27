@@ -465,19 +465,31 @@ namespace Avalonia.X11
         }
         
         [DllImport (libX11)]
-        public static extern unsafe int XLookupString(ref XEvent xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
+        public static extern int XLookupString(ref XKeyEvent xevent, byte* buffer, int num_bytes, out nint keysym, IntPtr composeStatus);
         
         [DllImport (libX11)]
-        public static extern unsafe int Xutf8LookupString(IntPtr xic, ref XEvent xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
+        public static extern int Xutf8LookupString(IntPtr xic, ref XKeyEvent xevent, byte* buffer, int num_bytes, out nint keysym, out XLookupStatus status);
+
+        [DllImport (libX11)]
+        public static extern byte* XKeysymToString(nint keysym);
+
+        [DllImport (libX11)]
+        public static extern bool XkbLibraryVersion(ref int libMajor, ref int libMinor);
+
+        [DllImport (libX11)]
+        public static extern bool XkbQueryExtension(IntPtr display, out int *opcode, out int eventBase, out int *errorBase, ref int major, ref int minor);
+
+        [DllImport (libX11)]
+        public static extern bool XkbIgnoreExtension(bool ignore);
+
+        [DllImport (libX11)]
+        public static extern bool XkbLookupKeySym(IntPtr display, int keycode, int modifiers, out XModifierMask consumedModifiers, out nint keysym);
+
+        [DllImport (libX11)]
+        public static extern int XkbTranslateKeySym(IntPtr display, ref nint keySym, int modifiers, byte* buffer, int bufferSize, out int extraSize);
         
         [DllImport (libX11)]
-        public static extern unsafe int Xutf8LookupString(IntPtr xic, XEvent* xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
-        
-        [DllImport (libX11)]
-        public static extern unsafe IntPtr XKeycodeToKeysym(IntPtr display, int keycode, int index);
-        
-        [DllImport (libX11)]
-        public static extern unsafe IntPtr XSetLocaleModifiers(string modifiers);
+        public static extern IntPtr XSetLocaleModifiers(string modifiers);
 
         [DllImport (libX11)]
         public static extern IntPtr XOpenIM (IntPtr display, IntPtr rdb, IntPtr res_name, IntPtr res_class);
@@ -731,5 +743,11 @@ namespace Avalonia.X11
             plat.Windows[win] = handler;
             return win;
         }
+
+        public static int XkbGetGroupForCoreState(int state)
+            => (state >> 13) & 0x3;
+
+        public static int XkbSetGroupForCoreState(int state, int newGroup)
+            => (state & ~(0x3 << 13)) | ((newGroup & 0x3) << 13);
     }
 }
