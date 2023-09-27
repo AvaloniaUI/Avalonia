@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -28,12 +29,15 @@ namespace Avalonia.Controls
             {
                 control.PointerEntered -= ControlPointerEntered;
                 control.PointerExited -= ControlPointerExited;
+                control.RemoveHandler(InputElement.PointerPressedEvent, ControlPointerPressed);
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEntered += ControlPointerEntered;
                 control.PointerExited += ControlPointerExited;
+                control.AddHandler(InputElement.PointerPressedEvent, ControlPointerPressed,
+                    RoutingStrategies.Bubble | RoutingStrategies.Tunnel | RoutingStrategies.Direct, true);
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -106,6 +110,12 @@ namespace Avalonia.Controls
         {
             var control = (Control)sender!;
             Close(control);
+        }
+
+        private void ControlPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            StopTimer();
+            (sender as AvaloniaObject)?.ClearValue(ToolTip.IsOpenProperty);
         }
 
         private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)

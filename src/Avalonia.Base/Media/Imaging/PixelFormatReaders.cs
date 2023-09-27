@@ -94,7 +94,7 @@ internal static unsafe class PixelFormatReader
             _bit = 0;
         }
 
-        private static Rgba8888Pixel[] Palette = new[]
+        private static readonly Rgba8888Pixel[] Palette = new[]
         {
             s_black,
             new Rgba8888Pixel

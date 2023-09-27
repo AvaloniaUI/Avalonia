@@ -12,7 +12,7 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class Bitmap : IBitmap, IImageBrushSource
     {
-        private bool _isTranscoded;
+        private readonly bool _isTranscoded;
         /// <summary>
         /// Loads a Bitmap from a stream and decodes at the desired width. Aspect ratio is maintained.
         /// This is more efficient than loading and then resizing.
@@ -241,7 +241,7 @@ namespace Avalonia.Media.Imaging
                 throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
             }
 
-            if (readable.Format != Format || readable.AlphaFormat != alphaFormat)
+            if (buffer.Format != readable.Format || alphaFormat != readable.AlphaFormat)
             {
                 using (var fb = readable.Lock())
                 {

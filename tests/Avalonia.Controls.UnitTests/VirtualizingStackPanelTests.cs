@@ -501,6 +501,33 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/12838
+        [Fact]
+        public void NthChild_Selector_Works_For_ItemTemplate_Children()
+        {
+            using var app = App();
+
+            var style = new Style(x => x.OfType<ContentPresenter>().NthChild(5, 0).Child().OfType<Canvas>())
+            {
+                Setters = { new Setter(Panel.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+
+            Assert.Equal(10, realized.Count);
+
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 4 || i == 9) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, ((Canvas) container.Child!).Background);
+            }
+        }
+
         [Fact]
         public void NthLastChild_Selector_Works()
         {
@@ -524,6 +551,33 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(i, index);
                 Assert.Equal(expectedBackground, container.Background);
+            }
+        }
+
+        // https://github.com/AvaloniaUI/Avalonia/issues/12838
+        [Fact]
+        public void NthLastChild_Selector_Works_For_ItemTemplate_Children()
+        {
+            using var app = App();
+
+            var style = new Style(x => x.OfType<ContentPresenter>().NthLastChild(5, 0).Child().OfType<Canvas>())
+            {
+                Setters = { new Setter(Panel.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+
+            Assert.Equal(10, realized.Count);
+
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 0 || i == 5) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, ((Canvas) container.Child!).Background);
             }
         }
 

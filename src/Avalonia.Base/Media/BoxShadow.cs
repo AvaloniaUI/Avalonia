@@ -44,7 +44,7 @@ namespace Avalonia.Media
         struct ArrayReader
         {
             private int _index;
-            private string[] _arr;
+            private readonly string[] _arr;
 
             public ArrayReader(string[] arr)
             {
