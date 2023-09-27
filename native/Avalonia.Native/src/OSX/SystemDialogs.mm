@@ -428,8 +428,7 @@ private:
             }
 
             IAvnStringArray* array;
-            IAvnString* arrayItem;
-            
+
             // Prefer types priority of: file ext -> apple type id -> mime.
             // On macOS 10 we only support file extensions.
             if (@available(macOS 11, *)) {
@@ -441,41 +440,32 @@ private:
                     [file_uttype_array addObject:type];
                 }
                 else if (filters->GetExtensions(i, &array) == 0) {
-                    for (int j = 0; j < array->GetCount(); j++) {
-                        if (array->Get(j, &arrayItem) == 0) {
-                            NSString* ext = GetNSStringAndRelease(arrayItem);
-                            
-                            UTType* type = [UTType typeWithFilenameExtension:ext];
-                            if (type && ![file_uttype_array containsObject:type]) {
-                                [file_uttype_array addObject:type];
-                                typeCompleted = true;
-                            }
+                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                    {
+                        UTType* type = [UTType typeWithFilenameExtension:ext];
+                        if (type && ![file_uttype_array containsObject:type]) {
+                            [file_uttype_array addObject:type];
+                            typeCompleted = true;
                         }
                     }
                 }
                 if (!typeCompleted && filters->GetAppleUniformTypeIdentifiers(i, &array) == 0) {
-                    for (int j = 0; j < array->GetCount(); j++) {
-                        if (array->Get(j, &arrayItem) == 0) {
-                            NSString* ext = GetNSStringAndRelease(arrayItem);
-                            
-                            UTType* type = [UTType typeWithIdentifier:ext];
-                            if (type && ![file_uttype_array containsObject:type]) {
-                                [file_uttype_array addObject:type];
-                                typeCompleted = true;
-                            }
+                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                    {
+                        UTType* type = [UTType typeWithIdentifier:ext];
+                        if (type && ![file_uttype_array containsObject:type]) {
+                            [file_uttype_array addObject:type];
+                            typeCompleted = true;
                         }
                     }
                 }
                 if (!typeCompleted && filters->GetMimeTypes(i, &array) == 0) {
-                    for (int j = 0; j < array->GetCount(); j++) {
-                        if (array->Get(j, &arrayItem) == 0) {
-                            NSString* ext = GetNSStringAndRelease(arrayItem);
-                            
-                            UTType* type = [UTType typeWithMIMEType:ext];
-                            if (type && ![file_uttype_array containsObject:type]) {
-                                [file_uttype_array addObject:type];
-                                typeCompleted = true;
-                            }
+                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                    {
+                        UTType* type = [UTType typeWithMIMEType:ext];
+                        if (type && ![file_uttype_array containsObject:type]) {
+                            [file_uttype_array addObject:type];
+                            typeCompleted = true;
                         }
                     }
                 }
@@ -487,13 +477,10 @@ private:
                     [file_type_array addObject:@"*.*"];
                 }
                 else if (filters->GetExtensions(i, &array) == 0) {
-                    for (int j = 0; j < array->GetCount(); j++) {
-                        if (array->Get(j, &arrayItem)) {
-                            NSString* ext = GetNSStringAndRelease(arrayItem);
-                            
-                            if (![file_type_array containsObject:ext]) {
-                                [file_type_array addObject:ext];
-                            }
+                    for (NSString* ext in GetNSArrayOfStringsAndRelease(array))
+                    {
+                        if (![file_type_array containsObject:ext]) {
+                            [file_type_array addObject:ext];
                         }
                     }
                 }

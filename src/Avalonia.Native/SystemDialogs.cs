@@ -88,6 +88,7 @@ namespace Avalonia.Native
     {
         private readonly IReadOnlyList<FilePickerFileType>? _types;
         private readonly string? _defaultExtension;
+        private readonly List<IDisposable> _disposables;
 
         public FilePickerFileTypesWrapper(
             IReadOnlyList<FilePickerFileType>? types,
@@ -95,6 +96,7 @@ namespace Avalonia.Native
         {
             _types = types;
             _defaultExtension = defaultExtension;
+            _disposables = new List<IDisposable>();
         }
 
         public int Count => _types?.Count ?? 0;
@@ -108,27 +110,41 @@ namespace Avalonia.Native
 
         public IAvnString GetName(int index)
         {
-            return _types![index].Name.ToAvnString();
+            return EnsureDisposable(_types![index].Name.ToAvnString());
         }
 
         public IAvnStringArray GetPatterns(int index)
         {
-            return new AvnStringArray(_types![index].Patterns ?? Array.Empty<string>());
+            return EnsureDisposable(new AvnStringArray(_types![index].Patterns ?? Array.Empty<string>()));
         }
 
         public IAvnStringArray GetExtensions(int index)
         {
-            return new AvnStringArray(_types![index].TryGetExtensions() ?? Array.Empty<string>());
+            return EnsureDisposable(new AvnStringArray(_types![index].TryGetExtensions() ?? Array.Empty<string>()));
         }
 
         public IAvnStringArray GetMimeTypes(int index)
         {
-            return new AvnStringArray(_types![index].MimeTypes ?? Array.Empty<string>());
+            return EnsureDisposable(new AvnStringArray(_types![index].MimeTypes ?? Array.Empty<string>()));
         }
 
         public IAvnStringArray GetAppleUniformTypeIdentifiers(int index)
         {
-            return new AvnStringArray(_types![index].AppleUniformTypeIdentifiers ?? Array.Empty<string>());
+            return EnsureDisposable(new AvnStringArray(_types![index].AppleUniformTypeIdentifiers ?? Array.Empty<string>()));
+        }
+
+        protected override void Destroyed()
+        {
+            foreach (var disposable in _disposables)
+            {
+                disposable.Dispose();
+            }
+        }
+
+        private T EnsureDisposable<T>(T input) where T : IDisposable
+        {
+            _disposables.Add(input);
+            return input;
         }
     }
 

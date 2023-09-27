@@ -183,3 +183,21 @@ NSString* GetNSStringWithoutRelease(IAvnString* s)
     
     return result;
 }
+
+NSArray<NSString*>* GetNSArrayOfStringsAndRelease(IAvnStringArray* array)
+{
+    auto output = [NSMutableArray array];
+    if (array)
+    {
+        IAvnString* arrayItem;
+        for (int i = 0; i < array->GetCount(); i++)
+        {
+            if (array->Get(i, &arrayItem) == 0) {
+                NSString* ext = GetNSStringAndRelease(arrayItem);
+                [output addObject:ext];
+            }
+        }
+        array->Release();
+    }
+    return output;
+}

@@ -17,7 +17,7 @@ namespace Avalonia.Native.Interop
         string[] ToStringArray();
     }
 
-    internal class AvnString : NativeCallbackBase, IAvnString
+    internal sealed class AvnString : NativeCallbackBase, IAvnString
     {
         private IntPtr _native;
         private int _nativeLen;
@@ -64,19 +64,27 @@ namespace Avalonia.Native.Interop
         }
     }
 
-    internal class AvnStringArray : NativeCallbackBase, IAvnStringArray
+    internal sealed class AvnStringArray : NativeCallbackBase, IAvnStringArray
     {
-        private readonly IReadOnlyList<string> _items;
+        private readonly IAvnString[] _items;
 
-        public AvnStringArray(IReadOnlyList<string> items)
+        public AvnStringArray(IEnumerable<string> items)
         {
-            _items = items;
+            _items = items.Select(s => s.ToAvnString()).ToArray();
         }
 
-        public string[] ToStringArray() => (_items as string[] ?? _items.ToArray());
+        public string[] ToStringArray() => _items.Select(n => n.String).ToArray();
 
-        public uint Count => (uint)_items.Count;
-        public IAvnString Get(uint index) => _items[(int)index].ToAvnString();
+        public uint Count => (uint)_items.Length;
+        public IAvnString Get(uint index) => _items[(int)index];
+
+        protected override void Destroyed()
+        {
+            foreach (var item in _items)
+            {
+                item.Dispose();
+            }
+        }
     }
 }
 namespace Avalonia.Native.Interop.Impl
