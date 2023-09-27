@@ -3,27 +3,27 @@
     public interface IPlatformFeedback
     {
         /// <summary>
-        /// Plays a <see cref="SoundEffects"/>
+        /// Plays a <see cref="SoundEffects"/>.
         /// </summary>
-        /// <param name="soundEffect">The sound effect to play</param>
+        /// <param name="soundEffect">The sound effect to play.</param>
         bool Play(SoundEffects soundEffects);
 
         /// <summary>
-        /// Requests haptic feedback from the platform
+        /// Requests haptic feedback from the platform.
         /// </summary>
-        /// <param name="hapticFeedback">Value representing a predefined haptic feedback</param>
+        /// <param name="hapticFeedback">Value representing a predefined haptic feedback.</param>
         bool Vibrate(HapticFeedback hapticFeedback);
 
         /// <summary>
-        /// Requests haptic feedback from the platform
+        /// Requests haptic feedback from the platform.
         /// </summary>
-        /// <param name="duration">The duration, in milliseconds, of the vibration</param>
-        /// <param name="amplitude">The amplitude of the vibration</param>
+        /// <param name="duration">The duration, in milliseconds, of the vibration.</param>
+        /// <param name="amplitude">The amplitude of the vibration.</param>
         bool Vibrate(int duration, int amplitude = -1);
     }
 
     /// <summary>
-    /// Predefined platform sound effects
+    /// Predefined platform sound effects.
     /// </summary>
     public enum SoundEffects
     {
@@ -31,7 +31,7 @@
     }
 
     /// <summary>
-    /// Predefined platform haptic feedback
+    /// Predefined platform haptic feedback.
     /// </summary>
     public enum HapticFeedback
     {
