@@ -86,5 +86,7 @@ namespace Avalonia.X11
                 new Vector(96, 96), PixelFormat.Bgra8888,
                 () => h.Free());
         }
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
     }
 }

@@ -191,7 +191,7 @@ namespace Avalonia.Controls
                 }
                 if (dataGridColumn == null)
                 {
-                    throw new ArgumentNullException("dataGridColumn");
+                    throw new ArgumentNullException(nameof(dataGridColumn));
                 }
 
                 int columnIndexWithFiller = columnIndex;

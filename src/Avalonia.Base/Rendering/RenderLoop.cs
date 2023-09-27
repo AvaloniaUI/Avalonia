@@ -16,11 +16,11 @@ namespace Avalonia.Rendering
     /// </remarks>
     internal class RenderLoop : IRenderLoop
     {
-        private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
-        private List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
+        private readonly List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
+        private readonly List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
         private IRenderTimer? _timer;
         private int _inTick;
-        private int _inUpdate;
+        private readonly int _inUpdate;
         
         public static IRenderLoop LocatorAutoInstance
         {
@@ -42,7 +42,6 @@ namespace Avalonia.Rendering
         /// Initializes a new instance of the <see cref="RenderLoop"/> class.
         /// </summary>
         /// <param name="timer">The render timer.</param>
-        /// <param name="dispatcher">The UI thread dispatcher.</param>
         public RenderLoop(IRenderTimer timer)
         {
             _timer = timer;

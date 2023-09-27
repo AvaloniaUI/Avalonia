@@ -17,7 +17,7 @@
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
     AvnPixelSize _lastPixelSize;
-    NSObject<IRenderTarget>* _renderTarget;
+    NSObject<IRenderTarget>* _currentRenderTarget;
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
@@ -41,15 +41,39 @@
 
 - (void) updateRenderTarget
 {
-    [_renderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
-    [self setNeedsDisplayInRect:[self frame]];
+    if(_currentRenderTarget) {
+        [_currentRenderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
+        [self setNeedsDisplayInRect:[self frame]];
+    }
+}
+
+
+-(void) setRenderTarget:(NSObject<IRenderTarget>*)target
+{
+    if([self layer])
+    {
+        [self layer].delegate = nil;
+    }
+    _currentRenderTarget = target;
+    auto layer = [target layer];
+    [self setLayer: layer];
+    [layer setDelegate: self];
+    layer.needsDisplayOnBoundsChange = YES;
+    [self updateRenderTarget];
+}
+
+-(void)displayLayer: (CALayer*)layer
+{
+    [self updateLayer];
 }
 
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
-    _renderTarget = parent->renderTarget;
     [self setWantsLayer:YES];
+    [self setLayerContentsPlacement: NSViewLayerContentsPlacementTopLeft];
+
+    [self setCanDrawSubviewsIntoLayer: NO];
     [self setLayerContentsRedrawPolicy: NSViewLayerContentsRedrawDuringViewResize];
 
     _parent = parent;
@@ -75,12 +99,6 @@
 - (BOOL)wantsUpdateLayer
 {
     return YES;
-}
-
-- (void)setLayer:(CALayer *)layer
-{
-    [_renderTarget setNewLayer: layer];
-    [super setLayer: layer];
 }
 
 - (BOOL)isOpaque
@@ -162,14 +180,6 @@
 - (void)drawRect:(NSRect)dirtyRect
 {
     return;
-}
-
--(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose
-{
-    @autoreleasepool {
-        [_renderTarget setSwFrame:fb];
-        dispose->Release();
-    }
 }
 
 - (AvnPoint) translateLocalPoint:(AvnPoint)pt
@@ -437,24 +447,25 @@
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput: false])
+    if([self ignoreUserInput: false] || _parent == nullptr)
     {
         return;
     }
 
-    auto key = s_KeyMap[[event keyCode]];
+    auto scanCode = [event keyCode];
+    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
+    auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
 
-    uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+    auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    if(_parent != nullptr)
-    {
-        auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
-        if (key != LeftCtrl && key != RightCtrl) {
-          _lastKeyHandled = handled;
-        } else {
-          _lastKeyHandled = false;
-        }
+    auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    if (key != AvnKeyLeftCtrl && key != AvnKeyRightCtrl) {
+      _lastKeyHandled = handled;
+    } else {
+      _lastKeyHandled = false;
     }
 }
 
@@ -527,11 +538,13 @@
 - (void)keyDown:(NSEvent *)event
 {
     _lastKeyHandled = false;
+    
+    [self keyboardEvent:event withType:KeyDown];
         
-    [[self inputContext] handleEvent:event];
+    BOOL isKeyDownConsumed = [[self inputContext] handleEvent:event];
     
     if(!_lastKeyHandled){
-        [self keyboardEvent:event withType:KeyDown];
+        _lastKeyHandled = isKeyDownConsumed == YES;
     }
 }
 
@@ -542,7 +555,6 @@
 }
 
 - (void) doCommandBySelector:(SEL)selector{
-    
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -589,8 +601,6 @@
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-    _lastKeyHandled = true;
-    
     NSString* markedText;
         
     if([string isKindOfClass:[NSAttributedString class]])
@@ -659,8 +669,7 @@
         
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
         
-    _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
-    
+    _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point

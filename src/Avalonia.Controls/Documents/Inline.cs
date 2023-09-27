@@ -10,12 +10,14 @@ namespace Avalonia.Controls.Documents
     /// </summary>
     public abstract class Inline : TextElement
     {
+        // TODO12: change the field type to an AttachedProperty for consistency (breaking change)
         /// <summary>
         /// AvaloniaProperty for <see cref="TextDecorations" /> property.
         /// </summary>
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
-            AvaloniaProperty.Register<Inline, TextDecorationCollection?>(
-                nameof(TextDecorations));
+            AvaloniaProperty.RegisterAttached<Inline, Inline, TextDecorationCollection?>(
+                nameof(TextDecorations),
+                inherits: true);
 
         /// <summary>
         /// AvaloniaProperty for <see cref="BaselineAlignment" /> property.
@@ -30,8 +32,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public TextDecorationCollection? TextDecorations
         {
-            get { return GetValue(TextDecorationsProperty); }
-            set { SetValue(TextDecorationsProperty, value); }
+            get => GetValue(TextDecorationsProperty);
+            set => SetValue(TextDecorationsProperty, value);
         }
 
         /// <summary>
@@ -40,10 +42,30 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public BaselineAlignment BaselineAlignment
         {
-            get { return GetValue(BaselineAlignmentProperty); }
-            set { SetValue(BaselineAlignmentProperty, value); }
+            get => GetValue(BaselineAlignmentProperty);
+            set => SetValue(BaselineAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets the value of the attached <see cref="TextDecorationsProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font style.</returns>
+        public static TextDecorationCollection? GetTextDecorations(Control control)
+        {
+            return control.GetValue(TextDecorationsProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="TextDecorationsProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetTextDecorations(Control control, TextDecorationCollection? value)
+        {
+            control.SetValue(TextDecorationsProperty, value);
+        }
+        
         internal abstract void BuildTextRun(IList<TextRun> textRuns);
 
         internal abstract void AppendText(StringBuilder stringBuilder);

@@ -7,7 +7,7 @@ using Avalonia.Input.GestureRecognizers;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System.Linq;
-using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -147,8 +147,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public Size Extent
         {
-            get { return _extent; }
-            private set { SetAndRaise(ExtentProperty, ref _extent, value); }
+            get => _extent;
+            private set => SetAndRaise(ExtentProperty, ref _extent, value);
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public Size Viewport
         {
-            get { return _viewport; }
-            private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+            get => _viewport;
+            private set => SetAndRaise(ViewportProperty, ref _viewport, value);
         }
 
         /// <summary>
@@ -473,10 +473,31 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
-            Extent = Child!.Bounds.Size.Inflate(Child.Margin);
+            Extent = ComputeExtent(finalSize);
             _isAnchorElementDirty = true;
 
             return finalSize;
+        }
+
+        private Size ComputeExtent(Size viewportSize)
+        {
+            var childMargin = Child!.Margin;
+
+            if (Child.UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(Child);
+                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
+            }
+
+            var extent = Child!.Bounds.Size.Inflate(childMargin);
+
+            if (MathUtilities.AreClose(extent.Width, viewportSize.Width, LayoutHelper.LayoutEpsilon))
+                extent = extent.WithWidth(viewportSize.Width);
+
+            if (MathUtilities.AreClose(extent.Height, viewportSize.Height, LayoutHelper.LayoutEpsilon))
+                extent = extent.WithHeight(viewportSize.Height);
+
+            return extent;
         }
 
         private void OnScrollGesture(object? sender, ScrollGestureEventArgs e)

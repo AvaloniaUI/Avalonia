@@ -316,8 +316,13 @@ namespace Avalonia.Controls
         private bool _canRedo;
 
         private int _wordSelectionStart = -1;
+        private bool _touchDragStarted;
+        private bool _inTouchDrag;
+        private Point _touchDragStartPoint;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
+        private static bool _isHolding;
+        private int _currentClickCount;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -812,17 +817,54 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if (IsFocused)
+            if (_presenter != null)
             {
-                _presenter?.ShowCaret();
+                if (IsFocused)
+                {
+                    _presenter.ShowCaret();
+                }
+
+                _presenter.PropertyChanged += PresenterPropertyChanged;
             }
+
+            AddHandler(Gestures.HoldingEvent, OnHolding);
+        }
+
+        private void OnHolding(object? sender, HoldingRoutedEventArgs e)
+        {
+            if (e.Handled || e.HoldingState != HoldingState.Started)
+                return;
+
+            _isHolding = true;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
 
+            if (_presenter != null)
+            {
+                _presenter.HideCaret();
+
+                _presenter.PropertyChanged -= PresenterPropertyChanged;
+            }
+
             _imClient.SetPresenter(null, null);
+            
+            RemoveHandler(Gestures.HoldingEvent, OnHolding);
+        }
+
+        private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if(e.Property == TextPresenter.PreeditTextProperty)
+            {
+                if(string.IsNullOrEmpty(e.OldValue as string) && !string.IsNullOrEmpty(e.NewValue as string))
+                {
+                    PseudoClasses.Set(":empty", false);
+
+                    DeleteSelection();
+                }
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -975,7 +1017,9 @@ namespace Avalonia.Controls
 
                 textBuilder.Insert(caretIndex, input);
 
-                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(textBuilder));
+                var text = StringBuilderCache.GetStringAndRelease(textBuilder);
+
+                SetCurrentValue(TextProperty, text);
 
                 ClearSelection();
 
@@ -1429,7 +1473,20 @@ namespace Avalonia.Controls
             if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
+                var isTouch = e.Pointer.Type == PointerType.Touch;
+
+                _currentClickCount = e.ClickCount;
                 var point = e.GetPosition(_presenter);
+
+                if(isTouch && e.ClickCount == 1)
+                {
+                    _wordSelectionStart = -1;
+                    _touchDragStarted = true;
+                    _touchDragStartPoint = point;
+                    e.Pointer.Capture(_presenter);
+                    e.Handled = true;
+                    return;
+                }
 
                 _presenter.MoveCaretToPoint(point);
 
@@ -1464,7 +1521,6 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
-
                         if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
                             selectionStart = StringUtils.PreviousWord(text, caretIndex);
@@ -1498,7 +1554,7 @@ namespace Avalonia.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter == null)
+            if (_presenter == null || _isHolding)
             {
                 return;
             }
@@ -1511,6 +1567,16 @@ namespace Avalonia.Controls
                 point = new Point(
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
+
+                if(_touchDragStarted)
+                {
+                    _touchDragStarted = false;
+                    _inTouchDrag = true;
+
+                    _presenter.MoveCaretToPoint(_touchDragStartPoint);
+                    _touchDragStartPoint = default;
+                    SetCurrentValue(SelectionStartProperty, _presenter.CaretIndex);
+                }
 
                 _presenter.MoveCaretToPoint(point);
 
@@ -1566,12 +1632,23 @@ namespace Avalonia.Controls
                 return;
             }
 
+            _touchDragStarted = false;
+            _touchDragStartPoint = default;
+
+            var isInTouchDrag = _inTouchDrag;
+            _inTouchDrag = false;
+
             if (e.Pointer.Captured != _presenter)
             {
                 return;
             }
 
-            if (e.InitialPressMouseButton == MouseButton.Right)
+            // Don't update selection if the pointer was held
+            if (_isHolding)
+            {
+                _isHolding = false;
+            }
+            else if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1590,6 +1667,24 @@ namespace Avalonia.Controls
                     SetCurrentValue(CaretIndexProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                     SetCurrentValue(SelectionStartProperty, caretIndex);
+                }
+            }
+            else if (e.Pointer.Type == PointerType.Touch)
+            {
+                if (_currentClickCount == 1 && !isInTouchDrag)
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                }
+
+                if(SelectionStart != SelectionEnd)
+                {
+                    RaiseEvent(new ContextRequestedEventArgs(e));
                 }
             }
 
@@ -1853,6 +1948,37 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Returns the sum of any vertical whitespace added between the <see cref="ScrollViewer"/> and <see cref="TextPresenter"/> in the control template.
+        /// </summary>
+        /// <returns>The total vertical whitespace.</returns>
+        private double GetVerticalSpaceBetweenScrollViewerAndPresenter()
+        {
+            var verticalSpace = 0.0;
+            if (_presenter != null)
+            {
+                Visual? visual = _presenter;
+                while ((visual != null) && (visual != this))
+                {
+                    if (visual == _scrollViewer)
+                    {
+                        // ScrollViewer is a stopping point and should only include the Padding
+                        verticalSpace += _scrollViewer.Padding.Top + _scrollViewer.Padding.Bottom;
+                        break;
+                    }
+
+                    var margin = visual.GetValue<Thickness>(Layoutable.MarginProperty);
+                    var padding = visual.GetValue<Thickness>(Decorator.PaddingProperty);
+                    
+                    verticalSpace += margin.Top + padding.Top + padding.Bottom + margin.Bottom;
+
+                    visual = visual.VisualParent;
+                }
+            }
+
+            return verticalSpace;
+        }
+
+        /// <summary>
         /// Raises both the <see cref="TextChanging"/> and <see cref="TextChanged"/> events.
         /// </summary>
         /// <remarks>
@@ -2005,8 +2131,9 @@ namespace Avalonia.Controls
                     var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
                     var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
                     var textLayout = new TextLayout(new MaxLinesTextSource(MaxLines), paragraphProperties);
+                    var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
 
-                    maxHeight = Math.Ceiling(textLayout.Height);
+                    maxHeight = Math.Ceiling(textLayout.Height + verticalSpace);
                 }
 
                 _scrollViewer.SetCurrentValue(MaxHeightProperty, maxHeight);

@@ -17,6 +17,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -29,19 +30,19 @@ namespace Avalonia.X11
             new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
-        public IX11Screens X11Screens { get; private set; }
+        public X11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        public XResources Resources { get; private set; }
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
-        [DllImport("libc")]
-        private static extern void setlocale(int type, string s);
+
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
-            
+
             bool useXim = false;
             if (EnableIme(options))
             {
@@ -49,9 +50,6 @@ namespace Avalonia.X11
                 if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
                     useXim = true;
             }
-
-            // We have problems with text input otherwise
-            setlocale(0, "");
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
@@ -64,9 +62,10 @@ namespace Avalonia.X11
             OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
                 IntPtr.Zero);
             XError.Init();
-            
+
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
+            Resources = new XResources(this);
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
@@ -84,8 +83,7 @@ namespace Avalonia.X11
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = X11.X11Screens.Init(this);
-            Screens = new X11Screens(X11Screens);
+            Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
                 var xi2 = new XI2Manager();
@@ -93,17 +91,13 @@ namespace Avalonia.X11
                     XI2 = xi2;
             }
 
-            if (options.UseGpu)
+            var graphics = InitializeGraphics(options, Info);
+            if (graphics is not null)
             {
-                if (options.UseEGL)
-                    EglPlatformGraphics.TryInitialize();
-                else
-                    GlxPlatformGraphics.TryInitialize(Info, Options.GlProfiles);
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(graphics);
             }
 
-            var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
-
-            Compositor = new Compositor(gl);
+            Compositor = new Compositor(graphics);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -185,25 +179,84 @@ namespace Avalonia.X11
             
             return false;
         }
+        
+        private static IPlatformGraphics InitializeGraphics(X11PlatformOptions opts, X11Info info)
+        {
+            if (opts.RenderingMode is null || !opts.RenderingMode.Any())
+            {
+                throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} must not be empty or null");
+            }
+
+            foreach (var renderingMode in opts.RenderingMode)
+            {
+                if (renderingMode == X11RenderingMode.Software)
+                {
+                    return null;
+                }
+                
+                if (renderingMode == X11RenderingMode.Glx)
+                {
+                    if (GlxPlatformGraphics.TryCreate(info, opts.GlProfiles) is { } glx)
+                    {
+                        return glx;
+                    }
+                }
+
+                if (renderingMode == X11RenderingMode.Egl)
+                {
+                    if (EglPlatformGraphics.TryCreate() is { } egl)
+                    {
+                        return egl;
+                    }
+                }
+            }
+
+            throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
+        }
     }
 }
 
 namespace Avalonia
 {
     /// <summary>
+    /// Represents the rendering mode for platform graphics.
+    /// </summary>
+    public enum X11RenderingMode
+    {
+        /// <summary>
+        /// Avalonia is rendered into a framebuffer.
+        /// </summary>
+        Software = 1,
+
+        /// <summary>
+        /// Enables Glx rendering.
+        /// </summary>
+        Glx = 2,
+
+        /// <summary>
+        /// Enables native Linux EGL rendering.
+        /// </summary>
+        Egl = 3
+    }
+    
+    /// <summary>
     /// Platform-specific options which apply to Linux.
     /// </summary>
     public class X11PlatformOptions
     {
         /// <summary>
-        /// Enables native Linux EGL when set to true. The default value is false.
+        /// Gets or sets Avalonia rendering modes with fallbacks.
+        /// The first element in the array has the highest priority.
+        /// The default value is: <see cref="X11RenderingMode.Glx"/>, <see cref="X11RenderingMode.Software"/>.
         /// </summary>
-        public bool UseEGL { get; set; }
-
-        /// <summary>
-        /// Determines whether to use GPU for rendering in your project. The default value is true.
-        /// </summary>
-        public bool UseGpu { get; set; } = true;
+        /// <remarks>
+        /// If application should work on as wide range of devices as possible, at least add <see cref="X11RenderingMode.Software"/> as a fallback value.
+        /// </remarks>
+        /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
+        public IReadOnlyList<X11RenderingMode> RenderingMode { get; set; } = new[]
+        {
+            X11RenderingMode.Glx, X11RenderingMode.Software
+        };
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
@@ -289,7 +342,9 @@ namespace Avalonia
     {
         public static AppBuilder UseX11(this AppBuilder builder)
         {
-            builder.UseWindowingSubsystem(() =>
+            builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(() =>
                 new AvaloniaX11Platform().Initialize(AvaloniaLocator.Current.GetService<X11PlatformOptions>() ??
                                                      new X11PlatformOptions()));
             return builder;

@@ -165,8 +165,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs>? Click
         {
-            add { AddHandler(ClickEvent, value); }
-            remove { RemoveHandler(ClickEvent, value); }
+            add => AddHandler(ClickEvent, value);
+            remove => RemoveHandler(ClickEvent, value);
         }
 
         /// <summary>
@@ -177,8 +177,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public event EventHandler<RoutedEventArgs>? PointerEnteredItem
         {
-            add { AddHandler(PointerEnteredItemEvent, value); }
-            remove { RemoveHandler(PointerEnteredItemEvent, value); }
+            add => AddHandler(PointerEnteredItemEvent, value);
+            remove => RemoveHandler(PointerEnteredItemEvent, value);
         }
 
         /// <summary>
@@ -189,8 +189,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public event EventHandler<RoutedEventArgs>? PointerExitedItem
         {
-            add { AddHandler(PointerExitedItemEvent, value); }
-            remove { RemoveHandler(PointerExitedItemEvent, value); }
+            add => AddHandler(PointerExitedItemEvent, value);
+            remove => RemoveHandler(PointerExitedItemEvent, value);
         }
 
         /// <summary>
@@ -198,8 +198,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs>? SubmenuOpened
         {
-            add { AddHandler(SubmenuOpenedEvent, value); }
-            remove { RemoveHandler(SubmenuOpenedEvent, value); }
+            add => AddHandler(SubmenuOpenedEvent, value);
+            remove => RemoveHandler(SubmenuOpenedEvent, value);
         }
 
         /// <summary>
@@ -216,8 +216,8 @@ namespace Avalonia.Controls
         /// </summary>
         public KeyGesture? HotKey
         {
-            get { return GetValue(HotKeyProperty); }
-            set { SetValue(HotKeyProperty, value); }
+            get => GetValue(HotKeyProperty);
+            set => SetValue(HotKeyProperty, value);
         }
 
         /// <summary>
@@ -226,8 +226,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? CommandParameter
         {
-            get { return GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
         }
 
         /// <summary>
@@ -235,8 +235,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? Icon
         {
-            get { return GetValue(IconProperty); }
-            set { SetValue(IconProperty, value); }
+            get => GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
         }
 
         /// <summary>
@@ -248,8 +248,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public KeyGesture? InputGesture
         {
-            get { return GetValue(InputGestureProperty); }
-            set { SetValue(InputGestureProperty, value); }
+            get => GetValue(InputGestureProperty);
+            set => SetValue(InputGestureProperty, value);
         }
 
         /// <summary>
@@ -257,8 +257,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
         }
 
         /// <summary>
@@ -267,8 +267,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSubMenuOpen
         {
-            get { return GetValue(IsSubMenuOpenProperty); }
-            set { SetValue(IsSubMenuOpenProperty, value); }
+            get => GetValue(IsSubMenuOpenProperty);
+            set => SetValue(IsSubMenuOpenProperty, value);
         }
 
         /// <summary>
@@ -277,8 +277,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool StaysOpenOnClick
         {
-            get { return GetValue(StaysOpenOnClickProperty); }
-            set { SetValue(StaysOpenOnClickProperty, value); }
+            get => GetValue(StaysOpenOnClickProperty);
+            set => SetValue(StaysOpenOnClickProperty, value);
         }
 
         /// <summary>
@@ -312,10 +312,7 @@ namespace Avalonia.Controls
                     (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
-            set
-            {
-                SelectedIndex = value is Control c ? IndexFromContainer(c) : -1;
-            }
+            set => SelectedIndex = value is Control c ? IndexFromContainer(c) : -1;
         }
 
         /// <inheritdoc/>

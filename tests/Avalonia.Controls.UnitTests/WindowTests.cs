@@ -514,6 +514,41 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Window_Should_Not_Be_Centered_When_WindowStartupLocation_Is_CenterScreen_And_Window_Is_Hidden_And_Shown()
+        {
+            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+
+            var screens = new Mock<IScreenImpl>();
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+
+
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.Screen).Returns(screens.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window(windowImpl.Object)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen
+                };
+
+                window.Show();
+
+                var expected = new PixelPoint(150, 400);
+                window.Position = expected;
+
+                window.IsVisible = false;
+                window.IsVisible = true;
+
+                Assert.Equal(expected, window.Position);
+            }
+        }
+
+        [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
             var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
@@ -615,6 +650,23 @@ namespace Avalonia.Controls.UnitTests
 
                     Assert.Equal(window.Position, expectedPosition);
                 }
+            }
+        }
+
+        [Fact]
+        public void Window_Topmost_By_Default_Should_Configure_PlatformImpl_When_Constructed()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            var windowServices = TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
+
+            using (UnitTestApplication.Start(windowServices))
+            {
+                var window = new TopmostWindow();
+
+                Assert.True(window.Topmost);
+                windowImpl.Verify(i => i.SetTopmost(true));
             }
         }
 
@@ -1062,6 +1114,14 @@ namespace Avalonia.Controls.UnitTests
             {
                 MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
+            }
+        }
+
+        private class TopmostWindow : Window
+        {
+            static TopmostWindow()
+            {
+                TopmostProperty.OverrideDefaultValue<TopmostWindow>(true);
             }
         }
     }

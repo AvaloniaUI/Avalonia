@@ -11,15 +11,16 @@
 #include "KeyTransform.h"
 
 @class AvnAccessibilityElement;
+@protocol IRenderTarget;
 
-@interface AvnView : NSView<NSTextInputClient, NSDraggingDestination, AvnTextInputMethodDelegate>
+@interface AvnView : NSView<NSTextInputClient, NSDraggingDestination, AvnTextInputMethodDelegate, CALayerDelegate>
 -(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
--(void) setSwRenderedFrame: (AvnFramebuffer* _Nonnull) fb dispose: (IUnknown* _Nonnull) dispose;
 -(void) onClosed;
 
 -(AvnPlatformResizeReason) getResizeReason;
 -(void) setResizeReason:(AvnPlatformResizeReason)reason;
+-(void) setRenderTarget:(NSObject<IRenderTarget>*)target;
 + (AvnPoint)toAvnPoint:(CGPoint)p;
 @end

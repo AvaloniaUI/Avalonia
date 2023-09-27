@@ -231,7 +231,7 @@ namespace Avalonia.Controls
         public double Percentage
         {
             get => _percentage;
-            private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
+            private set => SetAndRaise(PercentageProperty, ref _percentage, value);
         }
 
         static ProgressBar()

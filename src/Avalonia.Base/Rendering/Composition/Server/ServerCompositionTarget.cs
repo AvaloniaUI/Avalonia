@@ -9,8 +9,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -28,13 +26,13 @@ namespace Avalonia.Rendering.Composition.Server
         private FrameTimeGraph? _renderTimeGraph;
         private FrameTimeGraph? _layoutTimeGraph;
         private Rect _dirtyRect;
-        private Random _random = new();
+        private readonly Random _random = new();
         private Size _layerSize;
         private IDrawingContextLayerImpl? _layer;
         private bool _redrawRequested;
         private bool _disposed;
-        private HashSet<ServerCompositionVisual> _attachedVisuals = new();
-        private Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
+        private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
+        private readonly Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
 
         public long Id { get; }
         public ulong Revision { get; private set; }
@@ -135,7 +133,18 @@ namespace Avalonia.Rendering.Composition.Server
                 _redrawRequested = true;
             }
 
-            _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            try
+            {
+                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            }
+            catch (RenderTargetNotReadyException)
+            {
+                return;
+            }
+            catch (RenderTargetCorruptedException)
+            {
+                return;
+            }
 
             if ((_dirtyRect.Width == 0 && _dirtyRect.Height == 0) && !_redrawRequested)
                 return;

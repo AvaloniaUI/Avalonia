@@ -42,9 +42,10 @@
 
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-    
+
     <x:Double x:Key="ListAccentLowOpacity">0.6</x:Double>
     <x:Double x:Key="ListAccentMediumOpacity">0.8</x:Double>
+    <x:Double x:Key="DataGridSortIconMinWidth">32</x:Double>
 
     <StreamGeometry x:Key="DataGridSortIconDescendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
     <StreamGeometry x:Key="DataGridSortIconAscendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
@@ -169,26 +170,28 @@
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="PART_ColumnHeaderRoot" ColumnDefinitions="*,Auto">
 
-              <Grid Margin="{TemplateBinding Padding}"
+              <Panel Margin="{TemplateBinding Padding}"
                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" MinWidth="32" />
-                </Grid.ColumnDefinitions>
-
-                <ContentPresenter Content="{TemplateBinding Content}"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}" />
-
-                <Path Name="SortIcon"
-                      IsVisible="False"
-                      Grid.Column="1"
-                      Height="12"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      Fill="{TemplateBinding Foreground}"
-                      Stretch="Uniform" />
-              </Grid>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" MinWidth="{DynamicResource DataGridSortIconMinWidth}" />
+                  </Grid.ColumnDefinitions>
+                
+                  <ContentPresenter Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                
+                  <Path Name="SortIcon"
+                        IsVisible="False"
+                        Grid.Column="1"
+                        Height="12"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Fill="{TemplateBinding Foreground}"
+                        Stretch="Uniform" />
+                </Grid>
+              </Panel>
 
               <Rectangle Name="VerticalSeparator"
                          Grid.Column="1"
@@ -512,7 +515,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="{TemplateBinding CornerRadius}">
-            <Grid ColumnDefinitions="Auto,*,Auto" 
+            <Grid ColumnDefinitions="Auto,*,Auto"
                   RowDefinitions="Auto,*,Auto,Auto"
                   ClipToBounds="True">
               <DataGridColumnHeader Name="PART_TopLeftCornerHeader"

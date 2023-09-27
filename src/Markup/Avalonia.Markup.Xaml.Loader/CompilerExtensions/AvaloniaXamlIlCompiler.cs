@@ -179,9 +179,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return parsed;
         }
 
-        public void Compile(XamlDocument document, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlMethodBuilder<IXamlILEmitter> populateMethod, IXamlMethodBuilder<IXamlILEmitter> buildMethod, string baseUri, IFileSource fileSource)
+        public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string baseUri, IFileSource fileSource)
         {
-            Compile(document, _contextType, populateMethod, buildMethod,
+            var tb = typeBuilderProvider.TypeBuilder;
+
+            Compile(document, _contextType, typeBuilderProvider.PopulateMethod, typeBuilderProvider.BuildMethod,
                 _configuration.TypeMappings.XmlNamespaceInfoProvider == null ?
                     null :
                     tb.DefineSubType(_configuration.WellKnownTypes.Object,

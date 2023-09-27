@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Input.TextInput;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Native.Interop;
 
 #nullable enable
@@ -8,7 +9,7 @@ namespace Avalonia.Native
 {
     internal class AvaloniaNativeTextInputMethod : ITextInputMethodImpl, IDisposable
     {
-        private ITextInputMethodClient? _client;
+        private TextInputMethodClient? _client;
         private IAvnTextInputMethodClient? _nativeClient;
         private readonly IAvnTextInputMethod _inputMethod;
         
@@ -28,7 +29,7 @@ namespace Avalonia.Native
             _inputMethod.Reset();
         }
 
-        public void SetClient(ITextInputMethodClient? client)
+        public void SetClient(TextInputMethodClient? client)
         {
             if (_client is { SupportsSurroundingText: true })
             {
@@ -96,11 +97,12 @@ namespace Avalonia.Native
             }
             
             var surroundingText = _client.SurroundingText;
+            var selection = _client.Selection;
 
             _inputMethod.SetSurroundingText(
-                surroundingText.Text ?? "",
-                surroundingText.AnchorOffset,
-                surroundingText.CursorOffset
+                surroundingText ?? "",
+                selection.Start,
+                selection.End
             );
         }
 
@@ -116,9 +118,9 @@ namespace Avalonia.Native
 
         private class AvnTextInputMethodClient : NativeCallbackBase, IAvnTextInputMethodClient
         {
-            private readonly ITextInputMethodClient _client;
+            private readonly TextInputMethodClient _client;
 
-            public AvnTextInputMethodClient(ITextInputMethodClient client)
+            public AvnTextInputMethodClient(TextInputMethodClient client)
             {
                 _client = client;
             }
@@ -135,7 +137,7 @@ namespace Avalonia.Native
             {
                 if (_client.SupportsSurroundingText)
                 {
-                    _client.SelectInSurroundingText(start, end);
+                    _client.Selection = new TextSelection(start, end);
                 }
             }
         }

@@ -1,8 +1,6 @@
 using System;
 using Avalonia.Rendering.Composition.Server;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -10,7 +8,7 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     public partial class CompositionVisualCollection : CompositionObject
     {
-        private CompositionVisual _owner;
+        private readonly CompositionVisual _owner;
         internal CompositionVisualCollection(CompositionVisual parent, ServerCompositionVisualCollection server) : base(parent.Compositor, server)
         {
             _owner = parent;

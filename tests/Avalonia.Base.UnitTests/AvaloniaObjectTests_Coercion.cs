@@ -244,6 +244,19 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Second_Coerce_Of_Default_Value_Is_Passed_Uncoerced_Value()
+        {
+            var target = new Class1();
+
+            target.MinFoo = 20;
+            target.CoerceFooInvocations.Clear();
+            target.CoerceValue(Class1.FooProperty);
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(new[] { 11, 11 }, target.CoerceFooInvocations);
+        }
+
+        [Fact]
         public void ClearValue_Respects_Coerced_Default_Value()
         {
             var target = new Class1();

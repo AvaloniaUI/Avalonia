@@ -140,10 +140,7 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         protected void Invalidate()
         {
-            if (InlineHost != null)
-            {
-                InlineHost.Invalidate();
-            }
+            InlineHost?.Invalidate();
 
             Invalidated?.Invoke(this, EventArgs.Empty);
         }
@@ -154,15 +151,9 @@ namespace Avalonia.Controls.Documents
             {
                 if (oldParent != newParent)
                 {
-                    if (oldParent != null)
-                    {
-                        oldParent.Remove(child);
-                    }
+                    oldParent?.Remove(child);
 
-                    if (newParent != null)
-                    {
-                        newParent.Add(child);
-                    }
+                    newParent?.Add(child);
                 }
             }
         }

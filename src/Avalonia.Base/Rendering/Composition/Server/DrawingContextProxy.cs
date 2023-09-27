@@ -8,8 +8,6 @@ using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>
@@ -22,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Server;
 internal class CompositorDrawingContextProxy : IDrawingContextImpl,
     IDrawingContextWithAcrylicLikeSupport, IDrawingContextImplWithEffects
 {
-    private IDrawingContextImpl _impl;
+    private readonly IDrawingContextImpl _impl;
 
     public CompositorDrawingContextProxy(IDrawingContextImpl impl)
     {
@@ -124,6 +122,11 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.PushOpacityMask(mask, bounds);
     }
 
+    public void PushRenderOptions(RenderOptions renderOptions)
+    {
+        _impl.PushRenderOptions(renderOptions);
+    }
+
     public void PopOpacityMask()
     {
         _impl.PopOpacityMask();
@@ -137,6 +140,11 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
     public void PopGeometryClip()
     {
         _impl.PopGeometryClip();
+    }
+
+    public void PopRenderOptions()
+    {
+        _impl.PopRenderOptions();
     }
 
     public object? GetFeature(Type t) => _impl.GetFeature(t);

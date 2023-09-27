@@ -163,7 +163,7 @@ namespace Avalonia.Input
                 {
                     if(s_isHolding && ev.Source is Interactive i)
                     {
-                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer.Type));
+                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer.Type, e));
                     }
                     s_holdCancellationToken?.Cancel();
                     s_holdCancellationToken?.Dispose();
@@ -191,7 +191,7 @@ namespace Avalonia.Input
                             if (!token.IsCancellationRequested && e.Source is InputElement i && GetIsHoldingEnabled(i) && (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(i)))
                             {
                                 s_isHolding = true;
-                                i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_lastPointer.Type));
+                                i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_lastPointer.Type, e));
                             }
                         }, settings.HoldWaitDuration);
                     }
@@ -231,7 +231,7 @@ namespace Avalonia.Input
                         if(s_isHolding)
                         {
                             s_isHolding = false;
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Completed, s_lastPressPoint, s_lastPointer!.Type));
+                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Completed, s_lastPressPoint, s_lastPointer!.Type, e));
                         }
                         else if (e.InitialPressMouseButton == MouseButton.Right)
                         {
@@ -264,18 +264,18 @@ namespace Avalonia.Input
                     {
                         var point = e.GetCurrentPoint((Visual)target);
                         var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
-                        var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
-                        var tapRect = new Rect(s_lastPressPoint, new Size())
-                            .Inflate(new Thickness(tapSize.Width, tapSize.Height));
+                        var holdSize = new Size(4, 4);
+                        var holdRect = new Rect(s_lastPressPoint, new Size())
+                            .Inflate(new Thickness(holdSize.Width, holdSize.Height));
 
-                        if (tapRect.ContainsExclusive(point.Position))
+                        if (holdRect.ContainsExclusive(point.Position))
                         {
                             return;
                         }
 
                         if (s_isHolding)
                         {
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer!.Type));
+                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer!.Type, e));
                         }
                     }
                 }

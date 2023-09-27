@@ -87,11 +87,8 @@ namespace Avalonia.Controls
                     (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
-            set
-            {
-                SelectedIndex = value is Control c ?
+            set => SelectedIndex = value is Control c ?
                     IndexFromContainer(c) : -1;
-            }
         }
 
         /// <inheritdoc/>

@@ -12,6 +12,7 @@ using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
 using Key = Avalonia.Input.Key;
+using PhysicalKey = Avalonia.Input.PhysicalKey;
 using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 using ProtocolMouseButton = Avalonia.Remote.Protocol.Input.MouseButton;
 
@@ -226,7 +227,9 @@ namespace Avalonia.Controls.Remote.Server
                                 InputRoot!,
                                 key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                                 (Key)key.Key,
-                                GetAvaloniaRawInputModifiers(key.Modifiers)));
+                                GetAvaloniaRawInputModifiers(key.Modifiers),
+                                (PhysicalKey)key.PhysicalKey,
+                                key.KeySymbol));
                         }, DispatcherPriority.Input);
                         break;
 
@@ -282,9 +285,6 @@ namespace Avalonia.Controls.Remote.Server
             }
         }
 
-        public ILockedFramebuffer Lock()
-            => GetOrCreateFramebuffer().Lock(_sendLastFrameIfNeeded);
-
         private void SendLastFrameIfNeeded()
         {
             if (IsDisposed)
@@ -328,5 +328,8 @@ namespace Avalonia.Controls.Remote.Server
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; }
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() =>
+            new FuncFramebufferRenderTarget(() => GetOrCreateFramebuffer().Lock(_sendLastFrameIfNeeded));
     }
 }

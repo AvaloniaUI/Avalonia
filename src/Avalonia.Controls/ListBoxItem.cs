@@ -37,8 +37,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -101,6 +101,11 @@ namespace Avalonia.Controls
                 {
                     if (owner.UpdateSelectionFromPointerEvent(this, e))
                     {
+                        // As we only update selection from touch/pen on pointer release, we need to raise
+                        // the pointer event on the owner to trigger a commit.
+                        if (e.Pointer.Type != PointerType.Mouse)
+                            owner.RaiseEvent(e);
+
                         e.Handled = true;
                         this.PlaySoundEffect(SoundEffects.Click);
                     }
