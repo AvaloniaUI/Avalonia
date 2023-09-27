@@ -203,6 +203,11 @@ namespace Avalonia.iOS
                     return _clipboard;
                 }
 
+                if (featureType == typeof(IPlatformFeedback))
+                {
+                    return new PlatformFeedback();
+                }
+
                 return null;
             }
         }

@@ -25,7 +25,7 @@ namespace Avalonia.Android.Platform
             _view = view;
         }
 
-        public void Play(SoundEffects soundEffects)
+        public bool Play(SoundEffects soundEffects)
         {
             if (_view != null)
             {
@@ -35,12 +35,14 @@ namespace Avalonia.Android.Platform
                 {
                     case SoundEffects.Click:
                         audioManager.PlaySoundEffect(SoundEffect.KeyClick);
-                        break;
+                        return true;
                 }
             }
+
+            return false;
         }
 
-        public void Vibrate(HapticFeedback hapticFeedback)
+        public bool Vibrate(HapticFeedback hapticFeedback)
         {
             if (_view != null)
             {
@@ -48,22 +50,23 @@ namespace Avalonia.Android.Platform
                 switch (hapticFeedback)
                 {
                     case HapticFeedback.Click:
-                        activity?.Window?.DecorView?.PerformHapticFeedback(FeedbackConstants.ContextClick);
-                        break;
+                        return activity?.Window?.DecorView?.PerformHapticFeedback(FeedbackConstants.ContextClick) ??
+                               false;
                     case HapticFeedback.LongPress:
-                        activity?.Window?.DecorView?.PerformHapticFeedback(FeedbackConstants.LongPress);
-                        break;
+                        return activity?.Window?.DecorView?.PerformHapticFeedback(FeedbackConstants.LongPress) ?? false;
                 }
             }
+
+            return false;
         }
 
-        public void Vibrate(int duration, int amplitude = -1)
+        public bool Vibrate(int duration, int amplitude = -1)
         {
             if (_view != null)
             {
                 if (ContextCompat.CheckSelfPermission(_view.Context, Manifest.Permission.Vibrate) != Permission.Granted)
                 {
-                    return;
+                    return false;
                 }
 
                 var vibrator = Build.VERSION.SdkInt >= BuildVersionCodes.S ? (_view.Context.GetSystemService(Context.VibratorManagerService) as VibratorManager)?.DefaultVibrator :
@@ -77,7 +80,11 @@ namespace Avalonia.Android.Platform
                 {
                     vibrator?.Vibrate(duration);
                 }
+
+                return true;
             }
+
+            return false;
         }
     }
 }

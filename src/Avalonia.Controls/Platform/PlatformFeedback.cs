@@ -13,10 +13,10 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control with the <see cref="SoundEffects"/> attached to.</param>
         /// <param name="soundEffects">The <see cref="SoundEffects"/> to play</param>
-        internal static void PlaySoundEffect(this Control control, SoundEffects soundEffects)
+        internal static bool PlaySoundEffect(this Control control, SoundEffects soundEffects)
         {
             var platformFeedback = TopLevel.GetTopLevel(control)?.PlatformFeedback;
-            platformFeedback?.Play(soundEffects);
+            return platformFeedback?.Play(soundEffects) ?? false;
         }
 
         /// <summary>
@@ -24,10 +24,10 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control"></param>
         /// <param name="hapticFeedback">Value representing a predefined haptic feedback</param>
-        internal static void Vibrate(this Control control, HapticFeedback hapticFeedback)
+        internal static bool Vibrate(this Control control, HapticFeedback hapticFeedback)
         {
             var platformFeedback = TopLevel.GetTopLevel(control)?.PlatformFeedback;
-            platformFeedback?.Vibrate(hapticFeedback);
+            return platformFeedback?.Vibrate(hapticFeedback) ?? false;
         }
 
         /// <summary>
@@ -36,10 +36,10 @@ namespace Avalonia.Controls
         /// <param name="control"></param>
         /// <param name="duration">The duration, in milliseconds, of the vibration</param>
         /// <param name="amplitude">The amplitude of the vibration</param>
-        internal static void Vibrate(this Control control, int duration, int amplitude = -1)
+        internal static bool Vibrate(this Control control, int duration, int amplitude = -1)
         {
             var platformFeedback = TopLevel.GetTopLevel(control)?.PlatformFeedback;
-            platformFeedback?.Vibrate(duration, amplitude);
+            return platformFeedback?.Vibrate(duration, amplitude) ?? false;
         }
     }
 }
