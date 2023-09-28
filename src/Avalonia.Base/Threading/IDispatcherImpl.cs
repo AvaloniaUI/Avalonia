@@ -46,7 +46,7 @@ internal class LegacyDispatcherImpl : IDispatcherImpl
 {
     private readonly IPlatformThreadingInterface _platformThreading;
     private IDisposable? _timer;
-    private Stopwatch _clock = Stopwatch.StartNew();
+    private readonly Stopwatch _clock = Stopwatch.StartNew();
 
     public LegacyDispatcherImpl(IPlatformThreadingInterface platformThreading)
     {

@@ -11,7 +11,7 @@ namespace Avalonia.Media.Imaging
     public class WriteableBitmap : Bitmap
     {
         // Holds a buffer with pixel format that requires transcoding
-        private BitmapMemory? _pixelFormatMemory = null;
+        private readonly BitmapMemory? _pixelFormatMemory = null;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="WriteableBitmap"/> class.

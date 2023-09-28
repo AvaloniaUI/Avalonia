@@ -5,12 +5,8 @@
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
     <ProvisioningType>manual</ProvisioningType>
     <Nullable>enable</Nullable>
-    <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
-    
-    <!-- These properties need to be set in order to run on a real iDevice -->
-    <!--<RuntimeIdentifier>ios-arm64</RuntimeIdentifier>-->
-    <!--<CodesignKey></CodesignKey>-->
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />

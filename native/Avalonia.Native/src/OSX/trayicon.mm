@@ -83,3 +83,18 @@ HRESULT AvnTrayIcon::SetIsVisible(bool isVisible)
     
     return  S_OK;
 }
+
+HRESULT AvnTrayIcon::SetToolTipText(char* text)
+{
+    START_COM_CALL;
+    
+    @autoreleasepool
+    {
+        if (text != nullptr)
+        {
+            [[_native button] setToolTip:[NSString stringWithUTF8String:(const char*)text]];
+        }
+    }
+    
+    return  S_OK;
+}

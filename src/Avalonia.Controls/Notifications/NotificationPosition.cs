@@ -9,6 +9,8 @@
         TopLeft,
         TopRight,
         BottomLeft,
-        BottomRight
+        BottomRight,
+        TopCenter,
+        BottomCenter,
     }
 }

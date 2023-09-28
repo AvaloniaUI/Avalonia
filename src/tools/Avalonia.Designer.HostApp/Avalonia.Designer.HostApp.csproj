@@ -6,7 +6,7 @@
   <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
   <PropertyGroup>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-  </PropertyGroup>  
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />

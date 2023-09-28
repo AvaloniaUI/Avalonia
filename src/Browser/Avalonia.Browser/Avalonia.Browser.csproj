@@ -52,5 +52,5 @@
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Browser.Blazor, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
-  
+
 </Project>
