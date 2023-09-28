@@ -55,7 +55,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 }
 
                 attributesBuilder.AppendFormat(
-        "[DynamicDependency(XamlDynamicallyAccessedMemberTypes, typeof({0}))]", type);
+"       [DynamicDependency(XamlDynamicallyAccessedMemberTypes, typeof({0}))]", type);
                 attributesBuilder.AppendLine();
             }
             attributesBuilder.AppendLine("""
