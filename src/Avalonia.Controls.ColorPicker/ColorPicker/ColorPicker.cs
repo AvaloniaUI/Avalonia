@@ -1,6 +1,8 @@
 ﻿using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -8,10 +10,8 @@ namespace Avalonia.Controls
     /// Presents a color for user editing using a spectrum, palette and component sliders within a drop down.
     /// Editing is available when the drop down flyout is opened; otherwise, only the preview color is shown.
     /// </summary>
-    [PseudoClasses(PC_Empty)]
     public class ColorPicker : ColorView
     {
-        private const string PC_Empty = ":empty";
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorPicker"/> class.
         /// </summary>
@@ -20,14 +20,37 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Defines the <see cref="Content"/> property. 
+        /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly StyledProperty<object?> ContentProperty = AvaloniaProperty.Register<ColorPicker, object?>(
-            nameof(Content));
+        public static readonly StyledProperty<object?> ContentProperty =
+            ContentControl.ContentProperty.AddOwner<ColorPicker>();
 
         /// <summary>
-        /// Get or set the Content displayed in Dropdown Button. 
+        /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
+            ContentControl.ContentTemplateProperty.AddOwner<ColorPicker>();
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<ColorPicker>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<ColorPicker>();
+
+        /// <summary>
+        /// Gets or sets any content displayed in the ColorPicker's DropdownButton when flyout is closed.
+        /// </summary>
+        /// <remarks>
+        /// By default this should show a preview of the currently selected color. 
+        /// </remarks>
+        [Content]
+        [DependsOn(nameof(ContentTemplate))]
         public object? Content
         {
             get => GetValue(ContentProperty);
@@ -35,13 +58,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Defines the <see cref="ContentTemplate"/> property. 
-        /// </summary>
-        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty = AvaloniaProperty.Register<ColorPicker, IDataTemplate?>(
-            nameof(ContentTemplate));
-
-        /// <summary>
-        /// Get or set the ContentTemplate displayed in Dropdown Button. 
+        /// Gets or sets the data template used to display the content of the ColorPicker's DropdownButton.
         /// </summary>
         public IDataTemplate? ContentTemplate
         {
@@ -49,24 +66,22 @@ namespace Avalonia.Controls
             set => SetValue(ContentTemplateProperty, value);
         }
 
-        /// <inheritdoc/>
-        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the ColorPicker's DropdownButton.
+        /// </summary>
+        public HorizontalAlignment HorizontalContentAlignment
         {
-            base.OnApplyTemplate(e);
-            if (Content is null)
-            {
-                PseudoClasses.Set(PC_Empty, true);
-            }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
-        /// <inheirtdoc/>
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the ColorPicker's DropdownButton.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
         {
-            base.OnPropertyChanged(change);
-            if (change.Property == ContentProperty)
-            {
-                PseudoClasses.Set(PC_Empty, change.GetNewValue<object?>() is null);
-            }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
     }
 }

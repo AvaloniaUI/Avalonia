@@ -12,6 +12,22 @@
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="64" />
     <Setter Property="MinWidth" Value="64" />
+    <Setter Property="Content">
+      <Template>
+        <Panel>
+          <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+                  CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Margin="1,1,0,1" />
+          <Border Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrushConverter}}"
+                  CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Margin="1,1,0,1" />
+        </Panel>
+      </Template>
+    </Setter>
     <Setter Property="Palette">
       <controls:FluentColorPalette />
     </Setter>
@@ -20,8 +36,10 @@
         <DropDownButton CornerRadius="{TemplateBinding CornerRadius}"
                         Height="{TemplateBinding Height}"
                         Width="{TemplateBinding Width}"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
+                        Content="{TemplateBinding Content}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
                         Padding="0,0,10,0"
                         UseLayoutRounding="False">
           <DropDownButton.Styles>
@@ -29,34 +47,6 @@
               <Setter Property="Padding" Value="0" />
             </Style>
           </DropDownButton.Styles>
-          <DropDownButton.Content>
-            <Grid ColumnDefinitions="Auto, *">
-              <!-- Preview color -->
-              <Panel Name="ButtonColorPreviewPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
-                        Name="ButtonCheckerBorder"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Margin="1,1,0,1" />
-                <Border Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrushConverter}}"
-                        Name="ButtonColorBorder"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Margin="1,1,0,1" />
-              </Panel>
-              <ContentPresenter Grid.Column="1" 
-                                Name="ButtonContentPresenter"
-                                Content="{TemplateBinding Content}" 
-                                IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Margin="10 0 0 0"
-                                ContentTemplate="{TemplateBinding ContentTemplate}">
-              </ContentPresenter>
-            </Grid>
-          </DropDownButton.Content>
           <DropDownButton.Flyout>
             <Flyout Placement="Top">
 
@@ -531,17 +521,6 @@
       <Setter Property="IsPerceptive" Value="False" />
     </Style>
     -->
-    
-    <Style Selector="^:empty /template/ Panel#ButtonColorPreviewPanel">
-      <Setter Property="Grid.Column" Value="1"></Setter>
-    </Style>
-    <Style Selector="^:empty /template/ Border#ButtonCheckerBorder, ^:empty /template/ Border#ButtonColorBorder">
-      <Setter Property="Border.CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"></Setter>
-    </Style>
-    <Style Selector="^:not(:empty) /template/ Border#ButtonCheckerBorder, ^:not(:empty) /template/ Border#ButtonColorBorder">
-      <Setter Property="Border.Width" Value="{Binding $self.Bounds.Height}"/>
-    </Style>
-
   </ControlTheme>
 
 </ResourceDictionary>
