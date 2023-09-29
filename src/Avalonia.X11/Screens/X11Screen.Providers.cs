@@ -13,7 +13,7 @@ internal partial class X11Screens
 {
     internal class X11Screen
     {
-        public bool IsPrimary { get; }
+        public bool IsPrimary { get; set; }
         public string Name { get; set; }
         public PixelRect Bounds { get; set; }
         public Size? PhysicalSize { get; set; }

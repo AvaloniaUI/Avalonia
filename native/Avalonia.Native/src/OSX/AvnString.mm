@@ -169,3 +169,35 @@ NSString* GetNSStringAndRelease(IAvnString* s)
     
     return result;
 }
+
+NSString* GetNSStringWithoutRelease(IAvnString* s)
+{
+    NSString* result = nil;
+    
+    if (s != nullptr)
+    {
+        char* p;
+        if (s->Pointer((void**)&p) == S_OK && p != nullptr)
+            result = [NSString stringWithUTF8String:p];
+    }
+    
+    return result;
+}
+
+NSArray<NSString*>* GetNSArrayOfStringsAndRelease(IAvnStringArray* array)
+{
+    auto output = [NSMutableArray array];
+    if (array)
+    {
+        IAvnString* arrayItem;
+        for (int i = 0; i < array->GetCount(); i++)
+        {
+            if (array->Get(i, &arrayItem) == 0) {
+                NSString* ext = GetNSStringAndRelease(arrayItem);
+                [output addObject:ext];
+            }
+        }
+        array->Release();
+    }
+    return output;
+}
