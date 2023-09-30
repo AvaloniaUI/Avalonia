@@ -124,7 +124,7 @@ namespace Avalonia.OpenGL.Egl
         }
         
         [GetProcAddress("eglCreatePbufferFromClientBuffer")]
-        public partial IntPtr CreatePbufferFromClientBuffer(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int[]? attrib_list);
+        public partial IntPtr CreatePbufferFromClientBuffer(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int* attrib_list);
         
         [GetProcAddress("eglQueryDisplayAttribEXT", true)]
         public partial bool QueryDisplayAttribExt(IntPtr display, int attr, out IntPtr res);

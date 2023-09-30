@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
@@ -168,25 +169,32 @@ namespace Avalonia.Win32.OpenGl.Angle
             return d3dDeviceHandle;
         }
 
-        public EglSurface WrapDirect3D11Texture( IntPtr handle)
+        public unsafe EglSurface WrapDirect3D11Texture( IntPtr handle)
         {
             if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
-                throw new InvalidOperationException("Current platform API is " + PlatformApi);
-            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_NONE, EGL_NONE });            
+                ThrowInvalidPlatformApi();
+            var attrs = stackalloc[] { EGL_NONE, EGL_NONE };
+            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, attrs);
         }
 
-        public EglSurface WrapDirect3D11Texture(IntPtr handle, int offsetX, int offsetY, int width, int height)
+        public unsafe EglSurface WrapDirect3D11Texture(IntPtr handle, int offsetX, int offsetY, int width, int height)
         {
             if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
-                throw new InvalidOperationException("Current platform API is " + PlatformApi);
-            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle,
-                new[]
-                {
-                    EGL_WIDTH, width, EGL_HEIGHT, height, EGL_TEXTURE_OFFSET_X_ANGLE, offsetX,
-                    EGL_TEXTURE_OFFSET_Y_ANGLE, offsetY,
-                    _flexibleSurfaceSupported ? EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE : EGL_NONE, EGL_TRUE,
-                    EGL_NONE
-                });
+                ThrowInvalidPlatformApi();
+            var attrs = stackalloc[]
+            {
+                EGL_WIDTH, width, EGL_HEIGHT, height, EGL_TEXTURE_OFFSET_X_ANGLE, offsetX,
+                EGL_TEXTURE_OFFSET_Y_ANGLE, offsetY,
+                _flexibleSurfaceSupported ? EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE : EGL_NONE, EGL_TRUE,
+                EGL_NONE
+            };
+            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, attrs);
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ThrowInvalidPlatformApi()
+        {
+            throw new InvalidOperationException("Current platform API is " + PlatformApi);
+        } 
     }
 }
