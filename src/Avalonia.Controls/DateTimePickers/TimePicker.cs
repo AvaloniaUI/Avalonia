@@ -283,5 +283,13 @@ namespace Avalonia.Controls
             _popup!.Close();
             SetCurrentValue(SelectedTimeProperty, _presenter!.Time);
         }
+
+        /// <summary>
+        /// Clear SelectedTime.
+        /// </summary>
+        public void Clear()
+        {
+            SetCurrentValue(SelectedTimeProperty, null);
+        }
     }
 }

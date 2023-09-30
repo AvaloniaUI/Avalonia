@@ -918,5 +918,13 @@ namespace Avalonia.Controls
         {
             return !string.IsNullOrWhiteSpace(formatString);
         }
+
+        /// <summary>
+        /// Clear SelectedDate
+        /// </summary>
+        public void Clear()
+        {
+            SetCurrentValue(SelectedDateProperty, null);
+        }
     }
 }
