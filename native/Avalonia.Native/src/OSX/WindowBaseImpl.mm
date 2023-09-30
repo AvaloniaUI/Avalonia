@@ -106,6 +106,17 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
             [Window center];
         }
 
+        // When showing a window, disallow fullscreen because if the window is being
+        // shown while another window is fullscreen, macOS will briefly transition this
+        // new window to fullscreen and then it will be transitioned back. This breaks
+        // input events for a short time as described in this issue:
+        //
+        // https://yt.avaloniaui.net/issue/OUTSYSTEMS-40
+        //
+        // We restore the collection behavior at the end of this method.
+        auto collectionBehavior = [Window collectionBehavior];
+        [Window setCollectionBehavior:collectionBehavior & ~NSWindowCollectionBehaviorFullScreenPrimary];
+
         UpdateStyle();
         
         [Window invalidateShadow];
@@ -120,7 +131,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         }
 
         _shown = true;
-
+        [Window setCollectionBehavior:collectionBehavior];
         return S_OK;
     }
 }
