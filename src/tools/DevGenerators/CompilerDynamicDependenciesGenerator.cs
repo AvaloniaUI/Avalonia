@@ -14,7 +14,7 @@ public class CompilerDynamicDependenciesGenerator : IIncrementalGenerator
             .CreateSyntaxProvider(
                 static (s, _) => s is InvocationExpressionSyntax inv && inv.Expression is MemberAccessExpressionSyntax
                 {
-                    Name: { Identifier: { Text: "GetType" } }
+                    Name: { Identifier: { Text: "GetType" or "FindType" } }
                 } && inv.ArgumentList.Arguments.Count == 1 && inv.ArgumentList.Arguments[0].Expression is LiteralExpressionSyntax,
                 static (context, _) => (InvocationExpressionSyntax)context.Node!);
 
@@ -29,7 +29,12 @@ public class CompilerDynamicDependenciesGenerator : IIncrementalGenerator
                     .Replace("`2", "<,>")
                     .Replace("`3", "<,,>")
                     .Replace("`4", "<,,,>"))
-                .OrderBy(t => t);
+                .OrderBy(t => t)
+                .ToArray();
+            if (types.Length == 0)
+            {
+                return;
+            }
 
             var attributesBuilder = new StringBuilder();
             attributesBuilder.AppendLine("""
@@ -49,7 +54,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
 """);
             foreach (var type in types)
             {
-                if (type is "System.Void" or "XamlX.XamlDebugHatch")
+                if (type is "System.Void" or "XamlX.XamlDebugHatch"
+                    || type.StartsWith("CompiledAvaloniaXaml"))
                 {
                     continue;
                 }
