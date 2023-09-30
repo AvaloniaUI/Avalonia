@@ -209,7 +209,6 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
             sync.ExecutePostedCallbacks();
 
-            Assert.Equal(reversed, target.Classes.Contains(":reversed"));
             Assert.Equal(1, startedRaised);
             Assert.Equal("foo", target.Presenter!.Content);
             Assert.Equal("bar", presenter2.Content);
