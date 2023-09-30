@@ -84,6 +84,7 @@ namespace Avalonia.Data
                     Converter = Converter,
                     ConverterParameter = ConverterParameter,
                     Property = Property,
+                    Mode = Mode,
                 };
 
                 return clone.Initiate(target, targetProperty, anchor, enableDataValidation);
