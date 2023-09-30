@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
@@ -143,6 +144,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public XamlDocument Parse(string xaml, IXamlType overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
@@ -191,7 +195,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 (s, returnType, parameters) => tb.DefineDelegateSubType(s, false, returnType, parameters), baseUri,
                 fileSource);
         }
-        
+
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
         {
             var parsed = Parse(xaml, overrideRootType);
