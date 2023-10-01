@@ -122,10 +122,13 @@ namespace Avalonia.OpenGL.Egl
                 return null;
             return Marshal.PtrToStringAnsi(rv);
         }
-        
+
         [GetProcAddress("eglCreatePbufferFromClientBuffer")]
         public partial IntPtr CreatePbufferFromClientBuffer(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int[]? attrib_list);
-        
+
+        [GetProcAddress("eglCreatePbufferFromClientBuffer")]
+        public partial IntPtr CreatePbufferFromClientBufferPtr(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int* attrib_list);
+
         [GetProcAddress("eglQueryDisplayAttribEXT", true)]
         public partial bool QueryDisplayAttribExt(IntPtr display, int attr, out IntPtr res);
 
