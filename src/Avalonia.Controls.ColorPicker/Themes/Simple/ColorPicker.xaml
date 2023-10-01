@@ -12,6 +12,8 @@
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="64" />
     <Setter Property="MinWidth" Value="64" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
     <Setter Property="Content">
       <Template>
         <Panel>
