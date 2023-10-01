@@ -11,10 +11,6 @@ internal static class StringCompatibilityExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool EndsWith(this string str, char search) =>
-        str?.Length switch
-        {
-            int len when len > 0 => str[len - 1] == search,
-            _ => false
-        };
+        str.Length > 0 && str[str.Length - 1] == search;
 }
 #endif
