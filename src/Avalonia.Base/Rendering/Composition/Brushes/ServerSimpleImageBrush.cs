@@ -9,7 +9,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
-internal class ServerCompositionSimpleImageBrush : ServerCompositionSimpleTileBrush, 
+internal sealed class ServerCompositionSimpleImageBrush : ServerCompositionSimpleTileBrush, 
     IImageBrush, IImageBrushSource
 {
     public IImageBrushSource? Source => this;

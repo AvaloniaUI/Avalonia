@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
@@ -120,21 +121,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 void AddType(IXamlType type, IXamlType conv) 
                     => _converters.Add(new KeyValuePair<IXamlType, IXamlType>(type, conv));
-
-                void Add(string type, string conv)
-                    => AddType(typeSystem.GetType(type), typeSystem.GetType(conv));
                 
-                Add("Avalonia.Media.IImage","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
-                Add("Avalonia.Media.Imaging.Bitmap","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
-                Add("Avalonia.Media.IImageBrushSource","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
+                AddType(typeSystem.GetType("Avalonia.Media.IImage"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.BitmapTypeConverter"));
+                AddType(typeSystem.GetType("Avalonia.Media.Imaging.Bitmap"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.BitmapTypeConverter"));
+                AddType(typeSystem.GetType("Avalonia.Media.IImageBrushSource"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.BitmapTypeConverter"));
                 var ilist = typeSystem.GetType("System.Collections.Generic.IList`1");
                 AddType(ilist.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
                     typeSystem.GetType("Avalonia.Markup.Xaml.Converters.PointsListTypeConverter"));
-                Add("Avalonia.Controls.WindowIcon","Avalonia.Markup.Xaml.Converters.IconTypeConverter");
-                Add("System.Globalization.CultureInfo", "System.ComponentModel.CultureInfoConverter");
-                Add("System.Uri", "Avalonia.Markup.Xaml.Converters.AvaloniaUriTypeConverter");
-                Add("System.TimeSpan", "Avalonia.Markup.Xaml.Converters.TimeSpanTypeConverter");
-                Add("Avalonia.Media.FontFamily","Avalonia.Markup.Xaml.Converters.FontFamilyTypeConverter");
+                AddType(typeSystem.GetType("Avalonia.Controls.WindowIcon"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.IconTypeConverter"));
+                AddType(typeSystem.GetType("System.Globalization.CultureInfo"), typeSystem.GetType( "System.ComponentModel.CultureInfoConverter"));
+                AddType(typeSystem.GetType("System.Uri"), typeSystem.GetType( "Avalonia.Markup.Xaml.Converters.AvaloniaUriTypeConverter"));
+                AddType(typeSystem.GetType("System.TimeSpan"), typeSystem.GetType( "Avalonia.Markup.Xaml.Converters.TimeSpanTypeConverter"));
+                AddType(typeSystem.GetType("Avalonia.Media.FontFamily"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.FontFamilyTypeConverter"));
                 _avaloniaList = typeSystem.GetType("Avalonia.Collections.AvaloniaList`1");
                 _avaloniaListConverter = typeSystem.GetType("Avalonia.Collections.AvaloniaListConverter`1");
             }

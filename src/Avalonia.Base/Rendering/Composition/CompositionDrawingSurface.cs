@@ -5,7 +5,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition;
 
-public class CompositionDrawingSurface : CompositionSurface, IDisposable
+public sealed class CompositionDrawingSurface : CompositionSurface, IDisposable
 {
     internal new ServerCompositionDrawingSurface Server => (ServerCompositionDrawingSurface)base.Server!;
     internal CompositionDrawingSurface(Compositor compositor) : base(compositor, new ServerCompositionDrawingSurface(compositor.Server))

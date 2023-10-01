@@ -410,5 +410,13 @@ namespace Avalonia.Controls
         {
             SelectedDateChanged?.Invoke(sender, e);
         }
+
+        /// <summary>
+        /// Clear <see cref="SelectedDate"/>.
+        /// </summary>
+        public void Clear()
+        {
+            SetCurrentValue(SelectedDateProperty, null);
+        }
     }
 }
