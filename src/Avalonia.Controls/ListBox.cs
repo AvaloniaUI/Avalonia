@@ -17,6 +17,7 @@ namespace Avalonia.Controls
     /// An <see cref="ItemsControl"/> in which individual items can be selected.
     /// </summary>
     [TemplatePart("PART_ScrollViewer", typeof(IScrollable))]
+    [Avalonia.Metadata.ItemType(typeof(ListBoxItem))]
     public class ListBox : SelectingItemsControl
     {
         /// <summary>

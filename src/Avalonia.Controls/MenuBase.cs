@@ -14,6 +14,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Base class for menu controls.
     /// </summary>
+    [Avalonia.Metadata.ItemType(typeof(MenuItem))]
     public abstract class MenuBase : SelectingItemsControl, IFocusScope, IMenu
     {
         /// <summary>
