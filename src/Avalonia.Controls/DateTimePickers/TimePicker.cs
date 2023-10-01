@@ -285,7 +285,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Clear SelectedTime.
+        /// Clear <see cref="SelectedTime"/>.
         /// </summary>
         public void Clear()
         {

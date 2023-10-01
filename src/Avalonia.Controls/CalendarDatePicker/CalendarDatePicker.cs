@@ -920,7 +920,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Clear SelectedDate
+        /// Clear <see cref="SelectedDate"/>.
         /// </summary>
         public void Clear()
         {
