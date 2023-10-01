@@ -6,7 +6,7 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server;
 
-internal class ServerCompositionCustomVisual : ServerCompositionContainerVisual, IServerClockItem
+internal sealed class ServerCompositionCustomVisual : ServerCompositionContainerVisual, IServerClockItem
 {
     private readonly CompositionCustomVisualHandler _handler;
     private bool _wantsNextAnimationFrameAfterTick;

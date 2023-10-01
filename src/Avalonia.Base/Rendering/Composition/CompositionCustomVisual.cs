@@ -5,7 +5,7 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition;
 
-public class CompositionCustomVisual : CompositionContainerVisual
+public sealed class CompositionCustomVisual : CompositionContainerVisual
 {
     private List<object>? _messages;
 
