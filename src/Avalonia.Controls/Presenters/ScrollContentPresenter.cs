@@ -323,7 +323,6 @@ namespace Avalonia.Controls.Presenters
             }
 
             _ownerSubscriptions?.Dispose();
-            _owner = owner;
 
             var subscriptionDisposables = new IDisposable?[]
             {
@@ -334,6 +333,7 @@ namespace Avalonia.Controls.Presenters
                 IfUnset(ContentProperty, p => Bind(p, owner.GetBindingObservable(ContentProperty), Data.BindingPriority.Template)),
             }.Where(d => d != null).Cast<IDisposable>().ToArray();
 
+            _owner = owner;
             _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
 
             static bool NotDisabled(ScrollBarVisibility v) => v != ScrollBarVisibility.Disabled;

@@ -1182,6 +1182,7 @@ namespace Avalonia.Controls.UnitTests
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
+                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
                         }.RegisterInNameScope(scope),
                         new ScrollBar
                         {
