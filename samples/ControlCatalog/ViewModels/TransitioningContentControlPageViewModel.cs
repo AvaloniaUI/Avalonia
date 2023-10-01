@@ -103,8 +103,8 @@ namespace ControlCatalog.ViewModels
         /// </summary>
         public bool Reversed
         {
-            get { return _Reversed; }
-            set { this.RaiseAndSetIfChanged(ref _Reversed, value); }
+            get => _Reversed;
+            set => this.RaiseAndSetIfChanged(ref _Reversed, value);
         }
 
         private void SetupTransitions()
