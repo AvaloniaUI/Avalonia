@@ -8,7 +8,7 @@ namespace Avalonia.Controls
 {
     /// <summary>
     /// Presents a color for user editing using a spectrum, palette and component sliders within a drop down.
-    /// Editing is available when the drop down flyout is opened; otherwise, only the preview color is shown.
+    /// Editing is available when the drop down flyout is opened; otherwise, only the preview content area is shown.
     /// </summary>
     public class ColorPicker : ColorView
     {
@@ -44,7 +44,7 @@ namespace Avalonia.Controls
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ColorPicker>();
 
         /// <summary>
-        /// Gets or sets any content displayed in the ColorPicker's DropdownButton when flyout is closed.
+        /// Gets or sets any content displayed in the ColorPicker's preview content area.
         /// </summary>
         /// <remarks>
         /// By default this should show a preview of the currently selected color. 
@@ -58,7 +58,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the data template used to display the content of the ColorPicker's DropdownButton.
+        /// Gets or sets the data template used to display the content of the ColorPicker's preview content area.
         /// </summary>
         public IDataTemplate? ContentTemplate
         {
@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the horizontal alignment of the content within the ColorPicker's DropdownButton.
+        /// Gets or sets the horizontal alignment of the content within the ColorPicker's preview content area.
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
@@ -76,7 +76,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the vertical alignment of the content within the ColorPicker's DropdownButton.
+        /// Gets or sets the vertical alignment of the content within the ColorPicker's preview content area.
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
