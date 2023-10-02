@@ -36,10 +36,11 @@ internal class AvaloniaNameGenerator : INameGenerator
     {
         var resolveViews =
             from file in additionalFiles
-            where (file.Path.EndsWith(".xaml") ||
-                   file.Path.EndsWith(".paml") ||
-                   file.Path.EndsWith(".axaml")) &&
-                  _pathPattern.Matches(file.Path)
+            let filePath = file.Path
+            where (filePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) ||
+                   filePath.EndsWith(".paml", StringComparison.OrdinalIgnoreCase) ||
+                   filePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)) &&
+                  _pathPattern.Matches(filePath)
             let xaml = file.GetText(cancellationToken)?.ToString()
             where xaml != null
             let view = _classes.ResolveView(xaml)
