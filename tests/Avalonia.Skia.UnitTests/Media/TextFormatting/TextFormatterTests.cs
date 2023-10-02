@@ -706,6 +706,38 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
             }
         }
+        
+        [Fact]
+        public void Should_HitTestStringWithInvisibleRuns()
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+            //var textSource = new ListTextSource(
+
+            
+
+            using (Start())
+            {
+                var hello = new TextCharacters("Hello",
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+                var world = new TextCharacters("world",
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Red));
+
+                var source = new ListTextSource(new InvisibleRun(1), hello, new InvisibleRun(1), world);
+                
+                var textLine =
+                    TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
+
+                void VerifyHit(int offset)
+                {
+                    var glyphCenter = textLine.GetTextBounds(offset, 1)[0].Rectangle.Center;
+                    var hit = textLine.GetCharacterHitFromDistance(glyphCenter.X);
+                    Assert.Equal(offset, hit.FirstCharacterIndex);
+                }
+                VerifyHit(3);
+                VerifyHit(8);
+            }
+        }
 
         protected readonly record struct SimpleTextSource : ITextSource
         {
@@ -776,6 +808,32 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 return new TextCharacters(_text, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
             }
         }
+        
+        private class ListTextSource : ITextSource
+        {
+            private Dictionary<int, TextRun> _runs = new();
+
+            public ListTextSource(params TextRun[] runs) : this((IEnumerable<TextRun>)runs)
+            {
+                
+            }
+            
+            public ListTextSource(IEnumerable<TextRun> runs)
+            {
+                var off = 0;
+                foreach (var r in runs)
+                {
+                    _runs[off] = r;
+                    off += r.Length;
+                }
+            }
+            
+            public TextRun GetTextRun(int textSourceIndex)
+            {
+                _runs.TryGetValue(textSourceIndex, out var rv);
+                return rv;
+            }
+        }
 
         private class RectangleRun : DrawableTextRun
         {
@@ -797,6 +855,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     drawingContext.FillRectangle(_fill, _rect);
                 }
             }
+        }
+        
+        private class InvisibleRun : TextRun
+        {
+            public InvisibleRun(int length)
+            {
+                Length = length;
+            }
+            public override int Length { get; }
         }
 
         public static IDisposable Start()
