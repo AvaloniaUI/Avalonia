@@ -1409,7 +1409,7 @@ namespace Avalonia.Win32
             }
 
             // Ensure window state if decorations change
-            if (oldProperties.Decorations != newProperties.Decorations)
+            if (_shown && oldProperties.Decorations != newProperties.Decorations)
                 ShowWindow(WindowState, false);
         }
 
