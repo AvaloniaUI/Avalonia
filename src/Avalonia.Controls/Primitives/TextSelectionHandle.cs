@@ -7,36 +7,36 @@ namespace Avalonia.Controls.Primitives
 {
     public class TextSelectionHandle : TemplatedControl
     {
-        public static readonly RoutedEvent<VectorEventArgs> DragStartedEvent =
+        internal static readonly RoutedEvent<VectorEventArgs> DragStartedEvent =
             RoutedEvent.Register<TextSelectionHandle, VectorEventArgs>(nameof(DragStarted), RoutingStrategies.Bubble);
 
-        public static readonly RoutedEvent<VectorEventArgs> DragDeltaEvent =
+        internal static readonly RoutedEvent<VectorEventArgs> DragDeltaEvent =
             RoutedEvent.Register<TextSelectionHandle, VectorEventArgs>(nameof(DragDelta), RoutingStrategies.Bubble);
 
-        public static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
+        internal static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
             RoutedEvent.Register<TextSelectionHandle, VectorEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
 
-        public static readonly StyledProperty<SelectionHandleType> SelectionHandleTypeProperty = AvaloniaProperty.Register<TextSelectionHandle, SelectionHandleType>(nameof(SelectionHandleType));
+        internal static readonly StyledProperty<SelectionHandleType> SelectionHandleTypeProperty = AvaloniaProperty.Register<TextSelectionHandle, SelectionHandleType>(nameof(SelectionHandleType));
 
-        public event EventHandler<VectorEventArgs> DragStarted
+        internal event EventHandler<VectorEventArgs> DragStarted
         {
             add { AddHandler(DragStartedEvent, value); }
             remove { RemoveHandler(DragStartedEvent, value); }
         }
 
-        public event EventHandler<VectorEventArgs> DragDelta
+        internal event EventHandler<VectorEventArgs> DragDelta
         {
             add { AddHandler(DragDeltaEvent, value); }
             remove { RemoveHandler(DragDeltaEvent, value); }
         }
 
-        public event EventHandler<VectorEventArgs> DragCompleted
+        internal event EventHandler<VectorEventArgs> DragCompleted
         {
             add { AddHandler(DragCompletedEvent, value); }
             remove { RemoveHandler(DragCompletedEvent, value); }
         }
 
-        public SelectionHandleType SelectionHandleType
+        internal SelectionHandleType SelectionHandleType
         {
             get => GetValue(SelectionHandleTypeProperty);
             set => SetValue(SelectionHandleTypeProperty, value);
@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Primitives
 
         private Point _startPosition;
 
-        public Point IndicatorPosition => IsDragging ? _startPosition.WithX(_startPosition.X) + _delta : Bounds.Position.WithX(Bounds.Position.X).WithY(Bounds.Y);
+        internal Point IndicatorPosition => IsDragging ? _startPosition.WithX(_startPosition.X) + _delta : Bounds.Position.WithX(Bounds.Position.X).WithY(Bounds.Y);
 
         public bool IsDragging { get; private set; }
 
@@ -127,7 +127,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public void SetTopLeft(Point point)
+        internal void SetTopLeft(Point point)
         {
             Canvas.SetTop(this, point.Y);
             Canvas.SetLeft(this, point.X);

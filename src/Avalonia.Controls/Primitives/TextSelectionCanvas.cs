@@ -9,24 +9,24 @@ namespace Avalonia.Controls.Primitives
 {
     internal class TextSelectionCanvas : Canvas
     {
-        private TextSelectionHandle _caretThumb;
-        private TextSelectionHandle _startThumb;
-        private TextSelectionHandle _endThumb;
+        private TextSelectionHandle _caretHandle;
+        private TextSelectionHandle _startHandle;
+        private TextSelectionHandle _endHandle;
         private TextPresenter? _presenter;
         private TextBox? _textBox;
-        private bool _showThumbs;
+        private bool _showHandle;
 
-        public bool ShowThumbs
+        internal bool ShowHandles
         {
-            get => _showThumbs; set
+            get => _showHandle; set
             {
-                _showThumbs = value;
+                _showHandle = value;
 
                 if (!value)
                 {
-                    _startThumb.IsVisible = false;
-                    _endThumb.IsVisible = false;
-                    _caretThumb.IsVisible = false;
+                    _startHandle.IsVisible = false;
+                    _endHandle.IsVisible = false;
+                    _caretHandle.IsVisible = false;
                 }
 
                 IsVisible = value;
@@ -35,66 +35,68 @@ namespace Avalonia.Controls.Primitives
 
         public TextSelectionCanvas()
         {
-            _caretThumb = new TextSelectionHandle()
+            _caretHandle = new TextSelectionHandle()
             {
                 SelectionHandleType = SelectionHandleType.Caret
             };
-            _startThumb = new TextSelectionHandle();
-            _endThumb = new TextSelectionHandle();
+            _startHandle = new TextSelectionHandle();
+            _endHandle = new TextSelectionHandle();
 
             ClipToBounds = true;
 
-            Children.Add(_caretThumb);
-            Children.Add(_startThumb);
-            Children.Add(_endThumb);
+            Children.Add(_caretHandle);
+            Children.Add(_startHandle);
+            Children.Add(_endHandle);
 
-            _caretThumb.DragDelta += CaretThumb_DragDelta;
-            _caretThumb.DragCompleted += Thumb_DragCompleted;
+            _caretHandle.DragDelta += CaretHandle_DragDelta;
+            _caretHandle.DragCompleted += Handle_DragCompleted;
 
-            _startThumb.DragDelta += StartThumb_DragDelta;
-            _startThumb.DragCompleted += Thumb_DragCompleted;
-            _endThumb.DragDelta += EndThumb_DragDelta;
-            _endThumb.DragCompleted += Thumb_DragCompleted;
+            _startHandle.DragDelta += StartHandle_DragDelta;
+            _startHandle.DragCompleted += Handle_DragCompleted;
+            _endHandle.DragDelta += EndHandle_DragDelta;
+            _endHandle.DragCompleted += Handle_DragCompleted;
 
-            _caretThumb.Classes.Add("caret");
-            _startThumb.Classes.Add("start");
-            _endThumb.Classes.Add("end");
+            _caretHandle.Classes.Add("caret");
+            _startHandle.Classes.Add("start");
+            _endHandle.Classes.Add("end");
 
-            _startThumb.SetTopLeft(default);
-            _caretThumb.SetTopLeft(default);
-            _endThumb.SetTopLeft(default);
+            _startHandle.SetTopLeft(default);
+            _caretHandle.SetTopLeft(default);
+            _endHandle.SetTopLeft(default);
 
-            IsVisible = ShowThumbs;
+            IsVisible = ShowHandles;
+
+            ClipToBounds = false;
         }
 
-        private void EndThumb_DragDelta(object? sender, VectorEventArgs e)
+        private void EndHandle_DragDelta(object? sender, VectorEventArgs e)
         {
             if (sender is TextSelectionHandle handle)
                 DragSelectionHandle(handle);
         }
 
-        private void StartThumb_DragDelta(object? sender, VectorEventArgs e)
+        private void StartHandle_DragDelta(object? sender, VectorEventArgs e)
         {
             if (sender is TextSelectionHandle handle)
                 DragSelectionHandle(handle);
         }
 
-        private void CaretThumb_DragDelta(object? sender, Input.VectorEventArgs e)
+        private void CaretHandle_DragDelta(object? sender, Input.VectorEventArgs e)
         {
             if (_presenter != null && _textBox != null)
             {
-                var point = ToPresenter(_caretThumb.IndicatorPosition);
+                var point = ToPresenter(_caretHandle.IndicatorPosition);
                 _presenter.MoveCaretToPoint(point);
                 _textBox.SelectionStart = _textBox.SelectionEnd = _presenter.CaretIndex;
                 var points = _presenter.GetCaretPoints();
 
-                _caretThumb?.SetTopLeft(ToLayer(points.Item2));
+                _caretHandle?.SetTopLeft(ToLayer(points.Item2));
             }
         }
 
-        private void Thumb_DragCompleted(object? sender, Input.VectorEventArgs e)
+        private void Handle_DragCompleted(object? sender, Input.VectorEventArgs e)
         {
-            MoveThumbsToSelection();
+            MoveHandlesToSelection();
         }
 
         private void EnsureVisible()
@@ -107,24 +109,24 @@ namespace Avalonia.Controls.Primitives
 
                 var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
 
-                _startThumb.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_startThumb), Canvas.GetTop(_startThumb))) && ShowThumbs && hasSelection;
-                _endThumb.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_endThumb), Canvas.GetTop(_endThumb))) && ShowThumbs && hasSelection;
-                _caretThumb.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_caretThumb), Canvas.GetTop(_caretThumb))) && ShowThumbs && !hasSelection;
+                _startHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_startHandle), Canvas.GetTop(_startHandle))) && ShowHandles && hasSelection;
+                _endHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_endHandle), Canvas.GetTop(_endHandle))) && ShowHandles && hasSelection;
+                _caretHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_caretHandle), Canvas.GetTop(_caretHandle))) && ShowHandles && !hasSelection;
             }
         }
 
-        private void DragSelectionHandle(TextSelectionHandle thumb)
+        private void DragSelectionHandle(TextSelectionHandle handle)
         {
             if (_presenter != null && _textBox != null)
             {
-                var point = ToPresenter(thumb.IndicatorPosition);
+                var point = ToPresenter(handle.IndicatorPosition);
                 point = point.WithY(point.Y - _presenter.FontSize / 2);
                 var hit = _presenter.TextLayout.HitTestPoint(point);
                 var caret = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
 
-                var otherThumb = thumb == _startThumb ? _endThumb : _startThumb;
+                var otherHandle = handle == _startHandle ? _endHandle : _startHandle;
 
-                if (thumb.SelectionHandleType == SelectionHandleType.Start)
+                if (handle.SelectionHandleType == SelectionHandleType.Start)
                     _textBox.SelectionStart = caret;
                 else
                     _textBox.SelectionEnd = caret;
@@ -141,15 +143,15 @@ namespace Avalonia.Controls.Primitives
                     var first = rects.First();
                     var last = rects.Last();
 
-                    if (thumb.SelectionHandleType == SelectionHandleType.Start)
-                        thumb?.SetTopLeft(ToLayer(first.BottomLeft));
+                    if (handle.SelectionHandleType == SelectionHandleType.Start)
+                        handle?.SetTopLeft(ToLayer(first.BottomLeft));
                     else
-                        thumb?.SetTopLeft(ToLayer(last.BottomRight));
+                        handle?.SetTopLeft(ToLayer(last.BottomRight));
 
-                    if (otherThumb.SelectionHandleType == SelectionHandleType.Start)
-                        otherThumb?.SetTopLeft(ToLayer(first.BottomLeft));
+                    if (otherHandle.SelectionHandleType == SelectionHandleType.Start)
+                        otherHandle?.SetTopLeft(ToLayer(first.BottomLeft));
                     else
-                        otherThumb?.SetTopLeft(ToLayer(last.BottomRight));
+                        otherHandle?.SetTopLeft(ToLayer(last.BottomRight));
                 }
 
                 _presenter?.MoveCaretToTextPosition(caret);
@@ -168,28 +170,19 @@ namespace Avalonia.Controls.Primitives
             return (_presenter is { } p) ? (p.VisualRoot as Visual)?.TranslatePoint(point, p) ?? point : point;
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        public void MoveHandlesToSelection()
         {
-            base.OnAttachedToVisualTree(e);
-
-            AdornerLayer.SetIsClipEnabled(this, false);
-
-            ClipToBounds = false;
-        }
-
-        public void MoveThumbsToSelection()
-        {
-            if (_presenter == null || _textBox == null || _startThumb.IsDragging || _endThumb.IsDragging)
+            if (_presenter == null || _textBox == null || _startHandle.IsDragging || _endHandle.IsDragging)
             {
                 return;
             }
 
             var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
-            if (_caretThumb != null)
+            if (_caretHandle != null)
             {
                 var points = _presenter.GetCaretPoints();
 
-                _caretThumb.SetTopLeft(ToLayer(points.Item2));
+                _caretHandle.SetTopLeft(ToLayer(points.Item2));
             }
 
             if (hasSelection)
@@ -206,16 +199,16 @@ namespace Avalonia.Controls.Primitives
                     var first = rects.First();
                     var last = rects.Last();
 
-                    if (_startThumb != null && !_startThumb.IsDragging)
+                    if (_startHandle != null && !_startHandle.IsDragging)
                     {
-                        _startThumb.SetTopLeft(ToLayer(first.BottomLeft));
-                        _startThumb.SelectionHandleType = selectionStart < selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
+                        _startHandle.SetTopLeft(ToLayer(first.BottomLeft));
+                        _startHandle.SelectionHandleType = selectionStart < selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
                     }
 
-                    if (_endThumb != null && !_endThumb.IsDragging)
+                    if (_endHandle != null && !_endHandle.IsDragging)
                     {
-                        _endThumb.SetTopLeft(ToLayer(last.BottomRight));
-                        _endThumb.SelectionHandleType = selectionStart > selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
+                        _endHandle.SetTopLeft(ToLayer(last.BottomRight));
+                        _endHandle.SelectionHandleType = selectionStart > selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
                     }
                 }
             }
@@ -231,9 +224,9 @@ namespace Avalonia.Controls.Primitives
                 if (_textBox != null)
                 {
                     _textBox.AddHandler(TextBox.TextChangingEvent, TextChanged, handledEventsToo: true);
-                    _textBox.AddHandler(TextBox.KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
-                    _textBox.AddHandler(TextBox.LostFocusEvent, TextBoxLostFocus, handledEventsToo: true);
-                    _textBox.AddHandler(TextBox.DoubleTappedEvent, TextBoxDoubleTapped);
+                    _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
+                    _textBox.AddHandler(LostFocusEvent, TextBoxLostFocus, handledEventsToo: true);
+                    _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
 
                     _textBox.PropertyChanged += _textBox_PropertyChanged;
                     _textBox.LayoutUpdated += _textBox_LayoutUpdated;
@@ -244,9 +237,9 @@ namespace Avalonia.Controls.Primitives
                 if (_textBox != null)
                 {
                     _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
-                    _textBox.RemoveHandler(TextBox.KeyDownEvent, TextBoxKeyDown);
-                    _textBox.RemoveHandler(TextBox.DoubleTappedEvent, TextBoxDoubleTapped);
-                    _textBox.RemoveHandler(TextBox.LostFocusEvent, TextBoxLostFocus);
+                    _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
+                    _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
+                    _textBox.RemoveHandler(LostFocusEvent, TextBoxLostFocus);
 
                     _textBox.PropertyChanged -= _textBox_PropertyChanged;
                     _textBox.LayoutUpdated -= _textBox_LayoutUpdated;
@@ -256,43 +249,48 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private void TextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            if (e.Pointer.Type != PointerType.Mouse)
+            {
+                ShowHandles = true;
+
+                MoveHandlesToSelection();
+                EnsureVisible();
+            }
+        }
+
         private void _textBox_LayoutUpdated(object? sender, EventArgs e)
         {
-            MoveThumbsToSelection();
-            EnsureVisible();
+            if (ShowHandles)
+            {
+                MoveHandlesToSelection();
+                EnsureVisible();
+            }
         }
 
         private void _textBox_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
+            if (ShowHandles && (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty))
             {
-                MoveThumbsToSelection();
+                MoveHandlesToSelection();
                 EnsureVisible();
             }
         }
 
         private void TextBoxLostFocus(object? sender, RoutedEventArgs e)
         {
-            ShowThumbs = false;
-
-            MoveThumbsToSelection();
-        }
-
-        private void TextBoxDoubleTapped(object? sender, TappedEventArgs e)
-        {
-            ShowThumbs = true;
-
-            MoveThumbsToSelection();
+            ShowHandles = false;
         }
 
         private void TextBoxKeyDown(object? sender, KeyEventArgs e)
         {
-            ShowThumbs = false;
+            ShowHandles = false;
         }
 
         private void TextChanged(object? sender, TextChangingEventArgs e)
         {
-            ShowThumbs = false;
+            ShowHandles = false;
         }
     }
 }

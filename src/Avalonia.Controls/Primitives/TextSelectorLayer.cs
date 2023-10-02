@@ -4,20 +4,20 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TestLayer : Canvas
+    public class TextSelectorLayer : Canvas
     {
         protected override bool BypassFlowDirectionPolicies => true;
         public Size AvailableSize { get; private set; }
-        public static TestLayer? GetTestLayer(Visual visual)
+        public static TextSelectorLayer? GetTestLayer(Visual visual)
         {
             foreach(var v in visual.GetVisualAncestors())
                 if(v is VisualLayerManager vlm)
-                    if (vlm.TestLayer != null)
-                        return vlm.TestLayer;
+                    if (vlm.TextSelectorLayer != null)
+                        return vlm.TextSelectorLayer;
             if (visual is TopLevel tl)
             {
                 var layers = tl.GetVisualDescendants().OfType<VisualLayerManager>().FirstOrDefault();
-                return layers?.TestLayer;
+                return layers?.TextSelectorLayer;
             }
 
             return null;
@@ -32,8 +32,6 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            // We are saving it here since child controls might need to know the entire size of the overlay
-            // and Bounds won't be updated in time
             AvailableSize = finalSize;
             return base.ArrangeOverride(finalSize);
         }

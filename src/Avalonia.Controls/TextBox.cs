@@ -1690,7 +1690,7 @@ namespace Avalonia.Controls
                         _wordSelectionStart = -1;
                     }
 
-                    _presenter.Canvas?.MoveThumbsToSelection();
+                    _presenter.Canvas?.MoveHandlesToSelection();
                 }
             }
 
