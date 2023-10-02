@@ -98,7 +98,7 @@ namespace Avalonia.Controls.Presenters
 
         private TextSelectionCanvas? _canvas;
         private Point? _previousOffset;
-        private TestLayer? _layer;
+        private TextSelectorLayer? _layer;
 
         static TextPresenter()
         {
@@ -444,10 +444,6 @@ namespace Avalonia.Controls.Presenters
         public void ShowCaret()
         {
             _caretBlink = true;
-            if (_canvas != null)
-            {
-                _canvas.ShowThumbs = true;
-            }
             _caretTimer.Start();
             InvalidateVisual();
         }
@@ -457,7 +453,7 @@ namespace Avalonia.Controls.Presenters
             _caretBlink = false;
             if (_canvas != null)
             {
-                _canvas.ShowThumbs = false;
+                _canvas.ShowHandles = false;
             }
             _caretTimer.Stop();
             InvalidateVisual();
@@ -861,7 +857,7 @@ namespace Avalonia.Controls.Presenters
                 _canvas = new TextSelectionCanvas();
             }
 
-            _layer = TestLayer.GetTestLayer(this);
+            _layer = TextSelectorLayer.GetTestLayer(this);
             _layer?.Add(_canvas);
             _canvas?.SetPresenter(this);
         }

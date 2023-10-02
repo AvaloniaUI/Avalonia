@@ -13,7 +13,7 @@ namespace Avalonia.Input.GestureRecognizers
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private bool _isScrollInertiaEnabled;
-        private int _scrollStartDistance = 5;
+        private int _scrollStartDistance = 30;
 
         private bool _scrolling;
         private Point _trackedRootPoint;
