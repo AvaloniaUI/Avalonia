@@ -54,7 +54,10 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                           Convert.ToUInt64(e.EventTime),
                           _view.InputRoot,
                           e.Action == KeyEventActions.Down ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                          AndroidKeyboardDevice.ConvertKey(e.KeyCode), GetModifierKeys(e));
+                          AndroidKeyboardDevice.ConvertKey(e.KeyCode),
+                          GetModifierKeys(e),
+                          PhysicalKey.None,
+                          e.DisplayLabel == '\0' ? null : new string(e.DisplayLabel, 1));
 
             _view.Input(rawKeyEvent);
 

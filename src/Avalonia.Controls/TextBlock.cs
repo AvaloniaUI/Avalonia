@@ -135,7 +135,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TextDecorations"/> property.
         /// </summary>
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
-            AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
+            Inline.TextDecorationsProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
@@ -679,14 +679,18 @@ namespace Avalonia.Controls
 
                 _textRuns = textRuns;
 
-                foreach (var textRun in _textRuns)
+                foreach (var textLine in TextLayout.TextLines)
                 {
-                    if (textRun is EmbeddedControlRun controlRun &&
-                    controlRun.Control is Control control)
+                    foreach (var run in textLine.TextRuns)
                     {
-                        VisualChildren.Add(control);
-
-                        control.Measure(Size.Infinity);
+                        if (run is DrawableTextRun drawable)
+                        {
+                            if (drawable is EmbeddedControlRun controlRun
+                                && controlRun.Control is Control control)
+                            {
+                                VisualChildren.Add(control);
+                            }
+                        }
                     }
                 }
             }
