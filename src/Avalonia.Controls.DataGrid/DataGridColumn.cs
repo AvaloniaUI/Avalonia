@@ -3,19 +3,20 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using Avalonia.Data;
-using Avalonia.Interactivity;
-using Avalonia.VisualTree;
-using Avalonia.Collections;
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Diagnostics;
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -819,7 +820,7 @@ namespace Avalonia.Controls
         /// <param name="source"></param>
         /// <param name="width">The DataGridLength to coerce.</param>
         /// <returns>The resultant (coerced) DataGridLength.</returns>
-        static DataGridLength CoerceWidth(AvaloniaObject source, DataGridLength width)
+        private static DataGridLength CoerceWidth(AvaloniaObject source, DataGridLength width)
         {
             var target = (DataGridColumn)source;
 
