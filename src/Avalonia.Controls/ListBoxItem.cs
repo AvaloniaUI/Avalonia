@@ -48,14 +48,16 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
+            var handled = e.Handled; // need to ignore context menu detection
+
             base.OnPointerPressed(e);
 
             _pointerDownPoint = s_invalidPoint;
 
-            if (e.Handled)
+            if (handled)
                 return;
 
-            if (!e.Handled && ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
+            if (!handled && ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
             {
                 var p = e.GetCurrentPoint(this);
 
@@ -65,7 +67,7 @@ namespace Avalonia.Controls
                     if (p.Pointer.Type == PointerType.Mouse)
                     {
                         // If the pressed point comes from a mouse, perform the selection immediately.
-                        e.Handled = owner.UpdateSelectionFromPointerEvent(this, e);
+                        e.Handled |= owner.UpdateSelectionFromPointerEvent(this, e);
                     }
                     else
                     {

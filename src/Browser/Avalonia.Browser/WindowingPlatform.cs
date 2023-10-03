@@ -45,6 +45,7 @@ namespace Avalonia.Browser
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
+                .Bind<PlatformPointerConfiguration>().ToSingleton<PlatformPointerConfiguration>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
             if (AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() is { } options
