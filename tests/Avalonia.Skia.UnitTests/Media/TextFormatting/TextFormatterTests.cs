@@ -756,6 +756,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
 
                 var bounds = textLine.GetTextBounds(0, 3);
+
+                Assert.Equal(1, bounds.Count);
+
+                var runBounds = bounds[0].TextRunBounds;
+
+                Assert.Equal(2, runBounds.Count);
             }
         }
 
