@@ -33,8 +33,7 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
-        [DllImport("libc")]
-        static extern void setlocale(int type, string s);
+
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
@@ -46,10 +45,6 @@ namespace Avalonia.X11
                 if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
                     useXim = true;
             }
-
-            // XIM doesn't work at all otherwise
-            if (useXim)
-                setlocale(0, "");
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);

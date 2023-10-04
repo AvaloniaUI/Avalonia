@@ -10,6 +10,7 @@
         <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
         <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
         <Compile Include="..\Shared\RawEventGrouping.cs" />
+        <Compile Include="..\Avalonia.Input\KeySymbolHelper.cs" />
     </ItemGroup>
 
 </Project>

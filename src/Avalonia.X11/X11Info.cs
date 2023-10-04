@@ -1,8 +1,5 @@
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using JetBrains.Annotations;
 using static Avalonia.X11.XLib;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 namespace Avalonia.X11
@@ -31,11 +28,15 @@ namespace Avalonia.X11
         public Version XInputVersion { get; }
 
         public IntPtr LastActivityTimestamp { get; set; }
-        public XVisualInfo? TransparentVisualInfo { get; set; }
-        public bool HasXim { get; set; }
-        public bool HasXSync { get; set; }
-        public IntPtr DefaultFontSet { get; set; }
-        
+        public XVisualInfo? TransparentVisualInfo { get; }
+        public bool HasXim { get; }
+        public bool HasXSync { get; }
+        public IntPtr DefaultFontSet { get; }
+        public bool HasXkb { get; }
+
+        [DllImport("libc")]
+        static extern void setlocale(int type, string s);
+
         public unsafe X11Info(IntPtr display, IntPtr deferredDisplay, bool useXim)
         {
             Display = display;
@@ -49,7 +50,10 @@ namespace Avalonia.X11
 
             DefaultFontSet = XCreateFontSet(Display, "-*-*-*-*-*-*-*-*-*-*-*-*-*-*",
                 out var _, out var _, IntPtr.Zero);
-            
+
+            // We have problems with text input otherwise
+            setlocale(0, "");
+
             if (useXim)
             {
                 XSetLocaleModifiers("");
@@ -60,7 +64,15 @@ namespace Avalonia.X11
 
             if (Xim == IntPtr.Zero)
             {
-                XSetLocaleModifiers("@im=none");
+                if (XSetLocaleModifiers("@im=none") == IntPtr.Zero)
+                {
+                    setlocale(0, "en_US.UTF-8");
+                    if (XSetLocaleModifiers("@im=none") == IntPtr.Zero)
+                    {
+                        setlocale(0, "C.UTF-8");
+                        XSetLocaleModifiers("@im=none");
+                    }
+                }
                 Xim = XOpenIM(display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             }
 
@@ -110,6 +122,18 @@ namespace Avalonia.X11
             catch
             {
                 //Ignore, XSync is not supported
+            }
+
+            try
+            {
+                var xkbMajor = 1;
+                var xkbMinor = 0;
+                HasXkb = XkbLibraryVersion(ref xkbMajor, ref xkbMinor)
+                    && XkbQueryExtension(display, out _, out _, out _, ref xkbMajor, ref xkbMinor);
+            }
+            catch
+            {
+                // Ignore, XKB is not supported
             }
         }
     }

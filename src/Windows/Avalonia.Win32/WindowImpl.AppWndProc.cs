@@ -96,9 +96,9 @@ namespace Avalonia.Win32
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
                         _scaling = dpi / 96.0;
                         ScalingChanged?.Invoke(_scaling);
-                        
+
                         using (SetResizeReason(PlatformResizeReason.DpiChange))
-                        { 
+                        {
                             SetWindowPos(hWnd,
                                 IntPtr.Zero,
                                 newDisplayRect.left,
@@ -115,13 +115,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
                     {
-                        e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            _owner,
-                            RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
-                            WindowsKeyboardDevice.Instance.Modifiers);
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam);
                         break;
                     }
 
@@ -140,13 +134,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYUP:
                 case WindowsMessage.WM_SYSKEYUP:
                     {
-                        e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            _owner,
-                            RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
-                            WindowsKeyboardDevice.Instance.Modifiers);
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam);
                         break;
                     }
                 case WindowsMessage.WM_CHAR:
@@ -438,7 +426,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETMINMAXINFO:
                     {
                         MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-                        
+
                         _maxTrackSize = mmi.ptMaxTrackSize;
 
                         if (_minSize.Width > 0)
@@ -513,7 +501,7 @@ namespace Avalonia.Win32
             if (_managedDrag.PreprocessInputEvent(ref e))
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
 #endif
-            
+
             if(shouldTakeFocus)
             {
                 SetFocus(_hwnd);
@@ -551,11 +539,11 @@ namespace Avalonia.Win32
             if (langid == _langid && Imm32InputMethod.Current.HWND == Hwnd)
             {
                 return;
-            } 
+            }
             _langid = langid;
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
-            
+
         }
 
         private static int ToInt32(IntPtr ptr)
@@ -624,6 +612,29 @@ namespace Avalonia.Win32
             }
 
             return modifiers;
+        }
+
+        private RawKeyEventArgs TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam)
+        {
+            var virtualKey = ToInt32(wParam);
+            var keyData = ToInt32(lParam);
+            var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
+            var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None)
+                return null;
+
+            var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            return new RawKeyEventArgs(
+                WindowsKeyboardDevice.Instance,
+                timestamp,
+                _owner,
+                eventType,
+                key,
+                WindowsKeyboardDevice.Instance.Modifiers,
+                physicalKey,
+                keySymbol);
         }
     }
 }

@@ -148,20 +148,20 @@ namespace Avalonia.Controls.UnitTests.Utils
                 // Let the button detach when clearing the source items
                 keyGestures.Clear();
                 lm.ExecuteLayoutPass();
-                
+
                 // Add it again to double check,and render
                 keyGestures.Add(gesture1);
                 lm.ExecuteLayoutPass();
-                
+
                 keyGestures.Clear();
                 lm.ExecuteLayoutPass();
-                
+
                 // The button should be collected since it's detached from the listbox
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
-                
+
                 Assert.True(weakReferences.Count > 0);
                 foreach (var weakReference in weakReferences)
                 {
@@ -208,7 +208,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
                 Assert.True(expectedParameter == commandResult, $"{factoryName} HotKey did not carry the CommandParameter.");
             }
@@ -251,7 +253,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
                 Assert.True(isExecuted == false, $"{factoryName} Execution raised when IsEnabled is false.");
             }

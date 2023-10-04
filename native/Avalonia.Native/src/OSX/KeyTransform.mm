@@ -1,391 +1,511 @@
 #include "KeyTransform.h"
 
-const int kVK_ANSI_A = 0x00;
-const int kVK_ANSI_S = 0x01;
-const int kVK_ANSI_D = 0x02;
-const int kVK_ANSI_F = 0x03;
-const int kVK_ANSI_H = 0x04;
-const int kVK_ANSI_G = 0x05;
-const int kVK_ANSI_Z = 0x06;
-const int kVK_ANSI_X = 0x07;
-const int kVK_ANSI_C = 0x08;
-const int kVK_ANSI_V = 0x09;
-const int kVK_ANSI_B = 0x0B;
-const int kVK_ANSI_Q = 0x0C;
-const int kVK_ANSI_W = 0x0D;
-const int kVK_ANSI_E = 0x0E;
-const int kVK_ANSI_R = 0x0F;
-const int kVK_ANSI_Y = 0x10;
-const int kVK_ANSI_T = 0x11;
-const int kVK_ANSI_1 = 0x12;
-const int kVK_ANSI_2 = 0x13;
-const int kVK_ANSI_3 = 0x14;
-const int kVK_ANSI_4 = 0x15;
-const int kVK_ANSI_6 = 0x16;
-const int kVK_ANSI_5 = 0x17;
-const int kVK_ANSI_Equal = 0x18;
-const int kVK_ANSI_9 = 0x19;
-const int kVK_ANSI_7 = 0x1A;
-const int kVK_ANSI_Minus = 0x1B;
-const int kVK_ANSI_8 = 0x1C;
-const int kVK_ANSI_0 = 0x1D;
-const int kVK_ANSI_RightBracket = 0x1E;
-const int kVK_ANSI_O = 0x1F;
-const int kVK_ANSI_U = 0x20;
-const int kVK_ANSI_LeftBracket = 0x21;
-const int kVK_ANSI_I = 0x22;
-const int kVK_ANSI_P = 0x23;
-const int kVK_ANSI_L = 0x25;
-const int kVK_ANSI_J = 0x26;
-const int kVK_ANSI_Quote = 0x27;
-const int kVK_ANSI_K = 0x28;
-const int kVK_ANSI_Semicolon = 0x29;
-const int kVK_ANSI_Backslash = 0x2A;
-const int kVK_ANSI_Comma = 0x2B;
-const int kVK_ANSI_Slash = 0x2C;
-const int kVK_ANSI_N = 0x2D;
-const int kVK_ANSI_M = 0x2E;
-const int kVK_ANSI_Period = 0x2F;
-const int kVK_ANSI_Grave = 0x32;
-const int kVK_ANSI_KeypadDecimal = 0x41;
-const int kVK_ANSI_KeypadMultiply = 0x43;
-const int kVK_ANSI_KeypadPlus = 0x45;
-const int kVK_ANSI_KeypadClear = 0x47;
-const int kVK_ANSI_KeypadDivide = 0x4B;
-const int kVK_ANSI_KeypadEnter = 0x4C;
-const int kVK_ANSI_KeypadMinus = 0x4E;
-const int kVK_ANSI_KeypadEquals = 0x51;
-const int kVK_ANSI_Keypad0 = 0x52;
-const int kVK_ANSI_Keypad1 = 0x53;
-const int kVK_ANSI_Keypad2 = 0x54;
-const int kVK_ANSI_Keypad3 = 0x55;
-const int kVK_ANSI_Keypad4 = 0x56;
-const int kVK_ANSI_Keypad5 = 0x57;
-const int kVK_ANSI_Keypad6 = 0x58;
-const int kVK_ANSI_Keypad7 = 0x59;
-const int kVK_ANSI_Keypad8 = 0x5B;
-const int kVK_ANSI_Keypad9 = 0x5C;
-const int kVK_Return = 0x24;
-const int kVK_Tab = 0x30;
-const int kVK_Space = 0x31;
-const int kVK_Delete = 0x33;
-const int kVK_Escape = 0x35;
-const int kVK_Command = 0x37;
-const int kVK_Shift = 0x38;
-const int kVK_CapsLock = 0x39;
-const int kVK_Option = 0x3A;
-const int kVK_Control = 0x3B;
-const int kVK_RightCommand = 0x36;
-const int kVK_RightShift = 0x3C;
-const int kVK_RightOption = 0x3D;
-const int kVK_RightControl = 0x3E;
-//const int kVK_Function = 0x3F;
-const int kVK_F17 = 0x40;
-const int kVK_VolumeUp = 0x48;
-const int kVK_VolumeDown = 0x49;
-const int kVK_Mute = 0x4A;
-const int kVK_F18 = 0x4F;
-const int kVK_F19 = 0x50;
-const int kVK_F20 = 0x5A;
-const int kVK_F5 = 0x60;
-const int kVK_F6 = 0x61;
-const int kVK_F7 = 0x62;
-const int kVK_F3 = 0x63;
-const int kVK_F8 = 0x64;
-const int kVK_F9 = 0x65;
-const int kVK_F11 = 0x67;
-const int kVK_F13 = 0x69;
-const int kVK_F16 = 0x6A;
-const int kVK_F14 = 0x6B;
-const int kVK_F10 = 0x6D;
-const int kVK_F12 = 0x6F;
-const int kVK_F15 = 0x71;
-const int kVK_Help = 0x72;
-const int kVK_Home = 0x73;
-const int kVK_PageUp = 0x74;
-const int kVK_ForwardDelete = 0x75;
-const int kVK_F4 = 0x76;
-const int kVK_End = 0x77;
-const int kVK_F2 = 0x78;
-const int kVK_PageDown = 0x79;
-const int kVK_F1 = 0x7A;
-const int kVK_LeftArrow = 0x7B;
-const int kVK_RightArrow = 0x7C;
-const int kVK_DownArrow = 0x7D;
-const int kVK_UpArrow = 0x7E;
-//const int kVK_ISO_Section = 0x0A;
-//const int kVK_JIS_Yen = 0x5D;
-//const int kVK_JIS_Underscore = 0x5E;
-//const int kVK_JIS_KeypadComma = 0x5F;
-//const int kVK_JIS_Eisu = 0x66;
-const int kVK_JIS_Kana = 0x68;
+#import <Carbon/Carbon.h>
+#include <array>
+#include <unordered_map>
 
-// converts from AvaloniaKeys to UnicodeSpecial keys.
-std::map<AvnKey, int> s_UnicodeKeyMap =
+struct KeyInfo
 {
-    { Up, NSUpArrowFunctionKey },
-    { Down, NSDownArrowFunctionKey },
-    { Left, NSLeftArrowFunctionKey },
-    { Right, NSRightArrowFunctionKey },
-    { F1, NSF1FunctionKey },
-    { F2, NSF2FunctionKey },
-    { F3, NSF3FunctionKey },
-    { F4, NSF4FunctionKey },
-    { F5, NSF5FunctionKey },
-    { F6, NSF6FunctionKey },
-    { F7, NSF7FunctionKey },
-    { F8, NSF8FunctionKey },
-    { F9, NSF9FunctionKey },
-    { F10, NSF10FunctionKey },
-    { F11, NSF11FunctionKey },
-    { F12, NSF12FunctionKey },
-    { F13, NSF13FunctionKey },
-    { F14, NSF14FunctionKey },
-    { F15, NSF15FunctionKey },
-    { F16, NSF16FunctionKey },
-    { F17, NSF17FunctionKey },
-    { F18, NSF18FunctionKey },
-    { F19, NSF19FunctionKey },
-    { F20, NSF20FunctionKey },
-    { F21, NSF21FunctionKey },
-    { F22, NSF22FunctionKey },
-    { F23, NSF23FunctionKey },
-    { F24, NSF24FunctionKey },
-    { Insert, NSInsertFunctionKey },
-    { Delete, NSDeleteFunctionKey },
-    { Home, NSHomeFunctionKey },
-    //{ Begin, NSBeginFunctionKey },
-    { End, NSEndFunctionKey },
-    { PageUp, NSPageUpFunctionKey },
-    { PageDown, NSPageDownFunctionKey },
-    { PrintScreen, NSPrintScreenFunctionKey },
-    { Scroll, NSScrollLockFunctionKey },
-    //{ SysReq, NSSysReqFunctionKey },
-    //{ Break, NSBreakFunctionKey },
-    //{ Reset, NSResetFunctionKey },
-    //{ Stop, NSStopFunctionKey },
-    //{ Menu, NSMenuFunctionKey },
-    //{ UserFunction, NSUserFunctionKey },
-    //{ SystemFunction, NSSystemFunctionKey },
-    { Print, NSPrintFunctionKey },
-    //{ ClearLine, NSClearLineFunctionKey },
-    //{ ClearDisplay, NSClearDisplayFunctionKey },
+    uint16_t scanCode;
+    AvnPhysicalKey physicalKey;
+    AvnKey qwertyKey;
+    uint16_t menuChar;
 };
 
-// Converts from Ansi virtual keys to Qwerty Keyboard map.
-std::map<int, const char*> s_QwertyKeyMap =
+// ScanCode - PhysicalKey - Key mapping (the virtual key is mapped as in a standard QWERTY keyboard)
+// https://github.com/chromium/chromium/blob/main/ui/events/keycodes/dom/dom_code_data.inc
+// This list has the same order as the PhysicalKey enum.
+const KeyInfo keyInfos[] =
 {
-    { 0, "a" },
-    { 1, "s" },
-    { 2, "d" },
-    { 3, "f" },
-    { 4, "h" },
-    { 5, "g" },
-    { 6, "z" },
-    { 7, "x" },
-    { 8, "c" },
-    { 9, "v" },
-    { 10, "§" },
-    { 11, "b" },
-    { 12, "q" },
-    { 13, "w" },
-    { 14, "e" },
-    { 15, "r" },
-    { 16, "y" },
-    { 17, "t" },
-    { 18, "1" },
-    { 19, "2" },
-    { 20, "3" },
-    { 21, "4" },
-    { 22, "6" },
-    { 23, "5" },
-    { 24, "=" },
-    { 25, "9" },
-    { 26, "7" },
-    { 27, "-" },
-    { 28, "8" },
-    { 29, "0" },
-    { 30, "]" },
-    { 31, "o" },
-    { 32, "u" },
-    { 33, "[" },
-    { 34, "i" },
-    { 35, "p" },
-    { 37, "l" },
-    { 38, "j" },
-    { 39, "'" },
-    { 40, "k" },
-    { 41, ";" },
-    { 42, "\\" },
-    { 43, "," },
-    { 44, "/" },
-    { 45, "n" },
-    { 46, "m" },
-    { 47, "." },
-    { 48, "\t" },
-    { 49, " " },
-    { 50, "`" },
-    { 51, "" },
-    { 52, "" },
-    { 53, "" },
-    { 65, "." },
-    { 66, "" },
-    { 67, "*" },
-    { 69, "+" },
-    { 70, "" },
-    { 71, "" },
-    { 72, "" },
-    { 75, "/" },
-    { 76, "" },
-    { 77, "" },
-    { 78, "-" },
-    { 81, "=" },
-    { 82, "0" },
-    { 83, "1" },
-    { 84, "2" },
-    { 85, "3" },
-    { 86, "4" },
-    { 87, "5" },
-    { 88, "6" },
-    { 89, "7" },
-    { 91, "8" },
-    { 92, "9" }
+    // Writing System Keys
+    { 0x32, AvnPhysicalKeyBackquote, AvnKeyOem3, '`' },
+    { 0x2A, AvnPhysicalKeyBackslash, AvnKeyOem5, '\\' },
+    { 0x21, AvnPhysicalKeyBracketLeft,AvnKeyOem4, '[' },
+    { 0x1E, AvnPhysicalKeyBracketRight, AvnKeyOem6, ']' },
+    { 0x2B, AvnPhysicalKeyComma, AvnKeyOemComma, ',' },
+    { 0x1D, AvnPhysicalKeyDigit0, AvnKeyD0, '0' },
+    { 0x12, AvnPhysicalKeyDigit1, AvnKeyD1, '1' },
+    { 0x13, AvnPhysicalKeyDigit2, AvnKeyD2, '2' },
+    { 0x14, AvnPhysicalKeyDigit3, AvnKeyD3, '3' },
+    { 0x15, AvnPhysicalKeyDigit4, AvnKeyD4, '4' },
+    { 0x17, AvnPhysicalKeyDigit5, AvnKeyD5, '5' },
+    { 0x16, AvnPhysicalKeyDigit6, AvnKeyD6, '6' },
+    { 0x1A, AvnPhysicalKeyDigit7, AvnKeyD7, '7' },
+    { 0x1C, AvnPhysicalKeyDigit8, AvnKeyD8, '8' },
+    { 0x19, AvnPhysicalKeyDigit9, AvnKeyD9, '9' },
+    { 0x18, AvnPhysicalKeyEqual, AvnKeyOemMinus, '-' },
+    { 0x0A, AvnPhysicalKeyIntlBackslash, AvnKeyOem102, 0 },
+    { 0x5E, AvnPhysicalKeyIntlRo, AvnKeyOem102, 0 },
+    { 0x5D, AvnPhysicalKeyIntlYen, AvnKeyOem5, 0 },
+    { 0x00, AvnPhysicalKeyA, AvnKeyA, 'a' },
+    { 0x0B, AvnPhysicalKeyB, AvnKeyB, 'b' },
+    { 0x08, AvnPhysicalKeyC, AvnKeyC, 'c' },
+    { 0x02, AvnPhysicalKeyD, AvnKeyD, 'd' },
+    { 0x0E, AvnPhysicalKeyE, AvnKeyE, 'e' },
+    { 0x03, AvnPhysicalKeyF, AvnKeyF, 'f' },
+    { 0x05, AvnPhysicalKeyG, AvnKeyG, 'g' },
+    { 0x04, AvnPhysicalKeyH, AvnKeyH, 'h' },
+    { 0x22, AvnPhysicalKeyI, AvnKeyI, 'i' },
+    { 0x26, AvnPhysicalKeyJ, AvnKeyJ, 'j' },
+    { 0x28, AvnPhysicalKeyK, AvnKeyK, 'k' },
+    { 0x25, AvnPhysicalKeyL, AvnKeyL, 'l' },
+    { 0x2E, AvnPhysicalKeyM, AvnKeyM, 'm' },
+    { 0x2D, AvnPhysicalKeyN, AvnKeyN, 'n' },
+    { 0x1F, AvnPhysicalKeyO, AvnKeyO, 'o' },
+    { 0x23, AvnPhysicalKeyP, AvnKeyP, 'p' },
+    { 0x0C, AvnPhysicalKeyQ, AvnKeyQ, 'q' },
+    { 0x0F, AvnPhysicalKeyR, AvnKeyR, 'r' },
+    { 0x01, AvnPhysicalKeyS, AvnKeyS, 's' },
+    { 0x11, AvnPhysicalKeyT, AvnKeyT, 't' },
+    { 0x20, AvnPhysicalKeyU, AvnKeyU, 'u' },
+    { 0x09, AvnPhysicalKeyV, AvnKeyV, 'v' },
+    { 0x0D, AvnPhysicalKeyW, AvnKeyW, 'w' },
+    { 0x07, AvnPhysicalKeyX, AvnKeyX, 'x' },
+    { 0x10, AvnPhysicalKeyY, AvnKeyY, 'y' },
+    { 0x06, AvnPhysicalKeyZ, AvnKeyZ, 'z' },
+    { 0x1B, AvnPhysicalKeyMinus, AvnKeyOemMinus, '-' },
+    { 0x2F, AvnPhysicalKeyPeriod, AvnKeyOemPeriod, '.' },
+    { 0x27, AvnPhysicalKeyQuote, AvnKeyOem7, '\'' },
+    { 0x29, AvnPhysicalKeySemicolon, AvnKeyOem1, ';' },
+    { 0x2C, AvnPhysicalKeySlash, AvnKeyOem2, '/' },
+
+    // Functional Keys
+    { 0x3A, AvnPhysicalKeyAltLeft, AvnKeyLeftAlt, 0 },
+    { 0x3D, AvnPhysicalKeyAltRight, AvnKeyRightAlt, 0 },
+    { 0x33, AvnPhysicalKeyBackspace, AvnKeyBack, kBackspaceCharCode },
+    { 0x39, AvnPhysicalKeyCapsLock, AvnKeyCapsLock, 0 },
+    { 0x6E, AvnPhysicalKeyContextMenu, AvnKeyApps, 0 },
+    { 0x3B, AvnPhysicalKeyControlLeft, AvnKeyLeftCtrl, 0 },
+    { 0x3E, AvnPhysicalKeyControlRight, AvnKeyRightCtrl, 0 },
+    { 0x24, AvnPhysicalKeyEnter, AvnKeyEnter, kReturnCharCode },
+    { 0x37, AvnPhysicalKeyMetaLeft, AvnKeyLWin, 0 },
+    { 0x36, AvnPhysicalKeyMetaRight, AvnKeyRWin, 0 },
+    { 0x38, AvnPhysicalKeyShiftLeft, AvnKeyLeftShift, 0 },
+    { 0x3C, AvnPhysicalKeyShiftRight, AvnKeyRightShift, 0 },
+    { 0x31, AvnPhysicalKeySpace, AvnKeySpace, kSpaceCharCode },
+    { 0x30, AvnPhysicalKeyTab, AvnKeyTab, kTabCharCode },
+    //{   , AvnPhysicalKeyConvert, 0 },
+    //{   , AvnPhysicalKeyKanaMode, 0 },
+    { 0x68, AvnPhysicalKeyLang1, AvnKeyKanaMode, 0 },
+    { 0x66, AvnPhysicalKeyLang2, AvnKeyHanjaMode, 0 },
+    //{   , AvnPhysicalKeyLang3, 0 },
+    //{   , AvnPhysicalKeyLang4, 0 },
+    //{   , AvnPhysicalKeyLang5, 0 },
+    //{   , AvnPhysicalKeyNonConvert, 0 },
+
+    // Control Pad Section
+    { 0x75, AvnPhysicalKeyDelete, AvnKeyDelete, NSDeleteFunctionKey },
+    { 0x77, AvnPhysicalKeyEnd, AvnKeyEnd, NSEndFunctionKey },
+    //{   , AvnPhysicalKeyHelp, 0 },
+    { 0x73, AvnPhysicalKeyHome, AvnKeyHome, NSHomeFunctionKey },
+    { 0x72, AvnPhysicalKeyInsert, AvnKeyInsert, NSInsertFunctionKey },
+    { 0x79, AvnPhysicalKeyPageDown, AvnKeyPageDown, NSPageDownFunctionKey },
+    { 0x74, AvnPhysicalKeyPageUp, AvnKeyPageUp, NSPageUpFunctionKey },
+
+    // Arrow Pad Section
+    { 0x7D, AvnPhysicalKeyArrowDown, AvnKeyDown, NSDownArrowFunctionKey },
+    { 0x7B, AvnPhysicalKeyArrowLeft, AvnKeyLeft, NSLeftArrowFunctionKey },
+    { 0x7C, AvnPhysicalKeyArrowRight, AvnKeyRight, NSRightArrowFunctionKey },
+    { 0x7E, AvnPhysicalKeyArrowUp, AvnKeyUp, NSUpArrowFunctionKey },
+
+    // Numpad Section
+    { 0x47, AvnPhysicalKeyNumLock, AvnKeyClear, kClearCharCode },
+    { 0x52, AvnPhysicalKeyNumPad0, AvnKeyNumPad0, '0' },
+    { 0x53, AvnPhysicalKeyNumPad1, AvnKeyNumPad1, '1' },
+    { 0x54, AvnPhysicalKeyNumPad2, AvnKeyNumPad2, '2' },
+    { 0x55, AvnPhysicalKeyNumPad3, AvnKeyNumPad3, '3' },
+    { 0x56, AvnPhysicalKeyNumPad4, AvnKeyNumPad4, '4' },
+    { 0x57, AvnPhysicalKeyNumPad5, AvnKeyNumPad5, '5' },
+    { 0x58, AvnPhysicalKeyNumPad6, AvnKeyNumPad6, '6' },
+    { 0x59, AvnPhysicalKeyNumPad7, AvnKeyNumPad7, '7' },
+    { 0x5B, AvnPhysicalKeyNumPad8, AvnKeyNumPad8, '8' },
+    { 0x5C, AvnPhysicalKeyNumPad9, AvnKeyNumPad9, '9' },
+    { 0x45, AvnPhysicalKeyNumPadAdd, AvnKeyAdd, '+' },
+    //{   , AvnPhysicalKeyNumPadClear, 0 },
+    { 0x5F, AvnPhysicalKeyNumPadComma, AvnKeyAbntC2, 0 },
+    { 0x41, AvnPhysicalKeyNumPadDecimal, AvnKeyDecimal, '.' },
+    { 0x4B, AvnPhysicalKeyNumPadDivide, AvnKeyDivide, '/' },
+    { 0x4C, AvnPhysicalKeyNumPadEnter, AvnKeyEnter, kReturnCharCode },
+    { 0x51, AvnPhysicalKeyNumPadEqual, AvnKeyOemPlus, '=' },
+    { 0x43, AvnPhysicalKeyNumPadMultiply, AvnKeyMultiply, '*' },
+    //{   , AvnPhysicalKeyNumPadParenLeft, 0 },
+    //{   , AvnPhysicalKeyNumPadParenRight, 0 },
+    { 0x4E, AvnPhysicalKeyNumPadSubtract, AvnKeySubtract, '-' },
+
+    // Function Section
+    { 0x35, AvnPhysicalKeyEscape, AvnKeyEscape, kEscapeCharCode },
+    { 0x7A, AvnPhysicalKeyF1, AvnKeyF1, NSF1FunctionKey },
+    { 0x78, AvnPhysicalKeyF2, AvnKeyF2, NSF2FunctionKey },
+    { 0x63, AvnPhysicalKeyF3, AvnKeyF3, NSF3FunctionKey },
+    { 0x76, AvnPhysicalKeyF4, AvnKeyF4, NSF4FunctionKey },
+    { 0x60, AvnPhysicalKeyF5, AvnKeyF5, NSF5FunctionKey },
+    { 0x61, AvnPhysicalKeyF6, AvnKeyF6, NSF6FunctionKey },
+    { 0x62, AvnPhysicalKeyF7, AvnKeyF7, NSF7FunctionKey },
+    { 0x64, AvnPhysicalKeyF8, AvnKeyF8, NSF8FunctionKey },
+    { 0x65, AvnPhysicalKeyF9, AvnKeyF9, NSF9FunctionKey },
+    { 0x6D, AvnPhysicalKeyF10, AvnKeyF10, NSF10FunctionKey },
+    { 0x67, AvnPhysicalKeyF11, AvnKeyF11, NSF11FunctionKey },
+    { 0x6F, AvnPhysicalKeyF12, AvnKeyF12, NSF12FunctionKey },
+    { 0x69, AvnPhysicalKeyF13, AvnKeyF13, NSF13FunctionKey },
+    { 0x6B, AvnPhysicalKeyF14, AvnKeyF14, NSF14FunctionKey },
+    { 0x71, AvnPhysicalKeyF15, AvnKeyF15, NSF15FunctionKey },
+    { 0x6A, AvnPhysicalKeyF16, AvnKeyF16, NSF16FunctionKey },
+    { 0x40, AvnPhysicalKeyF17, AvnKeyF17, NSF17FunctionKey },
+    { 0x4F, AvnPhysicalKeyF18, AvnKeyF18, NSF18FunctionKey },
+    { 0x50, AvnPhysicalKeyF19, AvnKeyF19, NSF19FunctionKey },
+    { 0x5A, AvnPhysicalKeyF20, AvnKeyF20, NSF20FunctionKey },
+    //{   , AvnPhysicalKeyF21, 0 },
+    //{   , AvnPhysicalKeyF22, 0 },
+    //{   , AvnPhysicalKeyF23, 0 },
+    //{   , AvnPhysicalKeyF24, 0 },
+    //{   , AvnPhysicalKeyPrintScreen, 0 },
+    //{   , AvnPhysicalKeyScrollLock, 0 },
+    //{   , AvnPhysicalKeyPause, 0 },
+
+    // Media Keys
+    //{   , AvnPhysicalKeyBrowserBack, 0 },
+    //{   , AvnPhysicalKeyBrowserFavorites, 0 },
+    //{   , AvnPhysicalKeyBrowserForward, 0 },
+    //{   , AvnPhysicalKeyBrowserHome, 0 },
+    //{   , AvnPhysicalKeyBrowserRefresh, 0 },
+    //{   , AvnPhysicalKeyBrowserSearch, 0 },
+    //{   , AvnPhysicalKeyBrowserStop, 0 },
+    //{   , AvnPhysicalKeyEject, 0 },
+    //{   , AvnPhysicalKeyLaunchApp1, 0 },
+    //{   , AvnPhysicalKeyLaunchApp2, 0 },
+    //{   , AvnPhysicalKeyLaunchMail, 0 },
+    //{   , AvnPhysicalKeyMediaPlayPause, 0 },
+    //{   , AvnPhysicalKeyMediaSelect, 0 },
+    //{   , AvnPhysicalKeyMediaStop, 0 },
+    //{   , AvnPhysicalKeyMediaTrackNext, 0 },
+    //{   , AvnPhysicalKeyMediaTrackPrevious, 0 },
+    //{   , AvnPhysicalKeyPower, 0 },
+    //{   , AvnPhysicalKeySleep, 0 },
+    { 0x49, AvnPhysicalKeyAudioVolumeDown, AvnKeyVolumeDown, 0 },
+    { 0x4A, AvnPhysicalKeyAudioVolumeMute, AvnKeyVolumeMute, 0 },
+    { 0x48, AvnPhysicalKeyAudioVolumeUp, AvnKeyVolumeUp, 0 },
+    //{   , AvnPhysicalKeyWakeUp, 0 },
+
+    // Legacy Keys
+    //{   , AvnPhysicalKeyAgain, 0 },
+    //{   , AvnPhysicalKeyCopy, 0 },
+    //{   , AvnPhysicalKeyCut, 0 },
+    //{   , AvnPhysicalKeyFind, 0 },
+    //{   , AvnPhysicalKeyOpen, 0 },
+    //{   , AvnPhysicalKeyPaste, 0 },
+    //{   , AvnPhysicalKeyProps, 0 },
+    //{   , AvnPhysicalKeySelect, 0 },
+    //{   , AvnPhysicalKeyUndo, 0 }
 };
 
-// converts from ansi virtualkeys to AvnKeys.
- std::map<int, AvnKey> s_KeyMap =
- {
-    {kVK_ANSI_A, A},
-    {kVK_ANSI_S, S},
-    {kVK_ANSI_D, D},
-    {kVK_ANSI_F, F},
-    {kVK_ANSI_H, H},
-    {kVK_ANSI_G, G},
-    {kVK_ANSI_Z, Z},
-    {kVK_ANSI_X, X},
-    {kVK_ANSI_C, C},
-    {kVK_ANSI_V, V},
-    {kVK_ANSI_B, B},
-    {kVK_ANSI_Q, Q},
-    {kVK_ANSI_W, W},
-    {kVK_ANSI_E, E},
-    {kVK_ANSI_R, R},
-    {kVK_ANSI_Y, Y},
-    {kVK_ANSI_T, T},
-    {kVK_ANSI_1, D1},
-    {kVK_ANSI_2, D2},
-    {kVK_ANSI_3, D3},
-    {kVK_ANSI_4, D4},
-    {kVK_ANSI_6, D6},
-    {kVK_ANSI_5, D5},
-    {kVK_ANSI_Equal, OemPlus},
-    {kVK_ANSI_9, D9},
-    {kVK_ANSI_7, D7},
-    {kVK_ANSI_Minus, OemMinus},
-    {kVK_ANSI_8, D8},
-    {kVK_ANSI_0, D0},
-    {kVK_ANSI_RightBracket, OemCloseBrackets},
-    {kVK_ANSI_O, O},
-    {kVK_ANSI_U, U},
-    {kVK_ANSI_LeftBracket, OemOpenBrackets},
-    {kVK_ANSI_I, I},
-    {kVK_ANSI_P, P},
-    {kVK_ANSI_L, L},
-    {kVK_ANSI_J, J},
-    {kVK_ANSI_Quote, OemQuotes},
-    {kVK_ANSI_K, AvnKeyK},
-    {kVK_ANSI_Semicolon, OemSemicolon},
-    {kVK_ANSI_Backslash, OemBackslash},
-    {kVK_ANSI_Comma, OemComma},
-    {kVK_ANSI_Slash, Oem2},
-    {kVK_ANSI_N, N},
-    {kVK_ANSI_M, M},
-    {kVK_ANSI_Period, OemPeriod},
-    {kVK_ANSI_Grave, OemTilde},
-    {kVK_ANSI_KeypadDecimal, Decimal},
-    {kVK_ANSI_KeypadMultiply, Multiply},
-    {kVK_ANSI_KeypadPlus, OemPlus},
-    {kVK_ANSI_KeypadClear, AvnKeyClear},
-    {kVK_ANSI_KeypadDivide, Divide},
-    {kVK_ANSI_KeypadEnter, AvnKeyEnter},
-    {kVK_ANSI_KeypadMinus, OemMinus},
-    {kVK_ANSI_KeypadEquals, OemPlus},
-    {kVK_ANSI_Keypad0, NumPad0},
-    {kVK_ANSI_Keypad1, NumPad1},
-    {kVK_ANSI_Keypad2, NumPad2},
-    {kVK_ANSI_Keypad3, NumPad3},
-    {kVK_ANSI_Keypad4, NumPad4},
-    {kVK_ANSI_Keypad5, NumPad5},
-    {kVK_ANSI_Keypad6, NumPad6},
-    {kVK_ANSI_Keypad7, NumPad7},
-    {kVK_ANSI_Keypad8, NumPad8},
-    {kVK_ANSI_Keypad9, NumPad9},
-    {kVK_Return, AvnKeyReturn},
-    {kVK_Tab, AvnKeyTab},
-    {kVK_Space, Space},
-    {kVK_Delete, AvnKeyBack},
-    {kVK_Escape, Escape},
-    {kVK_Command, LWin},
-    {kVK_Shift, LeftShift},
-    {kVK_CapsLock, AvnKeyCapsLock},
-    {kVK_Option, LeftAlt},
-    {kVK_Control, LeftCtrl},
-    {kVK_RightCommand, RWin},
-    {kVK_RightShift, RightShift},
-    {kVK_RightOption, RightAlt},
-    {kVK_RightControl, RightCtrl},
-    //{kVK_Function, ?},
-    {kVK_F17, F17},
-    {kVK_VolumeUp, VolumeUp},
-    {kVK_VolumeDown, VolumeDown},
-    {kVK_Mute, VolumeMute},
-    {kVK_F18, F18},
-    {kVK_F19, F19},
-    {kVK_F20, F20},
-    {kVK_F5, F5},
-    {kVK_F6, F6},
-    {kVK_F7, F7},
-    {kVK_F3, F3},
-    {kVK_F8, F8},
-    {kVK_F9, F9},
-    {kVK_F11, F11},
-    {kVK_F13, F13},
-    {kVK_F16, F16},
-    {kVK_F14, F14},
-    {kVK_F10, F10},
-    {kVK_F12, F12},
-    {kVK_F15, F15},
-    {kVK_Help, Help},
-    {kVK_Home, Home},
-    {kVK_PageUp, PageUp},
-    {kVK_ForwardDelete, Delete},
-    {kVK_F4, F4},
-    {kVK_End, End},
-    {kVK_F2, F2},
-    {kVK_PageDown, PageDown},
-    {kVK_F1, F1},
-    {kVK_LeftArrow, Left},
-    {kVK_RightArrow, Right},
-    {kVK_DownArrow, Down},
-    {kVK_UpArrow, Up},
-    {kVK_JIS_Kana, AvnKeyKanaMode},
+std::unordered_map<uint16_t, AvnKey> virtualKeyFromChar =
+{
+    // Alphabetic keys
+    { 'A', AvnKeyA },
+    { 'B', AvnKeyB },
+    { 'C', AvnKeyC },
+    { 'D', AvnKeyD },
+    { 'E', AvnKeyE },
+    { 'F', AvnKeyF },
+    { 'G', AvnKeyG },
+    { 'H', AvnKeyH },
+    { 'I', AvnKeyI },
+    { 'J', AvnKeyJ },
+    { 'K', AvnKeyK },
+    { 'L', AvnKeyL },
+    { 'M', AvnKeyM },
+    { 'N', AvnKeyN },
+    { 'O', AvnKeyO },
+    { 'P', AvnKeyP },
+    { 'Q', AvnKeyQ },
+    { 'R', AvnKeyR },
+    { 'S', AvnKeyS },
+    { 'T', AvnKeyT },
+    { 'U', AvnKeyU },
+    { 'V', AvnKeyV },
+    { 'W', AvnKeyW },
+    { 'X', AvnKeyX },
+    { 'Y', AvnKeyY },
+    { 'Z', AvnKeyZ },
+    { 'a', AvnKeyA },
+    { 'b', AvnKeyB },
+    { 'c', AvnKeyC },
+    { 'd', AvnKeyD },
+    { 'e', AvnKeyE },
+    { 'f', AvnKeyF },
+    { 'g', AvnKeyG },
+    { 'h', AvnKeyH },
+    { 'i', AvnKeyI },
+    { 'j', AvnKeyJ },
+    { 'k', AvnKeyK },
+    { 'l', AvnKeyL },
+    { 'm', AvnKeyM },
+    { 'n', AvnKeyN },
+    { 'o', AvnKeyO },
+    { 'p', AvnKeyP },
+    { 'q', AvnKeyQ },
+    { 'r', AvnKeyR },
+    { 's', AvnKeyS },
+    { 't', AvnKeyT },
+    { 'u', AvnKeyU },
+    { 'v', AvnKeyV },
+    { 'w', AvnKeyW },
+    { 'x', AvnKeyX },
+    { 'y', AvnKeyY },
+    { 'z', AvnKeyZ },
+
+    // Punctuation: US specific mappings (same as Chromium)
+    { ';', AvnKeyOem1 },
+    { ':', AvnKeyOem1 },
+    { '=', AvnKeyOemPlus },
+    { '+', AvnKeyOemPlus },
+    { ',', AvnKeyOemComma },
+    { '<', AvnKeyOemComma },
+    { '-', AvnKeyOemMinus },
+    { '_', AvnKeyOemMinus },
+    { '.', AvnKeyOemPeriod },
+    { '>', AvnKeyOemPeriod },
+    { '/', AvnKeyOem2 },
+    { '?', AvnKeyOem2 },
+    { '`', AvnKeyOem3 },
+    { '~', AvnKeyOem3 },
+    { '[', AvnKeyOem4 },
+    { '{', AvnKeyOem4 },
+    { '\\', AvnKeyOem5 },
+    { '|', AvnKeyOem5 },
+    { ']', AvnKeyOem6 },
+    { '}', AvnKeyOem6 },
+    { '\'', AvnKeyOem7 },
+    { '"', AvnKeyOem7 },
+
+    // Apple function keys
+    // https://developer.apple.com/documentation/appkit/1535851-function-key_unicode_values
+    { NSDeleteFunctionKey, AvnKeyDelete },
+    { NSUpArrowFunctionKey, AvnKeyUp },
+    { NSLeftArrowFunctionKey, AvnKeyLeft },
+    { NSRightArrowFunctionKey, AvnKeyRight },
+    { NSPageUpFunctionKey, AvnKeyPageUp },
+    { NSPageDownFunctionKey, AvnKeyPageDown },
+    { NSHomeFunctionKey, AvnKeyHome },
+    { NSEndFunctionKey, AvnKeyEnd },
+    { NSClearLineFunctionKey, AvnKeyClear },
+    { NSExecuteFunctionKey, AvnKeyExecute },
+    { NSHelpFunctionKey, AvnKeyHelp },
+    { NSInsertFunctionKey, AvnKeyInsert },
+    { NSMenuFunctionKey, AvnKeyApps },
+    { NSPauseFunctionKey, AvnKeyPause },
+    { NSPrintFunctionKey, AvnKeyPrint },
+    { NSPrintScreenFunctionKey, AvnKeyPrintScreen },
+    { NSScrollLockFunctionKey, AvnKeyScroll },
+    { NSF1FunctionKey, AvnKeyF1 },
+    { NSF2FunctionKey, AvnKeyF2 },
+    { NSF3FunctionKey, AvnKeyF3 },
+    { NSF4FunctionKey, AvnKeyF4 },
+    { NSF5FunctionKey, AvnKeyF5 },
+    { NSF6FunctionKey, AvnKeyF6 },
+    { NSF7FunctionKey, AvnKeyF7 },
+    { NSF8FunctionKey, AvnKeyF8 },
+    { NSF9FunctionKey, AvnKeyF9 },
+    { NSF10FunctionKey, AvnKeyF10 },
+    { NSF11FunctionKey, AvnKeyF11 },
+    { NSF12FunctionKey, AvnKeyF12 },
+    { NSF13FunctionKey, AvnKeyF13 },
+    { NSF14FunctionKey, AvnKeyF14 },
+    { NSF15FunctionKey, AvnKeyF15 },
+    { NSF16FunctionKey, AvnKeyF16 },
+    { NSF17FunctionKey, AvnKeyF17 },
+    { NSF18FunctionKey, AvnKeyF18 },
+    { NSF19FunctionKey, AvnKeyF19 },
+    { NSF20FunctionKey, AvnKeyF20 },
+    { NSF21FunctionKey, AvnKeyF21 },
+    { NSF22FunctionKey, AvnKeyF22 },
+    { NSF23FunctionKey, AvnKeyF23 },
+    { NSF24FunctionKey, AvnKeyF24 }
 };
 
-static std::map<AvnKey, int> BuildAvnKeyMap ()
+typedef std::array<AvnPhysicalKey, 0x7F> PhysicalKeyArray;
+
+static PhysicalKeyArray BuildPhysicalKeyFromScanCode()
 {
-    std::map<AvnKey, int> result;
-    
-    for( auto it = s_KeyMap.begin(); it != s_KeyMap.end(); ++it )
+    PhysicalKeyArray result {};
+
+    for (auto& keyInfo : keyInfos)
     {
-        int key = it->first;
-        AvnKey value = it->second;
-        
-        result[value] = key;
+        result[keyInfo.scanCode] = keyInfo.physicalKey;
     }
-    
+
     return result;
 }
 
-// Converts AvnKeys to Ansi VirtualKeys
-std::map<AvnKey, int> s_AvnKeyMap = BuildAvnKeyMap();
+PhysicalKeyArray physicalKeyFromScanCode = BuildPhysicalKeyFromScanCode();
 
+static std::unordered_map<AvnPhysicalKey, AvnKey, std::hash<int>> BuildQwertyVirtualKeyFromPhysicalKey()
+{
+    std::unordered_map<AvnPhysicalKey, AvnKey, std::hash<int>> result;
+    result.reserve(sizeof(keyInfos) / sizeof(keyInfos[0]));
+
+    for (auto& keyInfo : keyInfos)
+    {
+        result[keyInfo.physicalKey] = keyInfo.qwertyKey;
+    }
+
+    return result;
+}
+
+std::unordered_map<AvnPhysicalKey, AvnKey, std::hash<int>> qwertyVirtualKeyFromPhysicalKey = BuildQwertyVirtualKeyFromPhysicalKey();
+
+static std::unordered_map<AvnKey, uint16_t, std::hash<int>> BuildMenuCharFromVirtualKey()
+{
+    std::unordered_map<AvnKey, uint16_t, std::hash<int>> result;
+    result.reserve(100);
+    
+    for (auto& keyInfo : keyInfos)
+    {
+        if (keyInfo.menuChar != 0)
+            result[keyInfo.qwertyKey] = keyInfo.menuChar;
+    }
+
+    return result;
+}
+
+std::unordered_map<AvnKey, uint16_t, std::hash<int>> menuCharFromVirtualKey = BuildMenuCharFromVirtualKey();
+
+static bool IsNumpadOrNumericKey(AvnPhysicalKey physicalKey)
+{
+    return (physicalKey >= AvnPhysicalKeyDigit0 && physicalKey <= AvnPhysicalKeyDigit9)
+        || (physicalKey >= AvnPhysicalKeyNumLock && physicalKey <= AvnPhysicalKeyNumPadSubtract);
+}
+
+AvnPhysicalKey PhysicalKeyFromScanCode(uint16_t scanCode)
+{
+    return scanCode < physicalKeyFromScanCode.size() ? physicalKeyFromScanCode[scanCode] : AvnPhysicalKeyNone;
+}
+
+static bool IsAllowedAsciiChar(UniChar c)
+{
+    if (c < 0x20)
+    {
+        switch (c)
+        {
+            case kBackspaceCharCode:
+            case kReturnCharCode:
+            case kTabCharCode:
+            case kEscapeCharCode:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    if (c == kDeleteCharCode)
+        return false;
+
+    return true;
+}
+
+static UniCharCount CharsFromScanCode(UInt16 scanCode, NSEventModifierFlags modifierFlags, UInt16 keyAction, UniChar* buffer, UniCharCount bufferSize)
+{
+    auto currentKeyboard = TISCopyCurrentKeyboardInputSource();
+    if (!currentKeyboard)
+        return 0;
+
+    auto layoutData = static_cast<CFDataRef>(TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData));
+    if (!layoutData)
+        return 0;
+
+    auto* keyboardLayout = reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(layoutData));
+
+    UInt32 deadKeyState = 0;
+    UniCharCount length = 0;
+    
+    int glyphModifiers = 0;
+    if (modifierFlags & NSEventModifierFlagShift)
+        glyphModifiers |= shiftKey;
+    if (modifierFlags & NSEventModifierFlagCapsLock)
+        glyphModifiers |= alphaLock;
+    if (modifierFlags & NSEventModifierFlagOption)
+        glyphModifiers |= optionKey;
+
+    auto result = UCKeyTranslate(
+        keyboardLayout,
+        scanCode,
+        keyAction,
+        (glyphModifiers >> 8) & 0xFF,
+        LMGetKbdType(),
+        kUCKeyTranslateNoDeadKeysBit,
+        &deadKeyState,
+        bufferSize,
+        &length,
+        buffer);
+
+    if (result != noErr)
+        return 0;
+
+    if (deadKeyState)
+    {
+        // translate a space with dead key state to get the dead key itself
+        result = UCKeyTranslate(
+            keyboardLayout,
+            kVK_Space,
+            keyAction,
+            0,
+            LMGetKbdType(),
+            kUCKeyTranslateNoDeadKeysBit,
+            &deadKeyState,
+            bufferSize,
+            &length,
+            buffer);
+
+        if (result != noErr)
+            return 0;
+    }
+
+    if (length == 1 && buffer[0] <= 0x7F && !IsAllowedAsciiChar(buffer[0]))
+        return 0;
+
+    return length;
+}
+
+AvnKey VirtualKeyFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags)
+{
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+    if (!IsNumpadOrNumericKey(physicalKey))
+    {
+        const UniCharCount charCount = 4;
+        UniChar chars[charCount];
+        auto length = CharsFromScanCode(scanCode, modifierFlags, kUCKeyActionDown, chars, charCount);
+        if (length > 0)
+        {
+            auto it = virtualKeyFromChar.find(chars[0]);
+            if (it != virtualKeyFromChar.end())
+                return it->second;
+        }
+    }
+
+    auto it = qwertyVirtualKeyFromPhysicalKey.find(physicalKey);
+    return it == qwertyVirtualKeyFromPhysicalKey.end() ? AvnKeyNone : it->second;
+}
+
+NSString* KeySymbolFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags)
+{
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+
+    const UniCharCount charCount = 4;
+    UniChar chars[charCount];
+    auto length = CharsFromScanCode(scanCode, modifierFlags, kUCKeyActionDisplay, chars, charCount);
+    if (length > 0)
+        return [NSString stringWithCharacters:chars length:length];
+
+    auto it = qwertyVirtualKeyFromPhysicalKey.find(physicalKey);
+    if (it == qwertyVirtualKeyFromPhysicalKey.end())
+        return nullptr;
+
+    auto menuChar = MenuCharFromVirtualKey(it->second);
+    return menuChar == 0 || menuChar > 0x7E ? nullptr : [NSString stringWithCharacters:&menuChar length:1];
+}
+
+uint16_t MenuCharFromVirtualKey(AvnKey key)
+{
+    auto it = menuCharFromVirtualKey.find(key);
+    return it == menuCharFromVirtualKey.end() ? 0 : it->second;
+}

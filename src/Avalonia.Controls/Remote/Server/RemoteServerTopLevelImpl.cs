@@ -11,9 +11,9 @@ using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
-using InputModifiers = Avalonia.Input.InputModifiers;
 using Key = Avalonia.Input.Key;
 using PixelFormat = Avalonia.Platform.PixelFormat;
+using PhysicalKey = Avalonia.Input.PhysicalKey;
 using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 
 namespace Avalonia.Controls.Remote.Server
@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Remote.Server
         private static RawInputModifiers GetAvaloniaRawInputModifiers(
             Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
             => (RawInputModifiers)GetAvaloniaInputModifiers(modifiers);
-        
+
         private static RawInputModifiers GetAvaloniaInputModifiers (Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
         {
             var result = RawInputModifiers.None;
@@ -126,7 +126,7 @@ namespace Avalonia.Controls.Remote.Server
                         _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
                         _invalidated = true;
                     }
-                    
+
                     Dispatcher.UIThread.Post(RenderIfNeeded);
                 }
                 if (obj is ClientSupportedPixelFormatsMessage supportedFormats)
@@ -171,11 +171,11 @@ namespace Avalonia.Controls.Remote.Server
                     Dispatcher.UIThread.Post(() =>
                     {
                         Input?.Invoke(new RawPointerEventArgs(
-                            MouseDevice, 
-                            0, 
-                            InputRoot, 
-                            RawPointerEventType.Move, 
-                            new Point(pointer.X, pointer.Y), 
+                            MouseDevice,
+                            0,
+                            InputRoot,
+                            RawPointerEventType.Move,
+                            new Point(pointer.X, pointer.Y),
                             GetAvaloniaInputModifiers(pointer.Modifiers)));
                     }, DispatcherPriority.Input);
                 }
@@ -230,7 +230,9 @@ namespace Avalonia.Controls.Remote.Server
                             InputRoot,
                             key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                             (Key)key.Key,
-                            GetAvaloniaRawInputModifiers(key.Modifiers)));
+                            GetAvaloniaRawInputModifiers(key.Modifiers),
+                            (PhysicalKey)key.PhysicalKey,
+                            key.KeySymbol));
                     }, DispatcherPriority.Input);
                 }
                 if(obj is TextInputEventMessage text)
@@ -263,7 +265,7 @@ namespace Avalonia.Controls.Remote.Server
         }
 
         public override IEnumerable<object> Surfaces => new[] { this };
-        
+
         FrameMessage RenderFrame(int width, int height, ProtocolPixelFormat? format)
         {
             var scalingX = _dpi.X / 96.0;
@@ -326,7 +328,7 @@ namespace Avalonia.Controls.Remote.Server
                     format = fmt;
                     break;
                 }
-            
+
             var frame = RenderFrame((int) ClientSize.Width, (int) ClientSize.Height, format);
             lock (_lock)
             {

@@ -20,7 +20,7 @@ namespace Avalonia.Win32.Input
         private bool _showCandidateList;
         private ushort _langId;
         private const int _caretMargin = 1;
-        
+
         public void SetLanguageAndWindow(WindowImpl parent, IntPtr hwnd, IntPtr HKL)
         {
             if (HWND != hwnd)
@@ -159,7 +159,7 @@ namespace Avalonia.Win32.Input
                 };
                 ImmSetCandidateWindow(himc, ref candidateForm);
             }
-            
+
             _caretManager.TryMove(x2, y2);
 
             if (_showCompositionWindow)
@@ -220,7 +220,7 @@ namespace Avalonia.Win32.Input
         {
             // we're skipping this. not usable on windows
         }
-        
+
         public bool IsComposing { get; set; }
 
         ~Imm32InputMethod()

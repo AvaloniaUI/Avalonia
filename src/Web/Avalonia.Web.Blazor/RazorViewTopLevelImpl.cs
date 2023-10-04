@@ -91,15 +91,29 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        public void RawKeyboardEvent(RawKeyEventType type, string key, RawInputModifiers modifiers)
+        public bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
         {
-            if (Keycodes.KeyCodes.TryGetValue(key, out var avkey))
-            {
-                if (_inputRoot is { })
-                {
-                    Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
-                }
-            }
+            if (_inputRoot is null)
+                return false;
+
+            var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
+            var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
+            var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
+
+            var args = new RawKeyEventArgs(
+                KeyboardDevice,
+                Timestamp,
+                _inputRoot,
+                type,
+                key,
+                modifiers,
+                physicalKey,
+                keySymbol
+            );
+
+            Input?.Invoke(args);
+
+            return args.Handled;
         }
 
         public void RawTextEvent(string text)
