@@ -305,7 +305,20 @@ namespace Avalonia.Controls
         /// <returns>
         /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
         /// </returns>
-        public static ItemsControl? ItemsControlFromItemContaner(Control container)
+        [Obsolete("Typo, use ItemsControlFromItemContainer instead")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
+        public static ItemsControl? ItemsControlFromItemContaner(Control container) =>
+            ItemsControlFromItemContainer(container);
+
+        /// <summary>
+        /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>
+        /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
+        /// </returns>
+        public static ItemsControl? ItemsControlFromItemContainer(Control container)
         {
             var c = container.Parent as Control;
 
