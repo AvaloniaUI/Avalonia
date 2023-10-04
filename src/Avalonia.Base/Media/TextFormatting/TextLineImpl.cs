@@ -290,6 +290,12 @@ namespace Avalonia.Media.TextFormatting
                         continue;
                     }
                 }
+                else
+                {
+                    currentPosition += currentRun.Length;
+
+                    continue;
+                }
 
                 break;
             }
@@ -990,6 +996,12 @@ namespace Avalonia.Media.TextFormatting
 
             var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
 
+            //Make sure we properly deal with zero width space runs
+            if (characterLength == 0 && currentRun.Length > 0 && currentRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace == 0)
+            {
+                characterLength = currentRun.Length;
+            }
+
             if (endX < startX)
             {
                 (endX, startX) = (startX, endX);
@@ -1003,7 +1015,9 @@ namespace Avalonia.Media.TextFormatting
 
             var runWidth = endX - startX;
 
-            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
+            var textSourceIndex = offset + startHit.FirstCharacterIndex;
+
+            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
         }
 
         private TextRunBounds GetRunBoundsRightToLeft(ShapedTextRun currentRun, double endX,
@@ -1038,6 +1052,17 @@ namespace Avalonia.Media.TextFormatting
 
             var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
 
+            //Make sure we properly deal with zero width space runs
+            if (characterLength == 0 && currentRun.Length > 0 && currentRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace == 0)
+            {
+                characterLength = currentRun.Length;
+            }
+
+            if(startHit.FirstCharacterIndex > endHit.FirstCharacterIndex)
+            {
+                startHit = endHit;
+            }
+
             if (endX < startX)
             {
                 (endX, startX) = (startX, endX);
@@ -1051,7 +1076,9 @@ namespace Avalonia.Media.TextFormatting
 
             var runWidth = endX - startX;
 
-            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
+            var textSourceIndex = offset + startHit.FirstCharacterIndex;
+
+            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
         }
 
         public override void Dispose()
