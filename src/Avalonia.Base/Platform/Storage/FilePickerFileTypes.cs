@@ -8,6 +8,7 @@ public static class FilePickerFileTypes
     public static FilePickerFileType All { get; } = new("All")
     {
         Patterns = new[] { "*.*" },
+        AppleUniformTypeIdentifiers = new[] { "public.item" },
         MimeTypes = new[] { "*/*" }
     };
 

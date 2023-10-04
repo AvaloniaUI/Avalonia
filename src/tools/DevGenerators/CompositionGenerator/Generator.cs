@@ -435,7 +435,8 @@ return;
             "Matrix4x4",
             "Quaternion",
             "Color",
-            "Avalonia.Media.Color"
+            "Avalonia.Media.Color",
+            "Vector3D"
         };
 
         static BlockSyntax ApplyGetProperty(BlockSyntax body, GProperty prop, string? expr = null)

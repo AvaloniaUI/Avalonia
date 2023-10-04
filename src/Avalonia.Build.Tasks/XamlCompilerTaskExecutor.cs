@@ -23,11 +23,15 @@ namespace Avalonia.Build.Tasks
     public static partial class XamlCompilerTaskExecutor
     {
         private const string CompiledAvaloniaXamlNamespace = "CompiledAvaloniaXaml";
-        
-        static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".paml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".axaml");
-        
+
+        static bool CheckXamlName(IResource r)
+        {
+            var name = r.Name;
+            return name.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".xaml",StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".paml", StringComparison.OrdinalIgnoreCase);
+        }
+
         public class CompileResult
         {
             public bool Success { get; set; }

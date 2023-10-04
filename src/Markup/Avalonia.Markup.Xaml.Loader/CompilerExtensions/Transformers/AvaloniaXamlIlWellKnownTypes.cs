@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using XamlX.Emit;
@@ -203,7 +204,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ThemeVariant = cfg.TypeSystem.GetType("Avalonia.Styling.ThemeVariant");
             WindowTransparencyLevel = cfg.TypeSystem.GetType("Avalonia.Controls.WindowTransparencyLevel");
 
-            (IXamlType, IXamlConstructor) GetNumericTypeInfo(string name, IXamlType componentType, int componentCount)
+            (IXamlType, IXamlConstructor) GetNumericTypeInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] string name, IXamlType componentType, int componentCount)
             {
                 var type = cfg.TypeSystem.GetType(name);
                 var ctor = type.GetConstructor(Enumerable.Range(0, componentCount).Select(_ => componentType).ToList());
