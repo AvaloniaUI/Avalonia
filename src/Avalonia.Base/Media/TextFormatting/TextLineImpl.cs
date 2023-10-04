@@ -1058,6 +1058,11 @@ namespace Avalonia.Media.TextFormatting
                 characterLength = currentRun.Length;
             }
 
+            if(startHit.FirstCharacterIndex > endHit.FirstCharacterIndex)
+            {
+                startHit = endHit;
+            }
+
             if (endX < startX)
             {
                 (endX, startX) = (startX, endX);
