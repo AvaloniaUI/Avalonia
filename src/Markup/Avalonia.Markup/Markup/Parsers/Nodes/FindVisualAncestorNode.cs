@@ -3,7 +3,7 @@ using Avalonia.Data.Core;
 using Avalonia.VisualTree;
 using Avalonia.Reactive;
 
-namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
+namespace Avalonia.Markup.Parsers.Nodes
 {
     internal class FindVisualAncestorNode : ExpressionNode
     {

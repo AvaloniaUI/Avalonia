@@ -277,6 +277,30 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             nodes.Add(new FindAncestorPathElementNode(GetType(ancestor.Namespace, ancestor.TypeName), ancestor.Level));
                         }
                         break;
+                    case BindingExpressionGrammar.VisualAncestorNode ancestor:
+                        if (ancestor.Namespace is null && ancestor.TypeName is null)
+                        {
+                            var styledElementType = context.GetAvaloniaTypes().StyledElement;
+                            var ancestorType = context
+                                .ParentNodes()
+                                .OfType<XamlAstConstructableObjectNode>()
+                                .Where(x => styledElementType.IsAssignableFrom(x.Type.GetClrType()))
+                                .Skip(1)
+                                .ElementAtOrDefault(ancestor.Level)
+                                ?.Type.GetClrType();
+
+                            if (ancestorType is null)
+                            {
+                                throw new XamlX.XamlParseException("Unable to resolve implicit visual ancestor type based on XAML tree.", lineInfo);
+                            }
+
+                            nodes.Add(new FindVisualAncestorPathElementNode(ancestorType, ancestor.Level));
+                        }
+                        else
+                        {
+                            nodes.Add(new FindVisualAncestorPathElementNode(GetType(ancestor.Namespace, ancestor.TypeName), ancestor.Level));
+                        }
+                        break;
                     case BindingExpressionGrammar.NameNode elementName:
                         IXamlType elementType = null;
                         foreach (var deferredContent in context.ParentNodes().OfType<NestedScopeMetadataNode>())
