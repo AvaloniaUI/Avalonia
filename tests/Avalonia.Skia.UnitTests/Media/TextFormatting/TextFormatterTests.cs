@@ -738,6 +738,26 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 VerifyHit(8);
             }
         }
+        
+        [Fact]
+        public void GetTextBounds_For_TextLine_With_ZeroWidthSpaces_Does_Not_Freeze()
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+
+            using (Start())
+            {
+                var text = new TextCharacters("\u200B\u200B",
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+
+                var source = new ListTextSource(text, new InvisibleRun(1), new TextEndOfParagraph());
+                
+                var textLine =
+                    TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
+
+                var bounds = textLine.GetTextBounds(0, 3);
+            }
+        }
 
         protected readonly record struct SimpleTextSource : ITextSource
         {
