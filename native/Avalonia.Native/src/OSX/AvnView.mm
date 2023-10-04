@@ -650,7 +650,7 @@
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    if(_parent == nullptr){
+    if(_parent == nullptr || _lastKeyHandled){
         return;
     }
     
