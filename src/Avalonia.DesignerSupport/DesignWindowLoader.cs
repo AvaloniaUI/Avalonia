@@ -90,7 +90,7 @@ namespace Avalonia.DesignerSupport
                         };
                 }
                 else if (loaded is Application)
-                    control = new TextBlock { Text = "Application can't be previewed in design view" };
+                    control = new TextBlock { Text = "This file cannot be previewed in design view" };
                 else
                     control = (Control)loaded;
 
