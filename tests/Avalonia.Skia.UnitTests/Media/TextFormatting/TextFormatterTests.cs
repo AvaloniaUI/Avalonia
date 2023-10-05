@@ -765,6 +765,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Line_Formatting_For_Oversized_Embedded_Runs_Does_Not_Produce_Empty_Lines()
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
+                textWrap: TextWrapping.WrapWithOverflow);
+
+            using (Start())
+            {
+                var source = new ListTextSource(new RectangleRun(new Rect(0, 0, 200, 10), Brushes.Aqua));
+                var textLine = TextFormatter.Current.FormatLine(source, 0, 100, paragraphProperties);
+                Assert.Equal(200d, textLine.Length);
+            }
+        }
+
         protected readonly record struct SimpleTextSource : ITextSource
         {
             private readonly string _text;
