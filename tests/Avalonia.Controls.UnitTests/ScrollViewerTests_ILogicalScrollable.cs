@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
 
-public class ScrollViewerTests_ILogicalScrollable
+public class ScrollViewerTests_ILogicalScrollable : ScopedTestBase
 {
     [Fact]
     public void Extent_Offset_And_Viewport_Should_Be_Read_From_ILogicalScrollable()

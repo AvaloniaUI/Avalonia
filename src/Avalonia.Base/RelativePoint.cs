@@ -164,9 +164,9 @@ namespace Avalonia
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;
 
-                if (x.EndsWith("%"))
+                if (x.EndsWith('%'))
                 {
-                    if (!y.EndsWith("%"))
+                    if (!y.EndsWith('%'))
                     {
                         throw new FormatException("If one coordinate is relative, both must be.");
                     }
