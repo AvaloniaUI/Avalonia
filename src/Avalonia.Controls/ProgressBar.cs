@@ -5,7 +5,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Reactive;
 
 namespace Avalonia.Controls
@@ -313,8 +312,13 @@ namespace Avalonia.Controls
 
             if (change.Property == IsIndeterminateProperty)
             {
-                UpdatePseudoClasses(change.GetNewValue<bool>(), null);
+                UpdatePseudoClasses(change.GetNewValue<bool>() && IsVisible, null);
             }
+            if (change.Property == IsVisibleProperty)
+            {
+                UpdatePseudoClasses(change.GetNewValue<bool>() && IsIndeterminate, null);
+            }
+
             else if (change.Property == OrientationProperty)
             {
                 UpdatePseudoClasses(null, change.GetNewValue<Orientation>());
