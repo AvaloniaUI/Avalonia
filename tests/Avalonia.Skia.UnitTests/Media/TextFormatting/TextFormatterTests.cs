@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.UnitTests;
@@ -778,6 +779,47 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine = TextFormatter.Current.FormatLine(source, 0, 100, paragraphProperties);
                 Assert.Equal(200d, textLine.Length);
             }
+        }
+
+        class IncrementalTabProperties : TextParagraphProperties
+        {
+            public IncrementalTabProperties(TextRunProperties defaultTextRunProperties)
+            {
+                DefaultTextRunProperties = defaultTextRunProperties;
+            }
+
+            public override FlowDirection FlowDirection { get; }
+            public override TextAlignment TextAlignment { get; }
+            public override double LineHeight { get; }
+            public override bool FirstLineInParagraph { get; }
+            public override TextRunProperties DefaultTextRunProperties { get; }
+            public override TextWrapping TextWrapping { get; }
+            public override double Indent { get; }
+            public override double DefaultIncrementalTab => 64;
+        }
+        
+        [Fact]
+        public void Line_With_IncrementalTab_Should_Return_Correct_Backspace_Position()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("DejaVu Sans"));
+                
+                var defaultRunProperties = new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black);
+                var paragraphProperties = new IncrementalTabProperties(defaultRunProperties);
+
+                var text = new TextCharacters("ff",
+                    new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
+                
+                var source = new ListTextSource(text);
+                
+                var textLine = TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
+                
+                var backspaceHit = textLine.GetBackspaceCaretCharacterHit(new CharacterHit(2));
+                Assert.Equal(1, backspaceHit.FirstCharacterIndex);
+                Assert.Equal(0, backspaceHit.TrailingLength);
+            }
+            
         }
 
         protected readonly record struct SimpleTextSource : ITextSource
