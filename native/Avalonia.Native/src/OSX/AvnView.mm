@@ -15,7 +15,7 @@
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
-    bool _lastKeyHandled;
+    bool _lastKeyConsumeByInputContext;
     AvnPixelSize _lastPixelSize;
     NSObject<IRenderTarget>* _currentRenderTarget;
     AvnPlatformResizeReason _resizeReason;
@@ -457,25 +457,17 @@
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
     auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
     auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
-
+    
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
-    if (key != AvnKeyLeftCtrl && key != AvnKeyRightCtrl) {
-      _lastKeyHandled = handled;
-    } else {
-      _lastKeyHandled = false;
+    if(!_lastKeyConsumeByInputContext || key <= 32){
+        auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+        
+        if(key > 32 && type == KeyDown && !handled){
+            _parent->BaseEvents->RawTextInputEvent(timestamp, keySymbolUtf8);
+        }
     }
-}
-
-- (BOOL)performKeyEquivalent:(NSEvent *)event
-{
-    bool result = _lastKeyHandled;
-
-    _lastKeyHandled = false;
-
-    return result;
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -537,15 +529,13 @@
 
 - (void)keyDown:(NSEvent *)event
 {
-    _lastKeyHandled = false;
+    _lastKeyConsumeByInputContext = false;
+    
+    if(_parent->InputMethod->IsActive()){
+        _lastKeyConsumeByInputContext = [[self inputContext] handleEvent:event] == YES;
+    }
     
     [self keyboardEvent:event withType:KeyDown];
-        
-    BOOL isKeyDownConsumed = [[self inputContext] handleEvent:event];
-    
-    if(!_lastKeyHandled){
-        _lastKeyHandled = isKeyDownConsumed == YES;
-    }
 }
 
 - (void)keyUp:(NSEvent *)event
