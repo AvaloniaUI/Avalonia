@@ -777,7 +777,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var source = new ListTextSource(new RectangleRun(new Rect(0, 0, 200, 10), Brushes.Aqua));
                 var textLine = TextFormatter.Current.FormatLine(source, 0, 100, paragraphProperties);
-                Assert.Equal(200d, textLine.Length);
+                Assert.Equal(200d, textLine.WidthIncludingTrailingWhitespace);
             }
         }
 
