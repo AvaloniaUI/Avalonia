@@ -1949,10 +1949,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             public string this[string key]
             {
-                get
-                {
-                    return _storage[key];
-                }
+                get => _storage[key];
                 set
                 {
                     _storage[key] = value;
@@ -1991,10 +1988,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         object _parameter;
         public object Parameter
         {
-            get
-            {
-                return _parameter;
-            }
+            get => _parameter;
             set
             {
                 if (_parameter == value)
@@ -2050,8 +2044,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         private IEnumerable _items;
         public IEnumerable Items
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => _items;
+            set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         public AvaloniaList<DataGridLikeColumn> Columns { get; } = new();
