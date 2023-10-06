@@ -191,8 +191,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 _configuration.TypeMappings.XmlNamespaceInfoProvider == null ?
                     null :
                     tb.DefineSubType(_configuration.WellKnownTypes.Object,
-                        "__AvaloniaXamlIlNsInfo", false), (name, bt) => tb.DefineSubType(bt, name, false),
-                (s, returnType, parameters) => tb.DefineDelegateSubType(s, false, returnType, parameters), baseUri,
+                        "__AvaloniaXamlIlNsInfo", XamlVisibility.Private), (name, bt) => tb.DefineSubType(bt, name, XamlVisibility.Private),
+                (s, returnType, parameters) => tb.DefineDelegateSubType(s, XamlVisibility.Private, returnType, parameters), baseUri,
                 fileSource);
         }
 
