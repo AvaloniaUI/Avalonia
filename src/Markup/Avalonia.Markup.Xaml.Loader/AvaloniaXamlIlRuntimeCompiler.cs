@@ -254,9 +254,9 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     true,
                     () => new XamlDocumentTypeBuilderProvider(
                         builder,
-                        compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, true),
+                        compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, XamlVisibility.Public),
                         document.RootInstance is null ?
-                            compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true) :
+                            compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, XamlVisibility.Public) :
                             null)));
                 originalDocuments.Add(document);
             }

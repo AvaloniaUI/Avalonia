@@ -93,7 +93,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             var nameScopeType = typeSystem.FindType("Avalonia.Controls.INameScope");
             var field = typebuilder.DefineField(nameScopeType, 
-                ContextNameScopeFieldName, true, false);
+                ContextNameScopeFieldName, XamlVisibility.Public, false);
             constructor
                 .Ldarg_0()
                 .Ldarg(1)
