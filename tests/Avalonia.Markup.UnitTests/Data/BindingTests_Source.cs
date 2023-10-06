@@ -28,7 +28,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public string Foo
             {
-                get { return _foo; }
+                get => _foo;
                 set
                 {
                     _foo = value;
