@@ -274,11 +274,6 @@ namespace Avalonia.Win32.Automation
 
         private static AutomationNode Create(AutomationPeer peer)
         {
-            if (s_nodes.TryGetValue(peer, out var automationNode))
-            {
-                return automationNode;
-            }
-            
             return peer.GetProvider<AAP.IRootProvider>() is object ?
                 new RootAutomationNode(peer) :
                 new AutomationNode(peer);

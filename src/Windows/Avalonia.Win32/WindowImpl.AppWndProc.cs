@@ -7,6 +7,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
@@ -732,6 +733,14 @@ namespace Avalonia.Win32
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
+
+                        control.Unloaded += ReleaseAutomationNode;
+                        void ReleaseAutomationNode(object sender, RoutedEventArgs eventArgs)
+                        {
+                            AutomationNode.Release(peer);
+                            control.Unloaded -= ReleaseAutomationNode;
+                        }
+                        
                         return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
                     }
                     break;
