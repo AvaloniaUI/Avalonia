@@ -735,7 +735,7 @@ namespace Avalonia.Win32
                         var node = AutomationNode.GetOrCreate(peer);
 
                         control.Unloaded += ReleaseAutomationNode;
-                        void ReleaseAutomationNode(object sender, RoutedEventArgs eventArgs)
+                        void ReleaseAutomationNode(object? _, RoutedEventArgs __)
                         {
                             AutomationNode.Release(peer);
                             control.Unloaded -= ReleaseAutomationNode;
