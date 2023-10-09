@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using XamlX;
 using XamlX.Compiler;
@@ -14,6 +15,7 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
 {
     public const string AvaloniaXmlnsDefinitionAttribute = "Avalonia.Metadata.XmlnsDefinitionAttribute";
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = TrimmingMessages.Roslyn)]
     public static MiniCompiler CreateDefault(RoslynTypeSystem typeSystem, params string[] additionalTypes)
     {
         var mappings = new XamlLanguageTypeMappings(typeSystem);

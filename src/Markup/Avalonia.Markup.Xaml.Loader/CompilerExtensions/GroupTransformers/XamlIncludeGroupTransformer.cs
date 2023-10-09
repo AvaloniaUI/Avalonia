@@ -170,7 +170,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         AstGroupTransformationContext context, string nodeTypeName, XamlPropertyAssignmentNode sourceProperty,
         bool strictSourceValueType)
     {
-        void OnInvalidSource(IXamlAstNode node) =>
+        void OnInvalidSource(IXamlAstNode? node) =>
             context.ReportDiagnostic(
                 AvaloniaXamlDiagnosticCodes.TransformError,
                 strictSourceValueType ? XamlDiagnosticSeverity.Error : XamlDiagnosticSeverity.Warning,
