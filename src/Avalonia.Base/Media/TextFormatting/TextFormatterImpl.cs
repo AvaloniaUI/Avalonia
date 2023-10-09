@@ -713,9 +713,31 @@ namespace Avalonia.Media.TextFormatting
 
             var measuredLength = MeasureLength(textRuns, paragraphWidth);
 
-            if(measuredLength == 0)
+            if(measuredLength == 0 && paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
             {
+                for (int i = 0; i < textRuns.Count; i++)
+                {
+                    measuredLength += textRuns[i].Length;
+                }
 
+                TextLineBreak? textLineBreak;
+
+                if (currentLineBreak?.TextEndOfLine is { } textEndOfLine)
+                {
+                    textLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
+                }
+                else
+                {
+                    textLineBreak = null;
+                }
+
+                var textLine = new TextLineImpl(textRuns.ToArray(), firstTextSourceIndex, measuredLength,
+                  paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                  textLineBreak);
+
+                textLine.FinalizeLine();
+
+                return textLine;
             }
 
             var currentLength = 0;
