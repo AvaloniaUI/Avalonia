@@ -363,10 +363,16 @@ namespace Avalonia.Build.Tasks
                                     populateBuilder,
                                     parsed,
                                     populateName,
-                                    classTypeDefinition == null && classModifierPublic.Value),
+                                    classTypeDefinition == null && classModifierPublic.Value
+                                        ? XamlVisibility.Public
+                                        : XamlVisibility.Private),
                                 buildName == null ?
                                     null :
-                                    compiler.DefineBuildMethod(builder, parsed, buildName, classModifierPublic.Value))));
+                                    compiler.DefineBuildMethod(
+                                        builder,
+                                        parsed,
+                                        buildName,
+                                        classModifierPublic.Value ? XamlVisibility.Public : XamlVisibility.Assembly))));
                     }
                     catch (Exception e)
                     {
@@ -418,11 +424,11 @@ namespace Avalonia.Build.Tasks
                             contextClass,
                             document.TypeBuilderProvider.PopulateMethod,
                             document.TypeBuilderProvider.BuildMethod,
-                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, true),
+                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, XamlVisibility.Public),
                             (closureName, closureBaseType) =>
-                                populateBuilder.DefineSubType(closureBaseType, closureName, false),
+                                populateBuilder.DefineSubType(closureBaseType, closureName, XamlVisibility.Private),
                             (closureName, returnType, parameterTypes) =>
-                                populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
+                                populateBuilder.DefineDelegateSubType(closureName, XamlVisibility.Private, returnType, parameterTypes),
                             res.Uri, res
                         );
 
@@ -677,7 +683,7 @@ namespace Avalonia.Build.Tasks
                     foreach (var ogMethod in wrappedOgType.Methods.Where(m => m.IsPublic && m.IsStatic))
                     {
                         var method = typeBuilder.DefineMethod(ogMethod.ReturnType, ogMethod.Parameters, ogMethod.Name,
-                            ogMethod.IsPublic, ogMethod.IsStatic, false);
+                            XamlVisibility.Public, ogMethod.IsStatic, false);
                         method.Generator.Ldnull();
                         method.Generator.Throw();
                     }
