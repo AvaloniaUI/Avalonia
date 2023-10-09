@@ -146,6 +146,10 @@
     <Style Selector="^:icon /template/ Viewbox#PART_IconPresenter">
       <Setter Property="IsVisible" Value="True" />
     </Style>
+    
+    <Style Selector="^.textMenu">
+      <Setter Property="Padding" Value="11,4,0,7"/>
+    </Style>
 
     <Style Selector="^:selected">
       <Style Selector="^ /template/ Border#PART_LayoutRoot">
