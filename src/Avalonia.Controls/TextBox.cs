@@ -361,13 +361,6 @@ namespace Avalonia.Controls
             _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
             _hasDoneSnapshotOnce = false;
             UpdatePseudoclasses();
-
-            AddHandler(Gestures.DoubleTappedEvent, OnDoubleTapped);
-        }
-
-        private void OnDoubleTapped(object? sender, TappedEventArgs e)
-        {
-            _isDoubleTapped = true;
         }
 
         /// <summary>
@@ -834,16 +827,6 @@ namespace Avalonia.Controls
 
                 _presenter.PropertyChanged += PresenterPropertyChanged;
             }
-
-            AddHandler(Gestures.HoldingEvent, OnHolding);
-        }
-
-        private void OnHolding(object? sender, HoldingRoutedEventArgs e)
-        {
-            if (e.Handled || e.HoldingState != HoldingState.Started)
-                return;
-
-            _isHolding = true;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -858,8 +841,6 @@ namespace Avalonia.Controls
             }
 
             _imClient.SetPresenter(null, null);
-            
-            RemoveHandler(Gestures.HoldingEvent, OnHolding);
         }
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -1478,8 +1459,6 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
-            _isDoubleTapped = false;
-
             if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
@@ -1558,7 +1537,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            _isDoubleTapped = false;
+            _isDoubleTapped = e.ClickCount == 2;
             e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
@@ -1735,7 +1714,7 @@ namespace Avalonia.Controls
 
                 if(SelectionStart != SelectionEnd)
                 {
-                    RaiseEvent(new ContextRequestedEventArgs(e));
+                    _presenter.Canvas?.ShowContextMenu();
                 }
             }
 

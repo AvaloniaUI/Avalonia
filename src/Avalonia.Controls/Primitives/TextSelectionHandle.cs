@@ -133,6 +133,11 @@ namespace Avalonia.Controls.Primitives
             Canvas.SetLeft(this, point.X);
         }
 
+        internal Point GetTopLeft()
+        {
+            return new Point(Canvas.GetLeft(this), Canvas.GetTop(this));
+        }
+
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             if (_lastPoint.HasValue)

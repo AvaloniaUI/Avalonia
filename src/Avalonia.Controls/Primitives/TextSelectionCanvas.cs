@@ -9,6 +9,8 @@ namespace Avalonia.Controls.Primitives
 {
     internal class TextSelectionCanvas : Canvas
     {
+        private const int ContextMenuPadding = 16;
+
         private TextSelectionHandle _caretHandle;
         private TextSelectionHandle _startHandle;
         private TextSelectionHandle _endHandle;
@@ -97,6 +99,8 @@ namespace Avalonia.Controls.Primitives
         private void Handle_DragCompleted(object? sender, Input.VectorEventArgs e)
         {
             MoveHandlesToSelection();
+
+            ShowContextMenu();
         }
 
         private void EnsureVisible()
@@ -119,6 +123,11 @@ namespace Avalonia.Controls.Primitives
         {
             if (_presenter != null && _textBox != null)
             {
+                if (_textBox.ContextFlyout is { } flyout)
+                {
+                    flyout.Hide();
+                }
+
                 var point = ToPresenter(handle.IndicatorPosition);
                 point = point.WithY(point.Y - _presenter.FontSize / 2);
                 var hit = _presenter.TextLayout.HitTestPoint(point);
@@ -168,6 +177,11 @@ namespace Avalonia.Controls.Primitives
         private Point ToPresenter(Point point)
         {
             return (_presenter is { } p) ? (p.VisualRoot as Visual)?.TranslatePoint(point, p) ?? point : point;
+        }
+
+        private Point ToTextBox(Point point)
+        {
+            return (_textBox is { } p) ? (p.VisualRoot as Visual)?.TranslatePoint(point, p) ?? point : point;
         }
 
         public void MoveHandlesToSelection()
@@ -227,6 +241,7 @@ namespace Avalonia.Controls.Primitives
                     _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
                     _textBox.AddHandler(LostFocusEvent, TextBoxLostFocus, handledEventsToo: true);
                     _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
+                    _textBox.AddHandler(Gestures.HoldingEvent, TextBoxHolding, handledEventsToo: true);
 
                     _textBox.PropertyChanged += _textBox_PropertyChanged;
                     _textBox.LayoutUpdated += _textBox_LayoutUpdated;
@@ -240,6 +255,7 @@ namespace Avalonia.Controls.Primitives
                     _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
                     _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
                     _textBox.RemoveHandler(LostFocusEvent, TextBoxLostFocus);
+                    _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
 
                     _textBox.PropertyChanged -= _textBox_PropertyChanged;
                     _textBox.LayoutUpdated -= _textBox_LayoutUpdated;
@@ -247,6 +263,53 @@ namespace Avalonia.Controls.Primitives
 
                 _textBox = null;
             }
+        }
+
+        private void TextBoxHolding(object? sender, HoldingRoutedEventArgs e)
+        {
+            if (ShowContextMenu())
+                e.Handled = true;
+        }
+
+        internal bool ShowContextMenu()
+        {
+            if (_textBox != null)
+            {
+                if (_textBox.ContextFlyout is MenuFlyout flyout)
+                {
+                    var verticalOffset = (double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) + ContextMenuPadding;
+
+                    TextSelectionHandle? handle = null;
+
+                    if (_textBox.SelectionStart != _textBox.SelectionEnd)
+                    {
+                        if (_startHandle.IsEffectivelyVisible)
+                            handle = _startHandle;
+                        else if (_endHandle.IsEffectivelyVisible)
+                            handle = _endHandle;
+                    }
+                    else
+                    {
+                        if (_caretHandle.IsEffectivelyVisible)
+                        {
+                            handle = _caretHandle;
+                        }
+                    }
+
+                    if (handle != null)
+                    {
+                        var topLeft = ToTextBox(handle.GetTopLeft());
+                        flyout.VerticalOffset = topLeft.Y - verticalOffset;
+                        flyout.HorizontalOffset = topLeft.X;
+                        flyout.Placement = PlacementMode.Top;
+                        flyout.ShowAt(_textBox);
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void TextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -291,6 +354,8 @@ namespace Avalonia.Controls.Primitives
         private void TextChanged(object? sender, TextChangingEventArgs e)
         {
             ShowHandles = false;
+            if (_textBox?.ContextFlyout is { } flyout && flyout.IsOpen)
+                flyout.Hide();
         }
     }
 }
