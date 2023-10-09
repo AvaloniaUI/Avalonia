@@ -803,7 +803,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var typeface = new Typeface(FontFamily.Parse("DejaVu Sans"));
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DejaVu Sans"));
                 
                 var defaultRunProperties = new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black);
                 var paragraphProperties = new IncrementalTabProperties(defaultRunProperties);
