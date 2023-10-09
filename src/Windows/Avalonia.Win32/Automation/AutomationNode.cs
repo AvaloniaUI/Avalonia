@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop.Automation;
 using AAP = Avalonia.Automation.Provider;
@@ -59,6 +60,17 @@ namespace Avalonia.Win32.Automation
 
             if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
                 embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
+            
+            if (peer is ControlAutomationPeer controlAutomationPeer)
+            {
+                var control = controlAutomationPeer.Owner;
+                control.Unloaded += ReleaseAutomationNode;
+                void ReleaseAutomationNode(object? _, RoutedEventArgs __)
+                {
+                    Release(peer);
+                    control.Unloaded -= ReleaseAutomationNode;
+                }
+            }
         }
 
         public AutomationPeer Peer { get; protected set; }
