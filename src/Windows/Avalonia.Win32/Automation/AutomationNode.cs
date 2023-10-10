@@ -64,12 +64,7 @@ namespace Avalonia.Win32.Automation
 
             if (peer is ControlAutomationPeer controlAutomationPeer)
             {
-                var control = controlAutomationPeer switch
-                {
-                    ButtonAutomationPeer bap => bap.Owner,
-                    NoneAutomationPeer nap => nap.Owner,
-                    var cap => cap.Owner
-                };
+                var control = controlAutomationPeer.Owner;
                 
                 control.Unloaded += ReleaseAutomationNode;
                 void ReleaseAutomationNode(object? _, RoutedEventArgs __)
@@ -188,7 +183,18 @@ namespace Avalonia.Win32.Automation
             return peer is null ? null : s_nodes.GetValue(peer, Create);
         }
 
-        public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
+        public static void Release(AutomationPeer peer)
+        {
+            if (peer is ControlAutomationPeer controlAutomationPeer)
+            {
+                foreach (var childAutomationPeer in controlAutomationPeer.GetChildren())
+                {
+                    Release(childAutomationPeer);
+                }
+            }
+            
+            s_nodes.Remove(peer);
+        }
 
         IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
