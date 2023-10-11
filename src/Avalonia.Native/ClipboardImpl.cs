@@ -94,19 +94,20 @@ namespace Avalonia.Native
         {
             _native.Clear();
 
+            // If there is multiple values with the same "to" format, prefer these that were not mapped.
             var formats = data.GetDataFormats().Select(f =>
                 {
-                    string fromFormat, toFormat;
-                    bool wasMapped;
+                    string from, to;
+                    bool mapped;
                     if (f == DataFormats.Text)
-                        (fromFormat, toFormat, wasMapped) = (f, NSPasteboardTypeString, true);
+                        (from, to, mapped) = (f, NSPasteboardTypeString, true);
                     else if (f == DataFormats.Files || f == DataFormats.FileNames)
-                        (fromFormat, toFormat, wasMapped) = (f, NSFilenamesPboardType, true);
-                    else (fromFormat, toFormat, wasMapped) = (fromFormat: f, toFormat: f, wasMapped: false);
-                    return (fromFormat, toFormat, wasMapped);
+                        (from, to, mapped) = (f, NSFilenamesPboardType, true);
+                    else (from, to, mapped) = (f, f, false);
+                    return (from, to, mapped);
                 })
-                .GroupBy(p => p.toFormat)
-                .Select(g => g.OrderBy(f => !f.wasMapped).First());
+                .GroupBy(p => p.to)
+                .Select(g => g.OrderBy(f => f.mapped).First());
                 
             
             foreach (var (fromFormat, toFormat, _) in formats)
