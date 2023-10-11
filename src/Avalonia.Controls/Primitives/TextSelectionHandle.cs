@@ -7,13 +7,7 @@ namespace Avalonia.Controls.Primitives
 {
     public class TextSelectionHandle : Thumb
     {
-        internal static readonly StyledProperty<SelectionHandleType> SelectionHandleTypeProperty = AvaloniaProperty.Register<TextSelectionHandle, SelectionHandleType>(nameof(SelectionHandleType));
-
-        internal SelectionHandleType SelectionHandleType
-        {
-            get => GetValue(SelectionHandleTypeProperty);
-            set => SetValue(SelectionHandleTypeProperty, value);
-        }
+        internal SelectionHandleType SelectionHandleType { get; set; }
 
         private Point _startPosition;
 
