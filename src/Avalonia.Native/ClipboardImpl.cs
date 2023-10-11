@@ -171,5 +171,7 @@ namespace Avalonia.Native
         public bool Contains(string dataFormat) => Formats.Contains(dataFormat);
 
         public object Get(string dataFormat) => _clipboard.GetDataAsync(dataFormat).GetAwaiter().GetResult();
+
+        public Task SetFromDataObjectAsync(IDataObject dataObject) => _clipboard.SetDataObjectAsync(dataObject);
     }
 }
