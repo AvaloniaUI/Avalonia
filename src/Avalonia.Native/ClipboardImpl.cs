@@ -13,6 +13,7 @@ namespace Avalonia.Native
     class ClipboardImpl : IClipboard, IDisposable
     {
         private IAvnClipboard _native;
+        // TODO hide native types behind IAvnClipboard abstraction, so managed side won't depend on macOS.
         private const string NSPasteboardTypeString = "public.utf8-plain-text";
         private const string NSFilenamesPboardType = "NSFilenamesPboardType";
 
@@ -46,7 +47,7 @@ namespace Avalonia.Native
 
         public IEnumerable<string> GetFormats()
         {
-            var rv = new List<string>();
+            var rv = new HashSet<string>();
             using (var formats = _native.ObtainFormats())
             {
                 var cnt = formats.Count;
@@ -58,11 +59,11 @@ namespace Avalonia.Native
                              rv.Add(DataFormats.Text);
                          if (fmt.String == NSFilenamesPboardType)
                          {
-#pragma warning disable CS0618 // Type or member is obsolete
-                            rv.Add(DataFormats.FileNames);
-#pragma warning restore CS0618 // Type or member is obsolete
-                            rv.Add(DataFormats.Files);
+                             rv.Add(DataFormats.FileNames);
+                             rv.Add(DataFormats.Files);
                          }
+                         else
+                             rv.Add(fmt.String);
                     }
                 }
             }
@@ -91,32 +92,55 @@ namespace Avalonia.Native
         public unsafe Task SetDataObjectAsync(IDataObject data)
         {
             _native.Clear();
-            foreach (var fmt in data.GetDataFormats())
+
+            var formats = data.GetDataFormats().Select(f =>
+                {
+                    string fromFormat, toFormat;
+                    bool wasMapped;
+                    if (f == DataFormats.Text)
+                        (fromFormat, toFormat, wasMapped) = (f, NSPasteboardTypeString, true);
+                    else if (f == DataFormats.Files || f == DataFormats.FileNames)
+                        (fromFormat, toFormat, wasMapped) = (f, NSFilenamesPboardType, true);
+                    else (fromFormat, toFormat, wasMapped) = (fromFormat: f, toFormat: f, wasMapped: false);
+                    return (fromFormat, toFormat, wasMapped);
+                })
+                .GroupBy(p => p.toFormat)
+                .Select(g => g.OrderBy(f => !f.wasMapped).First());
+                
+            
+            foreach (var (fromFormat, toFormat, _) in formats)
             {
-                var o = data.Get(fmt);
-                if(o is string s)
-                    _native.SetText(fmt, s);
-                else if(o is byte[] bytes)
-                    fixed (byte* pbytes = bytes)
-                        _native.SetBytes(fmt, pbytes, bytes.Length);
+                var o = data.Get(fromFormat);
+                switch (o)
+                {
+                    case string s:
+                        _native.SetText(toFormat, s);
+                        break;
+                    case IStorageItem storageItem when storageItem.TryGetLocalPath() is { } localPath:
+                        _native.SetText(toFormat, localPath);
+                        break;
+                    case byte[] bytes:
+                    {
+                        fixed (byte* pbytes = bytes)
+                            _native.SetBytes(toFormat, pbytes, bytes.Length);
+                        break;
+                    }
+                }
             }
             return Task.CompletedTask;
         }
 
         public Task<string[]> GetFormatsAsync()
         {
-            using (var n = _native.ObtainFormats())
-                return Task.FromResult(n.ToStringArray());
+            return Task.FromResult(GetFormats().ToArray());
         }
 
         public async Task<object> GetDataAsync(string format)
         {
-            if (format == DataFormats.Text)
+            if (format == DataFormats.Text || format == NSPasteboardTypeString)
                 return await GetTextAsync();
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (format == DataFormats.FileNames)
+            if (format == DataFormats.FileNames || format == NSFilenamesPboardType)
                 return GetFileNames();
-#pragma warning restore CS0618 // Type or member is obsolete
             if (format == DataFormats.Files)
                 return GetFiles();
             using (var n = _native.GetBytes(format))
@@ -146,17 +170,6 @@ namespace Avalonia.Native
 
         public bool Contains(string dataFormat) => Formats.Contains(dataFormat);
 
-        public object Get(string dataFormat)
-        {
-            if (dataFormat == DataFormats.Text)
-                return _clipboard.GetTextAsync().Result;
-            if (dataFormat == DataFormats.Files)
-                return _clipboard.GetFiles();
-#pragma warning disable CS0618
-            if (dataFormat == DataFormats.FileNames)
-#pragma warning restore CS0618
-                return _clipboard.GetFileNames();
-            return null;
-        }
+        public object Get(string dataFormat) => _clipboard.GetDataAsync(dataFormat).GetAwaiter().GetResult();
     }
 }
