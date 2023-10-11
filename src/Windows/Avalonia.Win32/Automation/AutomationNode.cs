@@ -191,6 +191,11 @@ namespace Avalonia.Win32.Automation
                 {
                     Release(childAutomationPeer);
                 }
+
+                if (ControlAutomationPeer.FromElement(controlAutomationPeer.Owner) is ControlAutomationPeer parentAutomationPeer)
+                {
+                    _ = parentAutomationPeer.GetChildren();
+                }
             }
             
             s_nodes.Remove(peer);
