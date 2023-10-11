@@ -147,7 +147,7 @@
       <Setter Property="IsVisible" Value="True" />
     </Style>
     
-    <Style Selector="^.textMenu">
+    <Style Selector="^.text-menu">
       <Setter Property="Padding" Value="11,4,0,7"/>
     </Style>
 

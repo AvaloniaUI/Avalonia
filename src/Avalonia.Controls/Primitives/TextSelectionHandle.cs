@@ -5,36 +5,9 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TextSelectionHandle : TemplatedControl
+    public class TextSelectionHandle : Thumb
     {
-        internal static readonly RoutedEvent<VectorEventArgs> DragStartedEvent =
-            RoutedEvent.Register<TextSelectionHandle, VectorEventArgs>(nameof(DragStarted), RoutingStrategies.Bubble);
-
-        internal static readonly RoutedEvent<VectorEventArgs> DragDeltaEvent =
-            RoutedEvent.Register<TextSelectionHandle, VectorEventArgs>(nameof(DragDelta), RoutingStrategies.Bubble);
-
-        internal static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
-            RoutedEvent.Register<TextSelectionHandle, VectorEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
-
         internal static readonly StyledProperty<SelectionHandleType> SelectionHandleTypeProperty = AvaloniaProperty.Register<TextSelectionHandle, SelectionHandleType>(nameof(SelectionHandleType));
-
-        internal event EventHandler<VectorEventArgs> DragStarted
-        {
-            add { AddHandler(DragStartedEvent, value); }
-            remove { RemoveHandler(DragStartedEvent, value); }
-        }
-
-        internal event EventHandler<VectorEventArgs> DragDelta
-        {
-            add { AddHandler(DragDeltaEvent, value); }
-            remove { RemoveHandler(DragDeltaEvent, value); }
-        }
-
-        internal event EventHandler<VectorEventArgs> DragCompleted
-        {
-            add { AddHandler(DragCompletedEvent, value); }
-            remove { RemoveHandler(DragCompletedEvent, value); }
-        }
 
         internal SelectionHandleType SelectionHandleType
         {
@@ -77,22 +50,26 @@ namespace Avalonia.Controls.Primitives
 
             InvalidateMeasure();
         }
-
-        protected void OnDragStarted(VectorEventArgs e)
+        protected override void OnDragStarted(VectorEventArgs e)
         {
+            base.OnDragStarted(e);
+
             _startPosition = Bounds.Position;
             _delta = default;
             IsDragging = true;
         }
 
-        protected void OnDragDelta(VectorEventArgs e)
+        protected override void OnDragDelta(VectorEventArgs e)
         {
+            base.OnDragDelta(e);
+
             _delta = e.Vector;
             UpdateTextSelectionHandlePosition();
         }
 
-        protected void OnDragCompleted(VectorEventArgs e)
+        protected override void OnDragCompleted(VectorEventArgs e)
         {
+            base.OnDragCompleted(e);
             IsDragging = false;
 
             _startPosition = default;

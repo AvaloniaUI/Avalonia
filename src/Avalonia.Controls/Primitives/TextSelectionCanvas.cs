@@ -7,13 +7,13 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    internal class TextSelectionCanvas : Canvas
+    internal class TextSelectionHandleCanvas : Canvas
     {
         private const int ContextMenuPadding = 16;
 
-        private TextSelectionHandle _caretHandle;
-        private TextSelectionHandle _startHandle;
-        private TextSelectionHandle _endHandle;
+        private readonly TextSelectionHandle _caretHandle;
+        private readonly TextSelectionHandle _startHandle;
+        private readonly TextSelectionHandle _endHandle;
         private TextPresenter? _presenter;
         private TextBox? _textBox;
         private bool _showHandle;
@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public TextSelectionCanvas()
+        public TextSelectionHandleCanvas()
         {
             _caretHandle = new TextSelectionHandle()
             {
@@ -50,13 +50,15 @@ namespace Avalonia.Controls.Primitives
             Children.Add(_startHandle);
             Children.Add(_endHandle);
 
+            _caretHandle.DragStarted += Handle_DragStarted;
             _caretHandle.DragDelta += CaretHandle_DragDelta;
             _caretHandle.DragCompleted += Handle_DragCompleted;
-
             _startHandle.DragDelta += StartHandle_DragDelta;
             _startHandle.DragCompleted += Handle_DragCompleted;
+            _startHandle.DragStarted += Handle_DragStarted;
             _endHandle.DragDelta += EndHandle_DragDelta;
             _endHandle.DragCompleted += Handle_DragCompleted;
+            _endHandle.DragStarted += Handle_DragStarted;
 
             _caretHandle.Classes.Add("caret");
             _startHandle.Classes.Add("start");
@@ -69,6 +71,14 @@ namespace Avalonia.Controls.Primitives
             IsVisible = ShowHandles;
 
             ClipToBounds = false;
+        }
+
+        private void Handle_DragStarted(object? sender, VectorEventArgs e)
+        {
+            if (_textBox?.ContextFlyout is { } flyout)
+            {
+                flyout.Hide();
+            }
         }
 
         private void EndHandle_DragDelta(object? sender, VectorEventArgs e)
@@ -192,12 +202,10 @@ namespace Avalonia.Controls.Primitives
             }
 
             var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
-            if (_caretHandle != null)
-            {
-                var points = _presenter.GetCaretPoints();
 
-                _caretHandle.SetTopLeft(ToLayer(points.Item2));
-            }
+            var points = _presenter.GetCaretPoints();
+
+            _caretHandle.SetTopLeft(ToLayer(points.Item2));
 
             if (hasSelection)
             {
@@ -213,13 +221,13 @@ namespace Avalonia.Controls.Primitives
                     var first = rects.First();
                     var last = rects.Last();
 
-                    if (_startHandle != null && !_startHandle.IsDragging)
+                    if (!_startHandle.IsDragging)
                     {
                         _startHandle.SetTopLeft(ToLayer(first.BottomLeft));
                         _startHandle.SelectionHandleType = selectionStart < selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
                     }
 
-                    if (_endHandle != null && !_endHandle.IsDragging)
+                    if (!_endHandle.IsDragging)
                     {
                         _endHandle.SetTopLeft(ToLayer(last.BottomRight));
                         _endHandle.SelectionHandleType = selectionStart > selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
@@ -243,8 +251,8 @@ namespace Avalonia.Controls.Primitives
                     _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
                     _textBox.AddHandler(Gestures.HoldingEvent, TextBoxHolding, handledEventsToo: true);
 
-                    _textBox.PropertyChanged += _textBox_PropertyChanged;
-                    _textBox.LayoutUpdated += _textBox_LayoutUpdated;
+                    _textBox.PropertyChanged += TextBoxPropertyChanged;
+                    _textBox.EffectiveViewportChanged += TextBoxEffectiveViewportChanged;
                 }
             }
             else
@@ -257,11 +265,20 @@ namespace Avalonia.Controls.Primitives
                     _textBox.RemoveHandler(LostFocusEvent, TextBoxLostFocus);
                     _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
 
-                    _textBox.PropertyChanged -= _textBox_PropertyChanged;
-                    _textBox.LayoutUpdated -= _textBox_LayoutUpdated;
+                    _textBox.PropertyChanged -= TextBoxPropertyChanged;
+                    _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
                 }
 
                 _textBox = null;
+            }
+        }
+
+        private void TextBoxEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
+        {
+            if (ShowHandles)
+            {
+                MoveHandlesToSelection();
+                EnsureVisible();
             }
         }
 
@@ -302,7 +319,7 @@ namespace Avalonia.Controls.Primitives
                         flyout.VerticalOffset = topLeft.Y - verticalOffset;
                         flyout.HorizontalOffset = topLeft.X;
                         flyout.Placement = PlacementMode.Top;
-                        flyout.ShowAt(_textBox);
+                        _textBox.RaiseEvent(new ContextRequestedEventArgs());
 
                         return true;
                     }
@@ -323,7 +340,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void _textBox_LayoutUpdated(object? sender, EventArgs e)
+        private void TextBoxLayoutUpdated(object? sender, EventArgs e)
         {
             if (ShowHandles)
             {
@@ -332,7 +349,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void _textBox_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        private void TextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (ShowHandles && (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty))
             {

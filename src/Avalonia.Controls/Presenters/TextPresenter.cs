@@ -95,8 +95,6 @@ namespace Avalonia.Controls.Presenters
         private CharacterHit _lastCharacterHit;
         private Rect _caretBounds;
         private Point _navigationPosition;
-
-        private TextSelectionCanvas? _canvas;
         private Point? _previousOffset;
         private TextSelectorLayer? _layer;
 
@@ -303,7 +301,7 @@ namespace Avalonia.Controls.Presenters
 
         protected override bool BypassFlowDirectionPolicies => true;
 
-        internal TextSelectionCanvas? Canvas { get => _canvas; set => _canvas = value; }
+        internal TextSelectionHandleCanvas? TextSelectionHandleCanvas { get; set; }
 
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
@@ -451,9 +449,9 @@ namespace Avalonia.Controls.Presenters
         public void HideCaret()
         {
             _caretBlink = false;
-            if (_canvas != null)
+            if (TextSelectionHandleCanvas != null)
             {
-                _canvas.ShowHandles = false;
+                TextSelectionHandleCanvas.ShowHandles = false;
             }
             _caretTimer.Stop();
             InvalidateVisual();
@@ -852,22 +850,24 @@ namespace Avalonia.Controls.Presenters
 
             _caretTimer.Tick += CaretTimerTick;
 
-            if (_canvas == null)
+            if (TextSelectionHandleCanvas == null)
             {
-                _canvas = new TextSelectionCanvas();
+                TextSelectionHandleCanvas = new TextSelectionHandleCanvas();
             }
 
             _layer = TextSelectorLayer.GetTestLayer(this);
-            _layer?.Add(_canvas);
-            _canvas?.SetPresenter(this);
+            _layer?.Add(TextSelectionHandleCanvas);
+            TextSelectionHandleCanvas.SetPresenter(this);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            if (_canvas is { } c)
+            if (TextSelectionHandleCanvas is { } c)
+            {
                 _layer?.Remove(c);
-            _canvas?.SetPresenter(null);
+                c.SetPresenter(null);
+            }
 
             _caretTimer.Stop();
 
