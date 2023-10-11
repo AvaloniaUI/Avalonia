@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Avalonia.Input.GestureRecognizers;
+﻿using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
 {
@@ -29,7 +28,7 @@ namespace Avalonia.Input
 
         protected override void PointerMoved(PointerEventArgs e)
         {
-            if (Target != null && Target is Visual visual)
+            if (Target is Visual visual)
             {
                 if(_firstContact == e.Pointer)
                 {
@@ -60,7 +59,7 @@ namespace Avalonia.Input
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 if (_firstContact == null)
                 {
