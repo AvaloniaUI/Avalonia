@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Logging;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
@@ -116,8 +117,19 @@ namespace Avalonia.Native
                     case string s:
                         _native.SetText(toFormat, s);
                         break;
-                    case IStorageItem storageItem when storageItem.TryGetLocalPath() is { } localPath:
-                        _native.SetText(toFormat, localPath);
+                    case IEnumerable<IStorageItem> storageItems:
+                        using (var strings = new AvnStringArray(storageItems
+                                   .Select(s => s.TryGetLocalPath())
+                                   .Where(p => p is not null)))
+                        {
+                            _native.SetStrings(toFormat, strings);
+                        }
+                        break;
+                    case IEnumerable<string> managedStrings:
+                        using (var strings = new AvnStringArray(managedStrings))
+                        {
+                            _native.SetStrings(toFormat, strings);
+                        }
                         break;
                     case byte[] bytes:
                     {
@@ -125,6 +137,10 @@ namespace Avalonia.Native
                             _native.SetBytes(toFormat, pbytes, bytes.Length);
                         break;
                     }
+                    default:
+                        Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)?.Log(this,
+                            "Unsupported IDataObject value type: {0}", o?.GetType().FullName ?? "(null)");
+                        break;
                 }
             }
             return Task.CompletedTask;
