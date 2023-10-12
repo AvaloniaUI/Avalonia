@@ -5,7 +5,7 @@ namespace Avalonia
 {
     public static class SystemFontAppBuilderExtension
     {
-        public static AppBuilder WithCustomSystemFont(this AppBuilder appBuilder, Uri fontSource)
+        public static AppBuilder WithSystemFontSource(this AppBuilder appBuilder, Uri fontSource)
         {
             return appBuilder.ConfigureFonts(fontManager =>
             {
