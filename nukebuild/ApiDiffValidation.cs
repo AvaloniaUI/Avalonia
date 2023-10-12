@@ -12,6 +12,13 @@ public static class ApiDiffValidation
 {
     private static readonly HttpClient s_httpClient = new();
 
+    private static readonly (string oldTfm, string newTfm)[] s_tfmRedirects = new[]
+    {
+        // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1)
+        ("net6.0-android", "net7.0-android"),
+        ("net6.0-ios", "net7.0-ios")
+    };
+
     public static async Task ValidatePackage(
         Tool apiCompatTool, string packagePath, string baselineVersion,
         string suppressionFilesFolder, bool updateSuppressionFile)
@@ -54,8 +61,14 @@ public static class ApiDiffValidation
                     await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
                 }
 
+                var targetTfm = baselineDll.target;
+                if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
+                {
+                    targetTfm = newTfm;
+                }
+
                 var targetDll = targetDlls.FirstOrDefault(e =>
-                    e.target == baselineDll.target && e.entry.Name == baselineDll.entry.Name);
+                    e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
                 if (targetDll.entry is null)
                 {
                     throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
