@@ -31,7 +31,7 @@ namespace Avalonia.Input
         {
             if (Target != null && Target is Visual visual)
             {
-                if(_firstContact == e.Pointer)
+                if (_firstContact == e.Pointer)
                 {
                     _firstPoint = e.GetPosition(visual);
                 }
@@ -50,7 +50,19 @@ namespace Avalonia.Input
 
                     var scale = distance / _initialDistance;
 
-                    var pinchEventArgs = new PinchEventArgs(scale, _origin);
+                    var point = _firstPoint;
+                    if (point.X > _origin.X)
+                    {
+                        point = _secondPoint;
+                    }
+
+                    // https://stackoverflow.com/a/15994225/20894223
+                    var deltaX = point.X - _origin.X;
+                    var deltaY = -(point.Y - _origin.Y);          // I reverse the sign, because on the screen the Y axes are reversed with respect to the Cartesian plane.
+                    var rad = System.Math.Atan2(deltaX, deltaY);  // radiant
+                    var degree = rad * (180 / System.Math.PI);
+                    degree += 90;                                 // Shift angle of 90°
+                    var pinchEventArgs = new PinchEventArgs(scale, _origin, degree);
                     Target?.RaiseEvent(pinchEventArgs);
 
                     e.Handled = pinchEventArgs.Handled;
