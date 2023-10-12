@@ -132,6 +132,8 @@ namespace Avalonia.Input
             element.AddHandler(RightTappedEvent, handler);
         }
 
+        public static void AddHoldingHandler(Interactive element, EventHandler<HoldingRoutedEventArgs> handler) =>
+            element.AddHandler(HoldingEvent, handler);
         public static void RemoveTappedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
         {
             element.RemoveHandler(TappedEvent, handler);
@@ -147,6 +149,8 @@ namespace Avalonia.Input
             element.RemoveHandler(RightTappedEvent, handler);
         }
 
+        public static void RemoveHoldingHandler(Interactive element, EventHandler<RoutedEventArgs> handler) =>
+            element.RemoveHandler(HoldingEvent, handler);
         private static void PointerPressed(RoutedEventArgs ev)
         {
             if (ev.Source is null)
