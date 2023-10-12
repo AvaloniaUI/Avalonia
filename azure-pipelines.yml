@@ -30,14 +30,14 @@ jobs:
     vmImage: 'ubuntu-20.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.404'
+    displayName: 'Use .NET Core SDK 6.0.415'
     inputs:
-      version: 6.0.404
+      version: 6.0.415
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.101'
+    displayName: 'Use .NET Core SDK 7.0.402'
     inputs:
-      version: 7.0.101
+      version: 7.0.402
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
