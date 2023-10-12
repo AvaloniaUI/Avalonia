@@ -11,16 +11,6 @@ namespace Avalonia.Input
         private Point _secondPoint;
         private Point _origin;
 
-        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            PointerPressed(e);
-        }
-
-        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
-        {
-            PointerReleased(e);
-        }
-
         protected override void PointerCaptureLost(IPointer pointer)
         {
             RemoveContact(pointer);
