@@ -156,6 +156,9 @@ namespace Avalonia.Input
         public static void AddPointerTouchPadGestureSwipeHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
             element.AddHandler(PointerTouchPadGestureSwipeEvent, handler);
 
+        public static void AddScrollGestureHandler(Interactive element, EventHandler<RoutedEventArgs> handler) =>
+            element.AddHandler(ScrollGestureEvent, handler);
+
         public static void RemoveTappedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
         {
             element.RemoveHandler(TappedEvent, handler);
@@ -194,6 +197,9 @@ namespace Avalonia.Input
 
         public static void RemovePointerTouchPadGestureSwipeHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
             element.RemoveHandler(PointerTouchPadGestureSwipeEvent, handler);
+
+        public static void RemoveScrollGestureHandler(Interactive element, EventHandler<ScrollGestureEventArgs> handler) =>
+            element.RemoveHandler(ScrollGestureEvent,handler);
 
         private static void PointerPressed(RoutedEventArgs ev)
         {
