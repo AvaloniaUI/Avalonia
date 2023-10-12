@@ -732,6 +732,7 @@ interface IAvnClipboard : IUnknown
      HRESULT SetText(char* type, char* utf8Text);
      HRESULT ObtainFormats(IAvnStringArray**ppv);
      HRESULT GetStrings(char* type, IAvnStringArray**ppv);
+     HRESULT SetStrings(char* type, IAvnStringArray*ppv);
      HRESULT SetBytes(char* type, void* utf8Text, int len);
      HRESULT GetBytes(char* type, IAvnString**ppv);
     
