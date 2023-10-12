@@ -141,6 +141,9 @@ namespace Avalonia.Input
         public static void AddPinchEndedHandler(Interactive element, EventHandler<PinchEndedEventArgs> handler) =>
             element.AddHandler(PinchEndedEvent, handler);
 
+        public static void AddPullGestureHandler(Interactive element, EventHandler<PullGestureEventArgs> handler) =>
+            element.AddHandler(PullGestureEvent, handler);
+
         public static void RemoveTappedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
         {
             element.RemoveHandler(TappedEvent, handler);
@@ -164,6 +167,9 @@ namespace Avalonia.Input
 
         public static void RemovePinchEndedHandler(Interactive element, EventHandler<PinchEndedEventArgs> handler) =>
             element.RemoveHandler(PinchEndedEvent, handler);
+
+        public static void RemovePullGestureHandler(Interactive element, EventHandler<PullGestureEventArgs> handler) =>
+            element.RemoveHandler(PullGestureEvent, handler);
 
         private static void PointerPressed(RoutedEventArgs ev)
         {
