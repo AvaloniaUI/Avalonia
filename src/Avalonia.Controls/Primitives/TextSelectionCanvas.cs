@@ -292,7 +292,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_textBox != null)
             {
-                if (_textBox.ContextFlyout is MenuFlyout flyout)
+                if (_textBox.ContextFlyout is Flyout flyout)
                 {
                     var verticalOffset = (double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) + ContextMenuPadding;
 
@@ -323,6 +323,10 @@ namespace Avalonia.Controls.Primitives
 
                         return true;
                     }
+                }
+                else
+                {
+                    _textBox.RaiseEvent(new ContextRequestedEventArgs());
                 }
             }
 
