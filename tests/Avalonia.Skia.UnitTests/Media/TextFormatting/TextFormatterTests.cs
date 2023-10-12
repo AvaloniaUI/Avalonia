@@ -822,6 +822,22 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             
         }
 
+        [Fact]
+        public void Should_Wrap_Chinese()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+
+                var text = "一二三四 TEXT 一二三四五六七八九十零";
+
+                var textLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
+
+                Assert.Equal(3, textLine.TextRuns.Count);
+            }
+        }
+
         protected readonly record struct SimpleTextSource : ITextSource
         {
             private readonly string _text;
