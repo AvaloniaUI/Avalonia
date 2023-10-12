@@ -231,9 +231,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     Assert.NotNull(systemFontCollection);
 
-                    var customFontFamilies = new[] { new FontFamily(s_fontUri) };
-
-                    systemFontCollection.AddCustomFontFamilies(customFontFamilies);
+                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono"), out var glyphTypeface));
 
