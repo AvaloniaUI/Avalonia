@@ -17,7 +17,7 @@ namespace Avalonia.Media.Immutable
         {
             Color = color;
             Opacity = opacity;
-            Transform = null;
+            Transform = transform;
         }
 
         /// <summary>
