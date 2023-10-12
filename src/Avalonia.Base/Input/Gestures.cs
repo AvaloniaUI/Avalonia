@@ -150,6 +150,9 @@ namespace Avalonia.Input
         public static void AddPointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
             element.AddHandler(PointerTouchPadGestureMagnifyEvent, handler);
 
+        public static void AddPointerTouchPadGestureRotateHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.AddHandler(PointerTouchPadGestureRotateEvent, handler);
+
         public static void RemoveTappedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
         {
             element.RemoveHandler(TappedEvent, handler);
@@ -182,6 +185,9 @@ namespace Avalonia.Input
 
         public static void RemovePointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
             element.RemoveHandler(PointerTouchPadGestureMagnifyEvent, handler);
+
+        public static void RemovePointerTouchPadGestureRotateHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.RemoveHandler(PointerTouchPadGestureRotateEvent, handler);
 
         private static void PointerPressed(RoutedEventArgs ev)
         {
