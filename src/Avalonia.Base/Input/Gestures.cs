@@ -159,6 +159,9 @@ namespace Avalonia.Input
         public static void AddScrollGestureHandler(Interactive element, EventHandler<RoutedEventArgs> handler) =>
             element.AddHandler(ScrollGestureEvent, handler);
 
+        public static void AddScrollGestureEndedHandler(Interactive element, EventHandler<ScrollGestureEndedEventArgs> handler) =>
+            element.AddHandler(ScrollGestureEndedEvent, handler);
+
         public static void RemoveTappedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
         {
             element.RemoveHandler(TappedEvent, handler);
@@ -200,6 +203,9 @@ namespace Avalonia.Input
 
         public static void RemoveScrollGestureHandler(Interactive element, EventHandler<ScrollGestureEventArgs> handler) =>
             element.RemoveHandler(ScrollGestureEvent,handler);
+
+        public static void RemoveScrollGestureEndedHandler(Interactive element,EventHandler<ScrollGestureEndedEventArgs> handler) =>
+            element.RemoveHandler(ScrollGestureEndedEvent,handler);
 
         private static void PointerPressed(RoutedEventArgs ev)
         {
