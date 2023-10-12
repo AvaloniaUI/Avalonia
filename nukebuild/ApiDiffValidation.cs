@@ -13,10 +13,11 @@ public static class ApiDiffValidation
 {
     private static readonly HttpClient s_httpClient = new();
 
-    private static readonly Dictionary<(string target, string asmName), (string target, string asmName)> s_assemblyRedirects = new()
+    private static readonly (string oldTfm, string newTfm)[] s_tfmRedirects = new[]
     {
-        [("net6.0-android31.0", "Avalonia.Android.dll")] = ("net7.0-android33.0", "Avalonia.Android.dll"),
-        [("net6.0-ios16.1", "Avalonia.iOS.dll")] = ("net7.0-ios16.1", "Avalonia.iOS.dll")
+        // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1)
+        ("net6.0-android", "net7.0-android"),
+        ("net6.0-ios", "net7.0-ios")
     };
 
     public static async Task ValidatePackage(
@@ -64,13 +65,14 @@ public static class ApiDiffValidation
                     await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
                 }
 
-                if (!s_assemblyRedirects.TryGetValue((baselineDll.target, baselineDll.entry.Name), out var lookupPair))
+                var targetTfm = baselineDll.target;
+                if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
                 {
-                    lookupPair = (baselineDll.target, baselineDll.entry.Name);
+                    targetTfm = newTfm;
                 }
 
                 var targetDll = targetDlls.FirstOrDefault(e =>
-                    e.target == lookupPair.target && e.entry.Name == lookupPair.asmName);
+                    e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
                 if (targetDll.entry is null)
                 {
                     throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
