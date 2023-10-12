@@ -67,22 +67,14 @@ namespace Avalonia.Media.Fonts
             //We initialize the system font collection during construction.
         }
 
-        public void AddCustomFontFamilies(IReadOnlyList<FontFamily> customFontFamilies)
+        public void AddCustomFontSource(Uri source)
         {
-            if (customFontFamilies is null)
+            if (source is null)
             {
                 return;
             }
 
-            for (int i = 0; i < customFontFamilies.Count; i++)
-            {
-                var fontFamily = customFontFamilies[i];
-
-                if (fontFamily.Key is FontFamilyKey key)
-                {
-                    LoadGlyphTypefaces(_fontManager.PlatformImpl, key.Source);
-                }
-            }
+            LoadGlyphTypefaces(_fontManager.PlatformImpl, source);
         }
 
         private void LoadGlyphTypefaces(IFontManagerImpl fontManager, Uri source)

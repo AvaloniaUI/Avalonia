@@ -1,18 +1,17 @@
-﻿using System.Collections.Generic;
-using Avalonia.Media;
+﻿using System;
 using Avalonia.Media.Fonts;
 
 namespace Avalonia
 {
     public static class SystemFontAppBuilderExtension
     {
-        public static AppBuilder WithCustomSystemFonts(this AppBuilder appBuilder, IReadOnlyList<FontFamily> customFontFamilies)
+        public static AppBuilder WithCustomSystemFont(this AppBuilder appBuilder, Uri fontSource)
         {
             return appBuilder.ConfigureFonts(fontManager =>
             {
                 if(fontManager.SystemFonts is SystemFontCollection systemFontCollection)
                 {
-                    systemFontCollection.AddCustomFontFamilies(customFontFamilies);
+                    systemFontCollection.AddCustomFontSource(fontSource);
                 }
             });
         }
