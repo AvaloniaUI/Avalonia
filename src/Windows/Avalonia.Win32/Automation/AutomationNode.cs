@@ -194,6 +194,7 @@ namespace Avalonia.Win32.Automation
 
                 if (ControlAutomationPeer.FromElement(controlAutomationPeer.Owner) is ControlAutomationPeer parentAutomationPeer)
                 {
+                    parentAutomationPeer.InvalidateChildren();
                     _ = parentAutomationPeer.GetChildren();
                 }
             }

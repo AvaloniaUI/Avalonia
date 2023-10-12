@@ -130,7 +130,7 @@ namespace Avalonia.Automation.Peers
         /// <summary>
         /// Invalidates the peer's children and causes a re-read from <see cref="GetChildrenCore"/>.
         /// </summary>
-        protected void InvalidateChildren()
+        public void InvalidateChildren()
         {
             _childrenValid = false;
             RaiseChildrenChangedEvent();
