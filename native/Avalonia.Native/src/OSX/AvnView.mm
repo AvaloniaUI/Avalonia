@@ -461,7 +461,7 @@
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    if(!_lastKeyConsumeByInputContext || key <= 32){
+    if(!_lastKeyConsumeByInputContext || (key <= 32 && key != AvnKeySpace)){
         auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
         
         if(type == KeyDown && !handled && keySymbolUtf8 != NULL){
