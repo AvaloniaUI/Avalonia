@@ -22,6 +22,11 @@
         public abstract double LineHeight { get; }
 
         /// <summary>
+        /// Paragraph's line spacing
+        /// </summary>
+        public abstract double LineSpacing { get; }
+
+        /// <summary>
         /// Indicates the first line of the paragraph.
         /// </summary>
         public abstract bool FirstLineInParagraph { get; }

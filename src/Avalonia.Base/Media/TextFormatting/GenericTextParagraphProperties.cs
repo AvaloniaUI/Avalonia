@@ -9,6 +9,7 @@
         private TextAlignment _textAlignment;
         private TextWrapping _textWrap;
         private double _lineHeight;
+        private double _lineSpacing;
 
         /// <summary>
         /// Constructing TextParagraphProperties
@@ -143,6 +144,11 @@
         public override double LetterSpacing { get; }
 
         /// <summary>
+        /// The line spacing
+        /// </summary>
+        public override double LineSpacing => _lineSpacing;
+
+        /// <summary>
         /// Set text flow direction
         /// </summary>
         internal void SetFlowDirection(FlowDirection flowDirection)
@@ -166,6 +172,11 @@
         internal void SetLineHeight(double lineHeight)
         {
             _lineHeight = lineHeight;
+        }
+
+        internal void SetLineSpacing(double lineSpacing)
+        {
+            _lineSpacing = lineSpacing;
         }
 
         /// <summary>
