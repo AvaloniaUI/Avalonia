@@ -10,11 +10,11 @@ namespace Avalonia.Input
             ScaleOrigin = scaleOrigin;
         }
 
-        public PinchEventArgs(double scale, Point scaleOrigin, double degree) : base(Gestures.PinchEvent)
+        public PinchEventArgs(double scale, Point scaleOrigin, double angle) : base(Gestures.PinchEvent)
         {
             Scale = scale;
             ScaleOrigin = scaleOrigin;
-            Angle = degree;
+            Angle = angle;
         }
 
         public double Scale { get; } = 1;
@@ -22,8 +22,11 @@ namespace Avalonia.Input
         public Point ScaleOrigin { get; }
 
         /// <summary>
-        /// Pinch angle in degrees
-        /// </summary>
+        /// Gets the angle of the pinch gesture, in degrees.
+        /// <summary>
+        /// <remarks>
+        /// A pinch gesture is the movement of two pressed points closer together. This property is the measured angle of the line between those two points. Remember zero degrees is a line pointing up.
+        /// </remarks>
         public double Angle { get; }
     }
 

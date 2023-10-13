@@ -59,9 +59,8 @@ namespace Avalonia.Input
                     // https://stackoverflow.com/a/15994225/20894223
                     var deltaX = point.X - _origin.X;
                     var deltaY = -(point.Y - _origin.Y);          // I reverse the sign, because on the screen the Y axes are reversed with respect to the Cartesian plane.
-                    var rad = System.Math.Atan2(deltaX, deltaY);  // radiant
+                    var rad = System.Math.Atan2(deltaX, deltaY);  // radians
                     var degree = rad * (180 / System.Math.PI);
-                    degree += 90;                                 // Shift angle of 90°
                     var pinchEventArgs = new PinchEventArgs(scale, _origin, degree);
                     Target?.RaiseEvent(pinchEventArgs);
 
