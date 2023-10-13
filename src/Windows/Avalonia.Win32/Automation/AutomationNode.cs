@@ -61,18 +61,6 @@ namespace Avalonia.Win32.Automation
 
             if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
                 embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
-
-            if (peer is ControlAutomationPeer controlAutomationPeer)
-            {
-                var control = controlAutomationPeer.Owner;
-                
-                control.Unloaded += ReleaseAutomationNode;
-                void ReleaseAutomationNode(object? _, RoutedEventArgs __)
-                {
-                    Release(peer);
-                    control.Unloaded -= ReleaseAutomationNode;
-                }
-            }
         }
 
         public AutomationPeer Peer { get; protected set; }
@@ -183,24 +171,7 @@ namespace Avalonia.Win32.Automation
             return peer is null ? null : s_nodes.GetValue(peer, Create);
         }
 
-        public static void Release(AutomationPeer peer)
-        {
-            if (peer is ControlAutomationPeer controlAutomationPeer)
-            {
-                foreach (var childAutomationPeer in controlAutomationPeer.GetChildren())
-                {
-                    Release(childAutomationPeer);
-                }
-
-                if (ControlAutomationPeer.FromElement(controlAutomationPeer.Owner) is ControlAutomationPeer parentAutomationPeer)
-                {
-                    parentAutomationPeer.InvalidateChildren();
-                    _ = parentAutomationPeer.GetChildren();
-                }
-            }
-            
-            s_nodes.Remove(peer);
-        }
+        public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
 
         IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());

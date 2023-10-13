@@ -11,7 +11,7 @@ namespace Avalonia.Automation.Peers
     /// </summary>
     public class ControlAutomationPeer : AutomationPeer
     {
-        private IReadOnlyList<AutomationPeer>? _children;
+        private IReadOnlyList<WeakReference<AutomationPeer>>? _children;
         private bool _childrenValid;
         private AutomationPeer? _parent;
         private bool _parentValid;
@@ -60,20 +60,29 @@ namespace Avalonia.Automation.Peers
 
         protected override IReadOnlyList<AutomationPeer> GetOrCreateChildrenCore()
         {
-            var children = _children ?? Array.Empty<AutomationPeer>();
+            var children = _children ?? Array.Empty<WeakReference<AutomationPeer>>();
+
+            var childrenValidReferences = children
+                .Select(c => c.TryGetTarget(out var peer) ? peer : null!)
+                .Where(c => c is not null)
+                .ToList();
 
             if (_childrenValid)
-                return children;
+                return childrenValidReferences;
 
             var newChildren = GetChildrenCore() ?? Array.Empty<AutomationPeer>();
 
-            foreach (var peer in children.Except(newChildren))
+            foreach (var peer in childrenValidReferences.Except(newChildren))
                 peer.TrySetParent(null);
             foreach (var peer in newChildren)
                 peer.TrySetParent(this);
 
             _childrenValid = true;
-            return _children = newChildren;
+            _children = newChildren
+                .Select(c => new WeakReference<AutomationPeer>(c))
+                .ToList();
+
+            return newChildren;
         }
 
         protected virtual IReadOnlyList<AutomationPeer>? GetChildrenCore()
@@ -130,7 +139,7 @@ namespace Avalonia.Automation.Peers
         /// <summary>
         /// Invalidates the peer's children and causes a re-read from <see cref="GetChildrenCore"/>.
         /// </summary>
-        public void InvalidateChildren()
+        protected void InvalidateChildren()
         {
             _childrenValid = false;
             RaiseChildrenChangedEvent();
