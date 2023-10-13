@@ -767,9 +767,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         
-        [Theory,
-         InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow),   
-        ]
+        [Theory]
+        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
         public void Line_Formatting_For_Oversized_Embedded_Runs_Does_Not_Produce_Empty_Lines(TextWrapping wrapping)
         {
             var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
@@ -784,9 +783,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
         
-        [Theory,
-            InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow),   
-        ]
+        [Theory]
+        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
         public void Line_Formatting_For_Oversized_Embedded_Runs_Inside_Normal_Text_Does_Not_Produce_Empty_Lines(
             TextWrapping wrapping)
         {
