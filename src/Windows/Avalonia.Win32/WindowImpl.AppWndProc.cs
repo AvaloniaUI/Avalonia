@@ -733,6 +733,14 @@ namespace Avalonia.Win32
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
+
+                        control.Unloaded += ReleaseAutomationNode;
+                        void ReleaseAutomationNode(object _, RoutedEventArgs __)
+                        {
+                            UiaCoreProviderApi.UiaDisconnectProvider(node);
+                            control.Unloaded -= ReleaseAutomationNode;
+                        }
+                        
                         return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
                     }
                     break;
