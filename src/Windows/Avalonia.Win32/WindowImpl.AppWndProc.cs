@@ -735,7 +735,7 @@ namespace Avalonia.Win32
                         var node = AutomationNode.GetOrCreate(peer);
 
                         control.Unloaded += ReleaseAutomationNode;
-                        void ReleaseAutomationNode(object _, RoutedEventArgs __)
+                        void ReleaseAutomationNode(object? _, RoutedEventArgs __)
                         {
                             UiaCoreProviderApi.UiaDisconnectProvider(node);
                             control.Unloaded -= ReleaseAutomationNode;
