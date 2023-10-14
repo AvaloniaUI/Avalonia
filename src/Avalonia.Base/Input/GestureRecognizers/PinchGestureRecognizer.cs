@@ -50,20 +50,15 @@ namespace Avalonia.Input
 
                     var scale = distance / _initialDistance;
 
-                    var point = _firstPoint;
-                    if (point.X > _origin.X)
-                    {
-                        point = _secondPoint;
-                    }
-
                     // https://stackoverflow.com/a/15994225/20894223
-                    var deltaX = point.X - _origin.X;
-                    var deltaY = -(point.Y - _origin.Y);          // I reverse the sign, because on the screen the Y axes are reversed with respect to the Cartesian plane.
-                    var rad = System.Math.Atan2(deltaX, deltaY);  // radians
-                    var degree = rad * (180 / System.Math.PI);
+
+                    var deltaX = _firstPoint.X - _secondPoint.X;
+                    var deltaY = - (_firstPoint.Y - _secondPoint.Y);     // I reverse the sign, because on the screen the Y axes are reversed with respect to the Cartesian plane.
+                    var rad = System.Math.Atan2(deltaX, deltaY);         // radians from -π to +π
+                    var degree = ((rad * (180 / System.Math.PI))) + 180; // Atan2 returns a radian value between -π to +π, in degrees -180 to +180.
+                                                                         // To get the angle between 0 and 360 degrees you need to add 180 degrees.
                     var pinchEventArgs = new PinchEventArgs(scale, _origin, degree);
                     Target?.RaiseEvent(pinchEventArgs);
-
                     e.Handled = pinchEventArgs.Handled;
                 }
             }
