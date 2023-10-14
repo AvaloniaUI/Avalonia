@@ -60,6 +60,7 @@ namespace Avalonia.Input
                     var pinchEventArgs = new PinchEventArgs(scale, _origin, degree);
                     Target?.RaiseEvent(pinchEventArgs);
                     e.Handled = pinchEventArgs.Handled;
+                    e.PreventGestureRecognition();
                 }
             }
         }
@@ -93,16 +94,20 @@ namespace Avalonia.Input
 
                     Capture(_firstContact);
                     Capture(_secondContact);
+                    e.PreventGestureRecognition();
                 }
             }
         }
 
         protected override void PointerReleased(PointerReleasedEventArgs e)
         {
-            RemoveContact(e.Pointer);
+            if(RemoveContact(e.Pointer))
+            {
+                e.PreventGestureRecognition();
+            }
         }
 
-        private void RemoveContact(IPointer pointer)
+        private bool RemoveContact(IPointer pointer)
         {
             if (_firstContact == pointer || _secondContact == pointer)
             {
@@ -119,7 +124,9 @@ namespace Avalonia.Input
                 }
 
                 Target?.RaiseEvent(new PinchEndedEventArgs());
+                return true;
             }
+            return false;
         }
 
         private float GetDistance(Point a, Point b)
