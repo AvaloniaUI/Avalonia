@@ -53,7 +53,7 @@ namespace Avalonia.Controls
             TextElement.FontWeightProperty.AddOwner<TextBlock>();
 
         /// <summary>
-        /// Defines the <see cref="FontWeight"/> property.
+        /// Defines the <see cref="FontStretch"/> property.
         /// </summary>
         public static readonly StyledProperty<FontStretch> FontStretchProperty =
             TextElement.FontStretchProperty.AddOwner<TextBlock>();
