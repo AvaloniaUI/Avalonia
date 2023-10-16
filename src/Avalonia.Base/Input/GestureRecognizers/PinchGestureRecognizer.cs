@@ -129,9 +129,9 @@ namespace Avalonia.Input
             return false;
         }
 
-        private float GetDistance(Point a, Point b)
+        private static float GetDistance(Point a, Point b)
         {
-            var length = _secondPoint - _firstPoint;
+            var length = b - a;
             return (float)new Vector(length.X, length.Y).Length;
         }
     }
