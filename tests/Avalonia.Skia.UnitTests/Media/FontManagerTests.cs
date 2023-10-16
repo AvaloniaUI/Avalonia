@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Avalonia.Headless;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
@@ -214,6 +216,26 @@ namespace Avalonia.Skia.UnitTests.Media
                     Assert.NotNull(glyphTypeface);
 
                     Assert.Equal(FontManager.Current.DefaultFontFamily.Name, glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Use_Custom_SystemFont()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
+
+                    Assert.NotNull(systemFontCollection);
+
+                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono"), out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
                 }
             }
         }

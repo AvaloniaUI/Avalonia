@@ -607,19 +607,19 @@ namespace Avalonia.Media.TextFormatting
                                         }
 
                                         break;
-                                    }                              
+                                    }
 
                                     var clusterLength = Math.Max(0, nextInfo.GlyphCluster - currentInfo.GlyphCluster);
 
-                                    if(clusterLength == 0)
+                                    if (clusterLength == 0)
                                     {
                                         clusterLength = currentRun.Length - runLength;
                                     }
 
-                                    if(clusterLength == 0)
+                                    if (clusterLength == 0)
                                     {
                                         clusterLength = shapedTextCharacters.GlyphRun.Metrics.FirstCluster + currentRun.Length - currentInfo.GlyphCluster;
-                                    }   
+                                    }
 
                                     if (currentWidth + clusterWidth > paragraphWidth)
                                     {
@@ -713,31 +713,37 @@ namespace Avalonia.Media.TextFormatting
 
             var measuredLength = MeasureLength(textRuns, paragraphWidth);
 
-            if(measuredLength == 0 && paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
+            if(measuredLength == 0)
             {
-                for (int i = 0; i < textRuns.Count; i++)
+                if(paragraphProperties.TextWrapping == TextWrapping.NoWrap)
                 {
-                    measuredLength += textRuns[i].Length;
-                }
-
-                TextLineBreak? textLineBreak;
-
-                if (currentLineBreak?.TextEndOfLine is { } textEndOfLine)
-                {
-                    textLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
+                    for (int i = 0; i < textRuns.Count; i++)
+                    {
+                        measuredLength += textRuns[i].Length;
+                    }
                 }
                 else
                 {
-                    textLineBreak = null;
+                    var firstRun = textRuns[0];
+
+                    if(firstRun is ShapedTextRun)
+                    {
+                        var graphemeEnumerator = new GraphemeEnumerator(firstRun.Text.Span);
+
+                        if(graphemeEnumerator.MoveNext(out var grapheme))
+                        {
+                            measuredLength = grapheme.Length;
+                        }
+                        else
+                        {
+                            measuredLength = 1;
+                        }
+                    }
+                    else
+                    {
+                        measuredLength = firstRun.Length;
+                    }
                 }
-
-                var textLine = new TextLineImpl(textRuns.ToArray(), firstTextSourceIndex, measuredLength,
-                  paragraphWidth, paragraphProperties, resolvedFlowDirection,
-                  textLineBreak);
-
-                textLine.FinalizeLine();
-
-                return textLine;
             }
 
             var currentLength = 0;
@@ -841,7 +847,7 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap)
+                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRun.Length)
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
@@ -856,12 +862,6 @@ namespace Avalonia.Media.TextFormatting
                     currentLength += currentRun.Length;
 
                     continue;
-                }
-
-                //We don't want to surpass the measuredLength with trailing whitespace when we are in a right to left setting.
-                if(currentPosition > measuredLength && resolvedFlowDirection == FlowDirection.RightToLeft)
-                {
-                    break;
                 }
 
                 measuredLength = currentPosition;
