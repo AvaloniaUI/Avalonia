@@ -130,7 +130,7 @@ namespace Avalonia.Skia
             var font = _glyphTypefaceImpl.CreateSKFont((float)FontRenderingEmSize);
 
             font.Hinting = SKFontHinting.Full;
-            font.Subpixel = edging == SKFontEdging.SubpixelAntialias;
+            font.Subpixel = edging == SKFontEdging.SubpixelAntialias || edging == SKFontEdging.Antialias;
             font.Edging = edging;
 
             return font;
