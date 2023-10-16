@@ -84,6 +84,16 @@ namespace Avalonia.Controls
                 inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="LineSpacing"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<double> LineSpacingProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
+                nameof(LineSpacing),
+                0,
+                validate: IsValidLineSpacing,
+                inherits: true);
+
+        /// <summary>
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
         public static readonly AttachedProperty<double> LetterSpacingProperty =
@@ -263,6 +273,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(LineHeightProperty);
             set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the extra distance of each line to the next line.
+        /// </summary>
+        public double LineSpacing
+        {
+            get => GetValue(LineSpacingProperty);
+            set => SetValue(LineSpacingProperty, value);
         }
 
         /// <summary>
@@ -620,7 +639,10 @@ namespace Avalonia.Controls
                 Foreground);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing);
+                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+            {
+                LineSpacing = LineSpacing
+            };
 
             ITextSource textSource;
 
@@ -799,6 +821,8 @@ namespace Avalonia.Controls
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
 
         private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;
+
+        private static bool IsValidLineSpacing(double lineSpacing) => !double.IsNaN(lineSpacing) && !double.IsInfinity(lineSpacing);
 
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
