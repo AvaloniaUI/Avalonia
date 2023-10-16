@@ -46,8 +46,9 @@ namespace Avalonia.OpenGL.Controls
             }
 
             ElementComposition.SetElementChildVisual(this, null);
+
+            _updateQueued = false;
             _visual = null;
-            
             _resources?.DisposeAsync();
             _resources = null;
             _initialization = null;
