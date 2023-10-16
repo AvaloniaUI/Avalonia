@@ -64,7 +64,6 @@ namespace Avalonia.X11
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _usePositioningFlags = false;
-        private X11FocusProxy _focusProxy;
 
         private enum XSyncState
         {
@@ -158,8 +157,6 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
 
             Handle = new PlatformHandle(_handle, "XID");
-            _focusProxy = new X11FocusProxy(platform, _handle, OnEvent);
-            SetWmClass(_focusProxy._handle, "FocusProxy");
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -179,7 +176,7 @@ namespace Avalonia.X11
                 XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                     32, PropertyMode.Replace, new[] { _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL }, 1);
 
-                SetWmClass(_handle, _platform.Options.WmClass);
+                SetWmClass(_platform.Options.WmClass);
             }
 
             var surfaces = new List<object>
@@ -216,7 +213,7 @@ namespace Avalonia.X11
             InitializeIme();
             
             XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
-                PropertyMode.Replace, new[] { _x11.Atoms.WM_DELETE_WINDOW, _x11.Atoms.WM_TAKE_FOCUS, _x11.Atoms._NET_WM_SYNC_REQUEST }, 3);
+                PropertyMode.Replace, new[] { _x11.Atoms.WM_DELETE_WINDOW, _x11.Atoms._NET_WM_SYNC_REQUEST }, 2);
 
             if (_x11.HasXSync)
             {
@@ -563,11 +560,6 @@ namespace Avalonia.X11
                         _xSyncValue.Lo = new UIntPtr(ev.ClientMessageEvent.ptr3.ToPointer()).ToUInt32();
                         _xSyncValue.Hi = ev.ClientMessageEvent.ptr4.ToInt32();
                         _xSyncState = XSyncState.WaitConfigure;
-                    }
-                    else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS)
-                    {
-                        IntPtr time = ev.ClientMessageEvent.ptr2;
-                        XSetInputFocus(_x11.Display, _focusProxy._handle, RevertTo.Parent, time);
                     }
                 }
             }
@@ -952,8 +944,6 @@ namespace Avalonia.X11
             {                
                 _renderHandle = IntPtr.Zero;
             }
-
-            _focusProxy.Cleanup();
         }
 
         private bool ActivateTransientChildIfNeeded()
@@ -1111,7 +1101,7 @@ namespace Avalonia.X11
             else
             {
                 XRaiseWindow(_x11.Display, _handle);
-                XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
+                XSetInputFocus(_x11.Display, _handle, 0, IntPtr.Zero);
             }
         }
 
@@ -1203,7 +1193,7 @@ namespace Avalonia.X11
             }
         }
 
-        public void SetWmClass(IntPtr handle, string wmClass)
+        public void SetWmClass(string wmClass)
         {
             // See https://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS
             // We don't actually parse the application's command line, so we only use RESOURCE_NAME and argv[0]
@@ -1219,7 +1209,7 @@ namespace Avalonia.X11
             {
                 hint->res_name = pAppId;
                 hint->res_class = pWmClass;
-                XSetClassHint(_x11.Display, handle, hint);
+                XSetClassHint(_x11.Display, _handle, hint);
             }
 
             XFree(hint);
