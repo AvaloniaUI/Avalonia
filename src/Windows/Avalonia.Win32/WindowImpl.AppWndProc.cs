@@ -1172,6 +1172,7 @@ namespace Avalonia.Win32
                 key,
                 WindowsKeyboardDevice.Instance.Modifiers,
                 physicalKey,
+                virtualKey,
                 keySymbol);
         }
     }

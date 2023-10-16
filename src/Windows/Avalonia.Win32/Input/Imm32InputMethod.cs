@@ -327,7 +327,7 @@ namespace Avalonia.Win32.Input
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
                 {
-                    KeyPress(Key.Delete, PhysicalKey.Delete);
+                    KeyPress(Key.Delete, PhysicalKey.Delete, (int)VirtualKeyStates.VK_DELETE);
                 }
             }
 
@@ -398,15 +398,15 @@ namespace Avalonia.Win32.Input
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
 
-        private void KeyPress(Key key, PhysicalKey physicalKey)
+        private void KeyPress(Key key, PhysicalKey physicalKey, int nativeKeyCode)
         {
             if (_parent?.Input != null)
             {
                 _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
-                RawKeyEventType.KeyDown, key, RawInputModifiers.None, physicalKey, null));
+                RawKeyEventType.KeyDown, key, RawInputModifiers.None, physicalKey, nativeKeyCode, null));
 
                 _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
-                RawKeyEventType.KeyUp, key, RawInputModifiers.None, physicalKey, null));
+                RawKeyEventType.KeyUp, key, RawInputModifiers.None, physicalKey, nativeKeyCode, null));
 
             }
         }

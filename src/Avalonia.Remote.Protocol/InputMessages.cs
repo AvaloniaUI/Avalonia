@@ -78,6 +78,7 @@ namespace Avalonia.Remote.Protocol.Input
         public Key Key { get; set; }
         public PhysicalKey PhysicalKey { get; set; }
         public string? KeySymbol { get; set; }
+        public int NativeKeyCode { get; set; }
     }
 
     [AvaloniaRemoteMessageGuid("C174102E-7405-4594-916F-B10B8248A17D")]

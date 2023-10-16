@@ -767,7 +767,7 @@ interface IAvnWindowBaseEvents : IUnknown
                                 AvnPoint point,
                                 AvnVector delta);
      bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers,
-                      AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol);
+                      AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol, int nativeKeyCode);
      bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
      void ScalingChanged(double scaling);
      void RunRenderPriorityJobs();

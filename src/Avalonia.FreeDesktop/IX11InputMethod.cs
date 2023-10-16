@@ -16,6 +16,7 @@ namespace Avalonia.FreeDesktop
 #pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public int KeyVal { get; set; }
+        public int ScanCode { get; set; }
         public KeyModifiers Modifiers { get; set; }
         public RawKeyEventType Type { get; set; }
     }

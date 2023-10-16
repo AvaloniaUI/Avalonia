@@ -50,6 +50,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             FireForward(new X11InputMethodForwardedKey
             {
                 KeyVal = (int)k.keyval,
+                ScanCode = (int)k.keycode,
                 Type = state.HasAllFlags(IBusModifierMask.ReleaseMask) ? RawKeyEventType.KeyUp : RawKeyEventType.KeyDown,
                 Modifiers = mods
             });

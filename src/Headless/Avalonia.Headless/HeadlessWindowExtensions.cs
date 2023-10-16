@@ -43,42 +43,42 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates keyboard press on the headless window/toplevel.
     /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyPressQwerty alternatively.")]
+    [Obsolete("Use the overload that takes a physical key, key symbol and keycode instead, or KeyPressQwerty alternatively.")]
     public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyPress(topLevel, key, modifiers, PhysicalKey.None, null);
+        KeyPress(topLevel, key, modifiers, PhysicalKey.None, 0, null);
 
     /// <summary>
     /// Simulates keyboard press on the headless window/toplevel.
     /// </summary>
-    public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
+    public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, int keyCode,
         string? keySymbol) =>
-        RunJobsOnImpl(topLevel, w => w.KeyPress(key, modifiers, physicalKey, keySymbol));
+        RunJobsOnImpl(topLevel, w => w.KeyPress(key, modifiers, physicalKey, keyCode, keySymbol));
 
     /// <summary>
     /// Simulates keyboard press on the headless window/toplevel, as if typed on a QWERTY keyboard.
     /// </summary>
-    public static void KeyPressQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers) =>
-        RunJobsOnImpl(topLevel, w => w.KeyPress(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
+    public static void KeyPressQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers, int keyCode) =>
+        RunJobsOnImpl(topLevel, w => w.KeyPress(physicalKey.ToQwertyKey(), modifiers, physicalKey, keyCode, physicalKey.ToQwertyKeySymbol()));
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel.
     /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyReleaseQwerty alternatively.")]
+    [Obsolete("Use the overload that takes a physical key, key symbol and keycode instead, or KeyReleaseQwerty alternatively.")]
     public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyRelease(topLevel, key, modifiers, PhysicalKey.None, null);
+        KeyRelease(topLevel, key, modifiers, PhysicalKey.None, 0, null);
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel.
     /// </summary>
-    public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
+    public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, int keyCode,
         string? keySymbol) =>
-        RunJobsOnImpl(topLevel, w => w.KeyRelease(key, modifiers, physicalKey, keySymbol));
+        RunJobsOnImpl(topLevel, w => w.KeyRelease(key, modifiers, physicalKey, keyCode, keySymbol));
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel, as if typed on a QWERTY keyboard.
     /// </summary>
-    public static void KeyReleaseQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers) =>
-        RunJobsOnImpl(topLevel, w => w.KeyRelease(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
+    public static void KeyReleaseQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers, int keyCode) =>
+        RunJobsOnImpl(topLevel, w => w.KeyRelease(physicalKey.ToQwertyKey(), modifiers, physicalKey, keyCode, physicalKey.ToQwertyKeySymbol()));
 
     /// <summary>
     /// Simulates a text input event on the headless window/toplevel

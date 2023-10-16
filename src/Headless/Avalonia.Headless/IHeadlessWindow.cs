@@ -7,8 +7,8 @@ namespace Avalonia.Headless
     internal interface IHeadlessWindow
     {
         WriteableBitmap? GetLastRenderedFrame();
-        void KeyPress(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol);
-        void KeyRelease(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol);
+        void KeyPress(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, int nativeKeyCode, string? keySymbol);
+        void KeyRelease(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, int nativeKeyCode, string? keySymbol);
         void TextInput(string text);
         void MouseDown(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseMove(Point point, RawInputModifiers modifiers = RawInputModifiers.None);

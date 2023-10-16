@@ -268,7 +268,7 @@ namespace Avalonia.Headless
             return null;
         }
 
-        void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol)
+        void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, int nativeKeyCode, string? keySymbol)
         {
             Input?.Invoke(new RawKeyEventArgs(
                 _keyboard,
@@ -278,10 +278,11 @@ namespace Avalonia.Headless
                 key,
                 modifiers,
                 physicalKey,
+                nativeKeyCode,
                 keySymbol));
         }
 
-        void IHeadlessWindow.KeyRelease(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol)
+        void IHeadlessWindow.KeyRelease(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, int nativeKeyCode, string? keySymbol)
         {
             Input?.Invoke(new RawKeyEventArgs(
                 _keyboard,
@@ -291,6 +292,7 @@ namespace Avalonia.Headless
                 key,
                 modifiers,
                 physicalKey,
+                nativeKeyCode,
                 keySymbol));
         }
 

@@ -229,6 +229,7 @@ namespace Avalonia.Controls.Remote.Server
                                 (Key)key.Key,
                                 GetAvaloniaRawInputModifiers(key.Modifiers),
                                 (PhysicalKey)key.PhysicalKey,
+                                key.NativeKeyCode,
                                 key.KeySymbol));
                         }, DispatcherPriority.Input);
                         break;

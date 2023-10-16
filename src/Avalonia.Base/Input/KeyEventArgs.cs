@@ -71,4 +71,13 @@ public class KeyEventArgs : RoutedEventArgs
     /// <see cref="Key"/>
     /// <see cref="PhysicalKey"/>
     public string? KeySymbol { get; init; }
+
+    /// <summary>
+    /// Gets the key code of the associated event.
+    /// This is platform-dependent.
+    /// <remarks>
+    /// Use this property if you need to refer to a key's native keycode.
+    /// </remarks>
+    /// </summary>
+    public int NativeKeyCode { get; init; }
 }

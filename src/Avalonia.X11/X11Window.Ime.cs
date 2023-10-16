@@ -98,6 +98,7 @@ namespace Avalonia.X11
                 X11KeyTransform.KeyFromX11Key(x11Key),
                 (RawInputModifiers)forwardedKey.Modifiers,
                 PhysicalKey.None,
+                forwardedKey.ScanCode,
                 keySymbol));
         }
 
@@ -119,6 +120,7 @@ namespace Avalonia.X11
                     key,
                     modifiers,
                     physicalKey,
+                    ev.KeyEvent.keycode,
                     symbol,
                     TranslateEventToString(ref ev, symbol)) :
                 new RawKeyEventArgs(
@@ -129,6 +131,7 @@ namespace Avalonia.X11
                     key,
                     modifiers,
                     physicalKey,
+                    ev.KeyEvent.keycode,
                     symbol);
 
             ScheduleKeyInput(args, ref ev, (int)x11Key, ev.KeyEvent.keycode);
@@ -338,9 +341,10 @@ namespace Avalonia.X11
                 Key key,
                 RawInputModifiers modifiers,
                 PhysicalKey physicalKey,
+                int nativeKeyCode,
                 string? keySymbol,
                 string? text)
-                : base(device, timestamp, root, type, key, modifiers, physicalKey, keySymbol)
+                : base(device, timestamp, root, type, key, modifiers, physicalKey, nativeKeyCode, keySymbol)
             {
                 Text = text;
             }
