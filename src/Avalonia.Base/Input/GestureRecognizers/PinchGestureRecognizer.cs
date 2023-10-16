@@ -11,6 +11,7 @@ namespace Avalonia.Input
         private IPointer? _secondContact;
         private Point _secondPoint;
         private Point _origin;
+        private double _previousAngle;
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -50,14 +51,10 @@ namespace Avalonia.Input
 
                     var scale = distance / _initialDistance;
 
-                    // https://stackoverflow.com/a/15994225/20894223
+                    var degree = GetAngleDegreeFromPoints(_firstPoint, _secondPoint);
 
-                    var deltaX = _firstPoint.X - _secondPoint.X;
-                    var deltaY = - (_firstPoint.Y - _secondPoint.Y);     // I reverse the sign, because on the screen the Y axes are reversed with respect to the Cartesian plane.
-                    var rad = System.Math.Atan2(deltaX, deltaY);         // radians from -π to +π
-                    var degree = ((rad * (180 / System.Math.PI))) + 180; // Atan2 returns a radian value between -π to +π, in degrees -180 to +180.
-                                                                         // To get the angle between 0 and 360 degrees you need to add 180 degrees.
-                    var pinchEventArgs = new PinchEventArgs(scale, _origin, degree);
+                    var pinchEventArgs = new PinchEventArgs(scale, _origin, degree, _previousAngle - degree);
+                    _previousAngle = degree;
                     Target?.RaiseEvent(pinchEventArgs);
                     e.Handled = pinchEventArgs.Handled;
                     e.PreventGestureRecognition();
@@ -91,6 +88,8 @@ namespace Avalonia.Input
                     _initialDistance = GetDistance(_firstPoint, _secondPoint);
 
                     _origin = new Point((_firstPoint.X + _secondPoint.X) / 2.0f, (_firstPoint.Y + _secondPoint.Y) / 2.0f);
+
+                    _previousAngle = GetAngleDegreeFromPoints(_firstPoint, _secondPoint);
 
                     Capture(_firstContact);
                     Capture(_secondContact);
@@ -133,6 +132,19 @@ namespace Avalonia.Input
         {
             var length = b - a;
             return (float)new Vector(length.X, length.Y).Length;
+        }
+
+        private static double GetAngleDegreeFromPoints(Point a, Point b)
+        {
+            // https://stackoverflow.com/a/15994225/20894223
+
+            var deltaX = a.X - b.X;
+            var deltaY = -(a.Y - b.Y);                           // I reverse the sign, because on the screen the Y axes
+                                                                 // are reversed with respect to the Cartesian plane.
+            var rad = System.Math.Atan2(deltaX, deltaY);         // radians from -π to +π
+            var degree = ((rad * (180 / System.Math.PI))) + 180; // Atan2 returns a radian value between -π to +π, in degrees -180 to +180.
+                                                                 // To get the angle between 0 and 360 degrees you need to add 180 degrees.
+            return degree;
         }
     }
 }
