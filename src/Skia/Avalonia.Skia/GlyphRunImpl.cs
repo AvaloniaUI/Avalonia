@@ -70,6 +70,11 @@ namespace Avalonia.Skia
                 var gBounds = glyphBounds[i];
                 var advance = glyphInfos[i].GlyphAdvance;
 
+                if(gBounds.Width == 0)
+                {
+                    gBounds = new SKRect(0, 0, (float)advance, 1);
+                }
+
                 runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, baselineOrigin.Y + gBounds.Top, gBounds.Width, gBounds.Height));
 
                 currentX += advance;
