@@ -97,12 +97,12 @@ namespace Avalonia.Controls.Primitives
         {
             if (_presenter != null && _textBox != null)
             {
-                var point = ToPresenter(_caretHandle.IndicatorPosition);
+                var point = ToTextBox(_caretHandle.IndicatorPosition);
                 _presenter.MoveCaretToPoint(point);
                 _textBox.SelectionStart = _textBox.SelectionEnd = _presenter.CaretIndex;
                 var points = _presenter.GetCaretPoints();
 
-                _caretHandle?.SetTopLeft(ToLayer(points.Item2));
+                _caretHandle?.SetTopLeft(points.Item2);
             }
         }
 
@@ -115,17 +115,15 @@ namespace Avalonia.Controls.Primitives
 
         private void EnsureVisible()
         {
-            if (_textBox is { } t && t.VisualRoot is Visual r)
+            if (_textBox is { } t)
             {
-                var bounds = t.Bounds;
-                var topLeft = t.TranslatePoint(default, r as Visual) ?? default;
-                bounds = bounds.WithX(topLeft.X).WithY(topLeft.Y);
+                var bounds = t.Bounds.WithX(0).WithY(0);
 
                 var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
 
-                _startHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_startHandle), Canvas.GetTop(_startHandle))) && ShowHandles && hasSelection;
-                _endHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_endHandle), Canvas.GetTop(_endHandle))) && ShowHandles && hasSelection;
-                _caretHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_caretHandle), Canvas.GetTop(_caretHandle))) && ShowHandles && !hasSelection;
+                _startHandle.IsVisible = bounds.Contains(ToTextBox(new Point(GetLeft(_startHandle), GetTop(_startHandle)))) && ShowHandles && hasSelection;
+                _endHandle.IsVisible = bounds.Contains(ToTextBox(new Point(GetLeft(_endHandle), GetTop(_endHandle)))) && ShowHandles && hasSelection;
+                _caretHandle.IsVisible = bounds.Contains(ToTextBox(new Point(GetLeft(_caretHandle), GetTop(_caretHandle)))) && ShowHandles && !hasSelection;
             }
         }
 
@@ -138,7 +136,7 @@ namespace Avalonia.Controls.Primitives
                     flyout.Hide();
                 }
 
-                var point = ToPresenter(handle.IndicatorPosition);
+                var point = ToTextBox(handle.IndicatorPosition);
                 point = point.WithY(point.Y - _presenter.FontSize / 2);
                 var hit = _presenter.TextLayout.HitTestPoint(point);
                 var caret = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
@@ -163,14 +161,14 @@ namespace Avalonia.Controls.Primitives
                     var last = rects.Last();
 
                     if (handle.SelectionHandleType == SelectionHandleType.Start)
-                        handle?.SetTopLeft(ToLayer(first.BottomLeft));
+                        handle?.SetTopLeft(first.BottomLeft);
                     else
-                        handle?.SetTopLeft(ToLayer(last.BottomRight));
+                        handle?.SetTopLeft(last.BottomRight);
 
                     if (otherHandle.SelectionHandleType == SelectionHandleType.Start)
-                        otherHandle?.SetTopLeft(ToLayer(first.BottomLeft));
+                        otherHandle?.SetTopLeft(first.BottomLeft);
                     else
-                        otherHandle?.SetTopLeft(ToLayer(last.BottomRight));
+                        otherHandle?.SetTopLeft(last.BottomRight);
                 }
 
                 _presenter?.MoveCaretToTextPosition(caret);
@@ -179,19 +177,9 @@ namespace Avalonia.Controls.Primitives
             EnsureVisible();
         }
 
-        private Point ToLayer(Point point)
-        {
-            return (_presenter?.VisualRoot is Visual v) ? _presenter?.TranslatePoint(point, v) ?? point : point;
-        }
-
-        private Point ToPresenter(Point point)
-        {
-            return (_presenter is { } p) ? (p.VisualRoot as Visual)?.TranslatePoint(point, p) ?? point : point;
-        }
-
         private Point ToTextBox(Point point)
         {
-            return (_textBox is { } p) ? (p.VisualRoot as Visual)?.TranslatePoint(point, p) ?? point : point;
+            return (_textBox is { } t) ? (_presenter as Visual)?.TranslatePoint(point, t) ?? point : point;
         }
 
         public void MoveHandlesToSelection()
@@ -205,7 +193,7 @@ namespace Avalonia.Controls.Primitives
 
             var points = _presenter.GetCaretPoints();
 
-            _caretHandle.SetTopLeft(ToLayer(points.Item2));
+            _caretHandle.SetTopLeft(points.Item2);
 
             if (hasSelection)
             {
@@ -223,13 +211,13 @@ namespace Avalonia.Controls.Primitives
 
                     if (!_startHandle.IsDragging)
                     {
-                        _startHandle.SetTopLeft(ToLayer(first.BottomLeft));
+                        _startHandle.SetTopLeft(first.BottomLeft);
                         _startHandle.SelectionHandleType = selectionStart < selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
                     }
 
                     if (!_endHandle.IsDragging)
                     {
-                        _endHandle.SetTopLeft(ToLayer(last.BottomRight));
+                        _endHandle.SetTopLeft(last.BottomRight);
                         _endHandle.SelectionHandleType = selectionStart > selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
                     }
                 }

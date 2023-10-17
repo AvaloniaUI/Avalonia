@@ -90,7 +90,6 @@ namespace Avalonia.Controls.Presenters
         private Rect _caretBounds;
         private Point _navigationPosition;
         private Point? _previousOffset;
-        private TextSelectorLayer? _layer;
 
         static TextPresenter()
         {
@@ -843,8 +842,7 @@ namespace Avalonia.Controls.Presenters
                 TextSelectionHandleCanvas = new TextSelectionHandleCanvas();
             }
 
-            _layer = TextSelectorLayer.GetTestLayer(this);
-            _layer?.Add(TextSelectionHandleCanvas);
+            AdornerLayer.SetAdorner(this, TextSelectionHandleCanvas);
             TextSelectionHandleCanvas.SetPresenter(this);
         }
 
@@ -853,7 +851,7 @@ namespace Avalonia.Controls.Presenters
             base.OnDetachedFromVisualTree(e);
             if (TextSelectionHandleCanvas is { } c)
             {
-                _layer?.Remove(c);
+                AdornerLayer.SetAdornedElement(this, null);
                 c.SetPresenter(null);
             }
 
