@@ -1187,6 +1187,10 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("A\nBB\nCCC\nDDDD", 1, 2)]
         [InlineData("A\nBB\nCCC\nDDDD", 2, 5)]
         [InlineData("A\nBB\nCCC\nDDDD", 3, 9)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 0, 0)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 1, 5)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 2, 11)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 3, 17)]
         public void Should_Scroll_Caret_To_Line(string text, int targetLineIndex, int expectedCaretIndex)
         {
             using (UnitTestApplication.Start(Services))
