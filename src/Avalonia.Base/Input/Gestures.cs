@@ -132,6 +132,39 @@ namespace Avalonia.Input
             element.AddHandler(RightTappedEvent, handler);
         }
 
+        public static void AddHoldingHandler(Interactive element, EventHandler<HoldingRoutedEventArgs> handler) =>
+            element.AddHandler(HoldingEvent, handler);
+
+        public static void AddPinchHandler(Interactive element, EventHandler<PinchEventArgs> handler) =>
+            element.AddHandler(PinchEvent, handler);
+
+        public static void AddPinchEndedHandler(Interactive element, EventHandler<PinchEndedEventArgs> handler) =>
+            element.AddHandler(PinchEndedEvent, handler);
+
+        public static void AddPullGestureHandler(Interactive element, EventHandler<PullGestureEventArgs> handler) =>
+            element.AddHandler(PullGestureEvent, handler);
+
+        public static void AddPullGestureEndedHandler(Interactive element, EventHandler<PullGestureEndedEventArgs> handler) =>
+            element.AddHandler(PullGestureEndedEvent, handler);
+
+        public static void AddPointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.AddHandler(PointerTouchPadGestureMagnifyEvent, handler);
+
+        public static void AddPointerTouchPadGestureRotateHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.AddHandler(PointerTouchPadGestureRotateEvent, handler);
+
+        public static void AddPointerTouchPadGestureSwipeHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.AddHandler(PointerTouchPadGestureSwipeEvent, handler);
+
+        public static void AddScrollGestureHandler(Interactive element, EventHandler<RoutedEventArgs> handler) =>
+            element.AddHandler(ScrollGestureEvent, handler);
+
+        public static void AddScrollGestureEndedHandler(Interactive element, EventHandler<ScrollGestureEndedEventArgs> handler) =>
+            element.AddHandler(ScrollGestureEndedEvent, handler);
+
+        public static void AddScrollGestureInertiaStartingHandler(Interactive element, EventHandler<ScrollGestureInertiaStartingEventArgs> handler) =>
+            element.AddHandler(ScrollGestureInertiaStartingEvent, handler);
+
         public static void RemoveTappedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
         {
             element.RemoveHandler(TappedEvent, handler);
@@ -146,6 +179,39 @@ namespace Avalonia.Input
         {
             element.RemoveHandler(RightTappedEvent, handler);
         }
+
+        public static void RemoveHoldingHandler(Interactive element, EventHandler<RoutedEventArgs> handler) =>
+            element.RemoveHandler(HoldingEvent, handler);
+
+        public static void RemovePinchHandler(Interactive element, EventHandler<PinchEventArgs> handler) =>
+            element.RemoveHandler(PinchEvent, handler);
+
+        public static void RemovePinchEndedHandler(Interactive element, EventHandler<PinchEndedEventArgs> handler) =>
+            element.RemoveHandler(PinchEndedEvent, handler);
+
+        public static void RemovePullGestureHandler(Interactive element, EventHandler<PullGestureEventArgs> handler) =>
+            element.RemoveHandler(PullGestureEvent, handler);
+
+        public static void RemovePullGestureEndedHandler(Interactive element, EventHandler<PullGestureEndedEventArgs> handler) =>
+            element.RemoveHandler(PullGestureEndedEvent, handler);
+
+        public static void RemovePointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.RemoveHandler(PointerTouchPadGestureMagnifyEvent, handler);
+
+        public static void RemovePointerTouchPadGestureRotateHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.RemoveHandler(PointerTouchPadGestureRotateEvent, handler);
+
+        public static void RemovePointerTouchPadGestureSwipeHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
+            element.RemoveHandler(PointerTouchPadGestureSwipeEvent, handler);
+
+        public static void RemoveScrollGestureHandler(Interactive element, EventHandler<ScrollGestureEventArgs> handler) =>
+            element.RemoveHandler(ScrollGestureEvent,handler);
+
+        public static void RemoveScrollGestureEndedHandler(Interactive element,EventHandler<ScrollGestureEndedEventArgs> handler) =>
+            element.RemoveHandler(ScrollGestureEndedEvent,handler);
+
+        public static void RemoveScrollGestureInertiaStartingHandler(Interactive element, EventHandler<ScrollGestureInertiaStartingEventArgs> handler) =>
+            element.RemoveHandler(ScrollGestureInertiaStartingEvent, handler);
 
         private static void PointerPressed(RoutedEventArgs ev)
         {
