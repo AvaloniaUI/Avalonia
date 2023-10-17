@@ -292,7 +292,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_textBox != null)
             {
-                if (_textBox.ContextFlyout is Flyout flyout)
+                if (_textBox.ContextFlyout is PopupFlyoutBase flyout)
                 {
                     var verticalOffset = (double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) + ContextMenuPadding;
 
@@ -318,7 +318,7 @@ namespace Avalonia.Controls.Primitives
                         var topLeft = ToTextBox(handle.GetTopLeft());
                         flyout.VerticalOffset = topLeft.Y - verticalOffset;
                         flyout.HorizontalOffset = topLeft.X;
-                        flyout.Placement = PlacementMode.Top;
+                        flyout.Placement = PlacementMode.TopEdgeAlignedLeft;
                         _textBox.RaiseEvent(new ContextRequestedEventArgs());
 
                         return true;

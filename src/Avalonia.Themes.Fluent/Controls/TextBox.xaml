@@ -33,10 +33,10 @@
     <MenuItem x:Name="TextBoxContextFlyoutCopyItem" Header="Copy" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}"/>
     <MenuItem x:Name="TextBoxContextFlyoutPasteItem" Header="Paste" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}"/>
   </MenuFlyout>
-  <MenuFlyout x:Key="MobileTextBoxContextFlyout" FlyoutPresenterTheme="{StaticResource HorizontalFlyout}">
-    <MenuItem x:Name="MobileTextBoxContextFlyoutCutItem" Classes="text-menu" Header="Cut" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" />
-    <MenuItem x:Name="MobileTextBoxContextFlyoutCopyItem" Classes="text-menu" Header="Copy" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" />
-    <MenuItem x:Name="MobileTextBoxContextFlyoutPasteItem" Classes="text-menu" Header="Paste" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" />
+  <MenuFlyout x:Key="MobileTextBoxContextFlyout" FlyoutPresenterTheme="{StaticResource MobileHorizontalMenuFlyoutPresenter}" ItemContainerTheme="{StaticResource MobileTextMenuItem}">
+    <MenuItem x:Name="MobileTextBoxContextFlyoutCutItem" Header="Cut" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" IsVisible="{Binding $parent[TextBox].CanCut}" />
+    <MenuItem x:Name="MobileTextBoxContextFlyoutCopyItem" Header="Copy" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" IsVisible="{Binding $parent[TextBox].CanCopy}" />
+    <MenuItem x:Name="MobileTextBoxContextFlyoutPasteItem" Header="Paste" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" />
   </MenuFlyout>
 
   <ControlTheme x:Key="FluentTextBoxButton" TargetType="Button">
