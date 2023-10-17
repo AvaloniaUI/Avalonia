@@ -52,8 +52,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnUpdatePreedit(Exception? arg1, (DBusVariantItem text, uint cursor_pos, bool visible) preeditComponents)
         {
-            
-            if (preeditComponents.text.Value is DBusStructItem { Count: >= 3 } structItem &&
+            if (preeditComponents.text is { Value: DBusStructItem { Count: >= 3 } structItem } &&
                 structItem[2] is DBusStringItem stringItem)
             {
                 _preeditText = stringItem.Value;
@@ -63,11 +62,17 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                     : 0;
                 
                 _preeditShown = true;
-
-                if (Client?.SupportsPreedit == true)
-                    Client.SetPreeditText(
-                        _preeditText, _preeditCursor);
             }
+            else
+            {
+                _preeditText = null;
+                _preeditShown = false;
+                _preeditCursor = 0;
+            }
+
+            if (Client?.SupportsPreedit == true)
+                Client.SetPreeditText(
+                    _preeditShown ? _preeditText : null, _preeditCursor);
         }
 
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
