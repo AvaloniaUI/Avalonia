@@ -176,18 +176,18 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
-        public void GlyphRun_With_Leading_Space_Has_Correct_InBounds()
+        public void GlyphRun_With_Leading_Space_Has_Correct_InkBounds()
         {
             using (Start())
             {
                 var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
                 var options = new TextShaperOptions(typeface.GlyphTypeface, 14);
-                var shapedBuffer = TextShaper.Current.ShapeText(" ", options);
+                var shapedBuffer = TextShaper.Current.ShapeText(" x", options);
 
                 var glyphRun1 = CreateGlyphRun(shapedBuffer);
                 var bounds = glyphRun1.InkBounds;
 
-                Assert.Equal(shapedBuffer[0].GlyphAdvance, bounds.Width);
+                Assert.Equal(shapedBuffer[0].GlyphAdvance, bounds.Left);
             }
         }
 
