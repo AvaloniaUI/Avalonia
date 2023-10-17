@@ -44,8 +44,6 @@ namespace Avalonia.Controls.Primitives
             _startHandle = new TextSelectionHandle();
             _endHandle = new TextSelectionHandle();
 
-            ClipToBounds = true;
-
             Children.Add(_caretHandle);
             Children.Add(_startHandle);
             Children.Add(_endHandle);
@@ -118,14 +116,14 @@ namespace Avalonia.Controls.Primitives
             if (_textBox is { } t && t.VisualRoot is Visual r)
             {
                 var bounds = t.Bounds;
-                var topLeft = t.TranslatePoint(default, r as Visual) ?? default;
+                var topLeft = t.TranslatePoint(default, r) ?? default;
                 bounds = bounds.WithX(topLeft.X).WithY(topLeft.Y);
 
                 var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
 
-                _startHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_startHandle), Canvas.GetTop(_startHandle))) && ShowHandles && hasSelection;
-                _endHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_endHandle), Canvas.GetTop(_endHandle))) && ShowHandles && hasSelection;
-                _caretHandle.IsVisible = bounds.Contains(new Point(Canvas.GetLeft(_caretHandle), Canvas.GetTop(_caretHandle))) && ShowHandles && !hasSelection;
+                _startHandle.IsVisible = bounds.Contains(new Point(GetLeft(_startHandle), GetTop(_startHandle))) && ShowHandles && hasSelection;
+                _endHandle.IsVisible = bounds.Contains(new Point(GetLeft(_endHandle), GetTop(_endHandle))) && ShowHandles && hasSelection;
+                _caretHandle.IsVisible = bounds.Contains(new Point(GetLeft(_caretHandle), GetTop(_caretHandle))) && ShowHandles && !hasSelection;
             }
         }
 
