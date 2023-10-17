@@ -900,8 +900,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public XamlILNodeEmitResult Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
+                var intType = context.Configuration.TypeSystem.GetType("System.Int32");
                 var types = context.GetAvaloniaTypes();
-                codeGen.Newobj(types.CompiledBindingPathBuilder.FindConstructor());
+
+                // We're calling the CompiledBindingPathBuilder(int apiVersion) with an apiVersion 
+                // of 1 to indicate that we don't want TemplatedParent compatibility hacks enabled.
+                codeGen
+                    .Ldc_I4(1)
+                    .Newobj(types.CompiledBindingPathBuilder.FindConstructor(new() { intType }));
 
                 foreach (var transform in _transformElements)
                 {

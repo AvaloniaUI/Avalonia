@@ -107,8 +107,17 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     public class CompiledBindingPathBuilder
     {
+        private readonly int _apiVersion;
         private object? _rawSource;
         private readonly List<ICompiledBindingPathElement> _elements = new();
+
+        public CompiledBindingPathBuilder()
+        {
+        }
+
+        // TODO12: Remove this constructor. apiVersion is only needed for compatibility with
+        // versions of Avalonia which used $self.Property() for building TemplatedParent bindings.
+        public CompiledBindingPathBuilder(int apiVersion) => _apiVersion = apiVersion;
 
         public CompiledBindingPathBuilder Not()
         {
@@ -118,7 +127,21 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
-            _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
+            // Older versions of Avalonia used $self.Property() for building TemplatedParent bindings.
+            // Try to detect this and upgrade to using a TemplatedParentPathElement so that logging works
+            // correctly.
+            if (_apiVersion == 0 && 
+                info.Name == "TemplatedParent" && 
+                _elements.Count >= 1 &&
+                _elements[_elements.Count - 1] is SelfPathElement)
+            {
+                _elements.Add(new TemplatedParentPathElement());
+            }
+            else
+            {
+                _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
+            }
+
             return this;
         }
 
