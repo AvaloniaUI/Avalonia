@@ -47,6 +47,12 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             ?? _modern?.WatchForwardKeyAsync((e, ev) => handler.Invoke(e, (ev.keyval, ev.state, ev.type ? 1 : 0)))
             ?? new ValueTask<IDisposable?>(default(IDisposable?));
 
+        public ValueTask<IDisposable?> WatchUpdateFormattedPreeditAsync(
+            Action<Exception?, ((string, int)[] @str, int @cursorpos)> handler) =>
+            _old?.WatchUpdateFormattedPreeditAsync(handler)
+            ?? _modern?.WatchUpdateFormattedPreeditAsync(handler)
+            ?? new(default);
+        
         public Task SetCapacityAsync(uint flags) =>
             _old?.SetCapacityAsync(flags) ?? _modern?.SetCapabilityAsync(flags) ?? Task.CompletedTask;
     }
