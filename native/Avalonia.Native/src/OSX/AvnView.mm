@@ -460,16 +460,7 @@
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
-}
-
-- (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
-    if([self ignoreUserInput: false] || _parent == nullptr)
-    {
-        return false;
-    }
-    
-    return _parent->BaseEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
+    _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -485,7 +476,6 @@
     bool isControlPressed = (newModifierState & Control) == Control;
     bool isShiftPressed = (newModifierState & Shift) == Shift;
     bool isCommandPressed = (newModifierState & Windows) == Windows;
-
 
     if (isAltPressed && !isAltCurrentlyPressed)
     {
@@ -529,8 +519,17 @@
     [super flagsChanged:event];
 }
 
+- (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
+    return _parent->BaseEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
+}
+
 - (void)keyDown:(NSEvent *)event
 {
+    if([self ignoreUserInput: false] || _parent == nullptr)
+    {
+        return;
+    }
+    
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     
     auto scanCode = [event keyCode];
