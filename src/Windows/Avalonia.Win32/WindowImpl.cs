@@ -1348,7 +1348,7 @@ namespace Avalonia.Win32
                 {
                     style &= ~fullDecorationFlags;
 
-                    if (newProperties.Decorations == SystemDecorations.BorderOnly)
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly && WindowState != WindowState.Maximized)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
                     }
