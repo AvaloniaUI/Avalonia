@@ -146,11 +146,6 @@
     <Style Selector="^:icon /template/ Viewbox#PART_IconPresenter">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-    
-    <Style Selector="^.text-menu">
-      <Setter Property="Padding" Value="11,4,0,7"/>
-    </Style>
-
     <Style Selector="^:selected">
       <Style Selector="^ /template/ Border#PART_LayoutRoot">
         <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPointerOver}" />
@@ -201,6 +196,113 @@
 
     <Style Selector="^:empty /template/ Path#PART_ChevronPath">
       <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^:separator">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Separator/>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+  </ControlTheme>
+  <ControlTheme x:Key="MobileTextMenuItem" TargetType="MenuItem">
+    <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
+    <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
+    <Setter Property="Padding" Value="{DynamicResource MobileMenuFlyoutItemThemePaddingNarrow}" />
+    <Setter Property="Margin" Value="{DynamicResource MobileMenuFlyoutItemMargin}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border Name="PART_LayoutRoot"
+                  Padding="{TemplateBinding Padding}"
+                  Margin="{TemplateBinding Margin}"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"
+                                  SharedSizeGroup="MenuItemIcon" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+
+              <Viewbox Name="PART_IconPresenter"
+                       Margin="{DynamicResource MenuIconPresenterMargin}"
+                       StretchDirection="DownOnly"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="False"
+                       Width="16" Height="16">
+                <ContentPresenter Content="{TemplateBinding Icon}"/>
+              </Viewbox>
+
+              <ContentPresenter Name="PART_HeaderPresenter"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Stretch"
+                                RecognizesAccessKey="True"
+                                Grid.Column="1"/>
+            </Grid>
+          </Border>
+          <Popup Name="PART_Popup"
+                 WindowManagerAddShadowHint="False"
+                 Placement="RightEdgeAlignedBottom"
+                 HorizontalOffset="{DynamicResource MenuFlyoutSubItemPopupHorizontalOffset}"
+                 IsLightDismissEnabled="False"
+                 IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
+            <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
+                    BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
+                    BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
+                    Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
+                    MaxWidth="{DynamicResource FlyoutThemeMaxWidth}"
+                    MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="{DynamicResource OverlayCornerRadius}">
+              <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
+                <ItemsPresenter Name="PART_ItemsPresenter"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                Margin="{DynamicResource MenuFlyoutScrollerMargin}"
+                                Grid.IsSharedSizeScope="True" />
+              </ScrollViewer>
+            </Border>
+          </Popup>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:icon /template/ Viewbox#PART_IconPresenter">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:selected">
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPointerOver}" />
+      </Style>
+      <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPointerOver}" />
+      </Style>
+    </Style>
+
+    <!--  Listen for PART_LayoutRoot:pointerover, so it will not be triggered when subitem is pressed  -->
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot:pointerover">
+      <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
+      <Style Selector="^ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPressed}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:disabled">
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundDisabled}" />
+      </Style>
+      <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
+      </Style>
     </Style>
 
     <Style Selector="^:separator">
