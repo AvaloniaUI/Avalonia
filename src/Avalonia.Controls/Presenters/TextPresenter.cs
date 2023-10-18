@@ -855,7 +855,7 @@ namespace Avalonia.Controls.Presenters
                 TextSelectionHandleCanvas = new TextSelectionHandleCanvas();
             }
 
-            _layer = TextSelectorLayer.GetTestLayer(this);
+            _layer = TextSelectorLayer.GetTextSelectorLayer(this);
             _layer?.Add(TextSelectionHandleCanvas);
             TextSelectionHandleCanvas.SetPresenter(this);
         }

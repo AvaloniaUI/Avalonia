@@ -5,6 +5,9 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
+    /// <summary>
+    /// A controls that enables easy control over text selection using touch based input
+    /// </summary>
     public class TextSelectionHandle : Thumb
     {
         internal SelectionHandleType SelectionHandleType { get; set; }
@@ -13,7 +16,7 @@ namespace Avalonia.Controls.Primitives
 
         internal Point IndicatorPosition => IsDragging ? _startPosition.WithX(_startPosition.X) + _delta : Bounds.Position.WithX(Bounds.Position.X).WithY(Bounds.Y);
 
-        public bool IsDragging { get; private set; }
+        internal bool IsDragging { get; private set; }
 
         private Vector _delta;
         private Point? _lastPoint;
@@ -30,7 +33,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToVisualTree(e);
 
-            if(_transform == null)
+            if (_transform == null)
             {
                 _transform = new TranslateTransform();
             }
@@ -80,7 +83,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_transform != null)
             {
-                if(SelectionHandleType == SelectionHandleType.Caret)
+                if (SelectionHandleType == SelectionHandleType.Caret)
                 {
                     HasMirrorTransform = true;
                     _transform.X = Bounds.Width / 2 * -1;

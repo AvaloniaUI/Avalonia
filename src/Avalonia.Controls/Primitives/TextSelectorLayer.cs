@@ -8,10 +8,10 @@ namespace Avalonia.Controls.Primitives
     {
         protected override bool BypassFlowDirectionPolicies => true;
         public Size AvailableSize { get; private set; }
-        public static TextSelectorLayer? GetTestLayer(Visual visual)
+        public static TextSelectorLayer? GetTextSelectorLayer(Visual visual)
         {
-            foreach(var v in visual.GetVisualAncestors())
-                if(v is VisualLayerManager vlm)
+            foreach (var v in visual.GetVisualAncestors())
+                if (v is VisualLayerManager vlm)
                     if (vlm.TextSelectorLayer != null)
                         return vlm.TextSelectorLayer;
             if (visual is TopLevel tl)
