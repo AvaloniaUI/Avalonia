@@ -200,6 +200,17 @@ namespace Avalonia.Input
                    // In our unit tests some elements might not have a root. Remove when we migrate to headless tests.
                 ?? (FocusManager?)AvaloniaLocator.Current.GetService<IFocusManager>();
         }
+
+        internal bool TryMoveFocus(NavigationDirection direction)
+        {
+            if (GetFocusedElement() is {} focusedElement
+                && KeyboardNavigationHandler.GetNext(focusedElement, direction) is {} newElement)
+            {
+                return newElement.Focus(NavigationMethod.Directional);
+            }
+
+            return false;
+        }
         
         /// <summary>
         /// Checks if the specified element can be focused.
