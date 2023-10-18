@@ -183,7 +183,8 @@ namespace Avalonia.Input
                 var text = e.Key.ToString();
                 var matches = _registered
                     .Where(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
-                        && x.Element.IsEffectivelyVisible)
+                        && x.Element.IsEffectivelyVisible
+                        && x.Element.IsEffectivelyEnabled)
                     .Select(x => x.Element);
 
                 // If the menu is open, only match controls in the menu's visual tree.

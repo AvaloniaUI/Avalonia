@@ -766,18 +766,62 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Line_Formatting_For_Oversized_Embedded_Runs_Does_Not_Produce_Empty_Lines()
+        
+        [Theory]
+        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
+        public void Line_Formatting_For_Oversized_Embedded_Runs_Does_Not_Produce_Empty_Lines(TextWrapping wrapping)
         {
             var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
             var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
-                textWrap: TextWrapping.WrapWithOverflow);
+                textWrap: wrapping);
 
             using (Start())
             {
                 var source = new ListTextSource(new RectangleRun(new Rect(0, 0, 200, 10), Brushes.Aqua));
                 var textLine = TextFormatter.Current.FormatLine(source, 0, 100, paragraphProperties);
                 Assert.Equal(200d, textLine.WidthIncludingTrailingWhitespace);
+            }
+        }
+        
+        [Theory]
+        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
+        public void Line_Formatting_For_Oversized_Embedded_Runs_Inside_Normal_Text_Does_Not_Produce_Empty_Lines(
+            TextWrapping wrapping)
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
+                textWrap: wrapping);
+            
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DejaVu Sans"));
+                
+                var text1 = new TextCharacters("Hello",
+                    new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
+                var text2 = new TextCharacters("world",
+                    new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
+                
+                var source = new ListTextSource(
+                    text1,
+                    new RectangleRun(new Rect(0, 0, 200, 10), Brushes.Aqua),
+                    new InvisibleRun(1),
+                    new TextEndOfLine(),
+                    text2,
+                    new TextEndOfParagraph(1));
+
+                var lines = new List<TextLine>();
+                var dcp = 0;
+                for (var c = 0;; c++)
+                {
+                    Assert.True(c < 1000, "Infinite loop");
+                    var textLine = TextFormatter.Current.FormatLine(source, dcp, 30, paragraphProperties);
+                    Assert.NotNull(textLine);
+                    lines.Add(textLine);
+                    dcp += textLine.Length;
+                    
+                    if (textLine.TextLineBreak is {} eol && eol.TextEndOfLine is TextEndOfParagraph)
+                        break;
+                }
             }
         }
 
@@ -910,7 +954,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         
         private class ListTextSource : ITextSource
         {
-            private Dictionary<int, TextRun> _runs = new();
+            private List<TextRun> _runs = new();
 
             public ListTextSource(params TextRun[] runs) : this((IEnumerable<TextRun>)runs)
             {
@@ -919,18 +963,27 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             
             public ListTextSource(IEnumerable<TextRun> runs)
             {
-                var off = 0;
-                foreach (var r in runs)
-                {
-                    _runs[off] = r;
-                    off += r.Length;
-                }
+                _runs = runs.ToList();
             }
             
             public TextRun GetTextRun(int textSourceIndex)
             {
-                _runs.TryGetValue(textSourceIndex, out var rv);
-                return rv;
+                var off = 0;
+                for (var c = 0; c < _runs.Count; c++)
+                {
+                    var run = _runs[c];
+                    if (textSourceIndex >= off && textSourceIndex - off < run.Length)
+                    {
+                        if (run.Length == 1)
+                            return run;
+                        var chars = ((TextCharacters)run);
+                        return new TextCharacters(chars.Text.Slice(textSourceIndex - off), chars.Properties);
+                    }
+
+                    off += run.Length;
+                }
+
+                return null;
             }
         }
 
