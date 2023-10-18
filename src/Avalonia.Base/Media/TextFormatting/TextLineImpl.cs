@@ -1233,6 +1233,7 @@ namespace Avalonia.Media.TextFormatting
 
             var height = descent - ascent + lineGap;
             var lineHeight = _paragraphProperties.LineHeight;
+            var lineSpacing = _paragraphProperties.LineSpacing;
 
             var bounds = new Rect();
 
@@ -1339,7 +1340,7 @@ namespace Avalonia.Media.TextFormatting
             return new TextLineMetrics
             {
                 HasOverflowed = hasOverflowed,
-                Height = height,
+                Height = height + lineSpacing,
                 Extent = bounds.Height,
                 NewlineLength = newLineLength,
                 Start = start,

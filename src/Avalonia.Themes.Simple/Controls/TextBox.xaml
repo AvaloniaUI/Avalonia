@@ -134,6 +134,8 @@
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                   <Panel>
                     <TextBlock Name="watermark"
+                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"   
                                IsVisible="{TemplateBinding Text,
                                                            Converter={x:Static StringConverters.IsNullOrEmpty}}"
                                Opacity="0.5"
