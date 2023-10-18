@@ -23,6 +23,7 @@
     NSMutableAttributedString* _text;
     NSRange _selectedRange;
     NSRange _markedRange;
+    NSEvent* _lastKeyDownEvent;
 }
 
 - (void)onClosed
@@ -530,6 +531,8 @@
         return;
     }
     
+    _lastKeyDownEvent = event;
+    
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     
     auto scanCode = [event keyCode];
@@ -558,12 +561,6 @@
             if(!hasInputModifier){
                 [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
             }
-        }else{
-            //The input context consumes control keys so we need to check for them here
-            //Spaces are should be excluded
-            if(!hasInputModifier && key <= 32 && key != AvnKeySpace){
-                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
-            }
         }
         
     }
@@ -576,6 +573,8 @@
             _parent->BaseEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
         }
     }
+    
+    _lastKeyDownEvent = nullptr;
 }
 
 - (void)keyUp:(NSEvent *)event
@@ -585,6 +584,9 @@
 }
 
 - (void) doCommandBySelector:(SEL)selector{
+    if(_lastKeyDownEvent != nullptr){
+        [self keyboardEvent:_lastKeyDownEvent withType:KeyDown];
+    }
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
