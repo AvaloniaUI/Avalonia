@@ -23,6 +23,11 @@ namespace Avalonia.Input.TextInput
         /// Fires when the selection has changed
         /// </summary>
         public event EventHandler? SelectionChanged;
+        
+        /// <summary>
+        /// Fires when client wants to reset IME state
+        /// </summary>
+        public event EventHandler? ResetRequested;
 
         /// <summary>
         /// The visual that's showing the text
@@ -59,6 +64,14 @@ namespace Avalonia.Input.TextInput
         /// </summary>
         public virtual void SetPreeditText(string? preeditText) { }
 
+        /// <summary>
+        /// Sets the non-committed input string and cursor offset in that string
+        /// </summary>
+        public virtual void SetPreeditText(string? preeditText, int? cursorPos)
+        {
+            SetPreeditText(preeditText);
+        }
+        
         protected virtual void RaiseTextViewVisualChanged()
         {
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
@@ -77,6 +90,11 @@ namespace Avalonia.Input.TextInput
         protected virtual void RaiseSelectionChanged()
         {
             SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+        
+        protected virtual void RequestReset()
+        {
+            ResetRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 
