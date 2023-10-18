@@ -182,7 +182,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
                 var options = new TextShaperOptions(typeface.GlyphTypeface, 14);
-                var shapedBuffer = TextShaper.Current.ShapeText(" x", options);
+                var shapedBuffer = TextShaper.Current.ShapeText(" I", options);
 
                 var glyphRun1 = CreateGlyphRun(shapedBuffer);
                 var bounds = glyphRun1.InkBounds;
