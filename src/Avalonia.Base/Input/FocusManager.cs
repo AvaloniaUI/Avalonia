@@ -206,7 +206,7 @@ namespace Avalonia.Input
             if (GetFocusedElement() is {} focusedElement
                 && KeyboardNavigationHandler.GetNext(focusedElement, direction) is {} newElement)
             {
-                return newElement.Focus(NavigationMethod.Directional);
+                return newElement.Focus();
             }
 
             return false;
