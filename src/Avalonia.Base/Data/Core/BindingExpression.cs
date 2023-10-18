@@ -286,6 +286,16 @@ internal class BindingExpression : IObservable<object?>,
     /// <param name="value">The <see cref="ExpressionNode.Value"/>.</param>
     internal void OnNodeValueChanged(int nodeIndex, object? value)
     {
+        if (value is BindingNotification notification && 
+            notification.ErrorType == BindingErrorType.Error &&
+            notification.Error is not null &&
+            ShouldLogError(out var target))
+        {
+            // Log any errors the arrive via a node value change. This is mainly to make sure that
+            // errors which come from property accessors get logged.
+            Log(target, notification.Error.Message, CalculateErrorPoint(nodeIndex));
+        }
+
         if (nodeIndex == _nodes.Count - 1)
         {
             // The leaf node has changed. If the binding mode is not OneWayToSource, publish the
@@ -336,15 +346,10 @@ internal class BindingExpression : IObservable<object?>,
         if (_observer is null || _mode == BindingMode.OneWayToSource)
             return;
 
-        // Build a string describing the binding chain up to the node that errored.
-        var errorPoint = new StringBuilder();
+        var errorPoint = CalculateErrorPoint(nodeIndex);
 
-        if (nodeIndex >= 0)
-            _nodes[nodeIndex].BuildString(errorPoint);
-        else
-            errorPoint.Append("(source)");
-
-        LogWarningIfNecessary(error, errorPoint.ToString());
+        if (ShouldLogError(out var target))
+            Log(target, error, errorPoint);
 
         var e = new BindingChainException(error, Description, errorPoint.ToString());
         _observer.OnNext(new BindingNotification(
@@ -353,17 +358,17 @@ internal class BindingExpression : IObservable<object?>,
             ConvertFallback(FallbackValue, nameof(FallbackValue))));
     }
 
-    private void LogWarningIfNecessary(string error, string errorPoint)
+    private string CalculateErrorPoint(int nodeIndex)
     {
-        if (!_target.TryGetTarget(out var target))
-            return;
+        // Build a string describing the binding chain up to the node that errored.
+        var result = new StringBuilder();
 
-        if (_nodes.Count > 0 &&
-            _nodes[0] is SourceNode sourceNode &&
-            !sourceNode.ShouldLogErrors(target))
-            return;
+        if (nodeIndex >= 0)
+            _nodes[nodeIndex].BuildString(result);
+        else
+            result.Append("(source)");
 
-        Log(target, error, errorPoint);
+        return result.ToString();
     }
 
     private void Log(AvaloniaObject target, string error, LogEventLevel level = LogEventLevel.Warning)
@@ -391,6 +396,15 @@ internal class BindingExpression : IObservable<object?>,
             Description,
             errorPoint,
             error);
+    }
+
+    private bool ShouldLogError([NotNullWhen(true)] out AvaloniaObject? target)
+    {
+        if (!_target.TryGetTarget(out target))
+            return false;
+        if (_nodes.Count > 0 && _nodes[0] is SourceNode sourceNode)
+            return sourceNode.ShouldLogErrors(target);
+        return true;
     }
 
     private void Start()

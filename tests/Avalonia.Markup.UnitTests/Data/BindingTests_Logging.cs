@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Core;
+using Avalonia.Data.Core.Plugins.Reflection;
 using Avalonia.Input;
 using Avalonia.Logging;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Reactive;
 using Avalonia.UnitTests;
 using Xunit;
@@ -267,6 +271,33 @@ namespace Avalonia.Markup.UnitTests.Data
                     binding.Path,
                     "Could not find a matching property accessor for 'Foo' on 'System.Object'.",
                     "Foo"))
+                {
+                    target.Bind(Control.TagProperty, binding);
+                }
+            }
+        }
+
+        public class CompiledBinding
+        {
+            [Fact]
+            public void Should_Log_For_Invalid_DataContext_Type()
+            {
+                var target = new TestRoot { DataContext = 48 };
+                var stringLengthProperty = new ClrPropertyInfo(
+                    "Length",
+                    x => ((string)x).Length,
+                    null,
+                    typeof(int));
+                var bindingPath = new CompiledBindingPathBuilder()
+                    .Property(stringLengthProperty, PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
+                    .Build();
+                var binding = new CompiledBindingExtension(bindingPath);
+
+                using (AssertLog(
+                       target,
+                       bindingPath.ToString(),
+                       "Unable to cast object of type 'System.Int32' to type 'System.String'.",
+                       "Length"))
                 {
                     target.Bind(Control.TagProperty, binding);
                 }
