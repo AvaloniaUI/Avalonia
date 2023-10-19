@@ -141,14 +141,22 @@ namespace Avalonia.Controls.Primitives
                 var point = ToPresenter(handle.IndicatorPosition);
                 point = point.WithY(point.Y - _presenter.FontSize / 2);
                 var hit = _presenter.TextLayout.HitTestPoint(point);
-                var caret = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
+                var position = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
 
                 var otherHandle = handle == _startHandle ? _endHandle : _startHandle;
 
                 if (handle.SelectionHandleType == SelectionHandleType.Start)
-                    _textBox.SelectionStart = caret;
+                {
+                    if (position >= _textBox.SelectionEnd)
+                        position = _textBox.SelectionEnd - 1;
+                        _textBox.SelectionStart = position;
+                }
                 else
-                    _textBox.SelectionEnd = caret;
+                {
+                    if (position <= _textBox.SelectionStart)
+                        position = _textBox.SelectionStart + 1;
+                    _textBox.SelectionEnd = position;
+                }
 
                 var selectionStart = _textBox.SelectionStart;
                 var selectionEnd = _textBox.SelectionEnd;
@@ -173,7 +181,7 @@ namespace Avalonia.Controls.Primitives
                         otherHandle?.SetTopLeft(ToLayer(last.BottomRight));
                 }
 
-                _presenter?.MoveCaretToTextPosition(caret);
+                _presenter?.MoveCaretToTextPosition(position);
             }
 
             EnsureVisible();
