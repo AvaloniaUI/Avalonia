@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -20,7 +21,8 @@ namespace Avalonia.Controls.Primitives
 
         internal bool ShowHandles
         {
-            get => _showHandle; set
+            get => _showHandle;
+            set
             {
                 _showHandle = value;
 
@@ -37,10 +39,7 @@ namespace Avalonia.Controls.Primitives
 
         public TextSelectionHandleCanvas()
         {
-            _caretHandle = new TextSelectionHandle()
-            {
-                SelectionHandleType = SelectionHandleType.Caret
-            };
+            _caretHandle = new TextSelectionHandle() { SelectionHandleType = SelectionHandleType.Caret };
             _startHandle = new TextSelectionHandle();
             _endHandle = new TextSelectionHandle();
 
@@ -91,7 +90,7 @@ namespace Avalonia.Controls.Primitives
                 DragSelectionHandle(handle);
         }
 
-        private void CaretHandle_DragDelta(object? sender, Input.VectorEventArgs e)
+        private void CaretHandle_DragDelta(object? sender, VectorEventArgs e)
         {
             if (_presenter != null && _textBox != null)
             {
@@ -104,7 +103,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void Handle_DragCompleted(object? sender, Input.VectorEventArgs e)
+        private void Handle_DragCompleted(object? sender, VectorEventArgs e)
         {
             MoveHandlesToSelection();
 
@@ -121,9 +120,12 @@ namespace Avalonia.Controls.Primitives
 
                 var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
 
-                _startHandle.IsVisible = bounds.Contains(new Point(GetLeft(_startHandle), GetTop(_startHandle))) && ShowHandles && hasSelection;
-                _endHandle.IsVisible = bounds.Contains(new Point(GetLeft(_endHandle), GetTop(_endHandle))) && ShowHandles && hasSelection;
-                _caretHandle.IsVisible = bounds.Contains(new Point(GetLeft(_caretHandle), GetTop(_caretHandle))) && ShowHandles && !hasSelection;
+                _startHandle.IsVisible = bounds.Contains(new Point(GetLeft(_startHandle), GetTop(_startHandle))) &&
+                                         ShowHandles && hasSelection;
+                _endHandle.IsVisible = bounds.Contains(new Point(GetLeft(_endHandle), GetTop(_endHandle))) &&
+                                       ShowHandles && hasSelection;
+                _caretHandle.IsVisible = bounds.Contains(new Point(GetLeft(_caretHandle), GetTop(_caretHandle))) &&
+                                         ShowHandles && !hasSelection;
             }
         }
 
@@ -222,13 +224,17 @@ namespace Avalonia.Controls.Primitives
                     if (!_startHandle.IsDragging)
                     {
                         _startHandle.SetTopLeft(ToLayer(first.BottomLeft));
-                        _startHandle.SelectionHandleType = selectionStart < selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
+                        _startHandle.SelectionHandleType = selectionStart < selectionEnd ?
+                            SelectionHandleType.Start :
+                            SelectionHandleType.End;
                     }
 
                     if (!_endHandle.IsDragging)
                     {
                         _endHandle.SetTopLeft(ToLayer(last.BottomRight));
-                        _endHandle.SelectionHandleType = selectionStart > selectionEnd ? SelectionHandleType.Start : SelectionHandleType.End;
+                        _endHandle.SelectionHandleType = selectionStart > selectionEnd ?
+                            SelectionHandleType.Start :
+                            SelectionHandleType.End;
                     }
                 }
             }
@@ -271,7 +277,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void TextBoxEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
+        private void TextBoxEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
             if (ShowHandles)
             {
@@ -292,7 +298,8 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_textBox.ContextFlyout is PopupFlyoutBase flyout)
                 {
-                    var verticalOffset = (double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) + ContextMenuPadding;
+                    var verticalOffset = (double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) +
+                                         ContextMenuPadding;
 
                     TextSelectionHandle? handle = null;
 
@@ -342,18 +349,10 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void TextBoxLayoutUpdated(object? sender, EventArgs e)
-        {
-            if (ShowHandles)
-            {
-                MoveHandlesToSelection();
-                EnsureVisible();
-            }
-        }
-
         private void TextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (ShowHandles && (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty))
+            if (ShowHandles && (e.Property == TextBox.SelectionStartProperty ||
+                                e.Property == TextBox.SelectionEndProperty))
             {
                 MoveHandlesToSelection();
                 EnsureVisible();
