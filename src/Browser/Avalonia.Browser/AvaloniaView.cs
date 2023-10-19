@@ -12,6 +12,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
@@ -138,11 +139,8 @@ namespace Avalonia.Browser
             }
             else
             {
-                //var rasterInitialized = _interop.InitRaster();
-                //Console.WriteLine("raster initialized: {0}", rasterInitialized);
-
-                //_topLevelImpl.SetSurface(ColorType,
-                // new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
+                Logger.TryGet(LogEventLevel.Error, LogArea.BrowserPlatform)?
+                    .Log(this, "[Avalonia]: Unable to initialize Canvas surface.");
             }
 
             CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
