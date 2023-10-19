@@ -18,6 +18,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         private string? _preeditText;
         private int _preeditCursor;
         private bool _preeditShown = true;
+        private int _insideReset = 0;
 
         public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
@@ -52,8 +53,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnUpdatePreedit(Exception? arg1, (DBusVariantItem text, uint cursor_pos, bool visible) preeditComponents)
         {
-            
-            if (preeditComponents.text.Value is DBusStructItem { Count: >= 3 } structItem &&
+            if (preeditComponents.text is { Value: DBusStructItem { Count: >= 3 } structItem } &&
                 structItem[2] is DBusStringItem stringItem)
             {
                 _preeditText = stringItem.Value;
@@ -63,11 +63,17 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                     : 0;
                 
                 _preeditShown = true;
-
-                if (Client?.SupportsPreedit == true)
-                    Client.SetPreeditText(
-                        _preeditText, _preeditCursor);
             }
+            else
+            {
+                _preeditText = null;
+                _preeditShown = false;
+                _preeditCursor = 0;
+            }
+
+            if (Client?.SupportsPreedit == true)
+                Client.SetPreeditText(
+                    _preeditShown ? _preeditText : null, _preeditCursor);
         }
 
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
@@ -98,6 +104,14 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnCommitText(Exception? e, DBusVariantItem variantItem)
         {
+            if (_insideReset > 0) 
+            {
+                // For some reason iBus can trigger a CommitText while being reset.
+                // Thankfully the signal is sent _during_ Reset call processing,
+                // so it arrives on-the-wire before Reset call result, so we can 
+                // check if we have any pending Reset calls and ignore the signal here
+                return;
+            }
             if (e is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitText failed: {e}");
@@ -125,10 +139,23 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             => (active ? _context?.FocusInAsync() : _context?.FocusOutAsync())
                 ?? Task.CompletedTask;
 
-        protected override Task ResetContextCore()
+        protected override async Task ResetContextCore()
         {
             _preeditShown = true;
-            return _context?.ResetAsync() ?? Task.CompletedTask;
+            if (_context == null)
+                return;
+            if (_context == null)
+                return;
+
+            try
+            {
+                _insideReset++;
+                await _context.ResetAsync();
+            }
+            finally
+            {
+                _insideReset--;
+            }
         }
 
         protected override Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode)
@@ -159,7 +186,8 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             var caps = IBusCapability.CapFocus;
             if (supportsPreedit)
                 caps |= IBusCapability.CapPreeditText;
-            await _context.SetCapabilitiesAsync((uint)caps);
+            if (_context != null)
+                await _context.SetCapabilitiesAsync((uint)caps);
         }
     }
 }
