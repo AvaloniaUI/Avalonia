@@ -57,11 +57,8 @@ namespace Avalonia.Browser
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            return new Timer(_ =>
-            {
-                Dispatcher.UIThread.RunJobs(priority);
-                tick();
-            }, null, interval, interval);
+            var timerId = CanvasHelper.SetTimeout(tick, (int)interval.TotalMilliseconds);
+            return Reactive.Disposable.Create(() => CanvasHelper.ClearTimeout(timerId));
         }
 
         public void Signal(DispatcherPriority priority)
@@ -70,23 +67,22 @@ namespace Avalonia.Browser
                 return;
 
             _signaled = true;
-            var interval = TimeSpan.FromMilliseconds(1);
 
-            IDisposable? disp = null;
-            disp = new Timer(_ =>
+            // NOTE: by HTML5 spec minimal timeout is 4ms, but Chrome seems to work well with 1ms as well.
+            var interval = 1;
+
+            CanvasHelper.SetTimeout(() =>
             {
                 _signaled = false;
-                disp?.Dispose();
-
                 Signaled?.Invoke(null);
-            }, null, interval, interval);
+            }, interval);
         }
 
         public bool CurrentThreadIsLoopThread
         {
             get
             {
-                return true; // Browser is single threaded.
+                return true; // TODO: add MT support.
             }
         }
 
