@@ -442,6 +442,7 @@ namespace Avalonia.Browser
                 return;
             }
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
             ManualTriggerRenderTimer.Instance.RaiseTick();
         }
 
