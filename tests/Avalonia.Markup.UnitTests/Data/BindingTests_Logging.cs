@@ -6,6 +6,7 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins.Reflection;
 using Avalonia.Input;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Reactive;
@@ -116,6 +117,52 @@ namespace Avalonia.Markup.UnitTests.Data
                 using (AssertNoLog())
                 {
                     target.Bind(Control.TagProperty, binding);
+                }
+            }
+        }
+
+        public class NamedElement
+        {
+            [Fact]
+            public void Should_Log_NameScope_Not_Found()
+            {
+                var target = new Decorator { };
+                var root = new TestRoot(target);
+                var binding = new Binding("#source") { TypeResolver = ResolveType };
+
+                using (AssertLog(target, binding.Path, "NameScope not found.", "#source"))
+                {
+                    target.Bind(Control.TagProperty, binding);
+                }
+            }
+
+            [Fact]
+            public void Should_Not_Log_Element_Property_Null_For_Unrooted_Control()
+            {
+                var ns = new NameScope();
+                var source = new Canvas { Name = "source" };
+                var target = new Decorator { };
+                var binding = new Binding("#source.DataContext.Foo") { TypeResolver = ResolveType, NameScope = new(ns) };
+                var container = new StackPanel 
+                { 
+                    [NameScope.NameScopeProperty] = ns,
+                    Children = { source, target }
+                };
+
+                ns.Register(source.Name, source);
+
+                using (AssertNoLog())
+                {
+                    target.Bind(Control.TagProperty, binding);
+                }
+
+                // Sanity check to that the binding works when rooted: make sure that we're not just testing a broken
+                // binding!
+                using (AssertNoLog())
+                {
+                    var root = new TestRoot(container);
+                    root.DataContext = new { Foo = "foo" };
+                    Assert.Equal("foo", target.Tag);
                 }
             }
         }
