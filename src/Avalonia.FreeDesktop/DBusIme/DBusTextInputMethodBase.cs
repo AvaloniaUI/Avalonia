@@ -308,9 +308,9 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         void ITextInputMethodImpl.Reset()
         {
-            Reset();
             _queue.Enqueue(async () =>
             {
+                Reset();
                 if (!IsConnected)
                     return;
                 await ResetContextCore();
