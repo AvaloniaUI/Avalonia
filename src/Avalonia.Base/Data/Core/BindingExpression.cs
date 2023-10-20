@@ -8,6 +8,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
 using Avalonia.Logging;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.Data.Core;
 
@@ -540,7 +541,7 @@ internal class BindingExpression : IObservable<object?>,
         }
     }
 
-    private static object? Convert(
+    private object? Convert(
         IValueConverter converter,
         object? converterParameter,
         object? value,
@@ -554,8 +555,12 @@ internal class BindingExpression : IObservable<object?>,
         {
             var valueString = value?.ToString() ?? "(null)";
             var valueTypeName = value?.GetType().FullName ?? "null";
-            var ex = new InvalidCastException(
-                $"Could not convert '{valueString}' ({valueTypeName}) to {targetType} using '{converter}'.", e);
+            var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{targetType}' using '{converter}'";
+
+            if (ShouldLogError(out var target))
+                Log(target, $"{message}: {e.Message}", LogEventLevel.Warning);
+
+            var ex = new InvalidCastException(message + '.', e);
             return new BindingNotification(ex, BindingErrorType.Error);
         }
     }

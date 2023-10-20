@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Controls.Converters;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins.Reflection;
 using Avalonia.Input;
@@ -248,6 +251,28 @@ namespace Avalonia.Markup.UnitTests.Data
                     target.Bind(Control.MarginProperty, binding);
                 }
             }
+
+            [Fact]
+            public void Should_Log_Error_For_Unconvertible_Type_With_Converter()
+            {
+                var target = new Decorator { DataContext = new { Foo = new System.Version() } };
+                var root = new TestRoot(target);
+                var binding = new Binding("Foo")
+                {
+                    Converter = new ThrowingConverter(),
+                };
+
+                using (AssertLog(
+                    target,
+                    binding.Path,
+                    "Could not convert '0.0' (System.Version) to 'Avalonia.Thickness' " +
+                    "using 'Avalonia.Markup.UnitTests.Data.BindingTests_Logging+ThrowingConverter': " +
+                    "The method or operation is not implemented.",
+                    property: Control.MarginProperty))
+                {
+                    target.Bind(Control.MarginProperty, binding);
+                }
+            }
         }
 
         public class Fallback
@@ -445,6 +470,19 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             public TestClass(string? foo = null) => Foo = foo;
             public string? Foo { get; set; }
+        }
+
+        private class ThrowingConverter : IValueConverter
+        {
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
+
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private record LogMessage(LogEventLevel level, string area, object source, string messageTemplate, params object[] propertyValues);
