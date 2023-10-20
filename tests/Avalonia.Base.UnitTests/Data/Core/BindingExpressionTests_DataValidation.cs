@@ -102,7 +102,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
                 // Exception is thrown by trying to set value to "foo".
                 new BindingNotification(
-                    new InvalidCastException("Cannot convert 'foo' (System.String) to System.Int32."),
+                    new InvalidCastException("Could not convert 'foo' (System.String) to System.Int32."),
                     BindingErrorType.DataValidationError),
 
                 // Value is set then validation is updated.

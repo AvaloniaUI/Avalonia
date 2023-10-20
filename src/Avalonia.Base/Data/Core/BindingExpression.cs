@@ -186,7 +186,7 @@ internal class BindingExpression : IObservable<object?>,
                 var valueString = value?.ToString() ?? "(null)";
                 var valueTypeName = value?.GetType().FullName ?? "null";
                 var ex = new InvalidCastException(
-                    $"Cannot convert '{valueString}' ({valueTypeName}) to {type}.");
+                    $"Could not convert '{valueString}' ({valueTypeName}) to {type}.");
                 _observer?.OnNext(new BindingNotification(ex, BindingErrorType.DataValidationError));
                 return false;
             }
@@ -555,7 +555,7 @@ internal class BindingExpression : IObservable<object?>,
             var valueString = value?.ToString() ?? "(null)";
             var valueTypeName = value?.GetType().FullName ?? "null";
             var ex = new InvalidCastException(
-                $"Cannot convert '{valueString}' ({valueTypeName}) to {targetType} using '{converter}'.", e);
+                $"Could not convert '{valueString}' ({valueTypeName}) to {targetType} using '{converter}'.", e);
             return new BindingNotification(ex, BindingErrorType.Error);
         }
     }
@@ -572,7 +572,7 @@ internal class BindingExpression : IObservable<object?>,
             Log(target, $"Could not convert {fallbackName} '{fallback}' to '{TargetType}'.", LogEventLevel.Error);
 
         return AvaloniaProperty.UnsetValue;
-   }
+    }
 
     private object? ConvertFrom(TargetTypeConverter? converter, object value)
     {
@@ -586,7 +586,7 @@ internal class BindingExpression : IObservable<object?>,
 
         var valueString = value?.ToString() ?? "(null)";
         var valueTypeName = value?.GetType().FullName ?? "null";
-        var message = $"Cannot convert '{valueString}' ({valueTypeName}) to '{targetType}'.";
+        var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{targetType}'.";
 
         if (ShouldLogError(out var target))
             Log(target, message, LogEventLevel.Warning);

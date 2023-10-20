@@ -242,7 +242,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 using (AssertLog(
                     target,
                     binding.Path,
-                    "Cannot convert '0.0' (System.Version) to 'Avalonia.Thickness'.",
+                    "Could not convert '0.0' (System.Version) to 'Avalonia.Thickness'.",
                     property: Control.MarginProperty))
                 {
                     target.Bind(Control.MarginProperty, binding);

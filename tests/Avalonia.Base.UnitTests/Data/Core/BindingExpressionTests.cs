@@ -112,7 +112,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             Assert.Equal(
                 new BindingNotification(
-                    new InvalidCastException("Cannot convert 'foo' (System.String) to 'System.Int32'."),
+                    new InvalidCastException("Could not convert 'foo' (System.String) to 'System.Int32'."),
                     BindingErrorType.Error,
                     42),
                 result);
@@ -134,7 +134,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             Assert.Equal(
                 new BindingNotification(
-                    new InvalidCastException("Cannot convert 'foo' (System.String) to 'System.Int32'."),
+                    new InvalidCastException("Could not convert 'foo' (System.String) to 'System.Int32'."),
                     BindingErrorType.Error,
                     42),
                 result);
@@ -251,7 +251,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     new BindingNotification($"{1.2}"),
                     new BindingNotification($"{3.4}"),
                     new BindingNotification(
-                        new InvalidCastException("Cannot convert 'bar' (System.String) to System.Double."),
+                        new InvalidCastException("Could not convert 'bar' (System.String) to System.Double."),
                         BindingErrorType.DataValidationError)
                 },
                 result);
