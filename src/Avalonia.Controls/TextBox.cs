@@ -1538,7 +1538,7 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == _presenter && e.Pointer.Type == PointerType.Mouse && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1550,18 +1550,26 @@ namespace Avalonia.Controls
 
                 var caretIndex = _presenter.CaretIndex;
 
-                var selectionStart = SelectionStart;
-                var selectionEnd = SelectionEnd;
-
-                if (_wordSelectionStart >= 0)
+                if (e.Pointer.Type == PointerType.Mouse)
                 {
-                    UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
 
-                    SetCurrentValue(SelectionStartProperty, selectionStart);
-                    SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    if (_wordSelectionStart >= 0)
+                    {
+                        UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                        SetCurrentValue(SelectionStartProperty, selectionStart);
+                        SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                    }
                 }
                 else
                 {
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
             }
