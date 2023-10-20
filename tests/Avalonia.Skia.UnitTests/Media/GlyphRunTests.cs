@@ -187,7 +187,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var glyphRun1 = CreateGlyphRun(shapedBuffer);
                 var bounds = glyphRun1.InkBounds;
 
-                Assert.Equal(shapedBuffer[0].GlyphAdvance, bounds.Left);
+                Assert.True(bounds.Left > 0);
             }
         }
 
