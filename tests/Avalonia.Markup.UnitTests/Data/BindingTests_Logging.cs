@@ -121,52 +121,6 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class NamedElement
-        {
-            [Fact]
-            public void Should_Log_NameScope_Not_Found()
-            {
-                var target = new Decorator { };
-                var root = new TestRoot(target);
-                var binding = new Binding("#source") { TypeResolver = ResolveType };
-
-                using (AssertLog(target, binding.Path, "NameScope not found.", "#source"))
-                {
-                    target.Bind(Control.TagProperty, binding);
-                }
-            }
-
-            [Fact]
-            public void Should_Not_Log_Element_Property_Null_For_Unrooted_Control()
-            {
-                var ns = new NameScope();
-                var source = new Canvas { Name = "source" };
-                var target = new Decorator { };
-                var binding = new Binding("#source.DataContext.Foo") { TypeResolver = ResolveType, NameScope = new(ns) };
-                var container = new StackPanel 
-                { 
-                    [NameScope.NameScopeProperty] = ns,
-                    Children = { source, target }
-                };
-
-                ns.Register(source.Name, source);
-
-                using (AssertNoLog())
-                {
-                    target.Bind(Control.TagProperty, binding);
-                }
-
-                // Sanity check to that the binding works when rooted: make sure that we're not just testing a broken
-                // binding!
-                using (AssertNoLog())
-                {
-                    var root = new TestRoot(container);
-                    root.DataContext = new { Foo = "foo" };
-                    Assert.Equal("foo", target.Tag);
-                }
-            }
-        }
-
         public class VisualAncestor
         {
             [Fact]
@@ -174,8 +128,8 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { };
                 var root = new TestRoot(target);
-                var binding = new Binding 
-                { 
+                var binding = new Binding
+                {
                     RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
                     {
                         AncestorType = typeof(TextBlock),
@@ -226,6 +180,72 @@ namespace Avalonia.Markup.UnitTests.Data
                 using (AssertNoLog())
                 {
                     target.Bind(Control.TagProperty, binding);
+                }
+            }
+        }
+
+        public class NamedElement
+        {
+            [Fact]
+            public void Should_Log_NameScope_Not_Found()
+            {
+                var target = new Decorator { };
+                var root = new TestRoot(target);
+                var binding = new Binding("#source") { TypeResolver = ResolveType };
+
+                using (AssertLog(target, binding.Path, "NameScope not found.", "#source"))
+                {
+                    target.Bind(Control.TagProperty, binding);
+                }
+            }
+
+            [Fact]
+            public void Should_Not_Log_Element_Property_Null_For_Unrooted_Control()
+            {
+                var ns = new NameScope();
+                var source = new Canvas { Name = "source" };
+                var target = new Decorator { };
+                var binding = new Binding("#source.DataContext.Foo") { TypeResolver = ResolveType, NameScope = new(ns) };
+                var container = new StackPanel 
+                { 
+                    [NameScope.NameScopeProperty] = ns,
+                    Children = { source, target }
+                };
+
+                ns.Register(source.Name, source);
+
+                using (AssertNoLog())
+                {
+                    target.Bind(Control.TagProperty, binding);
+                }
+
+                // Sanity check to that the binding works when rooted: make sure that we're not just testing a broken
+                // binding!
+                using (AssertNoLog())
+                {
+                    var root = new TestRoot(container);
+                    root.DataContext = new { Foo = "foo" };
+                    Assert.Equal("foo", target.Tag);
+                }
+            }
+        }
+
+        public class Converter
+        {
+            [Fact]
+            public void Should_Log_Error_For_Unconvertible_Type()
+            {
+                var target = new Decorator { DataContext = new { Foo = new System.Version() } };
+                var root = new TestRoot(target);
+                var binding = new Binding("Foo");
+
+                using (AssertLog(
+                    target,
+                    binding.Path,
+                    "Cannot convert '0.0' (System.Version) to 'Avalonia.Thickness'.",
+                    property: Control.MarginProperty))
+                {
+                    target.Bind(Control.MarginProperty, binding);
                 }
             }
         }

@@ -498,7 +498,7 @@ internal class BindingExpression : IObservable<object?>,
             else if (_targetTypeConverter is not null && value is not null)
             {
                 // Otherwise, if we have a target type converter, convert the value to the target type.
-                value = UpdateAndUnwrap(ConvertFrom(_targetTypeConverter, value, false), ref notification);
+                value = UpdateAndUnwrap(ConvertFrom(_targetTypeConverter, value), ref notification);
             }
         }
 
@@ -574,7 +574,7 @@ internal class BindingExpression : IObservable<object?>,
         return AvaloniaProperty.UnsetValue;
    }
 
-    private object? ConvertFrom(TargetTypeConverter? converter, object value, bool isFallback)
+    private object? ConvertFrom(TargetTypeConverter? converter, object value)
     {
         if (converter is null || _targetProperty is null)
             return value;
@@ -586,10 +586,12 @@ internal class BindingExpression : IObservable<object?>,
 
         var valueString = value?.ToString() ?? "(null)";
         var valueTypeName = value?.GetType().FullName ?? "null";
-        var fallbackMessage = isFallback ? " fallback value " : " ";
-        var ex = new InvalidCastException(
-            $"Cannot convert{fallbackMessage}'{valueString}' ({valueTypeName}) to '{targetType}'.");
-        return new BindingNotification(ex, BindingErrorType.Error);
+        var message = $"Cannot convert '{valueString}' ({valueTypeName}) to '{targetType}'.";
+
+        if (ShouldLogError(out var target))
+            Log(target, message, LogEventLevel.Warning);
+
+        return new BindingNotification(new InvalidCastException(message), BindingErrorType.Error);
     }
 
     private static object? UpdateAndUnwrap(object? value, ref BindingNotification? notification)
