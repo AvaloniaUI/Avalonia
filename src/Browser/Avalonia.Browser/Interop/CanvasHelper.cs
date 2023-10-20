@@ -45,4 +45,10 @@ internal static partial class CanvasHelper
 
     [JSImport("globalThis.clearTimeout")]
     public static partial int ClearTimeout(int id);
+
+    [JSImport("globalThis.setInterval")]
+    public static partial int SetInterval([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
+
+    [JSImport("globalThis.clearInterval")]
+    public static partial int ClearInterval(int id);
 }
