@@ -871,14 +871,27 @@ interface IAvnSystemDialogs : IUnknown
                                  [const] char* title,
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
-                                 [const] char* filters);
+                                 IAvnFilePickerFileTypes* filters);
     
      void SaveFileDialog(IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
-                                 [const] char* filters);
+                                 IAvnFilePickerFileTypes* filters);
+}
+
+[uuid(4d7ab7db-a111-406f-abeb-11cb6aa033d5)]
+interface IAvnFilePickerFileTypes : IUnknown
+{
+    int GetCount(); 
+    bool IsDefaultType(int index);
+    bool IsAnyType(int index);
+    IAvnString* GetName(int index);
+    HRESULT GetPatterns(int index, IAvnStringArray**ppv);
+    HRESULT GetExtensions(int index, IAvnStringArray**ppv);
+    HRESULT GetMimeTypes(int index, IAvnStringArray**ppv);
+    HRESULT GetAppleUniformTypeIdentifiers(int index, IAvnStringArray**ppv);
 }
 
 [uuid(9a52bc7a-d8c7-4230-8d34-704a0b70a933)]
@@ -895,6 +908,7 @@ interface IAvnClipboard : IUnknown
      HRESULT SetText(char* type, char* utf8Text);
      HRESULT ObtainFormats(IAvnStringArray**ppv);
      HRESULT GetStrings(char* type, IAvnStringArray**ppv);
+     HRESULT SetStrings(char* type, IAvnStringArray*ppv);
      HRESULT SetBytes(char* type, void* utf8Text, int len);
      HRESULT GetBytes(char* type, IAvnString**ppv);
     

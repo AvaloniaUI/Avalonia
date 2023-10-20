@@ -177,35 +177,6 @@ namespace Avalonia.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
-            TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string?)e.NewValue));
-            ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue!));
-
-            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon?)e.NewValue)?.PlatformImpl));
-
-            CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue!));
-
-            WindowStateProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue!; });
-
-            ExtendClientAreaToDecorationsHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaToDecorationsHint((bool)e.NewValue!); });
-
-            ExtendClientAreaChromeHintsProperty.Changed.AddClassHandler<Window>(
-                (w, e) =>
-                {
-                    if (w.PlatformImpl != null)
-                    {
-                        w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue!);
-                    }
-                });
-
-            ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaTitleBarHeightHint((double)e.NewValue!); });
-
-            MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue!, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
-            MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue!), new Size(w.MaxWidth, w.MaxHeight)));
-            MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue!, w.MaxHeight)));
-            MaxHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue!)));
         }
 
         /// <summary>
@@ -230,7 +201,21 @@ namespace Avalonia.Controls
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
-            PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
+            CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
+            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon(icon?.PlatformImpl));
+            CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
+            CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
+
+            CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
+            CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
+            CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, hint => PlatformImpl!.SetExtendClientAreaChromeHints(hint));
+
+            CreatePlatformImplBinding(MinWidthProperty, UpdateMinMaxSize);
+            CreatePlatformImplBinding(MaxWidthProperty, UpdateMinMaxSize);
+            CreatePlatformImplBinding(MinHeightProperty, UpdateMinMaxSize);
+            CreatePlatformImplBinding(MaxHeightProperty, UpdateMinMaxSize);
+
+            void UpdateMinMaxSize(double _) => PlatformImpl!.SetMinMaxSize(new Size(MinWidth, MinHeight), new Size(MaxWidth, MaxHeight));
         }
 
         /// <summary>
@@ -260,8 +245,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public SizeToContent SizeToContent
         {
-            get { return GetValue(SizeToContentProperty); }
-            set { SetValue(SizeToContentProperty, value); }
+            get => GetValue(SizeToContentProperty);
+            set => SetValue(SizeToContentProperty, value);
         }
 
         /// <summary>
@@ -269,8 +254,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Title
         {
-            get { return GetValue(TitleProperty); }
-            set { SetValue(TitleProperty, value); }
+            get => GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
         }
 
         /// <summary>
@@ -278,8 +263,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ExtendClientAreaToDecorationsHint
         {
-            get { return GetValue(ExtendClientAreaToDecorationsHintProperty); }
-            set { SetValue(ExtendClientAreaToDecorationsHintProperty, value); }
+            get => GetValue(ExtendClientAreaToDecorationsHintProperty);
+            set => SetValue(ExtendClientAreaToDecorationsHintProperty, value);
         }
 
         /// <summary>
@@ -338,8 +323,8 @@ namespace Avalonia.Controls
         /// </summary>
         public SystemDecorations SystemDecorations
         {
-            get { return GetValue(SystemDecorationsProperty); }
-            set { SetValue(SystemDecorationsProperty, value); }
+            get => GetValue(SystemDecorationsProperty);
+            set => SetValue(SystemDecorationsProperty, value);
         }
 
         /// <summary>
@@ -347,8 +332,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ShowActivated
         {
-            get { return GetValue(ShowActivatedProperty); }
-            set { SetValue(ShowActivatedProperty, value); }
+            get => GetValue(ShowActivatedProperty);
+            set => SetValue(ShowActivatedProperty, value);
         }
 
         /// <summary>
@@ -357,8 +342,8 @@ namespace Avalonia.Controls
         /// 
         public bool ShowInTaskbar
         {
-            get { return GetValue(ShowInTaskbarProperty); }
-            set { SetValue(ShowInTaskbarProperty, value); }
+            get => GetValue(ShowInTaskbarProperty);
+            set => SetValue(ShowInTaskbarProperty, value);
         }
 
         /// <summary>
@@ -366,8 +351,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowState WindowState
         {
-            get { return GetValue(WindowStateProperty); }
-            set { SetValue(WindowStateProperty, value); }
+            get => GetValue(WindowStateProperty);
+            set => SetValue(WindowStateProperty, value);
         }
 
         /// <summary>
@@ -375,8 +360,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanResize
         {
-            get { return GetValue(CanResizeProperty); }
-            set { SetValue(CanResizeProperty, value); }
+            get => GetValue(CanResizeProperty);
+            set => SetValue(CanResizeProperty, value);
         }
 
         /// <summary>
@@ -384,8 +369,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowIcon? Icon
         {
-            get { return GetValue(IconProperty); }
-            set { SetValue(IconProperty, value); }
+            get => GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
         }
 
         /// <summary>
@@ -402,11 +387,8 @@ namespace Avalonia.Controls
         /// </summary>
         public PixelPoint Position
         {
-            get { return PlatformImpl?.Position ?? PixelPoint.Origin; }
-            set
-            {
-                PlatformImpl?.Move(value);
-            }
+            get => PlatformImpl?.Position ?? PixelPoint.Origin;
+            set => PlatformImpl?.Move(value);
         }
 
         /// <summary>

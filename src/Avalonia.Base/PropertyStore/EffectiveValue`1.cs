@@ -17,7 +17,7 @@ namespace Avalonia.PropertyStore
     {
         private readonly StyledPropertyMetadata<T> _metadata;
         private T? _baseValue;
-        private UncommonFields? _uncommon;
+        private readonly UncommonFields? _uncommon;
 
         public EffectiveValue(
             AvaloniaObject owner,

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <PackageId>Avalonia.Browser.Blazor</PackageId>
     <ResolveStaticWebAssetsInputsDependsOn>_IncludeGeneratedAvaloniaStaticFiles;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 

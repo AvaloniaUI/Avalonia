@@ -49,6 +49,12 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<string?> PreeditTextProperty =
             AvaloniaProperty.Register<TextPresenter, string?>(nameof(PreeditText));
+        
+        /// <summary>
+        /// Defines the <see cref="PreeditText"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int?> PreeditTextCursorPositionProperty =
+            AvaloniaProperty.Register<TextPresenter, int?>(nameof(PreeditTextCursorPosition));
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
@@ -124,6 +130,12 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(PreeditTextProperty);
             set => SetValue(PreeditTextProperty, value);
+        }
+        
+        public int? PreeditTextCursorPosition
+        {
+            get => GetValue(PreeditTextCursorPositionProperty);
+            set => SetValue(PreeditTextCursorPositionProperty, value);
         }
 
         /// <summary>
@@ -828,8 +840,8 @@ namespace Avalonia.Controls.Presenters
 
             _caretTimer.Tick -= CaretTimerTick;
         }
-
-        private void OnPreeditTextChanged(string? preeditText)
+        
+        private void OnPreeditChanged(string? preeditText, int? cursorPosition)
         {
             if (string.IsNullOrEmpty(preeditText))
             {
@@ -837,7 +849,10 @@ namespace Avalonia.Controls.Presenters
             }
             else
             {
-                UpdateCaret(new CharacterHit(CaretIndex + preeditText.Length), false);
+                var cursorPos = cursorPosition is >= 0 && cursorPosition <= preeditText.Length
+                    ? cursorPosition.Value
+                    : preeditText.Length;
+                UpdateCaret(new CharacterHit(CaretIndex + cursorPos), false);
                 InvalidateMeasure();
                 CaretChanged();
             }
@@ -854,7 +869,12 @@ namespace Avalonia.Controls.Presenters
 
             if(change.Property == PreeditTextProperty)
             {
-                OnPreeditTextChanged(change.NewValue as string);
+                OnPreeditChanged(change.NewValue as string, PreeditTextCursorPosition);
+            }
+            
+            if(change.Property == PreeditTextCursorPositionProperty)
+            {
+                OnPreeditChanged(PreeditText, PreeditTextCursorPosition);
             }
 
             if(change.Property == TextProperty)

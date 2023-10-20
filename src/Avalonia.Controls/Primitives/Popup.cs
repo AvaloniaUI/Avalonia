@@ -750,10 +750,7 @@ namespace Avalonia.Controls.Primitives
                 else
                 {
                     var anc = this.FindLogicalAncestorOfType<Control>();
-                    if (anc != null)
-                    {
-                        anc.Focus();
-                    }
+                    anc?.Focus();
                 }
             }
         }

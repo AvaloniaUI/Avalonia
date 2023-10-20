@@ -27,7 +27,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             public void Invalidate()
             {
-                if (IsValid)
+                if (!IsValid)
                     return;
                 IsValid = false;
                 if (Subscribers != null)

@@ -469,18 +469,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var currentHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(3, 1));
 
+                Assert.Equal(3, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
+
+                currentHit = textLine.GetPreviousCaretCharacterHit(currentHit);
+
                 Assert.Equal(2, currentHit.FirstCharacterIndex);
-                Assert.Equal(1, currentHit.TrailingLength);
+                Assert.Equal(0, currentHit.TrailingLength);
 
                 currentHit = textLine.GetPreviousCaretCharacterHit(currentHit);
 
                 Assert.Equal(1, currentHit.FirstCharacterIndex);
-                Assert.Equal(1, currentHit.TrailingLength);
-
-                currentHit = textLine.GetPreviousCaretCharacterHit(currentHit);
-
-                Assert.Equal(0, currentHit.FirstCharacterIndex);
-                Assert.Equal(1, currentHit.TrailingLength);
+                Assert.Equal(0, currentHit.TrailingLength);
 
                 currentHit = textLine.GetPreviousCaretCharacterHit(currentHit);
 
@@ -786,21 +786,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(20, 1));
 
-                Assert.Equal(19, characterHit.FirstCharacterIndex);
+                Assert.Equal(20, characterHit.FirstCharacterIndex);
 
-                Assert.Equal(1, characterHit.TrailingLength);
+                Assert.Equal(0, characterHit.TrailingLength);
 
                 characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(10, 1));
 
-                Assert.Equal(9, characterHit.FirstCharacterIndex);
+                Assert.Equal(10, characterHit.FirstCharacterIndex);
 
-                Assert.Equal(1, characterHit.TrailingLength);
+                Assert.Equal(0, characterHit.TrailingLength);
 
                 characterHit = textLine.GetPreviousCaretCharacterHit(characterHit);
 
-                Assert.Equal(8, characterHit.FirstCharacterIndex);
+                Assert.Equal(9, characterHit.FirstCharacterIndex);
 
-                Assert.Equal(1, characterHit.TrailingLength);
+                Assert.Equal(0, characterHit.TrailingLength);
 
                 characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(21));
 

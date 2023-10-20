@@ -21,12 +21,18 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         private string BitmapPath
         {
-            get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
+            get
+            {
+                return System.IO.Path.Combine(OutputPath, "github_icon.png");
+            }
         }
 
         private string SmallBitmapPath
         {
-            get { return System.IO.Path.Combine(OutputPath, "github_icon_small.png"); }
+            get
+            {
+                return System.IO.Path.Combine(OutputPath, "github_icon_small.png");
+            }
         }
 
         [Fact]

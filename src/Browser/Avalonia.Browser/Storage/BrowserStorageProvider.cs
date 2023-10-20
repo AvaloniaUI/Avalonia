@@ -147,7 +147,7 @@ internal class BrowserStorageProvider : IStorageProvider
     {
         var types = input?
             .Where(t => t.MimeTypes?.Any() == true && t != FilePickerFileTypes.All)
-            .Select(t => StorageHelper.CreateAcceptType(t.Name, t.MimeTypes!.ToArray(), t.TryGetExtensions()?.ToArray()))
+            .Select(t => StorageHelper.CreateAcceptType(t.Name, t.MimeTypes!.ToArray(), t.TryGetExtensions()?.Select(e => "." + e).ToArray()))
             .ToArray();
         if (types?.Length == 0)
         {
