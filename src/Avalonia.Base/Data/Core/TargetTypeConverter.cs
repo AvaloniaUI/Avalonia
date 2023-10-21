@@ -9,10 +9,13 @@ namespace Avalonia.Data.Core;
 
 internal abstract class TargetTypeConverter
 {
-    public static TargetTypeConverter GetDefaultConverter() => new DefaultConverter();
+    private static TargetTypeConverter? s_default;
+    private static TargetTypeConverter? s_reflection;
+
+    public static TargetTypeConverter GetDefaultConverter() => s_default ??= new DefaultConverter();
 
     [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
-    public static TargetTypeConverter GetReflectionConverter() => new ReflectionConverter();
+    public static TargetTypeConverter GetReflectionConverter() => s_reflection ??= new ReflectionConverter();
 
     public abstract bool TryConvert(object? value, Type type, CultureInfo culture, out object? result);
 
