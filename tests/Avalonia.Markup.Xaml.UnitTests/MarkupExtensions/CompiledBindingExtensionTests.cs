@@ -1881,6 +1881,34 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void Can_Use_Implicit_Conversions()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:ImplicitConvertible'
+        x:CompileBindings='True'>
+    <TextBlock Name='textBlock'>
+        <TextBlock.Background>
+            <SolidColorBrush Color='{{Binding}}'/>
+        </TextBlock.Background>
+    </TextBlock>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new ImplicitConvertible("Green");
+                window.DataContext = dataContext;
+
+                var brush = Assert.IsType<SolidColorBrush>(textBlock.Background);
+                Assert.Equal(Colors.Green, brush.Color);
+            }
+        }
+
         static void Throws(string type, Action cb)
         {
             try
@@ -2103,5 +2131,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         
         [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
         public IDataTemplate Template { get; set; }
+    }
+
+    public class ImplicitConvertible
+    {
+        public ImplicitConvertible(string value) => Value = value;
+        
+        public string Value { get; }
+        
+        public static implicit operator Avalonia.Media.Color(ImplicitConvertible value)
+        {
+            return Color.Parse(value.Value);
+        }
     }
 }
