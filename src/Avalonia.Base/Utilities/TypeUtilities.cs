@@ -388,7 +388,7 @@ namespace Avalonia.Utilities
         }
 
         [Flags]
-        private enum OperatorType
+        internal enum OperatorType
         {
             Implicit = 1,
             Explicit = 2
@@ -399,7 +399,7 @@ namespace Avalonia.Utilities
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-        private static MethodInfo? FindTypeConversionOperatorMethod(
+        internal static MethodInfo? FindTypeConversionOperatorMethod(
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type fromType,
             Type toType, OperatorType operatorType)
         {

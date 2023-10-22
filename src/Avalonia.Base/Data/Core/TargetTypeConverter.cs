@@ -4,6 +4,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using System.Windows.Input;
 using Avalonia.Utilities;
+using static Avalonia.Utilities.TypeUtilities;
 
 namespace Avalonia.Data.Core;
 
@@ -64,6 +65,17 @@ internal abstract class TargetTypeConverter
                     result = null;
                     return false;
                 }
+            }
+
+            // TODO: This requires reflection: we probably need to make compiled bindings emit
+            // conversion code at compile-time.
+            if (FindTypeConversionOperatorMethod(
+                value.GetType(), 
+                t, 
+                OperatorType.Implicit | OperatorType.Explicit) is { } cast)
+            {
+                result = cast.Invoke(null, new[] { value });
+                return true;
             }
 
             result = null;
