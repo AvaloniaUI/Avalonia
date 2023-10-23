@@ -12,7 +12,7 @@
     <NativeMenu>
       <NativeMenuItem Header="File">
         <NativeMenu>
-          <NativeMenuItem Header="Open..." ToolTip="Opens a file."/>
+          <NativeMenuItem Header="Open..."/>
         </NativeMenu>
       </NativeMenuItem>
       <NativeMenuItem Header="View">

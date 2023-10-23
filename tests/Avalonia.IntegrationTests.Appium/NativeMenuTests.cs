@@ -63,17 +63,34 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Win32_Avalonia_Menu_Has_ToolTip_If_Defined()
         {
-            var fileMenu = _session.FindElementByXPath("//MenuItem[@Name='File']");
-            fileMenu.Click();
+            var viewMenu = _session.FindElementByXPath("//MenuItem[@Name='View']");
+            viewMenu.Click();
 
-            var openMenuItem = fileMenu.FindElementByName("Open...");
-            openMenuItem.MovePointerOver();
+            var buttonMenuItem = viewMenu.FindElementByName("Button");
+            buttonMenuItem.MovePointerOver();
 
             // Wait for tooltip to open.
             Thread.Sleep(1000);
 
             var toolTipCandidates = _session.FindElementsByClassName("TextBlock");
-            Assert.Contains(toolTipCandidates, x => x.Text == "Opens a file.");
+            Assert.Contains(toolTipCandidates, x => x.Text == "Button");
+        }
+
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void MacOS_Native_Menu_Has_ToolTip_If_Defined()
+        {
+            var menuBar = _session.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
+            var viewMenu = menuBar.FindElementByName("View");
+            viewMenu.Click();
+
+            var buttonMenuItem = viewMenu.FindElementByName("Button");
+            buttonMenuItem.MovePointerOver();
+
+            // Wait for tooltip to open.
+            Thread.Sleep(2000);
+
+            var toolTipCandidates = _session.FindElementsByClassName("XCUIElementTypeStaticText");
+            Assert.Contains(toolTipCandidates, x => x.Text == "Button");
         }
     }
 }
