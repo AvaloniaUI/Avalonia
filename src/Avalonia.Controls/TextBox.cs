@@ -316,9 +316,6 @@ namespace Avalonia.Controls
         private bool _canRedo;
 
         private int _wordSelectionStart = -1;
-        private bool _touchDragStarted;
-        private bool _inTouchDrag;
-        private Point _touchDragStartPoint;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private static bool _isHolding;
@@ -804,7 +801,17 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
+            }
+
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+
+            if(_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            }
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -812,6 +819,11 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
+        }
+
+        private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            _presenter?.TextSelectionHandleCanvas?.MoveHandlesToSelection();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -1546,9 +1558,14 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
+                var previousIndex = _presenter.CaretIndex;
+
                 _presenter.MoveCaretToPoint(point);
 
                 var caretIndex = _presenter.CaretIndex;
+
+                if (Math.Abs(caretIndex - previousIndex) == 1)
+                    e.PreventGestureRecognition();
 
                 if (e.Pointer.Type == PointerType.Mouse)
                 {
@@ -1607,9 +1624,6 @@ namespace Avalonia.Controls
             {
                 return;
             }
-
-            _touchDragStarted = false;
-            _touchDragStartPoint = default;
 
             if (e.Pointer.Captured != _presenter)
             {
