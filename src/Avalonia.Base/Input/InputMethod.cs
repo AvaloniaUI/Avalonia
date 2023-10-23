@@ -1,4 +1,8 @@
-﻿namespace Avalonia.Input
+﻿using System;
+using Avalonia.Input.TextInput;
+using Avalonia.Interactivity;
+
+namespace Avalonia.Input
 {
     public class InputMethod
     {
@@ -23,7 +27,25 @@
         {
             return target.GetValue<bool>(IsInputMethodEnabledProperty);
         }
-
+        
+        /// <summary>
+        /// Defines the <see cref="TextInputMethodClientRequeryRequested"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputMethodClientRequeryRequestedEventArgs> TextInputMethodClientRequeryRequestedEvent =
+            RoutedEvent.Register<InputElement, TextInputMethodClientRequeryRequestedEventArgs>(
+                "TextInputMethodClientRequeryRequested",
+                RoutingStrategies.Bubble);
+        
+        public static void AddTextInputMethodClientRequeryRequestedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.AddHandler(TextInputMethodClientRequeryRequestedEvent, handler);
+        }
+        
+        public static void RemoveTextInputMethodClientRequeryRequestedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.AddHandler(TextInputMethodClientRequeryRequestedEvent, handler);
+        }
+        
         private InputMethod()
         {
 

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using Avalonia.Compatibility;
 using Avalonia.Reactive;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Interop;
 
@@ -22,7 +24,19 @@ namespace Avalonia.Native.Interop.Impl
 
         public NativeMenuItemBase ManagedMenuItem { get; set; }
 
-        private void UpdateTitle(string title) => SetTitle(title ?? "");
+        private void UpdateTitle(string title)
+        {
+            if (OperatingSystemEx.IsMacOS())
+            {
+                // macOS does not process access key markers, so remove them.
+                title = AccessText.RemoveAccessKeyMarker(title);
+            }
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                title = "";
+            }
+            SetTitle(title);
+        }
 
         private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
