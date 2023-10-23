@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium;
+﻿using System.Threading;
+using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -57,6 +58,22 @@ namespace Avalonia.IntegrationTests.Appium
 
             Assert.True(menuBar.FindElementsByName("_Options").Count == 0);
             Assert.True(menuBar.FindElementsByName("Options").Count == 1);
+        }
+
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Win32_Avalonia_Menu_Has_ToolTip_If_Defined()
+        {
+            var fileMenu = _session.FindElementByXPath("//MenuItem[@Name='File']");
+            fileMenu.Click();
+
+            var openMenuItem = fileMenu.FindElementByName("Open...");
+            openMenuItem.MovePointerOver();
+
+            // Wait for tooltip to open.
+            Thread.Sleep(1000);
+
+            var toolTipCandidates = _session.FindElementsByClassName("TextBlock");
+            Assert.Contains(toolTipCandidates, x => x.Text == "Opens a file.");
         }
     }
 }
