@@ -11,7 +11,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.WinRT.Composition;
 
-internal class WinUiCompositorConnection : IRenderTimer
+internal class WinUiCompositorConnection : IRenderTimer, Win32.ICompositorConnection
 {
     private readonly WinUiCompositionShared _shared;
     public event Action<TimeSpan>? Tick;
@@ -54,7 +54,7 @@ internal class WinUiCompositorConnection : IRenderTimer
                     threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT
                 });
                 connect = new WinUiCompositorConnection();
-                AvaloniaLocator.CurrentMutable.BindToSelf(connect);
+                AvaloniaLocator.CurrentMutable.Bind<ICompositorConnection>().ToConstant(connect);
                 AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
                 tcs.SetResult(true);
 
@@ -144,5 +144,9 @@ internal class WinUiCompositorConnection : IRenderTimer
         return false;
     }
 
-    public WinUiCompositedWindowSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new(_shared, info);
+    public Win32CompositionMode CompositionMode => Win32CompositionMode.WinUIComposition;
+    public bool TransparencySupported => true;
+    public bool AcrylicSupported { get; }
+    public bool MicaSupported { get; }
+    public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new WinUiCompositedWindowSurface(_shared, info);
 }

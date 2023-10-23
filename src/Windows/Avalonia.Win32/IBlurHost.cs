@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Win32.WinRT
+﻿namespace Avalonia.Win32
 {
     internal enum BlurEffect
     {

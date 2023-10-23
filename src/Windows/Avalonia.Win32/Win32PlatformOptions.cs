@@ -61,14 +61,14 @@ public enum Win32CompositionMode
     /// </remarks>
     WinUIComposition = 1,
 
-    // /// <summary>
-    // /// Render Avalonia to a texture inside the DirectComposition tree.
-    // /// </summary>
-    // /// <remarks>
-    // /// Supported on Windows 8 and above. Ignored on other versions.<br/>
-    // /// Can only be applied with <see cref="Win32PlatformOptions.RenderingMode"/>=<see cref="Win32RenderingMode.AngleEgl"/>.
-    // /// </remarks>
-    // DirectComposition = 2,
+    /// <summary>
+    /// Render Avalonia to a texture inside the DirectComposition tree.
+    /// </summary>
+    /// <remarks>
+    /// Supported on Windows 8 and above. Ignored on other versions.<br/>
+    /// Can only be applied with <see cref="Win32PlatformOptions.RenderingMode"/>=<see cref="Win32RenderingMode.AngleEgl"/>.
+    /// </remarks>
+    DirectComposition = 2,
 
     /// <summary>
     /// When <see cref="LowLatencyDxgiSwapChain"/> is active, renders Avalonia through a low-latency Dxgi Swapchain.
