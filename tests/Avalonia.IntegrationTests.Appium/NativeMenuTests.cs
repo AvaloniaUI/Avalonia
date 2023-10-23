@@ -49,5 +49,14 @@ namespace Avalonia.IntegrationTests.Appium
 
             Assert.True(buttonTab.Selected);
         }
+
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void MacOS_Sanitizes_Access_Key_Markers_When_Included_In_Menu_Title()
+        {
+            var menuBar = _session.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
+
+            Assert.True(menuBar.FindElementsByName("_Options").Count == 0);
+            Assert.True(menuBar.FindElementsByName("Options").Count == 1);
+        }
     }
 }
