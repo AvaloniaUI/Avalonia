@@ -18,6 +18,9 @@
       <NativeMenuItem Header="View">
         <NativeMenu/>
       </NativeMenuItem>
+      <NativeMenuItem Header="_Options">
+        <NativeMenu/>
+      </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>
   <DockPanel>

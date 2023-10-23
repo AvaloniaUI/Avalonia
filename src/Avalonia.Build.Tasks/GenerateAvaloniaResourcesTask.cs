@@ -88,7 +88,10 @@ namespace Avalonia.Build.Tasks
 
             foreach (var s in sources.ToArray())
             {
-                if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml") || s.Path.ToLowerInvariant().EndsWith(".axaml"))
+                var path = s.Path;
+                if (path.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase) 
+                    || path.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) 
+                    || path.EndsWith(".paml", StringComparison.OrdinalIgnoreCase) )
                 {
                     XamlFileInfo info;
                     try
@@ -110,7 +113,7 @@ namespace Avalonia.Build.Tasks
                                 $"Duplicate x:Class directive, {info.XClass} is already used in {typeToXamlIndex[info.XClass]}");
                             return false;
                         }
-                        typeToXamlIndex[info.XClass] = s.Path;
+                        typeToXamlIndex[info.XClass] = path;
                     }
                 }
             }

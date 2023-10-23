@@ -8,7 +8,7 @@ namespace Avalonia.Reactive.Operators;
 internal abstract class Sink<TTarget> : IDisposable
 {
     private IDisposable? _upstream;
-    private volatile IObserver<TTarget> _observer;
+    private readonly IObserver<TTarget> _observer;
 
     protected Sink(IObserver<TTarget> observer)
     {

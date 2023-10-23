@@ -933,8 +933,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged
         {
-            add { AddHandler(SelectionChangedEvent, value); }
-            remove { RemoveHandler(SelectionChangedEvent, value); }
+            add => AddHandler(SelectionChangedEvent, value);
+            remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
         /// <summary>
@@ -1490,10 +1490,7 @@ namespace Avalonia.Controls
             _view?.AddRange(_newViewItems);
 
             // Clear the evaluator to discard a reference to the last item
-            if (_valueBindingEvaluator != null)
-            {
-                _valueBindingEvaluator.ClearDataContext();
-            }
+            _valueBindingEvaluator?.ClearDataContext();
 
             // indicate that filtering is not ongoing anymore
             _filterInAction = false;

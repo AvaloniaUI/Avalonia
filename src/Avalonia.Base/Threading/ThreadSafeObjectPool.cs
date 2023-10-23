@@ -4,7 +4,7 @@ namespace Avalonia.Threading
 {
     internal class ThreadSafeObjectPool<T> where T : class, new()
     {
-        private Stack<T> _stack = new Stack<T>();
+        private readonly Stack<T> _stack = new Stack<T>();
         public static ThreadSafeObjectPool<T> Default { get; } = new ThreadSafeObjectPool<T>();
 
         public T Get()

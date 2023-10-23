@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         private double _lastEstimatedElementSizeU = 25;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
-        private ScrollViewer? _scrollViewer;
+        private IScrollAnchorProvider? _scrollAnchorProvider;
         private Rect _viewport = s_invalidViewport;
         private Dictionary<object, Stack<Control>>? _recyclePool;
         private Control? _focusedElement;
@@ -119,8 +119,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+            get => GetValue(AreHorizontalSnapPointsRegularProperty);
+            set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -128,8 +128,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+            get => GetValue(AreVerticalSnapPointsRegularProperty);
+            set => SetValue(AreVerticalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Avalonia.Controls
                             new Rect(u, 0, sizeU, finalSize.Height) :
                             new Rect(0, u, finalSize.Width, sizeU);
                         e.Arrange(rect);
-                        _scrollViewer?.RegisterAnchorCandidate(e);
+                        _scrollAnchorProvider?.RegisterAnchorCandidate(e);
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
                 }
@@ -229,13 +229,13 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+            _scrollAnchorProvider = this.FindAncestorOfType<IScrollAnchorProvider>();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _scrollViewer = null;
+            _scrollAnchorProvider = null;
         }
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
@@ -689,7 +689,7 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
             
-            _scrollViewer?.UnregisterAnchorCandidate(element);
+            _scrollAnchorProvider?.UnregisterAnchorCandidate(element);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
 

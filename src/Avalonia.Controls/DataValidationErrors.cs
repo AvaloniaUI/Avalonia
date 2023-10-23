@@ -44,8 +44,8 @@ namespace Avalonia.Controls
 
         public Control? Owner
         {
-            get { return _owner; }
-            set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            get => _owner;
+            set => SetAndRaise(OwnerProperty, ref _owner, value);
         }
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace Avalonia.Controls
 
         public IDataTemplate ErrorTemplate
         {
-            get { return GetValue(ErrorTemplateProperty); }
-            set { SetValue(ErrorTemplateProperty, value); }
+            get => GetValue(ErrorTemplateProperty);
+            set => SetValue(ErrorTemplateProperty, value);
         }
 
         private static void ErrorsChanged(AvaloniaPropertyChangedEventArgs e)

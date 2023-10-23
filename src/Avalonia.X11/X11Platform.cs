@@ -283,7 +283,13 @@ namespace Avalonia
         /// Input method editor is a component that enables users to generate characters not natively available 
         /// on their input devices by using sequences of characters or mouse operations that are natively available on their input devices.
         /// </remarks>
-        public bool? EnableIme { get; set; }
+        public bool? EnableIme { get; set; } = true;
+
+        /// <summary>
+        /// Determines whether to use Input Focus Proxy.
+        /// The default value is false.
+        /// </summary> 
+        public bool EnableInputFocusProxy { get; set; }
         
         /// <summary>
         /// Determines whether to enable support for the

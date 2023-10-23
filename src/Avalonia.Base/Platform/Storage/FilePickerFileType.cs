@@ -47,10 +47,11 @@ public sealed class FilePickerFileType
     internal IReadOnlyList<string>? TryGetExtensions()
     {
         // Converts random glob pattern to a simple extension name.
-        // GetExtension should be sufficient here.
+        // Path.GetExtension should be sufficient here,
         // Only exception is "*.*proj" patterns that should be filtered as well.
         return Patterns?.Select(Path.GetExtension)
             .Where(e => !string.IsNullOrEmpty(e) && !e.Contains('*') && e.StartsWith("."))
+            .Select(e => e!.TrimStart('.'))
             .ToArray()!;
     }
 }

@@ -80,45 +80,45 @@ namespace Avalonia.Controls.Primitives
 
         public double ViewportSize
         {
-            get { return GetValue(ViewportSizeProperty); }
-            set { SetValue(ViewportSizeProperty, value); }
+            get => GetValue(ViewportSizeProperty);
+            set => SetValue(ViewportSizeProperty, value);
         }
 
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         [Content]
         public Thumb? Thumb
         {
-            get { return GetValue(ThumbProperty); }
-            set { SetValue(ThumbProperty, value); }
+            get => GetValue(ThumbProperty);
+            set => SetValue(ThumbProperty, value);
         }
 
         public Button? IncreaseButton
         {
-            get { return GetValue(IncreaseButtonProperty); }
-            set { SetValue(IncreaseButtonProperty, value); }
+            get => GetValue(IncreaseButtonProperty);
+            set => SetValue(IncreaseButtonProperty, value);
         }
 
         public Button? DecreaseButton
         {
-            get { return GetValue(DecreaseButtonProperty); }
-            set { SetValue(DecreaseButtonProperty, value); }
+            get => GetValue(DecreaseButtonProperty);
+            set => SetValue(DecreaseButtonProperty, value);
         }
 
         public bool IsDirectionReversed
         {
-            get { return GetValue(IsDirectionReversedProperty); }
-            set { SetValue(IsDirectionReversedProperty, value); }
+            get => GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, value);
         }
 
         public bool IgnoreThumbDrag
         {
-            get { return GetValue(IgnoreThumbDragProperty); }
-            set { SetValue(IgnoreThumbDragProperty, value); }
+            get => GetValue(IgnoreThumbDragProperty);
+            set => SetValue(IgnoreThumbDragProperty, value);
         }
 
         private double ThumbCenterOffset { get; set; }
@@ -229,18 +229,12 @@ namespace Avalonia.Controls.Primitives
                 offset = offset.WithY(isDirectionReversed ? decreaseButtonLength + thumbLength : 0.0);
                 pieceSize = pieceSize.WithHeight(increaseButtonLength);
 
-                if (IncreaseButton != null)
-                {
-                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                IncreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithY(isDirectionReversed ? 0.0 : increaseButtonLength + thumbLength);
                 pieceSize = pieceSize.WithHeight(decreaseButtonLength);
 
-                if (DecreaseButton != null)
-                {
-                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                DecreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithY(isDirectionReversed ? decreaseButtonLength : increaseButtonLength);
                 pieceSize = pieceSize.WithHeight(thumbLength);
@@ -264,18 +258,12 @@ namespace Avalonia.Controls.Primitives
                 offset = offset.WithX(isDirectionReversed ? increaseButtonLength + thumbLength : 0.0);
                 pieceSize = pieceSize.WithWidth(decreaseButtonLength);
 
-                if (DecreaseButton != null)
-                {
-                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                DecreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithX(isDirectionReversed ? 0.0 : decreaseButtonLength + thumbLength);
                 pieceSize = pieceSize.WithWidth(increaseButtonLength);
 
-                if (IncreaseButton != null)
-                {
-                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                IncreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithX(isDirectionReversed ? increaseButtonLength : decreaseButtonLength);
                 pieceSize = pieceSize.WithWidth(thumbLength);

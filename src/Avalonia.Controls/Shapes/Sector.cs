@@ -80,7 +80,7 @@ namespace Avalonia.Controls.Shapes
             var streamGeometry = new StreamGeometry();
             using (StreamGeometryContext context = streamGeometry.Open())
             {
-                context.BeginFigure(startCurvePoint, false);
+                context.BeginFigure(startCurvePoint, isFilled: true);
                 context.ArcTo(
                     endCurvePoint,
                     size,
