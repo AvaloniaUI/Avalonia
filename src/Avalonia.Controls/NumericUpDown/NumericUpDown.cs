@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -344,6 +344,15 @@ namespace Avalonia.Controls
             TextProperty.Changed.Subscribe(OnTextChanged);
             TextConverterProperty.Changed.Subscribe(OnTextConverterChanged);
             ValueProperty.Changed.Subscribe(OnValueChanged);
+
+            FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
+        }
+
+        /// <inheritdoc />
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+            TextBox?.Focus();
         }
 
         /// <inheritdoc />
