@@ -395,7 +395,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _nativeControlHost;
             }
 
-            if (featureType == typeof(IInsetsManager))
+            if (featureType == typeof(IInsetsManager) || featureType == typeof(ISoftwareKeyboardListener))
             {
                 return _insetsManager;
             }

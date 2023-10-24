@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
@@ -8,18 +9,37 @@ using Avalonia.Media;
 
 namespace Avalonia.Android.Platform
 {
-    internal class AndroidInsetsManager : Java.Lang.Object, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener
+    internal class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, ISoftwareKeyboardListener
     {
         private readonly AvaloniaMainActivity _activity;
         private readonly TopLevelImpl _topLevel;
         private bool _displayEdgeToEdge;
-        private bool _usesLegacyLayouts;
         private bool? _systemUiVisibility;
         private SystemBarTheme? _statusBarTheme;
         private bool? _isDefaultSystemBarLightTheme;
         private Color? _systemBarColor;
+        private SoftwareKeyboardState _state;
+        private float _currentSoftwareKeyboardAnimationProgress;
+        private int _startHeight;
+        private int _endHeight;
+        private bool _isKeyboardAnimating;
+        private readonly bool _usesLegacyLayouts;
 
         public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
+        public event EventHandler<SoftwareKeyboardStateChangedEventArgs> SoftwareKeyboardStateChanged;
+        public event EventHandler SoftwareKeyboardHeightChanged;
+
+        public SoftwareKeyboardState SoftwareKeyboardState
+        {
+            get => _state; set
+            {
+                var oldState = _state;
+                _state = value;
+
+                if (oldState != value)
+                    SoftwareKeyboardStateChanged?.Invoke(this, new SoftwareKeyboardStateChangedEventArgs(oldState, value));
+            }
+        }
 
         public bool DisplayEdgeToEdge
         {
@@ -47,7 +67,7 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public AndroidInsetsManager(AvaloniaMainActivity activity, TopLevelImpl topLevel)
+        internal AndroidInsetsManager(AvaloniaMainActivity activity, TopLevelImpl topLevel) : base(DispatchModeStop)
         {
             _activity = activity;
             _topLevel = topLevel;
@@ -61,6 +81,8 @@ namespace Avalonia.Android.Platform
             }
 
             DisplayEdgeToEdge = false;
+
+            ViewCompat.SetWindowInsetsAnimationCallback(_activity.Window.DecorView, this);
         }
 
         public Thickness SafeAreaPadding
@@ -88,10 +110,40 @@ namespace Avalonia.Android.Platform
             }
         }
 
+        public float SoftwareKeyboardHeight
+        {
+            get
+            {
+                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+
+                if (insets != null)
+                {
+                    var navbarInset = _displayEdgeToEdge ? 0 : insets.GetInsets(WindowInsetsCompat.Type.NavigationBars()).Bottom;
+                    if (_startHeight == _endHeight)
+                    {
+                        return (float)((insets.GetInsets(WindowInsetsCompat.Type.Ime()).Bottom - navbarInset) / _topLevel.RenderScaling);
+                    }
+                    else
+                    {
+                        var animationProgress = SoftwareKeyboardState == SoftwareKeyboardState.Open ? _currentSoftwareKeyboardAnimationProgress : 1 - _currentSoftwareKeyboardAnimationProgress;
+                        return (float)((_endHeight - navbarInset) * animationProgress / _topLevel.RenderScaling);
+                    }
+                }
+
+                return default;
+            }
+        }
+
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
-            NotifySafeAreaChanged(SafeAreaPadding);
             insets = ViewCompat.OnApplyWindowInsets(v, insets);
+            NotifySafeAreaChanged(SafeAreaPadding);
+
+            SoftwareKeyboardState = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? SoftwareKeyboardState.Open : SoftwareKeyboardState.Closed;
+
+            if (!_isKeyboardAnimating)
+                SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+
             return insets;
         }
 
@@ -103,6 +155,14 @@ namespace Avalonia.Android.Platform
         public void OnGlobalLayout()
         {
             NotifySafeAreaChanged(SafeAreaPadding);
+
+            if (_usesLegacyLayouts)
+            {
+                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+                SoftwareKeyboardState = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? SoftwareKeyboardState.Open : SoftwareKeyboardState.Closed;
+
+                SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public SystemBarTheme? SystemBarTheme
@@ -123,8 +183,6 @@ namespace Avalonia.Android.Platform
             set
             {
                 _statusBarTheme = value;
-
-                var isDefault = _statusBarTheme == null;
 
                 if (!_topLevel.View.IsShown)
                 {
@@ -217,6 +275,61 @@ namespace Avalonia.Android.Platform
             IsSystemBarVisible = _systemUiVisibility;
             SystemBarTheme = _statusBarTheme;
             SystemBarColor = _systemBarColor;
+        }
+
+        public override WindowInsetsCompat OnProgress(WindowInsetsCompat insets, IList<WindowInsetsAnimationCompat> runningAnimations)
+        {
+            foreach (var anim in runningAnimations)
+            {
+                if ((anim.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+                {
+                    _currentSoftwareKeyboardAnimationProgress = anim.InterpolatedFraction;
+
+                    SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+
+                    break;
+                }
+            }
+            return insets;
+        }
+
+        public override WindowInsetsAnimationCompat.BoundsCompat OnStart(WindowInsetsAnimationCompat animation, WindowInsetsAnimationCompat.BoundsCompat bounds)
+        {
+            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+            {
+                _currentSoftwareKeyboardAnimationProgress = animation.InterpolatedFraction;
+                _startHeight = bounds.LowerBound.Bottom;
+                _endHeight = bounds.UpperBound.Bottom;
+            }
+
+            return base.OnStart(animation, bounds);
+        }
+
+        public override void OnEnd(WindowInsetsAnimationCompat animation)
+        {
+            base.OnEnd(animation);
+
+            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+            {
+                _currentSoftwareKeyboardAnimationProgress = animation.InterpolatedFraction;
+                _isKeyboardAnimating = false;
+
+                _startHeight = 0;
+                _endHeight = 0;
+
+                SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public override void OnPrepare(WindowInsetsAnimationCompat animation)
+        {
+            base.OnPrepare(animation);
+
+            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+            {
+                _currentSoftwareKeyboardAnimationProgress = animation.InterpolatedFraction;
+                _isKeyboardAnimating = true;
+            }
         }
     }
 }

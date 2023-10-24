@@ -514,6 +514,7 @@ namespace Avalonia.Controls
             ?? new NoopStorageProvider();
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
+        public ISoftwareKeyboardListener? SoftwareKeyboardListener => PlatformImpl?.TryGetFeature<ISoftwareKeyboardListener>();
 
         /// <summary>
         /// Gets the platform's clipboard implementation
