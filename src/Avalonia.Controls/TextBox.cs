@@ -1810,6 +1810,28 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Scroll the <see cref="TextBox"/> to the specified line index.
+        /// </summary>
+        /// <param name="lineIndex">The line index to scroll to.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="lineIndex"/> is less than zero. -or - <paramref name="lineIndex"/> is larger than or equal to the line count.</exception>
+        public void ScrollToLine(int lineIndex)
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (lineIndex < 0 || lineIndex >= _presenter.TextLayout.TextLines.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(lineIndex));
+            }
+
+            var textLine = _presenter.TextLayout.TextLines[lineIndex];
+            _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
+
+        }
+
+        /// <summary>
         /// Select all text in the TextBox
         /// </summary>
         public void SelectAll()
