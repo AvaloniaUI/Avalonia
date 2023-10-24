@@ -50,11 +50,12 @@ namespace Avalonia.Media.Fonts
             var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName,
                 (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
 
-            if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface != null)
+            if (glyphTypefaces.TryGetValue(key, out glyphTypeface))
             {
-                return true;
+                return glyphTypeface != null;
             }
 
+            //Try to find nearest match first
             if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
             {
                 return true;
@@ -62,10 +63,7 @@ namespace Avalonia.Media.Fonts
 
             _fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
 
-            if (!glyphTypefaces.TryAdd(key, glyphTypeface))
-            {
-                return false;
-            }
+            glyphTypefaces.TryAdd(key, glyphTypeface);
 
             return glyphTypeface != null;
         }
