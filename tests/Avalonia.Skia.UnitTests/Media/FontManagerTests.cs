@@ -239,5 +239,26 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
+
+
+        [Fact]
+        public void Should_Get_Nearest_Match_For_Custom_SystemFont()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
+
+                    Assert.NotNull(systemFontCollection);
+
+                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Oblique), out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
+            }
+        }
     }
 }
