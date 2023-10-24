@@ -47,19 +47,24 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName, (key) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
+            var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName,
+                (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
 
-            if (!glyphTypefaces.TryGetValue(key, out glyphTypeface))
+            if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface != null)
             {
-                if (!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
-                {
-                    TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
-                }
+                return true;
+            }
 
-                if (!glyphTypefaces.TryAdd(key, glyphTypeface))
-                {
-                    return false;
-                }
+            if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+            {
+                return true;
+            }
+
+            _fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
+
+            if (!glyphTypefaces.TryAdd(key, glyphTypeface))
+            {
+                return false;
             }
 
             return glyphTypeface != null;
@@ -104,9 +109,9 @@ namespace Avalonia.Media.Fonts
                     }
 
                     var key = new FontCollectionKey(
-                           glyphTypeface.Style,
-                           glyphTypeface.Weight,
-                           glyphTypeface.Stretch);
+                        glyphTypeface.Style,
+                        glyphTypeface.Weight,
+                        glyphTypeface.Stretch);
 
                     glyphTypefaces.TryAdd(key, glyphTypeface);
                 }
