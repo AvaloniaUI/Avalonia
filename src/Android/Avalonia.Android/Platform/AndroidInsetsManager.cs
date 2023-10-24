@@ -27,7 +27,7 @@ namespace Avalonia.Android.Platform
 
         public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
         public event EventHandler<SoftwareKeyboardStateChangedEventArgs> SoftwareKeyboardStateChanged;
-        public event EventHandler SoftwareKeyboardHeightChanged;
+        public event EventHandler SoftwareKeyboardBoundsChanged;
 
         public SoftwareKeyboardState SoftwareKeyboardState
         {
@@ -110,7 +110,7 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public Rect SoftwareKeyboardRect
+        public Rect SoftwareKeyboardBounds
         {
             get
             {
@@ -147,7 +147,7 @@ namespace Avalonia.Android.Platform
             SoftwareKeyboardState = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? SoftwareKeyboardState.Open : SoftwareKeyboardState.Closed;
 
             if (!_isKeyboardAnimating)
-                SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+                SoftwareKeyboardBoundsChanged?.Invoke(this, EventArgs.Empty);
 
             return insets;
         }
@@ -166,7 +166,7 @@ namespace Avalonia.Android.Platform
                 var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
                 SoftwareKeyboardState = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? SoftwareKeyboardState.Open : SoftwareKeyboardState.Closed;
 
-                SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+                SoftwareKeyboardBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -290,7 +290,7 @@ namespace Avalonia.Android.Platform
                 {
                     _currentSoftwareKeyboardAnimationProgress = anim.InterpolatedFraction;
 
-                    SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+                    SoftwareKeyboardBoundsChanged?.Invoke(this, EventArgs.Empty);
 
                     break;
                 }
@@ -322,7 +322,7 @@ namespace Avalonia.Android.Platform
                 _startHeight = 0;
                 _endHeight = 0;
 
-                SoftwareKeyboardHeightChanged?.Invoke(this, EventArgs.Empty);
+                SoftwareKeyboardBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 

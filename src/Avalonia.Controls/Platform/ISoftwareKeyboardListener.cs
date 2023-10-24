@@ -16,9 +16,9 @@ namespace Avalonia.Controls.Platform
         SoftwareKeyboardState SoftwareKeyboardState { get; }
 
         /// <summary>
-        /// The current software keyboard frame rect.
+        /// The current software keyboard bounds.
         /// </summary>
-        Rect SoftwareKeyboardRect { get; }
+        Rect SoftwareKeyboardBounds { get; }
 
         /// <summary>
         /// Occurs when the software keyboard's state has changed.
@@ -26,9 +26,9 @@ namespace Avalonia.Controls.Platform
         event EventHandler<SoftwareKeyboardStateChangedEventArgs> SoftwareKeyboardStateChanged;
 
         /// <summary>
-        /// Occurs when the software keyboard's height has changed.
+        /// Occurs when the software keyboard's bounds has changed.
         /// </summary>
-        event EventHandler SoftwareKeyboardHeightChanged;
+        event EventHandler SoftwareKeyboardBoundsChanged;
     }
 
     /// <summary>
