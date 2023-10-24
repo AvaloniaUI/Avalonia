@@ -55,13 +55,12 @@ namespace Avalonia.Media.Fonts
                 return glyphTypeface != null;
             }
 
-            //Try to find nearest match first
-            if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+            if(!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface) || 
+                !glyphTypeface.FamilyName.Contains(familyName))
             {
-                return true;
+                //Try to find nearest match first
+                TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
             }
-
-            _fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
 
             glyphTypefaces.TryAdd(key, glyphTypeface);
 
