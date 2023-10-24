@@ -127,6 +127,20 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
     }
 }
 
+HRESULT AvnAppMenuItem::SetToolTip (char* utf8String)
+{
+    START_COM_CALL;
+
+    @autoreleasepool
+    {
+        if (utf8String != nullptr)
+        {
+            [_native setToolTip:[NSString stringWithUTF8String:(const char*)utf8String]];
+        }
+
+        return S_OK;
+    }
+}
 
 HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
