@@ -784,6 +784,11 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+      
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="Black" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <!-- Resources for Button.xaml -->
@@ -1571,6 +1576,11 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
