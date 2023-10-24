@@ -1328,7 +1328,9 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
-            var overhangLeading = Math.Max(0, bounds.Left - start);
+            //The width of overhanging pixels at the origin
+            var overhangLeading = Math.Max(0, start - bounds.Left);
+            //The width of overhanging pixels at the end
             var overhangTrailing = Math.Max(0, bounds.Width - widthIncludingWhitespace);
             var hasOverflowed = width > _paragraphWidth;
 
