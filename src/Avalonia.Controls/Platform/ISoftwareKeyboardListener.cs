@@ -53,12 +53,12 @@ namespace Avalonia.Controls.Platform
     public class SoftwareKeyboardStateChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// The new state of the suftware keyboard
+        /// The new state of the software keyboard
         /// </summary>
         public SoftwareKeyboardState NewState { get; }
 
         /// <summary>
-        /// The previous state before the change occured.
+        /// The previous state before the change occurred.
         /// </summary>
         public SoftwareKeyboardState OldState { get; }
 
