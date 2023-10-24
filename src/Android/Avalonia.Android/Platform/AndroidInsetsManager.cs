@@ -110,7 +110,7 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public float SoftwareKeyboardHeight
+        public Rect SoftwareKeyboardRect
         {
             get
             {
@@ -118,16 +118,21 @@ namespace Avalonia.Android.Platform
 
                 if (insets != null)
                 {
-                    var navbarInset = _displayEdgeToEdge ? 0 : insets.GetInsets(WindowInsetsCompat.Type.NavigationBars()).Bottom;
+                    float height;
+                    var navbarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars()).Bottom;
                     if (_startHeight == _endHeight)
                     {
-                        return (float)((insets.GetInsets(WindowInsetsCompat.Type.Ime()).Bottom - navbarInset) / _topLevel.RenderScaling);
+                        height = (float)((insets.GetInsets(WindowInsetsCompat.Type.Ime()).Bottom - navbarInset) / _topLevel.RenderScaling);
                     }
                     else
                     {
                         var animationProgress = SoftwareKeyboardState == SoftwareKeyboardState.Open ? _currentSoftwareKeyboardAnimationProgress : 1 - _currentSoftwareKeyboardAnimationProgress;
-                        return (float)((_endHeight - navbarInset) * animationProgress / _topLevel.RenderScaling);
+                        height = (float)((_endHeight - navbarInset) * animationProgress / _topLevel.RenderScaling);
                     }
+
+                    height = Math.Max(0, height); 
+
+                    return new Rect(0, _topLevel.ClientSize.Height - SafeAreaPadding.Bottom - height, _topLevel.ClientSize.Width, height);
                 }
 
                 return default;
