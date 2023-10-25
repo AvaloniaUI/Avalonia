@@ -13,7 +13,7 @@ internal class DirectCompositedWindow : IDisposable
     public EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo WindowInfo { get; }
     private readonly IDCompositionVisual _container;
     private readonly IDCompositionTarget _target;
-    private readonly IDCompositionDevice _device;
+    private readonly IDCompositionDevice2 _device;
 
     public void Dispose()
     {
@@ -29,11 +29,10 @@ internal class DirectCompositedWindow : IDisposable
     {
         WindowInfo = info;
         _shared = shared;
-        _device = shared.Device?.CloneReference() ?? throw new InvalidOperationException("IDCompositionDevice was not yet created.");
+        _device = shared.Device.CloneReference();
 
-        using var desktopTarget = _device.CreateTargetForHwnd(WindowInfo.Handle, false);
+        using var desktopTarget = shared.Device.CreateTargetForHwnd(WindowInfo.Handle, false);
         _target = desktopTarget.QueryInterface<IDCompositionTarget>();
-
 
         using var container = shared.Device.CreateVisual();
         _container = container.CloneReference();
@@ -41,7 +40,7 @@ internal class DirectCompositedWindow : IDisposable
         _target.SetRoot(container);
     }
 
-    public unsafe void SetSurface(IDCompositionSurface surface) => _container.SetContent(MicroComRuntime.GetNativePointer(surface));
+    public void SetSurface(IDCompositionSurface surface) => _container.SetContent(surface);
 
     public void SetBlur(BlurEffect blurEffect)
     {

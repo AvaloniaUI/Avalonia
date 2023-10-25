@@ -51,8 +51,8 @@ interface IDCompositionDevice : IUnknown
     HRESULT CreateVisual([out] IDCompositionVisual** visual);
     HRESULT CreateSurface(UINT width, UINT height, DXGI_FORMAT pixelFormat, DXGI_ALPHA_MODE alphaMode, [out] IDCompositionSurface** surface);
     HRESULT CreateVirtualSurface(UINT initialWidth, UINT initialHeight, DXGI_FORMAT pixelFormat, DXGI_ALPHA_MODE alphaMode, [out] IDCompositionVirtualSurface** virtualSurface);
-    HRESULT CreateSurfaceFromHandle(IntPtr handle, [out] void** surface);
-    HRESULT CreateSurfaceFromHwnd(IntPtr hwnd, [out] void** surface);
+    HRESULT CreateSurfaceFromHandle(IntPtr handle, [out] IUnknown** surface);
+    HRESULT CreateSurfaceFromHwnd(IntPtr hwnd, [out] IUnknown** surface);
     HRESULT CreateTranslateTransform([out] void** translateTransform);
     HRESULT CreateScaleTransform([out] void** scaleTransform);
     HRESULT CreateRotateTransform([out] void** rotateTransform);
@@ -78,7 +78,7 @@ interface IDCompositionDevice2 : IUnknown
     HRESULT WaitForCommitCompletion();
     HRESULT GetFrameStatistics(DCOMPOSITION_FRAME_STATISTICS* statistics);
     HRESULT CreateVisual([out] IDCompositionVisual** visual);
-    HRESULT CreateSurfaceFactory(void* renderingDevice, [out] IDCompositionSurfaceFactory** surfaceFactory);
+    HRESULT CreateSurfaceFactory(IUnknown* renderingDevice, [out] IDCompositionSurfaceFactory** surfaceFactory);
     HRESULT CreateSurface(UINT width, UINT height, DXGI_FORMAT pixelFormat, DXGI_ALPHA_MODE alphaMode, [out] IDCompositionSurface** surface);
     HRESULT CreateVirtualSurface(UINT initialWidth, UINT initialHeight, DXGI_FORMAT pixelFormat, DXGI_ALPHA_MODE alphaMode, [out] IDCompositionVirtualSurface** virtualSurface);
     HRESULT CreateTranslateTransform([out] void** translateTransform);
@@ -107,8 +107,8 @@ interface IDCompositionDevice3 : IDCompositionDevice2
 interface IDCompositionDesktopDevice : IDCompositionDevice2
 {
     HRESULT CreateTargetForHwnd(IntPtr hwnd, bool topmost, [out] IDCompositionVisual** target);
-    HRESULT CreateSurfaceFromHandle(IntPtr handle, [out] void** surface);
-    HRESULT CreateSurfaceFromHwnd(IntPtr hwnd, [out] void** surface);
+    HRESULT CreateSurfaceFromHandle(IntPtr handle, [out] IUnknown** surface);
+    HRESULT CreateSurfaceFromHwnd(IntPtr hwnd, [out] IUnknown** surface);
 }
 
 [uuid(4d93059d-097b-4651-9a60-f0f25116e2f3)]
@@ -126,7 +126,7 @@ interface IDCompositionVisual : IUnknown
     HRESULT SetBorderMode(/* DCOMPOSITION_BORDER_MODE */ int borderMode);
     HRESULT SetClip_IDCompositionClip(void* clip);
     HRESULT SetClip(/* D2D_RECT_F */ void* rect);
-    HRESULT SetContent(void* content);
+    HRESULT SetContent(IUnknown* content);
     HRESULT AddVisual(IDCompositionVisual* visual, BOOL insertAbove, IDCompositionVisual* referenceVisual);
     HRESULT RemoveVisual(IDCompositionVisual* visual);
     HRESULT RemoveAllVisuals();

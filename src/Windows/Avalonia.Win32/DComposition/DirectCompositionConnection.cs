@@ -17,14 +17,16 @@ namespace Avalonia.Win32.DComposition;
 
 internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
 {
+    private static readonly Guid IID_IDCompositionDesktopDevice = Guid.Parse("5f4633fe-1e08-4cb8-8c75-ce24333f5602");
+
     public event Action<TimeSpan>? Tick;
     public bool RunsInBackground => true;
 
     private readonly DirectCompositionShared _shared;
 
-    public DirectCompositionConnection()
+    public DirectCompositionConnection(DirectCompositionShared shared)
     {
-        _shared = new DirectCompositionShared();
+        _shared = shared;
     }
     
     private static bool TryCreateAndRegisterCore()
@@ -35,8 +37,18 @@ internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
             DirectCompositionConnection connect;
             try
             {
-                connect = new DirectCompositionConnection();
-                
+                var result = NativeMethods.DCompositionCreateDevice2(default, IID_IDCompositionDesktopDevice, out var cDevice);
+                if (result != UnmanagedMethods.HRESULT.S_OK)
+                {
+                    throw new Win32Exception((int)result);
+                }
+
+                using (var device = MicroComRuntime.CreateProxyFor<IDCompositionDesktopDevice>(cDevice, false))
+                {
+                    var shared = new DirectCompositionShared(device);
+                    connect = new DirectCompositionConnection(shared);
+                }
+
                 AvaloniaLocator.CurrentMutable.Bind<ICompositorConnection>().ToConstant(connect);
                 AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
                 tcs.SetResult(true);
@@ -61,24 +73,13 @@ internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
             cts.Cancel();
 
         var _stopwatch = Stopwatch.StartNew();
-        IDCompositionDevice? device = null;
+        var device = _shared.Device.CloneReference();
         
         while (!cts.IsCancellationRequested)
         {
             try
             {
-                if (device is null)
-                {
-                    // We don't use EventWaitHandle, as we can't block thread and we need to raise Tick before any window created.
-                    // We don't have any locks for _shared.Device, as we are inside of the loop, and it's low impact.
-                    Thread.Sleep(1);
-                    device = _shared.Device?.CloneReference();
-                }
-                else
-                {
-                    device.WaitForCommitCompletion();
-                }
-
+                device.WaitForCommitCompletion();
                 Tick?.Invoke(_stopwatch.Elapsed);
             }
             catch (Exception ex)
@@ -93,12 +94,12 @@ internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
 
     public static bool IsSupported()
     {
-        return Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
+        return Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1;
     }
 
     public static bool TryCreateAndRegister()
     {
-        if (Win32Platform.WindowsVersion >= PlatformConstants.Windows8)
+        if (IsSupported())
         {
             try
             {
@@ -107,16 +108,16 @@ internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
             }
             catch (Exception e)
             {
-                Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
+                Logger.TryGet(LogEventLevel.Error, LogArea.Win32Platform)
                     ?.Log(null, "Unable to initialize WinUI compositor: {0}", e);
             }
         }
         else
         {
             var osVersionNotice =
-                $"Windows {PlatformConstants.Windows8} is required. Your machine has Windows {Win32Platform.WindowsVersion} installed.";
+                $"Windows {PlatformConstants.Windows8_1} is required. Your machine has Windows {Win32Platform.WindowsVersion} installed.";
 
-            Logger.TryGet(LogEventLevel.Warning, "WinUIComposition")?.Log(null,
+            Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)?.Log(null,
                 $"Unable to initialize WinUI compositor: {osVersionNotice}");
         }
 
@@ -124,6 +125,7 @@ internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
     }
 
     public Win32CompositionMode CompositionMode => Win32CompositionMode.DirectComposition;
+    public bool RequiresLayeredWindow => true;
     public bool TransparencySupported => true;
     public bool AcrylicSupported { get; }
     public bool MicaSupported { get; }
