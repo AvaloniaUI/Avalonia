@@ -58,8 +58,31 @@ namespace Avalonia.Media.Fonts
             if(!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface) || 
                 !glyphTypeface.FamilyName.Contains(familyName))
             {
-                //Try to find nearest match first
+                //Try to find nearest match if possible
                 TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
+            }
+
+            if(glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+            {
+                var fontSimulations = FontSimulations.None;
+
+                if(style != FontStyle.Normal && glyphTypeface2.Style != style)
+                {
+                    fontSimulations |= FontSimulations.Oblique;
+                }
+
+                if((int)weight >= 600 && glyphTypeface2.Weight != weight)
+                {
+                    fontSimulations |= FontSimulations.Bold;
+                }
+
+                if(fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
+                {
+                    using (stream)
+                    {
+                        _fontManager.PlatformImpl.TryCreateGlyphTypeface(stream, fontSimulations, out glyphTypeface);
+                    }
+                }
             }
 
             glyphTypefaces.TryAdd(key, glyphTypeface);
@@ -92,7 +115,7 @@ namespace Avalonia.Media.Fonts
             {
                 var stream = assetLoader.Open(fontAsset);
 
-                if (fontManager.TryCreateGlyphTypeface(stream, out var glyphTypeface))
+                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                 {
                     if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
                     {
