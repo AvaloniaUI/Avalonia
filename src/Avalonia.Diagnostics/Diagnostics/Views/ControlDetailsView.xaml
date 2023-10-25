@@ -75,7 +75,16 @@
           <DataGridTemplateColumn Header="Property"  IsReadOnly="True" x:DataType="vm:PropertyViewModel">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate DataType="vm:PropertyViewModel">
-                <DockPanel>
+                <!--
+                Do not remove the DockPanel background set to Transparent
+                because if Background is null HitTest on empty space returns false
+                -->
+                <DockPanel Background="Transparent">
+                  <DockPanel.Styles>
+                    <Style Selector="DockPanel[IsPointerOver=False] > ToggleButton">
+                      <Setter Property="IsVisible" Value="False"/>
+                    </Style>
+                  </DockPanel.Styles>
                   <ToggleButton
                     IsChecked="{Binding IsPinned}"
                     Background="Transparent"
