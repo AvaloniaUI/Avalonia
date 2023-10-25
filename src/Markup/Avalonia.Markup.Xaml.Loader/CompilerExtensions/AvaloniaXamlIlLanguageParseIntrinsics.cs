@@ -416,6 +416,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         private static IXamlType GetElementType(IXamlType type, XamlTypeWellKnownTypes types)
         {
+            if (type.IsArray)
+            {
+                return type.ArrayElementType;
+            }
+
             return type.GetAllInterfaces().FirstOrDefault(i =>
                     i.FullName.StartsWith(types.IEnumerableT.FullName))?
                 .GenericArguments[0];

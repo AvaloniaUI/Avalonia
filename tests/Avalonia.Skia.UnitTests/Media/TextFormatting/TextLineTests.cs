@@ -1259,6 +1259,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+       
+
+        [Fact]
+        public void Should_GetPreviousCharacterHit_Non_Trailing()
+        {
+            var text = "123.45.67.•";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(10, 1));
+            }
+        }
+
         private class FixedRunsTextSource : ITextSource
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
