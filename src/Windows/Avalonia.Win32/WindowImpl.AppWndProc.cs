@@ -100,7 +100,7 @@ namespace Avalonia.Win32
                         }
 
                         // Cleanup render targets
-                        (_gl as IDisposable)?.Dispose();
+                        (_glSurface as IDisposable)?.Dispose();
 
                         if (_dropTarget != null)
                         {
