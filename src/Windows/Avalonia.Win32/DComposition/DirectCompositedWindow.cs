@@ -42,17 +42,6 @@ internal class DirectCompositedWindow : IDisposable
 
     public void SetSurface(IDCompositionSurface surface) => _container.SetContent(surface);
 
-    public void SetBlur(BlurEffect blurEffect)
-    {
-        lock (_shared.SyncRoot)
-        {
-            // _blur.SetIsVisible(blurEffect == BlurEffect.Acrylic
-            //                    || blurEffect == BlurEffect.Mica && _mica == null ?
-            //     1 :
-            //     0);
-        }
-    }
-
     public IDisposable BeginTransaction()
     {
         Monitor.Enter(_shared.SyncRoot);

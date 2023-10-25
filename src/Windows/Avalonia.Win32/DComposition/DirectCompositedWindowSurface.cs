@@ -10,7 +10,6 @@ namespace Avalonia.Win32.DComposition;
 
 internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface, IDisposable, ICompositionEffectsSurface
 {
-    internal static readonly Guid IID_IDCompositionDevice = Guid.Parse("c37ea93a-e7aa-450d-b16f-9746cb0407f3");
     private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
     private readonly DirectCompositionShared _shared;
     private DirectCompositedWindow? _window;
@@ -25,7 +24,7 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     public IDirect3D11TextureRenderTarget CreateRenderTarget(IPlatformGraphicsContext context, IntPtr d3dDevice)
     {
         _window ??= new DirectCompositedWindow(_info, _shared);
-        _window.SetBlur(_blurEffect);
+        SetBlur(_blurEffect);
 
         return new DirectCompositedWindowRenderTarget(context, d3dDevice, _shared, _window);
     }
@@ -42,7 +41,7 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     public void SetBlur(BlurEffect enable)
     {
         _blurEffect = enable;
-        _window?.SetBlur(enable);
+        // _window?.SetBlur(enable);
     }
 }
 
