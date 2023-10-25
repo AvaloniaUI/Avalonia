@@ -1,15 +1,17 @@
-﻿namespace Avalonia.Win32
+﻿namespace Avalonia.Win32;
+
+internal enum BlurEffect
 {
-    internal enum BlurEffect
-    {
-        None,
-        Acrylic,
-        MicaLight,
-        MicaDark
-    }
-    
-    internal interface IBlurHost
-    {
-        void SetBlur(BlurEffect enable);
-    }
+    None,
+    GaussianBlur,
+    Acrylic,
+    MicaLight,
+    MicaDark
+}
+
+internal interface ICompositionEffectsSurface
+{
+    bool IsBlurSupported(BlurEffect effect);
+
+    void SetBlur(BlurEffect enable);
 }

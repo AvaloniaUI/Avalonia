@@ -117,7 +117,7 @@ public class Win32PlatformOptions
     /// <summary>
     /// Gets or sets Avalonia composition modes with fallbacks.
     /// The first element in the array has the highest priority.
-    /// The default value is: <see cref="Win32CompositionMode.WinUIComposition"/>, <see cref="Win32CompositionMode.RedirectionSurface"/>.
+    /// The default value is: <see cref="Win32CompositionMode.WinUIComposition"/>, <see cref="Win32CompositionMode.DirectComposition"/>, <see cref="Win32CompositionMode.RedirectionSurface"/>.
     /// </summary>
     /// <remarks>
     /// If application should work on as wide range of devices as possible, at least add <see cref="Win32CompositionMode.RedirectionSurface"/> as a fallback value.
@@ -125,7 +125,7 @@ public class Win32PlatformOptions
     /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
     public IReadOnlyList<Win32CompositionMode> CompositionMode { get; set; } = new[]
     {
-        Win32CompositionMode.WinUIComposition, Win32CompositionMode.RedirectionSurface
+        Win32CompositionMode.WinUIComposition, Win32CompositionMode.DirectComposition, Win32CompositionMode.RedirectionSurface
     };
 
     /// <summary>

@@ -15,7 +15,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DComposition;
 
-internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
+internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactory
 {
     private static readonly Guid IID_IDCompositionDesktopDevice = Guid.Parse("5f4633fe-1e08-4cb8-8c75-ce24333f5602");
 
@@ -49,7 +49,7 @@ internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
                     connect = new DirectCompositionConnection(shared);
                 }
 
-                AvaloniaLocator.CurrentMutable.Bind<ICompositorConnection>().ToConstant(connect);
+                AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connect);
                 AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
                 tcs.SetResult(true);
             }
@@ -124,10 +124,6 @@ internal class DirectCompositionConnection : IRenderTimer, ICompositorConnection
         return false;
     }
 
-    public Win32CompositionMode CompositionMode => Win32CompositionMode.DirectComposition;
-    public bool RequiresLayeredWindow => true;
-    public bool TransparencySupported => true;
-    public bool AcrylicSupported { get; }
-    public bool MicaSupported { get; }
+    public bool RequiresNoRedirectionBitmap => true;
     public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DirectCompositedWindowSurface(_shared, info);
 }

@@ -10,7 +10,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DirectX
 {
-    internal unsafe class DxgiConnection : IRenderTimer, ICompositorConnection
+    internal unsafe class DxgiConnection : IRenderTimer, IWindowsSurfaceFactory
     {
         public const uint ENUM_CURRENT_SETTINGS = unchecked((uint)(-1));
 
@@ -165,7 +165,7 @@ namespace Avalonia.Win32.DirectX
                 {
                     var connection = new DxgiConnection(pumpLock);
 
-                    AvaloniaLocator.CurrentMutable.Bind<ICompositorConnection>().ToConstant(connection);
+                    AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connection);
                     AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connection);
                     tcs.SetResult(true);
                     connection.RunLoop();
@@ -182,10 +182,7 @@ namespace Avalonia.Win32.DirectX
             return tcs.Task.Result;
         }
 
-        public Win32CompositionMode CompositionMode => Win32CompositionMode.LowLatencyDxgiSwapChain;
-        public bool TransparencySupported => false;
-        public bool AcrylicSupported { get; }
-        public bool MicaSupported { get; }
+        public bool RequiresNoRedirectionBitmap => false;
         public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DxgiSwapchainWindow(this, info);
     }
 }

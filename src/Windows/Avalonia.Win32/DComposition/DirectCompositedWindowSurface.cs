@@ -36,6 +36,9 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
         _window = null;
     }
 
+    // TODO: we can implement BlurEffect.GaussianBlur in with IDCompositionDevice3.CreateGaussianBlurEffect. 
+    public bool IsBlurSupported(BlurEffect effect) => effect == BlurEffect.None;
+
     public void SetBlur(BlurEffect enable)
     {
         _blurEffect = enable;
