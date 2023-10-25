@@ -246,6 +246,8 @@ namespace Avalonia.Headless
         {
             glyphTypeface = new HeadlessGlyphTypefaceImpl();
 
+            TryCreateGlyphTypefaceCount++;
+
             return true;
         }
     }
