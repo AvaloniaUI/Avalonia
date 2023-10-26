@@ -56,6 +56,11 @@ namespace Avalonia.Input
 
             if (Captured != null)
                 CaptureGestureRecognizer(null);
+
+            if(Captured == null && CapturedGestureRecognizer == null)
+            {
+                IsGestureRecognitionSkipped = false;
+            }
         }
 
         static IInputElement? GetNextCapture(Visual parent)
@@ -78,6 +83,8 @@ namespace Avalonia.Input
         /// Gets the gesture recognizer that is currently capturing by the pointer, if any.
         /// </summary>
         internal GestureRecognizer? CapturedGestureRecognizer { get; private set; }
+
+        public bool IsGestureRecognitionSkipped { get; set; }
 
         public void Dispose()
         {
