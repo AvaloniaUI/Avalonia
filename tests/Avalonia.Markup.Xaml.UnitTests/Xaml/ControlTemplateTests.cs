@@ -5,6 +5,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -243,6 +244,41 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var diagnostic = presenter.GetDiagnostic(ContentPresenter.ContentProperty);
                 Assert.Equal(BindingPriority.Template, diagnostic.Priority);
+            }
+        }
+
+        [Fact]
+        public void Foo()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <ControlTheme x:Key='{x:Type Button}' TargetType='Button'>
+			<Style Selector='^:disabled'>
+				<Setter Property='Background' Value='LightGray'/>
+			</Style>
+		</ControlTheme>
+    </Window.Resources>
+
+    <TemplatedControl Background='LightBlue' IsEnabled='False'>
+		<TemplatedControl.Template>
+			<ControlTemplate TargetType='TemplatedControl'>
+				<Button Background='{TemplateBinding Background}'/>
+			</ControlTemplate>
+		</TemplatedControl.Template>
+	</TemplatedControl>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                window.Show();
+
+                var control = (TemplatedControl)window.Content;
+                var button = Assert.IsType<Button>(control.GetVisualChildren().Single());
+                var brush = Assert.IsAssignableFrom<ISolidColorBrush>(button.Background);
+
+                Assert.Equal(Colors.LightBlue, brush.Color);
             }
         }
 

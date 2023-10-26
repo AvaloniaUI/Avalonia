@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
@@ -8,12 +9,15 @@ namespace Avalonia.PropertyStore
         Animation,
         AnimationTemplatedParentTheme,
         AnimationTheme,
-        StyleTrigger,
-        StyleTriggerTemplatedParentTheme,
-        StyleTriggerTheme,
+        TemplateStyleTrigger,
+        TemplateStyleTriggerTemplatedParentTheme,
+        TemplateStyleTriggerTheme,
         Template,
         TemplateTemplatedParentTheme,
         TemplateTheme,
+        StyleTrigger,
+        StyleTriggerTemplatedParentTheme,
+        StyleTriggerTheme,
         Style,
         StyleTemplatedParentTheme,
         StyleTheme,
@@ -21,11 +25,21 @@ namespace Avalonia.PropertyStore
 
     internal static class FramePriorityExtensions
     {
-        public static FramePriority ToFramePriority(this BindingPriority priority, FrameType type = FrameType.Style)
+        public static FramePriority ToFramePriority(
+            this BindingPriority priority,
+            FrameType type = FrameType.Style,
+            bool isTemplateSelector = false)
         {
-            Debug.Assert(priority != BindingPriority.LocalValue);
-            var p = (int)(priority > 0 ? priority : priority + 1);
-            return (FramePriority)(p * 3 + (int)type);
+            var p = (priority, isTemplateSelector) switch
+            {
+                (BindingPriority.Animation, _) => FramePriority.Animation,
+                (BindingPriority.StyleTrigger, false) => FramePriority.StyleTrigger,
+                (BindingPriority.StyleTrigger, true) => FramePriority.TemplateStyleTrigger,
+                (BindingPriority.Template, _) => FramePriority.StyleTrigger,
+                (BindingPriority.Style, _) => FramePriority.Style,
+                _ => throw new ArgumentException("Invalid priority."),
+            };
+            return (FramePriority)((int)p + (int)type);
         }
 
         public static bool IsType(this FramePriority priority, FrameType type)

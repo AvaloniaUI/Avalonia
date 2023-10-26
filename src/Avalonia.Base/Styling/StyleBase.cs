@@ -92,7 +92,7 @@ namespace Avalonia.Styling
             return false;
         }
 
-        internal ValueFrame Attach(StyledElement target, IStyleActivator? activator, FrameType type)
+        internal ValueFrame Attach(StyledElement target, IStyleActivator? activator, FrameType type, bool isTemplateSelector)
         {
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");
@@ -107,7 +107,7 @@ namespace Avalonia.Styling
             {
                 var canShareInstance = activator is null;
 
-                instance = new StyleInstance(this, activator, type);
+                instance = new StyleInstance(this, activator, type, isTemplateSelector);
 
                 if (_setters is not null)
                 {

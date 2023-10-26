@@ -20,10 +20,10 @@ namespace Avalonia.PropertyStore
         private ValueStore? _owner;
         private bool _isShared;
 
-        protected ValueFrame(BindingPriority priority, FrameType type)
+        protected ValueFrame(BindingPriority priority, FrameType type, bool isTemplateSelector = false)
         {
             Priority = priority;
-            FramePriority = priority.ToFramePriority(type);
+            FramePriority = priority.ToFramePriority(type, isTemplateSelector);
         }
 
         public int EntryCount => _index.Count;

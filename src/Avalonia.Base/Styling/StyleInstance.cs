@@ -29,8 +29,9 @@ namespace Avalonia.Styling
         public StyleInstance(
             IStyle style,
             IStyleActivator? activator,
-            FrameType type)
-            : base(GetPriority(activator), type)
+            FrameType type,
+            bool isTemplateSelector)
+            : base(GetPriority(activator), type, isTemplateSelector)
         {
             _activator = activator;
             Source = style;

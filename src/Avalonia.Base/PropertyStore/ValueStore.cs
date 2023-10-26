@@ -772,7 +772,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(oldValue != newValue);
             Debug.Assert(oldValue is not null || newValue is not null);
 
-            // If the value is set locally, propagaton ends here.
+            // If the value is set locally, propagation ends here.
             if (_effectiveValues.ContainsKey(property) == true)
                 return;
 
@@ -825,7 +825,7 @@ namespace Avalonia.PropertyStore
                     if (current?.Priority < priority && current?.BasePriority < priority)
                         break;
 
-                    // Try to get an entry from the frame for the property we're reevaluating.
+                    // Try to get an entry from the frame for the property we're re-evaluating.
                     var foundEntry = frame.TryGetEntryIfActive(property, out var entry, out var activeChanged);
                     
                     // If the active state of the frame has changed since the last read, and
@@ -855,6 +855,9 @@ namespace Avalonia.PropertyStore
                             AddEffectiveValue(property, current);
                             current.SetAndRaise(this, entry, priority);
                         }
+
+                        if (priority > BindingPriority.Animation)
+                            break;
                     }
 
                     if (generation != _frameGeneration)
