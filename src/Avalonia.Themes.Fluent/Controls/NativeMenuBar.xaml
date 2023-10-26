@@ -12,6 +12,7 @@
           <Menu.Styles>
             <Style Selector="MenuItem" x:DataType="NativeMenuItem">
               <Setter Property="Header" Value="{Binding Header}"/>
+              <Setter Property="ToolTip.Tip" Value="{Binding ToolTip}"/>
               <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
               <Setter Property="InputGesture" Value="{Binding Gesture}"/>
               <Setter Property="ItemsSource" Value="{Binding Menu.Items}"/>

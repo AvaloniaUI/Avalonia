@@ -51,6 +51,7 @@ namespace IntegrationTestApp
                     var menuItem = new NativeMenuItem
                     {
                         Header = (string)tabItem.Header!,
+                        ToolTip = (string)tabItem.Header!,
                         IsChecked = tabItem.IsSelected,
                         ToggleType = NativeMenuItemToggleType.Radio,
                     };
