@@ -54,10 +54,13 @@ namespace Avalonia.Input
             if (Captured is Visual v3)
                 v3.DetachedFromVisualTree += OnCaptureDetached;
 
-            PreviousCaptured = null;
-
             if (Captured != null)
                 CaptureGestureRecognizer(null);
+
+            if(Captured == null && CapturedGestureRecognizer == null)
+            {
+                IsGestureRecognitionSkipped = false;
+            }
         }
 
         static IInputElement? GetNextCapture(Visual parent)
@@ -81,11 +84,7 @@ namespace Avalonia.Input
         /// </summary>
         internal GestureRecognizer? CapturedGestureRecognizer { get; private set; }
 
-        /// <summary>
-        /// The previously captured element. This is set when a <see cref="GestureRecognizer"/> captures
-        /// the pointer.
-        /// </summary>
-        internal IInputElement? PreviousCaptured { get; private set; }
+        public bool IsGestureRecognitionSkipped { get; set; }
 
         public void Dispose()
         {
@@ -107,19 +106,7 @@ namespace Avalonia.Input
 
             if (gestureRecognizer != null)
             {
-                if (PreviousCaptured == null)
-                    PreviousCaptured = Captured;
                 Capture(null);
-            }
-        }
-
-        internal void ReleaseGestureRecognizerCapture()
-        {
-            if(CapturedGestureRecognizer != null)
-            {
-                Capture(PreviousCaptured);
-
-                CaptureGestureRecognizer(null);
             }
         }
     }

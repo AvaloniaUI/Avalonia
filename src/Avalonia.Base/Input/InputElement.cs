@@ -504,21 +504,6 @@ namespace Avalonia.Input
             return FocusManager.GetFocusManager(this)?.Focus(this, method, keyModifiers) ?? false; 
         }
 
-        /// <summary>
-        /// Cancels the current gesture recognizer captured by the pointer, and restores the previous captured 
-        /// element if available. If no gesture is currently started by the pointer, no changes are made.
-        /// </summary>
-        /// <param name="pointer">The pointer with the captured gesture</param>
-        public void CancelCurrentGesture(Pointer pointer)
-        {
-            var captured = pointer.PreviousCaptured as Visual;
-
-            if(captured == this || this.GetVisualDescendants().Contains(captured))
-            {
-                pointer?.ReleaseGestureRecognizerCapture();
-            }
-        }
-
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
