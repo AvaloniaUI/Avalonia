@@ -583,5 +583,91 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
+
+        [Fact]
+        public void Removing_Focused_Element_Inside_Focus_Scope_Activates_Root_Focus_Scope()
+        {
+            // Issue #13325
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button innerButton, intermediateButton, outerButton;
+            TestFocusScope innerScope;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        // Intermediate focus scope to make sure that the root focus scope gets
+                        // activated, not this one.
+                        new TestFocusScope
+                        {
+                            Children =
+                            {
+                                (innerScope = new TestFocusScope
+                                {
+                                    Children =
+                                    {
+                                        (innerButton = new Button()),
+                                    }
+                                }),
+                                (intermediateButton = new Button()),
+                            }
+                        },
+                        (outerButton = new Button()),
+                    }
+                }
+            };
+
+            // Focus a control in each scope, ending with the innermost one.
+            outerButton.Focus();
+            intermediateButton.Focus();
+            innerButton.Focus();
+
+            // Remove the focused control from the tree.
+            ((Panel)innerButton.Parent).Children.Remove(innerButton);
+
+            var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
+            Assert.Same(outerButton, focusManager.GetFocusedElement());
+            Assert.Null(focusManager.GetFocusedElement(innerScope));
+        }
+
+        [Fact]
+        public void Removing_Focus_Scope_Activates_Root_Focus_Scope()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button innerButton, outerButton;
+            TestFocusScope innerScope;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (innerScope = new TestFocusScope
+                        {
+                            Children =
+                            {
+                                (innerButton = new Button()),
+                            }
+                        }),
+                        (outerButton = new Button()),
+                    }
+                }
+            };
+
+            // Focus a control in the top-level and inner focus scopes.
+            outerButton.Focus();
+            innerButton.Focus();
+
+            // Remove the inner focus scope.
+            ((Panel)innerScope.Parent).Children.Remove(innerScope);
+
+            var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
+            Assert.Same(outerButton, focusManager.GetFocusedElement());
+        }
+
+        private class TestFocusScope : Panel, IFocusScope
+        {
+        }
     }
 }
