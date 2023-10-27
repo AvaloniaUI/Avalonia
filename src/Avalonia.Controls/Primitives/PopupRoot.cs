@@ -77,7 +77,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        Visual? IHostedVisualTreeRoot.Host => VisualParent;
+        Visual? IHostedVisualTreeRoot.Host => Parent as Visual ?? ParentTopLevel;
 
         /// <summary>
         /// Gets the styling parent of the popup root.

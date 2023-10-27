@@ -666,6 +666,44 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(outerButton, focusManager.GetFocusedElement());
         }
 
+        [Fact]
+        public void Switching_Focus_Scope_Changes_Focus()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            Button innerButton, outerButton;
+            TestFocusScope innerScope;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (innerScope = new TestFocusScope
+                        {
+                            Children =
+                            {
+                                (innerButton = new Button()),
+                            }
+                        }),
+                        (outerButton = new Button()),
+                    }
+                }
+            };
+
+            // Focus a control in the top-level and inner focus scopes.
+            outerButton.Focus();
+            innerButton.Focus();
+
+            var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
+            Assert.Same(innerButton, focusManager.GetFocusedElement());
+
+            focusManager.SetFocusScope(root);
+            Assert.Same(outerButton, focusManager.GetFocusedElement());
+
+            focusManager.SetFocusScope(innerScope);
+            Assert.Same(innerButton, focusManager.GetFocusedElement());
+        }
+
         private class TestFocusScope : Panel, IFocusScope
         {
         }
