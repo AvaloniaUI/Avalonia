@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -60,8 +60,6 @@ namespace Avalonia.Win32
         private Thickness _extendedMargins;
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
-        private readonly bool _isUsingComposition;
-        private readonly IBlurHost? _blurHost;
         private WindowResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
 
@@ -74,7 +72,7 @@ namespace Avalonia.Win32
         private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
         private readonly FramebufferManager _framebuffer;
-        private readonly object? _gl;
+        private readonly object? _glSurface;
         private readonly bool _wmPointerEnabled;
 
         private readonly Win32NativeControlHost _nativeControlHost;
@@ -101,6 +99,7 @@ namespace Avalonia.Win32
         private uint _langid;
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
+        private readonly WindowTransparencyLevel _defaultTransparencyLevel;
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
@@ -133,20 +132,10 @@ namespace Avalonia.Win32
                 Decorations = SystemDecorations.Full
             };
 
+            var surfaceFactory = AvaloniaLocator.Current.GetService<IWindowsSurfaceFactory>();
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
-
-            var compositionConnector = AvaloniaLocator.Current.GetService<WinUiCompositorConnection>();
-
-            var isUsingAngleDX11 = glPlatform is D3D11AngleWin32PlatformGraphics;
-            _isUsingComposition = compositionConnector is { } && isUsingAngleDX11;
-
-            DxgiConnection? dxgiConnection = null;
-            var isUsingDxgiSwapchain = false;
-            if (!_isUsingComposition)
-            {
-                dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
-                isUsingDxgiSwapchain = dxgiConnection is { } && isUsingAngleDX11;
-            }
+            UseRedirectionBitmap = surfaceFactory is null || glPlatform is null ||
+                                   !surfaceFactory.RequiresNoRedirectionBitmap;
 
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
@@ -157,34 +146,28 @@ namespace Avalonia.Win32
             {
                 UpdateInputMethod(GetKeyboardLayout(0));
             }
-            
+
             if (glPlatform != null)
             {
-                if (_isUsingComposition)
+                if (surfaceFactory is not null)
                 {
-                    var cgl = compositionConnector!.CreateSurface(this);
-                    _blurHost = cgl;
-                    _gl = cgl;
-                }
-                else if (isUsingDxgiSwapchain)
-                {
-                    var dxgigl = new DxgiSwapchainWindow(dxgiConnection!, this);
-                    _gl = dxgigl;
+                    _glSurface = surfaceFactory.CreateSurface(this);
                 }
                 else
                 {
                     if (glPlatform is D3D11AngleWin32PlatformGraphics or D3D9AngleWin32PlatformGraphics)
-                        _gl = new EglGlPlatformSurface(this);
+                        _glSurface = new EglGlPlatformSurface(this);
                     else if (glPlatform is WglPlatformOpenGlInterface)
-                        _gl = new WglGlPlatformSurface(this);
+                        _glSurface = new WglGlPlatformSurface(this);
                 }
             }
 
             Screen = new ScreenImpl();
             _storageProvider = new Win32StorageProvider(this);
 
-            _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
-            _transparencyLevel = _isUsingComposition ? WindowTransparencyLevel.Transparent : WindowTransparencyLevel.None;
+            _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
+            _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
+            _transparencyLevel = _defaultTransparencyLevel;
             s_instances.Add(this);
         }
 
@@ -243,6 +226,9 @@ namespace Avalonia.Win32
         }
 
         private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.IsPrimary)?.Scaling ?? 1;
+
+        private ICompositionEffectsSurface? CompositionEffectsSurface => _glSurface as ICompositionEffectsSurface;
+        private bool UseRedirectionBitmap { get; }
 
         public double RenderScaling => _scaling;
 
@@ -362,164 +348,143 @@ namespace Avalonia.Win32
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            var windowsVersion = Win32Platform.WindowsVersion;
-
             foreach (var level in transparencyLevels)
             {
-                if (!IsSupported(level, windowsVersion))
+                if (!IsSupported(level))
                     continue;
+
                 if (level == TransparencyLevel)
+                {
                     return;
+                }
                 if (level == WindowTransparencyLevel.Transparent)
-                    SetTransparencyTransparent(windowsVersion);
-                else if (level == WindowTransparencyLevel.Blur)
-                    SetTransparencyBlur(windowsVersion);
+                {
+                    if (!SetTransparencyTransparent())
+                        continue;
+                }
                 else if (level == WindowTransparencyLevel.AcrylicBlur)
-                    SetTransparencyAcrylicBlur(windowsVersion);
+                {
+                    if (!SetTransparencyAcrylicBlur())
+                        continue;
+                }
                 else if (level == WindowTransparencyLevel.Mica)
-                    SetTransparencyMica(windowsVersion);
+                {
+                    if (!SetTransparencyMica())
+                        continue;
+                }
 
                 TransparencyLevel = level;
                 return;
             }
 
-            // If we get here, we didn't find a supported level. Use the defualt of Transparent or
-            // None, depending on whether composition is enabled.
-            if (_isUsingComposition)
-            {
-                SetTransparencyTransparent(windowsVersion);
-                TransparencyLevel = WindowTransparencyLevel.Transparent;
-            }
-            else
-            {
-                TransparencyLevel = WindowTransparencyLevel.None;
-            }
+            // If we get here, we didn't find a supported level. Report the default.
+            TransparencyLevel = _defaultTransparencyLevel;
         }
 
-        private bool IsSupported(WindowTransparencyLevel level, Version windowsVersion)
+        private bool IsSupported(WindowTransparencyLevel level)
         {
-            // Only None is suppported when composition is disabled.
-            if (!_isUsingComposition)
-                return level == WindowTransparencyLevel.None;
-
-            // When composition is enabled, None is not supported because the backing visual always
-            // has an alpha channel
+            // None is only supported with redirection bitmap.
+            // Note, it's still possible to have non-transparent window with a fallback background brush.
             if (level == WindowTransparencyLevel.None)
-                return false;
+                return UseRedirectionBitmap;
 
-            // Transparent only supported on Windows 8+.
+            // Transparent is supported either with DwmEnableBlurBehindWindow (win8+) or with NoRedirectionBitmap.
             if (level == WindowTransparencyLevel.Transparent)
-                return windowsVersion >= PlatformConstants.Windows8;
+                return !UseRedirectionBitmap || Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
-            // Blur only supported on Windows 8 and lower.
             if (level == WindowTransparencyLevel.Blur)
-                return windowsVersion < PlatformConstants.Windows10;
+                return CompositionEffectsSurface?.IsBlurSupported(BlurEffect.GaussianBlur) ?? false;
 
-            // Acrylic is supported on Windows >= 10.0.15063.
             if (level == WindowTransparencyLevel.AcrylicBlur)
-                return windowsVersion >= WinUiCompositionShared.MinAcrylicVersion;
+                return CompositionEffectsSurface?.IsBlurSupported(BlurEffect.Acrylic) ?? false;
 
-            // Mica is supported on Windows >= 10.0.22000.
             if (level == WindowTransparencyLevel.Mica)
-                return windowsVersion >= WinUiCompositionShared.MinHostBackdropVersion;
+                return CompositionEffectsSurface?.IsBlurSupported(BlurEffect.MicaDark) ?? false;
 
             return false;
         }
 
-        private void SetTransparencyTransparent(Version windowsVersion)
+        private bool SetTransparencyTransparent()
         {
-            // Transparent only supported with composition on Windows 8+.
-            if (!_isUsingComposition || windowsVersion < PlatformConstants.Windows8)
-                return;
-
-            if (windowsVersion < PlatformConstants.Windows10)
+            if (CompositionEffectsSurface is {} surface)
             {
-                // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
-                // Windows 10, hence using ACCENT_ENABLE_BLURBEHIND to disable blurbehind  ¯\_(ツ)_/¯.
-                // Hey, I'm just porting what was here before.
-                SetAccentState(AccentState.ACCENT_ENABLE_BLURBEHIND);
-                var blurInfo = new DWM_BLURBEHIND(false);
-                DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+                surface.SetBlur(BlurEffect.None);
+                return true;
             }
-
-            SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(BlurEffect.None);
+            else
+            {
+                return SetLegacyTransparency(true);
+            }
         }
 
-        private void SetTransparencyBlur(Version windowsVersion)
+        private bool SetTransparencyAcrylicBlur()
         {
-            // Blur only supported with composition on Windows 8 and lower.
-            if (!_isUsingComposition || windowsVersion >= PlatformConstants.Windows10)
-                return;
-
-            // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
-            // Windows 10.
-            SetAccentState(AccentState.ACCENT_DISABLED);
-            var blurInfo = new DWM_BLURBEHIND(true);
-            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
-        }
-
-        private void SetTransparencyAcrylicBlur(Version windowsVersion)
-        {
-            // Acrylic blur only supported with composition on Windows >= 10.0.15063.
-            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinAcrylicVersion)
-                return;
-
             SetUseHostBackdropBrush(true);
-            _blurHost?.SetBlur(BlurEffect.Acrylic);
+            SetLegacyTransparency(false);
+
+            CompositionEffectsSurface!.SetBlur(BlurEffect.Acrylic);
+            return true;
         }
 
-        private void SetTransparencyMica(Version windowsVersion)
+        /// <summary>
+        /// Sets the transparency mica
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        private bool SetTransparencyMica()
         {
-            // Mica only supported with composition on Windows >= 10.0.22000.
-            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
-                return;
-
             SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(_currentThemeVariant switch
+            SetLegacyTransparency(false);
+            
+            CompositionEffectsSurface!.SetBlur(_currentThemeVariant switch
             {
                 PlatformThemeVariant.Light => BlurEffect.MicaLight,
                 PlatformThemeVariant.Dark => BlurEffect.MicaDark,
                 _ => throw new ArgumentOutOfRangeException()
             });
+            return true;
         }
 
-        private void SetAccentState(AccentState state)
+        private bool SetLegacyTransparency(bool enabled)
         {
-            var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf(accent);
+            if (Win32Platform.WindowsVersion < PlatformConstants.Windows8 || !UseRedirectionBitmap)
+                return false;
+            
+            // On pre-Win8 this method was blurring a window, which is a different from desired behavior.
+            // On win8+ we use this method as a fallback, when WinUI/DComp composition with true transparency isn't available.
+            // Note: there is no guarantee that this behavior won't be changed back to true blur in Win12.
+            // See https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmenableblurbehindwindow#remarks
+            // Also https://github.com/qt/qtbase/blob/fd300f143fd30947bba60a03d614acd2711b635f/src/plugins/platforms/windows/qwindowswindow.cpp#L519
+            var blurInfo = new DWM_BLURBEHIND();
+            blurInfo.fEnable = enabled;
+            blurInfo.dwFlags = DWM_BB.Enable | DWM_BB.BlurRegion;
+            blurInfo.hRgnBlur = CreateRectRgn(0, 0, -1, -1);
 
-            //Some of the AccentState Enum's values have different meanings on Windows 8.x than on Windows 10
-            accent.AccentState = state;
+            var result = DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
 
-            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-            Marshal.StructureToPtr(accent, accentPtr, false);
+            if (blurInfo.hRgnBlur != default)
+            {
+                DeleteObject(blurInfo.hRgnBlur);
+            }
 
-            var data = new WindowCompositionAttributeData();
-            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
-            data.SizeOfData = accentStructSize;
-            data.Data = accentPtr;
-
-            SetWindowCompositionAttribute(_hwnd, ref data);
-            Marshal.FreeHGlobal(accentPtr);
+            return result == 0;
         }
 
-        private void SetUseHostBackdropBrush(bool useHostBackdropBrush)
+        private unsafe bool SetUseHostBackdropBrush(bool useHostBackdropBrush)
         {
             if (Win32Platform.WindowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
-                return;
+                return false;
 
-            unsafe
-            {
-                var pvUseBackdropBrush = useHostBackdropBrush ? 1 : 0;
-                DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
-            }
+            // AcrylicBlur requires window to set DWMWA_USE_HOSTBACKDROPBRUSH flag on Win11+.
+            // It's not necessary on older versions and it's not necessary with Mica brush.
+            
+            var pvUseBackdropBrush = useHostBackdropBrush ? 1 : 0;
+            var result = DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
+            return result == 0;
         }
-
         public IEnumerable<object> Surfaces
-            => _gl is null ?
+            => _glSurface is null ?
                 new object[] { Handle, _framebuffer } :
-                new object[] { Handle, _gl, _framebuffer };
+                new object[] { Handle, _glSurface, _framebuffer };
 
         public PixelPoint Position
         {
@@ -797,7 +762,7 @@ namespace Avalonia.Win32
                     sizeof(int));
                 if (TransparencyLevel == WindowTransparencyLevel.Mica)
                 {
-                    SetTransparencyMica(Win32Platform.WindowsVersion);
+                    SetTransparencyMica();
                 }
             }
         }
@@ -805,7 +770,7 @@ namespace Avalonia.Win32
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
-                _isUsingComposition ? (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0,
+                UseRedirectionBitmap ? 0 : (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP,
                 atom,
                 null,
                 (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int)WindowStyles.WS_CLIPCHILDREN,
@@ -992,7 +957,7 @@ namespace Avalonia.Win32
             }
 
             //using a default margin of 0 when using WinUiComp removes artefacts when resizing. See issue #8316
-            var defaultMargin = _isUsingComposition ? 0 : 1;
+            var defaultMargin = UseRedirectionBitmap ? 1 : 0;
 
             MARGINS margins = new MARGINS();
             margins.cxLeftWidth = defaultMargin;
@@ -1274,7 +1239,7 @@ namespace Avalonia.Win32
 
             if (oldProperties.IsFullScreen == newProperties.IsFullScreen)
             {
-                var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (_isUsingComposition ? WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0);
+                var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (UseRedirectionBitmap ? 0 : WindowStyles.WS_EX_NOREDIRECTIONBITMAP);
 
                 if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
                 {
