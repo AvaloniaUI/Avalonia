@@ -59,8 +59,8 @@ namespace Avalonia.Build.Tasks
             try
             {
                 references = references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")).ToArray();
-                var typeSystem = new CecilTypeSystem(references, input);
-                var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
+                using var typeSystem = new CecilTypeSystem(references, input);
+                using var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
 
                 var asm = typeSystem.TargetAssemblyDefinition;
                 var refAsm = refTypeSystem?.TargetAssemblyDefinition;
