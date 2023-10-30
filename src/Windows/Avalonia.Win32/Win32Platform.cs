@@ -16,6 +16,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
@@ -242,18 +243,11 @@ namespace Avalonia.Win32
 
         private static IconImpl CreateIconImpl(Stream stream)
         {
-            try
-            {
-                // new Icon() will work only if stream is an "ico" file.
-                return new IconImpl(new System.Drawing.Icon(stream));
-            }
-            catch (ArgumentException)
-            {
-                // Fallback to Bitmap creation and converting into a windows icon. 
-                using var icon = new System.Drawing.Bitmap(stream);
-                var hIcon = icon.GetHicon();
-                return new IconImpl(System.Drawing.Icon.FromHandle(hIcon));
-            }
+            var ms = new MemoryStream();
+            stream.CopyTo(ms);
+            ms.Position = 0;
+            var iconData = ms.ToArray();
+            return new IconImpl(new Win32Icon(iconData), iconData);
         }
 
         private static void SetDpiAwareness()

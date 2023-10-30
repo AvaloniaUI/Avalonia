@@ -116,7 +116,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\SkiaSharp.props = build\SkiaSharp.props
 		build\SourceGenerators.props = build\SourceGenerators.props
 		build\SourceLink.props = build\SourceLink.props
-		build\System.Drawing.Common.props = build\System.Drawing.Common.props
 		build\System.Memory.props = build\System.Memory.props
 		build\TrimmingEnable.props = build\TrimmingEnable.props
 		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props

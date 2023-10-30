@@ -1325,6 +1325,10 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr CreateIconIndirect([In] ref ICONINFO iconInfo);
 
         [DllImport("user32.dll")]
+        public static extern IntPtr CreateIconFromResourceEx(byte* pbIconBits, uint cbIconBits,
+            int fIcon, int dwVersion, int csDesired, int cyDesired, int flags);
+
+        [DllImport("user32.dll")]
         public static extern bool DestroyIcon(IntPtr hIcon);
 
         [DllImport("user32.dll", EntryPoint = "PeekMessageW", ExactSpelling = true)]
@@ -1611,6 +1615,8 @@ namespace Avalonia.Win32.Interop
         public static extern bool CloseHandle(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
         public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateBitmap(int width, int height, int planes, int bitCount, IntPtr data);
         [DllImport("gdi32.dll")]
         public static extern int DeleteObject(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
@@ -2114,6 +2120,8 @@ namespace Avalonia.Win32.Interop
         public enum DEVICECAP
         {
             HORZRES = 8,
+            BITSPIXEL = 12,
+            PLANES = 14,
             DESKTOPHORZRES = 118
         }
 
