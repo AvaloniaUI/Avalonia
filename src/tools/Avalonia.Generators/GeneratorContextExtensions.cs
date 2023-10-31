@@ -1,13 +1,11 @@
 using System;
 using Microsoft.CodeAnalysis;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 
 namespace Avalonia.Generators;
 
 internal static class GeneratorContextExtensions
 {
-    private const string UnhandledErrorDescriptorId = "AXN0002";
-    private const string InvalidTypeDescriptorId = "AXN0001";
-
     public static string GetMsBuildProperty(
         this GeneratorExecutionContext context,
         string name,
@@ -18,14 +16,14 @@ internal static class GeneratorContextExtensions
     }
 
     public static void ReportNameGeneratorUnhandledError(this GeneratorExecutionContext context, Exception error) =>
-        context.Report(UnhandledErrorDescriptorId,
+        context.Report(AvaloniaXamlDiagnosticCodes.NameGenerator,
             "Unhandled exception occured while generating typed Name references. " +
             "Please file an issue: https://github.com/avaloniaui/Avalonia",
             error.Message,
             error.ToString());
 
     public static void ReportNameGeneratorInvalidType(this GeneratorExecutionContext context, string typeName) =>
-        context.Report(InvalidTypeDescriptorId,
+        context.Report(AvaloniaXamlDiagnosticCodes.TypeSystemError,
             $"Avalonia x:Name generator was unable to generate names for type '{typeName}'. " +
             $"The type '{typeName}' does not exist in the assembly.");
 
