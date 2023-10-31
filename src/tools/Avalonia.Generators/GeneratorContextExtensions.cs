@@ -16,7 +16,7 @@ internal static class GeneratorContextExtensions
     }
 
     public static void ReportNameGeneratorUnhandledError(this GeneratorExecutionContext context, Exception error) =>
-        context.Report(AvaloniaXamlDiagnosticCodes.NameGenerator,
+        context.Report(AvaloniaXamlDiagnosticCodes.NameGeneratorError,
             "Unhandled exception occured while generating typed Name references. " +
             "Please file an issue: https://github.com/avaloniaui/Avalonia",
             error.Message,
