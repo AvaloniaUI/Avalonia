@@ -56,6 +56,7 @@ namespace Avalonia.Build.Tasks
                 refInput, RefOutputPath,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
                 ProjectDirectory, VerifyIl, DefaultCompileBindings, outputImportance,
+                new XamlCompilerDiagnosticsFilter(TreatWarningsAsErrors, WarningsAsErrors, WarningsNotAsErrors, NoWarn, AnalyzerConfigFiles),
                 (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null, SkipXamlCompilation, DebuggerLaunch);
             if (!res.Success)
             {
@@ -121,6 +122,12 @@ namespace Avalonia.Build.Tasks
 
         public bool DebuggerLaunch { get; set; }
 
+        public bool TreatWarningsAsErrors { get; set; }
+        public string WarningsAsErrors { get; set; }
+        public string WarningsNotAsErrors { get; set; }
+        public string NoWarn { get; set; }
+        public ITaskItem[] AnalyzerConfigFiles { get; set; }
+        
         [Output]
         public string[] WrittenFilePaths { get; private set; } = Array.Empty<string>();
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,21 +45,13 @@ namespace Avalonia.Build.Tasks
             }
         }
 
-        public static CompileResult Compile(IBuildEngine engine,
-            string input, string output,
-            string refInput, string refOutput,
-            string[] references, string projectDirectory,
-            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey,
-            bool skipXamlCompilation)
-        {
-            return Compile(engine, input, output, refInput, refOutput, references, projectDirectory, verifyIl, defaultCompileBindings, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
-        }
-
         internal static CompileResult Compile(IBuildEngine engine,
             string input, string output,
             string refInput, string refOutput,
             string[] references, string projectDirectory,
-            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
+            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance,
+            XamlCompilerDiagnosticsFilter diagnosticsFilter,
+            string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
         {
             try
             {
@@ -70,7 +63,7 @@ namespace Avalonia.Build.Tasks
                 var refAsm = refTypeSystem?.TargetAssemblyDefinition;
                 if (!skipXamlCompilation)
                 {
-	                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, debuggerLaunch);
+	                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, diagnosticsFilter, debuggerLaunch);
 	                if (compileRes == null)
 	                    return new CompileResult(true);
 	                if (compileRes == false)
@@ -99,7 +92,7 @@ namespace Avalonia.Build.Tasks
             }
             catch (Exception ex)
             {
-                engine.LogError(BuildEngineErrorCode.Unknown, "", ex);
+                engine.LogError(AvaloniaXamlDiagnosticCodes.Unknown, "", ex);
                 return new CompileResult(false);
             }
         }
@@ -107,8 +100,9 @@ namespace Avalonia.Build.Tasks
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
             string projectDirectory, bool verifyIl,
             bool defaultCompileBindings,
-            MessageImportance logImportance
-            , bool debuggerLaunch = false)
+            MessageImportance logImportance,
+            XamlCompilerDiagnosticsFilter diagnosticsFilter,
+            bool debuggerLaunch = false)
         {
             if (debuggerLaunch)
             {
@@ -170,6 +164,19 @@ namespace Avalonia.Build.Tasks
             asm.MainModule.Types.Add(trampolineBuilder);
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
+            var diagnostics = new List<XamlDiagnostic>();
+            var diagnosticsHandler = new XamlDiagnosticsHandler()
+            {
+                HandleDiagnostic = diagnostic =>
+                {
+                    var newSeverity = diagnosticsFilter.Handle(diagnostic);
+                    diagnostic = diagnostic with { Severity = newSeverity };
+                    diagnostics.Add(diagnostic);
+                    return newSeverity;
+                },
+                CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia
+            };
+
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
                 typeSystem.TargetAssembly,
                 xamlLanguage,
@@ -178,7 +185,8 @@ namespace Avalonia.Build.Tasks
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
                 new XamlIlTrampolineBuilder(typeSystem.CreateTypeBuilder(trampolineBuilder)),
-                new DeterministicIdGenerator());
+                new DeterministicIdGenerator(),
+                diagnosticsHandler);
 
 
             var contextDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlContext", 
@@ -259,6 +267,7 @@ namespace Avalonia.Build.Tasks
             {
                 var typeDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!"+ group.Name,
                     TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
+                var skipGroupTransformers = false;
 
                 typeDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
                 {
@@ -338,8 +347,7 @@ namespace Avalonia.Build.Tasks
                                 new XamlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
                         }
-                        
-                        
+
                         compiler.Transform(parsed);
 
                         var populateName = classType == null ? "Populate:" + res.Name : "!XamlIlPopulate";
@@ -376,29 +384,27 @@ namespace Avalonia.Build.Tasks
                     }
                     catch (Exception e)
                     {
-                        int lineNumber = 0, linePosition = 0;
-                        if (e is XamlParseException xe)
-                        {
-                            lineNumber = xe.LineNumber;
-                            linePosition = xe.LinePosition;
-                        }
-
-                        engine.LogError(BuildEngineErrorCode.TransformError, res.FilePath, e, lineNumber, linePosition);
-                        return false;
+                        skipGroupTransformers = true;
+                        engine.LogError(AvaloniaXamlDiagnosticCodes.TransformError, res.FilePath, e);
                     }
                 }
 
                 try
                 {
-                    compiler.TransformGroup(parsedXamlDocuments);
+                    if (!skipGroupTransformers)
+                    {
+                        compiler.TransformGroup(parsedXamlDocuments);
+                    }
                 }
-                catch (XamlDocumentParseException e)
+                catch (Exception e)
                 {
-                    engine.LogError(BuildEngineErrorCode.TransformError, e.FilePath, e, e.LineNumber, e.LinePosition);
+                    engine.LogError(AvaloniaXamlDiagnosticCodes.TransformError, "", e);
                 }
-                catch (XamlParseException e)
+                
+                var hasAnyError = ReportDiagnostics(engine, diagnostics);
+                if (hasAnyError)
                 {
-                    engine.LogError(BuildEngineErrorCode.TransformError, "", e, e.LineNumber, e.LinePosition);
+                    return false;
                 }
 
                 foreach (var document in parsedXamlDocuments)
@@ -605,7 +611,7 @@ namespace Avalonia.Build.Tasks
                             }
                             else
                             {
-                                engine.LogWarning(BuildEngineErrorCode.Loader, "",
+                                engine.LogWarning(AvaloniaXamlDiagnosticCodes.Loader, "",
                                     $"XAML resource \"{res.Uri}\" won't be reachable via runtime loader, as no public constructor was found");
                             }
                         }
@@ -619,7 +625,8 @@ namespace Avalonia.Build.Tasks
                             lineNumber = xe.LineNumber;
                             linePosition = xe.LinePosition;
                         }
-                        engine.LogError(BuildEngineErrorCode.EmitError, res.FilePath, e, lineNumber, linePosition);
+                        
+                        engine.LogError(AvaloniaXamlDiagnosticCodes.EmitError, res.FilePath, e, lineNumber, linePosition);
                         return false;
                     }
                     res.Remove();
@@ -636,7 +643,6 @@ namespace Avalonia.Build.Tasks
                     }
                 }
                 
-                
                 return true;
             }
             
@@ -650,6 +656,21 @@ namespace Avalonia.Build.Tasks
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             return true;
+        }
+
+        static bool ReportDiagnostics(IBuildEngine engine, IReadOnlyCollection<XamlDiagnostic> diagnostics)
+        {
+            var hasAnyError = diagnostics.Any(d => d.Severity >= XamlDiagnosticSeverity.Error);
+
+            const int maxErrorsPerDocument = 100;
+            foreach (var diagnostic in diagnostics
+                         .GroupBy(d => d.Document)
+                         .SelectMany(d => d.Take(maxErrorsPerDocument)))
+            {
+                engine.LogDiagnostic(diagnostic);
+            }
+
+            return hasAnyError;
         }
 
         static bool? CompileCoreForRefAssembly(
