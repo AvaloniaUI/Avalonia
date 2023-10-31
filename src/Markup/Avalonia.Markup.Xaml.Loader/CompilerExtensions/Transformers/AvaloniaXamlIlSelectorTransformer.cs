@@ -31,7 +31,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             if (pn.Values.Count != 1)
                 return context.ReportError(XamlXDiagnosticCode.ParseError, "Selector property should should have exactly one value",
-                    node, new XamlIlNoOpSelector());
+                    node, new XamlIlNoOpSelector(node));
             
             if (pn.Values[0] is XamlIlSelectorNode)
                 //Deja vu. I've just been in this place before
@@ -39,7 +39,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             
             if (!(pn.Values[0] is XamlAstTextNode tn))
                 return context.ReportError(XamlXDiagnosticCode.ParseError, "Selector property should be a text node",
-                    node, new XamlIlNoOpSelector());
+                    node, new XamlIlNoOpSelector(node));
 
             var selectorType = pn.Property.GetClrProperty().Getter.ReturnType;
             var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
@@ -183,11 +183,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             catch (Exception e)
             {
                 return context.ReportError(XamlXDiagnosticCode.ParseError, "Unable to parse selector: " + e.Message,
-                    node, new XamlIlNoOpSelector());
+                    node, new XamlIlNoOpSelector(node));
             }
 
             var selector = Create(parsed, (p, n) 
-                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
+                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true)
+                    ?? new XamlAstClrTypeReference(node, XamlPseudoType.Unknown, false));
             pn.Values[0] = selector;
 
             var templateType = GetLastTemplateTypeFromSelector(selector);
@@ -530,7 +531,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
     class XamlIlNoOpSelector : XamlIlSelectorNode
     {
-        public XamlIlNoOpSelector() : base(null)
+        public XamlIlNoOpSelector(IXamlLineInfo lineInfo) : base(null, lineInfo, XamlPseudoType.Unknown)
         {
             TargetType = null;
         }
