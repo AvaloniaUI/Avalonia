@@ -209,11 +209,34 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
             var trampolineBuilder = _sreBuilder.DefineType("Trampolines_" + Guid.NewGuid().ToString("N"));
 
+            var diagnostics = new List<XamlDiagnostic>();
+            var diagnosticsHandler = new XamlDiagnosticsHandler()
+            {
+                HandleDiagnostic = (diagnostic) =>
+                {
+                    var runtimeDiagnostic = new RuntimeXamlDiagnostic(diagnostic.Code.ToString(),
+                        (RuntimeXamlDiagnosticSeverity)diagnostic.Severity,
+                        diagnostic.Title, diagnostic.LineNumber, diagnostic.LinePosition)
+                    {
+                        Document = diagnostic.Document,
+                        Description = diagnostic.Description
+                    };
+                    var newSeverity =
+                        (XamlDiagnosticSeverity?)configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) ??
+                        diagnostic.Severity;
+                    diagnostic = diagnostic with { Severity = newSeverity };
+                    diagnostics.Add(diagnostic);
+                    return newSeverity;
+                }
+            };
+            
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                     _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
                     new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
                     new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType)),
-                    new XamlIlTrampolineBuilder(_sreTypeSystem.CreateTypeBuilder(trampolineBuilder))),
+                    new XamlIlTrampolineBuilder(_sreTypeSystem.CreateTypeBuilder(trampolineBuilder)),
+                    null,
+                    diagnosticsHandler),
                 _sreEmitMappings,
                 _sreContextType)
             {
@@ -236,8 +259,9 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 {
                     overrideType = _sreTypeSystem.GetType(document.RootInstance.GetType());
                 }
-                
+
                 var parsed = compiler.Parse(xaml, overrideType);
+                parsed.Document = "runtimexaml:" + parsedDocuments.Count;
                 compiler.Transform(parsed);
 
                 var xamlName = GetSafeUriIdentifier(document.BaseUri)
@@ -262,6 +286,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
 
             compiler.TransformGroup(parsedDocuments);
+
+            diagnostics.ThrowExceptionIfAnyError();
 
             var createdTypes = parsedDocuments.Select(document =>
             {

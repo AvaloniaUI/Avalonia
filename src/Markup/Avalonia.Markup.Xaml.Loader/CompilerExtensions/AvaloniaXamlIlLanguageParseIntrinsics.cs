@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using Avalonia.Media;
+using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.TypeSystem;
@@ -24,11 +25,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     // // shorthand seconds format (ie. "0.25")
                     if (!tsText.Contains(":") && double.TryParse(tsText,
-                        NumberStyles.Float | NumberStyles.AllowThousands,
-                        CultureInfo.InvariantCulture, out var seconds))
+                            NumberStyles.Float | NumberStyles.AllowThousands,
+                            CultureInfo.InvariantCulture, out var seconds))
                         timeSpan = TimeSpan.FromSeconds(seconds);
                     else
-                        throw new XamlX.XamlLoadException($"Unable to parse {text} as a time span", node);
+                    {
+                        result = null;
+                        return context.ReportTransformError($"Unable to parse {text} as a time span", node, false);
+                    }
                 }
 
                 result = new XamlStaticOrTargetedReturnMethodCallNode(node,
@@ -56,7 +60,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a thickness", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a thickness", node, false);
                 }
             }
 
@@ -73,7 +78,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a point", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a point", node, false);
                 }
             }
 
@@ -90,7 +96,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a vector", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a vector", node, false);
                 }
             }
 
@@ -107,7 +114,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a size", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a size", node, false);
                 }
             }
 
@@ -124,7 +132,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a matrix", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a matrix", node, false);
                 }
             }
 
@@ -141,7 +150,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a corner radius", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a corner radius", node, false);
                 }
             }
 
@@ -149,7 +159,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 if (!Color.TryParse(text, out Color color))
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a color", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a color", node, false);
                 }
 
                 result = new XamlStaticOrTargetedReturnMethodCallNode(node,
@@ -179,7 +190,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a relative point", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a relative point", node, false);
                 }
             }
 
@@ -195,7 +207,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a grid length", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a grid length", node, false);
                 }
             }
             
@@ -218,7 +231,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a grid length", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse \"{text}\" as a grid length", node, false);
                 }
             }
 
@@ -295,7 +309,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 if (string.IsNullOrWhiteSpace(uriText) || !Uri.TryCreate(uriText, kind, out var _))
                 {
-                        throw new XamlX.XamlLoadException($"Unable to parse text {uriText} as a {kind} uri.", node);
+                    result = null;
+                    return context.ReportTransformError($"Unable to parse text {uriText} as a {kind} uri", node, false);
                 }
                 result = new XamlAstNewClrObjectNode(node
                     , new(node, types.Uri, false)
@@ -341,7 +356,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     }
                     else
                     {
-                        throw new XamlX.XamlLoadException($"Invalid PointsList.", node);
+                        result = null;
+                        return context.ReportTransformError($"Unable to parse text {text} as a PointsList", node, false);
                     }
                 }
                 else
@@ -388,6 +404,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     nodes[index] = itemNode;
                 }
 
+                foreach (var element in nodes)
+                {
+                    if (!elementType.IsAssignableFrom(element.Type.GetClrType()))
+                    {
+                        result = null;
+                        context.ReportTransformError(
+                            $"x:Array element {element.Type.GetClrType().Name} is not assignable to the array element type {elementType.Name}!",
+                            node);
+                        return false;
+                    }
+                }
+                
                 if (types.AvaloniaList.MakeGenericType(elementType).IsAssignableFrom(type))
                 {
                     result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, type, elementType, nodes);

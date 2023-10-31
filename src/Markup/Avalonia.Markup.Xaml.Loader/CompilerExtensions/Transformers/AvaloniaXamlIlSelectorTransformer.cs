@@ -30,14 +30,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return node;
 
             if (pn.Values.Count != 1)
-                throw new XamlParseException("Selector property should should have exactly one value", node);
+                return context.ReportError(XamlXDiagnosticCode.ParseError, "Selector property should should have exactly one value",
+                    node, new XamlIlNoOpSelector());
             
             if (pn.Values[0] is XamlIlSelectorNode)
                 //Deja vu. I've just been in this place before
                 return node;
             
             if (!(pn.Values[0] is XamlAstTextNode tn))
-                throw new XamlParseException("Selector property should be a text node", node);
+                return context.ReportError(XamlXDiagnosticCode.ParseError, "Selector property should be a text node",
+                    node, new XamlIlNoOpSelector());
 
             var selectorType = pn.Property.GetClrProperty().Getter.ReturnType;
             var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
@@ -180,7 +182,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             catch (Exception e)
             {
-                throw new XamlParseException("Unable to parse selector: " + e.Message, node);
+                return context.ReportError(XamlXDiagnosticCode.ParseError, "Unable to parse selector: " + e.Message,
+                    node, new XamlIlNoOpSelector());
             }
 
             var selector = Create(parsed, (p, n) 
@@ -522,6 +525,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             EmitCall(context, codeGen,
                 m => m.Name == "Nesting" && m.Parameters.Count == 1);
+        }
+    }
+
+    class XamlIlNoOpSelector : XamlIlSelectorNode
+    {
+        public XamlIlNoOpSelector() : base(null)
+        {
+            TargetType = null;
+        }
+
+        public override IXamlType TargetType { get; }
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
         }
     }
 }

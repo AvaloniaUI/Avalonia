@@ -43,7 +43,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             }
                             else
                             {
-                                throw new XamlX.XamlParseException("x:DataType should be set to a type name.", directive.Values[0]);
+                                inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
+                                context.ReportError(XamlXDiagnosticCode.ParseError, "x:DataType should be set to a type name.", directive.Values[0]);
+                                break;
                             }
                         }
                     }
@@ -136,7 +138,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     var parentItemsDataContext = context.ParentNodes().SkipWhile(n => n != parentObject).OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentItemsDataContext != null)
                     {
-                        itemsCollectionType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, parentItemsBinding, () => parentItemsDataContext.DataContextType, parentObject.Type.GetClrType());
+                        itemsCollectionType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context,
+                            parentItemsBinding, () => parentItemsDataContext.DataContextType,
+                            parentObject.Type.GetClrType());
                     }
                 }
             }
@@ -185,7 +189,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     return parentDataContextNode.DataContextType;
                 };
 
-                var bindingResultType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, obj, startTypeResolver, on.Type.GetClrType());
+                var bindingResultType =
+                    XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, obj, startTypeResolver,
+                        on.Type.GetClrType());
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, bindingResultType);
             }
 
