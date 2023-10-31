@@ -20,8 +20,10 @@ internal static class AvaloniaXamlDiagnosticCodes
     public const string CompiledBindingsError = "AVLN2100";
     public const string CompiledBindingsPathError = "AVLN2101";
     public const string DataContextResolvingError = "AVLN2102";
-    public const string PropertyPathError = "AVLN2200";
-    public const string SelectorError = "AVLN2300";
+    public const string StyleTransformError = "AVLN2200";
+    public const string SelectorsTransformError = "AVLN2201";
+    public const string PropertyPathError = "AVLN2202";
+    public const string DuplicateSetterError = "AVLN2203";
 
     // XAML emit errors 3000-3999.
     public const string EmitError = "AVLN3000";
