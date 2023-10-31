@@ -87,8 +87,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return transformed;
             }
 
-            var lastElement =
-                transformed.Elements[transformed.Elements.Count - 1];
+            var lastElement = transformed.Elements.LastOrDefault();
             
             if (parentNode.Property?.Getter?.ReturnType == context.GetAvaloniaTypes().ICommand && lastElement is XamlIlClrMethodPathElementNode methodPathElement)
             {
@@ -866,10 +865,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 Elements = elements;
             }
 
-            public IXamlType BindingResultType
-                => _transformElements.Count > 0
-                    ? _transformElements[0].Type
-                    : Elements[Elements.Count - 1].Type;
+            public IXamlType BindingResultType =>
+                _transformElements.FirstOrDefault()?.Type
+                    ?? Elements.LastOrDefault()?.Type
+                    ?? XamlPseudoType.Unknown;
 
             public IXamlAstTypeReference Type { get; }
 

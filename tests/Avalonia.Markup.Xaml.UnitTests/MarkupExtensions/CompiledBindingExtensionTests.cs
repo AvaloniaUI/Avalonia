@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -515,6 +516,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </ContentControl>
 </Window>";
                 ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+            }
+        }
+
+        [Fact]
+        public void ReportsMultipleErrorsOnDataContextAndBindingPathErrors()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <ContentControl Content='{CompiledBinding NoDataContext}'
+                    Tag='{CompiledBinding NonExistentProp, DataType=local:TestDataContext}'
+                    Height='{CompiledBinding invalid.}' />
+</Window>";
+                var ex = Assert.Throws<AggregateException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Collection(
+                    ex.InnerExceptions,
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner));
             }
         }
 
@@ -1860,7 +1883,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         static void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
         static void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
-
 
         static void PerformClick(Button button)
         {
