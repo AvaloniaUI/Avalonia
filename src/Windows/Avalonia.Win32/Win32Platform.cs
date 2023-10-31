@@ -239,7 +239,8 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
-                return CreateIconImpl(memoryStream);
+                var iconData = memoryStream.ToArray();
+                return new IconImpl(new Win32Icon(iconData), iconData);
             }
         }
 
