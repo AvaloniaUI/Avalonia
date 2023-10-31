@@ -34,7 +34,7 @@ public class MiniCompilerTests
         var compilation = CreateBasicCompilation(MiniClass);
         var compiler = MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation));
 
-        Assert.Throws<XamlParseException>(() => compiler.Transform(xaml));
+        Assert.Throws<XamlTransformException>(() => compiler.Transform(xaml));
     }
 
     [Fact]
