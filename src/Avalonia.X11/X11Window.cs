@@ -65,6 +65,11 @@ namespace Avalonia.X11
         private bool _useRenderWindow = false;
         private bool _usePositioningFlags = false;
         private X11FocusProxy? _focusProxy;
+        private IDragDropDevice? _dragDevice;
+        private IDataObject? _dragDataObject;
+        private Point? _dragPosition;
+        private IntPtr? _dragSource;
+        private bool _sentStatus;
 
         private enum XSyncState
         {
@@ -174,6 +179,10 @@ namespace Avalonia.X11
                 ignoredMask |= platform.XI2.AddWindow(_handle, this);
             var mask = new IntPtr(0xffffff ^ (int)ignoredMask);
             XSelectInput(_x11.Display, _handle, mask);
+
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms.XdndAware, _x11.Atoms.XA_ATOM,
+                32, PropertyMode.Replace, new[] { Xdnd.ProtocolVersion }, 1);
+
             if (!_overrideRedirect)
             {
                 var protocols = new[]
@@ -559,9 +568,160 @@ namespace Avalonia.X11
             {
                 Cleanup(true);
             }
+            else if (ev.type == XEventName.SelectionNotify)
+            {
+                if (ev.SelectionEvent.selection == _x11.Atoms.XdndSelection)
+                {
+                    if (_dragDataObject is XdndDataObject dropObject && _dragSource != null)
+                    {
+                        try
+                        {
+                            dropObject.ReceiveContent(_handle);
+                            var raw = new RawDragEvent(
+                                _dragDevice!,
+                                RawDragEventType.Drop,
+                                _inputRoot,
+                                _dragPosition!.Value,
+                                _dragDataObject,
+                                DragDropEffects.Copy,
+                                RawInputModifiers.None);
+                            Input?.Invoke(raw);
+                        }
+                        finally
+                        {
+                            // Send finish
+                            var xev = new XEvent
+                            {
+                                ClientMessageEvent =
+                                {
+                                    type = XEventName.ClientMessage,
+                                    send_event = 1,
+                                    window = _dragSource.Value,
+                                    message_type = _x11.Atoms.XdndFinished,
+                                    format = 32,
+                                    ptr1 = _handle,
+                                    ptr2 = (IntPtr)1,
+                                    ptr3 = _x11.Atoms.XdndActionCopy,
+                                    ptr4 = IntPtr.Zero,
+                                    ptr5 = IntPtr.Zero
+                                }
+                            };
+                            XSendEvent(_x11.Display, _dragSource.Value, false, IntPtr.Zero, ref xev);
+                        }
+                    }
+                }
+            }
             else if (ev.type == XEventName.ClientMessage)
             {
-                if (ev.ClientMessageEvent.message_type == _x11.Atoms.WM_PROTOCOLS)
+                if (ev.ClientMessageEvent.message_type == _x11.Atoms.XdndEnter)
+                {
+                    if (_dragDevice == null)
+                    {
+                        return;
+                    }
+
+                    _dragDataObject = new XdndDataObject(_x11, ref ev);
+                    _dragSource = ev.ClientMessageEvent.ptr1;
+
+                    var raw = new RawDragEvent(
+                        _dragDevice,
+                        RawDragEventType.DragEnter,
+                        _inputRoot,
+                        new Point(0.0, 0.0),
+                        _dragDataObject,
+                        DragDropEffects.Copy,
+                        RawInputModifiers.None);
+                    Input?.Invoke(raw);
+                    _sentStatus = false;
+                }
+                else if (ev.ClientMessageEvent.message_type == _x11.Atoms.XdndLeave)
+                {
+                    if (_dragDevice == null || _dragDataObject == null || _dragPosition == null)
+                    {
+                        return;
+                    }
+
+                    var raw = new RawDragEvent(
+                        _dragDevice,
+                        RawDragEventType.DragLeave,
+                        _inputRoot,
+                        _dragPosition.Value,
+                        _dragDataObject,
+                        DragDropEffects.Copy,
+                        RawInputModifiers.None);
+                    Input?.Invoke(raw);
+
+                    _dragDataObject = null;
+                }
+                else if (ev.ClientMessageEvent.message_type == _x11.Atoms.XdndPosition)
+                {
+                    if (_dragDevice == null || _dragDataObject == null)
+                    {
+                        return;
+                    }
+
+                    var pos = ev.ClientMessageEvent.ptr3;
+                    var serverPos = new PixelPoint((int)pos >> 16, (int)pos & 0xffff);
+                    var clientPos = PointToClient(serverPos);
+                    _dragPosition = clientPos;
+
+                    var raw = new RawDragEvent(
+                        _dragDevice,
+                        RawDragEventType.DragOver,
+                        _inputRoot,
+                        _dragPosition.Value,
+                        _dragDataObject,
+                        DragDropEffects.Copy,
+                        RawInputModifiers.None);
+                    Input?.Invoke(raw);
+
+                    // Note: We should tell the XServer to not notify us until the selectable region is left
+                    
+                    // if (_sentStatus) return;
+
+                    // var acceptPos = _position!.Value;
+                    // var acceptRectStart = (IntPtr)((acceptPos.X & 0xffff) << 16 | (acceptPos.Y & 0xffff));
+                    // var acceptRectEnd = (IntPtr)((_realSize.Width & 0xffff) << 16 | (_realSize.Height & 0xffff));
+                    
+                    var acceptRectStart = IntPtr.Zero;
+                    var acceptRectEnd = IntPtr.Zero;
+
+                    var source = ev.ClientMessageEvent.ptr1;
+
+                    var xev = new XEvent
+                    {
+                        ClientMessageEvent =
+                        {
+                            type = XEventName.ClientMessage,
+                            send_event = 1,
+                            window = source,
+                            message_type = _x11.Atoms.XdndStatus,
+                            format = 32,
+                            ptr1 = _handle,
+                            ptr2 = (IntPtr)1,
+                            ptr3 = acceptRectStart,
+                            ptr4 = acceptRectEnd,
+                            ptr5 = ev.ClientMessageEvent.ptr5
+                        }
+                    };
+                    XSendEvent(_x11.Display, source, false, IntPtr.Zero, ref xev);
+
+                    _sentStatus = true;
+                }
+                else if (ev.ClientMessageEvent.message_type == _x11.Atoms.XdndDrop)
+                {
+                    if (_dragDevice == null || _dragDataObject == null || _dragPosition == null)
+                    {
+                        return;
+                    }
+                    
+                    // HACK: We just request the actual content here and tell the user in SelectionNotify
+                    if (_dragDataObject is XdndDataObject dropObject)
+                    {
+                        dropObject.RequestContent(ev.ClientMessageEvent.ptr3, _handle);
+                    }
+                }
+                else if (ev.ClientMessageEvent.message_type == _x11.Atoms.WM_PROTOCOLS)
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
@@ -865,6 +1025,7 @@ namespace Avalonia.X11
         public void SetInputRoot(IInputRoot inputRoot)
         {
             _inputRoot = inputRoot;
+            _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
         }
 
         public void Dispose()
