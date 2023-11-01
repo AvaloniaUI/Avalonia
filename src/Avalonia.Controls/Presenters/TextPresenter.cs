@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -584,6 +585,12 @@ namespace Avalonia.Controls.Presenters
             InvalidateMeasure();
         }
 
+        protected override void OnLoaded(RoutedEventArgs e)
+        {
+            base.OnLoaded(e);
+            EnsureTextSelectionLayer();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             _constraint = availableSize;
@@ -850,14 +857,20 @@ namespace Avalonia.Controls.Presenters
 
             _caretTimer.Tick += CaretTimerTick;
 
+            if (TextSelectionHandleCanvas is { } canvas && _layer != null && !_layer.Children.Contains(canvas))
+                _layer?.Add(TextSelectionHandleCanvas);
+        }
+
+        private void EnsureTextSelectionLayer()
+        {
             if (TextSelectionHandleCanvas == null)
             {
                 TextSelectionHandleCanvas = new TextSelectionHandleCanvas();
+                TextSelectionHandleCanvas.SetPresenter(this);
             }
-
             _layer = TextSelectorLayer.GetTextSelectorLayer(this);
-            _layer?.Add(TextSelectionHandleCanvas);
-            TextSelectionHandleCanvas.SetPresenter(this);
+            if (_layer != null && !_layer.Children.Contains(TextSelectionHandleCanvas))
+                _layer?.Add(TextSelectionHandleCanvas);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
