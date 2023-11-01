@@ -611,8 +611,16 @@ namespace Avalonia.Build.Tasks
                             }
                             else
                             {
-                                engine.LogWarning(AvaloniaXamlDiagnosticCodes.Loader, "",
-                                    $"XAML resource \"{res.Uri}\" won't be reachable via runtime loader, as no public constructor was found");
+                                var diagnostic = new XamlDiagnostic(
+                                    AvaloniaXamlDiagnosticCodes.XamlLoaderUnreachable,
+                                    diagnosticsFilter.Handle(
+                                        XamlDiagnosticSeverity.Warning,
+                                        AvaloniaXamlDiagnosticCodes.XamlLoaderUnreachable),
+                                    $"XAML resource \"{res.Uri}\" won't be reachable via runtime loader, as no public constructor was found")
+                                {
+                                    Document = document.FileSource?.FilePath
+                                };
+                                engine.LogDiagnostic(diagnostic);
                             }
                         }
 

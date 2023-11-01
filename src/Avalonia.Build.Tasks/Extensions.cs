@@ -25,7 +25,11 @@ namespace Avalonia.Build.Tasks
                 message += diagnostic.Description;
             }
 
-            if (diagnostic.Severity == XamlDiagnosticSeverity.Warning)
+            if (diagnostic.Severity == XamlDiagnosticSeverity.None)
+            {
+                // Skip.
+            }
+            else if (diagnostic.Severity == XamlDiagnosticSeverity.Warning)
             {
                 engine.LogWarningEvent(new BuildWarningEventArgs("Avalonia", diagnostic.Code, diagnostic.Document ?? "",
                     diagnostic.LineNumber ?? 0, diagnostic.LinePosition ?? 0, 

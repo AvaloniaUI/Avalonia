@@ -36,13 +36,16 @@ public class XamlCompilerDiagnosticsFilter
 
     internal XamlDiagnosticSeverity Handle(XamlDiagnostic diagnostic)
     {
-        var currentSeverity = diagnostic.Severity;
-        
-        if (_lazyEditorConfig.Value.TryGetValue(diagnostic.Code, out var severity))
+        return Handle(diagnostic.Severity, diagnostic.Code);
+    }
+
+    internal XamlDiagnosticSeverity Handle(XamlDiagnosticSeverity currentSeverity, string diagnosticCode)
+    {
+        if (_lazyEditorConfig.Value.TryGetValue(diagnosticCode, out var severity))
         {
             currentSeverity =  severity.ToLowerInvariant() switch
             {
-                "default" => diagnostic.Severity,
+                "default" => currentSeverity,
                 "error" => XamlDiagnosticSeverity.Error,
                 "warning" => XamlDiagnosticSeverity.Warning,
                 _ => XamlDiagnosticSeverity.None // "suggestion", "silent", "none"
@@ -50,9 +53,9 @@ public class XamlCompilerDiagnosticsFilter
         }
     
         var treatAsError = currentSeverity == XamlDiagnosticSeverity.Warning
-                           && !_noWarn.Contains(diagnostic.Code)
-                           && (_warningsAsErrors.Contains(diagnostic.Code) || _treatWarningsAsErrors)
-                           && !_warningsNotAsErrors.Contains(diagnostic.Code);
+                           && !_noWarn.Contains(diagnosticCode)
+                           && (_warningsAsErrors.Contains(diagnosticCode) || _treatWarningsAsErrors)
+                           && !_warningsNotAsErrors.Contains(diagnosticCode);
 
         return treatAsError ? XamlDiagnosticSeverity.Error : currentSeverity;
     }

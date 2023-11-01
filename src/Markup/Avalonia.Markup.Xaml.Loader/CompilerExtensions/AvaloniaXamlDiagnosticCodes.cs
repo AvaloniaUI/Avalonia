@@ -27,7 +27,7 @@ internal static class AvaloniaXamlDiagnosticCodes
 
     // XAML emit errors 3000-3999.
     public const string EmitError = "AVLN3000";
-    public const string Loader = "AVLN3001";
+    public const string XamlLoaderUnreachable = "AVLN3001";
 
     // Generator specific errors 4000-4999.
     public const string NameGeneratorError = "AVLN4001";
