@@ -3,6 +3,7 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Win32.DComposition;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.OpenGl.Angle;
@@ -45,9 +46,9 @@ static class Win32GlManager
                 
             if (renderingMode == Win32RenderingMode.AngleEgl)
             {
-                var egl = AngleWin32PlatformGraphics.TryCreate(AvaloniaLocator.Current.GetService<AngleOptions>() ?? new());
+                var egl = AngleWin32PlatformGraphicsFactory.TryCreate(AvaloniaLocator.Current.GetService<AngleOptions>() ?? new());
 
-                if (egl != null && egl.PlatformApi == AngleOptions.PlatformApi.DirectX11)
+                if (egl is D3D11AngleWin32PlatformGraphics)
                 {
                     TryRegisterComposition(opts);
                     return egl;
@@ -83,6 +84,13 @@ static class Win32GlManager
             if (compositionMode == Win32CompositionMode.WinUIComposition
                 && WinUiCompositorConnection.IsSupported()
                 && WinUiCompositorConnection.TryCreateAndRegister())
+            {
+                return;
+            }
+
+            if (compositionMode == Win32CompositionMode.DirectComposition
+                && DirectCompositionConnection.IsSupported()
+                && DirectCompositionConnection.TryCreateAndRegister())
             {
                 return;
             }

@@ -13,7 +13,7 @@ abstract class SwapchainBase<TImage> : IAsyncDisposable where TImage : class, IS
 {
     protected ICompositionGpuInterop Interop { get; }
     protected CompositionDrawingSurface Target { get; }
-    private List<TImage> _pendingImages = new();
+    private readonly List<TImage> _pendingImages = new();
 
     public SwapchainBase(ICompositionGpuInterop interop, CompositionDrawingSurface target)
     {

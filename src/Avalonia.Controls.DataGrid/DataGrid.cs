@@ -2285,7 +2285,16 @@ namespace Avalonia.Controls
         /// <param name="e">PointerWheelEventArgs</param>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if(UpdateScroll(e.Delta * DATAGRID_mouseWheelDelta))
+            var delta = e.Delta;
+            
+            // KeyModifiers.Shift should scroll in horizontal direction. This does not work on every platform. 
+            // If Shift-Key is pressed and X is close to 0 we swap the Vector.
+            if (e.KeyModifiers == KeyModifiers.Shift && MathUtilities.IsZero(delta.X))
+            {
+                delta = new Vector(delta.Y, delta.X);
+            }
+            
+            if(UpdateScroll(delta * DATAGRID_mouseWheelDelta))
             {
                 e.Handled = true;
             }

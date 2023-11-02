@@ -123,8 +123,14 @@ namespace Avalonia.Animation
                         toAdd = newTransitions.Except(oldTransitions).ToList();
                     }
 
-                    newTransitions.CollectionChanged += TransitionsCollectionChangedHandler;
-                    _isSubscribedToTransitionsCollection = true;
+                    // Subscribe to collection changes only if transitions are already enabled,
+                    // i.e. control is attached to the visual tree
+                    if (_transitionsEnabled)
+                    {
+                        newTransitions.CollectionChanged += TransitionsCollectionChangedHandler;
+                        _isSubscribedToTransitionsCollection = true;
+                    }
+
                     AddTransitions(toAdd);
                 }
 

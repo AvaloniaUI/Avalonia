@@ -153,8 +153,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AllowSpin
         {
-            get { return GetValue(AllowSpinProperty); }
-            set { SetValue(AllowSpinProperty, value); }
+            get => GetValue(AllowSpinProperty);
+            set => SetValue(AllowSpinProperty, value);
         }
 
         /// <summary>
@@ -162,8 +162,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Location ButtonSpinnerLocation
         {
-            get { return GetValue(ButtonSpinnerLocationProperty); }
-            set { SetValue(ButtonSpinnerLocationProperty, value); }
+            get => GetValue(ButtonSpinnerLocationProperty);
+            set => SetValue(ButtonSpinnerLocationProperty, value);
         }
 
         /// <summary>
@@ -171,8 +171,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ShowButtonSpinner
         {
-            get { return GetValue(ShowButtonSpinnerProperty); }
-            set { SetValue(ShowButtonSpinnerProperty, value); }
+            get => GetValue(ShowButtonSpinnerProperty);
+            set => SetValue(ShowButtonSpinnerProperty, value);
         }
 
         /// <summary>
@@ -198,8 +198,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string FormatString
         {
-            get { return GetValue(FormatStringProperty); }
-            set { SetValue(FormatStringProperty, value); }
+            get => GetValue(FormatStringProperty);
+            set => SetValue(FormatStringProperty, value);
         }
 
         /// <summary>
@@ -207,8 +207,8 @@ namespace Avalonia.Controls
         /// </summary>
         public decimal Increment
         {
-            get { return GetValue(IncrementProperty); }
-            set { SetValue(IncrementProperty, value); }
+            get => GetValue(IncrementProperty);
+            set => SetValue(IncrementProperty, value);
         }
 
         /// <summary>
@@ -216,8 +216,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsReadOnly
         {
-            get { return GetValue(IsReadOnlyProperty); }
-            set { SetValue(IsReadOnlyProperty, value); }
+            get => GetValue(IsReadOnlyProperty);
+            set => SetValue(IsReadOnlyProperty, value);
         }
 
         /// <summary>
@@ -225,8 +225,8 @@ namespace Avalonia.Controls
         /// </summary>
         public decimal Maximum
         {
-            get { return GetValue(MaximumProperty); }
-            set { SetValue(MaximumProperty, value); }
+            get => GetValue(MaximumProperty);
+            set => SetValue(MaximumProperty, value);
         }
 
         /// <summary>
@@ -234,8 +234,8 @@ namespace Avalonia.Controls
         /// </summary>
         public decimal Minimum
         {
-            get { return GetValue(MinimumProperty); }
-            set { SetValue(MinimumProperty, value); }
+            get => GetValue(MinimumProperty);
+            set => SetValue(MinimumProperty, value);
         }
 
         /// <summary>
@@ -283,8 +283,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Watermark
         {
-            get { return GetValue(WatermarkProperty); }
-            set { SetValue(WatermarkProperty, value); }
+            get => GetValue(WatermarkProperty);
+            set => SetValue(WatermarkProperty, value);
         }
 
         /// <summary>
@@ -973,8 +973,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<NumericUpDownValueChangedEventArgs>? ValueChanged
         {
-            add { AddHandler(ValueChangedEvent, value); }
-            remove { RemoveHandler(ValueChangedEvent, value); }
+            add => AddHandler(ValueChangedEvent, value);
+            remove => RemoveHandler(ValueChangedEvent, value);
         }
 
         private bool CommitInput(bool forceTextUpdate = false)

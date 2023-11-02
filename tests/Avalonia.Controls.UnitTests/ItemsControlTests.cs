@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -126,6 +127,155 @@ namespace Avalonia.Controls.UnitTests
             var container = GetContainer(target);
 
             Assert.Same(container.Theme, theme);
+        }
+
+        [Fact]
+        public void Container_Should_Have_Theme_Set_To_ItemContainerTheme_With_Base_TargetType()
+        {
+            using var app = Start();
+            var theme = new ControlTheme { TargetType = typeof(Control) };
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme);
+        }
+
+        [Fact]
+        public void ItemContainerTheme_Can_Be_Changed()
+        {
+            using var app = Start();
+            
+            var theme1 = new ControlTheme 
+            { 
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var theme2 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Green) }
+            };
+
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme1);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme1);
+            Assert.Equal(container.Background, Brushes.Red);
+
+            target.ItemContainerTheme = theme2;
+
+            container = GetContainer(target);
+            Assert.Same(container.Theme, theme2);
+            Assert.Equal(container.Background, Brushes.Green);
+        }
+
+        [Fact]
+        public void ItemContainerTheme_Can_Be_Changed_Virtualizing()
+        {
+            using var app = Start();
+
+            var theme1 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var theme2 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Green) }
+            };
+
+            var itemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme1,
+                itemsPanel: itemsPanel);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme1);
+            Assert.Equal(container.Background, Brushes.Red);
+
+            target.ItemContainerTheme = theme2;
+            Layout(target);
+
+            container = GetContainer(target);
+            Assert.Same(container.Theme, theme2);
+            Assert.Equal(container.Background, Brushes.Green);
+        }
+
+        [Fact]
+        public void ItemContainerTheme_Can_Be_Cleared()
+        {
+            using var app = Start();
+
+            var theme = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme);
+            Assert.Equal(container.Background, Brushes.Red);
+
+            target.ItemContainerTheme = null;
+
+            container = GetContainer(target);
+            Assert.Null(container.Theme);
+            Assert.Null(container.Background);
+        }
+
+        [Fact]
+        public void ItemContainerTheme_Should_Not_Override_LocalValue_Theme()
+        {
+            using var app = Start();
+
+            var theme1 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var theme2 = new ControlTheme
+            {
+                TargetType = typeof(Control),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Green) }
+            };
+
+            var items = new object[]
+            {
+                new ContentPresenter(),
+                new ContentPresenter
+                {
+                    Theme = theme2
+                },
+            };
+
+            var target = CreateTarget(
+                itemsSource: items,
+                itemContainerTheme: theme1);
+
+            Assert.Same(theme1, GetContainer(target, 0).Theme);
+            Assert.Same(theme2, GetContainer(target, 1).Theme);
+
+            target.ItemContainerTheme = null;
+
+            Assert.Null(GetContainer(target, 0).Theme);
+            Assert.Same(theme2, GetContainer(target, 1).Theme);
         }
 
         [Fact]
@@ -361,6 +511,41 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotNull(before);
             Assert.NotNull(after);
             Assert.Same(before, after);
+        }
+
+        [Fact]
+        public void Control_Item_Should_Be_Removed_From_LogicalChildren()
+        {
+            using var app = Start();
+            var item = new Border();
+
+            var items = new ObservableCollection<Control>();
+            var target = CreateTarget(itemsSource: items);
+
+            items.Add(item);
+            items.Remove(item);
+
+            Assert.Empty(target.LogicalChildren);
+        }
+
+        [Fact]
+        public void Control_Item_Should_Be_Removed_From_LogicalChildren_Virtualizing()
+        {
+            using var app = Start();
+            var item = new Border();
+
+            var items = new ObservableCollection<Control>();
+            var itemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+            var target = CreateTarget(
+                itemsPanel: itemsPanel,
+                itemsSource: items);
+
+            items.Add(item);
+            Layout(target);
+
+            items.Remove(item);
+
+            Assert.Empty(target.LogicalChildren);
         }
 
         [Fact]
@@ -851,6 +1036,7 @@ namespace Avalonia.Controls.UnitTests
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
             IDataTemplate? itemTemplate = null,
+            ITemplate<Panel?>? itemsPanel = null,
             IEnumerable<IDataTemplate>? dataTemplates = null,
             bool performLayout = true)
         {
@@ -861,6 +1047,7 @@ namespace Avalonia.Controls.UnitTests
                 itemsSource: itemsSource,
                 itemContainerTheme: itemContainerTheme,
                 itemTemplate: itemTemplate,
+                itemsPanel: itemsPanel,
                 dataTemplates: dataTemplates,
                 performLayout: performLayout);
         }
@@ -995,7 +1182,6 @@ namespace Avalonia.Controls.UnitTests
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
                         }.RegisterInNameScope(scope),
                         new ScrollBar
                         {

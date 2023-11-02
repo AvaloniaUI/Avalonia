@@ -256,9 +256,13 @@ namespace Avalonia.X11.NativeDialogs
 
         public static IntPtr GetForeignWindow(IntPtr xid) => gdk_x11_window_foreign_new_for_display(s_display, xid);
 
+        static object s_startGtkLock = new();
+        static Task<bool> s_startGtkTask;
+
         public static Task<bool> StartGtk()
         {
-            return StartGtkCore();
+            lock (s_startGtkLock)
+                return s_startGtkTask ??= StartGtkCore();
         }
 
         private static void GtkThread(TaskCompletionSource<bool> tcs)

@@ -247,9 +247,9 @@ namespace Avalonia.Native
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
-            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, uint key)
+            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol)
             {
-                return _parent.RawKeyEvent(type, timeStamp, modifiers, key).AsComBool();
+                return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol).AsComBool();
             }
 
             int IAvnWindowBaseEvents.RawTextInputEvent(ulong timeStamp, string text)
@@ -322,14 +322,28 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
-        public bool RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, uint key)
+        public bool RawKeyEvent(
+            AvnRawKeyEventType type,
+            ulong timeStamp,
+            AvnInputModifiers modifiers,
+            AvnKey key,
+            AvnPhysicalKey physicalKey,
+            string keySymbol)
         {
             if (_inputRoot is null) 
                 return false;
             
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
+            var args = new RawKeyEventArgs(
+                _keyboard,
+                timeStamp,
+                _inputRoot,
+                (RawKeyEventType)type,
+                (Key)key,
+                (RawInputModifiers)modifiers,
+                (PhysicalKey)physicalKey,
+                keySymbol);
 
             Input?.Invoke(args);
 

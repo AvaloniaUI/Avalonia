@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputType>Library</OutputType>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\HarfBuzzSharp.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
+  <ItemGroup>
+    <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\netstandard2.0\PInvoke.dll" Link="Assets\PInvoke.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\netstandard2.0\PInvoke.dll.refs" Link="Assets\PInvoke.dll.refs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" />
+    <!-- Ensure PInvoke.csproj is build before Avalonia.Build.Tasks.UnitTest -->
+    <ProjectReference Include="..\TestFiles\BuildTasks\PInvoke\PInvoke.csproj" 
+                      SetConfiguration="Configuration=$(Configuration)"
+                      SetTargetFramework="TargetFramework=netstandard2.0"
+                      ReferenceOutputAssembly="false" 
+                      PrivateAssets="all" />
+  </ItemGroup>
+</Project>

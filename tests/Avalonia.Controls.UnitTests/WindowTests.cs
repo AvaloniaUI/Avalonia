@@ -653,6 +653,23 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Window_Topmost_By_Default_Should_Configure_PlatformImpl_When_Constructed()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            var windowServices = TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
+
+            using (UnitTestApplication.Start(windowServices))
+            {
+                var window = new TopmostWindow();
+
+                Assert.True(window.Topmost);
+                windowImpl.Verify(i => i.SetTopmost(true));
+            }
+        }
+
         public class SizingTests
         {
             [Fact]
@@ -1097,6 +1114,14 @@ namespace Avalonia.Controls.UnitTests
             {
                 MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
+            }
+        }
+
+        private class TopmostWindow : Window
+        {
+            static TopmostWindow()
+            {
+                TopmostProperty.OverrideDefaultValue<TopmostWindow>(true);
             }
         }
     }

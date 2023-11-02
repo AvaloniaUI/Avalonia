@@ -366,6 +366,8 @@ namespace Avalonia.Win32.Interop
             VK_OEM_PERIOD = 0xBE,
             VK_OEM_2 = 0xBF,
             VK_OEM_3 = 0xC0,
+            VK_ABNT_C1 = 0xC1,
+            VK_ABNT_C2 = 0xC2,
             VK_OEM_4 = 0xDB,
             VK_OEM_5 = 0xDC,
             VK_OEM_6 = 0xDD,
@@ -1149,6 +1151,9 @@ namespace Avalonia.Win32.Interop
             uint uStartScan, uint cScanLines,
            IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
 
+        [DllImport("gdi32.dll", SetLastError = false, ExactSpelling = true)]
+        public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
+
         [DllImport("user32.dll")]
         public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
@@ -1203,8 +1208,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern uint GetDoubleClickTime();
 
-        [DllImport("user32.dll")]
-        public static extern bool GetKeyboardState(byte[] lpKeyState);
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetKeyboardState(byte* lpKeyState);
 
         [DllImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
         public static extern uint MapVirtualKey(uint uCode, uint uMapType);
@@ -1399,15 +1405,15 @@ namespace Avalonia.Win32.Interop
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool DeleteTimerQueueTimer(IntPtr TimerQueue, IntPtr Timer, IntPtr CompletionEvent);
 
-        [DllImport("user32.dll")]
-        public static extern int ToUnicode(
-            uint virtualKeyCode,
-            uint scanCode,
-            byte[] keyboardState,
-            [Out, MarshalAs(UnmanagedType.LPWStr, SizeConst = 64)]
-            StringBuilder receivingBuffer,
-            int bufferSize,
-            uint flags);
+        [DllImport("user32.dll", ExactSpelling = true)]
+        public static extern int ToUnicodeEx(
+            uint wVirtKey,
+            uint wScanCode,
+            byte* lpKeyState,
+            char* pwszBuff,
+            int cchBuff,
+            uint wFlags,
+            IntPtr dwhkl);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool TrackMouseEvent(ref TRACKMOUSEEVENT lpEventTrack);
@@ -1701,8 +1707,8 @@ namespace Avalonia.Win32.Interop
         [DllImport("dwmapi.dll")]
         public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
 
-        [DllImport("dwmapi.dll")]
-        public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
+        [DllImport("dwmapi.dll", SetLastError = false)]
+        public static extern int DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
         
         [Flags]
         public enum LayeredWindowFlags
@@ -1729,14 +1735,6 @@ namespace Avalonia.Win32.Interop
             public bool fEnable;
             public IntPtr hRgnBlur;
             public bool fTransitionOnMaximized;
-
-            public DWM_BLURBEHIND(bool enabled)
-            {
-                fEnable = enabled;
-                hRgnBlur = IntPtr.Zero;
-                fTransitionOnMaximized = false;
-                dwFlags = DWM_BB.Enable;
-            }
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1825,22 +1823,6 @@ namespace Avalonia.Win32.Interop
             }
 
             return result;
-        }
-
-        internal static int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data)
-        {
-            var user32 = LoadLibrary("user32.dll");
-            var pfnSetWindowCompositionAttribute = (delegate* unmanaged[Stdcall]<IntPtr, WindowCompositionAttributeData*, int>)GetProcAddress(user32, nameof(SetWindowCompositionAttribute));
-            if (pfnSetWindowCompositionAttribute == null)
-            {
-                // This preserves the same behavior as using the DllImport attribute.
-                throw new EntryPointNotFoundException("The unsupported SetWindowCompositionAttribute-function has been removed from the operating system.");
-            }
-
-            fixed (WindowCompositionAttributeData* pData = &data)
-            {
-                return pfnSetWindowCompositionAttribute(hwnd, pData);
-            }
         }
 
         [Flags]
