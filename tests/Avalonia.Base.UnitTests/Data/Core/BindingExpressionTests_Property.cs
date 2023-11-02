@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes.Reflection;
@@ -345,6 +346,36 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.Equal(new[] { "NewName" }, result);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Can_Convert_Int_To_Enum_Two_Way(bool allowReflection)
+        {
+            var data = new Class3 {  IntValue = 1 };
+            var control = new Control();
+            var target = BindingExpression.Create(
+                data, 
+                o => o.IntValue,
+                mode: BindingMode.TwoWay,
+                target: control,
+                targetProperty: DockPanel.DockProperty,
+                allowReflection: allowReflection);
+            var instance = new InstancedBinding(
+                target,
+                BindingMode.TwoWay,
+                BindingPriority.LocalValue);
+
+            BindingOperations.Apply(control, DockPanel.DockProperty, instance);
+
+            Assert.Equal(Dock.Bottom, DockPanel.GetDock(control));
+
+            DockPanel.SetDock(control, Dock.Right);
+
+            Assert.Equal(2, data.IntValue);
+
+            GC.KeepAlive(data);
+        }
+
         public class MyViewModelBase { public object Name => "Name"; }
 
         public class MyViewModel : MyViewModelBase { public new string Name => "NewName"; }
@@ -417,6 +448,17 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
         private class Class3 : Class1
         {
+            private int _intValue;
+
+            public int IntValue
+            {
+                get => _intValue;
+                set
+                {
+                    _intValue = value;
+                    RaisePropertyChanged(nameof(IntValue));
+                }
+            }
         }
 
         private class WithoutBar : NotifyingBase, INext

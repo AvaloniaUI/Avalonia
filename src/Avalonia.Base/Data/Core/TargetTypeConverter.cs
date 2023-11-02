@@ -53,6 +53,12 @@ internal abstract class TargetTypeConverter
                 return true;
             }
 
+            if (t.IsEnum && t.GetEnumUnderlyingType() == value.GetType())
+            {
+                result = Enum.ToObject(t, value);
+                return true;
+            }
+
             if (value is IConvertible convertible)
             {
                 try
