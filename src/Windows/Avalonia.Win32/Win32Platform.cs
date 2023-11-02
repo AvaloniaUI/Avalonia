@@ -240,8 +240,6 @@ namespace Avalonia.Win32
             {
                 bitmap.Save(memoryStream);
 
-                memoryStream.Position = 0;
-
                 var iconData = memoryStream.ToArray();
 
                 return new IconImpl(new Win32Icon(iconData), iconData);
@@ -250,9 +248,12 @@ namespace Avalonia.Win32
 
         private static IconImpl CreateIconImpl(Stream stream)
         {
-            stream.Position = 0;
+            if (stream.CanSeek)
+            {
+                stream.Position = 0;
+            }
 
-            if(stream is MemoryStream memoryStream)
+            if (stream is MemoryStream memoryStream)
             {
                 var iconData = memoryStream.ToArray();
 
