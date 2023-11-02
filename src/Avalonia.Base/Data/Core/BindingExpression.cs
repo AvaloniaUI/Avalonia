@@ -222,8 +222,9 @@ internal class BindingExpression : IObservable<object?>,
     /// <param name="target">The target to which the value will be written.</param>
     /// <param name="targetNullValue">The null target value.</param>
     /// <param name="targetProperty">The target property.</param>
+    /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-    public static BindingExpression Create<TIn, TOut>(
+    internal static BindingExpression Create<TIn, TOut>(
         TIn source,
         Expression<Func<TIn, TOut>> expression,
         IValueConverter? converter = null,
@@ -233,7 +234,8 @@ internal class BindingExpression : IObservable<object?>,
         BindingMode mode = BindingMode.OneWay,
         AvaloniaObject? target = null,
         object? targetNullValue = null,
-        AvaloniaProperty? targetProperty = null)
+        AvaloniaProperty? targetProperty = null,
+        bool allowReflection = true)
             where TIn : class?
     {
         var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression, enableDataValidation);
@@ -250,7 +252,9 @@ internal class BindingExpression : IObservable<object?>,
             target: target,
             targetNullValue: targetNullValue,
             targetProperty: targetProperty,
-            targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
+            targetTypeConverter: allowReflection ?
+                TargetTypeConverter.GetReflectionConverter() :
+                TargetTypeConverter.GetDefaultConverter());
     }
 
     /// <summary>
