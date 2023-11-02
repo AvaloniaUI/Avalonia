@@ -267,7 +267,7 @@ namespace Avalonia.Build.Tasks
             {
                 var typeDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!"+ group.Name,
                     TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
-                var skipGroupTransformers = false;
+                var transformFailed = false;
 
                 typeDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
                 {
@@ -384,24 +384,25 @@ namespace Avalonia.Build.Tasks
                     }
                     catch (Exception e)
                     {
-                        skipGroupTransformers = true;
+                        transformFailed = true;
                         engine.LogError(AvaloniaXamlDiagnosticCodes.TransformError, res.FilePath, e);
                     }
                 }
 
                 try
                 {
-                    if (!skipGroupTransformers)
+                    if (!transformFailed)
                     {
                         compiler.TransformGroup(parsedXamlDocuments);
                     }
                 }
                 catch (Exception e)
                 {
+                    transformFailed = true;
                     engine.LogError(AvaloniaXamlDiagnosticCodes.TransformError, "", e);
                 }
                 
-                var hasAnyError = ReportDiagnostics(engine, diagnostics);
+                var hasAnyError = ReportDiagnostics(engine, diagnostics) || transformFailed;
                 if (hasAnyError)
                 {
                     return false;
@@ -627,14 +628,7 @@ namespace Avalonia.Build.Tasks
                     }
                     catch (Exception e)
                     {
-                        int lineNumber = 0, linePosition = 0;
-                        if (e is XamlParseException xe)
-                        {
-                            lineNumber = xe.LineNumber;
-                            linePosition = xe.LinePosition;
-                        }
-                        
-                        engine.LogError(AvaloniaXamlDiagnosticCodes.EmitError, res.FilePath, e, lineNumber, linePosition);
+                        engine.LogError(AvaloniaXamlDiagnosticCodes.EmitError, res.FilePath, e);
                         return false;
                     }
                     res.Remove();
@@ -722,9 +716,7 @@ namespace Avalonia.Build.Tasks
             }
             catch (Exception e)
             {
-                engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", "",
-                    0, 0, 0, 0,
-                    e.Message, "", "Avalonia"));
+                engine.LogError(AvaloniaXamlDiagnosticCodes.Unknown, e.Message, e);
                 return false;
             }
 

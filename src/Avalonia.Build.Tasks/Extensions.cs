@@ -1,4 +1,5 @@
 using System;
+using System.Xml;
 using Microsoft.Build.Framework;
 using XamlX;
 
@@ -7,8 +8,15 @@ namespace Avalonia.Build.Tasks
     static class Extensions
     {
         public static void LogError(this IBuildEngine engine, string code, string file, Exception ex,
-            int lineNumber = 0, int linePosition = 0)
+            int? lineNumber = null, int? linePosition = null)
         {
+            if (lineNumber is null && linePosition is null
+                && ex is XmlException xe)
+            {
+                lineNumber = xe.LineNumber;
+                linePosition = xe.LinePosition;
+            }
+            
 #if DEBUG
             LogError(engine, code, file, ex.ToString(), lineNumber, linePosition);
 #else
@@ -19,7 +27,7 @@ namespace Avalonia.Build.Tasks
         public static void LogDiagnostic(this IBuildEngine engine, XamlDiagnostic diagnostic)
         {
             var message = diagnostic.Title;
-            if (string.IsNullOrWhiteSpace(diagnostic.Description))
+            if (!string.IsNullOrWhiteSpace(diagnostic.Description))
             {
                 message += Environment.NewLine;
                 message += diagnostic.Description;
@@ -48,11 +56,11 @@ namespace Avalonia.Build.Tasks
         }
         
         public static void LogError(this IBuildEngine engine, string code, string file, string message,
-            int lineNumber = 0, int linePosition = 0)
+            int? lineNumber = null, int? linePosition = null)
         {
             engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", code, file ?? "",
-                lineNumber, linePosition, lineNumber, linePosition, message,
-                "", "Avalonia"));
+                lineNumber ?? 0, linePosition ?? 0, lineNumber ?? 0, linePosition ?? 0,
+                message, "", "Avalonia"));
         }
 
         public static void LogWarning(this IBuildEngine engine, string code, string file, string message,
