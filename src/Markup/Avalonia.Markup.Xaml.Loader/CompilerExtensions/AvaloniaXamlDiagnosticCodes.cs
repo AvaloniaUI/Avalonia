@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
 using XamlX.Ast;
 
@@ -44,11 +45,18 @@ internal static class AvaloniaXamlDiagnosticCodes
                 XamlXWellKnownDiagnosticCodes.Obsolete => Obsolete,
                 _ => throw new ArgumentOutOfRangeException()
             },
-            
+
+            XamlDataContextException => DataContextResolvingError,
+            XamlBindingsTransformException => BindingsError,
+            XamlPropertyPathException => PropertyPathError,
+            XamlStyleTransformException => StyleTransformError,
+            XamlSelectorsTransformException => SelectorsTransformError,
+
             XamlTransformException => TransformError,
             XamlTypeSystemException => TypeSystemError,
             XamlLoadException => EmitError,
             XamlParseException => ParseError,
+            
             _ => Unknown
         };
     }

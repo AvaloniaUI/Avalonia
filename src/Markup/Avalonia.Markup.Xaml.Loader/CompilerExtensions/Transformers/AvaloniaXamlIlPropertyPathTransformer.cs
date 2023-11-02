@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class XamlPropertyPathException : XamlTransformException
     {
         public XamlPropertyPathException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
-            : base(message, lineInfo, AvaloniaXamlDiagnosticCodes.PropertyPathError, innerException)
+            : base(message, lineInfo, innerException)
         {
         }
     }

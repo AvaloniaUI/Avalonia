@@ -16,7 +16,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     internal class XamlSelectorsTransformException : XamlTransformException
     {
         public XamlSelectorsTransformException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
-            : base(message, lineInfo, AvaloniaXamlDiagnosticCodes.SelectorsTransformError, innerException)
+            : base(message, lineInfo, innerException)
         {
         }
     }

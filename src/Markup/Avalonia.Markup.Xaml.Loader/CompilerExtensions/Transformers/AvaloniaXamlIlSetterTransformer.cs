@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class XamlStyleTransformException : XamlTransformException
     {
         public XamlStyleTransformException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
-            : base(message, lineInfo, AvaloniaXamlDiagnosticCodes.StyleTransformError, innerException)
+            : base(message, lineInfo, innerException)
         {
         }
     }

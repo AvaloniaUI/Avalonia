@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class XamlDataContextException : XamlTransformException
     {
         public XamlDataContextException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
-            : base(message, lineInfo, AvaloniaXamlDiagnosticCodes.DataContextResolvingError, innerException)
+            : base(message, lineInfo, innerException)
         {
         }
     }

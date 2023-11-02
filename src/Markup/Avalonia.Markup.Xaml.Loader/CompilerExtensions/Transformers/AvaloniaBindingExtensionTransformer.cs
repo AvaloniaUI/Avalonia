@@ -12,7 +12,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class XamlBindingsTransformException : XamlTransformException
     {
         public XamlBindingsTransformException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
-            : base(message, lineInfo, AvaloniaXamlDiagnosticCodes.BindingsError, innerException)
+            : base(message, lineInfo, innerException)
         {
         }
     }
