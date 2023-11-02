@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using System;
+using Avalonia.Media;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -70,6 +71,31 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.Presenter.ApplyTemplate();
 
                 Assert.Equal("border2", button.Content);
+            }
+        }
+        
+        [Fact]
+        public void Binding_To_First_VisualAncestor_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <ContentControl Name='border1' Background='Red'>
+      <ContentControl Name='border2' Background='Green'>
+        <Button Name='button' Background='{Binding $parent[ContentControl].Background}'/>
+      </ContentControl>
+    </ContentControl>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+                var content = window.FindControl<ContentControl>("border2");
+
+                window.ApplyTemplate();
+                
+                Assert.Equal(Brushes.Green, button.Background);
             }
         }
 

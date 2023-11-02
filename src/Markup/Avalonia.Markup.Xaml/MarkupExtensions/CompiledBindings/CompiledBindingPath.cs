@@ -292,6 +292,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public Type? AncestorType { get; }
         public int Level { get; }
+        
+        public override string ToString()
+            => FormattableString.Invariant($"$visualparent[{AncestorType?.Name},{Level}]");
     }
 
     internal class ElementNameElement : ICompiledBindingPathElement, IControlSourceBindingPathElement

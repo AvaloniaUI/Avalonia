@@ -59,6 +59,9 @@ namespace Avalonia.Markup.Parsers
                     case BindingExpressionGrammar.AncestorNode ancestor:
                         nextNode = ParseFindAncestor(ancestor);
                         break;
+                    case BindingExpressionGrammar.VisualAncestorNode visualAncestor:
+                        nextNode = ParseFindVisualAncestor(visualAncestor);
+                        break;
                     case BindingExpressionGrammar.NameNode elementName:
                         nextNode = new ElementNameNode(_nameScope ?? throw new NotSupportedException("Invalid element name binding with null name scope!"), elementName.Name);
                         break;
@@ -99,6 +102,21 @@ namespace Avalonia.Markup.Parsers
             }
 
             return new FindAncestorNode(ancestorType, ancestorLevel);
+        }
+
+        private FindVisualAncestorNode ParseFindVisualAncestor(BindingExpressionGrammar.VisualAncestorNode node)
+        {
+            Type? ancestorType = null;
+            var ancestorLevel = node.Level;
+            if (!string.IsNullOrEmpty(node.TypeName))
+            {
+                if (_typeResolver == null)
+                {
+                    throw new InvalidOperationException("Cannot parse a binding path with a typed FindAncestor without a type resolver. Maybe you can use a LINQ Expression binding path instead?");
+                }
+                ancestorType = _typeResolver(node.Namespace, node.TypeName);
+            }
+            return new FindVisualAncestorNode(ancestorType, ancestorLevel);
         }
 
         private TypeCastNode ParseTypeCastNode(BindingExpressionGrammar.TypeCastNode node)
