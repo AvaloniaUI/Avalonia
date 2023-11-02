@@ -172,7 +172,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
     {
         void OnInvalidSource(IXamlAstNode node) =>
             context.ReportDiagnostic(
-                XamlXDiagnosticCode.TransformError,
+                AvaloniaXamlDiagnosticCodes.TransformError,
                 strictSourceValueType ? XamlDiagnosticSeverity.Error : XamlDiagnosticSeverity.Warning,
                 $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri. This {nodeTypeName} will be resolved in runtime instead.",
                 node);

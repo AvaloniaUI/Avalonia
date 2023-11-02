@@ -35,17 +35,21 @@ internal static class AvaloniaXamlDiagnosticCodes
     // Reserved for warnings 5000-9998
     public const string Obsolete = "AVLN5001";
 
-    internal static string XamlXDiagnosticCodeToAvalonia(XamlXDiagnosticCode xamlXDiagnosticCode)
+    internal static string XamlXDiagnosticCodeToAvalonia(object xamlException)
     {
-        return xamlXDiagnosticCode switch
+        return xamlException switch
         {
-            XamlXDiagnosticCode.Unknown => Unknown,
-            XamlXDiagnosticCode.ParseError => ParseError,
-            XamlXDiagnosticCode.TransformError => TransformError,
-            XamlXDiagnosticCode.EmitError => EmitError,
-            XamlXDiagnosticCode.TypeSystemError => TypeSystemError,
-            XamlXDiagnosticCode.Obsolete => Obsolete,
-            _ => throw new ArgumentOutOfRangeException(nameof(xamlXDiagnosticCode), xamlXDiagnosticCode, null)
+            XamlXWellKnownDiagnosticCodes wellKnownDiagnosticCodes => wellKnownDiagnosticCodes switch
+            {
+                XamlXWellKnownDiagnosticCodes.Obsolete => Obsolete,
+                _ => throw new ArgumentOutOfRangeException()
+            },
+            
+            XamlTransformException => TransformError,
+            XamlTypeSystemException => TypeSystemError,
+            XamlLoadException => EmitError,
+            XamlParseException => ParseError,
+            _ => Unknown
         };
     }
 }

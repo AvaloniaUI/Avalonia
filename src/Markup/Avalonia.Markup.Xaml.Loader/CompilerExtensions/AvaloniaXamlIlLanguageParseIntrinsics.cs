@@ -25,7 +25,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     title,
                     node)
                 {
-                    XamlXCode = XamlXDiagnosticCode.TransformError,
                     // Only one instance when we can lower Error to a Warning
                     MinSeverity = XamlDiagnosticSeverity.Warning
                 });
