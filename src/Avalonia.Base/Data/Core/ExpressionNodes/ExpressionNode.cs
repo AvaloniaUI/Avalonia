@@ -51,6 +51,19 @@ internal abstract class ExpressionNode
     }
 
     /// <summary>
+    /// Gets a value indicating whether the node's <see cref="Value"/> is alive, i.e. 
+    /// initialized and not a GC'd object.
+    /// </summary>
+    public bool IsValueAlive
+    {
+        get
+        {
+            return _value == BindingExpression.NullReference || 
+                _value?.TryGetTarget(out _) == true;
+        }
+    }
+
+    /// <summary>
     /// Appends a string representation of the expression node to a string builder.
     /// </summary>
     /// <param name="builder">The string builder.</param>
@@ -117,10 +130,10 @@ internal abstract class ExpressionNode
 
         if (source is null)
         {
-            // If the source is null then the value is null. We explcitly do not want to call
+            // If the source is null then the value is null. We explicitly do not want to call
             // OnSourceChanged as we don't want to raise errors for subsequent nodes in the
             // binding change.
-            _value = new(null);
+            _value = BindingExpression.NullReference;
         }
         else if (source != oldSource)
         {
@@ -175,7 +188,7 @@ internal abstract class ExpressionNode
             _value.TryGetTarget(out var oldValue) == false ||
             !Equals(oldValue, value))
         {
-            _value = new(value);
+            _value = value is null ? BindingExpression.NullReference : new(value);
             Owner?.OnNodeValueChanged(Index, value);
         }
     }

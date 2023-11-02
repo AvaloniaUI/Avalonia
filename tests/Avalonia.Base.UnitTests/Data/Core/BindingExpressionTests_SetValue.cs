@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.UnitTests;
@@ -163,6 +164,36 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Write_Unchanged_Value_Back_To_Property_With_Converter()
+        {
+            var data = new Cat();
+            var control = new Control();
+            var target = BindingExpression.Create(
+                data,
+                o => o.WhiskerCount,
+                converter: new CaseConverter(),
+                mode: BindingMode.TwoWay,
+                target: control,
+                targetProperty: Visual.OpacityProperty);
+            var instance = new InstancedBinding(
+                target, 
+                BindingMode.TwoWay, 
+                BindingPriority.LocalValue);
+
+            BindingOperations.Apply(control, Visual.OpacityProperty, instance);
+
+            Assert.Equal(4, control.Opacity);
+            Assert.Equal(9, data.Lives);
+
+            data.WhiskerCount = 3;
+
+            Assert.Equal(3, control.Opacity);
+            Assert.Equal(8, data.Lives);
+
+            GC.KeepAlive(data);
+        }
+
         private interface IAnimal
         {
             string? Name { get; }
@@ -216,6 +247,20 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
         private class Cat : Animal
         {
+            private int _whiskerCount= 4;
+
+            public int WhiskerCount
+            {
+                get => _whiskerCount;
+                set
+                {
+                    _whiskerCount = value;
+                    RaisePropertyChanged(nameof(WhiskerCount));
+                    --Lives;
+                }
+            }
+
+            public int Lives { get; private set; } = 9;
         }
 
         private class Snail : IAnimal

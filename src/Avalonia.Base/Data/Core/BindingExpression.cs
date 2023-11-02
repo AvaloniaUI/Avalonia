@@ -24,7 +24,7 @@ internal class BindingExpression : IObservable<object?>,
     IDescription,
     IDisposable
 {
-    private static readonly WeakReference<object?> NullReference = new(null);
+    internal static readonly WeakReference<object?> NullReference = new(null);
     private readonly WeakReference<object?>? _source;
     private readonly WeakReference<AvaloniaObject?> _target;
     private readonly BindingMode _mode;
@@ -161,16 +161,6 @@ internal class BindingExpression : IObservable<object?>,
         if (value == BindingOperations.DoNothing)
             return true;
 
-        // If the value is the same as the last value, then don't set the value.
-        if (_value is not null && _value.TryGetTarget(out var lastValue) && Equals(value, lastValue))
-            return true;
-
-        // If the value is null and the last value was null, then don't set the value. This is a
-        // separate step from the above because WeakReference<T>.TryGetTarget() returns false for
-        // null references.
-        if (value is null && _value == NullReference)
-            return true;
-
         // Use the target type converter to convert the value to the target type if necessary.
         if (_targetTypeConverter is not null)
         {
@@ -196,6 +186,10 @@ internal class BindingExpression : IObservable<object?>,
                 return false;
             }
         }
+
+        // Don't set the value if it's unchanged.
+        if (LeafNode.IsValueAlive && IdentityEquals(LeafNode.Value, value, type))
+            return true;
 
         try
         {
@@ -601,6 +595,14 @@ internal class BindingExpression : IObservable<object?>,
             Log(target, message, LogEventLevel.Warning);
 
         return new BindingNotification(new InvalidCastException(message), BindingErrorType.Error);
+    }
+
+    private static bool IdentityEquals(object? a, object? b, Type type)
+    {
+        if (type.IsValueType || type == typeof(string))
+            return Equals(a, b);
+        else
+            return ReferenceEquals(a, b);
     }
 
     private static object? UpdateAndUnwrap(object? value, ref BindingNotification? notification)
