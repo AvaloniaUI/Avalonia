@@ -8,29 +8,19 @@ using XamlX;
 
 namespace Avalonia.Build.Tasks;
 
+// With MSBuild, we don't need to read for TreatWarningsAsErrors/WarningsAsErrors/WarningsNotAsErrors/NoWarn properties.
+// Just by reporting them with LogWarning MSBuild will do the rest for us.
+// But we still need to read EditorConfig manually.
 public class XamlCompilerDiagnosticsFilter
 {
     private static readonly Regex s_editorConfigRegex =
         new("""avalonia_xaml_diagnostic\.([\w\d]+)\.severity\s*=\s*(\w*)""");
 
-    private readonly bool _treatWarningsAsErrors;
-    private readonly HashSet<string> _warningsAsErrors;
-    private readonly HashSet<string> _warningsNotAsErrors;
-    private readonly HashSet<string> _noWarn;
     private readonly Lazy<Dictionary<string, string>> _lazyEditorConfig;
 
     public XamlCompilerDiagnosticsFilter(
-        bool treatWarningsAsErrors,
-        string? warningsAsErrors,
-        string? warningsNotAsErrors,
-        string? noWarn,
         ITaskItem[]? analyzerConfigFiles)
     {
-        _treatWarningsAsErrors = treatWarningsAsErrors;
-        var msbuildSeparators = new[] { ',', ';' };
-        _warningsAsErrors = new HashSet<string>(warningsAsErrors?.Split(msbuildSeparators, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>());
-        _warningsNotAsErrors = new HashSet<string>(warningsNotAsErrors?.Split(msbuildSeparators, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>());
-        _noWarn = new HashSet<string>(noWarn?.Split(msbuildSeparators, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>());
         _lazyEditorConfig = new Lazy<Dictionary<string, string>>(() => ParseEditorConfigFiles(analyzerConfigFiles));
     }
 
@@ -43,7 +33,7 @@ public class XamlCompilerDiagnosticsFilter
     {
         if (_lazyEditorConfig.Value.TryGetValue(diagnosticCode, out var severity))
         {
-            currentSeverity =  severity.ToLowerInvariant() switch
+            return severity.ToLowerInvariant() switch
             {
                 "default" => currentSeverity,
                 "error" => XamlDiagnosticSeverity.Error,
@@ -51,13 +41,8 @@ public class XamlCompilerDiagnosticsFilter
                 _ => XamlDiagnosticSeverity.None // "suggestion", "silent", "none"
             };
         }
-    
-        var treatAsError = currentSeverity == XamlDiagnosticSeverity.Warning
-                           && !_noWarn.Contains(diagnosticCode)
-                           && (_warningsAsErrors.Contains(diagnosticCode) || _treatWarningsAsErrors)
-                           && !_warningsNotAsErrors.Contains(diagnosticCode);
 
-        return treatAsError ? XamlDiagnosticSeverity.Error : currentSeverity;
+        return currentSeverity;
     }
 
     private Dictionary<string, string> ParseEditorConfigFiles(ITaskItem[]? analyzerConfigFiles)

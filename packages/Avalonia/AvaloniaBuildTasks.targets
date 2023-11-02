@@ -154,10 +154,6 @@
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
       DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
-      TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
-      WarningsAsErrors="$(WarningsAsErrors)"
-      WarningsNotAsErrors="$(WarningsNotAsErrors)"
-      NoWarn="$(NoWarn)"
       AnalyzerConfigFiles="@(EditorConfigFiles)">
       <Output TaskParameter="WrittenFilePaths" ItemName="FileWrites" />
     </CompileAvaloniaXamlTask>
