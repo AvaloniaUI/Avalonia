@@ -1,5 +1,6 @@
 ﻿using System;
 using XamlX;
+using XamlX.Ast;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 
@@ -14,12 +15,10 @@ internal static class AvaloniaXamlDiagnosticCodes
     // XAML transform errors 2000-2999.
     public const string TransformError = "AVLN2000";
     public const string DuplicateXClass = "AVLN2002";
-    public const string LegacyResmScheme = "AVLN2003";
-    public const string TypeSystemError = "AVLN2004";
+    public const string TypeSystemError = "AVLN2003";
     public const string AvaloniaIntrinsicsError = "AVLN2005";
-    public const string CompiledBindingsError = "AVLN2100";
-    public const string CompiledBindingsPathError = "AVLN2101";
-    public const string DataContextResolvingError = "AVLN2102";
+    public const string BindingsError = "AVLN2100";
+    public const string DataContextResolvingError = "AVLN2101";
     public const string StyleTransformError = "AVLN2200";
     public const string SelectorsTransformError = "AVLN2201";
     public const string PropertyPathError = "AVLN2202";

@@ -227,7 +227,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     diagnostic = diagnostic with { Severity = newSeverity };
                     diagnostics.Add(diagnostic);
                     return newSeverity;
-                }
+                },
+                CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia
             };
             
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,

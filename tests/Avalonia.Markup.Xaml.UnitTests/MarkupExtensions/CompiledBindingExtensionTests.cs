@@ -497,7 +497,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Window.DataTemplates>
     <ContentControl Name='target' Content='{CompiledBinding}' />
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -515,7 +515,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
     </ContentControl>
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -686,7 +686,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         </ItemsControl.DataTemplates>
     </ItemsControl>
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
         
@@ -1171,7 +1171,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:CompileBindings='true'>
     <TextBlock Text='{Binding InvalidPath}' Name='textBlock' />
 </Window>";
-                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -1250,7 +1250,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:DataType='local:TestDataContext'
         x:CompileBindings='notabool'>
 </Window>";
-                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -1866,24 +1866,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     , textBlock.GetValue(TextBlock.TextProperty));
             }
         }
-
-        static void Throws(string type, Action cb)
-        {
-            try
-            {
-                cb();
-            }
-            catch (Exception e) when (e.GetType().Name == type)
-            {
-                return;
-            }
-
-            throw new Exception("Expected " + type);
-        }
-
-        static void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
-        static void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
-
+        
         static void PerformClick(Button button)
         {
             button.RaiseEvent(new KeyEventArgs

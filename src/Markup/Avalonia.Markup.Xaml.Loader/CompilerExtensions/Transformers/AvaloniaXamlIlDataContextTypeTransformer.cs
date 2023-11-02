@@ -10,6 +10,14 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
+    class XamlDataContextException : XamlTransformException
+    {
+        public XamlDataContextException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
+            : base(message, lineInfo, AvaloniaXamlDiagnosticCodes.DataContextResolvingError, innerException)
+        {
+        }
+    }
+
     class AvaloniaXamlIlDataContextTypeTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -43,9 +51,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             }
                             else
                             {
-                                inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
-                                context.ReportError(XamlXDiagnosticCode.ParseError, "x:DataType should be set to a type name.", directive.Values[0]);
-                                break;
+                                throw new XamlDataContextException("x:DataType should be set to a type name.", directive.Values[0]);
                             }
                         }
                     }
@@ -183,7 +189,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentDataContextNode is null)
                     {
-                        throw new XamlX.XamlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", obj);
+                        throw new XamlDataContextException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", obj);
                     }
 
                     return parentDataContextNode.DataContextType;
@@ -228,6 +234,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
         }
 
-        public override IXamlType DataContextType => throw new XamlTransformException("Unable to infer DataContext type for compiled bindings nested within this element. Please set x:DataType on the Binding or parent.", Value);
+        public override IXamlType DataContextType => XamlPseudoType.Unknown;
     }
 }
