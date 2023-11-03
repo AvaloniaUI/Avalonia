@@ -46,12 +46,14 @@ namespace Avalonia.Win32
 
         private WndProc? _wndProcDelegate;
         private IntPtr _hwnd;
-        private Win32DispatcherImpl _dispatcher;
+        private IControlledDispatcherImpl _dispatcher;
+        private Win32DispatcherImpl _win32DispatcherImpl;
 
         public Win32Platform()
         {
             CreateMessageWindow();
-            _dispatcher = new Win32DispatcherImpl(_hwnd);
+            _win32DispatcherImpl = new Win32DispatcherImpl(_hwnd);
+            _dispatcher = new DispatcherImplExceptionWrapper(_win32DispatcherImpl);
         }
 
         internal static Win32Platform Instance => s_instance;
@@ -137,7 +139,7 @@ namespace Avalonia.Win32
             if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM 
                 && wParam.ToInt64() == Win32DispatcherImpl.SignalW 
                 && lParam.ToInt64() == Win32DispatcherImpl.SignalL) 
-                _dispatcher?.DispatchWorkItem();
+                _win32DispatcherImpl?.DispatchWorkItem();
 
             if(msg == (uint)WindowsMessage.WM_QUERYENDSESSION)
             {
@@ -168,7 +170,7 @@ namespace Avalonia.Win32
             if (msg == (uint)WindowsMessage.WM_TIMER)
             {
                 if (wParam == (IntPtr)TIMERID_DISPATCHER)
-                    _dispatcher?.FireTimer();
+                    _win32DispatcherImpl?.FireTimer();
             }
             
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
