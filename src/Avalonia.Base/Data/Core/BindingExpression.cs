@@ -45,6 +45,7 @@ internal class BindingExpression : IObservable<object?>,
     /// The fallback value. Pass <see cref="AvaloniaProperty.UnsetValue"/> for no fallback.
     /// </param>
     /// <param name="converter">The converter to use.</param>
+    /// <param name="converterCulture">The converter culture to use.</param>
     /// <param name="converterParameter">The converter parameter.</param>
     /// <param name="enableDataValidation">
     /// Whether data validation should be enabled for the binding.
@@ -62,6 +63,7 @@ internal class BindingExpression : IObservable<object?>,
         IReadOnlyList<ExpressionNode> nodes,
         object? fallbackValue,
         IValueConverter? converter = null,
+        CultureInfo? converterCulture = null,
         object? converterParameter = null,
         bool enableDataValidation = false,
         BindingMode mode = BindingMode.OneWay,
@@ -90,6 +92,7 @@ internal class BindingExpression : IObservable<object?>,
         _enableDataValidation = enableDataValidation;
 
         if (converter is not null ||
+            converterCulture is not null ||
             converterParameter is not null ||
             fallbackValue != AvaloniaProperty.UnsetValue ||
             (targetNullValue is not null && targetNullValue != AvaloniaProperty.UnsetValue) ||
@@ -98,6 +101,7 @@ internal class BindingExpression : IObservable<object?>,
             _uncommon = new()
             {
                 _converter = converter,
+                _converterCulture = converterCulture,
                 _converterParameter = converterParameter,
                 _fallbackValue = fallbackValue,
                 _targetNullValue = targetNullValue ?? AvaloniaProperty.UnsetValue,
@@ -137,6 +141,7 @@ internal class BindingExpression : IObservable<object?>,
     public Type? SourceType => (LeafNode as ISettableNode)?.ValueType;
     public Type TargetType => _targetProperty?.PropertyType ?? typeof(object);
     public IValueConverter? Converter => _uncommon?._converter;
+    public CultureInfo ConverterCulture => _uncommon?._converterCulture ?? CultureInfo.CurrentCulture;
     public object? ConverterParameter => _uncommon?._converterParameter;
     public object? FallbackValue => _uncommon is not null ? _uncommon._fallbackValue : AvaloniaProperty.UnsetValue;
     public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
@@ -156,7 +161,7 @@ internal class BindingExpression : IObservable<object?>,
             return false;
 
         if (Converter is not null)
-            value = Converter.ConvertBack(value, type, ConverterParameter, CultureInfo.CurrentCulture);
+            value = Converter.ConvertBack(value, type, ConverterParameter, ConverterCulture);
 
         if (value == BindingOperations.DoNothing)
             return true;
@@ -164,7 +169,7 @@ internal class BindingExpression : IObservable<object?>,
         // Use the target type converter to convert the value to the target type if necessary.
         if (_targetTypeConverter is not null)
         {
-            if (_targetTypeConverter.TryConvert(value, type, CultureInfo.CurrentCulture, out var converted))
+            if (_targetTypeConverter.TryConvert(value, type, ConverterCulture, out var converted))
             {
                 value = converted;
             }
@@ -209,6 +214,7 @@ internal class BindingExpression : IObservable<object?>,
     /// <param name="source">The source from which the binding value will be read.</param>
     /// <param name="expression">The expression representing the binding path.</param>
     /// <param name="converter">The converter to use.</param>
+    /// <param name="converterCulture">The converter culture to use.</param>
     /// <param name="converterParameter">The converter parameter.</param>
     /// <param name="enableDataValidation">Whether data validation should be enabled for the binding.</param>
     /// <param name="fallbackValue">The fallback value.</param>
@@ -222,6 +228,7 @@ internal class BindingExpression : IObservable<object?>,
         TIn source,
         Expression<Func<TIn, TOut>> expression,
         IValueConverter? converter = null,
+        CultureInfo? converterCulture = null,
         object? converterParameter = null,
         bool enableDataValidation = false,
         Optional<object?> fallbackValue = default,
@@ -240,6 +247,7 @@ internal class BindingExpression : IObservable<object?>,
             nodes,
             fallback,
             converter: converter,
+            converterCulture: converterCulture,
             converterParameter: converterParameter,
             enableDataValidation: enableDataValidation,
             mode: mode,
@@ -492,7 +500,7 @@ internal class BindingExpression : IObservable<object?>,
             {
                 // The string format applies if we're targeting a type that can accept a string
                 // and the value isn't the TargetNullValue.
-                value = string.Format(CultureInfo.CurrentCulture, stringFormat, value);
+                value = string.Format(ConverterCulture, stringFormat, value);
             }
             else if (_targetTypeConverter is not null && value is not null)
             {
@@ -547,7 +555,7 @@ internal class BindingExpression : IObservable<object?>,
     {
         try
         {
-            return converter.Convert(value, targetType, converterParameter, CultureInfo.CurrentCulture);
+            return converter.Convert(value, targetType, converterParameter, ConverterCulture);
         }
         catch (Exception e)
         {
@@ -568,7 +576,7 @@ internal class BindingExpression : IObservable<object?>,
         if (_targetTypeConverter is null || TargetType == typeof(object) || fallback == AvaloniaProperty.UnsetValue)
             return fallback;
 
-        if (_targetTypeConverter.TryConvert(fallback, TargetType, CultureInfo.CurrentCulture, out var result))
+        if (_targetTypeConverter.TryConvert(fallback, TargetType, ConverterCulture, out var result))
             return result;
 
         if (_target.TryGetTarget(out var target))
@@ -584,7 +592,7 @@ internal class BindingExpression : IObservable<object?>,
 
         var targetType = _targetProperty.PropertyType;
 
-        if (converter.TryConvert(value, targetType, CultureInfo.CurrentCulture, out var result))
+        if (converter.TryConvert(value, targetType, ConverterCulture, out var result))
             return result;
 
         var valueString = value?.ToString() ?? "(null)";
@@ -628,6 +636,7 @@ internal class BindingExpression : IObservable<object?>,
     {
         public IValueConverter? _converter;
         public object? _converterParameter;
+        public CultureInfo? _converterCulture;
         public object? _fallbackValue;
         public string? _stringFormat;
         public object? _targetNullValue;

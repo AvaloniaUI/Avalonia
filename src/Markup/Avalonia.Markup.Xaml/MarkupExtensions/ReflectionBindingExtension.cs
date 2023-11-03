@@ -3,6 +3,8 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -24,6 +26,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 TypeResolver = serviceProvider.ResolveType,
                 Converter = Converter,
+                ConverterCulture = ConverterCulture,
                 ConverterParameter = ConverterParameter,
                 ElementName = ElementName,
                 FallbackValue = FallbackValue,
@@ -40,6 +43,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         }
 
         public IValueConverter? Converter { get; set; }
+
+        [TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
+        public CultureInfo? ConverterCulture { get; set; }
 
         public object? ConverterParameter { get; set; }
 

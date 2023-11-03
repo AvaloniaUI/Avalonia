@@ -100,6 +100,7 @@ namespace Avalonia.Data
                 nodes,
                 FallbackValue,
                 converter: Converter,
+                converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,
                 enableDataValidation: enableDataValidation,
                 mode: ResolveBindingMode(target, targetProperty),

@@ -26,6 +26,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 Path = Path,
                 Converter = Converter,
+                ConverterCulture = ConverterCulture,
                 ConverterParameter = ConverterParameter,
                 TargetNullValue = TargetNullValue,
                 FallbackValue = FallbackValue,
@@ -65,6 +66,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 nodes,
                 FallbackValue,
                 converter: Converter,
+                converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,
                 enableDataValidation: enableDataValidation,
                 mode: ResolveBindingMode(target, targetProperty),
