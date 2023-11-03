@@ -256,10 +256,7 @@ namespace Avalonia.Controls.Primitives
                 else
                 {
                     var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
-                    if (nextFocus != null)
-                    {
-                        nextFocus.Focus();
-                    }
+                    nextFocus?.Focus();
                 }
             }
             else if (ShowMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)

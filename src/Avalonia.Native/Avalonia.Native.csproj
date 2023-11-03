@@ -16,7 +16,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />

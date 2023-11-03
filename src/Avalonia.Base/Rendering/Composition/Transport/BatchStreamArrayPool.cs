@@ -17,7 +17,7 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
     int _usage;
     readonly int[] _usageStatistics = new int[10];
     int _usageStatisticsSlot;
-    bool _reclaimImmediately;
+    readonly bool _reclaimImmediately;
 
     public int CurrentUsage => _usage;
     public int CurrentPool => _pool.Count;

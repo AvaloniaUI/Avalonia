@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.UnitTests;
@@ -706,6 +707,180 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
             }
         }
+        
+        [Fact]
+        public void Should_HitTestStringWithInvisibleRuns()
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+            //var textSource = new ListTextSource(
+
+            
+
+            using (Start())
+            {
+                var hello = new TextCharacters("Hello",
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+                var world = new TextCharacters("world",
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Red));
+
+                var source = new ListTextSource(new InvisibleRun(1), hello, new InvisibleRun(1), world);
+                
+                var textLine =
+                    TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
+
+                void VerifyHit(int offset)
+                {
+                    var glyphCenter = textLine.GetTextBounds(offset, 1)[0].Rectangle.Center;
+                    var hit = textLine.GetCharacterHitFromDistance(glyphCenter.X);
+                    Assert.Equal(offset, hit.FirstCharacterIndex);
+                }
+                VerifyHit(3);
+                VerifyHit(8);
+            }
+        }
+        
+        [Fact]
+        public void GetTextBounds_For_TextLine_With_ZeroWidthSpaces_Does_Not_Freeze()
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+
+            using (Start())
+            {
+                var text = new TextCharacters("\u200B\u200B",
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+
+                var source = new ListTextSource(text, new InvisibleRun(1), new TextEndOfParagraph());
+                
+                var textLine =
+                    TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
+
+                var bounds = textLine.GetTextBounds(0, 3);
+
+                Assert.Equal(1, bounds.Count);
+
+                var runBounds = bounds[0].TextRunBounds;
+
+                Assert.Equal(2, runBounds.Count);
+            }
+        }
+
+        
+        [Theory]
+        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
+        public void Line_Formatting_For_Oversized_Embedded_Runs_Does_Not_Produce_Empty_Lines(TextWrapping wrapping)
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
+                textWrap: wrapping);
+
+            using (Start())
+            {
+                var source = new ListTextSource(new RectangleRun(new Rect(0, 0, 200, 10), Brushes.Aqua));
+                var textLine = TextFormatter.Current.FormatLine(source, 0, 100, paragraphProperties);
+                Assert.Equal(200d, textLine.WidthIncludingTrailingWhitespace);
+            }
+        }
+        
+        [Theory]
+        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
+        public void Line_Formatting_For_Oversized_Embedded_Runs_Inside_Normal_Text_Does_Not_Produce_Empty_Lines(
+            TextWrapping wrapping)
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
+                textWrap: wrapping);
+            
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DejaVu Sans"));
+                
+                var text1 = new TextCharacters("Hello",
+                    new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
+                var text2 = new TextCharacters("world",
+                    new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
+                
+                var source = new ListTextSource(
+                    text1,
+                    new RectangleRun(new Rect(0, 0, 200, 10), Brushes.Aqua),
+                    new InvisibleRun(1),
+                    new TextEndOfLine(),
+                    text2,
+                    new TextEndOfParagraph(1));
+
+                var lines = new List<TextLine>();
+                var dcp = 0;
+                for (var c = 0;; c++)
+                {
+                    Assert.True(c < 1000, "Infinite loop");
+                    var textLine = TextFormatter.Current.FormatLine(source, dcp, 30, paragraphProperties);
+                    Assert.NotNull(textLine);
+                    lines.Add(textLine);
+                    dcp += textLine.Length;
+                    
+                    if (textLine.TextLineBreak is {} eol && eol.TextEndOfLine is TextEndOfParagraph)
+                        break;
+                }
+            }
+        }
+
+        class IncrementalTabProperties : TextParagraphProperties
+        {
+            public IncrementalTabProperties(TextRunProperties defaultTextRunProperties)
+            {
+                DefaultTextRunProperties = defaultTextRunProperties;
+            }
+
+            public override FlowDirection FlowDirection { get; }
+            public override TextAlignment TextAlignment { get; }
+            public override double LineHeight { get; }
+            public override bool FirstLineInParagraph { get; }
+            public override TextRunProperties DefaultTextRunProperties { get; }
+            public override TextWrapping TextWrapping { get; }
+            public override double Indent { get; }
+            public override double DefaultIncrementalTab => 64;
+        }
+        
+        [Fact]
+        public void Line_With_IncrementalTab_Should_Return_Correct_Backspace_Position()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DejaVu Sans"));
+                
+                var defaultRunProperties = new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black);
+                var paragraphProperties = new IncrementalTabProperties(defaultRunProperties);
+
+                var text = new TextCharacters("ff",
+                    new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
+                
+                var source = new ListTextSource(text);
+                
+                var textLine = TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
+                
+                var backspaceHit = textLine.GetBackspaceCaretCharacterHit(new CharacterHit(2));
+                Assert.Equal(1, backspaceHit.FirstCharacterIndex);
+                Assert.Equal(0, backspaceHit.TrailingLength);
+            }
+            
+        }
+
+        [Fact]
+        public void Should_Wrap_Chinese()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+
+                var text = "一二三四 TEXT 一二三四五六七八九十零";
+
+                var textLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
+
+                Assert.Equal(3, textLine.TextRuns.Count);
+            }
+        }
 
         protected readonly record struct SimpleTextSource : ITextSource
         {
@@ -776,6 +951,41 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 return new TextCharacters(_text, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
             }
         }
+        
+        private class ListTextSource : ITextSource
+        {
+            private List<TextRun> _runs = new();
+
+            public ListTextSource(params TextRun[] runs) : this((IEnumerable<TextRun>)runs)
+            {
+                
+            }
+            
+            public ListTextSource(IEnumerable<TextRun> runs)
+            {
+                _runs = runs.ToList();
+            }
+            
+            public TextRun GetTextRun(int textSourceIndex)
+            {
+                var off = 0;
+                for (var c = 0; c < _runs.Count; c++)
+                {
+                    var run = _runs[c];
+                    if (textSourceIndex >= off && textSourceIndex - off < run.Length)
+                    {
+                        if (run.Length == 1)
+                            return run;
+                        var chars = ((TextCharacters)run);
+                        return new TextCharacters(chars.Text.Slice(textSourceIndex - off), chars.Properties);
+                    }
+
+                    off += run.Length;
+                }
+
+                return null;
+            }
+        }
 
         private class RectangleRun : DrawableTextRun
         {
@@ -797,6 +1007,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     drawingContext.FillRectangle(_fill, _rect);
                 }
             }
+        }
+        
+        private class InvisibleRun : TextRun
+        {
+            public InvisibleRun(int length)
+            {
+                Length = length;
+            }
+            public override int Length { get; }
         }
 
         public static IDisposable Start()

@@ -127,6 +127,20 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
     }
 }
 
+HRESULT AvnAppMenuItem::SetToolTip (char* utf8String)
+{
+    START_COM_CALL;
+
+    @autoreleasepool
+    {
+        if (utf8String != nullptr)
+        {
+            [_native setToolTip:[NSString stringWithUTF8String:(const char*)utf8String]];
+        }
+
+        return S_OK;
+    }
+}
 
 HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
@@ -147,33 +161,16 @@ HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
             if (modifiers & Windows)
                 flags |= NSEventModifierFlagCommand;
             
-            auto it = s_UnicodeKeyMap.find(key);
+            auto menuChar = MenuCharFromVirtualKey(key);
             
-            if(it != s_UnicodeKeyMap.end())
+            if (menuChar != 0)
             {
-                auto keyString= [NSString stringWithFormat:@"%C", (unsigned short)it->second];
+                auto keyString = [NSString stringWithCharacters:&menuChar length:1];
                 
                 [_native setKeyEquivalent: keyString];
                 [_native setKeyEquivalentModifierMask:flags];
                 
                 return S_OK;
-            }
-            else
-            {
-                auto it = s_AvnKeyMap.find(key); // check if a virtual key is mapped.
-                
-                if(it != s_AvnKeyMap.end())
-                {
-                    auto it1 = s_QwertyKeyMap.find(it->second); // convert virtual key to qwerty string.
-                    
-                    if(it1 != s_QwertyKeyMap.end())
-                    {
-                        [_native setKeyEquivalent: [NSString  stringWithUTF8String: it1->second]];
-                        [_native setKeyEquivalentModifierMask:flags];
-                        
-                        return S_OK;
-                    }
-                }
             }
         }
         

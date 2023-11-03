@@ -194,7 +194,7 @@ namespace Avalonia.Input.GestureRecognizers
     }
 
     /// An nth degree polynomial fit to a dataset.
-    internal class PolynomialFit
+    internal sealed class PolynomialFit
     {
         /// Creates a polynomial fit of the given degree.
         ///
@@ -213,7 +213,7 @@ namespace Avalonia.Input.GestureRecognizers
         public double Confidence { get; set; }
     }
 
-    internal class LeastSquaresSolver
+    internal sealed class LeastSquaresSolver
     {
         private const double PrecisionErrorTolerance = 1e-10;
 

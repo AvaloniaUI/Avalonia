@@ -1182,6 +1182,47 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData("A\nBB\nCCC\nDDDD", 0, 0)]
+        [InlineData("A\nBB\nCCC\nDDDD", 1, 2)]
+        [InlineData("A\nBB\nCCC\nDDDD", 2, 5)]
+        [InlineData("A\nBB\nCCC\nDDDD", 3, 9)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 0, 0)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 1, 5)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 2, 11)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 3, 17)]
+        public void Should_Scroll_Caret_To_Line(string text, int targetLineIndex, int expectedCaretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = text
+                };
+                tb.ApplyTemplate();
+                tb.ScrollToLine(targetLineIndex);
+                Assert.Equal(expectedCaretIndex, tb.CaretIndex);
+            }
+        }
+
+        [Fact]
+        public void Should_Throw_ArgumentOutOfRange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = string.Empty
+                };
+                tb.ApplyTemplate();
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(-1));
+                Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(1));
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),

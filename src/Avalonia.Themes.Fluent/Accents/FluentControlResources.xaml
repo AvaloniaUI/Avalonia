@@ -207,6 +207,10 @@
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+      <!-- Mobile Resources for MenuFlyout.xaml -->
+      <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
+      <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
+      <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
       <!-- Resources for TextBox.xaml -->
       <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -784,6 +788,11 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+      
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="Black" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <!-- Resources for Button.xaml -->
@@ -991,6 +1000,10 @@
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+      <!-- Mobile Resources for MenuFlyout.xaml -->
+      <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
+      <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
+      <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
       <!-- Resources for TextBox.xaml -->
       <!-- Copied from FluentBaseDark.xaml -->
@@ -1571,6 +1584,11 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

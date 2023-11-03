@@ -18,7 +18,7 @@
     <!-- For managed dialogs dev testing -->
     <InternalsVisibleTo Include="ControlCatalog, PublicKey=$(AvaloniaPublicKey)" />    
   </ItemGroup>
-  
+
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

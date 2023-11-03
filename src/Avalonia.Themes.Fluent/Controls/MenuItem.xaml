@@ -146,7 +146,6 @@
     <Style Selector="^:icon /template/ Viewbox#PART_IconPresenter">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-
     <Style Selector="^:selected">
       <Style Selector="^ /template/ Border#PART_LayoutRoot">
         <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPointerOver}" />
@@ -206,5 +205,9 @@
         </ControlTemplate>
       </Setter>
     </Style>
+  </ControlTheme>
+  <ControlTheme x:Key="HorizontalMenuItem" TargetType="MenuItem" BasedOn="{StaticResource FluentTopLevelMenuItem}">
+    <Setter Property="Padding" Value="{DynamicResource HorizontalMenuFlyoutItemThemePaddingNarrow}" />
+    <Setter Property="Margin" Value="{DynamicResource HorizontalMenuFlyoutItemMargin}" />
   </ControlTheme>
 </ResourceDictionary>

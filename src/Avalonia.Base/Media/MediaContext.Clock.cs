@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Animation;
 using Avalonia.Reactive;
-using Avalonia.Threading;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media;
 
@@ -17,8 +15,8 @@ internal partial class MediaContext
     class MediaContextClock : IGlobalClock
     {
         private readonly MediaContext _parent;
-        private List<IObserver<TimeSpan>> _observers = new();
-        private List<IObserver<TimeSpan>> _newObservers = new();
+        private readonly List<IObserver<TimeSpan>> _observers = new();
+        private readonly List<IObserver<TimeSpan>> _newObservers = new();
         private Queue<Action<TimeSpan>> _queuedAnimationFrames = new();
         private Queue<Action<TimeSpan>> _queuedAnimationFramesNext = new();
         private TimeSpan _currentAnimationTimestamp;
@@ -33,12 +31,12 @@ internal partial class MediaContext
         public IDisposable Subscribe(IObserver<TimeSpan> observer)
         {
             _parent.ScheduleRender(false);
-            Dispatcher.UIThread.VerifyAccess();
+            _parent._dispatcher.VerifyAccess();
             _observers.Add(observer);
             _newObservers.Add(observer);
             return Disposable.Create(() =>
             {
-                Dispatcher.UIThread.VerifyAccess();
+                _parent._dispatcher.VerifyAccess();
                 _observers.Remove(observer);
             });
         }

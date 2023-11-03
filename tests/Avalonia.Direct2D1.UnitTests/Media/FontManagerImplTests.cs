@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Direct2D1.Media;
+﻿using Avalonia.Direct2D1.Media;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -17,8 +16,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
             {
                 Direct2D1Platform.Initialize();
 
-                var glyphTypeface =
-                    new Typeface(new FontFamily("A, B, Arial")).GlyphTypeface;
+                var typeface = new Typeface(new FontFamily("A, B, Arial"));
+
+                var glyphTypeface = typeface.GlyphTypeface;
 
                 Assert.Equal("Arial", glyphTypeface.FamilyName);
             }
@@ -31,7 +31,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
             {
                 Direct2D1Platform.Initialize();
 
-                var glyphTypeface = new Typeface(new FontFamily("A, B, Arial"), weight: FontWeight.Bold).GlyphTypeface;
+                var typeface = new Typeface(new FontFamily("A, B, Arial"), weight: FontWeight.Bold);
+
+                var glyphTypeface = typeface.GlyphTypeface;
 
                 Assert.Equal("Arial", glyphTypeface.FamilyName);
 

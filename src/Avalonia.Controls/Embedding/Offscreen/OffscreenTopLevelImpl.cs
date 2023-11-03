@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Size ClientSize
         {
-            get { return _clientSize; }
+            get => _clientSize;
             set
             {
                 _clientSize = value;
@@ -43,14 +43,14 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public double RenderScaling
         {
-            get { return _scaling; }
+            get => _scaling;
             set
             {
                 _scaling = value;
                 ScalingChanged?.Invoke(value);
             }
         }
-        
+
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }

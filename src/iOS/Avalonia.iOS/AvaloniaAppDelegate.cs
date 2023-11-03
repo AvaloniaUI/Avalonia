@@ -29,15 +29,13 @@ namespace Avalonia.iOS
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
             var builder = AppBuilder.Configure<TApp>().UseiOS();
-            CustomizeAppBuilder(builder);
 
             var lifetime = new SingleViewLifetime();
 
             builder.AfterSetup(_ =>
             {
                 Window = new UIWindow();
-                
-                
+
                 var view = new AvaloniaView();
                 lifetime.View = view;
                 var controller = new DefaultAvaloniaViewController
@@ -47,7 +45,9 @@ namespace Avalonia.iOS
                 Window.RootViewController = controller;
                 view.InitWithController(controller);
             });
-            
+
+            CustomizeAppBuilder(builder);
+
             builder.SetupWithLifetime(lifetime);
 
             Window.MakeKeyAndVisible();
