@@ -140,8 +140,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? CommandParameter
         {
-            get { return GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
         }
 
         /// <summary>

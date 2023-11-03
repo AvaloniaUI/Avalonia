@@ -74,8 +74,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public IBrush? Background
         {
-            get { return GetValue(BackgroundProperty); }
-            set { SetValue(BackgroundProperty, value); }
+            get => GetValue(BackgroundProperty);
+            set => SetValue(BackgroundProperty, value);
         }
 
         /// <summary>
@@ -83,8 +83,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public FontFamily FontFamily
         {
-            get { return GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
+            get => GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
         }
 
         /// <summary>
@@ -92,8 +92,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public double FontSize
         {
-            get { return GetValue(FontSizeProperty); }
-            set { SetValue(FontSizeProperty, value); }
+            get => GetValue(FontSizeProperty);
+            set => SetValue(FontSizeProperty, value);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return GetValue(FontStyleProperty); }
-            set { SetValue(FontStyleProperty, value); }
+            get => GetValue(FontStyleProperty);
+            set => SetValue(FontStyleProperty, value);
         }
 
         /// <summary>
@@ -110,8 +110,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public FontWeight FontWeight
         {
-            get { return GetValue(FontWeightProperty); }
-            set { SetValue(FontWeightProperty, value); }
+            get => GetValue(FontWeightProperty);
+            set => SetValue(FontWeightProperty, value);
         }
 
         /// <summary>
@@ -119,8 +119,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public FontStretch FontStretch
         {
-            get { return GetValue(FontStretchProperty); }
-            set { SetValue(FontStretchProperty, value); }
+            get => GetValue(FontStretchProperty);
+            set => SetValue(FontStretchProperty, value);
         }
 
         /// <summary>
@@ -128,8 +128,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public IBrush? Foreground
         {
-            get { return GetValue(ForegroundProperty); }
-            set { SetValue(ForegroundProperty, value); }
+            get => GetValue(ForegroundProperty);
+            set => SetValue(ForegroundProperty, value);
         }
 
         /// <summary>

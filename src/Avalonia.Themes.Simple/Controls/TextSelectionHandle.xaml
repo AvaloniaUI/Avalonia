@@ -1,0 +1,52 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Double x:Key="TextSelectHandleSize">32</x:Double>
+  <ControlTheme x:Key="{x:Type TextSelectionHandle}"
+                TargetType="TextSelectionHandle">
+    <Setter Property="Background"
+            Value="{DynamicResource HighlightBrush}" />
+    <Setter Property="HorizontalAlignment"
+            Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid>
+            <PathIcon
+              Cursor="Arrow"
+              Name="PART_HandlePathIcon"
+              HorizontalAlignment="Stretch"
+              Height="{DynamicResource TextSelectHandleSize}"
+              Foreground="{TemplateBinding Background}"
+              >
+              <PathIcon.Data>
+                <GeometryGroup FillRule="NonZero">
+                  <RectangleGeometry Rect="0,0,16,16"/>
+                  <EllipseGeometry Center="16,16"
+                                   RadiusX="16"
+                                   RadiusY="16"/>
+                </GeometryGroup>
+              </PathIcon.Data>
+            </PathIcon>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style Selector="^.caret /template/ PathIcon#PART_HandlePathIcon">
+      <Setter Property="Data">
+        <GeometryGroup FillRule="NonZero">
+          <RectangleGeometry Rect="0,0,16,16">
+            <RectangleGeometry.Transform>
+              <TransformGroup >
+                <RotateTransform CenterX="16"
+                                 Angle="-45"/>
+              </TransformGroup>
+            </RectangleGeometry.Transform>
+          </RectangleGeometry>
+          <EllipseGeometry Center="16,22.7"
+                           RadiusX="16"
+                           RadiusY="16"/>
+        </GeometryGroup>
+      </Setter>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

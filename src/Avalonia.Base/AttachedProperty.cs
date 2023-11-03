@@ -6,7 +6,7 @@ namespace Avalonia
     /// An attached avalonia property.
     /// </summary>
     /// <typeparam name="TValue">The type of the property's value.</typeparam>
-    public class AttachedProperty<TValue> : StyledProperty<TValue>
+    public sealed class AttachedProperty<TValue> : StyledProperty<TValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttachedProperty{TValue}"/> class.

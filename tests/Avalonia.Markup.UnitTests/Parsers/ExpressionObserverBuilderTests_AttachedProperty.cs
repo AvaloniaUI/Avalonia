@@ -169,8 +169,8 @@ namespace Avalonia.Markup.UnitTests.Parsers
 
             public Class1 Next
             {
-                get { return GetValue(NextProperty); }
-                set { SetValue(NextProperty, value); }
+                get => GetValue(NextProperty);
+                set => SetValue(NextProperty, value);
             }
         }
     }

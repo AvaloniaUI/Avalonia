@@ -2,11 +2,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
   </PropertyGroup>
   <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
   <PropertyGroup>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-  </PropertyGroup>  
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
@@ -18,10 +19,12 @@
   <ItemGroup>
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerExtensions\**\*.cs" />
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\AvaloniaXamlIlRuntimeCompiler.cs" />
+    <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerDynamicDependencies.cs" />
     <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
+    <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2023020321" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.22045.20230930" />
   </ItemGroup>
   <Import Project="..\..\..\build\NetFX.props" />
 </Project>

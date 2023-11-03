@@ -674,8 +674,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public double DoubleValue
             {
-                get { return GetValue(DoubleValueProperty); }
-                set { SetValue(DoubleValueProperty, value); }
+                get => GetValue(DoubleValueProperty);
+                set => SetValue(DoubleValueProperty, value);
             }
 
             public static StyledProperty<double?> NullableDoubleProperty =
@@ -699,8 +699,8 @@ namespace Avalonia.Markup.UnitTests.Data
             private double _doubleValue;
             public double DoubleValue
             {
-                get { return _doubleValue; }
-                set { SetAndRaise(DoubleValueProperty, ref _doubleValue, value); }
+                get => _doubleValue;
+                set => SetAndRaise(DoubleValueProperty, ref _doubleValue, value);
             }
         }
 
@@ -731,7 +731,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public double Value
             {
-                get { return _value; }
+                get => _value;
                 set
                 {
                     if (_value != value)
@@ -765,8 +765,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public string TwoWay
             {
-                get { return GetValue(TwoWayProperty); }
-                set { SetValue(TwoWayProperty, value); }
+                get => GetValue(TwoWayProperty);
+                set => SetValue(TwoWayProperty, value);
             }
         }
 
@@ -777,7 +777,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public string Foo
             {
-                get { return _foo; }
+                get => _foo;
                 set
                 {
                     _foo = value;
@@ -888,8 +888,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public int Baz
             {
-                get { return GetValue(BazProperty); }
-                set { SetValue(BazProperty, value); }
+                get => GetValue(BazProperty);
+                set => SetValue(BazProperty, value);
             }
         }
     }

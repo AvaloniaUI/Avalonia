@@ -12,7 +12,8 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
-    public class BindingExpressionTests : IClassFixture<InvariantCultureFixture>
+    [InvariantCulture]
+    public class BindingExpressionTests
     {
         private static AvaloniaProperty TargetTypeDouble => TargetProperties.DoubleProperty;
         private static AvaloniaProperty TargetTypeInt => TargetProperties.IntProperty;

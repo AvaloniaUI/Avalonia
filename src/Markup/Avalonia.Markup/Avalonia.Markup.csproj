@@ -4,6 +4,7 @@
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Markup\Parsers\Nodes\ExpressionGrammer" />
     <None Include="Markup\Parsers\BindingExpressionGrammar.cs" />
   </ItemGroup>
   <ItemGroup>

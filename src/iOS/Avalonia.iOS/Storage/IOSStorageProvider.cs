@@ -39,17 +39,17 @@ internal class IOSStorageProvider : IStorageProvider
                 {
                     // We check for OS version outside of the lambda, it's safe.
 #pragma warning disable CA1416
-                    if (f.AppleUniformTypeIdentifiers?.Any() == true)
-                    {
-                        return f.AppleUniformTypeIdentifiers.Select(id => UTType.CreateFromIdentifier(id));
-                    }
                     if (f.TryGetExtensions() is { } extensions && extensions.Any())
                     {
-                        return extensions.Select(id => UTType.CreateFromExtension(id.TrimStart('.')));
+                        return extensions.Select(UTType.CreateFromExtension);
+                    }
+                    if (f.AppleUniformTypeIdentifiers?.Any() == true)
+                    {
+                        return f.AppleUniformTypeIdentifiers.Select(UTType.CreateFromIdentifier);
                     }
                     if (f.MimeTypes?.Any() == true)
                     {
-                        return f.MimeTypes.Select(id => UTType.CreateFromMimeType(id));
+                        return f.MimeTypes.Select(UTType.CreateFromMimeType);
                     }
                     return Array.Empty<UTType>();
 #pragma warning restore CA1416

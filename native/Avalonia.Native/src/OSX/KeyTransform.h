@@ -1,14 +1,15 @@
 #ifndef keytransform_h
 #define keytransform_h
+
+#import <cstdint>
 #include "common.h"
-#include <map>
 
-extern std::map<int, AvnKey> s_KeyMap;
+AvnPhysicalKey PhysicalKeyFromScanCode(uint16_t scanCode);
 
-extern std::map<AvnKey, int> s_AvnKeyMap;
+AvnKey VirtualKeyFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags);
 
-extern std::map<int, const char*> s_QwertyKeyMap;
+NSString* KeySymbolFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags);
 
-extern std::map<AvnKey, int> s_UnicodeKeyMap;
+uint16_t MenuCharFromVirtualKey(AvnKey key);
 
 #endif

@@ -14,7 +14,8 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
-    public class BindingExpressionTests_DataValidation : IClassFixture<InvariantCultureFixture>
+    [InvariantCulture]
+    public class ExpressionObserverTests_DataValidation
     {
         [Fact]
         public void Doesnt_Send_DataValidationError_When_DataValidatation_Not_Enabled()

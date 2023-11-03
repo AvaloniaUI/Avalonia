@@ -9,7 +9,7 @@ namespace Avalonia.Data
     /// </summary>
     public class BindingChainException : Exception
     {
-        private string _message;
+        private readonly string _message;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingChainException"/> class.

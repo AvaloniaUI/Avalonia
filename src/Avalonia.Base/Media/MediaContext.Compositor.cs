@@ -1,6 +1,4 @@
-using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Transport;
@@ -22,7 +20,7 @@ partial class MediaContext
         _requestedCommits.Remove(compositor);
         _pendingCompositionBatches[compositor] = commit;
         commit.Processed.ContinueWith(_ =>
-            Dispatcher.UIThread.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send));
+            _dispatcher.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send));
         return commit;
     }
     
