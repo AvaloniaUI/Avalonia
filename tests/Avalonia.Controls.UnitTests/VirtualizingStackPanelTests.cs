@@ -815,6 +815,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(3, target.Children.Count);
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/10968
+        [Fact]
+        public void Does_Not_Realize_Items_If_Self_Outside_Viewport()
+        {
+            using var app = App();
+            var (panel, _, itemsControl) = CreateUnrootedTarget<ItemsControl>();
+            itemsControl.Margin = new Thickness(0.0, 200.0, 0.0, 0.0);
+
+            var scrollContentPresenter = new ScrollContentPresenter
+            {
+                Width = 100,
+                Height = 100,
+                Content = itemsControl
+            };
+
+            var root = CreateRoot(scrollContentPresenter);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            Assert.Equal(1, panel.VisualChildren.Count);
+
+            scrollContentPresenter.Content = null;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            scrollContentPresenter.Content = itemsControl;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, panel.VisualChildren.Count);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
