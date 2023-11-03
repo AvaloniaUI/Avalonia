@@ -42,7 +42,7 @@ internal class DynamicPluginPropertyAccessorNode : ExpressionNode, IPropertyAcce
         return _accessor?.SetValue(value, BindingPriority.LocalValue) ?? false;
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         var reference = new WeakReference<object?>(source);
 

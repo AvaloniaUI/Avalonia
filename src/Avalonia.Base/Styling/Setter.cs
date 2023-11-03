@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
 using Avalonia.PropertyStore;
 
@@ -117,7 +118,13 @@ namespace Avalonia.Styling
 
                 if (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
                 {
-                    return new PropertySetterBindingInstance(target, instance, Property, mode, i.Source);
+                    if (i.Source is BindingExpression expression)
+                    {
+                        expression.Initialize(target.GetValueStore(), Property, instance.Priority);
+                        return expression;
+                    }
+                    else
+                        return new PropertySetterBindingInstance(target, instance, Property, mode, i.Source);
                 }
 
                 throw new NotSupportedException();

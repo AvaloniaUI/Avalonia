@@ -21,7 +21,7 @@ internal class FuncTransformNode : ExpressionNode
         // We don't have enough information to add anything here.
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         SetValue(_transform(source));
     }

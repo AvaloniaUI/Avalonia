@@ -56,7 +56,7 @@ internal class VisualAncestorElementNode : SourceNode
         return target is Visual visual && visual.IsAttachedToVisualTree;
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (source is Visual visual)
         {

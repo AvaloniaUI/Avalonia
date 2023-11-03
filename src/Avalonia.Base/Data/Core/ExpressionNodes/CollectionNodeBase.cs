@@ -22,7 +22,7 @@ internal abstract class CollectionNodeBase : ExpressionNode,
             UpdateValueOrSetError(sender);
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         Subscribe(source);
         UpdateValue(source);

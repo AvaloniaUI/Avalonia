@@ -35,7 +35,7 @@ internal class AvaloniaPropertyAccessorNode : ExpressionNode, ISettableNode
         return false;
     }
 
-    protected override void OnSourceChanged(object? source)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
         if (source is AvaloniaObject newObject)
         {

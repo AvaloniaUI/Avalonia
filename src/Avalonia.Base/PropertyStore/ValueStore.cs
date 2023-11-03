@@ -4,13 +4,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.PropertyStore
 {
-    internal class ValueStore
+    internal class ValueStore : IBindingExpressionSink
     {
         private readonly List<ValueFrame> _frames = new();
         private Dictionary<int, IDisposable>? _localValueBindings;
@@ -39,6 +41,33 @@ namespace Avalonia.PropertyStore
         {
             InsertFrame(style);
             ReevaluateEffectiveValues();
+        }
+
+        public IDisposable AddBinding<T>(
+            StyledProperty<T> property,
+            BindingExpression source,
+            BindingPriority priority)
+        {
+            if (priority == BindingPriority.LocalValue)
+            {
+                DisposeExistingLocalValueBinding(property);
+                _localValueBindings ??= new();
+                _localValueBindings[property.Id] = source;
+                source.Start(this, property, priority);
+                return source;
+            }
+            else
+            {
+                var effective = GetEffectiveValue(property);
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
+
+                frame.AddBinding(property, source);
+
+                if (effective is null || priority <= effective.Priority)
+                    source.Start(this, property, priority);
+
+                return source;
+            }
         }
 
         public IDisposable AddBinding<T>(
@@ -125,6 +154,15 @@ namespace Avalonia.PropertyStore
             }
         }
 
+        public IDisposable AddBinding<T>(DirectPropertyBase<T> property, BindingExpression source)
+        {
+            DisposeExistingLocalValueBinding(property);
+            _localValueBindings ??= new();
+            _localValueBindings[property.Id] = source;
+            source.Start(this, property, BindingPriority.LocalValue);
+            return source;
+        }
+
         public IDisposable AddBinding<T>(DirectPropertyBase<T> property, IObservable<BindingValue<T>> source)
         {
             var observer = new DirectBindingObserver<T>(this, property);
@@ -209,6 +247,20 @@ namespace Avalonia.PropertyStore
                 var effectiveValue = CreateEffectiveValue(property);
                 AddEffectiveValue(property, effectiveValue);
                 effectiveValue.SetCurrentValueAndRaise(this, property, value);
+            }
+        }
+
+        public void SetLocalValue(AvaloniaProperty property, object? value)
+        {
+            if (TryGetEffectiveValue(property, out var existing))
+            {
+                existing.SetLocalValueAndRaise(this, property, value);
+            }
+            else
+            {
+                var effectiveValue = property.CreateEffectiveValue(Owner);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetLocalValueAndRaise(this, property, value);
             }
         }
 
@@ -405,6 +457,7 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="entry">The binding entry.</param>
         /// <param name="priority">The priority of binding which produced a new value.</param>
+        [Obsolete("TODO: Remove?")]
         public void OnBindingValueChanged(
             IValueEntry entry,
             BindingPriority priority)
@@ -528,6 +581,7 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
+        [Obsolete("TODO: Remove?")]
         public void OnLocalValueBindingCompleted(AvaloniaProperty property, IDisposable observer)
         {
             if (_localValueBindings is not null &&
@@ -687,6 +741,87 @@ namespace Avalonia.PropertyStore
                 priority,
                 null,
                 overridden);
+        }
+
+        void IBindingExpressionSink.OnChanged(
+            BindingExpression instance,
+            bool hasValueChanged,
+            bool hasErrorChanged)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            Debug.Assert(instance.TargetProperty is not null);
+
+            var property = instance.TargetProperty;
+            var value = instance.GetValueOrDefault();
+
+            if (property.IsDirect)
+            {
+                if (hasValueChanged)
+                    property.RouteSetDirectValueUnchecked(Owner, value);
+            }
+            else
+            {
+                var priority = instance.Priority;
+
+                if (hasValueChanged)
+                {
+                    if (priority == BindingPriority.LocalValue)
+                    {
+                        if (value != AvaloniaProperty.UnsetValue)
+                            SetLocalValue(property, value);
+                        else if (property == StyledElement.DataContextProperty)
+                            SetLocalValue(property, null);
+                        else
+                            ClearValue(property);
+                    }
+                    else
+                    {
+                        if (TryGetEffectiveValue(property, out var existing))
+                        {
+                            if (priority <= existing.BasePriority)
+                                ReevaluateEffectiveValue(property, existing, changedValueEntry: instance);
+                        }
+                        else
+                        {
+                            AddEffectiveValueAndRaise(property, instance, priority);
+                        }
+                    }
+                }
+            }
+
+            if (instance.IsDataValidationEnabled)
+            {
+                instance.GetDataValidationState(out var state, out var error);
+                Owner.OnUpdateDataValidation(property, state, error);
+            }
+        }
+
+        /// <summary>
+        /// Called by a binding expression when the binding produces completes.
+        /// </summary>
+        /// <param name="instance">The binding expression.</param>
+        void IBindingExpressionSink.OnCompleted(BindingExpression instance)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            Debug.Assert(instance.TargetProperty is not null);
+
+            var property = instance.TargetProperty;
+
+            if (instance.IsDataValidationEnabled)
+                Owner.OnUpdateDataValidation(property, BindingValueType.UnsetValue, null);
+            
+            if (instance.Priority == BindingPriority.LocalValue)
+            {
+                if (_localValueBindings is not null &&
+                    _localValueBindings.TryGetValue(property.Id, out var existing))
+                {
+                    if (existing == instance)
+                    {
+                        _localValueBindings?.Remove(property.Id);
+                        ClearValue(property);
+                    }
+                }
+            }
         }
 
         private int InsertFrame(ValueFrame frame)

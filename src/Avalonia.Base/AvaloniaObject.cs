@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
@@ -607,6 +608,14 @@ namespace Avalonia
 
         internal ValueStore GetValueStore() => _values;
         internal IReadOnlyList<AvaloniaObject>? GetInheritanceChildren() => _inheritanceChildren;
+
+        internal IDisposable Bind(
+            AvaloniaProperty property,
+            BindingExpression expression,
+            BindingPriority priority)
+        {
+            return property.RouteBind(this, expression, priority);
+        }
 
         /// <summary>
         /// Called to update the validation state for properties for which data validation is

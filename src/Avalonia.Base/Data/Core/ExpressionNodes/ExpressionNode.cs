@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -86,7 +87,7 @@ internal abstract class ExpressionNode
     /// </summary>
     public void Reset()
     {
-        SetSource(null);
+        SetSource(null, null);
         _source = _value = null;
     }
 
@@ -116,7 +117,10 @@ internal abstract class ExpressionNode
     /// <see cref="AvaloniaProperty.UnsetValue"/> in which case the source will be considered
     /// to be null.
     /// </param>
-    public void SetSource(object? source)
+    /// <param name="dataValidationError">
+    /// Any data validation error reported by the previous expression node.
+    /// </param>
+    public void SetSource(object? source, Exception? dataValidationError)
     {
         var oldSource = Source;
 
@@ -137,7 +141,7 @@ internal abstract class ExpressionNode
         }
         else if (source != oldSource)
         {
-            try { OnSourceChanged(source); }
+            try { OnSourceChanged(source, dataValidationError); }
             catch (Exception e) { SetError(e); }
         }
     }
@@ -146,6 +150,17 @@ internal abstract class ExpressionNode
     /// Sets the current value to <see cref="AvaloniaProperty.UnsetValue"/>.
     /// </summary>
     protected void ClearValue() => SetValue(AvaloniaProperty.UnsetValue);
+
+    /// <summary>
+    /// Notifies the <see cref="Owner"/> of a data validation error.
+    /// </summary>
+    /// <param name="error">The error.</param>
+    protected void SetDataValidationError(Exception error)
+    {
+        if (error is TargetInvocationException tie)
+            error = tie.InnerException!;
+        Owner?.OnDataValidationError(error);
+    }
 
     /// <summary>
     /// Sets the current value to <see cref="AvaloniaProperty.UnsetValue"/> and notifies the
@@ -167,6 +182,8 @@ internal abstract class ExpressionNode
     {
         if (e is TargetInvocationException tie)
             e = tie.InnerException!;
+        if (e is AggregateException ae && ae.InnerExceptions.Count == 1)
+            e = e.InnerException!;
         SetError(e.Message);
     }
 
@@ -174,22 +191,58 @@ internal abstract class ExpressionNode
     /// Sets the current <see cref="Value"/>, notifying the <see cref="Owner"/> if the value
     /// has changed.
     /// </summary>
-    /// <param name="value">The new value.</param>
-    protected void SetValue(object? value)
+    /// <param name="valueOrNotification">
+    /// The new value. May be a <see cref="BindingNotification"/>.
+    /// </param>
+    protected void SetValue(object? valueOrNotification)
     {
+        if (valueOrNotification is BindingNotification notification)
+        {
+            if (notification.ErrorType == BindingErrorType.Error)
+                SetError(notification.Error!);
+            else if (notification.ErrorType == BindingErrorType.DataValidationError)
+                SetValue(notification.Value, notification.Error);
+            else
+                SetValue(notification.Value, null);
+        }
+        else
+        {
+            SetValue(valueOrNotification, null);
+        }
+    }
+
+    /// <summary>
+    /// Sets the current <see cref="Value"/>, notifying the <see cref="Owner"/> if the value
+    /// has changed.
+    /// </summary>
+    /// <param name="value">
+    /// The new value. May not be a <see cref="BindingNotification"/>.
+    /// </param>
+    /// <param name="dataValidationError">
+    /// The data validation error associated with the new value, if any.
+    /// </param>
+    protected void SetValue(object? value, Exception? dataValidationError = null)
+    {
+        Debug.Assert(value is not BindingNotification);
+
+        if (Owner is null)
+            return;
+
         // We raise a change notification if:
         //
         // - This is the initial value (_value is null)
-        // - The value is a binding notification
+        // - There is a data validation error
+        // - There is no data validation error, but the owner has one
         // - The old value has been GC'd - in this case we don't know if the new value is different
         // - The new value is different to the old value
         if (_value is null ||
-            value is BindingNotification ||
+            dataValidationError is not null ||
+            (dataValidationError is null && Owner.HasDataValidationError) ||
             _value.TryGetTarget(out var oldValue) == false ||
             !Equals(oldValue, value))
         {
             _value = value is null ? BindingExpression.NullReference : new(value);
-            Owner?.OnNodeValueChanged(Index, value);
+            Owner.OnNodeValueChanged(Index, value, dataValidationError);
         }
     }
 
@@ -198,7 +251,10 @@ internal abstract class ExpressionNode
     /// <see cref="Value"/>.
     /// </summary>
     /// <param name="source">The new source.</param>
-    protected abstract void OnSourceChanged(object source);
+    /// <param name="dataValidationError">
+    /// Any data validation error reported by the previous expression node.
+    /// </param>
+    protected abstract void OnSourceChanged(object source, Exception? dataValidationError);
 
     /// <summary>
     /// When implemented in a derived class, unsubscribes from the previous source.

@@ -19,7 +19,7 @@ internal class ReflectionTypeCastNode : ExpressionNode
         builder.Append(')');
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (_targetType.IsInstanceOfType(source))
             SetValue(source);

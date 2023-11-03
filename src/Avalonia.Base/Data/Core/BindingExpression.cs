@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -8,7 +9,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
 using Avalonia.Logging;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
+using Avalonia.Threading;
 
 namespace Avalonia.Data.Core;
 
@@ -19,21 +20,21 @@ namespace Avalonia.Data.Core;
 /// A <see cref="BindingExpression"/> represents a untyped binding which has been
 /// instantiated on an object.
 /// </remarks>
-internal class BindingExpression : IObservable<object?>,
-    IObserver<object?>,
-    IDescription,
-    IDisposable
+internal partial class BindingExpression : IDescription, IDisposable
 {
     internal static readonly WeakReference<object?> NullReference = new(null);
     private readonly WeakReference<object?>? _source;
     private readonly WeakReference<AvaloniaObject?> _target;
     private readonly BindingMode _mode;
     private readonly IReadOnlyList<ExpressionNode> _nodes;
-    private readonly AvaloniaProperty? _targetProperty;
     private readonly TargetTypeConverter? _targetTypeConverter;
-    private readonly bool _enableDataValidation;
-    private IObserver<object?>? _observer;
+    private bool _isRunning;
+    private BindingPriority _priority;
+    private bool _produceValue;
+    private IBindingExpressionSink? _sink;
+    private AvaloniaProperty? _targetProperty;
     private WeakReference<object?>? _value;
+    private BindingError? _error;
     private UncommonFields? _uncommon;
 
     /// <summary>
@@ -89,7 +90,7 @@ internal class BindingExpression : IObservable<object?>,
         _mode = mode;
         _nodes = nodes;
         _targetTypeConverter = targetTypeConverter;
-        _enableDataValidation = enableDataValidation;
+        IsDataValidationEnabled = enableDataValidation;
 
         if (converter is not null ||
             converterCulture is not null ||
@@ -138,15 +139,82 @@ internal class BindingExpression : IObservable<object?>,
         }
     }
 
+    public BindingPriority Priority => _priority;
     public Type? SourceType => (LeafNode as ISettableNode)?.ValueType;
+    public AvaloniaProperty? TargetProperty => _targetProperty;
     public Type TargetType => _targetProperty?.PropertyType ?? typeof(object);
     public IValueConverter? Converter => _uncommon?._converter;
     public CultureInfo ConverterCulture => _uncommon?._converterCulture ?? CultureInfo.CurrentCulture;
     public object? ConverterParameter => _uncommon?._converterParameter;
     public object? FallbackValue => _uncommon is not null ? _uncommon._fallbackValue : AvaloniaProperty.UnsetValue;
+    public bool IsDataValidationEnabled { get; }
+    public bool HasDataValidationError => _error?.ErrorType == BindingValueType.DataValidationError;
     public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
     public ExpressionNode LeafNode => _nodes[_nodes.Count - 1];
     public string? StringFormat => _uncommon?._stringFormat;
+
+    /// <summary>
+    /// Gets the current value of the binding expression.
+    /// </summary>
+    /// <returns>
+    /// The current value or <see cref="AvaloniaProperty.UnsetValue"/> if the binding was unable
+    /// to read a value.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The binding expression has not been started.
+    /// </exception>
+    public object? GetValue()
+    {
+        if (!_isRunning)
+            throw new InvalidOperationException("BindingExpression has not been started.");
+        if (_value is null)
+            return AvaloniaProperty.UnsetValue;
+        else if (_value == NullReference)
+            return null;
+        else if (_value.TryGetTarget(out var value))
+            return value;
+        else
+            return AvaloniaProperty.UnsetValue;
+    }
+
+    /// <summary>
+    /// Gets the current value of the binding expression or the default value for the target property.
+    /// </summary>
+    /// <returns>
+    /// The current value or the target property default.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The binding expression has not been started.
+    /// </exception>
+    public object? GetValueOrDefault()
+    {
+        var result = GetValue();
+        if (result == AvaloniaProperty.UnsetValue)
+            result = GetCachedDefaultValue();
+        return result;
+    }
+
+    /// <summary>
+    /// Gets the data validation state, if supported.
+    /// </summary>
+    /// <param name="state">The binding error state.</param>
+    /// <param name="error">The current binding error, if any.</param>
+    /// <returns>
+    /// True if the expression supports data validation, otherwise false.
+    /// </returns>
+    public void GetDataValidationState(out BindingValueType state, out Exception? error)
+    {
+        if (_error is not null)
+        {
+            state = _error.ErrorType;
+            error = _error.Exception;
+        }
+        else
+        {
+            state = BindingValueType.Value;
+            error = null;
+        }
+    }
 
     /// <summary>
     /// Writes the specified value to the binding source if possible.
@@ -177,13 +245,13 @@ internal class BindingExpression : IObservable<object?>,
             {
                 value = FallbackValue;
             }
-            else if (_enableDataValidation)
+            else if (IsDataValidationEnabled)
             {
                 var valueString = value?.ToString() ?? "(null)";
                 var valueTypeName = value?.GetType().FullName ?? "null";
                 var ex = new InvalidCastException(
                     $"Could not convert '{valueString}' ({valueTypeName}) to {type}.");
-                _observer?.OnNext(new BindingNotification(ex, BindingErrorType.DataValidationError));
+                OnDataValidationError(ex);
                 return false;
             }
             else
@@ -204,6 +272,61 @@ internal class BindingExpression : IObservable<object?>,
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Initializes the binding expression with the specified subscriber and target property but
+    /// does not start it.
+    /// </summary>
+    /// <param name="subscriber">The subscriber.</param>
+    /// <param name="targetProperty">The target property.</param>
+    /// <param name="priority">The priority of the binding.</param>
+    /// <exception cref="AvaloniaInternalException">
+    /// <paramref name="targetProperty"/> is different to that passed in the constructor, if one was
+    /// passed there.
+    /// </exception>
+    public void Initialize(
+        IBindingExpressionSink subscriber,
+        AvaloniaProperty targetProperty,
+        BindingPriority priority)
+    {
+        if (_targetProperty is not null && _targetProperty != targetProperty)
+            throw new AvaloniaInternalException(
+                "StartAsLocalValueBinding was called with a property different to that passed in constructor.");
+
+        _sink = subscriber;
+        _targetProperty = targetProperty;
+        _priority = priority;
+    }
+
+    /// <summary>
+    /// Starts the binding expression with the specified subscriber and target property..
+    /// </summary>
+    /// <param name="subscriber">The subscriber.</param>
+    /// <param name="targetProperty">The target property.</param>
+    /// <param name="priority">The priority of the binding.</param>
+    public void Start(
+        IBindingExpressionSink subscriber,
+        AvaloniaProperty targetProperty,
+        BindingPriority priority)
+    {
+        Initialize(subscriber, targetProperty, priority);
+        Start(produceValue: true);
+    }
+
+    /// <summary>
+    /// Terminates the binding.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_sink is null)
+            return;
+
+        Stop();
+
+        var sink = _sink;
+        _sink = null;
+        sink.OnCompleted(this);
     }
 
     /// <summary>
@@ -258,57 +381,26 @@ internal class BindingExpression : IObservable<object?>,
                 TargetTypeConverter.GetReflectionConverter() :
                 TargetTypeConverter.GetDefaultConverter());
     }
-
-    /// <summary>
-    /// Implements the disposable returned by <see cref="IObservable{T}.Subscribe(IObserver{T})"/>.
-    /// </summary>
-    void IDisposable.Dispose()
-    {
-        if (_observer is null)
-            return;
-        _observer = null;
-        Stop();
-    }
-
-    IDisposable IObservable<object?>.Subscribe(IObserver<object?> observer)
-    {
-        if (_observer is not null)
-            throw new InvalidOperationException(
-                $"An {nameof(BindingExpression)} may only have a single subscriber.");
-
-        _observer = observer ?? throw new ArgumentNullException(nameof(observer));
-        Start();
-        return this;
-    }
-
-    void IObserver<object?>.OnCompleted() { }
-    void IObserver<object?>.OnError(Exception error) { }
-    void IObserver<object?>.OnNext(object? value) => SetValue(value);
-
+    
     /// <summary>
     /// Called by an <see cref="ExpressionNode"/> belonging to this binding when its
     /// <see cref="ExpressionNode.Value"/> changes.
     /// </summary>
     /// <param name="nodeIndex">The <see cref="ExpressionNode.Index"/>.</param>
     /// <param name="value">The <see cref="ExpressionNode.Value"/>.</param>
-    internal void OnNodeValueChanged(int nodeIndex, object? value)
+    /// <param name="dataValidationError">
+    /// The data validation error associated with the current value, if any.
+    /// </param>
+    internal void OnNodeValueChanged(int nodeIndex, object? value, Exception? dataValidationError)
     {
-        if (value is BindingNotification notification && 
-            notification.ErrorType == BindingErrorType.Error &&
-            notification.Error is not null &&
-            ShouldLogError(out var target))
-        {
-            // Log any errors the arrive via a node value change. This is mainly to make sure that
-            // errors which come from property accessors get logged.
-            Log(target, notification.Error.Message, CalculateErrorPoint(nodeIndex));
-        }
+        Debug.Assert(value is not BindingNotification);
 
         if (nodeIndex == _nodes.Count - 1)
         {
             // The leaf node has changed. If the binding mode is not OneWayToSource, publish the
             // value to the target.
             if (_mode != BindingMode.OneWayToSource)
-                PublishValue();
+                UpdateAndPublishValue(value, dataValidationError);
 
             // If the binding mode is OneTime, then stop the binding.
             if (_mode == BindingMode.OneTime)
@@ -319,7 +411,7 @@ internal class BindingExpression : IObservable<object?>,
             // When the binding mode is OneWayToSource, we need to write the value to the source
             // when the object holding the source property changes; this is node before the leaf
             // node. First update the leaf node's source, then write the value to its property.
-            _nodes[nodeIndex + 1].SetSource(value);
+            _nodes[nodeIndex + 1].SetSource(value, dataValidationError);
             WriteTargetValueToSource();
         }
         else if (value is null)
@@ -328,7 +420,7 @@ internal class BindingExpression : IObservable<object?>,
         }
         else
         {
-            _nodes[nodeIndex + 1].SetSource(value);
+            _nodes[nodeIndex + 1].SetSource(value, dataValidationError);
         }
     }
 
@@ -342,15 +434,13 @@ internal class BindingExpression : IObservable<object?>,
     /// <param name="error">The error message.</param>
     internal void OnNodeError(int nodeIndex, string error)
     {
-        _value = null;
-
         // Set the source of all nodes after the one that errored to null. This needs to be done
         // for each node individually because setting the source to null will not result in
         // OnNodeValueChanged or OnNodeError being called.
         for (var i = nodeIndex + 1; i < _nodes.Count; ++i)
-            _nodes[i].SetSource(null);
+            _nodes[i].SetSource(null, null);
 
-        if (_observer is null || _mode == BindingMode.OneWayToSource)
+        if (_mode == BindingMode.OneWayToSource)
             return;
 
         var errorPoint = CalculateErrorPoint(nodeIndex);
@@ -358,11 +448,21 @@ internal class BindingExpression : IObservable<object?>,
         if (ShouldLogError(out var target))
             Log(target, error, errorPoint);
 
-        var e = new BindingChainException(error, Description, errorPoint.ToString());
-        _observer.OnNext(new BindingNotification(
-            e, 
-            BindingErrorType.Error, 
-            ConvertFallback(FallbackValue, nameof(FallbackValue))));
+        // Clear the current value.
+        UpdateValue(AvaloniaProperty.UnsetValue, null, out var hasValueChanged, out _);
+
+        // And store the error.
+        _error = new(
+            new BindingChainException(error, Description, errorPoint.ToString()),
+            BindingValueType.BindingError);
+
+        PublishValue(hasValueChanged, hasErrorChanged: true);
+    }
+
+    internal void OnDataValidationError(Exception error)
+    {
+        _error = new(error, BindingValueType.DataValidationError);
+        PublishValue(hasValueChanged: false, hasErrorChanged: true);
     }
 
     private string CalculateErrorPoint(int nodeIndex)
@@ -376,6 +476,27 @@ internal class BindingExpression : IObservable<object?>,
             result.Append("(source)");
 
         return result.ToString();
+    }
+
+    private object? GetCachedDefaultValue()
+    {
+        Debug.Assert(_targetProperty is not null);
+
+        if (_uncommon?._isDefaultValueInitialized == true)
+            return _uncommon._defaultValue;
+
+        if (_target.TryGetTarget(out var target))
+        {
+            _uncommon ??= new();
+            _uncommon._isDefaultValueInitialized = true;
+
+            if (_targetProperty.IsDirect)
+                _uncommon._defaultValue = ((IDirectPropertyAccessor)_targetProperty).GetUnsetValue(target.GetType());
+            else
+                _uncommon._defaultValue = ((IStyledPropertyAccessor)_targetProperty).GetDefaultValue(target.GetType());
+        }
+
+        return _uncommon?._defaultValue ?? AvaloniaProperty.UnsetValue;
     }
 
     private void Log(AvaloniaObject target, string error, LogEventLevel level = LogEventLevel.Warning)
@@ -414,17 +535,28 @@ internal class BindingExpression : IObservable<object?>,
         return true;
     }
 
-    private void Start()
+    private void Start(bool produceValue)
     {
-        if (_observer is null)
+        Debug.Assert(_sink is not null);
+
+        if (_isRunning)
             return;
+
+        _isRunning = true;
+        _produceValue = produceValue;
 
         if (_source?.TryGetTarget(out var source) == true)
         {
             if (_nodes.Count > 0)
-                _nodes[0].SetSource(source);
+            {
+                _nodes[0].SetSource(source, null);
+            }
             else
-                _observer.OnNext(source);
+            {
+                _value = new(source);
+                _error = null;
+                PublishValue(hasValueChanged: true, hasErrorChanged: false);
+            }
 
             if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
                 _target.TryGetTarget(out var target) &&
@@ -440,6 +572,8 @@ internal class BindingExpression : IObservable<object?>,
         {
             OnNodeError(-1, "Binding Source is null.");
         }
+
+        _produceValue = true;
     }
 
     private void Stop()
@@ -452,42 +586,50 @@ internal class BindingExpression : IObservable<object?>,
         {
             target.PropertyChanged -= OnTargetPropertyChanged;
         }
+
+        _isRunning = false;
+        _value = null;
     }
 
-    private void PublishValue()
+    private void UpdateValue(
+        object? value,
+        Exception? dataValidationError,
+        out bool hasValueChanged,
+        out bool hasErrorChanged)
     {
-        if (_observer is null)
-            return;
-
-        // The value can be a simple value or a BindingNotification. As we move through this method
-        // we'll keep `notification` updated with the value and current error state by calling
-        // `UpdateAndUnwrap`.
-        var valueOrNotification = _nodes.Count > 0 ? _nodes[_nodes.Count - 1].Value : null;
-        var value = BindingNotification.ExtractValue(valueOrNotification);
-        var notification = valueOrNotification as BindingNotification;
         var isTargetNullValue = false;
+        var hadError = _error is not null;
 
         // All values other than DoNothing should be passed to the converter.
         if (value != BindingOperations.DoNothing && Converter is { } converter)
-        {
-            value = UpdateAndUnwrap(
-                Convert(
-                    converter,
-                    ConverterParameter,
-                    value,
-                    _targetProperty?.PropertyType ?? typeof(object)),
-                ref notification);
-        }
+            value = Convert(converter, ConverterParameter, value, TargetType);
 
         // Check this here as the converter may return DoNothing.
         if (value == BindingOperations.DoNothing)
+        {
+            hasValueChanged = hasErrorChanged = false;
             return;
+        }
+
+        // Set the data validation error.
+        _error = dataValidationError is not null ?
+            new(dataValidationError, BindingValueType.DataValidationError) :
+            null;
+
+        // If we have a data validation error and the value is Unset then we keep the
+        // current value.
+        if (dataValidationError is not null && value == AvaloniaProperty.UnsetValue)
+        {
+            hasValueChanged = false;
+            hasErrorChanged = true;
+            return;
+        }
 
         // TargetNullValue only applies when the value is null: UnsetValue indicates that there
         // was a binding error so we don't want to use TargetNullValue in that case.
         if (value is null && TargetNullValue != AvaloniaProperty.UnsetValue)
         {
-            value = UpdateAndUnwrap(ConvertFallback(TargetNullValue, nameof(TargetNullValue)), ref notification);
+            value = ConvertFallback(TargetNullValue, nameof(TargetNullValue));
             isTargetNullValue = true;
         }
 
@@ -502,21 +644,63 @@ internal class BindingExpression : IObservable<object?>,
                 // and the value isn't the TargetNullValue.
                 value = string.Format(ConverterCulture, stringFormat, value);
             }
-            else if (_targetTypeConverter is not null && value is not null)
+            else if (_targetTypeConverter is not null)
             {
                 // Otherwise, if we have a target type converter, convert the value to the target type.
-                value = UpdateAndUnwrap(ConvertFrom(_targetTypeConverter, value), ref notification);
+                value = ConvertFrom(_targetTypeConverter, value);
             }
         }
 
         // FallbackValue applies if the result from the binding, converter or target type converter
         // is UnsetValue.
         if (value == AvaloniaProperty.UnsetValue && FallbackValue != AvaloniaProperty.UnsetValue)
-            value = UpdateAndUnwrap(ConvertFallback(FallbackValue, nameof(FallbackValue)), ref notification);
+            value = ConvertFallback(FallbackValue, nameof(FallbackValue));
 
-        // Store the value and publish the notification/value to the observer.
-        _value = value is null ? NullReference : new(value);
-        _observer.OnNext(notification ?? value);
+        // Update the stored value.
+        var oldValue = _value;
+
+        if (value is null)
+            _value = NullReference;
+        else
+            _value = new(value);
+
+        hasValueChanged = !Equals(oldValue, _value);
+        hasErrorChanged = _error is not null || (_error is null && hadError);
+    }
+
+    private void PublishValue(bool hasValueChanged, bool hasErrorChanged)
+    {
+        if (!hasValueChanged && !hasErrorChanged)
+            return;
+
+        if (_sink is not null && _produceValue)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                _sink.OnChanged(this, hasValueChanged, hasErrorChanged);
+            }
+            else
+            {
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
+                var sink = _sink;
+                var v = hasValueChanged;
+                var e = hasErrorChanged;
+                Dispatcher.UIThread.Post(() => sink.OnChanged(this, v, e));
+            }
+        }
+    }
+
+    private void UpdateAndPublishValue(object? value, Exception? dataValidationError)
+    {
+        UpdateValue(
+            value,
+            dataValidationError,
+            out var hasValueChanged,
+            out var hasErrorChanged);
+
+        if (hasValueChanged || hasErrorChanged)
+            PublishValue(hasValueChanged, hasErrorChanged);
     }
 
     private void WriteTargetValueToSource()
@@ -536,7 +720,7 @@ internal class BindingExpression : IObservable<object?>,
     private void OnSourceChanged(object? source)
     {
         if (_nodes.Count > 0)
-            _nodes[0].SetSource(source);
+            _nodes[0].SetSource(source, null);
     }
 
     private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -566,8 +750,8 @@ internal class BindingExpression : IObservable<object?>,
             if (ShouldLogError(out var target))
                 Log(target, $"{message}: {e.Message}", LogEventLevel.Warning);
 
-            var ex = new InvalidCastException(message + '.', e);
-            return new BindingNotification(ex, BindingErrorType.Error);
+            _error = new(new InvalidCastException(message + '.', e), BindingValueType.BindingError);
+            return AvaloniaProperty.UnsetValue;
         }
     }
 
@@ -585,7 +769,7 @@ internal class BindingExpression : IObservable<object?>,
         return AvaloniaProperty.UnsetValue;
     }
 
-    private object? ConvertFrom(TargetTypeConverter? converter, object value)
+    private object? ConvertFrom(TargetTypeConverter? converter, object? value)
     {
         if (converter is null || _targetProperty is null)
             return value;
@@ -602,7 +786,8 @@ internal class BindingExpression : IObservable<object?>,
         if (ShouldLogError(out var target))
             Log(target, message, LogEventLevel.Warning);
 
-        return new BindingNotification(new InvalidCastException(message), BindingErrorType.Error);
+        _error = new(new InvalidCastException(message), BindingValueType.BindingError);
+        return AvaloniaProperty.UnsetValue;
     }
 
     private static bool IdentityEquals(object? a, object? b, Type type)
@@ -613,23 +798,16 @@ internal class BindingExpression : IObservable<object?>,
             return ReferenceEquals(a, b);
     }
 
-    private static object? UpdateAndUnwrap(object? value, ref BindingNotification? notification)
+    private class BindingError
     {
-        if (value is BindingNotification n)
+        public BindingError(Exception exception, BindingValueType errorType)
         {
-            value = n.Value;
-
-            if (n.Error is not null)
-            {
-                if (notification is null)
-                    notification = n;
-                else
-                    notification.AddError(n.Error, n.ErrorType);
-            }
+            Exception = exception;
+            ErrorType = errorType;
         }
 
-        notification?.SetValue(value);
-        return value;
+        public Exception Exception { get; }
+        public BindingValueType ErrorType { get; }
     }
 
     private class UncommonFields
@@ -640,5 +818,7 @@ internal class BindingExpression : IObservable<object?>,
         public object? _fallbackValue;
         public string? _stringFormat;
         public object? _targetNullValue;
+        public object? _defaultValue;
+        public bool _isDefaultValueInitialized;
     }
 }

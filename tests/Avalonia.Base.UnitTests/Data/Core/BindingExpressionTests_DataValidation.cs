@@ -92,9 +92,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.Equal(new[]
             {
                 new BindingNotification(0),
-
-                // Value is notified twice as ErrorsChanged is always called by IndeiTest.
-                new BindingNotification(5),
                 new BindingNotification(5),
 
                 // Value is first signalled without an error as validation hasn't been updated.
@@ -104,7 +101,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 // Exception is thrown by trying to set value to "foo".
                 new BindingNotification(
                     new InvalidCastException("Could not convert 'foo' (System.String) to System.Int32."),
-                    BindingErrorType.DataValidationError),
+                    BindingErrorType.DataValidationError,
+                    -5),
 
                 // Value is set then validation is updated.
                 new BindingNotification(new DataValidationException("Must be positive"), BindingErrorType.DataValidationError, 5),

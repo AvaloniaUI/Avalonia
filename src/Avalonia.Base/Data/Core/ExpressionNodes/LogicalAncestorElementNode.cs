@@ -56,7 +56,7 @@ internal class LogicalAncestorElementNode : SourceNode
         return target is ILogical logical && logical.IsAttachedToLogicalTree;
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (source is ILogical logical)
         {

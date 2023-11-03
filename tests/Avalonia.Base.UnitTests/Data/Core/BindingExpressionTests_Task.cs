@@ -87,7 +87,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     new[]
                     {
                         new BindingNotification(
-                            new AggregateException(new NotSupportedException()),
+                            new BindingChainException("Specified method is not supported.", "Foo^", "^"),
                             BindingErrorType.Error)
                     },
                     result);
@@ -111,7 +111,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     new[]
                     {
                         new BindingNotification(
-                            new AggregateException(new NotSupportedException()),
+                            new BindingChainException("Specified method is not supported.", "Foo^", "^"),
                             BindingErrorType.Error)
                     },
                     result);

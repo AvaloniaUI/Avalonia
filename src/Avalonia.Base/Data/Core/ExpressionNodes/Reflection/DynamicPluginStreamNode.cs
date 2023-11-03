@@ -16,7 +16,7 @@ internal class DynamicPluginStreamNode : ExpressionNode
         builder.Append('^');
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         var reference = new WeakReference<object?>(source);
 

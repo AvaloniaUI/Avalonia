@@ -52,7 +52,7 @@ internal class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
         return true;
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         _indexes = null;
 
@@ -67,7 +67,7 @@ internal class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
             }
             
             _indexes = ConvertIndexes(parameters, Arguments);
-            base.OnSourceChanged(source);
+            base.OnSourceChanged(source, dataValidationError);
         }
         else
         {

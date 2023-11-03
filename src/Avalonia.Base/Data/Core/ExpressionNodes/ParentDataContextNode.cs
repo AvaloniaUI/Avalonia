@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Data.Core.ExpressionNodes;
+﻿using System;
+
+namespace Avalonia.Data.Core.ExpressionNodes;
 
 /// <summary>
 /// A node in an <see cref="BindingExpression"/> which selects the value of the visual
@@ -9,7 +11,7 @@ internal class ParentDataContextNode : DataContextNodeBase
     private static readonly AvaloniaObject s_unset = new();
     private AvaloniaObject? _parent = s_unset;
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (source is AvaloniaObject newElement)
             newElement.PropertyChanged += OnPropertyChanged;

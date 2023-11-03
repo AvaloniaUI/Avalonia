@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 
 namespace Avalonia
@@ -157,6 +158,12 @@ namespace Avalonia
             return null;
         }
 
+        internal override void RouteSetDirectValueUnchecked(AvaloniaObject o, object? value)
+        {
+            var bindingValue = BindingValue<TValue>.FromUntypedStrict(value);
+            o.SetDirectValueUnchecked<TValue>(this, bindingValue);
+        }
+
         internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)
         {
             RouteSetValue(o, value, BindingPriority.LocalValue);
@@ -174,6 +181,11 @@ namespace Avalonia
             BindingPriority priority)
         {
             return o.Bind(this, source);
+        }
+
+        internal override IDisposable RouteBind(AvaloniaObject o, BindingExpression source, BindingPriority priority)
+        {
+            return o.GetValueStore().AddBinding(this, source);
         }
     }
 }

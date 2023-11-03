@@ -45,7 +45,7 @@ internal class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISe
         return false;
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (_plugin.Start(new(source), PropertyName) is { } accessor)
         {

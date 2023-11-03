@@ -38,7 +38,7 @@ internal class MethodCommandNode : ExpressionNode
         builder.Append("()");
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (source is INotifyPropertyChanged newInpc)
             newInpc.PropertyChanged += OnPropertyChanged;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 using Xunit;
 
@@ -170,6 +171,11 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaObject o,
                 IObservable<object> source,
                 BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override IDisposable RouteBind(AvaloniaObject o, BindingExpression source, BindingPriority priority)
             {
                 throw new NotImplementedException();
             }

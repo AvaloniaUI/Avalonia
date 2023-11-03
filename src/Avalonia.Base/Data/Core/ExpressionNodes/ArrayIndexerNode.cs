@@ -30,7 +30,7 @@ internal class ArrayIndexerNode : ExpressionNode
         builder.Append(']');
     }
 
-    protected override void OnSourceChanged(object source)
+    protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (source is Array array)
             SetValue(array.GetValue(_indexes));

@@ -105,7 +105,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { StringValue = "foo" };
             var target = BindingExpression.Create(
-                data, 
+                data,
                 o => o.StringValue,
                 fallbackValue: 42,
                 targetProperty: TargetTypeInt);
@@ -126,7 +126,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { StringValue = "foo" };
             var target = BindingExpression.Create(
-                data, 
+                data,
                 o => o.StringValue,
                 enableDataValidation: true,
                 fallbackValue: 42,
@@ -253,7 +253,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     new BindingNotification($"{3.4}"),
                     new BindingNotification(
                         new InvalidCastException("Could not convert 'bar' (System.String) to System.Double."),
-                        BindingErrorType.DataValidationError)
+                        BindingErrorType.DataValidationError, $"{3.4}")
                 },
                 result);
 
