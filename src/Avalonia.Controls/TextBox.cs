@@ -316,13 +316,11 @@ namespace Avalonia.Controls
         private bool _canRedo;
 
         private int _wordSelectionStart = -1;
-        private bool _touchDragStarted;
-        private bool _inTouchDrag;
-        private Point _touchDragStartPoint;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private static bool _isHolding;
         private int _currentClickCount;
+        private bool _isDoubleTapped;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -803,7 +801,17 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
+            }
+
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+
+            if(_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            }
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -811,6 +819,11 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
+        }
+
+        private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            _presenter?.TextSelectionHandleCanvas?.MoveHandlesToSelection();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -826,16 +839,6 @@ namespace Avalonia.Controls
 
                 _presenter.PropertyChanged += PresenterPropertyChanged;
             }
-
-            AddHandler(Gestures.HoldingEvent, OnHolding);
-        }
-
-        private void OnHolding(object? sender, HoldingRoutedEventArgs e)
-        {
-            if (e.Handled || e.HoldingState != HoldingState.Started)
-                return;
-
-            _isHolding = true;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -850,8 +853,6 @@ namespace Avalonia.Controls
             }
 
             _imClient.SetPresenter(null, null);
-            
-            RemoveHandler(Gestures.HoldingEvent, OnHolding);
         }
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -1470,23 +1471,11 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
+            if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
-                var isTouch = e.Pointer.Type == PointerType.Touch;
-
                 _currentClickCount = e.ClickCount;
                 var point = e.GetPosition(_presenter);
-
-                if(isTouch && e.ClickCount == 1)
-                {
-                    _wordSelectionStart = -1;
-                    _touchDragStarted = true;
-                    _touchDragStartPoint = point;
-                    e.Pointer.Capture(_presenter);
-                    e.Handled = true;
-                    return;
-                }
 
                 _presenter.MoveCaretToPoint(point);
 
@@ -1548,6 +1537,7 @@ namespace Avalonia.Controls
                 }
             }
 
+            _isDoubleTapped = e.ClickCount == 2;
             e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
@@ -1568,32 +1558,35 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
-                if(_touchDragStarted)
-                {
-                    _touchDragStarted = false;
-                    _inTouchDrag = true;
-
-                    _presenter.MoveCaretToPoint(_touchDragStartPoint);
-                    _touchDragStartPoint = default;
-                    SetCurrentValue(SelectionStartProperty, _presenter.CaretIndex);
-                }
+                var previousIndex = _presenter.CaretIndex;
 
                 _presenter.MoveCaretToPoint(point);
 
                 var caretIndex = _presenter.CaretIndex;
 
-                var selectionStart = SelectionStart;
-                var selectionEnd = SelectionEnd;
+                if (Math.Abs(caretIndex - previousIndex) == 1)
+                    e.PreventGestureRecognition();
 
-                if (_wordSelectionStart >= 0)
+                if (e.Pointer.Type == PointerType.Mouse)
                 {
-                    UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
 
-                    SetCurrentValue(SelectionStartProperty, selectionStart);
-                    SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    if (_wordSelectionStart >= 0)
+                    {
+                        UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                        SetCurrentValue(SelectionStartProperty, selectionStart);
+                        SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                    }
                 }
                 else
                 {
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
             }
@@ -1632,15 +1625,49 @@ namespace Avalonia.Controls
                 return;
             }
 
-            _touchDragStarted = false;
-            _touchDragStartPoint = default;
-
-            var isInTouchDrag = _inTouchDrag;
-            _inTouchDrag = false;
-
             if (e.Pointer.Captured != _presenter)
             {
                 return;
+            }
+
+            if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
+            {
+                var text = Text;
+                var clickInfo = e.GetCurrentPoint(this);
+                if (text != null && !(clickInfo.Pointer?.Captured is Border))
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
+
+                    if (clickToSelect)
+                    {
+                        if (_wordSelectionStart >= 0)
+                        {
+                            UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                            SetCurrentValue(SelectionStartProperty, selectionStart);
+                            SetCurrentValue(SelectionEndProperty, selectionEnd);
+                        }
+                        else
+                        {
+                            SetCurrentValue(SelectionEndProperty, caretIndex);
+                        }
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionStartProperty, caretIndex);
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                        _wordSelectionStart = -1;
+                    }
+
+                    _presenter.TextSelectionHandleCanvas?.MoveHandlesToSelection();
+                }
             }
 
             // Don't update selection if the pointer was held
@@ -1671,7 +1698,7 @@ namespace Avalonia.Controls
             }
             else if (e.Pointer.Type == PointerType.Touch)
             {
-                if (_currentClickCount == 1 && !isInTouchDrag)
+                if (_currentClickCount == 1)
                 {
                     var point = e.GetPosition(_presenter);
 
@@ -1684,7 +1711,7 @@ namespace Avalonia.Controls
 
                 if(SelectionStart != SelectionEnd)
                 {
-                    RaiseEvent(new ContextRequestedEventArgs(e));
+                    _presenter.TextSelectionHandleCanvas?.ShowContextMenu();
                 }
             }
 
