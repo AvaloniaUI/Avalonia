@@ -32,4 +32,12 @@
       </ControlTemplate>
     </Setter>
   </ControlTheme>
+  <ControlTheme x:Key="HorizontalMenuFlyoutPresenter" TargetType="MenuFlyoutPresenter"  BasedOn="{StaticResource {x:Type MenuFlyoutPresenter}}">
+    <Setter Property="MinWidth" Value="{DynamicResource HorizontalMenuFlyoutThemeMinWidth}" />
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <StackPanel Orientation="Horizontal"/>
+      </ItemsPanelTemplate>
+    </Setter>
+  </ControlTheme>
 </ResourceDictionary>
