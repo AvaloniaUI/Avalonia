@@ -61,7 +61,7 @@ namespace Avalonia.Media
 #pragma warning restore CA1815 // Override equals and operator equals on value types
         {
             private int _index;
-            private BoxShadows _shadows;
+            private readonly BoxShadows _shadows;
 
             public BoxShadowsEnumerator(BoxShadows shadows)
             {

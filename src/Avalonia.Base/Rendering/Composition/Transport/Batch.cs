@@ -9,10 +9,10 @@ namespace Avalonia.Rendering.Composition.Transport
     /// <summary>
     /// Represents a group of serialized changes from the UI thread to be atomically applied at the render thread
     /// </summary>
-    public class CompositionBatch
+    public sealed class CompositionBatch
     {
         private static long _nextSequenceId = 1;
-        private static ConcurrentBag<BatchStreamData> _pool = new();
+        private static readonly ConcurrentBag<BatchStreamData> _pool = new();
         private readonly TaskCompletionSource<int> _acceptedTcs = new();
         private readonly TaskCompletionSource<int> _renderedTcs = new();
         

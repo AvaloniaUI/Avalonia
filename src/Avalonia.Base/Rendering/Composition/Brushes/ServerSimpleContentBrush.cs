@@ -5,7 +5,7 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server;
 
-internal class ServerCompositionSimpleContentBrush : ServerCompositionSimpleTileBrush, ITileBrush, ISceneBrush
+internal sealed class ServerCompositionSimpleContentBrush : ServerCompositionSimpleTileBrush, ITileBrush, ISceneBrush
 {
     private CompositionRenderDataSceneBrushContent? _content;
 

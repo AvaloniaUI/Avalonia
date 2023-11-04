@@ -155,14 +155,15 @@ partial class AvaloniaView
             }
         }
 
-        private void KeyPress(Key ev)
+        private void KeyPress(Key key, PhysicalKey physicalKey, string? keySymbol)
         {
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "Triggering key press {key}", ev);
-            _view._topLevelImpl.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, 0, _view.InputRoot,
-                RawKeyEventType.KeyDown, ev, RawInputModifiers.None));
+            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "Triggering key press {key}", key);
 
             _view._topLevelImpl.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, 0, _view.InputRoot,
-                RawKeyEventType.KeyUp, ev, RawInputModifiers.None));
+                RawKeyEventType.KeyDown, key, RawInputModifiers.None, physicalKey, keySymbol));
+
+            _view._topLevelImpl.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, 0, _view.InputRoot,
+                RawKeyEventType.KeyUp, key, RawInputModifiers.None, physicalKey, keySymbol));
         }
 
         private void TextInput(string text)
@@ -177,7 +178,7 @@ partial class AvaloniaView
 
             if (text == "\n")
             {
-                KeyPress(Key.Enter);
+                KeyPress(Key.Enter, PhysicalKey.Enter, "\r");
 
                 switch (ReturnKeyType)
                 {
@@ -194,7 +195,7 @@ partial class AvaloniaView
             TextInput(text);
         }
 
-        void IUIKeyInput.DeleteBackward() => KeyPress(Key.Back);
+        void IUIKeyInput.DeleteBackward() => KeyPress(Key.Back, PhysicalKey.Backspace, "\b");
 
         bool IUIKeyInput.HasText => true;
 

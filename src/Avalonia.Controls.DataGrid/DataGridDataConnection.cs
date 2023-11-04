@@ -193,18 +193,17 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>Try get number of DataSource itmes.</summary>
+        /// <summary>Try get number of DataSource items.</summary>
         /// <param name="allowSlow">When "allowSlow" is false, method will not use Linq.Count() method and will return 0 or 1 instead.</param>
         /// <param name="getAny">If "getAny" is true, method can use Linq.Any() method to speedup.</param>
-        /// <param name="count">number of DataSource itmes.</param>
-        /// <returns>true if able to retrieve number of DataSource itmes; otherwise, false.</returns>
+        /// <param name="count">number of DataSource items.</param>
+        /// <returns>true if able to retrieve number of DataSource items; otherwise, false.</returns>
         internal bool TryGetCount(bool allowSlow, bool getAny, out int count)
         {
             bool result;
             (result, count) = DataSource switch
             {
                 ICollection collection => (true, collection.Count),
-                DataGridCollectionView cv => (true, cv.Count),
                 IEnumerable enumerable when allowSlow && !getAny => (true, enumerable.Cast<object>().Count()),
                 IEnumerable enumerable when getAny => (true, enumerable.Cast<object>().Any() ? 1 : 0),
                 _ => (false, 0)

@@ -24,6 +24,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 Path = Path,
                 Converter = Converter,
+                ConverterCulture = ConverterCulture,
                 ConverterParameter = ConverterParameter,
                 TargetNullValue = TargetNullValue,
                 FallbackValue = FallbackValue,

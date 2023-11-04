@@ -42,6 +42,22 @@ public:
         }
     }
     
+    virtual HRESULT SetStrings(char* type, IAvnStringArray*ppv) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            NSArray<NSString*>* data = GetNSArrayOfStringsAndRelease(ppv);
+            NSString* typeString = [NSString stringWithUTF8String:(const char*)type];
+            if(_item == nil)
+                [_pb setPropertyList: data forType: typeString];
+            else
+                [_item setPropertyList: data forType:typeString];
+            return S_OK;
+        }
+    }
+    
     virtual HRESULT GetStrings(char* type, IAvnStringArray**ppv) override
     {
         START_COM_CALL;

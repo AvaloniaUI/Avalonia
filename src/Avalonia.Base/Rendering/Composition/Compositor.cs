@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
 using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Threading;
@@ -23,22 +21,24 @@ namespace Avalonia.Rendering.Composition
     {
         internal IRenderLoop Loop { get; }
         internal bool UseUiThreadForSynchronousCommits { get; }
-        private ServerCompositor _server;
+        private readonly ServerCompositor _server;
         private CompositionBatch? _nextCommit;
-        private BatchStreamObjectPool<object?> _batchObjectPool;
-        private BatchStreamMemoryPool _batchMemoryPool;
-        private Queue<ICompositorSerializable> _objectSerializationQueue = new();
-        private HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
+        private readonly BatchStreamObjectPool<object?> _batchObjectPool;
+        private readonly BatchStreamMemoryPool _batchMemoryPool;
+        private readonly Queue<ICompositorSerializable> _objectSerializationQueue = new();
+        private readonly HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
         private Queue<Action> _invokeBeforeCommitWrite = new(), _invokeBeforeCommitRead = new();
-        private HashSet<IDisposable> _disposeOnNextBatch = new();
+        private readonly HashSet<IDisposable> _disposeOnNextBatch = new();
         internal ServerCompositor Server => _server;
         private CompositionBatch? _pendingBatch;
         private readonly object _pendingBatchLock = new();
-        private List<Action> _pendingServerCompositorJobs = new();
+        private readonly List<Action> _pendingServerCompositorJobs = new();
         private DiagnosticTextRenderer? _diagnosticTextRenderer;
-        private Action _triggerCommitRequested;
+        private readonly Action _triggerCommitRequested;
 
         internal IEasing DefaultEasing { get; }
+
+        internal Dispatcher Dispatcher { get; }
 
         private DiagnosticTextRenderer? DiagnosticTextRenderer
         {
@@ -69,22 +69,24 @@ namespace Avalonia.Rendering.Composition
         }
 
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
-            : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false)
+            : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false, Dispatcher.UIThread)
         {
         }
 
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
-            ICompositorScheduler scheduler, bool reclaimBuffersImmediately)
+            ICompositorScheduler scheduler, bool reclaimBuffersImmediately,
+            Dispatcher dispatcher)
         {
             Loop = loop;
             UseUiThreadForSynchronousCommits = useUiThreadForSynchronousCommits;
+            Dispatcher = dispatcher;
             _batchMemoryPool = new(reclaimBuffersImmediately);
             _batchObjectPool = new(reclaimBuffersImmediately);
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
-            DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
+            DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
         }
 
         /// <summary>
@@ -99,14 +101,14 @@ namespace Avalonia.Rendering.Composition
         /// <returns>A CompositionBatch object that provides batch lifetime information</returns>
         public CompositionBatch RequestCompositionBatchCommitAsync()
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             if (_nextCommit == null)
             {
                 _nextCommit = new ();
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
-                        _ => Dispatcher.UIThread.Post(_triggerCommitRequested, DispatcherPriority.Send));
+                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send));
                 else
                     _triggerCommitRequested();
             }
@@ -130,7 +132,7 @@ namespace Avalonia.Rendering.Composition
         
         CompositionBatch CommitCore()
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             using var noPump = NonPumpingLockHelper.Use();
             
             var commit = _nextCommit ??= new();
@@ -197,7 +199,7 @@ namespace Avalonia.Rendering.Composition
 
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             if(_objectSerializationHashSet.Add(compositionObject))
                 _objectSerializationQueue.Enqueue(compositionObject);
             RequestCommitAsync();
@@ -217,14 +219,14 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         public void RequestCompositionUpdate(Action action)
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             _invokeBeforeCommitWrite.Enqueue(action);
             RequestCommitAsync();
         }
 
         internal void PostServerJob(Action job)
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             _pendingServerCompositorJobs.Add(job);
             RequestCommitAsync();
         }

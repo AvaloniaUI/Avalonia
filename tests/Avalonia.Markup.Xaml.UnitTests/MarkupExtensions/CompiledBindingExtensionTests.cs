@@ -1189,7 +1189,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.DataContext = new TestDataContext() { StringProperty = "Foo" };
 
-                Assert.Equal("Foo+Bar", textBlock.Text);
+                Assert.Equal($"Foo+Bar+{CultureInfo.CurrentCulture}", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void SupportConverterWithCulture()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext' x:CompileBindings='True'>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Converter={x:Static local:AppendConverter.Instance}, ConverterCulture=ar-SA}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.DataContext = new TestDataContext() { StringProperty = "Foo" };
+
+                Assert.Equal($"Foo++ar-SA", textBlock.Text);
             }
         }
 
@@ -1876,7 +1898,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public static IValueConverter Instance { get; } = new AppendConverter();
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => string.Format("{0}+{1}", value, parameter);
+            => string.Format("{0}+{1}+{2}", value, parameter, culture);
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
@@ -1927,10 +1949,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             public string this[string key]
             {
-                get
-                {
-                    return _storage[key];
-                }
+                get => _storage[key];
                 set
                 {
                     _storage[key] = value;
@@ -1969,10 +1988,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         object _parameter;
         public object Parameter
         {
-            get
-            {
-                return _parameter;
-            }
+            get => _parameter;
             set
             {
                 if (_parameter == value)
@@ -2028,8 +2044,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         private IEnumerable _items;
         public IEnumerable Items
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => _items;
+            set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         public AvaloniaList<DataGridLikeColumn> Columns { get; } = new();

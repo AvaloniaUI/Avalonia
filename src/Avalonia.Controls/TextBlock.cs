@@ -53,7 +53,7 @@ namespace Avalonia.Controls
             TextElement.FontWeightProperty.AddOwner<TextBlock>();
 
         /// <summary>
-        /// Defines the <see cref="FontWeight"/> property.
+        /// Defines the <see cref="FontStretch"/> property.
         /// </summary>
         public static readonly StyledProperty<FontStretch> FontStretchProperty =
             TextElement.FontStretchProperty.AddOwner<TextBlock>();
@@ -81,6 +81,16 @@ namespace Avalonia.Controls
                 nameof(LineHeight),
                 double.NaN,
                 validate: IsValidLineHeight,
+                inherits: true);
+
+        /// <summary>
+        /// Defines the <see cref="LineSpacing"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<double> LineSpacingProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
+                nameof(LineSpacing),
+                0,
+                validate: IsValidLineSpacing,
                 inherits: true);
 
         /// <summary>
@@ -178,8 +188,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Thickness Padding
         {
-            get { return GetValue(PaddingProperty); }
-            set { SetValue(PaddingProperty, value); }
+            get => GetValue(PaddingProperty);
+            set => SetValue(PaddingProperty, value);
         }
 
         /// <summary>
@@ -187,8 +197,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? Background
         {
-            get { return GetValue(BackgroundProperty); }
-            set { SetValue(BackgroundProperty, value); }
+            get => GetValue(BackgroundProperty);
+            set => SetValue(BackgroundProperty, value);
         }
 
         /// <summary>
@@ -207,8 +217,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FontFamily FontFamily
         {
-            get { return GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
+            get => GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
         }
 
         /// <summary>
@@ -216,8 +226,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double FontSize
         {
-            get { return GetValue(FontSizeProperty); }
-            set { SetValue(FontSizeProperty, value); }
+            get => GetValue(FontSizeProperty);
+            set => SetValue(FontSizeProperty, value);
         }
 
         /// <summary>
@@ -225,8 +235,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return GetValue(FontStyleProperty); }
-            set { SetValue(FontStyleProperty, value); }
+            get => GetValue(FontStyleProperty);
+            set => SetValue(FontStyleProperty, value);
         }
 
         /// <summary>
@@ -234,8 +244,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FontWeight FontWeight
         {
-            get { return GetValue(FontWeightProperty); }
-            set { SetValue(FontWeightProperty, value); }
+            get => GetValue(FontWeightProperty);
+            set => SetValue(FontWeightProperty, value);
         }
 
         /// <summary>
@@ -243,8 +253,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FontStretch FontStretch
         {
-            get { return GetValue(FontStretchProperty); }
-            set { SetValue(FontStretchProperty, value); }
+            get => GetValue(FontStretchProperty);
+            set => SetValue(FontStretchProperty, value);
         }
 
         /// <summary>
@@ -252,8 +262,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? Foreground
         {
-            get { return GetValue(ForegroundProperty); }
-            set { SetValue(ForegroundProperty, value); }
+            get => GetValue(ForegroundProperty);
+            set => SetValue(ForegroundProperty, value);
         }
 
         /// <summary>
@@ -263,6 +273,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(LineHeightProperty);
             set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the extra distance of each line to the next line.
+        /// </summary>
+        public double LineSpacing
+        {
+            get => GetValue(LineSpacingProperty);
+            set => SetValue(LineSpacingProperty, value);
         }
 
         /// <summary>
@@ -288,8 +307,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextWrapping TextWrapping
         {
-            get { return GetValue(TextWrappingProperty); }
-            set { SetValue(TextWrappingProperty, value); }
+            get => GetValue(TextWrappingProperty);
+            set => SetValue(TextWrappingProperty, value);
         }
 
         /// <summary>
@@ -297,8 +316,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextTrimming TextTrimming
         {
-            get { return GetValue(TextTrimmingProperty); }
-            set { SetValue(TextTrimmingProperty, value); }
+            get => GetValue(TextTrimmingProperty);
+            set => SetValue(TextTrimmingProperty, value);
         }
 
         /// <summary>
@@ -306,8 +325,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextAlignment TextAlignment
         {
-            get { return GetValue(TextAlignmentProperty); }
-            set { SetValue(TextAlignmentProperty, value); }
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
         }
 
         /// <summary>
@@ -338,8 +357,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double BaselineOffset
         {
-            get { return (double)GetValue(BaselineOffsetProperty); }
-            set { SetValue(BaselineOffsetProperty, value); }
+            get => (double)GetValue(BaselineOffsetProperty);
+            set => SetValue(BaselineOffsetProperty, value);
         }
 
         /// <summary>
@@ -620,7 +639,10 @@ namespace Avalonia.Controls
                 Foreground);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing);
+                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+            {
+                LineSpacing = LineSpacing
+            };
 
             ITextSource textSource;
 
@@ -799,6 +821,8 @@ namespace Avalonia.Controls
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
 
         private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;
+
+        private static bool IsValidLineSpacing(double lineSpacing) => !double.IsNaN(lineSpacing) && !double.IsInfinity(lineSpacing);
 
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
