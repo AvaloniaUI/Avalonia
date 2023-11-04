@@ -10,7 +10,6 @@ using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Media;
 using Avalonia.Controls.Primitives;
-using Avalonia.Styling;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -34,38 +33,6 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _showImplementedInterfaces;
         private IBrush? _FocusHighlighter;
         private IDisposable? _currentFocusHighlightAdorner = default;
-        private FocusTemplate? _focusTemplate = default;
-
-        private class FocusTemplate : ITemplate<Control?>
-        {
-            public IBrush? FocusBrush { get;  set; }
-            private Border? _border;
-
-            public Control? Build()
-            {
-                EnsureBuild();
-                return _border;
-            }
-
-            object? ITemplate.Build()
-            {
-                EnsureBuild();
-                return _border;
-            }
-
-            void EnsureBuild()
-            {
-                if (_border is null)
-                {
-                    _border = new Border()
-                    {
-                        BorderThickness = new Thickness(3),
-                    };
-                }
-                _border!.BorderBrush = FocusBrush;
-            }
-        }
-
 
         public MainViewModel(AvaloniaObject root)
         {
@@ -311,10 +278,8 @@ namespace Avalonia.Diagnostics.ViewModels
             var element = KeyboardDevice.Instance?.FocusedElement;
             FocusedControl = element?.GetType().Name;
             _currentFocusHighlightAdorner?.Dispose();
-            
-            //disposables.Dispose
             if (FocusHighlighter is IBrush brush
-                && element is Control input
+                && element is InputElement input
                 && TopLevel.GetTopLevel(input) is { } topLevel
                 && (topLevel is not Views.MainWindow))
             {
@@ -322,17 +287,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     return;
                 }
-                if (AdornerLayer.GetAdornerLayer(input) is { } adornerLayer)
-                {
-                    _focusTemplate ??= new FocusTemplate();
-                    _focusTemplate.FocusBrush = brush;
-                    CompositeDisposable disposables = new()
-                    {
-                        topLevel.SetValue(InputElement.FocusHighlighterProperty, true, Data.BindingPriority.Animation)!,
-                        adornerLayer.SetValue(AdornerLayer.DefaultFocusAdornerProperty, _focusTemplate!, Data.BindingPriority.Animation)!,
-                    };
-                    _currentFocusHighlightAdorner = disposables;
-                }
+                _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(input, brush);
             }
         }
 

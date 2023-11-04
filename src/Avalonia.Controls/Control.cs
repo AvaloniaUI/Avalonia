@@ -5,6 +5,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Rendering;
@@ -400,12 +401,10 @@ namespace Avalonia.Controls
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            var focusHighlighter = GetValue<bool>(FocusHighlighterProperty);
+
             if (IsFocused &&
                 (e.NavigationMethod == NavigationMethod.Tab ||
-                 e.NavigationMethod == NavigationMethod.Directional ||
-                 focusHighlighter
-                 ))
+                 e.NavigationMethod == NavigationMethod.Directional))
             {
                 var adornerLayer = AdornerLayer.GetAdornerLayer(this);
 
@@ -413,9 +412,10 @@ namespace Avalonia.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = !focusHighlighter && IsSet(FocusAdornerProperty)
+                        var template = IsSet(FocusAdornerProperty)
                             ? GetValue(FocusAdornerProperty)
                             : adornerLayer.DefaultFocusAdorner;
+
                         if (template != null)
                         {
                             _focusAdorner = template.Build();
@@ -424,7 +424,7 @@ namespace Avalonia.Controls
 
                     if (_focusAdorner != null && GetTemplateFocusTarget() is Visual target)
                     {
-                        AdornerLayer.SetAdornedElement(_focusAdorner, target);
+                        AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
                         adornerLayer.Children.Add(_focusAdorner);
                     }
                 }
