@@ -9,12 +9,34 @@
   <UserControl.DataContext>
     <viewModels:DataValidationViewModel />
   </UserControl.DataContext>
-  <StackPanel>
-    <TextBox Text="{Binding DataAnnotationsSample}"
+  <StackPanel TextBlock.TextWrapping="Wrap">
+    <Label Target="Email1" Content="Email validation" />
+    <TextBox x:Name="Email1"
+             MaxWidth="400"
+             HorizontalAlignment="Left"
+             Text="{Binding DataAnnotationsSample}" />
+
+    <Label Target="Email2" Content="Email validation with custom error converter"
+           Margin="0, 10, 0, 0" />
+    <TextBox x:Name="Email2"
+             Text="{Binding DataAnnotationsSample}"
+             MaxWidth="400"
+             HorizontalAlignment="Left"
              DataValidationErrors.ErrorConverter="{Binding Converter}" />
     
-    <TextBox Text="{Binding ExceptionInsideSetterSample}"
-             DataValidationErrors.ErrorConverter="{Binding ExceptionConverter}" />
+    <Label Target="SetterException" Content="Setter exception with custom error converter and tooltip error"
+           Margin="0, 10, 0, 0" />
+    <TextBox x:Name="SetterException"
+             Text="{Binding ExceptionInsideSetterSample}"
+             MaxWidth="400"
+             HorizontalAlignment="Left"
+             DataValidationErrors.ErrorConverter="{Binding ExceptionConverter}">
+      <TextBox.Styles>
+        <Style Selector="DataValidationErrors">
+          <Setter Property="Theme" Value="{DynamicResource TooltipDataValidationErrors}" />
+        </Style>
+      </TextBox.Styles>
+    </TextBox>
   </StackPanel>
 </UserControl>
 

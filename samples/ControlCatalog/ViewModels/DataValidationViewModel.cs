@@ -9,9 +9,6 @@ public class DataValidationViewModel : ViewModelBase
 {
     private string? _DataAnnotationsSample;
 
-    /// <summary>
-    /// Gets or sets an E-Mail-Address validated using annotations
-    /// </summary>
     [Required]
     [EmailAddress]
     [MinLength(5)]
@@ -25,24 +22,22 @@ public class DataValidationViewModel : ViewModelBase
     {
         return $"Error: {o}";
     });
-    
-    
+
+
     private string? _ExceptionInsideSetterSample;
 
-    /// <summary>
-    /// Gets or sets an E-Mail-Address validated using annotations
-    /// </summary>
     public string? ExceptionInsideSetterSample
     {
         get => _ExceptionInsideSetterSample;
         set
         {
-            if (value is null || value.Length < 5) throw new ArgumentOutOfRangeException(nameof(value), "Give me 5 or more letter please :-)");
-                
+            if (value is null || value.Length < 5)
+                throw new ArgumentOutOfRangeException(nameof(value), "Give me 5 or more letter please :-)");
+
             RaiseAndSetIfChanged(ref _ExceptionInsideSetterSample, value);
         }
     }
-    
+
     public Func<object, object> ExceptionConverter { get; } = new Func<object, object>(o =>
     {
         return o is Exception ex ? $"Huh, there was an Exception: {ex.Message}" : "Something went really wrong!";

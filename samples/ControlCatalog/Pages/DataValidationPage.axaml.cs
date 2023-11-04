@@ -10,10 +10,5 @@ public partial class DataValidationPage : UserControl
     {
         InitializeComponent();
     }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
 }
 
