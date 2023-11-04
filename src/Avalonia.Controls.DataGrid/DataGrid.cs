@@ -4145,13 +4145,8 @@ namespace Avalonia.Controls
 
                         if (editingElement != null)
                         {
-                            var errorList =
-                                binding.ValidationErrors
-                                       .SelectMany(ValidationUtil.UnpackException)
-                                       .Select(ValidationUtil.UnpackDataValidationException)
-                                       .ToList();
-
-                            DataValidationErrors.SetErrors(editingElement, errorList);
+                            DataValidationErrors.SetError(editingElement,
+                                new AggregateException(binding.ValidationErrors));
                         }
                     }
                 }
