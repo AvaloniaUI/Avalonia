@@ -341,6 +341,32 @@ namespace Avalonia.Base.UnitTests.Layout
             });
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/12452
+        [Fact]
+        public async Task Zero_ScaleTransform_Sets_Empty_EffectiveViewport()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var effectiveViewport = new Rect(Size.Infinity);
+
+                var root = CreateRoot();
+                var target = new Canvas { Width = 100, Height = 100 };
+                var parent = new Border { Width = 100, Height = 100, Child = target };
+
+                target.EffectiveViewportChanged += (_, e) => effectiveViewport = e.EffectiveViewport;
+
+                root.Child = parent;
+
+                await ExecuteInitialLayoutPass(root);
+
+                parent.RenderTransform = new ScaleTransform(0, 0);
+
+                await ExecuteLayoutPass(root);
+
+                Assert.Equal(new Rect(0, 0, 0, 0), effectiveViewport);
+            });
+        }
+
         private static TestRoot CreateRoot() => new TestRoot { Width = 1200, Height = 900 };
 
         private static Task ExecuteInitialLayoutPass(TestRoot root)
