@@ -558,20 +558,9 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            if (_logicalChildren is object)
-            {
-                var count = _logicalChildren.Count;
+            e ??= ResourcesChangedEventArgs.Empty;
 
-                if (count > 0)
-                {
-                    e ??= ResourcesChangedEventArgs.Empty;
-
-                    for (var i = 0; i < count; ++i)
-                    {
-                        _logicalChildren[i].NotifyResourcesChanged(e);
-                    }
-                }
-            }
+            MutationSafeLogicalChildrenOperation<ILogical>(child => child.NotifyResourcesChanged(e));
         }
 
         /// <summary>
@@ -877,6 +866,22 @@ namespace Avalonia
             }
         }
 
+        private void MutationSafeLogicalChildrenOperation<T>(Action<T> action)
+        {
+            // The operation can have side effects which mutate our logical children, so copy the collection. `action` must be
+            // safe to call if a child is removed after we copy the collection, and also safe NOT to call if a child is added.
+            if (_logicalChildren?.ToArray() is { } logicalChildrenCopy)
+            {
+                for (var i = 0; i < logicalChildrenCopy.Length; i++)
+                {
+                    if (logicalChildrenCopy[i] is T child)
+                    {
+                        action(child);
+                    }
+                }
+            }
+        }
+
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
             if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
@@ -901,17 +906,8 @@ namespace Avalonia
 
                 OnAttachedToLogicalTree(e);
                 AttachedToLogicalTree?.Invoke(this, e);
-            }
 
-            var logicalChildren = LogicalChildren;
-            var logicalChildrenCount = logicalChildren.Count;
-
-            for (var i = 0; i < logicalChildrenCount; i++)
-            {
-                if (logicalChildren[i] is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
-                {
-                    child.OnAttachedToLogicalTreeCore(e);
-                }
+                MutationSafeLogicalChildrenOperation<StyledElement>(child => child.OnAttachedToLogicalTreeCore(e));
             }
         }
 
@@ -924,16 +920,7 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                var logicalChildren = LogicalChildren;
-                var logicalChildrenCount = logicalChildren.Count;
-
-                for (var i = 0; i < logicalChildrenCount; i++)
-                {
-                    if (logicalChildren[i] is StyledElement child)
-                    {
-                        child.OnDetachedFromLogicalTreeCore(e);
-                    }
-                }
+                MutationSafeLogicalChildrenOperation<StyledElement>(child => child.OnDetachedFromLogicalTreeCore(e));
 
 #if DEBUG
                 if (((INotifyCollectionChangedDebug)Classes).GetCollectionChangedSubscribers()?.Length > 0)
@@ -989,15 +976,7 @@ namespace Avalonia
             try { values.RemoveFrames(styles); }
             finally { values.EndStyling(); }
 
-            if (_logicalChildren is not null)
-            {
-                var childCount = _logicalChildren.Count;
-
-                for (var i = 0; i < childCount; ++i)
-                {
-                    (_logicalChildren[i] as StyledElement)?.DetachStyles(styles);
-                }
-            }
+            MutationSafeLogicalChildrenOperation<StyledElement>(child => child.DetachStyles(styles));
         }
 
         private void NotifyResourcesChanged(
