@@ -107,7 +107,8 @@ namespace Avalonia.Rendering.Composition
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
-                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send));
+                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
+                        TaskContinuationOptions.ExecuteSynchronously);
                 else
                     _triggerCommitRequested();
             }

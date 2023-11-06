@@ -74,5 +74,10 @@ namespace Avalonia.Logging
         /// The log event comes from macOS Platform
         /// </summary>
         public const string macOSPlatform = nameof(macOSPlatform);
+
+        /// <summary>
+        /// The log event comes from Browser Platform
+        /// </summary>
+        public static string BrowserPlatform => nameof(BrowserPlatform);
     }
 }
