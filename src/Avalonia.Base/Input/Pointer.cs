@@ -81,7 +81,10 @@ namespace Avalonia.Input
 
         public void Dispose()
         {
-            Capture(null);
+            if (Captured != null)
+            {
+                Capture(null);
+            }
         }
 
         /// <summary>
