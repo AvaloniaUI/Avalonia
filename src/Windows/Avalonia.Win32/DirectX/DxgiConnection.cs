@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Logging;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.DirectX.DirectXUnmanagedMethods;
@@ -9,7 +10,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DirectX
 {
-    internal unsafe class DxgiConnection : IRenderTimer
+    internal unsafe class DxgiConnection : IRenderTimer, IWindowsSurfaceFactory
     {
         public const uint ENUM_CURRENT_SETTINGS = unchecked((uint)(-1));
 
@@ -164,7 +165,7 @@ namespace Avalonia.Win32.DirectX
                 {
                     var connection = new DxgiConnection(pumpLock);
 
-                    AvaloniaLocator.CurrentMutable.BindToSelf(connection);
+                    AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connection);
                     AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connection);
                     tcs.SetResult(true);
                     connection.RunLoop();
@@ -180,5 +181,8 @@ namespace Avalonia.Win32.DirectX
             // block until 
             return tcs.Task.Result;
         }
+
+        public bool RequiresNoRedirectionBitmap => false;
+        public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DxgiSwapchainWindow(this, info);
     }
 }

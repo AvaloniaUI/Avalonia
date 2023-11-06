@@ -207,6 +207,10 @@
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+      <!-- Mobile Resources for MenuFlyout.xaml -->
+      <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
+      <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
+      <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
       <!-- Resources for TextBox.xaml -->
       <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -996,6 +1000,10 @@
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+      <!-- Mobile Resources for MenuFlyout.xaml -->
+      <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
+      <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
+      <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
       <!-- Resources for TextBox.xaml -->
       <!-- Copied from FluentBaseDark.xaml -->
