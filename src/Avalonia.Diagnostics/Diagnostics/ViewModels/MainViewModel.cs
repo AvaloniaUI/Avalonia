@@ -8,6 +8,7 @@ using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Controls.Primitives;
 
@@ -31,14 +32,15 @@ namespace Avalonia.Diagnostics.ViewModels
         private IScreenshotHandler? _screenshotHandler;
         private bool _showPropertyType;
         private bool _showImplementedInterfaces;
+        private readonly HashSet<string> _pinnedProperties = new();
         private IBrush? _FocusHighlighter;
         private IDisposable? _currentFocusHighlightAdorner = default;
 
         public MainViewModel(AvaloniaObject root)
         {
             _root = root;
-            _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
-            _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root));
+            _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root), _pinnedProperties);
+            _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root), _pinnedProperties);
             _events = new EventsPageViewModel(this);
 
             UpdateFocusedControl();
