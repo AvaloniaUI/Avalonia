@@ -558,9 +558,14 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            e ??= ResourcesChangedEventArgs.Empty;
-
-            MutationSafeLogicalChildrenOperation<ILogical>(child => child.NotifyResourcesChanged(e));
+            if (_logicalChildren?.ToArray() is { } logicalChildrenCopy)
+            {
+                e ??= ResourcesChangedEventArgs.Empty;
+                for (var i = 0; i < logicalChildrenCopy.Length; i++)
+                {
+                    logicalChildrenCopy[i].NotifyResourcesChanged(e);
+                }
+            }
         }
 
         /// <summary>
@@ -866,23 +871,7 @@ namespace Avalonia
             }
         }
 
-        private void MutationSafeLogicalChildrenOperation<T>(Action<T> action)
-        {
-            // The operation can have side effects which mutate our logical children, so copy the collection. `action` must be
-            // safe to call if a child is removed after we copy the collection, and also safe NOT to call if a child is added.
-            if (_logicalChildren?.ToArray() is { } logicalChildrenCopy)
-            {
-                for (var i = 0; i < logicalChildrenCopy.Length; i++)
-                {
-                    if (logicalChildrenCopy[i] is T child)
-                    {
-                        action(child);
-                    }
-                }
-            }
-        }
-
-        private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
+        private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e, Arena<ILogical>? childrenArena = null)
         {
             if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
             {
@@ -907,11 +896,23 @@ namespace Avalonia
                 OnAttachedToLogicalTree(e);
                 AttachedToLogicalTree?.Invoke(this, e);
 
-                MutationSafeLogicalChildrenOperation<StyledElement>(child => child.OnAttachedToLogicalTreeCore(e));
+                if (_logicalChildren != null)
+                {
+                    childrenArena ??= new();
+                    var span = childrenArena.AcquireCopyOf(_logicalChildren);
+                    
+                    for (var i = 0; i < span.Length; i++)
+                    {
+                        if (span[i] is StyledElement child)
+                        {
+                            child.OnAttachedToLogicalTreeCore(e, childrenArena);
+                        }
+                    }
+                }
             }
         }
 
-        private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
+        private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e, Arena<ILogical>? childrenArena = null)
         {
             if (_logicalRoot != null)
             {
@@ -920,7 +921,19 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                MutationSafeLogicalChildrenOperation<StyledElement>(child => child.OnDetachedFromLogicalTreeCore(e));
+                if (_logicalChildren != null)
+                {
+                    childrenArena ??= new();
+                    var span = childrenArena.AcquireCopyOf(_logicalChildren);
+                    
+                    for (var i = 0; i < span.Length; i++)
+                    {
+                        if (span[i] is StyledElement child)
+                        {
+                            child.OnDetachedFromLogicalTreeCore(e, childrenArena);
+                        }
+                    }
+                }
 
 #if DEBUG
                 if (((INotifyCollectionChangedDebug)Classes).GetCollectionChangedSubscribers()?.Length > 0)
@@ -969,14 +982,26 @@ namespace Avalonia
             }
         }
 
-        private void DetachStyles(IReadOnlyList<Style> styles)
+        private void DetachStyles(IReadOnlyList<Style> styles, Arena<ILogical>? childrenArena = null)
         {
             var values = GetValueStore();
             values.BeginStyling();
             try { values.RemoveFrames(styles); }
             finally { values.EndStyling(); }
 
-            MutationSafeLogicalChildrenOperation<StyledElement>(child => child.DetachStyles(styles));
+            if (_logicalChildren != null)
+            {
+                childrenArena ??= new();
+                var span = childrenArena.AcquireCopyOf(_logicalChildren);
+
+                for (var i = 0; i < span.Length; i++)
+                {
+                    if (span[i] is StyledElement child)
+                    {
+                        child.DetachStyles(styles, childrenArena);
+                    }
+                }
+            }
         }
 
         private void NotifyResourcesChanged(
