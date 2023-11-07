@@ -60,6 +60,24 @@ namespace Avalonia.Platform
             this.Bounds = bounds;
             this.WorkingArea = workingArea;
             this.IsPrimary = isPrimary;
-        } 
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="Screen"/> is equal to the specified object.
+        /// </summary>
+        /// <param name="o">The object with which to test equality.</param>
+        /// <returns>True if the objects are equal, otherwise false.</returns>
+        public override bool Equals(object o)
+        {
+            if (o is Screen screen)
+            {
+                return IsPrimary == screen.IsPrimary &&
+                       Bounds == screen.Bounds &&
+                       WorkingArea == screen.WorkingArea &&
+                       Math.Abs(Scaling - screen.Scaling) < double.Epsilon;
+            }
+
+            return false;
+        }
     }
 }
