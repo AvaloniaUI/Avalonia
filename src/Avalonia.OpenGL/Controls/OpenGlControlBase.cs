@@ -258,7 +258,7 @@ namespace Avalonia.OpenGL.Controls
         
         protected abstract void OnOpenGlRender(GlInterface gl, int fb);
 
-        public bool HitTest(Point point)
+        bool ICustomHitTest.HitTest(Point point)
         {
             return true;
         }
