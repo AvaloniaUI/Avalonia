@@ -8,7 +8,7 @@
     <TextBox TextInputOptions.Multiline="True" AcceptsReturn="True" Watermark="Text" Height="200" TextWrapping="Wrap"/>
     <TextBox Watermark="Username" TextInputOptions.ContentType="Email" TextInputOptions.ReturnKeyType="Done" />
     <TextBox Watermark="Password" PasswordChar="*" TextInputOptions.ContentType="Password" />
-    <TextBox Watermark="Pin" PasswordChar="*" TextInputOptions.ContentType="Digits" />
+    <TextBox Watermark="Pin" PasswordChar="*" TextInputOptions.ContentType="Digits" TextInputOptions.ReturnKeyType="Next" />
     <Button Content="Login" Command="{Binding ButtonCommand}" />
   </StackPanel>
 </UserControl>
