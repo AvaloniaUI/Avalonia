@@ -274,7 +274,7 @@ namespace Avalonia.OpenGL.Controls
 
             public bool Equals(ICustomDrawOperation? other)
             {
-                return other.Equals(this);
+                return false;
             }
 
             public bool HitTest(Point p)
