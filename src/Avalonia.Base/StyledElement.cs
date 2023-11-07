@@ -5,8 +5,10 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Animation;
 using Avalonia.Collections;
+using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
@@ -82,7 +84,7 @@ namespace Avalonia
         private string? _name;
         private Classes? _classes;
         private ILogicalRoot? _logicalRoot;
-        private IAvaloniaList<ILogical>? _logicalChildren;
+        private AvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
         private Styles? _styles;
         private bool _stylesApplied;
@@ -558,18 +560,13 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            if (_logicalChildren is object)
+            if (_logicalChildren is { Count: > 0 })
             {
-                var count = _logicalChildren.Count;
+                e ??= ResourcesChangedEventArgs.Empty;
 
-                if (count > 0)
+                foreach (var child in _logicalChildren.UnsafeAsSpan())
                 {
-                    e ??= ResourcesChangedEventArgs.Empty;
-
-                    for (var i = 0; i < count; ++i)
-                    {
-                        _logicalChildren[i].NotifyResourcesChanged(e);
-                    }
+                    child.NotifyResourcesChanged(e);
                 }
             }
         }
@@ -747,16 +744,16 @@ namespace Avalonia
                     element._dataContextUpdating = true;
                     element.OnDataContextBeginUpdate();
 
-                    var logicalChildren = element.LogicalChildren;
-                    var logicalChildrenCount = logicalChildren.Count;
-
-                    for (var i = 0; i < logicalChildrenCount; i++)
+                    if (element._logicalChildren is {} children)
                     {
-                        if (element.LogicalChildren[i] is StyledElement s &&
-                            s.InheritanceParent == element &&
-                            !s.IsSet(DataContextProperty))
+                        foreach (var child in children.UnsafeAsSpan())
                         {
-                            DataContextNotifying(s, updateStarted);
+                            if (child is StyledElement s &&
+                                s.InheritanceParent == element &&
+                                !s.IsSet(DataContextProperty))
+                            {
+                                DataContextNotifying(s, updateStarted);
+                            }
                         }
                     }
                 }
@@ -903,14 +900,14 @@ namespace Avalonia
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
-            var logicalChildren = LogicalChildren;
-            var logicalChildrenCount = logicalChildren.Count;
-
-            for (var i = 0; i < logicalChildrenCount; i++)
+            if (_logicalChildren is { } children)
             {
-                if (logicalChildren[i] is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
+                foreach (var child in children.UnsafeAsSpan())
                 {
-                    child.OnAttachedToLogicalTreeCore(e);
+                    if (child is StyledElement s && s._logicalRoot != e.Root)
+                    {
+                        s.OnAttachedToLogicalTreeCore(e);
+                    }
                 }
             }
         }
@@ -924,14 +921,14 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                var logicalChildren = LogicalChildren;
-                var logicalChildrenCount = logicalChildren.Count;
-
-                for (var i = 0; i < logicalChildrenCount; i++)
+                if (_logicalChildren is { } children)
                 {
-                    if (logicalChildren[i] is StyledElement child)
+                    foreach (var child in children.UnsafeAsSpan())
                     {
-                        child.OnDetachedFromLogicalTreeCore(e);
+                        if (child is StyledElement s)
+                        {
+                            s.OnDetachedFromLogicalTreeCore(e);
+                        }
                     }
                 }
 
@@ -991,11 +988,9 @@ namespace Avalonia
 
             if (_logicalChildren is not null)
             {
-                var childCount = _logicalChildren.Count;
-
-                for (var i = 0; i < childCount; ++i)
+                foreach (var child in _logicalChildren.UnsafeAsSpan())
                 {
-                    (_logicalChildren[i] as StyledElement)?.DetachStyles(styles);
+                    (child as StyledElement)?.DetachStyles(styles);
                 }
             }
         }

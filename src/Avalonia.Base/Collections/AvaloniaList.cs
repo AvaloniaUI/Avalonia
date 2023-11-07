@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Diagnostics;
 
 namespace Avalonia.Collections
@@ -742,6 +743,11 @@ namespace Avalonia.Collections
             NotifyCountChanged();
         }
 
+        internal Span<T> UnsafeAsSpan()
+        {
+            return CollectionsMarshal.AsSpan(_inner);
+        }
+        
         /// <summary>
         /// Enumerates the elements of a <see cref="AvaloniaList{T}"/>.
         /// </summary>
