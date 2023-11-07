@@ -9,6 +9,8 @@ using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
 using Avalonia.Platform;
 using System.ComponentModel;
+using Avalonia.Media;
+using Avalonia.Rendering.SceneGraph;
 
 namespace Avalonia.OpenGL.Controls
 {
@@ -238,7 +240,12 @@ namespace Avalonia.OpenGL.Controls
             return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
                 Math.Max(1, (int)(Bounds.Height * scaling)));
         }
-        
+
+        public override void Render(DrawingContext context)
+        {
+            context.Custom(new OpenGLCustomDrawOperation());
+        }
+
         protected virtual void OnOpenGlInit(GlInterface gl)
         {
             
@@ -255,5 +262,30 @@ namespace Avalonia.OpenGL.Controls
         }
         
         protected abstract void OnOpenGlRender(GlInterface gl, int fb);
+
+        private class OpenGLCustomDrawOperation : ICustomDrawOperation
+        {
+            public Rect Bounds => new();
+
+            public void Dispose()
+            {
+                
+            }
+
+            public bool Equals(ICustomDrawOperation? other)
+            {
+                return other.Equals(this);
+            }
+
+            public bool HitTest(Point p)
+            {
+                return true;
+            }
+
+            public void Render(ImmediateDrawingContext context)
+            {
+                
+            }
+        }
     }
 }
