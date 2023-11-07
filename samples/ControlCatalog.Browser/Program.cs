@@ -1,8 +1,9 @@
+using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
-using Avalonia.Controls;
+using Avalonia.Logging;
 using ControlCatalog;
 using ControlCatalog.Browser;
 
@@ -12,7 +13,10 @@ internal partial class Program
 {
     public static async Task Main(string[] args)
     {
+        Trace.Listeners.Add(new ConsoleTraceListener());
+
         await BuildAvaloniaApp()
+            .LogToTrace(LogEventLevel.Warning)
             .AfterSetup(_ =>
             {
                 ControlCatalog.Pages.EmbedSample.Implementation = new EmbedSampleWeb();
