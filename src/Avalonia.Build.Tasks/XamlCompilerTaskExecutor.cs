@@ -286,6 +286,7 @@ namespace Avalonia.Build.Tasks
                         // StreamReader is needed here to handle BOM
                         var xaml = new StreamReader(new MemoryStream(res.FileContents)).ReadToEnd();
                         var parsed = XDocumentXamlParser.Parse(xaml);
+                        parsed.Document = res.FilePath;
 
                         var initialRoot = (XamlAstObjectNode)parsed.Root;
                         
