@@ -710,6 +710,12 @@ namespace Avalonia.Collections
             PropertyChanged?.Invoke(this, EventArgsCache.CountPropertyChanged);
         }
 
+
+        internal protected void NotifyPropertyChangedEvent(PropertyChangedEventArgs args)
+        {
+            PropertyChanged?.Invoke(this, args);
+        }
+
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with a remove action.
         /// </summary>
