@@ -239,18 +239,39 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
+
                 var iconData = memoryStream.ToArray();
+
                 return new IconImpl(new Win32Icon(iconData), iconData);
             }
         }
 
         private static IconImpl CreateIconImpl(Stream stream)
         {
-            var ms = new MemoryStream();
-            stream.CopyTo(ms);
-            ms.Position = 0;
-            var iconData = ms.ToArray();
-            return new IconImpl(new Win32Icon(iconData), iconData);
+            if (stream.CanSeek)
+            {
+                stream.Position = 0;
+            }
+
+            if (stream is MemoryStream memoryStream)
+            {
+                var iconData = memoryStream.ToArray();
+
+                return new IconImpl(new Win32Icon(iconData), iconData);
+            }
+            else
+            {
+                using (var ms = new MemoryStream())
+                {
+                    stream.CopyTo(ms);
+
+                    ms.Position = 0;
+
+                    var iconData = ms.ToArray();
+
+                    return new IconImpl(new Win32Icon(iconData), iconData);
+                }
+            }
         }
 
         private static void SetDpiAwareness()
