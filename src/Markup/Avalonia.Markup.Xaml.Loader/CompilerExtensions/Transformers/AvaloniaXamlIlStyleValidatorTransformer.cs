@@ -23,11 +23,10 @@ internal class AvaloniaXamlIlStyleValidatorTransformer : IXamlAstTransformer
             context.ReportDiagnostic(new XamlDiagnostic(
                 AvaloniaXamlDiagnosticCodes.StyleInMergedDictionaries,
                 XamlDiagnosticSeverity.Warning,
-                $"Including {nodeName} as part of MergedDictionaries will ignore any nested styles.",
-                node)
-            {
-                Description = $"Instead, you can add {nodeName} to the Styles collection on the same control or application."
-            });
+                // Keep it single line, as MSBuild splits multiline warnings into two warnings.
+                $"Including {nodeName} as part of MergedDictionaries will ignore any nested styles." +
+                $"Instead, you can add {nodeName} to the Styles collection on the same control or application.",
+                node));
         }
         
         return node;

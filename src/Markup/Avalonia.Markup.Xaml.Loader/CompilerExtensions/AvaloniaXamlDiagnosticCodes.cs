@@ -7,7 +7,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 
 internal static class AvaloniaXamlDiagnosticCodes
 {
-    public const string Unknown = "AVLN0000";
+    public const string Unknown = "AVLN9999";
 
     // XML/XAML parsing errors 1000-1999.
     public const string ParseError = "AVLN1000";
@@ -33,7 +33,7 @@ internal static class AvaloniaXamlDiagnosticCodes
     // Generator specific errors 4000-4999.
     public const string NameGeneratorError = "AVLN4001";
 
-    // Reserved for warnings 5000-9998
+    // Reserved 5000-9998
     public const string Obsolete = "AVLN5001";
 
     internal static string XamlXDiagnosticCodeToAvalonia(object xamlException)
