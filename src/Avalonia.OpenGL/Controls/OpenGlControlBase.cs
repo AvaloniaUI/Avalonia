@@ -14,7 +14,7 @@ using Avalonia.Rendering.SceneGraph;
 
 namespace Avalonia.OpenGL.Controls
 {
-    public abstract class OpenGlControlBase : Control
+    public abstract class OpenGlControlBase : Control, ICustomHitTest
     {
         private CompositionSurfaceVisual? _visual;
         private readonly Action _update;
@@ -241,11 +241,6 @@ namespace Avalonia.OpenGL.Controls
                 Math.Max(1, (int)(Bounds.Height * scaling)));
         }
 
-        public override void Render(DrawingContext context)
-        {
-            context.Custom(new OpenGLCustomDrawOperation());
-        }
-
         protected virtual void OnOpenGlInit(GlInterface gl)
         {
             
@@ -263,29 +258,9 @@ namespace Avalonia.OpenGL.Controls
         
         protected abstract void OnOpenGlRender(GlInterface gl, int fb);
 
-        private class OpenGLCustomDrawOperation : ICustomDrawOperation
+        public bool HitTest(Point point)
         {
-            public Rect Bounds => new();
-
-            public void Dispose()
-            {
-                
-            }
-
-            public bool Equals(ICustomDrawOperation? other)
-            {
-                return false;
-            }
-
-            public bool HitTest(Point p)
-            {
-                return true;
-            }
-
-            public void Render(ImmediateDrawingContext context)
-            {
-                
-            }
+            return true;
         }
     }
 }
