@@ -124,7 +124,7 @@ namespace Avalonia.Controls
         }
         public static void SetError(Control control, Exception? error)
         {
-            SetErrors(control, UnpackException(error)
+            SetErrors(control, UnpackException(error)?
                 .Select(UnpackDataValidationException)
                 .Where(e => e is not null)
                 .ToArray()!);
@@ -172,7 +172,7 @@ namespace Avalonia.Controls
             control.SetValue(ErrorConverterProperty, converter);
         }
 
-        private static IEnumerable<Exception> UnpackException(Exception? exception)
+        private static IEnumerable<Exception>? UnpackException(Exception? exception)
         {
             if (exception != null)
             {
@@ -183,7 +183,7 @@ namespace Avalonia.Controls
                 return exceptions.Where(x => !(x is BindingChainException)).ToArray();
             }
 
-            return Array.Empty<Exception>();
+            return null;
         }
 
         private static object? UnpackDataValidationException(Exception exception)
