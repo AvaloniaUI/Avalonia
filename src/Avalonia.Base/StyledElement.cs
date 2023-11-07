@@ -558,12 +558,13 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            if (_logicalChildren?.ToArray() is { } logicalChildrenCopy)
+            if (_logicalChildren != null)
             {
                 e ??= ResourcesChangedEventArgs.Empty;
-                for (var i = 0; i < logicalChildrenCopy.Length; i++)
+                var span = Arena<ILogical>.Current.AcquireCopyOf(_logicalChildren);
+                for (var i = 0; i < span.Length; i++)
                 {
-                    logicalChildrenCopy[i].NotifyResourcesChanged(e);
+                    span[i].NotifyResourcesChanged(e);
                 }
             }
         }
@@ -871,7 +872,7 @@ namespace Avalonia
             }
         }
 
-        private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e, Arena<ILogical>? childrenArena = null)
+        private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
             if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
             {
@@ -898,21 +899,20 @@ namespace Avalonia
 
                 if (_logicalChildren != null)
                 {
-                    childrenArena ??= new();
-                    var span = childrenArena.AcquireCopyOf(_logicalChildren);
+                    var span = Arena<ILogical>.Current.AcquireCopyOf(_logicalChildren);
                     
                     for (var i = 0; i < span.Length; i++)
                     {
                         if (span[i] is StyledElement child)
                         {
-                            child.OnAttachedToLogicalTreeCore(e, childrenArena);
+                            child.OnAttachedToLogicalTreeCore(e);
                         }
                     }
                 }
             }
         }
 
-        private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e, Arena<ILogical>? childrenArena = null)
+        private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
             if (_logicalRoot != null)
             {
@@ -923,14 +923,13 @@ namespace Avalonia
 
                 if (_logicalChildren != null)
                 {
-                    childrenArena ??= new();
-                    var span = childrenArena.AcquireCopyOf(_logicalChildren);
+                    var span = Arena<ILogical>.Current.AcquireCopyOf(_logicalChildren);
                     
                     for (var i = 0; i < span.Length; i++)
                     {
                         if (span[i] is StyledElement child)
                         {
-                            child.OnDetachedFromLogicalTreeCore(e, childrenArena);
+                            child.OnDetachedFromLogicalTreeCore(e);
                         }
                     }
                 }
@@ -982,7 +981,7 @@ namespace Avalonia
             }
         }
 
-        private void DetachStyles(IReadOnlyList<Style> styles, Arena<ILogical>? childrenArena = null)
+        private void DetachStyles(IReadOnlyList<Style> styles)
         {
             var values = GetValueStore();
             values.BeginStyling();
@@ -991,14 +990,13 @@ namespace Avalonia
 
             if (_logicalChildren != null)
             {
-                childrenArena ??= new();
-                var span = childrenArena.AcquireCopyOf(_logicalChildren);
+                var span = Arena<ILogical>.Current.AcquireCopyOf(_logicalChildren);
 
                 for (var i = 0; i < span.Length; i++)
                 {
                     if (span[i] is StyledElement child)
                     {
-                        child.DetachStyles(styles, childrenArena);
+                        child.DetachStyles(styles);
                     }
                 }
             }
