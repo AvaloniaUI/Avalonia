@@ -135,7 +135,9 @@ public class TransitioningContentControl : ContentControl
 
         var currentPresenter = _isFirstFull ? _presenter2 : Presenter;
 
-        if (_lastPresenter != currentPresenter && _lastPresenter != null)
+        if (_lastPresenter != null &&
+            _lastPresenter != currentPresenter &&
+            _lastPresenter.Content == Content)
             _lastPresenter.Content = null;
 
         currentPresenter.Content = Content;
