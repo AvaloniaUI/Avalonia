@@ -31,7 +31,7 @@ internal class AstGroupTransformationContext : AstTransformationContext
             _transformer = transformer;
         }
 
-        public override string GetVisitorInfo() => "Visitor:" + _transformer.GetType().Name;
+        public override string GetTransformerInfo() => _transformer.GetType().Name;
 
         public override IXamlAstNode VisitCore(AstTransformationContext context, IXamlAstNode node) =>
             _transformer.Transform((AstGroupTransformationContext)context, node);

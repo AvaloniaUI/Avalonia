@@ -50,8 +50,8 @@ namespace Avalonia.Build.Tasks
             string refInput, string refOutput,
             string[] references, string projectDirectory,
             bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance,
-            XamlCompilerDiagnosticsFilter diagnosticsFilter,
-            string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
+            XamlCompilerDiagnosticsFilter diagnosticsFilter, string strongNameKey,
+            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions)
         {
             try
             {
@@ -63,7 +63,10 @@ namespace Avalonia.Build.Tasks
                 var refAsm = refTypeSystem?.TargetAssemblyDefinition;
                 if (!skipXamlCompilation)
                 {
-	                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, diagnosticsFilter, debuggerLaunch);
+	                var compileRes = CompileCore(
+                        engine, typeSystem, projectDirectory, verifyIl,
+                        defaultCompileBindings, logImportance, diagnosticsFilter,
+                        debuggerLaunch, verboseExceptions);
 	                if (compileRes == null)
 	                    return new CompileResult(true);
 	                if (compileRes == false)
@@ -102,7 +105,8 @@ namespace Avalonia.Build.Tasks
             bool defaultCompileBindings,
             MessageImportance logImportance,
             XamlCompilerDiagnosticsFilter diagnosticsFilter,
-            bool debuggerLaunch = false)
+            bool debuggerLaunch,
+            bool verboseExceptions)
         {
             if (debuggerLaunch)
             {
@@ -174,7 +178,8 @@ namespace Avalonia.Build.Tasks
                     diagnostics.Add(diagnostic);
                     return newSeverity;
                 },
-                CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia
+                CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia,
+                ExceptionFormatter = ex => ex.FormatException(verboseExceptions)
             };
 
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,

@@ -66,6 +66,5 @@ public record RuntimeXamlDiagnostic(
     int? LineNumber,
     int? LinePosition)
 {
-    public string? Description { get; init; }
     public string? Document { get; init; }
 }

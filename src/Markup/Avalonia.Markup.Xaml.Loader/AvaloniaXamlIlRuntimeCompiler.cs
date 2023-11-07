@@ -218,8 +218,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                         (RuntimeXamlDiagnosticSeverity)diagnostic.Severity,
                         diagnostic.Title, diagnostic.LineNumber, diagnostic.LinePosition)
                     {
-                        Document = diagnostic.Document,
-                        Description = diagnostic.Description
+                        Document = diagnostic.Document
                     };
                     var newSeverity =
                         (XamlDiagnosticSeverity?)configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) ??
