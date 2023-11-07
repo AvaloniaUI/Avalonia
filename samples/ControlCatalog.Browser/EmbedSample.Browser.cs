@@ -4,6 +4,7 @@ using Avalonia.Platform;
 using Avalonia.Browser;
 
 using ControlCatalog.Pages;
+using System.Threading.Tasks;
 
 namespace ControlCatalog.Browser;
 
@@ -25,7 +26,7 @@ public class EmbedSampleWeb : INativeDemoControl
             _ = JSHost.ImportAsync("embed.js", "./embed.js").ContinueWith(_ =>
             {
                 EmbedInterop.AddAppButton(defaultHandle.Object);
-            });
+            }, TaskScheduler.FromCurrentSynchronizationContext());
 
             return defaultHandle;
         }
