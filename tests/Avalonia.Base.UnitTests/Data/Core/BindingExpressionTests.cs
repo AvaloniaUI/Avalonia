@@ -2,19 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
-    public class BindingExpressionTests : IClassFixture<InvariantCultureFixture>
+    [InvariantCulture]
+    public class BindingExpressionTests
     {
         [Fact]
         public async Task Should_Get_Simple_Property_Value()
@@ -125,7 +124,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 42,
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -147,7 +147,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 42,
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -169,7 +170,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 "bar",
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -192,7 +194,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 "bar",
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -228,7 +231,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(string),
                 "9.8",
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
 
             target.OnNext("foo");
 
@@ -260,6 +264,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 converter.Object,
+                CultureInfo.CurrentCulture,
                 converterParameter: "foo");
 
             target.Subscribe(_ => { });
@@ -278,6 +283,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 converter.Object,
+                CultureInfo.CurrentCulture,
                 converterParameter: "foo");
 
             target.OnNext("bar");
@@ -340,7 +346,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(string),
                 AvaloniaProperty.UnsetValue,
                 "bar",
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
 
             object result = null;
             target.Subscribe(x => result = x);

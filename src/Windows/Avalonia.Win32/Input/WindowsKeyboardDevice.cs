@@ -1,92 +1,50 @@
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Utilities;
-using Avalonia.Win32.Interop;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
+using static Avalonia.Win32.Interop.UnmanagedMethods.VirtualKeyStates;
 
 namespace Avalonia.Win32.Input
 {
-    internal class WindowsKeyboardDevice : KeyboardDevice
+    internal sealed class WindowsKeyboardDevice : KeyboardDevice
     {
-        private readonly byte[] _keyStates = new byte[256];
+        public new static WindowsKeyboardDevice Instance { get; } = new();
 
-        public new static WindowsKeyboardDevice Instance { get; } = new WindowsKeyboardDevice();
-
-        public RawInputModifiers Modifiers
+        public unsafe RawInputModifiers Modifiers
         {
             get
             {
-                UpdateKeyStates();
-                RawInputModifiers result = 0;
-
-                if (IsDown(Key.LeftAlt) || IsDown(Key.RightAlt))
+                fixed (byte* keyStates = stackalloc byte[256])
                 {
-                    result |= RawInputModifiers.Alt;
-                }
+                    GetKeyboardState(keyStates);
 
-                if (IsDown(Key.LeftCtrl) || IsDown(Key.RightCtrl))
-                {
-                    result |= RawInputModifiers.Control;
-                }
+                    var result = RawInputModifiers.None;
 
-                if (IsDown(Key.LeftShift) || IsDown(Key.RightShift))
-                {
-                    result |= RawInputModifiers.Shift;
-                }
+                    if (((keyStates[(int)VK_LMENU] | keyStates[(int)VK_RMENU]) & 0x80) != 0)
+                    {
+                        result |= RawInputModifiers.Alt;
+                    }
 
-                if (IsDown(Key.LWin) || IsDown(Key.RWin))
-                {
-                    result |= RawInputModifiers.Meta;
-                }
+                    if (((keyStates[(int)VK_LCONTROL] | keyStates[(int)VK_RCONTROL]) & 0x80) != 0)
+                    {
+                        result |= RawInputModifiers.Control;
+                    }
 
-                return result;
+                    if (((keyStates[(int)VK_LSHIFT] | keyStates[(int)VK_RSHIFT]) & 0x80) != 0)
+                    {
+                        result |= RawInputModifiers.Shift;
+                    }
+
+                    if (((keyStates[(int)VK_LWIN] | keyStates[(int)VK_RWIN]) & 0x80) != 0)
+                    {
+                        result |= RawInputModifiers.Meta;
+                    }
+
+                    return result;
+                }
             }
         }
 
-        public void WindowActivated(Window window)
+        private WindowsKeyboardDevice()
         {
-            SetFocusedElement(window, NavigationMethod.Unspecified, KeyModifiers.None);
-        }
-
-        public string StringFromVirtualKey(uint virtualKey)
-        {
-            var result = StringBuilderCache.Acquire(256);
-            int length = UnmanagedMethods.ToUnicode(
-                virtualKey,
-                0,
-                _keyStates,
-                result,
-                256,
-                0);
-            return StringBuilderCache.GetStringAndRelease(result);
-        }
-
-        private void UpdateKeyStates()
-        {
-            UnmanagedMethods.GetKeyboardState(_keyStates);
-        }
-
-        private bool IsDown(Key key)
-        {
-            return (GetKeyStates(key) & KeyStates.Down) != 0;
-        }
-
-        private KeyStates GetKeyStates(Key key)
-        {
-            int vk = KeyInterop.VirtualKeyFromKey(key);
-            byte state = _keyStates[vk];
-            KeyStates result = 0;
-
-            if ((state & 0x80) != 0)
-            {
-                result |= KeyStates.Down;
-            }
-
-            if ((state & 0x01) != 0)
-            {
-                result |= KeyStates.Toggled;
-            }
-
-            return result;
         }
     }
 }

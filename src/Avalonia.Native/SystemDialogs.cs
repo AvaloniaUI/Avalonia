@@ -32,6 +32,7 @@ namespace Avalonia.Native
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
             using var events = new SystemDialogEvents();
+            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null);
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
@@ -41,7 +42,7 @@ namespace Avalonia.Native
                                     options.Title ?? string.Empty,
                                     suggestedDirectory,
                                     string.Empty,
-                                    PrepareFilterParameter(options.FileTypeFilter));
+                                    fileTypes);
 
             var result = await events.Task.ConfigureAwait(false);
 
@@ -52,6 +53,7 @@ namespace Avalonia.Native
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
             using var events = new SystemDialogEvents();
+            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension);
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
@@ -60,7 +62,7 @@ namespace Avalonia.Native
                         options.Title ?? string.Empty,
                         suggestedDirectory,
                         options.SuggestedFileName ?? string.Empty,
-                        PrepareFilterParameter(options.FileTypeChoices));
+                        fileTypes);
 
             var result = await events.Task.ConfigureAwait(false);
             return result.FirstOrDefault() is string file
@@ -80,26 +82,69 @@ namespace Avalonia.Native
             return result?.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray()
                    ?? Array.Empty<IStorageFolder>();
         }
+    }
 
-        private static string PrepareFilterParameter(IReadOnlyList<FilePickerFileType>? fileTypes)
+    internal class FilePickerFileTypesWrapper : NativeCallbackBase, IAvnFilePickerFileTypes
+    {
+        private readonly IReadOnlyList<FilePickerFileType>? _types;
+        private readonly string? _defaultExtension;
+        private readonly List<IDisposable> _disposables;
+
+        public FilePickerFileTypesWrapper(
+            IReadOnlyList<FilePickerFileType>? types,
+            string? defaultExtension)
         {
-            return string.Join(";",
-                fileTypes?.SelectMany(f =>
-                {
-                    // On the native side we will try to parse identifiers or mimetypes.
-                    if (f.AppleUniformTypeIdentifiers?.Any() == true)
-                    {
-                        return f.AppleUniformTypeIdentifiers;
-                    }
-                    else if (f.MimeTypes?.Any() == true)
-                    {
-                        // MacOS doesn't accept "all" type, so it's pointless to pass it.
-                        return f.MimeTypes.Where(t => t != "*/*");
-                    }
+            _types = types;
+            _defaultExtension = defaultExtension;
+            _disposables = new List<IDisposable>();
+        }
 
-                    return Array.Empty<string>();
-                }) ??
-                Array.Empty<string>());
+        public int Count => _types?.Count ?? 0;
+
+        public int IsDefaultType(int index) => (_defaultExtension is not null &&
+            _types![index].TryGetExtensions()?.Any(ext => _defaultExtension.EndsWith(ext)) == true).AsComBool();
+
+        public int IsAnyType(int index) =>
+            (_types![index].Patterns?.Contains("*.*") == true || _types[index].MimeTypes?.Contains("*.*") == true)
+            .AsComBool();
+
+        public IAvnString GetName(int index)
+        {
+            return EnsureDisposable(_types![index].Name.ToAvnString());
+        }
+
+        public IAvnStringArray GetPatterns(int index)
+        {
+            return EnsureDisposable(new AvnStringArray(_types![index].Patterns ?? Array.Empty<string>()));
+        }
+
+        public IAvnStringArray GetExtensions(int index)
+        {
+            return EnsureDisposable(new AvnStringArray(_types![index].TryGetExtensions() ?? Array.Empty<string>()));
+        }
+
+        public IAvnStringArray GetMimeTypes(int index)
+        {
+            return EnsureDisposable(new AvnStringArray(_types![index].MimeTypes ?? Array.Empty<string>()));
+        }
+
+        public IAvnStringArray GetAppleUniformTypeIdentifiers(int index)
+        {
+            return EnsureDisposable(new AvnStringArray(_types![index].AppleUniformTypeIdentifiers ?? Array.Empty<string>()));
+        }
+
+        protected override void Destroyed()
+        {
+            foreach (var disposable in _disposables)
+            {
+                disposable.Dispose();
+            }
+        }
+
+        private T EnsureDisposable<T>(T input) where T : IDisposable
+        {
+            _disposables.Add(input);
+            return input;
         }
     }
 

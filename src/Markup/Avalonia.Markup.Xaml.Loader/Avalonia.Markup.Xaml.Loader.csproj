@@ -3,8 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <PackageId>Avalonia.Markup.Xaml.Loader</PackageId>
-    <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
+    <DefineConstants>$(DefineConstants);XAMLX_INTERNAL;XAML_RUNTIME_LOADER</DefineConstants>
   </PropertyGroup>
   <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
   <PropertyGroup>
@@ -22,4 +21,6 @@
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\..\build\SourceGenerators.props" />
 </Project>

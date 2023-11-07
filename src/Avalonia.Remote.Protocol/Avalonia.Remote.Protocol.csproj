@@ -4,10 +4,10 @@
     <DefineConstants>AVALONIA_REMOTE_PROTOCOL;$(DefineConstants)</DefineConstants>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
-    <PackageId>Avalonia.Remote.Protocol</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.Base\Input\Key.cs" />
+    <Compile Include="..\Avalonia.Base\Input\PhysicalKey.cs" />
     <Compile Include="..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Visible="False" />
   </ItemGroup>
   <Import Project="..\..\build\TrimmingEnable.props" />

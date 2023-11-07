@@ -71,6 +71,8 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RefreshContainer.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RefreshVisualizer.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ThemeVariantScope.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/HeaderedContentControl.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextSelectionHandle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

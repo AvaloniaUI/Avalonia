@@ -47,6 +47,23 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
+        public IGeometryImpl GetWidenedGeometry(IPen pen)
+        {
+            var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
+
+            using (var sink = result.Open())
+            {
+                Geometry.Widen(
+                    (float)pen.Thickness,
+                    pen.ToDirect2DStrokeStyle(Direct2D1Platform.Direct2D1Factory),
+                    0.25f,
+                    sink);
+                sink.Close();
+            }
+
+            return new StreamGeometryImpl(result);
+        }
+
         /// <inheritdoc/>
         public bool FillContains(Point point)
         {

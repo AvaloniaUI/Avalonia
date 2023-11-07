@@ -37,8 +37,8 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             public string Foo
             {
-                get { return GetValue(FooProperty); }
-                set { SetValue(FooProperty, value); }
+                get => GetValue(FooProperty);
+                set => SetValue(FooProperty, value);
             }
         }
     }

@@ -94,14 +94,14 @@ namespace Avalonia.Media.Fonts
         {
             var path = x.GetUnescapeAbsolutePath();
             return path.IndexOf(filePattern, StringComparison.Ordinal) >= 0
-                   && path.EndsWith(fileExtension, StringComparison.Ordinal);
+                   && path.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsFontTtfOrOtf(Uri uri)
         {
             var sourceWithoutArguments = GetSubString(uri.OriginalString, '?');
-            return sourceWithoutArguments.EndsWith(".ttf", StringComparison.Ordinal)
-                   || sourceWithoutArguments.EndsWith(".otf", StringComparison.Ordinal);
+            return sourceWithoutArguments.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)
+                   || sourceWithoutArguments.EndsWith(".otf", StringComparison.OrdinalIgnoreCase);
         }
 
         private static (string fileNameWithoutExtension, string extension) GetFileNameAndExtension(

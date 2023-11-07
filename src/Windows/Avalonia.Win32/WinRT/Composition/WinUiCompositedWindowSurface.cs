@@ -7,7 +7,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition
 {
-    internal class WinUiCompositedWindowSurface : IDirect3D11TexturePlatformSurface, IDisposable, IBlurHost
+    internal class WinUiCompositedWindowSurface : IDirect3D11TexturePlatformSurface, IDisposable, ICompositionEffectsSurface
     {
         private readonly WinUiCompositionShared _shared;
         private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
@@ -35,6 +35,15 @@ namespace Avalonia.Win32.WinRT.Composition
             _window?.Dispose();
             _window = null;
         }
+
+        public bool IsBlurSupported(BlurEffect effect) => effect switch
+        {
+            BlurEffect.None => true,
+            BlurEffect.Acrylic => Win32Platform.WindowsVersion >= WinUiCompositionShared.MinAcrylicVersion,
+            BlurEffect.MicaLight => Win32Platform.WindowsVersion >= WinUiCompositionShared.MinHostBackdropVersion,
+            BlurEffect.MicaDark => Win32Platform.WindowsVersion >= WinUiCompositionShared.MinHostBackdropVersion,
+            _ => false
+        };
 
         public void SetBlur(BlurEffect enable)
         {

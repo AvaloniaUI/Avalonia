@@ -242,7 +242,68 @@ namespace Avalonia.Headless
             return true;
         }
 
-        public virtual bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
+        {
+            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+
+            TryCreateGlyphTypefaceCount++;
+
+            return true;
+        }
+    }
+
+    internal class HeadlessFontManagerWithMultipleSystemFontsStub : IFontManagerImpl
+    {
+        private readonly string[] _installedFontFamilyNames;
+        private readonly string _defaultFamilyName;
+
+        public HeadlessFontManagerWithMultipleSystemFontsStub(
+            string[] installedFontFamilyNames,
+            string defaultFamilyName = "Default")
+        {
+            _installedFontFamilyNames = installedFontFamilyNames;
+            _defaultFamilyName = defaultFamilyName;
+        }
+
+        public int TryCreateGlyphTypefaceCount { get; private set; }
+
+        public string GetDefaultFontFamilyName()
+        {
+            return _defaultFamilyName;
+        }
+
+        string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
+        {
+            return _installedFontFamilyNames;
+        }
+
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+            FontStretch fontStretch,
+            CultureInfo? culture, out Typeface fontKey)
+        {
+            fontKey = new Typeface(_defaultFamilyName);
+
+            return false;
+        }
+
+        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            glyphTypeface = null;
+
+            TryCreateGlyphTypefaceCount++;
+
+            if (familyName == "Unknown")
+            {
+                return false;
+            }
+
+            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+
+            return true;
+        }
+
+        public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
             glyphTypeface = new HeadlessGlyphTypefaceImpl();
 

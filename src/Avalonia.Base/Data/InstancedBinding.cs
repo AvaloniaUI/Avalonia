@@ -14,7 +14,7 @@ namespace Avalonia.Data
     /// *instanced* by calling <see cref="IBinding.Initiate(AvaloniaObject, AvaloniaProperty, object, bool)"/>
     /// on a target object.
     /// </remarks>
-    public class InstancedBinding
+    public sealed class InstancedBinding
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
