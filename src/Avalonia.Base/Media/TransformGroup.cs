@@ -14,7 +14,7 @@ namespace Avalonia.Media
 
         private readonly PropertyChangedEventHandler _childrenChangedHandler;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
@@ -79,7 +79,7 @@ namespace Avalonia.Media
 
     public sealed class Transforms : AvaloniaList<Transform>
     {
-        private static readonly PropertyChangedEventArgs ItemsPropertyChanged = 
+        private static readonly PropertyChangedEventArgs IndexPropertyChanged =
             new PropertyChangedEventArgs(string.Empty);
 
         private readonly System.EventHandler _childTransform_ChangedHandler;
@@ -87,7 +87,7 @@ namespace Avalonia.Media
         public Transforms()
         {
             _childTransform_ChangedHandler = (_, _) =>
-                NotifyPropertyChangedEvent(ItemsPropertyChanged);
+                NotifyPropertyChangedEvent(IndexPropertyChanged);
         }
 
         public override void Insert(int index, Transform item)
@@ -100,6 +100,24 @@ namespace Avalonia.Media
         {
             item.Changed -= _childTransform_ChangedHandler;
             return base.Remove(item);
+        }
+
+        public new Transform this[int index]
+        {
+            get => base[index];
+            set
+            {
+                if (base[index] is Transform old)
+                {
+                    old.Changed -= _childTransform_ChangedHandler;
+                }
+                if (value is Transform transform)
+                {
+                    transform.Changed += _childTransform_ChangedHandler;
+                }
+                base[index] = value;
+                NotifyPropertyChangedEvent(IndexPropertyChanged);
+            }
         }
     }
 }
