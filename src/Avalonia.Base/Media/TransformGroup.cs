@@ -5,13 +5,14 @@ namespace Avalonia.Media
 {
     public sealed class TransformGroup : Transform
     {
+        private Matrix? _lastMatrix;
         /// <summary>
         /// Defines the <see cref="Children"/> property.
         /// </summary>
         public static readonly StyledProperty<Transforms> ChildrenProperty =
             AvaloniaProperty.Register<TransformGroup, Transforms>(nameof(Children));
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
@@ -28,6 +29,7 @@ namespace Avalonia.Media
 
         private void ChildTransform_Changed(object? sender, System.EventArgs e)
         {
+            _lastMatrix = null;
             this.RaiseChanged();
         }
 
@@ -51,14 +53,16 @@ namespace Avalonia.Media
         {
             get
             {
-                Matrix result = Matrix.Identity;
-
-                foreach (var t in Children)
+                if (_lastMatrix is null)
                 {
-                    result *= t.Value;
+                    var matrix = Matrix.Identity;
+                    foreach (var t in Children)
+                    {
+                        matrix *= t.Value;
+                    }
+                    _lastMatrix = matrix;
                 }
-
-                return result;
+                return _lastMatrix.Value;
             }
         }
     }
