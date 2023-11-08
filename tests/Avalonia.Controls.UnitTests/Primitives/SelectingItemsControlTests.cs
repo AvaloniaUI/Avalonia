@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
@@ -18,7 +17,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Data;
-using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -2225,6 +2223,42 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(0, selectedItemChangedRaised);
         }
 
+        [Fact]
+        public void Ensure_ItemsSource_Set_Before_SelectedValue()
+        {
+            using (Start())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:p='clr-namespace:Avalonia.Controls.UnitTests.Primitives'
+        x:DataType='p:TestViewModel'
+        >
+
+   <Window.DataContext>
+      <p:TestViewModel />
+   </Window.DataContext>
+
+   <p:TestSelector x:Name='target' SelectedValueBinding=""{Binding Id}""  SelectedValue='{Binding SelectedValue}' ItemsSource='{Binding Items}' />
+</Window>";
+
+                var window = (Window)Markup.Xaml.AvaloniaRuntimeXamlLoader.Load(xaml, GetType().Assembly);
+                window.Show();
+                var target = window.Find<TestSelector>("target");
+
+                Assert.NotNull(target);
+
+                Assert.Equal(14, target.PropertyChangeLog.Count);
+                Assert.Equal(nameof(ItemsControl.ItemsSource),
+                    target.PropertyChangeLog[3].Property);
+                Assert.Equal(nameof(SelectingItemsControl.SelectedValueBinding),
+                    target.PropertyChangeLog[4].Property);
+                Assert.Equal(nameof(SelectingItemsControl.SelectedValue),
+                    target.PropertyChangeLog[5].Property);
+            }
+        }
+
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -2341,44 +2375,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public string Selected { get; set; } = "b";
         }
 
-        private class TestSelector : SelectingItemsControl
-        {
-            public new static readonly DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
-                SelectingItemsControl.SelectedItemsProperty;
 
-            public TestSelector()
-            {
-                
-            }
-
-            public TestSelector(SelectionMode selectionMode)
-            {
-                SelectionMode = selectionMode;
-            }
-
-            public new ISelectionModel Selection
-            {
-                get => base.Selection;
-                set => base.Selection = value;
-            }
-
-            public new IList SelectedItems
-            {
-                get => base.SelectedItems;
-                set => base.SelectedItems = value;
-            }
-
-            public new SelectionMode SelectionMode
-            {
-                get => base.SelectionMode;
-                set => base.SelectionMode = value;
-            }
-
-            public new bool MoveSelection(NavigationDirection direction, bool wrap)
-            {
-                return base.MoveSelection(direction, wrap);
-            }
-        }
 
         private class ResettingCollection : List<string>, INotifyCollectionChanged
         {
@@ -2398,5 +2395,66 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
         }
+    }
+
+    internal class TestSelector : SelectingItemsControl
+    {
+        private List<(string Property, object NewValue, object OldValue)> _propertysSetSequence = new();
+
+        public new static readonly DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+            SelectingItemsControl.SelectedItemsProperty;
+
+        public TestSelector()
+        {
+        }
+
+        public TestSelector(SelectionMode selectionMode)
+        {
+            SelectionMode = selectionMode;
+        }
+
+        public new ISelectionModel Selection
+        {
+            get => base.Selection;
+            set => base.Selection = value;
+        }
+
+        public new IList SelectedItems
+        {
+            get => base.SelectedItems;
+            set => base.SelectedItems = value;
+        }
+
+        public new SelectionMode SelectionMode
+        {
+            get => base.SelectionMode;
+            set => base.SelectionMode = value;
+        }
+        public IReadOnlyList<(string Property, object NewValue, object OldValue)> PropertyChangeLog { get => _propertysSetSequence; }
+
+        public new bool MoveSelection(NavigationDirection direction, bool wrap)
+        {
+            return base.MoveSelection(direction, wrap);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            _propertysSetSequence.Add((change.Property.Name, change.NewValue, change.OldValue));
+        }
+    }
+
+    internal record struct TestItemViewModel(int Id, string Description);
+
+    internal class TestViewModel
+    {
+        public IEnumerable<TestItemViewModel> Items { get; } = new TestItemViewModel[]
+            {
+                  new(0, "Item 1"),
+                  new(1, "Item 2"),
+                  new(2, "Item 3"),
+            };
+
+        public int SelectedValue { get; set; } = 1;
     }
 }
