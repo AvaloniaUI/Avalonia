@@ -35,6 +35,11 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+    <Style Selector="^ /template/ ScrollBar#PART_VerticalScrollBar, 
+                     ^ /template/ ScrollBar#PART_HorizontalScrollBar,
+                     ^ /template/ Panel">
+      <Setter Property="Cursor" Value="Arrow" />
+    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="SimpleMenuScrollViewer"
