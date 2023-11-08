@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +7,6 @@ using System.Linq;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -185,6 +183,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the index of the selected item.
         /// </summary>
+        [DependsOn(nameof(ItemsSource))]
         public int SelectedIndex
         {
             get =>
@@ -211,6 +210,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
+        [DependsOn(nameof(ItemsSource))]
+        [DependsOn(nameof(SelectedIndex))]
         public object? SelectedItem
         {
             get =>
@@ -237,6 +238,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
+        [DependsOn(nameof(ItemsSource))]
         public IBinding? SelectedValueBinding
         {
             get => GetValue(SelectedValueBindingProperty);
@@ -247,6 +249,8 @@ namespace Avalonia.Controls.Primitives
         /// Gets or sets the value of the selected item, obtained using 
         /// <see cref="SelectedValueBinding"/>
         /// </summary>
+        [DependsOn(nameof(SelectedValueBinding))]
+        [DependsOn(nameof(SelectedIndex))]
         public object? SelectedValue
         {
             get => GetValue(SelectedValueProperty);
