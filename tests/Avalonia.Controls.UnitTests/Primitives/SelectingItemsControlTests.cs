@@ -2258,6 +2258,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Ensure_SelectedValue_OnLoad()
+        {
+            using (Start())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:p='clr-namespace:Avalonia.Controls.UnitTests.Primitives'
+        x:DataType='p:TestViewModel'
+        >
+
+   <Window.DataContext>
+      <p:TestViewModel />
+   </Window.DataContext>
+
+   <p:TestSelector x:Name='target' SelectedValueBinding=""{Binding Id}""  SelectedValue='{Binding SelectedValue}' ItemsSource='{Binding Items}' />
+</Window>";
+
+                var window = (Window)Markup.Xaml.AvaloniaRuntimeXamlLoader.Load(xaml, GetType().Assembly);
+                window.Show();
+                var target = window.Find<TestSelector>("target");
+
+                Assert.Equal(1, target.SelectedValue);
+            }
+        }
+
 
         private static IDisposable Start()
         {
