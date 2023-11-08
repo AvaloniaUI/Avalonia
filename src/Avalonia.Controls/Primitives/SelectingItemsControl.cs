@@ -577,12 +577,11 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc />
         protected override void OnInitialized()
         {
-            base.OnInitialized();
-
             if (_selection is object)
             {
                 _selection.Source = ItemsView.Source;
             }
+            base.OnInitialized();
         }
 
         /// <inheritdoc />
@@ -944,7 +943,7 @@ namespace Avalonia.Controls.Primitives
                 RaisePropertyChanged(SelectedItemsProperty, _oldSelectedItems, SelectedItems);
                 _oldSelectedItems = SelectedItems;
             }
-            else if (e.PropertyName == nameof(ISelectionModel.Source))
+            else if (e.PropertyName == nameof(ISelectionModel.Source) && this.IsInitialized)
             {
                 ClearValue(SelectedValueProperty);
             }

@@ -412,8 +412,8 @@ namespace Avalonia
         {
             if (_initCount == 0 && !IsInitialized)
             {
-                IsInitialized = true;
                 OnInitialized();
+                IsInitialized = true;
                 Initialized?.Invoke(this, EventArgs.Empty);
             }
         }

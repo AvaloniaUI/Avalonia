@@ -2248,7 +2248,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 Assert.NotNull(target);
 
-                Assert.Equal(14, target.PropertyChangeLog.Count);
+                Assert.Equal(12, target.PropertyChangeLog.Count);
                 Assert.Equal(nameof(ItemsControl.ItemsSource),
                     target.PropertyChangeLog[3].Property);
                 Assert.Equal(nameof(SelectingItemsControl.SelectedValueBinding),
