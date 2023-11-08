@@ -92,6 +92,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new XamlMergeResourceGroupTransformer(),
                 new AvaloniaXamlIncludeTransformer()
             };
+
+
+            InsertBefore<AvaloniaXamlIlControlTemplatePriorityTransformer>(
+                new DependsOnTransformer()
+                );
+
         }
         public AvaloniaXamlIlCompiler(TransformerConfiguration configuration,
             XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings,
