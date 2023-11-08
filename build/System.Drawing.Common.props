@@ -1,6 +1,0 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <PackageReference Condition="'$(TargetFramework)'!='netstandard2.0'" Include="System.Drawing.Common" Version="6.0.0" />
-    <PackageReference Condition="'$(TargetFramework)'=='netstandard2.0'" Include="System.Drawing.Common" Version="4.5.0" />
-  </ItemGroup>
-</Project>

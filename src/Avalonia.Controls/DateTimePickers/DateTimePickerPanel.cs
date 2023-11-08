@@ -406,7 +406,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void ScrollDown(int numItems = 1)
         {
-            var scrollHeight = _extent.Height - Viewport.Height;
+            var scrollHeight = Math.Max(Extent.Height - ItemHeight, 0);
             var newY = Math.Min(Offset.Y + (numItems * ItemHeight), scrollHeight);
             Offset = new Vector(0, newY);
         }

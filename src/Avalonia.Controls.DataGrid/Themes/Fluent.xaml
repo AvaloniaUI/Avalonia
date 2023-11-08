@@ -532,9 +532,13 @@
               <DataGridRowsPresenter Name="PART_RowsPresenter"
                                      Grid.Row="1"
                                      Grid.RowSpan="2"
-                                     Grid.ColumnSpan="3" Grid.Column="0">
+                                     Grid.ColumnSpan="3"
+                                     Grid.Column="0"
+                                     ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
                 <DataGridRowsPresenter.GestureRecognizers>
-                  <ScrollGestureRecognizer CanHorizontallyScroll="True" CanVerticallyScroll="True" />
+                  <ScrollGestureRecognizer CanHorizontallyScroll="True"
+                                           CanVerticallyScroll="True"
+                                           IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_RowsPresenter}" />
                 </DataGridRowsPresenter.GestureRecognizers>
               </DataGridRowsPresenter>
               <Rectangle Name="PART_BottomRightCorner"

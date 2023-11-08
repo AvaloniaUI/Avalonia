@@ -1,6 +1,4 @@
-﻿using System;
-using System.Windows.Input;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.UnitTests;
@@ -112,7 +110,7 @@ namespace Avalonia.Base.UnitTests.Input
             button.KeyBindings.Add(new KeyBinding
             {
                 Gesture = new KeyGesture(Key.O, KeyModifiers.Control),
-                Command = new DelegateCommand(() =>
+                Command = new Utilities.DelegateCommand(() =>
                 {
                     button.KeyBindings.Clear();
                     ++raised;
@@ -132,15 +130,6 @@ namespace Avalonia.Base.UnitTests.Input
                     "o"));
 
             Assert.Equal(1, raised);
-        }
-
-        private class DelegateCommand : ICommand
-        {
-            private readonly Action _action;
-            public DelegateCommand(Action action) => _action = action;
-            public event EventHandler CanExecuteChanged { add { } remove { } }
-            public bool CanExecute(object parameter) => true;
-            public void Execute(object parameter) => _action();
         }
 
         [Fact]

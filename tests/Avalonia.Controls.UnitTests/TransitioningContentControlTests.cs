@@ -183,6 +183,37 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("bar", presenter2.Content);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Transition_Should_Be_Reversed_If_Property_Is_Set(bool reversed)
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var (target, transition) = CreateTarget("foo");
+            var presenter2 = GetContentPresenters2(target);
+
+            target.IsTransitionReversed = reversed;
+
+            target.Content = "bar";
+
+            var startedRaised = 0;
+
+            transition.Started += (from, to, forward) =>
+            {
+                Assert.Equal(reversed, !forward);
+
+                ++startedRaised;
+            };
+
+            Layout(target);
+            sync.ExecutePostedCallbacks();
+
+            Assert.Equal(1, startedRaised);
+            Assert.Equal("foo", target.Presenter!.Content);
+            Assert.Equal("bar", presenter2.Content);
+        }
+
         [Fact]
         public void Logical_Children_Should_Not_Be_Duplicated()
         {
