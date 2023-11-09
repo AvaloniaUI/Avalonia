@@ -8,6 +8,10 @@ namespace Avalonia.Media
         static RenderOptions()
         {
             BitmapInterpolationModeProperty.Changed.Subscribe(BitmapInterpolationModeChanged);
+            TextRenderingModeProperty.Changed.Subscribe(TextRenderingModeChanged);
+            EdgeModeProperty.Changed.Subscribe(EdgeModeChanged);
+            BitmapBlendingModeProperty.Changed.Subscribe(BitmapBlendingModeChanged);
+            RequiresFullOpacityHandlingProperty.Changed.Subscribe(RequiresFullOpacityHandlingChanged);
         }
 
         /// <summary>
@@ -16,6 +20,35 @@ namespace Avalonia.Media
         public static readonly AttachedProperty<BitmapInterpolationMode> BitmapInterpolationModeProperty =
             AvaloniaProperty.RegisterAttached<RenderOptions, Visual, BitmapInterpolationMode>(
                 nameof(BitmapInterpolationMode), inherits: true);
+        
+        /// <summary>
+        /// Defines the <see cref="EdgeMode"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<EdgeMode> EdgeModeProperty =
+            AvaloniaProperty.RegisterAttached<RenderOptions, Visual, EdgeMode>(
+                nameof(EdgeMode), inherits: true);
+
+        /// <summary>
+        /// Defines the <see cref="TextRenderingMode"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<TextRenderingMode> TextRenderingModeProperty =
+            AvaloniaProperty.RegisterAttached<RenderOptions, Visual, TextRenderingMode>(
+                nameof(TextRenderingMode), inherits: true);
+        
+        /// <summary>
+        /// Defines the <see cref="BitmapBlendingMode"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<BitmapBlendingMode> BitmapBlendingModeProperty =
+            AvaloniaProperty.RegisterAttached<RenderOptions, Visual, BitmapBlendingMode>(
+                nameof(BitmapBlendingMode), inherits: true);
+        
+        /// <summary>
+        /// Defines the <see cref="BitmapBlendingMode"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool?> RequiresFullOpacityHandlingProperty =
+            AvaloniaProperty.RegisterAttached<RenderOptions, Visual, bool?>(
+                nameof(RequiresFullOpacityHandling), inherits: true);
+
         
         public BitmapInterpolationMode BitmapInterpolationMode { get; init; }
         public EdgeMode EdgeMode { get; init; }
@@ -51,6 +84,7 @@ namespace Avalonia.Media
                 {
                     BitmapInterpolationMode = e.GetNewValue<BitmapInterpolationMode>()
                 };
+                visual.InvalidateVisual();
             }
         }
 
@@ -61,7 +95,7 @@ namespace Avalonia.Media
         /// <returns>The value.</returns>
         public static BitmapBlendingMode GetBitmapBlendingMode(Visual visual)
         {
-            return visual.RenderOptions.BitmapBlendingMode;
+            return visual.GetValue(BitmapBlendingModeProperty);
         }
 
         /// <summary>
@@ -71,9 +105,21 @@ namespace Avalonia.Media
         /// <param name="value">The left value.</param>
         public static void SetBitmapBlendingMode(Visual visual, BitmapBlendingMode value)
         {
-            visual.RenderOptions = visual.RenderOptions with { BitmapBlendingMode = value };
+            visual.SetValue(BitmapBlendingModeProperty, value);
         }
 
+        private static void BitmapBlendingModeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Visual visual)
+            {
+                visual.RenderOptions = visual.RenderOptions with
+                {
+                    BitmapBlendingMode = e.GetNewValue<BitmapBlendingMode>()
+                };
+                visual.InvalidateVisual();
+            }
+        }
+        
         /// <summary>
         /// Gets the value of the EdgeMode attached property for a visual.
         /// </summary>
@@ -81,7 +127,7 @@ namespace Avalonia.Media
         /// <returns>The value.</returns>
         public static EdgeMode GetEdgeMode(Visual visual)
         {
-            return visual.RenderOptions.EdgeMode;
+            return visual.GetValue(EdgeModeProperty);
         }
 
         /// <summary>
@@ -91,7 +137,19 @@ namespace Avalonia.Media
         /// <param name="value">The value.</param>
         public static void SetEdgeMode(Visual visual, EdgeMode value)
         {
-            visual.RenderOptions = visual.RenderOptions with { EdgeMode = value };
+            visual.SetValue(EdgeModeProperty, value);
+        }
+        
+        private static void EdgeModeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Visual visual)
+            {
+                visual.RenderOptions = visual.RenderOptions with
+                {
+                    EdgeMode = e.GetNewValue<EdgeMode>()
+                };
+                visual.InvalidateVisual();
+            }
         }
 
         /// <summary>
@@ -101,7 +159,7 @@ namespace Avalonia.Media
         /// <returns>The value.</returns>
         public static TextRenderingMode GetTextRenderingMode(Visual visual)
         {
-            return visual.RenderOptions.TextRenderingMode;
+            return visual.GetValue(TextRenderingModeProperty);
         }
 
         /// <summary>
@@ -111,7 +169,19 @@ namespace Avalonia.Media
         /// <param name="value">The value.</param>
         public static void SetTextRenderingMode(Visual visual, TextRenderingMode value)
         {
-            visual.RenderOptions = visual.RenderOptions with { TextRenderingMode = value };
+            visual.SetValue(TextRenderingModeProperty, value);
+        }
+        
+        private static void TextRenderingModeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Visual visual)
+            {
+                visual.RenderOptions = visual.RenderOptions with
+                {
+                    TextRenderingMode = e.GetNewValue<TextRenderingMode>()
+                };
+                visual.InvalidateVisual();
+            }
         }
 
         /// <summary>
@@ -121,7 +191,7 @@ namespace Avalonia.Media
         /// <returns>The value.</returns>
         public static bool? GetRequiresFullOpacityHandling(Visual visual)
         {
-            return visual.RenderOptions.RequiresFullOpacityHandling;
+            return visual.GetValue(RequiresFullOpacityHandlingProperty);
         }
 
         /// <summary>
@@ -131,9 +201,21 @@ namespace Avalonia.Media
         /// <param name="value">The value.</param>
         public static void SetRequiresFullOpacityHandling(Visual visual, bool? value)
         {
-            visual.RenderOptions = visual.RenderOptions with { RequiresFullOpacityHandling = value };
+            visual.SetValue(RequiresFullOpacityHandlingProperty, value);
         }
 
+        private static void RequiresFullOpacityHandlingChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Visual visual)
+            {
+                visual.RenderOptions = visual.RenderOptions with
+                {
+                    RequiresFullOpacityHandling = e.GetNewValue<bool?>()
+                };
+                visual.InvalidateVisual();
+            }
+        }
+        
         public RenderOptions MergeWith(RenderOptions other)
         {
             var bitmapInterpolationMode = BitmapInterpolationMode;
