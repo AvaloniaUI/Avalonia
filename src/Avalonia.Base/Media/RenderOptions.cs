@@ -1,9 +1,22 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {
     public readonly record struct RenderOptions
     {
+        static RenderOptions()
+        {
+            BitmapInterpolationModeProperty.Changed.Subscribe(BitmapInterpolationModeChanged);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="BitmapInterpolationMode"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<BitmapInterpolationMode> BitmapInterpolationModeProperty =
+            AvaloniaProperty.RegisterAttached<RenderOptions, Visual, BitmapInterpolationMode>(
+                nameof(BitmapInterpolationMode), inherits: true);
+        
         public BitmapInterpolationMode BitmapInterpolationMode { get; init; }
         public EdgeMode EdgeMode { get; init; }
         public TextRenderingMode TextRenderingMode { get; init; }
@@ -17,7 +30,7 @@ namespace Avalonia.Media
         /// <returns>The value.</returns>
         public static BitmapInterpolationMode GetBitmapInterpolationMode(Visual visual)
         {
-            return visual.RenderOptions.BitmapInterpolationMode;
+            return visual.GetValue(BitmapInterpolationModeProperty);
         }
 
         /// <summary>
@@ -27,7 +40,18 @@ namespace Avalonia.Media
         /// <param name="value">The value.</param>
         public static void SetBitmapInterpolationMode(Visual visual, BitmapInterpolationMode value)
         {
-            visual.RenderOptions = visual.RenderOptions with { BitmapInterpolationMode = value };
+            visual.SetValue(BitmapInterpolationModeProperty, value);
+        }
+        
+        private static void BitmapInterpolationModeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Visual visual)
+            {
+                visual.RenderOptions = visual.RenderOptions with
+                {
+                    BitmapInterpolationMode = e.GetNewValue<BitmapInterpolationMode>()
+                };
+            }
         }
 
         /// <summary>
