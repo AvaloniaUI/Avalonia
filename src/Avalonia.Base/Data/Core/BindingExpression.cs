@@ -10,6 +10,7 @@ using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
 using Avalonia.Logging;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core;
 
@@ -20,22 +21,13 @@ namespace Avalonia.Data.Core;
 /// A <see cref="BindingExpression"/> represents a untyped binding which has been
 /// instantiated on an object.
 /// </remarks>
-internal partial class BindingExpression : IDescription, IDisposable
+internal partial class BindingExpression : UntypedBindingExpressionBase, IDescription, IDisposable
 {
-    internal static readonly WeakReference<object?> NullReference = new(null);
     private readonly WeakReference<object?>? _source;
-    private readonly WeakReference<AvaloniaObject?> _target;
     private readonly BindingMode _mode;
     private readonly IReadOnlyList<ExpressionNode> _nodes;
     private readonly TargetTypeConverter? _targetTypeConverter;
-    private bool _isRunning;
-    private BindingPriority _priority;
-    private bool _produceValue;
-    private IBindingExpressionSink? _sink;
-    private AvaloniaProperty? _targetProperty;
-    private WeakReference<object?>? _value;
-    private BindingError? _error;
-    private UncommonFields? _uncommon;
+    private readonly UncommonFields? _uncommon;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BindingExpression"/> class.
@@ -53,9 +45,7 @@ internal partial class BindingExpression : IDescription, IDisposable
     /// </param>
     /// <param name="mode">The binding mode.</param>
     /// <param name="stringFormat">The format string to use.</param>
-    /// <param name="target">The target to which the value will be written.</param>
     /// <param name="targetNullValue">The null target value.</param>
-    /// <param name="targetProperty">The target property.</param>
     /// <param name="targetTypeConverter">
     /// A final type converter to be run on the produced value.
     /// </param>
@@ -69,28 +59,20 @@ internal partial class BindingExpression : IDescription, IDisposable
         bool enableDataValidation = false,
         BindingMode mode = BindingMode.OneWay,
         string? stringFormat = null,
-        AvaloniaObject? target = null,
         object? targetNullValue = null,
-        AvaloniaProperty? targetProperty = null,
         TargetTypeConverter? targetTypeConverter = null)
+            : base(enableDataValidation)
     {
         if (mode == BindingMode.Default)
             throw new ArgumentException("Binding mode cannot be Default.", nameof(mode));
-        if (target is null && mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
-            throw new ArgumentException("Target cannot be null for TwoWay or OneWayToSource bindings.", nameof(target));
-        if (targetProperty is null && mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
-            throw new ArgumentException("Target property cannot be null for TwoWay or OneWayToSource bindings.", nameof(target));
 
         if (source == AvaloniaProperty.UnsetValue)
             source = null;
 
         _source = new(source);
-        _target = new(target);
-        _targetProperty = targetProperty;
         _mode = mode;
         _nodes = nodes;
         _targetTypeConverter = targetTypeConverter;
-        IsDataValidationEnabled = enableDataValidation;
 
         if (converter is not null ||
             converterCulture is not null ||
@@ -139,82 +121,14 @@ internal partial class BindingExpression : IDescription, IDisposable
         }
     }
 
-    public BindingPriority Priority => _priority;
     public Type? SourceType => (LeafNode as ISettableNode)?.ValueType;
-    public AvaloniaProperty? TargetProperty => _targetProperty;
-    public Type TargetType => _targetProperty?.PropertyType ?? typeof(object);
     public IValueConverter? Converter => _uncommon?._converter;
     public CultureInfo ConverterCulture => _uncommon?._converterCulture ?? CultureInfo.CurrentCulture;
     public object? ConverterParameter => _uncommon?._converterParameter;
     public object? FallbackValue => _uncommon is not null ? _uncommon._fallbackValue : AvaloniaProperty.UnsetValue;
-    public bool IsDataValidationEnabled { get; }
-    public bool HasDataValidationError => _error?.ErrorType == BindingValueType.DataValidationError;
     public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
     public ExpressionNode LeafNode => _nodes[_nodes.Count - 1];
     public string? StringFormat => _uncommon?._stringFormat;
-
-    /// <summary>
-    /// Gets the current value of the binding expression.
-    /// </summary>
-    /// <returns>
-    /// The current value or <see cref="AvaloniaProperty.UnsetValue"/> if the binding was unable
-    /// to read a value.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// The binding expression has not been started.
-    /// </exception>
-    public object? GetValue()
-    {
-        if (!_isRunning)
-            throw new InvalidOperationException("BindingExpression has not been started.");
-        if (_value is null)
-            return AvaloniaProperty.UnsetValue;
-        else if (_value == NullReference)
-            return null;
-        else if (_value.TryGetTarget(out var value))
-            return value;
-        else
-            return AvaloniaProperty.UnsetValue;
-    }
-
-    /// <summary>
-    /// Gets the current value of the binding expression or the default value for the target property.
-    /// </summary>
-    /// <returns>
-    /// The current value or the target property default.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// The binding expression has not been started.
-    /// </exception>
-    public object? GetValueOrDefault()
-    {
-        var result = GetValue();
-        if (result == AvaloniaProperty.UnsetValue)
-            result = GetCachedDefaultValue();
-        return result;
-    }
-
-    /// <summary>
-    /// Gets the data validation state, if supported.
-    /// </summary>
-    /// <param name="state">The binding error state.</param>
-    /// <param name="error">The current binding error, if any.</param>
-    /// <returns>
-    /// True if the expression supports data validation, otherwise false.
-    /// </returns>
-    public void GetDataValidationState(out BindingValueType state, out Exception? error)
-    {
-        if (_error is not null)
-        {
-            state = _error.ErrorType;
-            error = _error.Exception;
-        }
-        else
-        {
-            state = BindingValueType.Value;
-            error = null;
-        }
-    }
 
     /// <summary>
     /// Writes the specified value to the binding source if possible.
@@ -223,7 +137,7 @@ internal partial class BindingExpression : IDescription, IDisposable
     /// <returns>
     /// True if the value could be written to the binding source; otherwise false.
     /// </returns>
-    public bool SetValue(object? value)
+    public override bool WriteValueToSource(object? value)
     {
         if (_nodes.Count == 0 || LeafNode is not ISettableNode setter || setter.ValueType is not { } type)
             return false;
@@ -261,7 +175,7 @@ internal partial class BindingExpression : IDescription, IDisposable
         }
 
         // Don't set the value if it's unchanged.
-        if (LeafNode.IsValueAlive && IdentityEquals(LeafNode.Value, value, type))
+        if (LeafNode.IsValueAlive && TypeUtilities.IdentityEquals(LeafNode.Value, value, type))
             return true;
 
         try
@@ -272,61 +186,6 @@ internal partial class BindingExpression : IDescription, IDisposable
         {
             return false;
         }
-    }
-
-    /// <summary>
-    /// Initializes the binding expression with the specified subscriber and target property but
-    /// does not start it.
-    /// </summary>
-    /// <param name="subscriber">The subscriber.</param>
-    /// <param name="targetProperty">The target property.</param>
-    /// <param name="priority">The priority of the binding.</param>
-    /// <exception cref="AvaloniaInternalException">
-    /// <paramref name="targetProperty"/> is different to that passed in the constructor, if one was
-    /// passed there.
-    /// </exception>
-    public void Initialize(
-        IBindingExpressionSink subscriber,
-        AvaloniaProperty targetProperty,
-        BindingPriority priority)
-    {
-        if (_targetProperty is not null && _targetProperty != targetProperty)
-            throw new AvaloniaInternalException(
-                "StartAsLocalValueBinding was called with a property different to that passed in constructor.");
-
-        _sink = subscriber;
-        _targetProperty = targetProperty;
-        _priority = priority;
-    }
-
-    /// <summary>
-    /// Starts the binding expression with the specified subscriber and target property..
-    /// </summary>
-    /// <param name="subscriber">The subscriber.</param>
-    /// <param name="targetProperty">The target property.</param>
-    /// <param name="priority">The priority of the binding.</param>
-    public void Start(
-        IBindingExpressionSink subscriber,
-        AvaloniaProperty targetProperty,
-        BindingPriority priority)
-    {
-        Initialize(subscriber, targetProperty, priority);
-        Start(produceValue: true);
-    }
-
-    /// <summary>
-    /// Terminates the binding.
-    /// </summary>
-    public void Dispose()
-    {
-        if (_sink is null)
-            return;
-
-        Stop();
-
-        var sink = _sink;
-        _sink = null;
-        sink.OnCompleted(this);
     }
 
     /// <summary>
@@ -342,9 +201,7 @@ internal partial class BindingExpression : IDescription, IDisposable
     /// <param name="enableDataValidation">Whether data validation should be enabled for the binding.</param>
     /// <param name="fallbackValue">The fallback value.</param>
     /// <param name="mode">The binding mode.</param>
-    /// <param name="target">The target to which the value will be written.</param>
     /// <param name="targetNullValue">The null target value.</param>
-    /// <param name="targetProperty">The target property.</param>
     /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
     internal static BindingExpression Create<TIn, TOut>(
@@ -356,9 +213,7 @@ internal partial class BindingExpression : IDescription, IDisposable
         bool enableDataValidation = false,
         Optional<object?> fallbackValue = default,
         BindingMode mode = BindingMode.OneWay,
-        AvaloniaObject? target = null,
         object? targetNullValue = null,
-        AvaloniaProperty? targetProperty = null,
         bool allowReflection = true)
             where TIn : class?
     {
@@ -374,9 +229,7 @@ internal partial class BindingExpression : IDescription, IDisposable
             converterParameter: converterParameter,
             enableDataValidation: enableDataValidation,
             mode: mode,
-            target: target,
             targetNullValue: targetNullValue,
-            targetProperty: targetProperty,
             targetTypeConverter: allowReflection ?
                 TargetTypeConverter.GetReflectionConverter() :
                 TargetTypeConverter.GetDefaultConverter());
@@ -400,7 +253,12 @@ internal partial class BindingExpression : IDescription, IDisposable
             // The leaf node has changed. If the binding mode is not OneWayToSource, publish the
             // value to the target.
             if (_mode != BindingMode.OneWayToSource)
-                UpdateAndPublishValue(value, dataValidationError);
+            {
+                var error = dataValidationError is not null ?
+                    new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
+                    null;
+                ConvertAndPublishValue(value, error);
+            }
 
             // If the binding mode is OneTime, then stop the binding.
             if (_mode == BindingMode.OneTime)
@@ -448,21 +306,17 @@ internal partial class BindingExpression : IDescription, IDisposable
         if (ShouldLogError(out var target))
             Log(target, error, errorPoint);
 
-        // Clear the current value.
-        UpdateValue(AvaloniaProperty.UnsetValue, null, out var hasValueChanged, out _);
-
-        // And store the error.
-        _error = new(
+        // Clear the current value and publish the error.
+        var bindingError = new BindingError(
             new BindingChainException(error, Description, errorPoint.ToString()),
-            BindingValueType.BindingError);
-
-        PublishValue(hasValueChanged, hasErrorChanged: true);
+            BindingErrorType.Error);
+        ConvertAndPublishValue(AvaloniaProperty.UnsetValue, bindingError);
     }
 
     internal void OnDataValidationError(Exception error)
     {
-        _error = new(error, BindingValueType.DataValidationError);
-        PublishValue(hasValueChanged: false, hasErrorChanged: true);
+        var bindingError = new BindingError(error, BindingErrorType.DataValidationError);
+        PublishValue(UnchangedValue, bindingError);
     }
 
     private string CalculateErrorPoint(int nodeIndex)
@@ -478,27 +332,6 @@ internal partial class BindingExpression : IDescription, IDisposable
         return result.ToString();
     }
 
-    private object? GetCachedDefaultValue()
-    {
-        Debug.Assert(_targetProperty is not null);
-
-        if (_uncommon?._isDefaultValueInitialized == true)
-            return _uncommon._defaultValue;
-
-        if (_target.TryGetTarget(out var target))
-        {
-            _uncommon ??= new();
-            _uncommon._isDefaultValueInitialized = true;
-
-            if (_targetProperty.IsDirect)
-                _uncommon._defaultValue = ((IDirectPropertyAccessor)_targetProperty).GetUnsetValue(target.GetType());
-            else
-                _uncommon._defaultValue = ((IStyledPropertyAccessor)_targetProperty).GetDefaultValue(target.GetType());
-        }
-
-        return _uncommon?._defaultValue ?? AvaloniaProperty.UnsetValue;
-    }
-
     private void Log(AvaloniaObject target, string error, LogEventLevel level = LogEventLevel.Warning)
     {
         if (!Logger.TryGet(level, LogArea.Binding, out var log))
@@ -507,7 +340,7 @@ internal partial class BindingExpression : IDescription, IDisposable
         log.Log(
             target,
             "An error occurred binding {Property} to {Expression}: {Message}",
-            (object?)_targetProperty ?? "(unknown)",
+            (object?)TargetProperty ?? "(unknown)",
             Description,
             error);
     }
@@ -520,7 +353,7 @@ internal partial class BindingExpression : IDescription, IDisposable
         log.Log(
             target,
             "An error occurred binding {Property} to {Expression} at {ExpressionErrorPoint}: {Message}",
-            (object?)_targetProperty ?? "(unknown)",
+            (object?)TargetProperty ?? "(unknown)",
             Description,
             errorPoint,
             error);
@@ -528,42 +361,28 @@ internal partial class BindingExpression : IDescription, IDisposable
 
     private bool ShouldLogError([NotNullWhen(true)] out AvaloniaObject? target)
     {
-        if (!_target.TryGetTarget(out target))
+        if (!TryGetTarget(out target))
             return false;
         if (_nodes.Count > 0 && _nodes[0] is SourceNode sourceNode)
             return sourceNode.ShouldLogErrors(target);
         return true;
     }
 
-    private void Start(bool produceValue)
+    protected override void StartCore()
     {
-        Debug.Assert(_sink is not null);
-
-        if (_isRunning)
-            return;
-
-        _isRunning = true;
-        _produceValue = produceValue;
-
         if (_source?.TryGetTarget(out var source) == true)
         {
             if (_nodes.Count > 0)
-            {
                 _nodes[0].SetSource(source, null);
-            }
             else
-            {
-                _value = new(source);
-                _error = null;
-                PublishValue(hasValueChanged: true, hasErrorChanged: false);
-            }
+                PublishValue(source);
 
             if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
-                _target.TryGetTarget(out var target) &&
-                _targetProperty is not null)
+                TryGetTarget(out var target) &&
+                TargetProperty is not null)
             {
                 if (_mode is BindingMode.OneWayToSource)
-                    SetValue(target.GetValue(_targetProperty));
+                    PublishValue(target.GetValue(TargetProperty));
 
                 target.PropertyChanged += OnTargetPropertyChanged;
             }
@@ -572,58 +391,31 @@ internal partial class BindingExpression : IDescription, IDisposable
         {
             OnNodeError(-1, "Binding Source is null.");
         }
-
-        _produceValue = true;
     }
 
-    private void Stop()
+    protected override void StopCore()
     {
         foreach (var node in _nodes)
             node.Reset();
 
         if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
-            _target.TryGetTarget(out var target))
+            TryGetTarget(out var target))
         {
             target.PropertyChanged -= OnTargetPropertyChanged;
         }
-
-        _isRunning = false;
-        _value = null;
     }
 
-    private void UpdateValue(
-        object? value,
-        Exception? dataValidationError,
-        out bool hasValueChanged,
-        out bool hasErrorChanged)
+    private void ConvertAndPublishValue(object? value, BindingError? error)
     {
         var isTargetNullValue = false;
-        var hadError = _error is not null;
 
         // All values other than DoNothing should be passed to the converter.
         if (value != BindingOperations.DoNothing && Converter is { } converter)
-            value = Convert(converter, ConverterParameter, value, TargetType);
+            value = Convert(converter, ConverterParameter, value, TargetType, ref error);
 
         // Check this here as the converter may return DoNothing.
         if (value == BindingOperations.DoNothing)
-        {
-            hasValueChanged = hasErrorChanged = false;
             return;
-        }
-
-        // Set the data validation error.
-        _error = dataValidationError is not null ?
-            new(dataValidationError, BindingValueType.DataValidationError) :
-            null;
-
-        // If we have a data validation error and the value is Unset then we keep the
-        // current value.
-        if (dataValidationError is not null && value == AvaloniaProperty.UnsetValue)
-        {
-            hasValueChanged = false;
-            hasErrorChanged = true;
-            return;
-        }
 
         // TargetNullValue only applies when the value is null: UnsetValue indicates that there
         // was a binding error so we don't want to use TargetNullValue in that case.
@@ -647,7 +439,7 @@ internal partial class BindingExpression : IDescription, IDisposable
             else if (_targetTypeConverter is not null)
             {
                 // Otherwise, if we have a target type converter, convert the value to the target type.
-                value = ConvertFrom(_targetTypeConverter, value);
+                value = ConvertFrom(_targetTypeConverter, value, ref error);
             }
         }
 
@@ -656,78 +448,30 @@ internal partial class BindingExpression : IDescription, IDisposable
         if (value == AvaloniaProperty.UnsetValue && FallbackValue != AvaloniaProperty.UnsetValue)
             value = ConvertFallback(FallbackValue, nameof(FallbackValue));
 
-        // Update the stored value.
-        var oldValue = _value;
-
-        if (value is null)
-            _value = NullReference;
-        else
-            _value = new(value);
-
-        hasValueChanged = !Equals(oldValue, _value);
-        hasErrorChanged = _error is not null || (_error is null && hadError);
-    }
-
-    private void PublishValue(bool hasValueChanged, bool hasErrorChanged)
-    {
-        if (!hasValueChanged && !hasErrorChanged)
-            return;
-
-        if (_sink is not null && _produceValue)
-        {
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                _sink.OnChanged(this, hasValueChanged, hasErrorChanged);
-            }
-            else
-            {
-                // To avoid allocating closure in the outer scope we need to capture variables
-                // locally. This allows us to skip most of the allocations when on UI thread.
-                var sink = _sink;
-                var v = hasValueChanged;
-                var e = hasErrorChanged;
-                Dispatcher.UIThread.Post(() => sink.OnChanged(this, v, e));
-            }
-        }
-    }
-
-    private void UpdateAndPublishValue(object? value, Exception? dataValidationError)
-    {
-        UpdateValue(
-            value,
-            dataValidationError,
-            out var hasValueChanged,
-            out var hasErrorChanged);
-
-        if (hasValueChanged || hasErrorChanged)
-            PublishValue(hasValueChanged, hasErrorChanged);
+        // Publish the value.
+        PublishValue(value, error);
     }
 
     private void WriteTargetValueToSource()
     {
-        if (_mode != BindingMode.OneWayToSource)
-            return;
+        Debug.Assert(_mode == BindingMode.OneWayToSource);
 
-        if (_target.TryGetTarget(out var target) &&
-            _targetProperty is not null &&
-            target.GetValue(_targetProperty) is var value &&
-            !Equals(value, LeafNode.Value))
+        if (TryGetTarget(out var target) &&
+            TargetProperty is not null &&
+            target.GetValue(TargetProperty) is var value &&
+            !TypeUtilities.IdentityEquals(value, LeafNode.Value, TargetType))
         {
-            SetValue(value);
+            WriteValueToSource(value);
         }
-    }
-
-    private void OnSourceChanged(object? source)
-    {
-        if (_nodes.Count > 0)
-            _nodes[0].SetSource(source, null);
     }
 
     private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == _targetProperty)
+        Debug.Assert(_mode is BindingMode.TwoWay or BindingMode.OneWayToSource);
+
+        if (e.Property == TargetProperty)
         {
-            SetValue(e.NewValue);
+            WriteValueToSource(e.NewValue);
         }
     }
 
@@ -735,7 +479,8 @@ internal partial class BindingExpression : IDescription, IDisposable
         IValueConverter converter,
         object? converterParameter,
         object? value,
-        Type targetType)
+        Type targetType,
+        ref BindingError? error)
     {
         try
         {
@@ -750,7 +495,7 @@ internal partial class BindingExpression : IDescription, IDisposable
             if (ShouldLogError(out var target))
                 Log(target, $"{message}: {e.Message}", LogEventLevel.Warning);
 
-            _error = new(new InvalidCastException(message + '.', e), BindingValueType.BindingError);
+            error = new(new InvalidCastException(message + '.', e), BindingErrorType.Error);
             return AvaloniaProperty.UnsetValue;
         }
     }
@@ -763,51 +508,29 @@ internal partial class BindingExpression : IDescription, IDisposable
         if (_targetTypeConverter.TryConvert(fallback, TargetType, ConverterCulture, out var result))
             return result;
 
-        if (_target.TryGetTarget(out var target))
+        if (TryGetTarget(out var target))
             Log(target, $"Could not convert {fallbackName} '{fallback}' to '{TargetType}'.", LogEventLevel.Error);
 
         return AvaloniaProperty.UnsetValue;
     }
 
-    private object? ConvertFrom(TargetTypeConverter? converter, object? value)
+    private object? ConvertFrom(TargetTypeConverter? converter, object? value, ref BindingError? error)
     {
-        if (converter is null || _targetProperty is null)
+        if (converter is null)
             return value;
 
-        var targetType = _targetProperty.PropertyType;
-
-        if (converter.TryConvert(value, targetType, ConverterCulture, out var result))
+        if (converter.TryConvert(value, TargetType, ConverterCulture, out var result))
             return result;
 
         var valueString = value?.ToString() ?? "(null)";
         var valueTypeName = value?.GetType().FullName ?? "null";
-        var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{targetType}'.";
+        var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{TargetType}'.";
 
         if (ShouldLogError(out var target))
             Log(target, message, LogEventLevel.Warning);
 
-        _error = new(new InvalidCastException(message), BindingValueType.BindingError);
+        error = new(new InvalidCastException(message), BindingErrorType.Error);
         return AvaloniaProperty.UnsetValue;
-    }
-
-    private static bool IdentityEquals(object? a, object? b, Type type)
-    {
-        if (type.IsValueType || type == typeof(string))
-            return Equals(a, b);
-        else
-            return ReferenceEquals(a, b);
-    }
-
-    private class BindingError
-    {
-        public BindingError(Exception exception, BindingValueType errorType)
-        {
-            Exception = exception;
-            ErrorType = errorType;
-        }
-
-        public Exception Exception { get; }
-        public BindingValueType ErrorType { get; }
     }
 
     private class UncommonFields
@@ -818,7 +541,5 @@ internal partial class BindingExpression : IDescription, IDisposable
         public object? _fallbackValue;
         public string? _stringFormat;
         public object? _targetNullValue;
-        public object? _defaultValue;
-        public bool _isDefaultValueInitialized;
     }
 }

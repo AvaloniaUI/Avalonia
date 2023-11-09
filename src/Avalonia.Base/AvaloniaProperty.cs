@@ -569,7 +569,7 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         internal abstract IDisposable RouteBind(
             AvaloniaObject o,
-            BindingExpression source,
+            UntypedBindingExpressionBase source,
             BindingPriority priority);
 
         /// <summary>

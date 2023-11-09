@@ -45,7 +45,7 @@ namespace Avalonia.PropertyStore
 
         public IDisposable AddBinding<T>(
             StyledProperty<T> property,
-            BindingExpression source,
+            UntypedBindingExpressionBase source,
             BindingPriority priority)
         {
             if (priority == BindingPriority.LocalValue)
@@ -53,7 +53,7 @@ namespace Avalonia.PropertyStore
                 DisposeExistingLocalValueBinding(property);
                 _localValueBindings ??= new();
                 _localValueBindings[property.Id] = source;
-                source.Start(this, property, priority);
+                source.Start(this, Owner, property, priority);
                 return source;
             }
             else
@@ -61,10 +61,10 @@ namespace Avalonia.PropertyStore
                 var effective = GetEffectiveValue(property);
                 var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
 
-                frame.AddBinding(property, source);
+                frame.AddBinding<T>(source);
 
                 if (effective is null || priority <= effective.Priority)
-                    source.Start(this, property, priority);
+                    source.Start(this, Owner, property, priority);
 
                 return source;
             }
@@ -154,12 +154,12 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public IDisposable AddBinding<T>(DirectPropertyBase<T> property, BindingExpression source)
+        public IDisposable AddBinding<T>(DirectPropertyBase<T> property, UntypedBindingExpressionBase source)
         {
             DisposeExistingLocalValueBinding(property);
             _localValueBindings ??= new();
             _localValueBindings[property.Id] = source;
-            source.Start(this, property, BindingPriority.LocalValue);
+            source.Start(this, Owner, property, BindingPriority.LocalValue);
             return source;
         }
 
@@ -744,15 +744,16 @@ namespace Avalonia.PropertyStore
         }
 
         void IBindingExpressionSink.OnChanged(
-            BindingExpression instance,
+            UntypedBindingExpressionBase instance,
             bool hasValueChanged,
-            bool hasErrorChanged)
+            bool hasErrorChanged,
+            object? value,
+            BindingError? error)
         {
             Dispatcher.UIThread.VerifyAccess();
             Debug.Assert(instance.TargetProperty is not null);
 
             var property = instance.TargetProperty;
-            var value = instance.GetValueOrDefault();
 
             if (property.IsDirect)
             {
@@ -789,10 +790,10 @@ namespace Avalonia.PropertyStore
                 }
             }
 
-            if (instance.IsDataValidationEnabled)
+            if (hasErrorChanged && instance.IsDataValidationEnabled)
             {
-                instance.GetDataValidationState(out var state, out var error);
-                Owner.OnUpdateDataValidation(property, state, error);
+                var e = error?.ErrorType.ToBindingValueType() ?? BindingValueType.Value;
+                Owner.OnUpdateDataValidation(property, e, error?.Exception);
             }
         }
 
@@ -800,7 +801,7 @@ namespace Avalonia.PropertyStore
         /// Called by a binding expression when the binding produces completes.
         /// </summary>
         /// <param name="instance">The binding expression.</param>
-        void IBindingExpressionSink.OnCompleted(BindingExpression instance)
+        void IBindingExpressionSink.OnCompleted(UntypedBindingExpressionBase instance)
         {
             Dispatcher.UIThread.VerifyAccess();
             Debug.Assert(instance.TargetProperty is not null);

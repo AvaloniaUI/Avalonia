@@ -611,7 +611,7 @@ namespace Avalonia
 
         internal IDisposable Bind(
             AvaloniaProperty property,
-            BindingExpression expression,
+            UntypedBindingExpressionBase expression,
             BindingPriority priority)
         {
             return property.RouteBind(this, expression, priority);

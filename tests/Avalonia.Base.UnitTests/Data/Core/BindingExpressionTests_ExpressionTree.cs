@@ -15,7 +15,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var target = new object();
 
-            var observer = BindingExpression.Create(target, o => o);
+            var observer = BindingExpression.Create(target, o => o).ToObservable();
 
             Assert.Equal(target, await observer.Take(1));
             GC.KeepAlive(target);
@@ -26,7 +26,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var target = new Class1();
 
-            var observer = BindingExpression.Create(target, o => o.Foo);
+            var observer = BindingExpression.Create(target, o => o.Foo).ToObservable();
 
             Assert.Null(await observer.Take(1));
 
@@ -46,9 +46,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new Class1();
             var target = BindingExpression.Create(data, o => o.Foo);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                Assert.True(target.SetValue("baz"));
+                Assert.True(target.WriteValueToSource("baz"));
             }
 
             GC.KeepAlive(data);
@@ -59,7 +59,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new[] { 1, 2, 3, 4 };
 
-            var target = BindingExpression.Create(data, o => o[0]);
+            var target = BindingExpression.Create(data, o => o[0]).ToObservable();
 
             Assert.Equal(data[0], await target.Take(1));
             GC.KeepAlive(data);
@@ -70,7 +70,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new List<int> { 1, 2, 3, 4 };
 
-            var target = BindingExpression.Create(data, o => o[0]);
+            var target = BindingExpression.Create(data, o => o[0]).ToObservable();
 
             Assert.Equal(data[0], await target.Take(1));
             GC.KeepAlive(data);
@@ -85,7 +85,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             data.Add(key, new object());
 
-            var target = BindingExpression.Create(data, o => o[key]);
+            var target = BindingExpression.Create(data, o => o[key]).ToObservable();
 
             Assert.Equal(data[key], await target.Take(1));
 
@@ -99,9 +99,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             var target = BindingExpression.Create(data, o => o[0]);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                Assert.True(target.SetValue(2));
+                Assert.True(target.WriteValueToSource(2));
             }
 
             GC.KeepAlive(data);
@@ -112,7 +112,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             NotifyingBase test = new Class1 { Foo = "Test" };
 
-            var target = BindingExpression.Create(test, o => ((Class1)o).Foo);
+            var target = BindingExpression.Create(test, o => ((Class1)o).Foo).ToObservable();
 
             Assert.Equal("Test", await target.Take(1));
 
@@ -132,7 +132,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             NotifyingBase test = new Class1 { Foo = "Test" };
 
-            var target = BindingExpression.Create(test, o => (o as Class1).Foo);
+            var target = BindingExpression.Create(test, o => (o as Class1).Foo).ToObservable();
 
             Assert.Equal("Test", await target.Take(1));
 
@@ -144,7 +144,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var test = new Class2();
 
-            var target = BindingExpression.Create(test, o => o[Class2.FooProperty]);
+            var target = BindingExpression.Create(test, o => o[Class2.FooProperty]).ToObservable();
 
             Assert.Equal("foo", await target.Take(1));
 
@@ -156,7 +156,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var test = new Class1 { Foo = "Test" };
 
-            var target = BindingExpression.Create(test, o => o.Foo.Length);
+            var target = BindingExpression.Create(test, o => o.Foo.Length).ToObservable();
 
             Assert.Equal(test.Foo.Length, await target.Take(1));
 
@@ -169,7 +169,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new { Foo = Task.FromResult("foo") };
-                var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
+                var target = BindingExpression.Create(data, o => o.Foo.StreamBinding()).ToObservable();
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -184,7 +184,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Create_Method_Binding()
         {
             var data = new Class3();
-            var target = BindingExpression.Create(data, o => (Action)o.Method);
+            var target = BindingExpression.Create(data, o => (Action)o.Method).ToObservable();
             var value = await target.Take(1);
 
             Assert.IsAssignableFrom<Delegate>(value);

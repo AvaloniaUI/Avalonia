@@ -17,7 +17,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Return_BindingNotification_Error_For_Broken_Chain()
         {
             var data = new { Foo = new { Bar = 1 } };
-            var target = Build(data, "Foo.Bar.Baz");
+            var target = Build(data, "Foo.Bar.Baz").ToObservable();
             var result = await target.Take(1);
 
             Assert.IsType<BindingNotification>(result);

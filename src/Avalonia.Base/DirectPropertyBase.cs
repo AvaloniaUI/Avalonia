@@ -183,7 +183,10 @@ namespace Avalonia
             return o.Bind(this, source);
         }
 
-        internal override IDisposable RouteBind(AvaloniaObject o, BindingExpression source, BindingPriority priority)
+        internal override IDisposable RouteBind(
+            AvaloniaObject o,
+            UntypedBindingExpressionBase source,
+            BindingPriority priority)
         {
             return o.GetValueStore().AddBinding(this, source);
         }

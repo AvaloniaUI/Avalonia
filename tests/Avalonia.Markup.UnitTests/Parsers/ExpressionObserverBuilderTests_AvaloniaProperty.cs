@@ -22,7 +22,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Get_AvaloniaProperty_By_Name()
         {
             var data = new Class1();
-            var target = Build(data, "Foo");
+            var target = Build(data, "Foo").ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -37,7 +37,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var target = Build(data, "Foo");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = target.ToObservable().Subscribe(x => result.Add(x));
             data.SetValue(Class1.FooProperty, "bar");
 
             Assert.Equal(new[] { "foo", "bar" }, result);

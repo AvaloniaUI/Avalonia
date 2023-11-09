@@ -21,9 +21,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new Person { Name = "Frank" };
             var target = BindingExpression.Create(data, o => o.Name);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                target.SetValue("Kups");
+                target.WriteValueToSource("Kups");
             }
 
             Assert.Equal("Kups", data.Name);
@@ -35,9 +35,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new AvaloniaObject();
             var target = BindingExpression.Create(data, o => o[DockPanel.DockProperty]);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                target.SetValue(Dock.Right);
+                target.WriteValueToSource(Dock.Right);
             }
 
             Assert.Equal(Dock.Right, data[DockPanel.DockProperty]);
@@ -49,9 +49,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new { Foo = new[] { "foo" } };
             var target = BindingExpression.Create(data, o => o.Foo[0]);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                target.SetValue("bar");
+                target.WriteValueToSource("bar");
             }
 
             Assert.Equal("bar", data.Foo[0]);
@@ -65,9 +65,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new Person { Pet = new Dog { Name = "Fido" } };
             var target = BindingExpression.Create(data, o => o.Pet!.Name);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                target.SetValue("Rover");
+                target.WriteValueToSource("Rover");
             }
 
             Assert.Equal("Rover", data.Pet.Name);
@@ -80,10 +80,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => o.Pet!.Name);
 
             // Ensure the UntypedBindingExpression's subscriptions are kept active.
-            using (target!.OfType<string?>().Subscribe(x => { }))
+            using (target.ToObservable()!.OfType<string?>().Subscribe(x => { }))
             {
                 data.Pet = null;
-                Assert.False(target.SetValue("Rover"));
+                Assert.False(target.WriteValueToSource("Rover"));
             }
         }
 
@@ -93,9 +93,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new Person { Pet = new Cat() };
             var target = BindingExpression.Create(data, o => (o.Pet as Dog)!.IsBarky);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                Assert.False(target.SetValue("baz"));
+                Assert.False(target.WriteValueToSource("baz"));
             }
 
             GC.KeepAlive(data);
@@ -108,8 +108,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => o.Name);
             var result = new List<object?>();
 
-            target.Subscribe(result.Add);
-            target.SetValue("Frank");
+            target.ToObservable().Subscribe(result.Add);
+            target.WriteValueToSource("Frank");
 
             Assert.Equal(new[] { null, "Frank" }, result);
 
@@ -123,8 +123,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => o.Name);
             var result = new List<object?>();
 
-            target.Subscribe(result.Add);
-            target.SetValue("Frank");
+            target.ToObservable().Subscribe(result.Add);
+            target.WriteValueToSource("Frank");
 
             Assert.Equal(new[] { null, "Frank" }, result);
 
@@ -137,9 +137,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new Person();
             var target = BindingExpression.Create(data, o => (o.Pet as Dog)!.Name);
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                Assert.False(target.SetValue("Fido"));
+                Assert.False(target.WriteValueToSource("Fido"));
             }
 
             GC.KeepAlive(data);
@@ -154,9 +154,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 o => o.Name,
                 converter: new CaseConverter());
 
-            using (target.Subscribe(_ => { }))
+            using (target.ToObservable().Subscribe(_ => { }))
             {
-                Assert.True(target.SetValue("Kups"));
+                Assert.True(target.WriteValueToSource("Kups"));
             }
 
             Assert.Equal("kups", data.Name);
@@ -173,9 +173,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 data,
                 o => o.WhiskerCount,
                 converter: new CaseConverter(),
-                mode: BindingMode.TwoWay,
-                target: control,
-                targetProperty: Visual.OpacityProperty);
+                mode: BindingMode.TwoWay);
             var instance = new InstancedBinding(
                 target, 
                 BindingMode.TwoWay, 

@@ -26,7 +26,7 @@ namespace Avalonia.LeakTests
                 var source = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
                 var target = BindingExpression.Create(source, o => o.Foo);
 
-                target.Subscribe(_ => { });
+                target.ToObservable().Subscribe(_ => { });
                 return target;
             };
 
@@ -44,7 +44,7 @@ namespace Avalonia.LeakTests
                 var source = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
                 var target = BindingExpression.Create(source, o => o.Foo, enableDataValidation: true);
 
-                target.Subscribe(_ => { });
+                target.ToObservable().Subscribe(_ => { });
                 return target;
             };
 
@@ -62,7 +62,7 @@ namespace Avalonia.LeakTests
                 var source = new { Foo = new NonIntegerIndexer() };
                 var target = BindingExpression.Create(source, o => o.Foo);
 
-                target.Subscribe(_ => { });
+                target.ToObservable().Subscribe(_ => { });
                 return target;
             };
 
@@ -79,7 +79,7 @@ namespace Avalonia.LeakTests
             {
                 var source = new { Foo = new MethodBound() };
                 var target = BindingExpression.Create(source, o => (Action)o.Foo.A);
-                target.Subscribe(_ => { });
+                target.ToObservable().Subscribe(_ => { });
                 return target;
             };
 

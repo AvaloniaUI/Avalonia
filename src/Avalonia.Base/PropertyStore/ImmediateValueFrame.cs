@@ -15,9 +15,7 @@ namespace Avalonia.PropertyStore
         {
         }
 
-        public IValueEntry AddBinding<T>(
-            StyledProperty<T> property,
-            BindingExpression source)
+        public IValueEntry AddBinding<T>(UntypedBindingExpressionBase source)
         {
             Add(source);
             return source;

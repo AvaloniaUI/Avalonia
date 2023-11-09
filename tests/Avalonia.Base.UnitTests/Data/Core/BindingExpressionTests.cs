@@ -15,16 +15,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
     [InvariantCulture]
     public class BindingExpressionTests
     {
-        private static AvaloniaProperty TargetTypeDouble => TargetProperties.DoubleProperty;
-        private static AvaloniaProperty TargetTypeInt => TargetProperties.IntProperty;
-        private static AvaloniaProperty TargetTypeString => TargetProperties.StringProperty;
-
-
         [Fact]
         public async Task Should_Get_Source_Value()
         {
             var data = "foo";
-            var target = BindingExpression.Create(data, o => o);
+            var target = BindingExpression.Create(data, o => o).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -36,7 +31,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Convert_String_To_Double()
         {
             var data = new Class1 { StringValue = $"{5.6}" };
-            var target = BindingExpression.Create(data, o => o.StringValue, targetProperty: TargetTypeDouble);
+            var target = BindingExpression.Create(data, o => o.StringValue).ToObservable(typeof(double));
             var result = await target.Take(1);
 
             Assert.Equal(5.6, result);
@@ -48,7 +43,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Getting_Invalid_Double_String_Should_Return_BindingError()
         {
             var data = new Class1 { StringValue = "foo" };
-            var target = BindingExpression.Create(data, o => o.StringValue, targetProperty: TargetTypeDouble);
+            var target = BindingExpression.Create(data, o => o.StringValue).ToObservable(typeof(double));
             var result = await target.Take(1);
 
             Assert.IsType<BindingNotification>(result);
@@ -60,11 +55,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Convert_Set_String_To_Double()
         {
             var data = new Class1 { StringValue = $"{5.6}" };
-            var target = BindingExpression.Create(data, o => o.StringValue, targetProperty: TargetTypeDouble);
+            var target = BindingExpression.Create(data, o => o.StringValue);
 
-            using (target.Subscribe(x => { }))
+            using (target.ToObservable().Subscribe(x => { }))
             {
-                target.SetValue($"{6.7}");
+                target.WriteValueToSource($"{6.7}");
             }
 
             Assert.Equal($"{6.7}", data.StringValue);
@@ -76,7 +71,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Convert_Double_To_String()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(data, o => o.DoubleValue, targetProperty: TargetTypeString);
+            var target = BindingExpression.Create(data, o => o.DoubleValue).ToObservable(typeof(string));
             var result = await target.Take(1);
 
             Assert.Equal($"{5.6}", result);
@@ -90,9 +85,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new Class1 { DoubleValue = 5.6 };
             var target = BindingExpression.Create(data, o => o.DoubleValue);
 
-            using (target.Subscribe(x => { }))
+            using (target.ToObservable().Subscribe(x => { }))
             {
-                target.SetValue($"{6.7}");
+                target.WriteValueToSource($"{6.7}");
             }
 
             Assert.Equal(6.7, data.DoubleValue);
@@ -101,14 +96,13 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value()
+        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertible_Target_Value()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = BindingExpression.Create(
                 data,
                 o => o.StringValue,
-                fallbackValue: 42,
-                targetProperty: TargetTypeInt);
+                fallbackValue: 42).ToObservable(typeof(int));
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -122,15 +116,14 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value_With_Data_Validation()
+        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertible_Target_Value_With_Data_Validation()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = BindingExpression.Create(
                 data,
                 o => o.StringValue,
                 enableDataValidation: true,
-                fallbackValue: 42,
-                targetProperty: TargetTypeInt);
+                fallbackValue: 42).ToObservable(typeof(int));
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -147,9 +140,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Setting_Invalid_Double_String_Should_Not_Change_Target()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(data, o => o.DoubleValue, targetProperty: TargetTypeString);
+            var target = BindingExpression.Create(data, o => o.DoubleValue);
 
-            target.SetValue("foo");
+            using (target.ToObservable().Subscribe(_ => { }))
+                target.WriteValueToSource("foo");
 
             Assert.Equal(5.6, data.DoubleValue);
 
@@ -163,11 +157,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(
                 data, 
                 o => o.DoubleValue,
-                fallbackValue: "9.8",
-                targetProperty: TargetTypeString);
+                fallbackValue: "9.8");
 
-            using (target.Subscribe(_ => { }))
-                target.SetValue("foo");
+            using (target.ToObservable().Subscribe(_ => { }))
+                target.WriteValueToSource("foo");
 
             Assert.Equal(9.8, data.DoubleValue);
 
@@ -178,10 +171,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Coerce_Setting_UnsetValue_Double_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(data, o => o.DoubleValue, targetProperty: TargetTypeString);
+            var target = BindingExpression.Create(data, o => o.DoubleValue);
 
-            using (target.Subscribe(_ => { }))
-                target.SetValue(AvaloniaProperty.UnsetValue);
+            using (target.ToObservable().Subscribe(_ => { }))
+                target.WriteValueToSource(AvaloniaProperty.UnsetValue);
 
             Assert.Equal(0, data.DoubleValue);
 
@@ -198,8 +191,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 data, 
                 o => o.DoubleValue,                
                 converter: converter.Object,
-                converterParameter: "foo",
-                targetProperty: TargetTypeString);
+                converterParameter: "foo").ToObservable(typeof(string));
 
             target.Subscribe(_ => { });
 
@@ -217,11 +209,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 data,
                 o => o.DoubleValue,
                 converter: converter.Object,
-                converterParameter: "foo",
-                targetProperty: TargetTypeString);
+                converterParameter: "foo");
 
-            using (target.Subscribe(_ => { }))
-                target.SetValue("bar");
+            using (target.ToObservable().Subscribe(_ => { }))
+                target.WriteValueToSource("bar");
 
             converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.CurrentCulture));
 
@@ -236,14 +227,13 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(
                 data,
                 o => o.DoubleValue,
-                enableDataValidation: true,
-                targetProperty: TargetTypeString);
+                enableDataValidation: true);
             var result = new List<object>();
 
-            target.Subscribe(x => result.Add(x));
-            target.SetValue(1.2);
-            target.SetValue($"{3.4}");
-            target.SetValue("bar");
+            target.ToObservable(typeof(string)).Subscribe(x => result.Add(x));
+            target.WriteValueToSource(1.2);
+            target.WriteValueToSource($"{3.4}");
+            target.WriteValueToSource("bar");
 
             Assert.Equal(
                 new[]
@@ -268,11 +258,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(
                 data, 
                 o => o.StringValue,
-                targetNullValue: "bar",
-                targetProperty: TargetTypeString);
+                targetNullValue: "bar");
 
             object result = null;
-            target.Subscribe(x => result = x);
+            target.ToObservable().Subscribe(x => result = x);
 
             Assert.Equal("foo", result);
 

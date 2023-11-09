@@ -313,10 +313,10 @@ namespace Avalonia.Markup.UnitTests.Data
             child.GetObservable(Control.DataContextProperty).Subscribe(x => values.Add(x));
             child.Bind(Control.DataContextProperty, new Binding("Foo"));
 
-            // When binding to DataContext and the target isn't found, the binding should produce
+            // When binding to DataContext and the source isn't found, the binding should produce
             // null rather than UnsetValue in order to not propagate incorrect DataContexts from
             // parent controls while things are being set up. This logic is implemented in 
-            // `Avalonia.Markup.Data.Binding.Initiate`.
+            // `UntypedBindingExpressionBase.PublishValue`.
             Assert.True(child.IsSet(Control.DataContextProperty));
 
             root.Child = child;

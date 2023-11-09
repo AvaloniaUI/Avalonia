@@ -26,7 +26,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var expressionObserver = (BindingExpression)target.Initiate(
                 textBlock,
-                TextBlock.TextProperty).Source;
+                TextBlock.TextProperty).Expression;
 
             Assert.Same(StringConverters.IsNullOrEmpty, expressionObserver.Converter);
         }

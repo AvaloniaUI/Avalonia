@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value()
         {
             var data = new { Foo = "foo" };
-            var target = BindingExpression.Create(data, o => o.Foo);
+            var target = BindingExpression.Create(data, o => o.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -34,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value_Null()
         {
             var data = new { Foo = (string)null };
-            var target = BindingExpression.Create(data, o => o.Foo);
+            var target = BindingExpression.Create(data, o => o.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Null(result);
@@ -46,7 +46,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_From_Base_Class()
         {
             var data = new Class3 { Foo = "foo" };
-            var target = BindingExpression.Create(data, o => o.Foo);
+            var target = BindingExpression.Create(data, o => o.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -57,7 +57,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         [Fact]
         public async Task Should_Return_BindingNotification_Error_For_Root_Null()
         {
-            var target = BindingExpression.Create(default(Class3), o => o.Foo);
+            var target = BindingExpression.Create(default(Class3), o => o.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -71,7 +71,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         [Fact]
         public async Task Should_Return_BindingNotification_Error_For_Root_UnsetValue()
         {
-            var target = BindingExpression.Create(AvaloniaProperty.UnsetValue, o => (o as Class3).Foo);
+            var target = BindingExpression.Create(AvaloniaProperty.UnsetValue, o => (o as Class3).Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -86,7 +86,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } } };
-            var target = BindingExpression.Create(data, o => o.Foo.Bar.Baz);
+            var target = BindingExpression.Create(data, o => o.Foo.Bar.Baz).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal("baz", result);
@@ -101,7 +101,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => o.Foo.Foo.Length);
             var result = new List<object>();
 
-            target.Subscribe(x => result.Add(x));
+            target.ToObservable().Subscribe(x => result.Add(x));
 
             Assert.Equal(
                 new[]
@@ -123,7 +123,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => o.Foo);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = target.ToObservable().Subscribe(x => result.Add(x));
             data.Foo = "bar";
 
             Assert.Equal(new[] { "foo", "bar" }, result);
@@ -145,7 +145,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => o.Bar);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = target.ToObservable().Subscribe(x => result.Add(x));
 
             Assert.Equal(new[] { "foo" }, result);
 
@@ -182,7 +182,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = target.ToObservable().Subscribe(x => result.Add(x));
             ((Class2)data.Next).Bar = "baz";
             ((Class2)data.Next).Bar = null;
 
@@ -205,7 +205,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = target.ToObservable().Subscribe(x => result.Add(x));
             var old = data.Next;
             data.Next = new Class2 { Bar = "baz" };
             data.Next = new Class2 { Bar = null };
@@ -241,7 +241,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => ((o.Next as Class2).Next as Class2).Bar);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = target.ToObservable().Subscribe(x => result.Add(x));
             var old = data.Next;
             data.Next = new Class2 { Bar = "baz" };
             data.Next = old;
@@ -277,7 +277,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = target.ToObservable().Subscribe(x => result.Add(x));
             var old = data.Next;
             var breaking = new WithoutBar();
             data.Next = breaking;
@@ -321,7 +321,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             };
 
             var result = run();
-            result.Item1.Subscribe(x => { });
+            result.Item1.ToObservable().Subscribe(x => { });
 
             // Mono trickery
             GC.Collect(2);
@@ -341,7 +341,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = BindingExpression.Create(source, x => x.Name);
             var result = new List<object>();
 
-            target.Subscribe(x => result.Add(x));
+            target.ToObservable().Subscribe(x => result.Add(x));
 
             Assert.Equal(new[] { "NewName" }, result);
         }
@@ -357,8 +357,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 data, 
                 o => o.IntValue,
                 mode: BindingMode.TwoWay,
-                target: control,
-                targetProperty: DockPanel.DockProperty,
                 allowReflection: allowReflection);
             var instance = new InstancedBinding(
                 target,

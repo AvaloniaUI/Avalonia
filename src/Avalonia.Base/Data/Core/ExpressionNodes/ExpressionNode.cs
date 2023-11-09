@@ -59,7 +59,7 @@ internal abstract class ExpressionNode
     {
         get
         {
-            return _value == BindingExpression.NullReference || 
+            return _value == UntypedBindingExpressionBase._nullReference || 
                 _value?.TryGetTarget(out _) == true;
         }
     }
@@ -137,7 +137,7 @@ internal abstract class ExpressionNode
             // If the source is null then the value is null. We explicitly do not want to call
             // OnSourceChanged as we don't want to raise errors for subsequent nodes in the
             // binding change.
-            _value = BindingExpression.NullReference;
+            _value = BindingExpression._nullReference;
         }
         else if (source != oldSource)
         {
@@ -199,11 +199,20 @@ internal abstract class ExpressionNode
         if (valueOrNotification is BindingNotification notification)
         {
             if (notification.ErrorType == BindingErrorType.Error)
+            {
                 SetError(notification.Error!);
+            }
             else if (notification.ErrorType == BindingErrorType.DataValidationError)
-                SetValue(notification.Value, notification.Error);
+            {
+                if (notification.HasValue)
+                    SetValue(notification.Value, notification.Error);
+                else
+                    SetDataValidationError(notification.Error!);
+            }
             else
+            {
                 SetValue(notification.Value, null);
+            }
         }
         else
         {
@@ -237,11 +246,11 @@ internal abstract class ExpressionNode
         // - The new value is different to the old value
         if (_value is null ||
             dataValidationError is not null ||
-            (dataValidationError is null && Owner.HasDataValidationError) ||
+            (dataValidationError is null && Owner.ErrorType == BindingErrorType.DataValidationError) ||
             _value.TryGetTarget(out var oldValue) == false ||
             !Equals(oldValue, value))
         {
-            _value = value is null ? BindingExpression.NullReference : new(value);
+            _value = value is null ? BindingExpression._nullReference : new(value);
             Owner.OnNodeValueChanged(Index, value, dataValidationError);
         }
     }

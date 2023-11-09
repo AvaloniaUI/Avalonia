@@ -19,7 +19,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Negate_0()
         {
             var data = new { Foo = 0 };
-            var target = Build(data, "!Foo");
+            var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
             Assert.True((bool)result);
@@ -31,7 +31,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Negate_1()
         {
             var data = new { Foo = 1 };
-            var target = Build(data, "!Foo");
+            var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
             Assert.False((bool)result);
@@ -43,7 +43,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Negate_False_String()
         {
             var data = new { Foo = "false" };
-            var target = Build(data, "!Foo");
+            var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
             Assert.True((bool)result);
@@ -55,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Negate_True_String()
         {
             var data = new { Foo = "True" };
-            var target = Build(data, "!Foo");
+            var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
             Assert.False((bool)result);
@@ -67,7 +67,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Return_BindingNotification_For_String_Not_Convertible_To_Boolean()
         {
             var data = new { Foo = "foo" };
-            var target = Build(data, "!Foo");
+            var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -83,7 +83,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Return_BindingNotification_For_Value_Not_Convertible_To_Boolean()
         {
             var data = new { Foo = new object() };
-            var target = Build(data, "!Foo");
+            var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -99,7 +99,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Negate_BindingNotification_Value()
         {
             var data = new { Foo = true };
-            var target = Build(data, "!Foo", enableDataValidation: true);
+            var target = BuildAsObservable(data, "!Foo", enableDataValidation: true);
             var result = await target.Take(1);
 
             Assert.Equal(new BindingNotification(false), result);
@@ -111,7 +111,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Pass_Through_BindingNotification_Error()
         {
             var data = new object();
-            var target = Build(data, "!Foo", enableDataValidation: true);
+            var target = BuildAsObservable(data, "!Foo", enableDataValidation: true);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -127,7 +127,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Negate_BindingNotification_Error_FallbackValue()
         {
             var data = new Test { DataValidationError = "Test error" };
-            var target = Build(data, "!Foo", enableDataValidation: true);
+            var target = BuildAsObservable(data, "!Foo", enableDataValidation: true);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -145,9 +145,9 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new { Foo = "foo" };
             var target = Build(data, "!Foo");
-            target.Subscribe(_ => { });
+            target.ToObservable().Subscribe(_ => { });
 
-            Assert.False(target.SetValue("bar"));
+            Assert.False(target.WriteValueToSource("bar"));
 
             GC.KeepAlive(data);
         }
@@ -163,6 +163,11 @@ namespace Avalonia.Markup.UnitTests.Parsers
                 nodes,
                 AvaloniaProperty.UnsetValue,
                 enableDataValidation: enableDataValidation);
+        }
+
+        private static IObservable<object> BuildAsObservable(object source, string path, bool enableDataValidation = false)
+        {
+            return Build(source, path, enableDataValidation).ToObservable();
         }
 
         private class Test : INotifyDataErrorInfo

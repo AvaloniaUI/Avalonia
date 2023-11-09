@@ -27,7 +27,7 @@ public abstract class BindingExpressionTests_Indexer
     public async Task Should_Get_Array_Value()
     {
         var data = new { Foo = new[] { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[1]);
+        var target = CreateTarget(data, o => o.Foo[1]).ToObservable();
         var result = await target.Take(1);
 
         Assert.Equal("bar", result);
@@ -39,7 +39,7 @@ public abstract class BindingExpressionTests_Indexer
     public async Task Should_Get_MultiDimensional_Array_Value()
     {
         var data = new { Foo = new[,] { { "foo", "bar" }, { "baz", "qux" } } };
-        var target = CreateTarget(data, o => o.Foo[1, 1]);
+        var target = CreateTarget(data, o => o.Foo[1, 1]).ToObservable();
         var result = await target.Take(1);
 
         Assert.Equal("qux", result);
@@ -51,7 +51,7 @@ public abstract class BindingExpressionTests_Indexer
     public async Task Should_Get_Value_For_String_Indexer()
     {
         var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
-        var target = CreateTarget(data, o => o.Foo["foo"]);
+        var target = CreateTarget(data, o => o.Foo["foo"]).ToObservable();
         var result = await target.Take(1);
 
         Assert.Equal("bar", result);
@@ -63,7 +63,7 @@ public abstract class BindingExpressionTests_Indexer
     public async Task Should_Get_Value_For_Non_String_Indexer()
     {
         var data = new { Foo = new Dictionary<double, string> { { 1.0, "bar" }, { 2.0, "qux" } } };
-        var target = CreateTarget(data, o => o.Foo[1.0]);
+        var target = CreateTarget(data, o => o.Foo[1.0]).ToObservable();
         var result = await target.Take(1);
 
         Assert.Equal("bar", result);
@@ -75,7 +75,7 @@ public abstract class BindingExpressionTests_Indexer
     public async Task Array_Out_Of_Bounds_Should_Return_UnsetValue()
     {
         var data = new { Foo = new[] { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[2]);
+        var target = CreateTarget(data, o => o.Foo[2]).ToObservable();
         var result = await target.Take(1);
 
         Assert.Equal(AvaloniaProperty.UnsetValue, BindingNotification.ExtractValue(result));
@@ -87,7 +87,7 @@ public abstract class BindingExpressionTests_Indexer
     public async Task List_Out_Of_Bounds_Should_Return_UnsetValue()
     {
         var data = new { Foo = new List<string> { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[2]);
+        var target = CreateTarget(data, o => o.Foo[2]).ToObservable();
         var result = await target.Take(1);
 
         Assert.Equal(AvaloniaProperty.UnsetValue, BindingNotification.ExtractValue(result));
@@ -99,7 +99,7 @@ public abstract class BindingExpressionTests_Indexer
     public async Task Should_Get_List_Value()
     {
         var data = new { Foo = new List<string> { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[1]);
+        var target = CreateTarget(data, o => o.Foo[1]).ToObservable();
         var result = await target.Take(1);
 
         Assert.Equal("bar", result);
@@ -111,7 +111,7 @@ public abstract class BindingExpressionTests_Indexer
     public void Should_Track_INCC_Add()
     {
         var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[2]);
+        var target = CreateTarget(data, o => o.Foo[2]).ToObservable();
         var result = new List<object?>();
 
         using (var sub = target.Subscribe(x => result.Add(BindingNotification.ExtractValue(x))))
@@ -132,7 +132,7 @@ public abstract class BindingExpressionTests_Indexer
     public void Should_Track_INCC_Remove()
     {
         var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[0]);
+        var target = CreateTarget(data, o => o.Foo[0]).ToObservable();
         var result = new List<object?>();
 
         using (var sub = target.Subscribe(result.Add))
@@ -153,7 +153,7 @@ public abstract class BindingExpressionTests_Indexer
     public void Should_Track_INCC_Replace()
     {
         var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[1]);
+        var target = CreateTarget(data, o => o.Foo[1]).ToObservable();
         var result = new List<object?>();
 
         using (var sub = target.Subscribe(result.Add))
@@ -177,7 +177,7 @@ public abstract class BindingExpressionTests_Indexer
         // method, but even if it did we need to test with ObservableCollection as well
         // as AvaloniaList as it implements PropertyChanged as an explicit interface event.
         var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[1]);
+        var target = CreateTarget(data, o => o.Foo[1]).ToObservable();
         var result = new List<object?>();
 
         var sub = target.Subscribe(result.Add);
@@ -193,7 +193,7 @@ public abstract class BindingExpressionTests_Indexer
     public void Should_Track_INCC_Reset()
     {
         var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-        var target = CreateTarget(data, o => o.Foo[1]);
+        var target = CreateTarget(data, o => o.Foo[1]).ToObservable();
         var result = new List<object?>();
 
         var sub = target.Subscribe(x => result.Add(BindingNotification.ExtractValue(x)));
@@ -212,7 +212,7 @@ public abstract class BindingExpressionTests_Indexer
         data.Foo["foo"] = "bar";
         data.Foo["baz"] = "qux";
 
-        var target = CreateTarget(data, o => o.Foo["foo"]);
+        var target = CreateTarget(data, o => o.Foo["foo"]).ToObservable();
         var result = new List<object?>();
 
         using (var sub = target.Subscribe(result.Add))
@@ -236,9 +236,9 @@ public abstract class BindingExpressionTests_Indexer
         var data = new { Foo = new[] { "foo", "bar" } };
         var target = CreateTarget(data, o => o.Foo[1]);
 
-        using (target.Subscribe(_ => { }))
+        using (target.ToObservable().Subscribe(_ => { }))
         {
-            Assert.True(target.SetValue("baz"));
+            Assert.True(target.WriteValueToSource("baz"));
         }
 
         Assert.Equal("baz", data.Foo[1]);
@@ -258,9 +258,9 @@ public abstract class BindingExpressionTests_Indexer
         };
 
         var target = CreateTarget(data, o => o.Foo["foo"]);
-        using (target.Subscribe(_ => { }))
+        using (target.ToObservable().Subscribe(_ => { }))
         {
-            Assert.True(target.SetValue(4));
+            Assert.True(target.WriteValueToSource(4));
         }
 
         Assert.Equal(4, data.Foo["foo"]);
@@ -280,9 +280,9 @@ public abstract class BindingExpressionTests_Indexer
         };
 
         var target = CreateTarget(data, o => o.Foo["bar"]);
-        using (target.Subscribe(_ => { }))
+        using (target.ToObservable().Subscribe(_ => { }))
         {
-            Assert.True(target.SetValue(4));
+            Assert.True(target.WriteValueToSource(4));
         }
 
         Assert.Equal(4, data.Foo["bar"]);
@@ -299,9 +299,9 @@ public abstract class BindingExpressionTests_Indexer
 
         var target = CreateTarget(data, o => o.Foo["foo"]);
 
-        using (target.Subscribe(_ => { }))
+        using (target.ToObservable().Subscribe(_ => { }))
         {
-            Assert.True(target.SetValue("bar2"));
+            Assert.True(target.WriteValueToSource("bar2"));
         }
 
         Assert.Equal("bar2", data.Foo["foo"]);
@@ -314,7 +314,7 @@ public abstract class BindingExpressionTests_Indexer
     {
         var data = new[] { 1, 2, 3 };
 
-        var target = BindingExpression.Create(data, o => o[1]);
+        var target = BindingExpression.Create(data, o => o[1]).ToObservable();
 
         var value = await target.Take(1);
 

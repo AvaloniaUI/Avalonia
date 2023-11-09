@@ -24,7 +24,7 @@ namespace Avalonia.Data
             _ = property ?? throw new ArgumentNullException(nameof(property));
             _ = binding ?? throw new ArgumentNullException(nameof(binding));
 
-            if (binding.Source is BindingExpression expression)
+            if (binding.Expression is { } expression)
             {
                 return target.Bind(property, expression, BindingPriority.LocalValue);
             }

@@ -429,5 +429,25 @@ namespace Avalonia.Utilities
 
             return null;
         }
+
+        /// <summary>
+        /// Determines whether the specified object instances are "identity" equal which means
+        /// reference equal for reference types and <see cref="object.Equals(object?)"/> for value
+        /// types.
+        /// </summary>
+        /// <param name="a">The first object to compare.</param>
+        /// <param name="b">The second object to compare.</param>
+        /// <param name="type">
+        /// The type which determines whether the objects should be treated as a reference or
+        /// value type.
+        /// </param>
+        /// <returns>True if the objects are considered equal; otherwise false.</returns>
+        internal static bool IdentityEquals(object? a, object? b, Type type)
+        {
+            if (type.IsValueType || type == typeof(string))
+                return Equals(a, b);
+            else
+                return ReferenceEquals(a, b);
+        }
     }
 }

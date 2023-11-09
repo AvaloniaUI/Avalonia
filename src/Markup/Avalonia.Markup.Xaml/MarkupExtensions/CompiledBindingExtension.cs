@@ -71,9 +71,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 enableDataValidation: enableDataValidation,
                 mode: ResolveBindingMode(target, targetProperty),
                 stringFormat: StringFormat,
-                target: target,
                 targetNullValue: TargetNullValue,
-                targetProperty: targetProperty,
                 targetTypeConverter: TargetTypeConverter.GetDefaultConverter());
 
             return new InstancedBinding(expression, Mode, Priority);

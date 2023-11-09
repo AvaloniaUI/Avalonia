@@ -39,14 +39,14 @@ namespace Avalonia.Markup.Xaml.Templates
         {
             if (ItemsSource != null)
             {
-                var obs = ItemsSource switch
+                var expression = ItemsSource switch
                 {
                     Binding reflection => reflection.CreateObservableForTreeDataTemplate(item),
                     CompiledBindingExtension compiled => compiled.CreateObservableForTreeDataTemplate(item),
                     _ => throw new InvalidOperationException("TreeDataTemplate currently only supports Binding and CompiledBindingExtension!")
                 };
 
-                return InstancedBinding.OneWay(obs, BindingPriority.Style);
+                return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.Style);
             }
 
             return null;

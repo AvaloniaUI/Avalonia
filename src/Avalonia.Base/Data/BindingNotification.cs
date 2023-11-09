@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Data
 {
@@ -286,6 +287,19 @@ namespace Avalonia.Data
         {
             return a?.GetType() == b?.GetType() &&
                    a?.Message == b?.Message;
+        }
+    }
+
+    internal static class BindingErrorTypeExtensions
+    {
+        public static BindingValueType ToBindingValueType(this BindingErrorType type)
+        {
+            return type switch
+            {
+                BindingErrorType.Error => BindingValueType.BindingError,
+                BindingErrorType.DataValidationError => BindingValueType.DataValidationError,
+                _ => BindingValueType.Value,
+            };
         }
     }
 }

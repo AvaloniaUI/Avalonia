@@ -109,7 +109,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Should_Not_Keep_Source_Alive()
         {
-            Func<Tuple<BindingExpression, WeakReference>> run = () =>
+            Func<Tuple<IObservable<object>, WeakReference>> run = () =>
             {
                 var source = new Class1();
                 var target = Build(source, "(Owner.Foo)", typeResolver: _typeResolver);
@@ -144,13 +144,13 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Throws<ExpressionParseException>(() => Build(data, "(Owner.Foo.Bar)", typeResolver: _typeResolver));
         }
 
-        private static BindingExpression Build(object source, string path, Func<string, string, Type> typeResolver)
+        private static IObservable<object> Build(object source, string path, Func<string, string, Type> typeResolver)
         {
             var r = new CharacterReader(path);
             var grammar = BindingExpressionGrammar.Parse(ref r).Nodes;
             var nodes = new List<ExpressionNode>();
             ExpressionNodeFactory.CreateFromAst(grammar, typeResolver, null, nodes, out _);
-            return new BindingExpression(source, nodes, AvaloniaProperty.UnsetValue);
+            return new BindingExpression(source, nodes, AvaloniaProperty.UnsetValue).ToObservable();
         }
 
         private static class Owner

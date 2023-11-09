@@ -105,9 +105,7 @@ namespace Avalonia.Data
                 enableDataValidation: enableDataValidation,
                 mode: ResolveBindingMode(target, targetProperty),
                 stringFormat: StringFormat,
-                target: target,
                 targetNullValue: TargetNullValue,
-                targetProperty: targetProperty,
                 targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
             return new InstancedBinding(expression, Mode, Priority);
         }

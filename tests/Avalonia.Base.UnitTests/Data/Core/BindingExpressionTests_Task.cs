@@ -21,7 +21,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo);
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 tcs.SetResult("foo");
                 sync.ExecutePostedCallbacks();
 
@@ -41,7 +41,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
 
                 Assert.Equal(new[] { "foo" }, result);
 
@@ -59,7 +59,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Next.StreamBinding().Foo);
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 tcs.SetResult(new Class2("foo"));
                 sync.ExecutePostedCallbacks();
 
@@ -79,7 +79,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 tcs.SetException(new NotSupportedException());
                 sync.ExecutePostedCallbacks();
 
@@ -105,7 +105,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
 
                 Assert.Equal(
                     new[]
@@ -130,7 +130,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 tcs.SetResult("foo");
                 sync.ExecutePostedCallbacks();
 

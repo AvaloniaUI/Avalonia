@@ -24,10 +24,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = CreateTarget(data, o => o.MustBePositive, false);
             var validationMessageFound = false;
 
-            target!.OfType<BindingNotification>()
+            target.ToObservable()!.OfType<BindingNotification>()
                 .Where(x => x.ErrorType == BindingErrorType.DataValidationError)
                 .Subscribe(_ => validationMessageFound = true);
-            target.SetValue(-5);
+            target.WriteValueToSource(-5);
 
             Assert.False(validationMessageFound);
 
@@ -41,10 +41,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = CreateTarget(data, o => o.MustBePositive);
             var validationMessageFound = false;
 
-            target!.OfType<BindingNotification>()
+            target.ToObservable()!.OfType<BindingNotification>()
                 .Where(x => x.ErrorType == BindingErrorType.DataValidationError)
                 .Subscribe(_ => validationMessageFound = true);
-            target.SetValue(-5);
+            target.WriteValueToSource(-5);
 
             Assert.True(validationMessageFound);
 
@@ -55,7 +55,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Indei_Validation_Does_Not_Subscribe_When_DataValidation_Not_Enabled()
         {
             var data = new IndeiTest { MustBePositive = 5 };
-            var observer = CreateTarget(data, o => o.MustBePositive, false);
+            var observer = CreateTarget(data, o => o.MustBePositive, false).ToObservable();
 
             observer.Subscribe(_ => { });
 
@@ -66,7 +66,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Enabled_Indei_Validation_Subscribes()
         {
             var data = new IndeiTest { MustBePositive = 5 };
-            var observer = CreateTarget(data, o => o.MustBePositive);
+            var observer = CreateTarget(data, o => o.MustBePositive).ToObservable();
             var sub = observer.Subscribe(_ => { });
 
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
@@ -83,11 +83,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var observer = CreateTarget(data, o => o.MustBePositive);
             var result = new List<object?>();
 
-            observer.Subscribe(x => result.Add(x));
-            observer.SetValue(5);
-            observer.SetValue(-5);
-            observer.SetValue("foo");
-            observer.SetValue(5);
+            observer.ToObservable().Subscribe(x => result.Add(x));
+            observer.WriteValueToSource(5);
+            observer.WriteValueToSource(-5);
+            observer.WriteValueToSource("foo");
+            observer.WriteValueToSource(5);
 
             Assert.Equal(new[]
             {
@@ -120,7 +120,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 Inner = new IndeiTest()
             };
 
-            var observer = CreateTarget(data, o => o.Inner!.MustBePositive);
+            var observer = CreateTarget(data, o => o.Inner!.MustBePositive).ToObservable();
 
             observer.Subscribe(_ => { });
 
@@ -136,7 +136,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var container = new Container();
 
-            var observer = CreateTarget(container, o => o.Inner!.MustBePositive);
+            var observer = CreateTarget(container, o => o.Inner!.MustBePositive).ToObservable();
 
             var result = new List<object?>();
 

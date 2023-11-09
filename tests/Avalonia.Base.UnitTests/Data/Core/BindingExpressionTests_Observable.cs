@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo);
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 source.OnNext("bar");
                 sync.ExecutePostedCallbacks();
 
@@ -42,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 source.OnNext("bar");
                 sync.ExecutePostedCallbacks();
 
@@ -61,7 +61,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Next.StreamBinding().Foo);
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 data.Next.OnNext(new Class2("foo"));
                 sync.ExecutePostedCallbacks();
 
@@ -86,7 +86,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 source.OnNext("bar");
                 sync.ExecutePostedCallbacks();
 
@@ -108,7 +108,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data1, o => o.Next.StreamBinding().Foo, enableDataValidation: true);
                 var result = new List<object>();
 
-                var sub = target.Subscribe(x => result.Add(x));
+                var sub = target.ToObservable().Subscribe(x => result.Add(x));
                 data1.Next.OnNext(data2);
                 sync.ExecutePostedCallbacks();
 
@@ -138,7 +138,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 var target = BindingExpression.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<int>();
 
-                var sub = target.Subscribe(x => result.Add((int)x));
+                var sub = target.ToObservable().Subscribe(x => result.Add((int)x));
                 source.OnNext(42);
                 sync.ExecutePostedCallbacks();
 

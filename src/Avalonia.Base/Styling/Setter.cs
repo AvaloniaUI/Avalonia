@@ -120,7 +120,7 @@ namespace Avalonia.Styling
                 {
                     if (i.Source is BindingExpression expression)
                     {
-                        expression.Initialize(target.GetValueStore(), Property, instance.Priority);
+                        expression.Attach(target.GetValueStore(), target, Property, instance.Priority);
                         return expression;
                     }
                     else

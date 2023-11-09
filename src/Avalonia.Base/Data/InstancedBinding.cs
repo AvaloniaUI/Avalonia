@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Data.Core;
 using Avalonia.Reactive;
 using ObservableEx = Avalonia.Reactive.Observable;
 
@@ -16,6 +17,9 @@ namespace Avalonia.Data
     /// </remarks>
     public sealed class InstancedBinding
     {
+        private IObservable<object?>? _observable;
+        private UntypedBindingExpressionBase? _expression;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
         /// </summary>
@@ -32,7 +36,14 @@ namespace Avalonia.Data
         {
             Mode = mode;
             Priority = priority;
-            Source = source ?? throw new ArgumentNullException(nameof(source));
+            _observable = source ?? throw new ArgumentNullException(nameof(source));
+        }
+
+        internal InstancedBinding(UntypedBindingExpressionBase source, BindingMode mode, BindingPriority priority)
+        {
+            Mode = mode;
+            Priority = priority;
+            _expression = source ?? throw new ArgumentNullException(nameof(source));
         }
 
         /// <summary>
@@ -48,10 +59,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the binding source observable.
         /// </summary>
-        public IObservable<object?> Source { get; }
+        public IObservable<object?> Source => _observable ??= _expression!.ToObservable();
 
         [Obsolete("Use Source property"), EditorBrowsable(EditorBrowsableState.Never)]
         public IObservable<object?> Observable => Source;
+
+        internal UntypedBindingExpressionBase? Expression => _expression;
 
         /// <summary>
         /// Creates a new one-time binding with a fixed value.

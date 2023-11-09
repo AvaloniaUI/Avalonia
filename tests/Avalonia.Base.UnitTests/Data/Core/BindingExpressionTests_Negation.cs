@@ -16,7 +16,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Negate_Boolean_Value(bool value)
         {
             var data = new Test { Foo = value };
-            var target = BindingExpression.Create(data, o => !o.Foo);
+            var target = BindingExpression.Create(data, o => !o.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal(!value, (bool)result);
@@ -30,7 +30,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Negate_Boolean_Value_In_Path(bool value)
         {
             var data = new Test { Next = new Test { Foo = value } };
-            var target = BindingExpression.Create(data, o => !o.Next!.Foo);
+            var target = BindingExpression.Create(data, o => !o.Next!.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal(!value, (bool)result);
@@ -44,7 +44,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Double_Negate_Boolean_Value(bool value)
         {
             var data = new Test { Foo = value };
-            var target = BindingExpression.Create(data, o => !!o.Foo);
+            var target = BindingExpression.Create(data, o => !!o.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal(value, (bool)result);
@@ -58,7 +58,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Double_Negate_Boolean_Value_In_Path(bool value)
         {
             var data = new Test { Next = new Test { Foo = value } };
-            var target = BindingExpression.Create(data, o => !!o.Next!.Foo);
+            var target = BindingExpression.Create(data, o => !!o.Next!.Foo).ToObservable();
             var result = await target.Take(1);
 
             Assert.Equal(value, (bool)result);
@@ -71,9 +71,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Test { Foo = true };
             var target = BindingExpression.Create(data, o => !o.Foo);
-            target.Subscribe(_ => { });
+            target.ToObservable().Subscribe(_ => { });
 
-            Assert.True(target.SetValue(true));
+            Assert.True(target.WriteValueToSource(true));
 
             Assert.False(data.Foo);
         }
@@ -83,9 +83,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Test { Next = new Test { Foo = true } };
             var target = BindingExpression.Create(data, o => !o.Next!.Foo);
-            target.Subscribe(_ => { });
+            target.ToObservable().Subscribe(_ => { });
 
-            Assert.True(target.SetValue(true));
+            Assert.True(target.WriteValueToSource(true));
 
             Assert.False(data.Next.Foo);
         }
@@ -95,9 +95,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Test { Foo = true };
             var target = BindingExpression.Create(data, o => !!o.Foo);
-            target.Subscribe(_ => { });
+            target.ToObservable().Subscribe(_ => { });
 
-            Assert.True(target.SetValue(false));
+            Assert.True(target.WriteValueToSource(false));
 
             Assert.False(data.Foo);
         }
@@ -107,9 +107,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Test { Next = new Test { Foo = true } };
             var target = BindingExpression.Create(data, o => !!o.Next!.Foo);
-            target.Subscribe(_ => { });
+            target.ToObservable().Subscribe(_ => { });
 
-            Assert.True(target.SetValue(false));
+            Assert.True(target.WriteValueToSource(false));
 
             Assert.False(data.Next.Foo);
         }
