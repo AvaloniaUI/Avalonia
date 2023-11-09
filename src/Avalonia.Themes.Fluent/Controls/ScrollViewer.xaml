@@ -44,15 +44,18 @@
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"
                      Orientation="Horizontal"
-                     Grid.Row="1" />
+                     Grid.Row="1"
+                     Cursor="Arrow"/>
           <ScrollBar Name="PART_VerticalScrollBar"
                      Orientation="Vertical"
-                     Grid.Column="1" />
+                     Grid.Column="1"
+                     Cursor="Arrow"/>
           <Panel x:Name="PART_ScrollBarsSeparator"
                  Grid.Row="1"
                  Grid.Column="1"
                  Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}"
-                 Opacity="0">
+                 Opacity="0"
+                 Cursor="Arrow">
             <Panel.Transitions>
               <Transitions>
                 <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
@@ -64,11 +67,6 @@
     </Setter>
     <Style Selector="^[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
       <Setter Property="Opacity" Value="1" />
-    </Style>
-    <Style Selector="^ /template/ ScrollBar#PART_VerticalScrollBar, 
-                     ^ /template/ ScrollBar#PART_HorizontalScrollBar,
-                     ^ /template/ Panel#PART_ScrollBarsSeparator">
-      <Setter Property="Cursor" Value="Arrow" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

@@ -25,21 +25,19 @@
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"
                      Grid.Row="1"
-                     Orientation="Horizontal"/>
+                     Orientation="Horizontal"
+                     Cursor="Arrow"/>
           <ScrollBar Name="PART_VerticalScrollBar"
                      Grid.Column="1"
-                     Orientation="Vertical"/>
+                     Orientation="Vertical"
+                     Cursor="Arrow"/>
           <Panel Grid.Row="1"
                  Grid.Column="1"
-                 Background="{DynamicResource ThemeControlMidBrush}" />
+                 Background="{DynamicResource ThemeControlMidBrush}"
+                 Cursor="Arrow"/>
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^ /template/ ScrollBar#PART_VerticalScrollBar, 
-                     ^ /template/ ScrollBar#PART_HorizontalScrollBar,
-                     ^ /template/ Panel">
-      <Setter Property="Cursor" Value="Arrow" />
-    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="SimpleMenuScrollViewer"
