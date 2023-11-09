@@ -197,7 +197,7 @@ internal partial class X11Screens
         }
         
         
-        if (globalFactorString == null && screenFactorsString == null && usePhysicalDpi == null)
+        if (globalFactorString == null && screenFactorsString == null)
             return null;
 
         return (userConfig, globalFactor ?? 1, usePhysicalDpi);
