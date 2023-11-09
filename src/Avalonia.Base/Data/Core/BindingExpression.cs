@@ -9,7 +9,6 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
 using Avalonia.Logging;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core;
@@ -111,7 +110,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             leafAccessor?.EnableDataValidation();
     }
 
-    public string Description
+    public override string Description
     {
         get
         {
@@ -129,64 +128,6 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
     public ExpressionNode LeafNode => _nodes[_nodes.Count - 1];
     public string? StringFormat => _uncommon?._stringFormat;
-
-    /// <summary>
-    /// Writes the specified value to the binding source if possible.
-    /// </summary>
-    /// <param name="value">The value to write.</param>
-    /// <returns>
-    /// True if the value could be written to the binding source; otherwise false.
-    /// </returns>
-    public override bool WriteValueToSource(object? value)
-    {
-        if (_nodes.Count == 0 || LeafNode is not ISettableNode setter || setter.ValueType is not { } type)
-            return false;
-
-        if (Converter is not null)
-            value = Converter.ConvertBack(value, type, ConverterParameter, ConverterCulture);
-
-        if (value == BindingOperations.DoNothing)
-            return true;
-
-        // Use the target type converter to convert the value to the target type if necessary.
-        if (_targetTypeConverter is not null)
-        {
-            if (_targetTypeConverter.TryConvert(value, type, ConverterCulture, out var converted))
-            {
-                value = converted;
-            }
-            else if (FallbackValue != AvaloniaProperty.UnsetValue)
-            {
-                value = FallbackValue;
-            }
-            else if (IsDataValidationEnabled)
-            {
-                var valueString = value?.ToString() ?? "(null)";
-                var valueTypeName = value?.GetType().FullName ?? "null";
-                var ex = new InvalidCastException(
-                    $"Could not convert '{valueString}' ({valueTypeName}) to {type}.");
-                OnDataValidationError(ex);
-                return false;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        // Don't set the value if it's unchanged.
-        if (LeafNode.IsValueAlive && TypeUtilities.IdentityEquals(LeafNode.Value, value, type))
-            return true;
-
-        try
-        {
-            return setter.WriteValueToSource(value, _nodes);
-        }
-        catch
-        {
-            return false;
-        }
-    }
 
     /// <summary>
     /// Creates an <see cref="BindingExpression"/> from an expression tree.
@@ -319,47 +260,58 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         PublishValue(UnchangedValue, bindingError);
     }
 
-    private string CalculateErrorPoint(int nodeIndex)
+    internal override bool WriteValueToSource(object? value)
     {
-        // Build a string describing the binding chain up to the node that errored.
-        var result = new StringBuilder();
+        if (_nodes.Count == 0 || LeafNode is not ISettableNode setter || setter.ValueType is not { } type)
+            return false;
 
-        if (nodeIndex >= 0)
-            _nodes[nodeIndex].BuildString(result);
-        else
-            result.Append("(source)");
+        if (Converter is not null)
+            value = ConvertBack(Converter, ConverterCulture, ConverterParameter, value, type);
 
-        return result.ToString();
+        if (value == BindingOperations.DoNothing)
+            return true;
+
+        // Use the target type converter to convert the value to the target type if necessary.
+        if (_targetTypeConverter is not null)
+        {
+            if (_targetTypeConverter.TryConvert(value, type, ConverterCulture, out var converted))
+            {
+                value = converted;
+            }
+            else if (FallbackValue != AvaloniaProperty.UnsetValue)
+            {
+                value = FallbackValue;
+            }
+            else if (IsDataValidationEnabled)
+            {
+                var valueString = value?.ToString() ?? "(null)";
+                var valueTypeName = value?.GetType().FullName ?? "null";
+                var ex = new InvalidCastException(
+                    $"Could not convert '{valueString}' ({valueTypeName}) to {type}.");
+                OnDataValidationError(ex);
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        // Don't set the value if it's unchanged.
+        if (LeafNode.IsValueAlive && TypeUtilities.IdentityEquals(LeafNode.Value, value, type))
+            return true;
+
+        try
+        {
+            return setter.WriteValueToSource(value, _nodes);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
-    private void Log(AvaloniaObject target, string error, LogEventLevel level = LogEventLevel.Warning)
-    {
-        if (!Logger.TryGet(level, LogArea.Binding, out var log))
-            return;
-
-        log.Log(
-            target,
-            "An error occurred binding {Property} to {Expression}: {Message}",
-            (object?)TargetProperty ?? "(unknown)",
-            Description,
-            error);
-    }
-
-    private void Log(AvaloniaObject target, string error, string errorPoint, LogEventLevel level = LogEventLevel.Warning)
-    {
-        if (!Logger.TryGet(level, LogArea.Binding, out var log))
-            return;
-
-        log.Log(
-            target,
-            "An error occurred binding {Property} to {Expression} at {ExpressionErrorPoint}: {Message}",
-            (object?)TargetProperty ?? "(unknown)",
-            Description,
-            errorPoint,
-            error);
-    }
-
-    private bool ShouldLogError([NotNullWhen(true)] out AvaloniaObject? target)
+    protected override bool ShouldLogError([NotNullWhen(true)] out AvaloniaObject? target)
     {
         if (!TryGetTarget(out target))
             return false;
@@ -405,13 +357,40 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         }
     }
 
+    private string CalculateErrorPoint(int nodeIndex)
+    {
+        // Build a string describing the binding chain up to the node that errored.
+        var result = new StringBuilder();
+
+        if (nodeIndex >= 0)
+            _nodes[nodeIndex].BuildString(result);
+        else
+            result.Append("(source)");
+
+        return result.ToString();
+    }
+
+    private void Log(AvaloniaObject target, string error, string errorPoint, LogEventLevel level = LogEventLevel.Warning)
+    {
+        if (!Logger.TryGet(level, LogArea.Binding, out var log))
+            return;
+
+        log.Log(
+            target,
+            "An error occurred binding {Property} to {Expression} at {ExpressionErrorPoint}: {Message}",
+            (object?)TargetProperty ?? "(unknown)",
+            Description,
+            errorPoint,
+            error);
+    }
+
     private void ConvertAndPublishValue(object? value, BindingError? error)
     {
         var isTargetNullValue = false;
 
         // All values other than DoNothing should be passed to the converter.
         if (value != BindingOperations.DoNothing && Converter is { } converter)
-            value = Convert(converter, ConverterParameter, value, TargetType, ref error);
+            value = Convert(converter, ConverterCulture, ConverterParameter, value, TargetType, ref error);
 
         // Check this here as the converter may return DoNothing.
         if (value == BindingOperations.DoNothing)
@@ -472,31 +451,6 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         if (e.Property == TargetProperty)
         {
             WriteValueToSource(e.NewValue);
-        }
-    }
-
-    private object? Convert(
-        IValueConverter converter,
-        object? converterParameter,
-        object? value,
-        Type targetType,
-        ref BindingError? error)
-    {
-        try
-        {
-            return converter.Convert(value, targetType, converterParameter, ConverterCulture);
-        }
-        catch (Exception e)
-        {
-            var valueString = value?.ToString() ?? "(null)";
-            var valueTypeName = value?.GetType().FullName ?? "null";
-            var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{targetType}' using '{converter}'";
-
-            if (ShouldLogError(out var target))
-                Log(target, $"{message}: {e.Message}", LogEventLevel.Warning);
-
-            error = new(new InvalidCastException(message + '.', e), BindingErrorType.Error);
-            return AvaloniaProperty.UnsetValue;
         }
     }
 

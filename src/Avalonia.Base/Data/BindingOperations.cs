@@ -26,7 +26,7 @@ namespace Avalonia.Data
 
             if (binding.Expression is { } expression)
             {
-                return target.Bind(property, expression, BindingPriority.LocalValue);
+                return target.Bind(property, expression, binding.Priority);
             }
 
             var mode = binding.Mode;

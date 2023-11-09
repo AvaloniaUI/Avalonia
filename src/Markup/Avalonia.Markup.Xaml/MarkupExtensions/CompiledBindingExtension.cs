@@ -74,7 +74,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 targetNullValue: TargetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetDefaultConverter());
 
-            return new InstancedBinding(expression, Mode, Priority);
+            return new InstancedBinding(target, expression, Mode, Priority);
         }
 
         /// <summary>

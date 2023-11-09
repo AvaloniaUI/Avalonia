@@ -107,7 +107,7 @@ namespace Avalonia.Data
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
-            return new InstancedBinding(expression, Mode, Priority);
+            return new InstancedBinding(target, expression, Mode, Priority);
         }
 
         /// <summary>

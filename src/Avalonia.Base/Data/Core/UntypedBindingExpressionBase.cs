@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using Avalonia.Data.Converters;
+using Avalonia.Logging;
+using Avalonia.Metadata;
 using Avalonia.PropertyStore;
 using Avalonia.Reactive;
 using Avalonia.Threading;
@@ -10,7 +14,11 @@ namespace Avalonia.Data.Core;
 /// <summary>
 /// Base class for binding expressions which produce untyped values.
 /// </summary>
-internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, IDisposable, IValueEntry
+[PrivateApi]
+public abstract class UntypedBindingExpressionBase : BindingExpressionBase, 
+    IDisposable,
+    IDescription,
+    IValueEntry
 {
     protected static readonly object UnchangedValue = new();
     internal static readonly WeakReference<object?> _nullReference = new(null);
@@ -28,10 +36,15 @@ internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, ID
     /// Initializes a new instance of the <see cref="UntypedBindingExpressionBase"/> class.
     /// </summary>
     /// <param name="isDataValidationEnabled">Whether data validation is enabled.</param>
-    public UntypedBindingExpressionBase(bool isDataValidationEnabled)
+    public UntypedBindingExpressionBase(bool isDataValidationEnabled = false)
     {
         _isDataValidationEnabled = isDataValidationEnabled;
     }
+
+    /// <summary>
+    /// Gets a description of the binding expression.
+    /// </summary>
+    public abstract string Description { get; }
 
     /// <summary>
     /// Gets the current error state of the binding expression.
@@ -74,60 +87,6 @@ internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, ID
     }
 
     AvaloniaProperty IValueEntry.Property => TargetProperty ?? throw new Exception();
-
-    /// <summary>
-    /// Produces an observable which can be used to observe the value of the binding expression.
-    /// </summary>
-    /// <returns>An observable subject.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// The binding expression is already instantiated on an AvaloniaObject.
-    /// </exception>
-    /// <remarks>
-    /// This method is mostly here for backwards compatibility with <see cref="InstancedBinding"/>
-    /// and unit testing and we may want to remove it in future. In particular its usefulness in
-    /// terms of unit testing is limited in that it preserves the semantics of binding expressions
-    /// as expected by unit tests, not necessarily the semantics that will be used when the
-    /// expression is used as an <see cref="IValueEntry"/> instantiated in a
-    /// <see cref="ValueStore"/>. Unit tests should be migrated to not test the behaviour of
-    /// binding expressions through an observable, and instead test the behaviour of the binding
-    /// when applied to an <see cref="AvaloniaObject"/>.
-    /// 
-    /// A binding expression may only act as an observable or as a binding expression targeting an
-    /// AvaloniaObject, not both.
-    /// </remarks>
-    public IAvaloniaSubject<object?> ToObservable()
-    {
-        if (_sink is ObservableSink s)
-            return s;
-        if (_sink is not null)
-            throw new InvalidOperationException(
-                "Cannot call AsObservable on a to binding expression which is already " +
-                "instantiated on an AvaloniaObject.");
-
-        var o = new ObservableSink(this);
-        _sink = o;
-        return o;
-    }
-
-    /// <summary>
-    /// Produces an observable which can be used to observe the value of the binding expression
-    /// for unit testing.
-    /// </summary>
-    /// <param name="targetType">The <see cref="TargetType"/>.</param>
-    /// <returns>An observable subject.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// The binding expression is already instantiated on an AvaloniaObject.
-    /// </exception>
-    /// <remarks>
-    /// This method should be considered obsolete and new unit tests should not be written to use
-    /// it. For more information see <see cref="ToObservable()"/>.
-    /// </remarks>
-    public IAvaloniaSubject<object?> ToObservable(Type targetType)
-    {
-        var o = ToObservable();
-        TargetType = targetType;
-        return o;
-    }
 
     /// <summary>
     /// Terminates the binding.
@@ -183,56 +142,10 @@ internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, ID
     }
 
     /// <summary>
-    /// Attaches the binding expression to a subscriber with the specified subscriber but does not
-    /// start it.
+    /// Starts the binding expression following a call to 
+    /// <see cref="Attach(IBindingExpressionSink, AvaloniaObject, AvaloniaProperty, BindingPriority)"/>.
     /// </summary>
-    /// <param name="sink">The subscriber.</param>
-    /// <param name="target">The target object.</param>
-    /// <param name="targetProperty">The target property.</param>
-    /// <param name="priority">The priority of the binding.</param>
-    public void Attach(
-        IBindingExpressionSink sink,
-        AvaloniaObject target,
-        AvaloniaProperty targetProperty,
-        BindingPriority priority)
-    {
-        if (_sink is not null)
-            throw new InvalidOperationException("BindingExpression was already instantiated.");
-
-        _sink = sink;
-        _target = new(target);
-        TargetProperty = targetProperty;
-        TargetType = targetProperty.PropertyType;
-        Priority = priority;
-    }
-
-    /// <summary>
-    /// Initializes the binding expression with the specified subscriber and target property and
-    /// starts it.
-    /// </summary>
-    /// <param name="subscriber">The subscriber.</param>
-    /// <param name="target">The target object.</param>
-    /// <param name="targetProperty">The target property.</param>
-    /// <param name="priority">The priority of the binding.</param>
-    public void Start(
-        IBindingExpressionSink subscriber,
-        AvaloniaObject target,
-        AvaloniaProperty targetProperty,
-        BindingPriority priority)
-    {
-        Attach(subscriber, target, targetProperty, priority);
-        Start(produceValue: true);
-    }
-
-    /// <summary>
-    /// When overridden in a derived class, writes the specified value to the binding source if
-    /// possible.
-    /// </summary>
-    /// <param name="value">The value to write.</param>
-    /// <returns>
-    /// True if the value could be written to the binding source; otherwise false.
-    /// </returns>
-    public abstract bool WriteValueToSource(object? value);
+    public void Start() => Start(produceValue: true);
 
     bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
     {
@@ -264,27 +177,222 @@ internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, ID
     void IValueEntry.Unsubscribe() => Stop();
 
     /// <summary>
-    /// When overridden in a derived class, starts the binding expression.
+    /// Attaches the binding expression to a subscriber with the specified subscriber but does not
+    /// start it.
     /// </summary>
-    /// <remarks>
-    /// This method should not be called directly; instead call <see cref="Start(bool)"/>.
-    /// </remarks>
-    protected abstract void StartCore();
+    /// <param name="sink">The subscriber.</param>
+    /// <param name="target">The target object.</param>
+    /// <param name="targetProperty">The target property.</param>
+    /// <param name="priority">The priority of the binding.</param>
+    internal void Attach(
+        IBindingExpressionSink sink,
+        AvaloniaObject target,
+        AvaloniaProperty targetProperty,
+        BindingPriority priority)
+    {
+        if (_sink is not null)
+            throw new InvalidOperationException("BindingExpression was already attached.");
+
+        _sink = sink;
+        _target = new(target);
+        TargetProperty = targetProperty;
+        TargetType = targetProperty.PropertyType;
+        Priority = priority;
+    }
 
     /// <summary>
-    /// When overridden in a derived class, stops the binding expression.
+    /// Initializes the binding expression with the specified subscriber and target property and
+    /// starts it.
     /// </summary>
+    /// <param name="subscriber">The subscriber.</param>
+    /// <param name="target">The target object.</param>
+    /// <param name="targetProperty">The target property.</param>
+    /// <param name="priority">The priority of the binding.</param>
+    internal void AttachAndStart(
+        IBindingExpressionSink subscriber,
+        AvaloniaObject target,
+        AvaloniaProperty targetProperty,
+        BindingPriority priority)
+    {
+        Attach(subscriber, target, targetProperty, priority);
+        Start(produceValue: true);
+    }
+
+    /// <summary>
+    /// Produces an observable which can be used to observe the value of the binding expression.
+    /// </summary>
+    /// <param name="target">The binding target, if known.</param>
+    /// <returns>An observable subject.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The binding expression is already instantiated on an AvaloniaObject.
+    /// </exception>
     /// <remarks>
-    /// This method should not be called directly; instead call <see cref="Stop"/>.
+    /// This method is mostly here for backwards compatibility with <see cref="InstancedBinding"/>
+    /// and unit testing and we may want to remove it in future. In particular its usefulness in
+    /// terms of unit testing is limited in that it preserves the semantics of binding expressions
+    /// as expected by unit tests, not necessarily the semantics that will be used when the
+    /// expression is used as an <see cref="IValueEntry"/> instantiated in a
+    /// <see cref="ValueStore"/>. Unit tests should be migrated to not test the behaviour of
+    /// binding expressions through an observable, and instead test the behaviour of the binding
+    /// when applied to an <see cref="AvaloniaObject"/>.
+    /// 
+    /// A binding expression may only act as an observable or as a binding expression targeting an
+    /// AvaloniaObject, not both.
     /// </remarks>
-    protected abstract void StopCore();
+    internal IAvaloniaSubject<object?> ToObservable(AvaloniaObject? target = null)
+    {
+        if (_sink is ObservableSink s)
+            return s;
+        if (_sink is not null)
+            throw new InvalidOperationException(
+                "Cannot call AsObservable on a to binding expression which is already " +
+                "instantiated on an AvaloniaObject.");
+
+        var o = new ObservableSink(this);
+        _sink = o;
+        _target = target is not null ? new(target) : null;
+        return o;
+    }
+
+    /// <summary>
+    /// Produces an observable which can be used to observe the value of the binding expression
+    /// for unit testing.
+    /// </summary>
+    /// <param name="targetType">The <see cref="TargetType"/>.</param>
+    /// <returns>An observable subject.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The binding expression is already instantiated on an AvaloniaObject.
+    /// </exception>
+    /// <remarks>
+    /// This method should be considered obsolete and new unit tests should not be written to use
+    /// it. For more information see <see cref="ToObservable(AvaloniaObject?)"/>.
+    /// </remarks>
+    internal IAvaloniaSubject<object?> ToObservable(Type targetType)
+    {
+        var o = ToObservable(target: null);
+        TargetType = targetType;
+        return o;
+    }
+
+    /// <summary>
+    /// When overridden in a derived class, writes the specified value to the binding source if
+    /// possible.
+    /// </summary>
+    /// <param name="value">The value to write.</param>
+    /// <returns>
+    /// True if the value could be written to the binding source; otherwise false.
+    /// </returns>
+    internal abstract bool WriteValueToSource(object? value);
+
+    /// <summary>
+    /// Converts a value using a value converter, logging a warning if necessary.
+    /// </summary>
+    /// <param name="converter">The value converter.</param>
+    /// <param name="converterCulture">The culture to use for the conversion.</param>
+    /// <param name="converterParameter">The converter parameter.</param>
+    /// <param name="value">The value to convert.</param>
+    /// <param name="targetType">The target type to convert to.</param>
+    /// <param name="error">The current error state.</param>
+    /// <returns>
+    /// The converted value, or <see cref="AvaloniaProperty.UnsetValue"/> if an error occurred;
+    /// in which case the error state will logged and updated in <paramref name="error"/>.
+    /// </returns>
+    private protected object? Convert(
+        IValueConverter converter,
+        CultureInfo? converterCulture,
+        object? converterParameter,
+        object? value,
+        Type targetType,
+        ref BindingError? error)
+    {
+        try
+        {
+            return converter.Convert(
+                value,
+                targetType,
+                converterParameter,
+                converterCulture ?? CultureInfo.CurrentCulture);
+        }
+        catch (Exception e)
+        {
+            var valueString = value?.ToString() ?? "(null)";
+            var valueTypeName = value?.GetType().FullName ?? "null";
+            var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{targetType}' using '{converter}'";
+
+            if (ShouldLogError(out var target))
+                Log(target, $"{message}: {e.Message}", LogEventLevel.Warning);
+
+            error = new(new InvalidCastException(message + '.', e), BindingErrorType.Error);
+            return AvaloniaProperty.UnsetValue;
+        }
+    }
+
+    /// <summary>
+    /// Converts a value using a value converter's ConvertBack method, logging a warning if
+    /// necessary.
+    /// </summary>
+    /// <param name="converter">The value converter.</param>
+    /// <param name="converterCulture">The culture to use for the conversion.</param>
+    /// <param name="converterParameter">The converter parameter.</param>
+    /// <param name="value">The value to convert.</param>
+    /// <param name="targetType">The target type to convert to.</param>
+    /// <returns>
+    /// The converted value, or <see cref="AvaloniaProperty.UnsetValue"/> if an error occurred;
+    /// in which case the error will be logged.
+    /// </returns>
+    protected object? ConvertBack(
+        IValueConverter converter,
+        CultureInfo? converterCulture,
+        object? converterParameter,
+        object? value,
+        Type targetType)
+    {
+        try
+        {
+            return converter.ConvertBack(
+                value,
+                targetType,
+                converterParameter,
+                converterCulture ?? CultureInfo.CurrentCulture);
+        }
+        catch (Exception e)
+        {
+            var valueString = value?.ToString() ?? "(null)";
+            var valueTypeName = value?.GetType().FullName ?? "null";
+            var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{targetType}' using '{converter}'";
+
+            if (ShouldLogError(out var target))
+                Log(target, $"{message}: {e.Message}", LogEventLevel.Warning);
+
+            return AvaloniaProperty.UnsetValue;
+        }
+    }
+
+    /// <summary>
+    /// Logs a binding error.
+    /// </summary>
+    /// <param name="target">The target of the binding expression.</param>
+    /// <param name="error">The error message.</param>
+    /// <param name="level">The log level.</param>
+    protected void Log(AvaloniaObject target, string error, LogEventLevel level = LogEventLevel.Warning)
+    {
+        if (!Logger.TryGet(level, LogArea.Binding, out var log))
+            return;
+
+        log.Log(
+            target,
+            "An error occurred binding {Property} to {Expression}: {Message}",
+            (object?)TargetProperty ?? "(unknown)",
+            Description,
+            error);
+    }
 
     /// <summary>
     /// Publishes a new value and/or error state to the target.
     /// </summary>
     /// <param name="value">The new value, or <see cref="UnchangedValue"/>.</param>
     /// <param name="error">The new binding or data validation error.</param>
-    protected void PublishValue(object? value, BindingError? error = null)
+    private protected void PublishValue(object? value, BindingError? error = null)
     {
         // When binding to DataContext and the expression results in a binding error, the binding
         // expression should produce null rather than UnsetValue in order to not propagate
@@ -324,6 +432,19 @@ internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, ID
     }
 
     /// <summary>
+    /// Gets a value indicating whether an error should be logged given the current state of the
+    /// binding expression.
+    /// </summary>
+    /// <param name="target">
+    /// When the method returns, contains the target object, if it is available.
+    /// </param>
+    /// <returns>True if an error should be logged; otherwise false.</returns>
+    protected virtual bool ShouldLogError([NotNullWhen(true)] out AvaloniaObject? target)
+    {
+        return TryGetTarget(out target);
+    }
+
+    /// <summary>
     /// Starts the binding expression by calling <see cref="StartCore"/>.
     /// </summary>
     /// <param name="produceValue">
@@ -348,6 +469,14 @@ internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, ID
     }
 
     /// <summary>
+    /// When overridden in a derived class, starts the binding expression.
+    /// </summary>
+    /// <remarks>
+    /// This method should not be called directly; instead call <see cref="Start(bool)"/>.
+    /// </remarks>
+    protected abstract void StartCore();
+
+    /// <summary>
     /// Stops the binding expression by calling <see cref="StopCore"/>.
     /// </summary>
     protected void Stop()
@@ -356,6 +485,14 @@ internal abstract class UntypedBindingExpressionBase : BindingExpressionBase, ID
         _isRunning = false;
         _value = null;
     }
+
+    /// <summary>
+    /// When overridden in a derived class, stops the binding expression.
+    /// </summary>
+    /// <remarks>
+    /// This method should not be called directly; instead call <see cref="Stop"/>.
+    /// </remarks>
+    protected abstract void StopCore();
 
     /// <summary>
     /// Tries to retrieve the target for the binding expression.

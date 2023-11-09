@@ -17,8 +17,9 @@ namespace Avalonia.Data
     /// </remarks>
     public sealed class InstancedBinding
     {
+        private readonly AvaloniaObject? _target;
+        private readonly UntypedBindingExpressionBase? _expression;
         private IObservable<object?>? _observable;
-        private UntypedBindingExpressionBase? _expression;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
@@ -39,11 +40,26 @@ namespace Avalonia.Data
             _observable = source ?? throw new ArgumentNullException(nameof(source));
         }
 
-        internal InstancedBinding(UntypedBindingExpressionBase source, BindingMode mode, BindingPriority priority)
+        internal InstancedBinding(
+            UntypedBindingExpressionBase source,
+            BindingMode mode,
+            BindingPriority priority)
         {
             Mode = mode;
             Priority = priority;
             _expression = source ?? throw new ArgumentNullException(nameof(source));
+        }
+
+        internal InstancedBinding(
+            AvaloniaObject? target,
+            UntypedBindingExpressionBase source, 
+            BindingMode mode, 
+            BindingPriority priority)
+        {
+            Mode = mode;
+            Priority = priority;
+            _expression = source ?? throw new ArgumentNullException(nameof(source));
+            _target = target;
         }
 
         /// <summary>
@@ -59,7 +75,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the binding source observable.
         /// </summary>
-        public IObservable<object?> Source => _observable ??= _expression!.ToObservable();
+        public IObservable<object?> Source => _observable ??= _expression!.ToObservable(_target);
 
         [Obsolete("Use Source property"), EditorBrowsable(EditorBrowsableState.Never)]
         public IObservable<object?> Observable => Source;

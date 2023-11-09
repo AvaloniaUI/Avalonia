@@ -46,7 +46,7 @@ namespace Avalonia.Markup.Xaml.Templates
                     _ => throw new InvalidOperationException("TreeDataTemplate currently only supports Binding and CompiledBindingExtension!")
                 };
 
-                return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.Style);
+                return new InstancedBinding(null, expression, BindingMode.OneWay, BindingPriority.Style);
             }
 
             return null;

@@ -53,7 +53,7 @@ namespace Avalonia.PropertyStore
                 DisposeExistingLocalValueBinding(property);
                 _localValueBindings ??= new();
                 _localValueBindings[property.Id] = source;
-                source.Start(this, Owner, property, priority);
+                source.AttachAndStart(this, Owner, property, priority);
                 return source;
             }
             else
@@ -61,10 +61,11 @@ namespace Avalonia.PropertyStore
                 var effective = GetEffectiveValue(property);
                 var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
 
+                source.Attach(this, Owner, property, priority);
                 frame.AddBinding<T>(source);
 
                 if (effective is null || priority <= effective.Priority)
-                    source.Start(this, Owner, property, priority);
+                    source.Start();
 
                 return source;
             }
@@ -159,7 +160,7 @@ namespace Avalonia.PropertyStore
             DisposeExistingLocalValueBinding(property);
             _localValueBindings ??= new();
             _localValueBindings[property.Id] = source;
-            source.Start(this, Owner, property, BindingPriority.LocalValue);
+            source.AttachAndStart(this, Owner, property, BindingPriority.LocalValue);
             return source;
         }
 
