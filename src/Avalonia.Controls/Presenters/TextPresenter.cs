@@ -400,9 +400,9 @@ namespace Avalonia.Controls.Presenters
 
             _caretPen ??= new(GetCaretBrush(CaretBrush, Background));
 
-            var (p1, p2) = GetCaretPoints();
+            var points = GetCaretPoints();
 
-            context.DrawLine(_caretPen, p1, p2);
+            context.DrawLine(_caretPen, points.Item1, points.Item2);
         }
 
         internal (Point, Point) GetCaretPoints()
