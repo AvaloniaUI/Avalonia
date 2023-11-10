@@ -293,6 +293,36 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
+
+        [Fact]
+        public void Should_Not_Close_When_Pointer_Is_Moved_Over_ToolTip()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                var target = new Decorator()
+                {
+                    [ToolTip.TipProperty] = "Tip",
+                    [ToolTip.ShowDelayProperty] = 0
+                };
+
+                window.Content = target;
+
+                window.ApplyStyling();
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                _mouseHelper.Enter(target);
+                Assert.True(ToolTip.GetIsOpen(target));
+
+                var tooltip = Assert.IsType<ToolTip>(target.GetValue(ToolTip.ToolTipProperty));
+                _mouseHelper.Enter(tooltip);
+                _mouseHelper.Leave(target);
+
+                Assert.True(ToolTip.GetIsOpen(target));
+            }
+        }
     }
 
     internal class ToolTipViewModel
