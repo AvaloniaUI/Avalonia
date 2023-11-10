@@ -85,10 +85,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                     chosenAdapter = adapters
                         .OrderByDescending(x =>
                             // Put adreno in lower priority - it's broken in Avalonia.
-                            x.name.Contains("adreno") ? -1
-                            : x.name.Contains("nvidia") ? 2
-                            : x.name.Contains("amd") ? 1
-                            : 0)
+                            x.name.Contains("adreno") ? -1 : 0)
                         .First().adapter
                         .CloneReference();
 
