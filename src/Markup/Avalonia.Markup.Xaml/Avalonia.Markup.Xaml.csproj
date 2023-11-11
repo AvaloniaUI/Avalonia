@@ -14,6 +14,7 @@
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\FontFamilyTypeConverter.cs" />
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
+    <Compile Include="Data\DynamicResourceExpression.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MarkupExtension.cs" />
     <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />

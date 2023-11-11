@@ -118,7 +118,7 @@ namespace Avalonia.Styling
 
                 if (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
                 {
-                    if (i.Source is BindingExpression expression)
+                    if (i.Expression is { } expression)
                     {
                         expression.Attach(target.GetValueStore(), target, Property, instance.Priority);
                         return expression;

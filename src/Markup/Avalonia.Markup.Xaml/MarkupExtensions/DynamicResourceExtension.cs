@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Core;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -11,7 +14,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
     {
         private object? _anchor;
         private BindingPriority _priority;
-        private ThemeVariant? _currentThemeVariant;
+        private ThemeVariant? _themeVariant;
 
         public DynamicResourceExtension()
         {
@@ -38,7 +41,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                     (object?)serviceProvider.GetFirstParent<IResourceHost>();
             }
 
-            _currentThemeVariant = StaticResourceExtension.GetDictionaryVariant(serviceProvider);
+            _themeVariant = StaticResourceExtension.GetDictionaryVariant(serviceProvider);
 
             return this;
         }
@@ -50,34 +53,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             bool enableDataValidation)
         {
             if (ResourceKey is null)
-            {
                 return null;
-            }
-
-            var control = target as IResourceHost ?? _anchor as IResourceHost;
-
-            if (control != null)
-            {
-                var source = control.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
-                return InstancedBinding.OneWay(source, _priority);
-            }
-            else if (_anchor is IResourceProvider resourceProvider)
-            {
-                var source = resourceProvider.GetResourceObservable(ResourceKey, _currentThemeVariant, GetConverter(targetProperty));
-                return InstancedBinding.OneWay(source, _priority);
-            }
-
-            return null;
-        }
-
-        private static Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
-        {
-            if (targetProperty?.PropertyType == typeof(IBrush))
-            {
-                return x => ColorToBrushConverter.Convert(x, typeof(IBrush));
-            }
-
-            return null;
+            var expression = new DynamicResourceExpression(ResourceKey, _anchor, _themeVariant);
+            return new InstancedBinding(target, expression, BindingMode.OneWay, _priority);
         }
     }
 }

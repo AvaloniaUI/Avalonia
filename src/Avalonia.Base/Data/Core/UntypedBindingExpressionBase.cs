@@ -282,7 +282,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <returns>
     /// True if the value could be written to the binding source; otherwise false.
     /// </returns>
-    internal abstract bool WriteValueToSource(object? value);
+    internal virtual bool WriteValueToSource(object? value) => false;
 
     /// <summary>
     /// Converts a value using a value converter, logging a warning if necessary.
@@ -366,6 +366,27 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
             return AvaloniaProperty.UnsetValue;
         }
+    }
+
+    /// <summary>
+    /// Logs a binding error.
+    /// </summary>
+    /// <param name="error">The error message.</param>
+    /// <param name="level">The log level.</param>
+    protected void Log(string error, LogEventLevel level = LogEventLevel.Warning)
+    {
+        if (!TryGetTarget(out var target))
+            return;
+
+        if (!Logger.TryGet(level, LogArea.Binding, out var log))
+            return;
+
+        log.Log(
+            target,
+            "An error occurred binding {Property} to {Expression}: {Message}",
+            (object?)TargetProperty ?? "(unknown)",
+            Description,
+            error);
     }
 
     /// <summary>
