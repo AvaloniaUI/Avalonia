@@ -9,10 +9,12 @@ using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
 using Avalonia.Platform;
 using System.ComponentModel;
+using Avalonia.Media;
+using Avalonia.Rendering.SceneGraph;
 
 namespace Avalonia.OpenGL.Controls
 {
-    public abstract class OpenGlControlBase : Control
+    public abstract class OpenGlControlBase : Control, ICustomHitTest
     {
         private CompositionSurfaceVisual? _visual;
         private readonly Action _update;
@@ -238,7 +240,7 @@ namespace Avalonia.OpenGL.Controls
             return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
                 Math.Max(1, (int)(Bounds.Height * scaling)));
         }
-        
+
         protected virtual void OnOpenGlInit(GlInterface gl)
         {
             
@@ -255,5 +257,10 @@ namespace Avalonia.OpenGL.Controls
         }
         
         protected abstract void OnOpenGlRender(GlInterface gl, int fb);
+
+        bool ICustomHitTest.HitTest(Point point)
+        {
+            return true;
+        }
     }
 }
