@@ -226,7 +226,7 @@ namespace Avalonia.Controls
 
                 if (this is IFocusScope scope)
                 {
-                    ((FocusManager?)FocusManager)?.RemoveFocusScope(scope);
+                    ((FocusManager?)FocusManager)?.RemoveFocusRoot(scope);
                 }
 
                 base.HandleClosed();
