@@ -279,7 +279,7 @@ public class StyleIncludeTests
     }
     
     [Fact]
-    public void StyleInclude_Inside_Resources_Should_Produce_Warning()
+    public void Style_Inside_Resources_Should_Produce_Warning()
     {
         var diagnostics = new List<RuntimeXamlDiagnostic>();
         var control = (ContentControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(@"
