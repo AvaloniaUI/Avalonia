@@ -55,8 +55,7 @@ namespace Avalonia.Media.Fonts
                 return glyphTypeface != null;
             }
 
-            if(!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface) || 
-                !glyphTypeface.FamilyName.Contains(familyName))
+            if(!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
                 //Try to find nearest match if possible
                 TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
