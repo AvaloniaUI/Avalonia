@@ -673,9 +673,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     PlacementTarget = window,
                     Child = tb
                 };
-                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
-                window.Show();
 
+                window.Content = p;
+                window.Show();
+                window.Focus();
                 p.Open();
 
                 if (p.Host is OverlayPopupHost host)
@@ -692,7 +693,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var focusManager = window.FocusManager;
                 var focus = focusManager.GetFocusedElement();
-                Assert.True(focus == window);
+                Assert.Same(window, focus);
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
@@ -516,8 +517,7 @@ namespace Avalonia.Controls.Primitives
                 case DateTimePickerPanelType.Minute:
                     return new TimeSpan(0, value, 0).ToString(ItemFormat);
                 case DateTimePickerPanelType.TimePeriod:
-                    return value == MinimumValue ? CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator :
-                        CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator;
+                    return value == MinimumValue ? TimeUtils.GetAMDesignator() : TimeUtils.GetPMDesignator();
                 default:
                         return "";
             }
