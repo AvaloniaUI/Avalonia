@@ -1,8 +1,10 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="using:Avalonia.Controls"
                     xmlns:primitives="using:Avalonia.Controls.Primitives"
                     x:ClassModifier="internal">
+  
+  <PlacementMode x:Key="ColorPickerFlyoutPlacement">Top</PlacementMode>
 
   <ControlTheme x:Key="{x:Type ColorPicker}"
                 TargetType="ColorPicker">
@@ -45,7 +47,8 @@
             </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
-            <Flyout Placement="Top">
+            <Flyout FlyoutPresenterClasses="nopadding"
+                    Placement="{DynamicResource ColorPickerFlyoutPlacement}">
 
               <!-- The following is copy-pasted from the ColorView's control template.
                    It MUST always be kept in sync with the ColorView (which is master).
