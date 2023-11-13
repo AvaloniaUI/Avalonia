@@ -48,11 +48,10 @@ namespace Avalonia.Controls.Primitives
             Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
         
         /// <summary>
-        /// Defines the <see cref="OverlayInputPassThroughElement"/> property
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property
         /// </summary>
         public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
             Popup.PlacementConstraintAdjustmentProperty.AddOwner<PopupFlyoutBase>();
-        
         
         private readonly Lazy<Popup> _popupLazy;
         private Rect? _enlargedPopupRect;
@@ -126,10 +125,7 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(OverlayInputPassThroughElementProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value describing how the popup position will be adjusted if the
-        /// unadjusted position would result in the popup being partly constrained.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementConstraintAdjustment"/>
         public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
         {
             get => GetValue(PlacementConstraintAdjustmentProperty);

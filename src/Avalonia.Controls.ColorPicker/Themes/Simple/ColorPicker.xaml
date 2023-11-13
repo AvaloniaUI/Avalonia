@@ -3,6 +3,7 @@
                     xmlns:controls="using:Avalonia.Controls"
                     xmlns:primitives="using:Avalonia.Controls.Primitives"
                     x:ClassModifier="internal">
+  
   <PlacementMode x:Key="ColorPickerFlyoutPlacement">Top</PlacementMode>
 
   <ControlTheme x:Key="{x:Type ColorPicker}"
