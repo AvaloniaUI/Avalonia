@@ -6,6 +6,7 @@
       <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
       <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
       <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
+      <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
       <NoWarn>$(NoWarn);NU1605;CS8632</NoWarn>
       <DebugType>embedded</DebugType>
       <IncludeSymbols>false</IncludeSymbols>
