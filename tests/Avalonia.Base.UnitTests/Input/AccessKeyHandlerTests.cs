@@ -166,6 +166,30 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Should_Not_Raise_AccessKeyPressed_For_Registered_Access_Key_When_Not_Effectively_Enabled()
+        {
+            var button = new Button();
+            var root = new TestRoot(button) { IsEnabled = false };
+            var target = new AccessKeyHandler();
+            var raised = 0;
+
+            target.SetOwner(root);
+            target.Register('A', button);
+            button.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, (s, e) => ++raised);
+
+            KeyDown(root, Key.LeftAlt);
+            Assert.Equal(0, raised);
+
+            KeyDown(root, Key.A, KeyModifiers.Alt);
+            Assert.Equal(0, raised);
+
+            KeyUp(root, Key.A, KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt);
+
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
         public void Should_Open_MainMenu_On_Alt_KeyUp()
         {
             var root = new TestRoot();

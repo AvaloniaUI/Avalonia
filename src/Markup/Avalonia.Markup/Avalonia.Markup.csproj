@@ -5,8 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Markup\Parsers\Nodes\ExpressionGrammer" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Markup\Parsers\BindingExpressionGrammar.cs" />
   </ItemGroup>
   <ItemGroup>

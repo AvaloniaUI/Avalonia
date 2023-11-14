@@ -8,7 +8,7 @@ namespace Avalonia.Threading;
 /// </summary>
 public class DispatcherFrame
 {
-    private bool _exitWhenRequested;
+    private readonly bool _exitWhenRequested;
     private bool _continue;
     private bool _isRunning;
     private CancellationTokenSource? _cancellationTokenSource;

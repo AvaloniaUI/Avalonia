@@ -9,6 +9,7 @@ using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Platform
 {
@@ -148,16 +149,15 @@ namespace Avalonia.Controls.Platform
 
             if (item == null)
                 return;
-            
-            var serverTransform = item?.CompositionVisual?.TryGetServerGlobalTransform();
-            if (serverTransform == null)
-                return;
-            
-            var point = e.GetCurrentPoint(null);
-            var transformedPoint = point.Position.Transform(serverTransform.Value);
 
-            if (point.Properties.IsLeftButtonPressed && 
-                new Rect(item!.Bounds.Size).Contains(transformedPoint) == false)
+            var transformedBounds = item.GetTransformedBounds();
+            if (transformedBounds == null)
+                return;
+
+            var point = e.GetCurrentPoint(null);
+
+            if (point.Properties.IsLeftButtonPressed
+                   && transformedBounds.Value.Contains(point.Position) == false)
             {
                 e.Pointer.Capture(null);
             }

@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
@@ -25,6 +26,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     private readonly Action _update;
 
     private bool _queuedUpdate;
+    private bool _queuedSceneInvalidation;
     private bool _updating;
     private bool _isDisposed;
 
@@ -172,13 +174,17 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
-        TriggerSceneInvalidatedOnBatchCompletion(_compositor.RequestCommitAsync());
-    }
-
-    private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
-    {
-        await batchCompletion;
-        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
+        
+        var commit = _compositor.RequestCommitAsync();
+        if (!_queuedSceneInvalidation)
+        {
+            _queuedSceneInvalidation = true;
+            commit.ContinueWith(_ => Dispatcher.UIThread.Post(() =>
+            {
+                _queuedSceneInvalidation = false;
+                SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
+            }, DispatcherPriority.Input), TaskContinuationOptions.ExecuteSynchronously);
+        }
     }
 
     public void TriggerSceneInvalidatedForUnitTests(Rect rect) =>

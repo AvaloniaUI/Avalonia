@@ -64,7 +64,7 @@ namespace Avalonia.X11
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _usePositioningFlags = false;
-        private X11FocusProxy _focusProxy;
+        private X11FocusProxy? _focusProxy;
 
         private enum XSyncState
         {
@@ -158,8 +158,13 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
 
             Handle = new PlatformHandle(_handle, "XID");
-            _focusProxy = new X11FocusProxy(platform, _handle, OnEvent);
-            SetWmClass(_focusProxy._handle, "FocusProxy");
+            
+            if (platform.Options.EnableInputFocusProxy)
+            {
+                _focusProxy = new X11FocusProxy(platform, _handle, OnEvent);
+                SetWmClass(_focusProxy._handle, "FocusProxy");
+            }
+            
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -214,9 +219,14 @@ namespace Avalonia.X11
                 _nativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
             _nativeControlHost = new X11NativeControlHost(_platform, this);
             InitializeIme();
+
+            var data = new List<IntPtr> { _x11.Atoms.WM_DELETE_WINDOW, _x11.Atoms._NET_WM_SYNC_REQUEST };
             
+            if(platform.Options.EnableInputFocusProxy)
+                data.Add(_x11.Atoms.WM_TAKE_FOCUS);
+
             XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
-                PropertyMode.Replace, new[] { _x11.Atoms.WM_DELETE_WINDOW, _x11.Atoms.WM_TAKE_FOCUS, _x11.Atoms._NET_WM_SYNC_REQUEST }, 3);
+                    PropertyMode.Replace, data.ToArray(), data.Count);
 
             if (_x11.HasXSync)
             {
@@ -230,6 +240,8 @@ namespace Avalonia.X11
                 () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this)
             });
+
+            platform.X11Screens.Changed += OnScreensChanged;
         }
 
         private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -295,19 +307,30 @@ namespace Avalonia.X11
 
         private void UpdateSizeHints(PixelSize? preResize)
         {
-            if(_overrideRedirect)
+            if (_overrideRedirect)
                 return;
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
             if (!_canResize)
-                max = min = _realSize;
-            
-            if (preResize.HasValue)
             {
-                var desired = preResize.Value;
-                max = new PixelSize(Math.Max(desired.Width, max.Width), Math.Max(desired.Height, max.Height));
-                min = new PixelSize(Math.Min(desired.Width, min.Width), Math.Min(desired.Height, min.Height));
+                if (preResize.HasValue)
+                {
+                    max = min = preResize.Value;
+                }
+                else
+                {
+                    max = min = _realSize;
+                }
+            }
+            else
+            {
+                if (preResize.HasValue)
+                {
+                    var desired = preResize.Value;
+                    max = new PixelSize(Math.Max(desired.Width, max.Width), Math.Max(desired.Height, max.Height));
+                    min = new PixelSize(Math.Min(desired.Width, min.Width), Math.Min(desired.Height, min.Height));
+                }
             }
 
             var hints = new XSizeHints
@@ -551,7 +574,7 @@ namespace Avalonia.X11
                         _xSyncValue.Hi = ev.ClientMessageEvent.ptr4.ToInt32();
                         _xSyncState = XSyncState.WaitConfigure;
                     }
-                    else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS)
+                    else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS && _platform.Options.EnableInputFocusProxy)
                     {
                         IntPtr time = ev.ClientMessageEvent.ptr2;
                         XSetInputFocus(_x11.Display, _focusProxy._handle, RevertTo.Parent, time);
@@ -585,6 +608,11 @@ namespace Avalonia.X11
             return extents;
         }
 
+        private void OnScreensChanged()
+        {
+            UpdateScaling();
+        }
+
         private bool UpdateScaling(bool skipResize = false)
         {
             double newScaling;
@@ -592,7 +620,7 @@ namespace Avalonia.X11
                 newScaling = _scalingOverride.Value;
             else
             {
-                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.Scaling)
+                var monitor = _platform.X11Screens.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(_position ?? default));
                 newScaling = monitor?.Scaling ?? RenderScaling;
             }
@@ -831,7 +859,8 @@ namespace Avalonia.X11
 
         }
 
-        public IInputRoot? InputRoot => _inputRoot;
+        public IInputRoot InputRoot
+            => _inputRoot ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
         
         public void SetInputRoot(IInputRoot inputRoot)
         {
@@ -926,13 +955,15 @@ namespace Avalonia.X11
                 if (!fromDestroyNotification)
                     XDestroyWindow(_x11.Display, handle);
             }
+
+            _platform.X11Screens.Changed -= OnScreensChanged;
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
                 _renderHandle = IntPtr.Zero;
             }
 
-            _focusProxy.Cleanup();
+            _focusProxy?.Cleanup();
         }
 
         private bool ActivateTransientChildIfNeeded()
@@ -991,8 +1022,10 @@ namespace Avalonia.X11
 
         private void Resize(Size clientSize, bool force, WindowResizeReason reason)
         {
-            if (!force && clientSize == ClientSize)
+            if (!force && (clientSize == ClientSize))
+            {
                 return;
+            }
             
             var needImmediatePopupResize = clientSize != ClientSize;
 
@@ -1068,6 +1101,7 @@ namespace Avalonia.X11
                 {
                     _position = value;
                     PositionChanged?.Invoke(value);
+                    UpdateScaling();
                 }
             }
         }
@@ -1095,7 +1129,7 @@ namespace Avalonia.X11
 
         public IScreenImpl Screen => _platform.Screens;
 
-        public Size MaxAutoSizeHint => _platform.X11Screens.Screens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
+        public Size MaxAutoSizeHint => _platform.X11Screens.AllScreens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 

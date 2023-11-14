@@ -5,6 +5,7 @@ using Avalonia.Data;
 using Avalonia.Layout;
 using System;
 using System.Globalization;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
@@ -227,8 +228,7 @@ namespace Avalonia.Controls
                 _minuteText.Text = newTime.ToString("mm");
                 PseudoClasses.Set(":hasnotime", false);
 
-                _periodText.Text = time.Value.Hours >= 12 ? CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator :
-                    CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator;
+                _periodText.Text = time.Value.Hours >= 12 ? TimeUtils.GetPMDesignator() : TimeUtils.GetAMDesignator();
             }
             else
             {
@@ -236,8 +236,7 @@ namespace Avalonia.Controls
                 _minuteText.Text = "minute";
                 PseudoClasses.Set(":hasnotime", true);
 
-                _periodText.Text = DateTime.Now.Hour >= 12 ? CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator :
-                    CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator;
+                _periodText.Text = DateTime.Now.Hour >= 12 ?  TimeUtils.GetPMDesignator() :  TimeUtils.GetAMDesignator();
             }
         }
 
@@ -282,6 +281,14 @@ namespace Avalonia.Controls
         {
             _popup!.Close();
             SetCurrentValue(SelectedTimeProperty, _presenter!.Time);
+        }
+
+        /// <summary>
+        /// Clear <see cref="SelectedTime"/>.
+        /// </summary>
+        public void Clear()
+        {
+            SetCurrentValue(SelectedTimeProperty, null);
         }
     }
 }

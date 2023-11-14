@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -14,6 +16,8 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
     {
         private FcitxICWrapper? _context;
         private FcitxCapabilityFlags? _lastReportedFlags;
+        private FcitxCapabilityFlags _optionFlags;
+        private FcitxCapabilityFlags _capabilityFlags;
 
         public FcitxX11TextInputMethod(Connection connection) : base(connection, "org.fcitx.Fcitx", "org.freedesktop.portal.Fcitx") { }
 
@@ -38,7 +42,34 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 
             AddDisposable(await _context.WatchCommitStringAsync(OnCommitString));
             AddDisposable(await _context.WatchForwardKeyAsync(OnForward));
+            AddDisposable(await _context.WatchUpdateFormattedPreeditAsync(OnPreedit));
             return true;
+        }
+
+        private void OnPreedit(Exception? arg1, ((string, int)[] str, int cursorpos) args)
+        {
+            int? cursor = null;
+            string preeditString = null;
+            if (args.str != null! && args.str.Length > 0)
+            {
+                preeditString = string.Join("", args.str.Select(x => x.Item1));
+
+                if (preeditString.Length > 0 && args.cursorpos >= 0)
+                {
+                    // cursorpos is a byte offset in UTF8 sequence that got sent through dbus
+                    // Tmds.DBus has already converted it to UTF16, so we need to convert it back
+                    // and figure out the byte offset
+                    var utf8String = Encoding.UTF8.GetBytes(preeditString);
+                    if (utf8String.Length >= args.cursorpos)
+                    {
+                        cursor = Encoding.UTF8.GetCharCount(utf8String, 0, args.cursorpos);
+                    }
+                }
+            }
+
+            if (Client?.SupportsPreedit == true)
+                Client.SetPreeditText(preeditString, cursor);
+
         }
 
         protected override Task DisconnectAsync() => _context?.DestroyICAsync() ?? Task.CompletedTask;
@@ -85,33 +116,56 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             return false;
         }
 
-        public override void SetOptions(TextInputOptions options) =>
-            Enqueue(async () =>
+        private void UpdateOptionsField(TextInputOptions options)
+        {
+            FcitxCapabilityFlags flags = default;
+            if (options.Lowercase)
+                flags |= FcitxCapabilityFlags.CAPACITY_LOWERCASE;
+            if (options.Uppercase)
+                flags |= FcitxCapabilityFlags.CAPACITY_UPPERCASE;
+            if (!options.AutoCapitalization)
+                flags |= FcitxCapabilityFlags.CAPACITY_NOAUTOUPPERCASE;
+            if (options.ContentType == TextInputContentType.Email)
+                flags |= FcitxCapabilityFlags.CAPACITY_EMAIL;
+            else if (options.ContentType == TextInputContentType.Number)
+                flags |= FcitxCapabilityFlags.CAPACITY_NUMBER;
+            else if (options.ContentType == TextInputContentType.Password)
+                flags |= FcitxCapabilityFlags.CAPACITY_PASSWORD;
+            else if (options.ContentType == TextInputContentType.Digits)
+                flags |= FcitxCapabilityFlags.CAPACITY_DIALABLE;
+            else if (options.ContentType == TextInputContentType.Url)
+                flags |= FcitxCapabilityFlags.CAPACITY_URL;
+            _optionFlags = flags;
+        }
+
+        async Task PushFlagsIfNeeded()
+        {
+            if(_context == null)
+                return;
+            
+            var flags = _optionFlags | _capabilityFlags;
+            
+            if (flags != _lastReportedFlags)
             {
-                if(_context == null)
-                    return;
-                FcitxCapabilityFlags flags = default;
-                if (options.Lowercase)
-                    flags |= FcitxCapabilityFlags.CAPACITY_LOWERCASE;
-                if (options.Uppercase)
-                    flags |= FcitxCapabilityFlags.CAPACITY_UPPERCASE;
-                if (!options.AutoCapitalization)
-                    flags |= FcitxCapabilityFlags.CAPACITY_NOAUTOUPPERCASE;
-                if (options.ContentType == TextInputContentType.Email)
-                    flags |= FcitxCapabilityFlags.CAPACITY_EMAIL;
-                else if (options.ContentType == TextInputContentType.Number)
-                    flags |= FcitxCapabilityFlags.CAPACITY_NUMBER;
-                else if (options.ContentType == TextInputContentType.Password)
-                    flags |= FcitxCapabilityFlags.CAPACITY_PASSWORD;
-                else if (options.ContentType == TextInputContentType.Digits)
-                    flags |= FcitxCapabilityFlags.CAPACITY_DIALABLE;
-                else if (options.ContentType == TextInputContentType.Url)
-                    flags |= FcitxCapabilityFlags.CAPACITY_URL;
-                if (flags != _lastReportedFlags)
-                {
-                    _lastReportedFlags = flags;
-                    await _context.SetCapacityAsync((uint)flags);
-                }
+                _lastReportedFlags = flags;
+                await _context.SetCapacityAsync((uint)flags);
+            }
+        }
+
+        protected override Task SetCapabilitiesCore(bool supportsPreedit, bool supportsSurroundingText)
+        {
+            _capabilityFlags = default;
+            if (supportsPreedit)
+                _capabilityFlags = FcitxCapabilityFlags.CAPACITY_PREEDIT;
+
+            return PushFlagsIfNeeded();
+        }
+
+        public override void SetOptions(TextInputOptions options) =>
+            Enqueue(() =>
+            {
+                UpdateOptionsField(options);
+                return PushFlagsIfNeeded();
             });
 
         private void OnForward(Exception? e, (uint keyval, uint state, int type) ev)

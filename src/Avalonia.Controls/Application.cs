@@ -83,8 +83,8 @@ namespace Avalonia
         /// </remarks>
         public object? DataContext
         {
-            get { return GetValue(DataContextProperty); }
-            set { SetValue(DataContextProperty, value); }
+            get => GetValue(DataContextProperty);
+            set => SetValue(DataContextProperty, value);
         }
 
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariant"/>
@@ -107,7 +107,7 @@ namespace Avalonia
         /// </value>
         public static Application? Current
         {
-            get { return AvaloniaLocator.Current.GetService<Application>(); }
+            get => AvaloniaLocator.Current.GetService<Application>();
         }
 
         /// <summary>

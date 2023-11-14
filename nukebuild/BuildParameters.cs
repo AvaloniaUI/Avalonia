@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.AzurePipelines;
@@ -38,7 +39,7 @@ public partial class Build
         public string RepositoryName { get; }
         public string RepositoryBranch { get; }
         public string ReleaseConfiguration { get; }
-        public string ReleaseBranchPrefix { get; }
+        public Regex ReleaseBranchRegex { get; }
         public string MSBuildSolution { get; }
         public bool IsLocalBuild { get; }
         public bool IsRunningOnUnix { get; }
@@ -77,7 +78,7 @@ public partial class Build
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
             MasterBranch = "refs/heads/master";
-            ReleaseBranchPrefix = "refs/heads/release/";
+            ReleaseBranchRegex = new("^refs/heads/release/(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
             ReleaseConfiguration = "Release";
             MSBuildSolution = RootDirectory / "dirs.proj";
 
@@ -101,8 +102,7 @@ public partial class Build
                     RepositoryName);
             IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch,
                 RepositoryBranch);
-            IsReleaseBranch = RepositoryBranch?.StartsWith(ReleaseBranchPrefix, StringComparison.OrdinalIgnoreCase) ==
-                              true;
+            IsReleaseBranch = RepositoryBranch is not null && ReleaseBranchRegex.IsMatch(RepositoryBranch);
 
             IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
             IsMyGetRelease = IsReleasable;
@@ -111,7 +111,7 @@ public partial class Build
             // VERSION
             Version = b.ForceNugetVersion ?? GetVersion();
 
-            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version).Major, 0).ToString();
+            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version.Split('-', StringSplitOptions.None).First()).Major, 0).ToString();
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
             if (IsRunningOnAzure)
