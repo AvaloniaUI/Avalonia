@@ -40,7 +40,8 @@ namespace Avalonia.Win32
             var files = await ShowFilePicker(
                 true, true,
                 options.AllowMultiple, false,
-                options.Title, null, options.SuggestedStartLocation, null, null);
+                options.Title, null, options.SuggestedStartLocation, null, null)
+                .ConfigureAwait(false);
             return files.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray();
         }
 
@@ -50,7 +51,8 @@ namespace Avalonia.Win32
                 true, false,
                 options.AllowMultiple, false,
                 options.Title, null, options.SuggestedStartLocation,
-                null, options.FileTypeFilter);
+                null, options.FileTypeFilter)
+                .ConfigureAwait(false);
             return files.Select(f => new BclStorageFile(new FileInfo(f))).ToArray();
         }
 
@@ -60,7 +62,8 @@ namespace Avalonia.Win32
                 false, false,
                 false, options.ShowOverwritePrompt,
                 options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
-                options.DefaultExtension, options.FileTypeChoices);
+                options.DefaultExtension, options.FileTypeChoices)
+                .ConfigureAwait(false);
             return files.Select(f => new BclStorageFile(new FileInfo(f))).FirstOrDefault();
         }
 
