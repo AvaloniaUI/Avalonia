@@ -171,7 +171,7 @@ namespace Avalonia.Win32
                         for (int i = 0; i < count; i++)
                         {
                             var shellItem = shellItemArray.GetItemAt(i);
-                            if (GetAbsoluteFilePath(shellItem) is { } selected)
+                            if (GetParsingName(shellItem) is { } selected)
                             {
                                 results.Add(selected);
                             }
