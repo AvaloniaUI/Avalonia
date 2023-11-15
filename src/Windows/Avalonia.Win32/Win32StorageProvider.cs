@@ -15,10 +15,12 @@ namespace Avalonia.Win32
 {
     internal class Win32StorageProvider : BclStorageProvider
     {
-        private const uint SIGDN_FILESYSPATH = 0x80058000;
+        private const uint SIGDN_DESKTOPABSOLUTEPARSING = 0x80028000;
 
-        private const FILEOPENDIALOGOPTIONS DefaultDialogOptions = FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM | FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE |
-            FILEOPENDIALOGOPTIONS.FOS_NOTESTFILECREATE | FILEOPENDIALOGOPTIONS.FOS_DONTADDTORECENT;
+        private const FILEOPENDIALOGOPTIONS DefaultDialogOptions =
+            FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST | FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM |
+            FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE | FILEOPENDIALOGOPTIONS.FOS_NOTESTFILECREATE |
+            FILEOPENDIALOGOPTIONS.FOS_DONTADDTORECENT;
 
         private readonly WindowImpl _windowImpl;
 
@@ -175,7 +177,7 @@ namespace Avalonia.Win32
                         result = results;
                     }
                     else if (frm.Result is { } shellItem
-                        && GetAbsoluteFilePath(shellItem) is { } singleResult)
+                        && GetParsingName(shellItem) is { } singleResult)
                     {
                         result = new[] { singleResult };
                     }
@@ -191,18 +193,23 @@ namespace Avalonia.Win32
         }
 
 
-        private static unsafe string? GetAbsoluteFilePath(IShellItem shellItem)
+        private static string? GetParsingName(IShellItem shellItem)
         {
-            var pszString = new IntPtr(shellItem.GetDisplayName(SIGDN_FILESYSPATH));
-            if (pszString != IntPtr.Zero)
+            return GetDisplayName(shellItem, SIGDN_DESKTOPABSOLUTEPARSING);
+        }
+        
+        private static unsafe string? GetDisplayName(IShellItem shellItem, uint sigdnName)
+        {
+            char* pszString = null;
+            if (shellItem.GetDisplayName(sigdnName, &pszString) == 0)
             {
                 try
                 {
-                    return Marshal.PtrToStringUni(pszString);
+                    return Marshal.PtrToStringUni((IntPtr)pszString);
                 }
                 finally
                 {
-                    Marshal.FreeCoTaskMem(pszString);
+                    Marshal.FreeCoTaskMem((IntPtr)pszString);
                 }
             }
             return default;
