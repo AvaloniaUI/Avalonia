@@ -634,8 +634,9 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOVE:
                     {
-                        PositionChanged?.Invoke(new PixelPoint((short)(ToInt32(lParam) & 0xffff),
-                            (short)(ToInt32(lParam) >> 16)));
+                       // PositionChanged?.Invoke(new PixelPoint((short)(ToInt32(lParam) & 0xffff),
+                       //     (short)(ToInt32(lParam) >> 16)));
+                        PositionChanged?.Invoke(Position);
                         return IntPtr.Zero;
                     }
 
