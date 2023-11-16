@@ -518,7 +518,7 @@ namespace Avalonia.Win32
             get
             {
                 // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
-                if (Win32Platform.WindowsVersion.Major < 10 || !HasFullDecorations || GetStyle().HasFlag(WindowStyles.WS_POPUP))
+                if (Win32Platform.WindowsVersion.Major < 10 || _windowProperties.Decorations == SystemDecorations.None || GetStyle().HasFlag(WindowStyles.WS_POPUP))
                 {
                     return PixelSize.Empty;
                 }
