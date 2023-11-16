@@ -527,7 +527,7 @@ namespace Avalonia.Win32
                 GetWindowRect(_hwnd, out var frameRect);
                 var borderWidth = GetSystemMetrics(SystemMetric.SM_CXBORDER);
 
-                return new PixelSize(clientRect.left - frameRect.left - borderWidth, 0);
+                return new PixelSize(clientRect.left - frameRect.left - borderWidth, clientRect.top - frameRect.top - borderWidth);
             }
         }
 
