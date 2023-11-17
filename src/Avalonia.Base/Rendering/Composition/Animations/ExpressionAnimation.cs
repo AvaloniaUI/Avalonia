@@ -3,8 +3,6 @@ using System;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Animations
 {
     /// <summary>
@@ -18,7 +16,7 @@ namespace Avalonia.Rendering.Composition.Animations
     /// of Composition objects, mathematical functions and operators and Input.
     /// Use the <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> method to start the animation.
     /// </remarks>
-    public class ExpressionAnimation : CompositionAnimation
+    public sealed class ExpressionAnimation : CompositionAnimation
     {
         private string? _expression;
         private Expression? _parsedExpression;

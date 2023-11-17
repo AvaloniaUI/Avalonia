@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+
+  <style name="MyTheme">
+  </style>
+
+  <style name="MyTheme.NoActionBar" parent="@style/Theme.AppCompat.NoActionBar">
+    <item name="android:windowActionBar">false</item>
+    <item name="android:windowBackground">@null</item>
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+    <item name="android:windowSplashScreenAnimatedIcon">@drawable/avalonia_anim</item>
+    <item name="android:windowSplashScreenAnimationDuration">1000</item>
+    <item name="postSplashScreenTheme">@style/MyTheme.Main</item>
+
+  </style>
+  <style name="MyTheme.Main"
+         parent ="MyTheme.NoActionBar">
+    <item name="android:windowIsTranslucent">true</item>
+  </style>
+</resources>

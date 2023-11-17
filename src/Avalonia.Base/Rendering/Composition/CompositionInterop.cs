@@ -67,18 +67,20 @@ abstract class CompositionGpuImportedObjectBase : ICompositionGpuImportedObject
         Context = context;
         Feature = feature;
         
-        ImportCompeted = Compositor.InvokeServerJobAsync(Import);
+        ImportCompleted = Compositor.InvokeServerJobAsync(Import);
     }
     
     protected abstract void Import();
     public abstract void Dispose();
 
-    public Task ImportCompeted { get; }
+    public Task ImportCompleted { get; }
+
+    public Task ImportCompeted => ImportCompleted;
     public bool IsLost => Context.IsLost;
 
     public ValueTask DisposeAsync() => new(Compositor.InvokeServerJobAsync(() =>
     {
-        if (ImportCompeted.Status == TaskStatus.RanToCompletion)
+        if (ImportCompleted.Status == TaskStatus.RanToCompletion)
             Dispose();
     }));
 }

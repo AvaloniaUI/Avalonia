@@ -25,13 +25,6 @@ namespace Avalonia.Media
     {
         private const double byteToDouble = 1.0 / 255;
 
-        static Color()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// Gets the Alpha component of the color.
         /// </summary>
@@ -353,7 +346,7 @@ namespace Avalonia.Media
 
             if (workingString.Length >= 11 &&
                 workingString.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal))
+                workingString.EndsWith(')'))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
                 prefixMatched = true;
@@ -362,7 +355,7 @@ namespace Avalonia.Media
             if (prefixMatched == false &&
                 workingString.Length >= 10 &&
                 workingString.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal))
+                workingString.EndsWith(')'))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
                 prefixMatched = true;

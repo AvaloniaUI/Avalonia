@@ -22,8 +22,8 @@ namespace Avalonia.Native
         {
             _inner = inner;
             _inner.ChildrenChanged += (_, _) => Node?.ChildrenChanged();
-            if (inner is WindowBaseAutomationPeer window)
-                window.FocusChanged += (_, _) => Node?.FocusChanged(); 
+            if (inner is IRootProvider root)
+                root.FocusChanged += (_, _) => Node?.FocusChanged(); 
         }
 
         ~AvnAutomationPeer() => Node?.Dispose();
@@ -39,6 +39,7 @@ namespace Avalonia.Native
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
         public IAvnString Name => _inner.GetName().ToAvnString();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
+        public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
 
         public int HasKeyboardFocus() => _inner.HasKeyboardFocus().AsComBool();
         public int IsContentElement() => _inner.IsContentElement().AsComBool();
@@ -48,6 +49,13 @@ namespace Avalonia.Native
         public void SetFocus() => _inner.SetFocus();
         public int ShowContextMenu() => _inner.ShowContextMenu().AsComBool();
 
+        public void SetNode(IAvnAutomationNode node)
+        {
+            if (Node is not null)
+                throw new InvalidOperationException("The AvnAutomationPeer already has a node.");
+            Node = node;
+        }
+
         public IAvnAutomationPeer? RootPeer
         {
             get
@@ -55,7 +63,7 @@ namespace Avalonia.Native
                 var peer = _inner;
                 var parent = peer.GetParent();
 
-                while (peer is not IRootProvider && parent is not null)
+                while (peer.GetProvider<IRootProvider>() is null && parent is not null)
                 {
                     peer = parent;
                     parent = peer.GetParent();
@@ -65,26 +73,23 @@ namespace Avalonia.Native
             }
         }
 
-        public void SetNode(IAvnAutomationNode node)
-        {
-            if (Node is not null)
-                throw new InvalidOperationException("The AvnAutomationPeer already has a node.");
-            Node = node;
-        }
-        
-        public int IsRootProvider() => (_inner is IRootProvider).AsComBool();
+        private IEmbeddedRootProvider EmbeddedRootProvider => GetProvider<IEmbeddedRootProvider>();
+        private IExpandCollapseProvider ExpandCollapseProvider => GetProvider<IExpandCollapseProvider>();
+        private IInvokeProvider InvokeProvider => GetProvider<IInvokeProvider>();
+        private IRangeValueProvider RangeValueProvider => GetProvider<IRangeValueProvider>();
+        private IRootProvider RootProvider => GetProvider<IRootProvider>();
+        private ISelectionItemProvider SelectionItemProvider => GetProvider<ISelectionItemProvider>();
+        private IToggleProvider ToggleProvider => GetProvider<IToggleProvider>();
+        private IValueProvider ValueProvider => GetProvider<IValueProvider>();
 
-        public IAvnWindowBase RootProvider_GetWindow()
-        {
-            var window = (WindowBase)((ControlAutomationPeer)_inner).Owner;
-            return ((WindowBaseImpl)window.PlatformImpl!).Native;
-        }
-        
-        public IAvnAutomationPeer? RootProvider_GetFocus() => Wrap(((IRootProvider)_inner).GetFocus());
+        public int IsRootProvider() => IsProvider<IRootProvider>();
+
+        public IAvnWindowBase? RootProvider_GetWindow() => (RootProvider.PlatformImpl as WindowBaseImpl)?.Native;
+        public IAvnAutomationPeer? RootProvider_GetFocus() => Wrap(RootProvider.GetFocus());
 
         public IAvnAutomationPeer? RootProvider_GetPeerFromPoint(AvnPoint point)
         {
-            var result = ((IRootProvider)_inner).GetPeerFromPoint(point.ToAvaloniaPoint());
+            var result = RootProvider.GetPeerFromPoint(point.ToAvaloniaPoint());
 
             if (result is null)
                 return null;
@@ -103,46 +108,80 @@ namespace Avalonia.Native
             return Wrap(result);
         }
 
-        public int IsExpandCollapseProvider() => (_inner is IExpandCollapseProvider).AsComBool();
 
-        public int ExpandCollapseProvider_GetIsExpanded() => ((IExpandCollapseProvider)_inner).ExpandCollapseState switch
+        public int IsEmbeddedRootProvider() => IsProvider<IEmbeddedRootProvider>();
+
+        public IAvnAutomationPeer? EmbeddedRootProvider_GetFocus() => Wrap(EmbeddedRootProvider.GetFocus());
+
+        public IAvnAutomationPeer? EmbeddedRootProvider_GetPeerFromPoint(AvnPoint point)
+        {
+            var result = EmbeddedRootProvider.GetPeerFromPoint(point.ToAvaloniaPoint());
+
+            if (result is null)
+                return null;
+
+            // The OSX accessibility APIs expect non-ignored elements when hit-testing.
+            while (!result.IsControlElement())
+            {
+                var parent = result.GetParent();
+
+                if (parent is not null)
+                    result = parent;
+                else
+                    break;
+            }
+
+            return Wrap(result);
+        }
+
+        public int IsExpandCollapseProvider() => IsProvider<IExpandCollapseProvider>();
+
+        public int ExpandCollapseProvider_GetIsExpanded() => ExpandCollapseProvider.ExpandCollapseState switch
         {
             ExpandCollapseState.Expanded => 1,
             ExpandCollapseState.PartiallyExpanded => 1,
             _ => 0,
         };
 
-        public int ExpandCollapseProvider_GetShowsMenu() => ((IExpandCollapseProvider)_inner).ShowsMenu.AsComBool();
-        public void ExpandCollapseProvider_Expand() => ((IExpandCollapseProvider)_inner).Expand();
-        public void ExpandCollapseProvider_Collapse() => ((IExpandCollapseProvider)_inner).Collapse();
+        public int ExpandCollapseProvider_GetShowsMenu() => ExpandCollapseProvider.ShowsMenu.AsComBool();
+        public void ExpandCollapseProvider_Expand() => ExpandCollapseProvider.Expand();
+        public void ExpandCollapseProvider_Collapse() => ExpandCollapseProvider.Collapse();
 
-        public int IsInvokeProvider() => (_inner is IInvokeProvider).AsComBool();
-        public void InvokeProvider_Invoke() => ((IInvokeProvider)_inner).Invoke();
+        public int IsInvokeProvider() => IsProvider<IInvokeProvider>();
+        public void InvokeProvider_Invoke() => InvokeProvider.Invoke();
 
-        public int IsRangeValueProvider() => (_inner is IRangeValueProvider).AsComBool();
-        public double RangeValueProvider_GetValue() => ((IRangeValueProvider)_inner).Value;
-        public double RangeValueProvider_GetMinimum() => ((IRangeValueProvider)_inner).Minimum;
-        public double RangeValueProvider_GetMaximum() => ((IRangeValueProvider)_inner).Maximum;
-        public double RangeValueProvider_GetSmallChange() => ((IRangeValueProvider)_inner).SmallChange;
-        public double RangeValueProvider_GetLargeChange() => ((IRangeValueProvider)_inner).LargeChange;
-        public void RangeValueProvider_SetValue(double value) => ((IRangeValueProvider)_inner).SetValue(value);
+        public int IsRangeValueProvider() => IsProvider<IRangeValueProvider>();
+        public double RangeValueProvider_GetValue() => RangeValueProvider.Value;
+        public double RangeValueProvider_GetMinimum() => RangeValueProvider.Minimum;
+        public double RangeValueProvider_GetMaximum() => RangeValueProvider.Maximum;
+        public double RangeValueProvider_GetSmallChange() => RangeValueProvider.SmallChange;
+        public double RangeValueProvider_GetLargeChange() => RangeValueProvider.LargeChange;
+        public void RangeValueProvider_SetValue(double value) => RangeValueProvider.SetValue(value);
 
-        public int IsSelectionItemProvider() => (_inner is ISelectionItemProvider).AsComBool();
-        public int SelectionItemProvider_IsSelected() => ((ISelectionItemProvider)_inner).IsSelected.AsComBool();
+        public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
+        public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
         
-        public int IsToggleProvider() => (_inner is IToggleProvider).AsComBool();
-        public int ToggleProvider_GetToggleState() => (int)((IToggleProvider)_inner).ToggleState;
-        public void ToggleProvider_Toggle() => ((IToggleProvider)_inner).Toggle();
+        public int IsToggleProvider() => IsProvider<IToggleProvider>();
+        public int ToggleProvider_GetToggleState() => (int)ToggleProvider.ToggleState;
+        public void ToggleProvider_Toggle() => ToggleProvider.Toggle();
 
-        public int IsValueProvider() => (_inner is IValueProvider).AsComBool();
-        public IAvnString ValueProvider_GetValue() => ((IValueProvider)_inner).Value.ToAvnString();
-        public void ValueProvider_SetValue(string value) => ((IValueProvider)_inner).SetValue(value);
+        public int IsValueProvider() => IsProvider<IValueProvider>();
+        public IAvnString ValueProvider_GetValue() => ValueProvider.Value.ToAvnString();
+        public void ValueProvider_SetValue(string value) => ValueProvider.SetValue(value);
 
         [return: NotNullIfNotNull("peer")]
         public static AvnAutomationPeer? Wrap(AutomationPeer? peer)
         {
             return peer is null ? null : s_wrappers.GetValue(peer, x => new(peer));
         }
+
+        private T GetProvider<T>()
+        {
+            return _inner.GetProvider<T>() ?? throw new InvalidOperationException(
+                $"The peer {_inner} does not implement {typeof(T)}.");
+        }
+
+        private int IsProvider<T>() => (_inner.GetProvider<T>() is not null).AsComBool();
     }
 
     internal class AvnAutomationPeerArray : NativeCallbackBase, IAvnAutomationPeerArray

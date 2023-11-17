@@ -55,7 +55,6 @@ namespace Avalonia.Controls
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
 
-        private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private static readonly object s_itemIsItsOwnContainer = new object();
         private readonly Action<Control, int> _recycleElement;
         private readonly Action<Control> _recycleElementOnItemRemoved;
@@ -67,11 +66,13 @@ namespace Avalonia.Controls
         private double _lastEstimatedElementSizeU = 25;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
-        private ScrollViewer? _scrollViewer;
-        private Rect _viewport = s_invalidViewport;
+        private IScrollAnchorProvider? _scrollAnchorProvider;
+        private Rect _viewport;
         private Dictionary<object, Stack<Control>>? _recyclePool;
         private Control? _focusedElement;
         private int _focusedIndex = -1;
+        private Control? _realizingElement;
+        private int _realizingIndex = -1;
 
         public VirtualizingStackPanel()
         {
@@ -117,8 +118,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+            get => GetValue(AreHorizontalSnapPointsRegularProperty);
+            set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -126,8 +127,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+            get => GetValue(AreVerticalSnapPointsRegularProperty);
+            set => SetValue(AreVerticalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -209,7 +210,7 @@ namespace Avalonia.Controls
                             new Rect(u, 0, sizeU, finalSize.Height) :
                             new Rect(0, u, finalSize.Width, sizeU);
                         e.Arrange(rect);
-                        _scrollViewer?.RegisterAnchorCandidate(e);
+                        _scrollAnchorProvider?.RegisterAnchorCandidate(e);
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
                 }
@@ -227,13 +228,13 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+            _scrollAnchorProvider = this.FindAncestorOfType<IScrollAnchorProvider>();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _scrollViewer = null;
+            _scrollAnchorProvider = null;
         }
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
@@ -336,6 +337,8 @@ namespace Avalonia.Controls
                 return _scrollToElement;
             if (_focusedIndex == index)
                 return _focusedElement;
+            if (index == _realizingIndex)
+                return _realizingElement;
             if (GetRealizedElement(index) is { } realized)
                 return realized;
             if (Items[index] is Control c && c.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
@@ -349,6 +352,8 @@ namespace Avalonia.Controls
                 return _scrollToIndex;
             if (container == _focusedElement)
                 return _focusedIndex;
+            if (container == _realizingElement)
+                return _realizingIndex;
             return _realizedElements?.GetIndex(container) ?? -1;
         }
 
@@ -432,18 +437,17 @@ namespace Avalonia.Controls
 
             // If the control has not yet been laid out then the effective viewport won't have been set.
             // Try to work it out from an ancestor control.
-            var viewport = _viewport != s_invalidViewport ? _viewport : EstimateViewport();
+            var viewport = _viewport;
 
             // Get the viewport in the orientation direction.
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
             // Get or estimate the anchor element from which to start realization.
-            var itemCount = items?.Count ?? 0;
             var (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
                 viewportStart,
                 viewportEnd,
-                itemCount,
+                items.Count,
                 ref _lastEstimatedElementSizeU);
 
             // Check if the anchor element is not within the currently realized elements.
@@ -485,32 +489,6 @@ namespace Avalonia.Controls
             return _lastEstimatedElementSizeU;
         }
 
-        private Rect EstimateViewport()
-        {
-            var c = this.GetVisualParent();
-            var viewport = new Rect();
-
-            if (c is null)
-            {
-                return viewport;
-            }
-
-            while (c is not null)
-            {
-                if ((c.Bounds.Width != 0 || c.Bounds.Height != 0) &&
-                    c.TransformToVisual(this) is Matrix transform)
-                {
-                    viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
-                        .TransformToAABB(transform);
-                    break;
-                }
-
-                c = c?.GetVisualParent();
-            }
-
-            return viewport.Intersect(new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity));
-        }
-
         private void RealizeElements(
             IReadOnlyList<object?> items,
             Size availableSize,
@@ -532,7 +510,9 @@ namespace Avalonia.Controls
             // Start at the anchor element and move forwards, realizing elements.
             do
             {
+                _realizingIndex = index;
                 var e = GetOrCreateElement(items, index);
+                _realizingElement = e;
                 e.Measure(availableSize);
 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
@@ -543,6 +523,8 @@ namespace Avalonia.Controls
 
                 u += sizeU;
                 ++index;
+                _realizingIndex = -1;
+                _realizingElement = null;
             } while (u < viewport.viewportUEnd && index < items.Count);
 
             // Store the last index and end U position for the desired size calculation.
@@ -679,7 +661,7 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
             
-            _scrollViewer?.UnregisterAnchorCandidate(element);
+            _scrollAnchorProvider?.UnregisterAnchorCandidate(element);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
 
@@ -776,107 +758,10 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
-            var snapPoints = new List<double>();
+            if(_realizedElements == null)
+                return new List<double>();
 
-            switch (orientation)
-            {
-                case Orientation.Horizontal:
-                    if (AreHorizontalSnapPointsRegular)
-                        throw new InvalidOperationException();
-                    if (Orientation == Orientation.Horizontal)
-                    {
-                        var averageElementSize = EstimateElementSizeU();
-                        double snapPoint = 0;
-                        for (var i = 0; i < Items.Count; i++)
-                        {
-                            var container = ContainerFromIndex(i);
-                            if (container != null)
-                            {
-                                switch (snapPointsAlignment)
-                                {
-                                    case SnapPointsAlignment.Near:
-                                        snapPoint = container.Bounds.Left;
-                                        break;
-                                    case SnapPointsAlignment.Center:
-                                        snapPoint = container.Bounds.Center.X;
-                                        break;
-                                    case SnapPointsAlignment.Far:
-                                        snapPoint = container.Bounds.Right;
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                if (snapPoint == 0)
-                                {
-                                    switch (snapPointsAlignment)
-                                    {
-                                        case SnapPointsAlignment.Center:
-                                            snapPoint = averageElementSize / 2;
-                                            break;
-                                        case SnapPointsAlignment.Far:
-                                            snapPoint = averageElementSize;
-                                            break;
-                                    }
-                                }
-                                else
-                                    snapPoint += averageElementSize;
-                            }
-
-                            snapPoints.Add(snapPoint);
-                        }
-                    }
-                    break;
-                case Orientation.Vertical:
-                    if (AreVerticalSnapPointsRegular)
-                        throw new InvalidOperationException();
-                    if (Orientation == Orientation.Vertical)
-                    {
-                        var averageElementSize = EstimateElementSizeU();
-                        double snapPoint = 0;
-                        for (var i = 0; i < Items.Count; i++)
-                        {
-                            var container = ContainerFromIndex(i);
-                            if (container != null)
-                            {
-                                switch (snapPointsAlignment)
-                                {
-                                    case SnapPointsAlignment.Near:
-                                        snapPoint = container.Bounds.Top;
-                                        break;
-                                    case SnapPointsAlignment.Center:
-                                        snapPoint = container.Bounds.Center.Y;
-                                        break;
-                                    case SnapPointsAlignment.Far:
-                                        snapPoint = container.Bounds.Bottom;
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                if (snapPoint == 0)
-                                {
-                                    switch (snapPointsAlignment)
-                                    {
-                                        case SnapPointsAlignment.Center:
-                                            snapPoint = averageElementSize / 2;
-                                            break;
-                                        case SnapPointsAlignment.Far:
-                                            snapPoint = averageElementSize;
-                                            break;
-                                    }
-                                }
-                                else
-                                    snapPoint += averageElementSize;
-                            }
-
-                            snapPoints.Add(snapPoint);
-                        }
-                    }
-                    break;
-            }
-
-            return snapPoints;
+            return new VirtualizingSnapPointsList(_realizedElements, ItemsControl?.ItemsSource?.Count() ?? 0, orientation, Orientation, snapPointsAlignment, EstimateElementSizeU());
         }
 
         /// <inheritdoc/>

@@ -39,4 +39,16 @@ internal static partial class CanvasHelper
         JSObject canvas,
         string canvasId,
         [JSMarshalAs<JSType.Function>] Action renderFrameCallback);
+
+    [JSImport("globalThis.setTimeout")]
+    public static partial int SetTimeout([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
+
+    [JSImport("globalThis.clearTimeout")]
+    public static partial int ClearTimeout(int id);
+
+    [JSImport("globalThis.setInterval")]
+    public static partial int SetInterval([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
+
+    [JSImport("globalThis.clearInterval")]
+    public static partial int ClearInterval(int id);
 }

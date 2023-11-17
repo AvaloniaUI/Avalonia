@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Rendering.Composition.Transport;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Animations
 {
     /// <summary>
@@ -19,10 +17,10 @@ namespace Avalonia.Rendering.Composition.Animations
     /// When expression is used in ImplicitAnimationCollection a special keyword `this.FinalValue` will represent
     /// the final value of the animated property that was changed 
     /// </remarks>
-    public class ImplicitAnimationCollection : CompositionObject, IDictionary<string, ICompositionAnimationBase>
+    public sealed class ImplicitAnimationCollection : CompositionObject, IDictionary<string, ICompositionAnimationBase>
     {
-        private Dictionary<string, ICompositionAnimationBase> _inner = new Dictionary<string, ICompositionAnimationBase>();
-        private IDictionary<string, ICompositionAnimationBase> _innerface;
+        private readonly Dictionary<string, ICompositionAnimationBase> _inner = new Dictionary<string, ICompositionAnimationBase>();
+        private readonly IDictionary<string, ICompositionAnimationBase> _innerface;
         internal ImplicitAnimationCollection(Compositor compositor) : base(compositor, null)
         {
             _innerface = _inner;

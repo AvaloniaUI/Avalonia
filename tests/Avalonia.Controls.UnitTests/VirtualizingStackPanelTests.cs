@@ -368,6 +368,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Focused_Element_Losing_Focus_Does_Not_Reset_Selection()
+        {
+            using var app = App();
+            var (target, scroll, listBox) = CreateTarget<ListBox>(
+                styles: new[]
+                {
+                    new Style(x => x.OfType<ListBoxItem>())
+                    {
+                        Setters =
+                        {
+                            new Setter(ListBoxItem.TemplateProperty, ListBoxItemTemplate()),
+                        }
+                    }
+                });
+
+            listBox.SelectedIndex = 0;
+
+            var selectedContainer = target.GetRealizedElements().First()!;
+            selectedContainer.Focusable = true;
+            selectedContainer.Focus();
+
+            scroll.Offset = new Vector(0, 500);
+            Layout(target);
+
+            var newFocused = target.GetRealizedElements().First()!;
+            newFocused.Focusable = true;
+            newFocused.Focus();
+
+            Assert.Equal(0, listBox.SelectedIndex);
+        }
+
+        [Fact]
         public void Removing_Range_When_Scrolled_To_End_Updates_Viewport()
         {
             using var app = App();
@@ -469,6 +501,33 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/12838
+        [Fact]
+        public void NthChild_Selector_Works_For_ItemTemplate_Children()
+        {
+            using var app = App();
+
+            var style = new Style(x => x.OfType<ContentPresenter>().NthChild(5, 0).Child().OfType<Canvas>())
+            {
+                Setters = { new Setter(Panel.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+
+            Assert.Equal(10, realized.Count);
+
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 4 || i == 9) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, ((Canvas) container.Child!).Background);
+            }
+        }
+
         [Fact]
         public void NthLastChild_Selector_Works()
         {
@@ -492,6 +551,33 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(i, index);
                 Assert.Equal(expectedBackground, container.Background);
+            }
+        }
+
+        // https://github.com/AvaloniaUI/Avalonia/issues/12838
+        [Fact]
+        public void NthLastChild_Selector_Works_For_ItemTemplate_Children()
+        {
+            using var app = App();
+
+            var style = new Style(x => x.OfType<ContentPresenter>().NthLastChild(5, 0).Child().OfType<Canvas>())
+            {
+                Setters = { new Setter(Panel.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+
+            Assert.Equal(10, realized.Count);
+
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 0 || i == 5) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, ((Canvas) container.Child!).Background);
             }
         }
 
@@ -729,6 +815,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(3, target.Children.Count);
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/10968
+        [Fact]
+        public void Does_Not_Realize_Items_If_Self_Outside_Viewport()
+        {
+            using var app = App();
+            var (panel, _, itemsControl) = CreateUnrootedTarget<ItemsControl>();
+            itemsControl.Margin = new Thickness(0.0, 200.0, 0.0, 0.0);
+
+            var scrollContentPresenter = new ScrollContentPresenter
+            {
+                Width = 100,
+                Height = 100,
+                Content = itemsControl
+            };
+
+            var root = CreateRoot(scrollContentPresenter);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            Assert.Equal(1, panel.VisualChildren.Count);
+
+            scrollContentPresenter.Content = null;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            scrollContentPresenter.Content = itemsControl;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, panel.VisualChildren.Count);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -776,7 +890,19 @@ namespace Avalonia.Controls.UnitTests
             Optional<IDataTemplate?> itemTemplate = default,
             IEnumerable<Style>? styles = null)
         {
-            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(items, itemTemplate);
+            return CreateTarget<ItemsControl>(
+                items: items, 
+                itemTemplate: itemTemplate, 
+                styles: styles);
+        }
+
+        private static (VirtualizingStackPanel, ScrollViewer, T) CreateTarget<T>(
+            IEnumerable<object>? items = null,
+            Optional<IDataTemplate?> itemTemplate = default,
+            IEnumerable<Style>? styles = null)
+                where T : ItemsControl, new()
+        {
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<T>(items, itemTemplate);
             var root = CreateRoot(itemsControl, styles);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -808,7 +934,7 @@ namespace Avalonia.Controls.UnitTests
             var itemsControl = new T
             {
                 ItemsSource = items,
-                Template = new FuncControlTemplate<ItemsControl>((_, ns) => scroll.RegisterInNameScope(ns)),
+                Template = new FuncControlTemplate<T>((_, ns) => scroll.RegisterInNameScope(ns)),
                 ItemsPanel = new FuncTemplate<Panel?>(() => target),
                 ItemTemplate = itemTemplate.GetValueOrDefault(DefaultItemTemplate()),
             };
@@ -838,12 +964,23 @@ namespace Avalonia.Controls.UnitTests
             root?.LayoutManager.ExecuteLayoutPass();
         }
 
+        private static IControlTemplate ListBoxItemTemplate()
+        {
+            return new FuncControlTemplate<ListBoxItem>((x, ns) =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    Width = 100,
+                    Height = 10,
+                }.RegisterInNameScope(ns));
+        }
+
         private static IControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((x, ns) =>
                 new ScrollContentPresenter
                 {
-                    Name = "PART_ContentPresenter",
+                    Name = "PART_ScrollContentPresenter",
                 }.RegisterInNameScope(ns));
         }
 

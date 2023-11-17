@@ -13,5 +13,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
 
         public ILockedFramebuffer Lock() => new AndroidFramebuffer(_topLevel.InternalView.Holder.Surface, _topLevel.RenderScaling);
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
     }
 }

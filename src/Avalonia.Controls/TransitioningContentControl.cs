@@ -15,8 +15,9 @@ namespace Avalonia.Controls;
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _currentTransition;
-    private ContentPresenter? _transitionPresenter;
-    private Optional<object?> _transitionFrom;
+    private ContentPresenter? _presenter2;
+    private bool _isFirstFull;
+    private bool _shouldAnimate;
 
     /// <summary>
     /// Defines the <see cref="PageTransition"/> property.
@@ -27,6 +28,14 @@ public class TransitioningContentControl : ContentControl
             defaultValue: new ImmutableCrossFade(TimeSpan.FromMilliseconds(125)));
 
     /// <summary>
+    /// Defines the <see cref="IsTransitionReversed"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsTransitionReversedProperty =
+        AvaloniaProperty.Register<TransitioningContentControl, bool>(
+            nameof(IsTransitionReversed),
+            defaultValue: false);
+
+    /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
     /// </summary>
     public IPageTransition? PageTransition
@@ -35,50 +44,70 @@ public class TransitioningContentControl : ContentControl
         set => SetValue(PageTransitionProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the control will be animated in the reverse direction.
+    /// </summary>
+    /// <remarks>May not apply to all transitions.</remarks>
+    public bool IsTransitionReversed
+    {
+        get => GetValue(IsTransitionReversedProperty);
+        set => SetValue(IsTransitionReversedProperty, value);
+    }
+
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);
 
-        if (_transitionFrom.HasValue)
+        if (_shouldAnimate)
         {
             _currentTransition?.Cancel();
 
-            if (_transitionPresenter is not null &&
+            if (_presenter2 is not null &&
                 Presenter is Visual presenter &&
-                PageTransition is { } transition &&
-                (_transitionFrom.Value is not Visual v || v.VisualParent is null))
-            {
-                _transitionPresenter.Content = _transitionFrom.Value;
-                _transitionPresenter.IsVisible = true;
-                _transitionFrom = Optional<object?>.Empty;
+                PageTransition is { } transition)
+            {   
+                _shouldAnimate = false;
                 
                 var cancel = new CancellationTokenSource();
                 _currentTransition = cancel;
 
-                transition.Start(_transitionPresenter, presenter, true, cancel.Token).ContinueWith(x =>
+                var from = _isFirstFull ? _presenter2 : presenter;
+                var to = _isFirstFull ? presenter : _presenter2;
+
+                transition.Start(from, to, !IsTransitionReversed, cancel.Token).ContinueWith(x =>
                 {
                     if (!cancel.IsCancellationRequested)
                     {
-                        _transitionPresenter.Content = null;
-                        _transitionPresenter.IsVisible = false;
+                        HideOldPresenter();
                     }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
             }
 
-            _transitionFrom = Optional<object?>.Empty;
+            _shouldAnimate = false;
         }
 
         return result;
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateContent(false);
+    }
+
     protected override bool RegisterContentPresenter(ContentPresenter presenter)
     {
-        if (!base.RegisterContentPresenter(presenter) &&
-            presenter is ContentPresenter p &&
-            p.Name == "PART_TransitionContentPresenter")
+        if (base.RegisterContentPresenter(presenter))
         {
-            _transitionPresenter = p;
-            _transitionPresenter.IsVisible = false;
+            return true;
+        }
+
+        if (presenter is ContentPresenter p &&
+            p.Name == "PART_ContentPresenter2")
+        {
+            _presenter2 = p;
+            _presenter2.IsVisible = false;
+            UpdateContent(false);
             return true;
         }
 
@@ -87,15 +116,46 @@ public class TransitioningContentControl : ContentControl
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-
-        if (change.Property == ContentProperty && 
-            _transitionPresenter is not null &&
-            Presenter is Visual &&
-            PageTransition is not null)
+        if (change.Property == ContentProperty)
         {
-            _transitionFrom = change.GetOldValue<object?>();
+            UpdateContent(true);
+            return;
+        }
+
+        base.OnPropertyChanged(change);
+    }
+
+    private void UpdateContent(bool withTransition)
+    {
+        if (VisualRoot is null || _presenter2 is null || Presenter is null)
+        {
+            return;
+        }
+
+        var currentPresenter = _isFirstFull ? _presenter2 : Presenter;
+        currentPresenter.Content = Content;
+        currentPresenter.IsVisible = true;
+
+        _isFirstFull = !_isFirstFull;
+
+        if (PageTransition is not null && withTransition)
+        {
+            _shouldAnimate = true;
             InvalidateArrange();
+        }
+        else
+        {
+            HideOldPresenter();
+        }
+    }
+
+    private void HideOldPresenter()
+    {
+        var oldPresenter = _isFirstFull ? _presenter2 : Presenter;
+        if (oldPresenter is not null)
+        {
+            oldPresenter.Content = null;
+            oldPresenter.IsVisible = false;
         }
     }
 

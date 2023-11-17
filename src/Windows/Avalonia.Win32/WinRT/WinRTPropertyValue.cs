@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32.WinRT
@@ -16,7 +17,15 @@ namespace Avalonia.Win32.WinRT
             UInt32 = u;
             Type = PropertyType.UInt32;
         }
-        
+
+        public WinRTPropertyValue(float[] uiColor)
+        {
+            Type = PropertyType.SingleArray;
+            _singleArray = uiColor;
+        }
+
+        private readonly float[]? _singleArray;
+
         public PropertyType Type { get; }
         public int IsNumericScalar { get; }
         public byte UInt8 { get; }
@@ -62,7 +71,17 @@ namespace Avalonia.Win32.WinRT
 
         public unsafe ulong* GetUInt64Array(uint* __valueSize) => throw NotImplemented;
 
-        public unsafe float* GetSingleArray(uint* __valueSize) => throw NotImplemented;
+        public unsafe float* GetSingleArray(uint* __valueSize)
+        {
+            if (_singleArray == null)
+                throw NotImplemented;
+            *__valueSize = (uint)_singleArray.Length;
+            var allocCoTaskMem = Marshal.AllocCoTaskMem(_singleArray.Length * Unsafe.SizeOf<float>());
+            Marshal.Copy(_singleArray, 0, allocCoTaskMem, _singleArray.Length);
+            float* s = (float*)allocCoTaskMem;
+
+            return s;
+        }
 
         public unsafe double* GetDoubleArray(uint* __valueSize) => throw NotImplemented;
 

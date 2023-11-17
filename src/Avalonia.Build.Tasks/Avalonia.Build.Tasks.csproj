@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0</TargetFrameworks>
-        <OutputType>exe</OutputType>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
-        <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
-        <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
-        <NoWarn>$(NoWarn);NU1605;CS8632</NoWarn>
+      <TargetFrameworks>netstandard2.0</TargetFrameworks>
+      <OutputType>exe</OutputType>
+      <GenerateDocumentationFile>false</GenerateDocumentationFile>
+      <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
+      <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
+      <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
+      <NoWarn>$(NoWarn);NU1605;CS8632</NoWarn>
+      <DebugType>embedded</DebugType>
+      <IncludeSymbols>false</IncludeSymbols>
     </PropertyGroup>
 
     <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
@@ -116,6 +118,7 @@
       <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
       <Compile Include="..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
       <Compile Include="..\Avalonia.Base\Utilities\SpanHelpers.cs" Link="Utilities\SpanHelpers.cs" />
+      <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.5" />

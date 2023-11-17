@@ -7,14 +7,12 @@ using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>
 /// Server-side counterpart of <see cref="CompositionDrawListVisual"/>
 /// </summary>
-internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisual
+internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisual, IServerRenderResourceObserver
 {
 #if DEBUG
     // This is needed for debugging purposes so we could see inspect the associated visual from debugger
@@ -37,6 +35,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         {
             _renderCommands?.Dispose();
             _renderCommands = reader.ReadObject<ServerCompositionRenderData?>();
+            _renderCommands?.AddObserver(this);
         }
         base.DeserializeChangesCore(reader, committedAt);
     }
@@ -49,6 +48,8 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         }
         base.RenderCore(canvas, currentTransformedClip);
     }
+    
+    public void DependencyQueuedInvalidate(IServerRenderResource sender) => ValuesInvalidated();
     
 #if DEBUG
     public override string ToString()

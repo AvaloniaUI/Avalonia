@@ -54,13 +54,6 @@ namespace Avalonia
 
         private readonly RelativeUnit _unit;
 
-        static RelativePoint()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<RelativePointAnimator>(prop => typeof(RelativePoint).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RelativePoint"/> struct.
         /// </summary>
@@ -171,9 +164,9 @@ namespace Avalonia
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;
 
-                if (x.EndsWith("%"))
+                if (x.EndsWith('%'))
                 {
-                    if (!y.EndsWith("%"))
+                    if (!y.EndsWith('%'))
                     {
                         throw new FormatException("If one coordinate is relative, both must be.");
                     }

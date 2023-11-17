@@ -39,8 +39,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ITransform? LayoutTransform
         {
-            get { return GetValue(LayoutTransformProperty); }
-            set { SetValue(LayoutTransformProperty, value); }
+            get => GetValue(LayoutTransformProperty);
+            set => SetValue(LayoutTransformProperty, value);
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool UseRenderTransform
         {
-            get { return GetValue(UseRenderTransformProperty); }
-            set { SetValue(UseRenderTransformProperty, value); }
+            get => GetValue(UseRenderTransformProperty);
+            set => SetValue(UseRenderTransformProperty, value);
         }
 
         public Control? TransformRoot => Child;
@@ -215,7 +215,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
-        private Matrix _transformation;
+        private Matrix _transformation = Matrix.Identity;
         private IDisposable? _transformChangedEvent;
 
         /// <summary>
@@ -256,13 +256,16 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ApplyLayoutTransform()
         {
-            if (LayoutTransform == null)
+            // Get the transform matrix and apply it
+            var matrix = LayoutTransform is null ?
+                Matrix.Identity :
+                RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
+
+            if (_transformation == matrix)
                 return;
 
-            // Get the transform matrix and apply it
-            _transformation = RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
-
-            _matrixTransform.Matrix = _transformation;
+            _transformation = matrix;
+            _matrixTransform.Matrix = matrix;
 
             // New transform means re-layout is necessary
             InvalidateMeasure();

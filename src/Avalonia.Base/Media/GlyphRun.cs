@@ -424,14 +424,20 @@ namespace Avalonia.Media
         /// </returns>
         public CharacterHit GetPreviousCaretCharacterHit(CharacterHit characterHit)
         {
-            if (characterHit.TrailingLength != 0)
+            //Always produce a hit that is on the left edge
+
+            if (characterHit.TrailingLength > 0)
             {
-                return new CharacterHit(characterHit.FirstCharacterIndex);
+                var previousCharacterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex, out _);
+
+                return new CharacterHit(previousCharacterHit.FirstCharacterIndex);
             }
+            else
+            {
+                var previousCharacterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
 
-            var previousCharacterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
-
-            return new CharacterHit(previousCharacterHit.FirstCharacterIndex);
+                return new CharacterHit(previousCharacterHit.FirstCharacterIndex);
+            }
         }
 
         /// <summary>
@@ -643,12 +649,13 @@ namespace Avalonia.Media
                 lastCluster = _glyphInfos[_glyphInfos.Count - 1].GlyphCluster;
             }
 
+            var isReversed = firstCluster > lastCluster;
+
             if (!IsLeftToRight)
             {
                 (lastCluster, firstCluster) = (firstCluster, lastCluster);
             }
 
-            var isReversed = firstCluster > lastCluster;
             var height = GlyphTypeface.Metrics.LineSpacing * Scale;
             var widthIncludingTrailingWhitespace = 0d;
 
@@ -766,14 +773,12 @@ namespace Avalonia.Media
 
             if (!charactersSpan.IsEmpty)
             {
-                var characterIndex = 0;
+                var characterIndex = charactersSpan.Length - 1;
 
                 for (var i = 0; i < _glyphInfos.Count; i++)
                 {
                     var currentCluster = _glyphInfos[i].GlyphCluster;
                     var codepoint = Codepoint.ReadAt(charactersSpan, characterIndex, out var characterLength);
-
-                    characterIndex += characterLength;
 
                     if (!codepoint.IsWhiteSpace)
                     {
@@ -784,9 +789,9 @@ namespace Avalonia.Media
 
                     var j = i;
 
-                    while (j - 1 >= 0)
+                    while (j + 1 < _glyphInfos.Count)
                     {
-                        var nextCluster = _glyphInfos[--j].GlyphCluster;
+                        var nextCluster = _glyphInfos[++j].GlyphCluster;
 
                         if (currentCluster == nextCluster)
                         {
@@ -797,6 +802,8 @@ namespace Avalonia.Media
 
                         break;
                     }
+
+                    characterIndex -= clusterLength;
 
                     if (codepoint.IsBreakChar)
                     {

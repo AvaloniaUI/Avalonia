@@ -1,8 +1,6 @@
 ﻿using Avalonia.Metadata;
 using Avalonia.Platform;
 
-#nullable enable
-
 namespace Avalonia.Media
 {
     /// <summary>
@@ -72,7 +70,7 @@ namespace Avalonia.Media
             newChildren.Parent = this;
         }
 
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             if (_children.Count > 0)
             {

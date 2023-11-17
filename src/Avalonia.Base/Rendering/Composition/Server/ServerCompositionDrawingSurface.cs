@@ -31,12 +31,12 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
             throw new PlatformGraphicsContextLostException();
 
         // This should never happen, but check for it anyway to avoid a deadlock
-        if (!image.ImportCompeted.IsCompleted)
+        if (!image.ImportCompleted.IsCompleted)
             throw new InvalidOperationException("The import operation is not completed yet");
 
         // Rethrow the import here exception
-        if (image.ImportCompeted.IsFaulted)
-            image.ImportCompeted.GetAwaiter().GetResult();
+        if (image.ImportCompleted.IsFaulted)
+            image.ImportCompleted.GetAwaiter().GetResult();
     }
 
     void Update(IBitmapImpl newImage, IPlatformRenderInterfaceContext context)
@@ -49,22 +49,31 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
 
     public void UpdateWithAutomaticSync(CompositionImportedGpuImage image)
     {
-        PerformSanityChecks(image);
-        Update(image.Image.SnapshotWithAutomaticSync(), image.Context);
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            Update(image.Image.SnapshotWithAutomaticSync(), image.Context);
+        }
     }
     
     public void UpdateWithKeyedMutex(CompositionImportedGpuImage image, uint acquireIndex, uint releaseIndex)
     {
-        PerformSanityChecks(image);
-        Update(image.Image.SnapshotWithKeyedMutex(acquireIndex, releaseIndex), image.Context);
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            Update(image.Image.SnapshotWithKeyedMutex(acquireIndex, releaseIndex), image.Context);
+        }
     }
 
     public void UpdateWithSemaphores(CompositionImportedGpuImage image, CompositionImportedGpuSemaphore wait, CompositionImportedGpuSemaphore signal)
     {
-        PerformSanityChecks(image);
-        if (!wait.IsUsable || !signal.IsUsable)
-            throw new PlatformGraphicsContextLostException();
-        Update(image.Image.SnapshotWithSemaphores(wait.Semaphore, signal.Semaphore), image.Context);
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            if (!wait.IsUsable || !signal.IsUsable)
+                throw new PlatformGraphicsContextLostException();
+            Update(image.Image.SnapshotWithSemaphores(wait.Semaphore, signal.Semaphore), image.Context);
+        }
     }
 
     public void Dispose()

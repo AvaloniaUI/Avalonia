@@ -1,11 +1,10 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia.Compatibility;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -19,7 +18,7 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions? _options;
-        private AvaloniaNativeGlPlatformGraphics? _platformGl;
+        private IPlatformGraphics? _platformGraphics;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -41,14 +40,13 @@ namespace Avalonia.Native
         {
             if (options.AvaloniaNativeLibraryPath != null)
             {
-                var loader = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                    (IDynLoader)new Win32Loader() :
-                    new UnixLoader();
-
-                var lib = loader.LoadLibrary(options.AvaloniaNativeLibraryPath);
-                var proc = loader.GetProcAddress(lib, "CreateAvaloniaNative", false);
+                var lib = NativeLibraryEx.Load(options.AvaloniaNativeLibraryPath);
+                if (!NativeLibraryEx.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
+                {
+                    throw new InvalidOperationException(
+                        "Unable to get \"CreateAvaloniaNative\" export from AvaloniaNativeLibrary library");
+                }
                 var d = Marshal.GetDelegateForFunctionPointer<CreateAvaloniaNativeDelegate>(proc);
-
 
                 return Initialize(d(), options);
             }
@@ -88,14 +86,17 @@ namespace Avalonia.Native
 
             var applicationPlatform = new AvaloniaNativeApplicationPlatform();
 
-            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
+            
+            if (_factory.MacOptions != null)
+                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
+
+            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform, new AvnDispatcher());
+            
             if (_factory.MacOptions != null)
             {
-                var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
-
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
-                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
@@ -107,7 +108,7 @@ namespace Avalonia.Native
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer())))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
@@ -120,23 +121,54 @@ namespace Avalonia.Native
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
 
             AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
-            
-            if (_options.UseGpu)
-            {
-                try
-                {
-                    _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IPlatformGraphics>().ToConstant(_platformGl);
 
-                }
-                catch (Exception)
+            foreach (var mode in _options.RenderingMode)
+            {
+                if (mode == AvaloniaNativeRenderingMode.OpenGl)
                 {
-                    // ignored
+                    try
+                    {
+                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
                 }
+#pragma warning disable CS0618
+                else if (mode == AvaloniaNativeRenderingMode.Metal)
+#pragma warning restore CS0618
+                {
+                    try
+                    {
+                        var metal = new MetalPlatformGraphics(_factory);
+                        metal.CreateContext().Dispose();
+                        _platformGraphics = metal;
+                    }
+                    catch
+                    {
+                        // Ignored
+                    }
+                }
+                else if (mode == AvaloniaNativeRenderingMode.Software)
+                    break;
             }
+
+            if (_platformGraphics != null)
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IPlatformGraphics>().ToConstant(_platformGraphics);
             
-            Compositor = new Compositor(_platformGl, true);
+
+            Compositor = new Compositor(_platformGraphics, true);
+
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        }
+
+        private void OnProcessExit(object? sender, EventArgs e)
+        {
+            AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+            _factory.Dispose();
         }
 
         public ITrayIconImpl CreateTrayIcon()
@@ -146,7 +178,7 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options, _platformGl);
+            return new WindowImpl(_factory, _options);
         }
 
         public IWindowImpl CreateEmbeddableWindow()

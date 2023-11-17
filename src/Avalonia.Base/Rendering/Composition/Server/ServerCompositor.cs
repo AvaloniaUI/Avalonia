@@ -7,8 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
-
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition.Server
 {
@@ -22,18 +21,19 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly IRenderLoop _renderLoop;
 
-        private readonly Queue<Batch> _batches = new Queue<Batch>();
+        private readonly Queue<CompositionBatch> _batches = new Queue<CompositionBatch>();
         private readonly Queue<Action> _receivedJobQueue = new();
         public long LastBatchId { get; private set; }
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
-        private List<ServerCompositionTarget> _activeTargets = new();
-        private HashSet<IServerClockItem> _clockItems = new();
-        private List<IServerClockItem> _clockItemsToUpdate = new();
+        private readonly List<ServerCompositionTarget> _activeTargets = new();
+        private readonly HashSet<IServerClockItem> _clockItems = new();
+        private readonly List<IServerClockItem> _clockItemsToUpdate = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
-        private object _lock = new object();
+        private readonly object _lock = new object();
         private Thread? _safeThread;
+        private bool _uiThreadIsInsideRender;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
@@ -49,7 +49,7 @@ namespace Avalonia.Rendering.Composition.Server
             _renderLoop.Add(this);
         }
 
-        public void EnqueueBatch(Batch batch)
+        public void EnqueueBatch(CompositionBatch batch)
         {
             lock (_batches) 
                 _batches.Enqueue(batch);
@@ -57,13 +57,13 @@ namespace Avalonia.Rendering.Composition.Server
 
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
-        List<Batch> _reusableToNotifyProcessedList = new();
-        List<Batch> _reusableToNotifyRenderedList = new();
+        readonly List<CompositionBatch> _reusableToNotifyProcessedList = new();
+        readonly List<CompositionBatch> _reusableToNotifyRenderedList = new();
         void ApplyPendingBatches()
         {
             while (true)
             {
-                Batch batch;
+                CompositionBatch batch;
                 lock (_batches)
                 {
                     if(_batches.Count == 0)
@@ -157,19 +157,45 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Render()
         {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                if (_uiThreadIsInsideRender)
+                    throw new InvalidOperationException("Reentrancy is not supported");
+                _uiThreadIsInsideRender = true;
+                try
+                {
+                    using (Dispatcher.UIThread.DisableProcessing()) 
+                        RenderReentrancySafe();
+                }
+                finally
+                {
+                    _uiThreadIsInsideRender = false;
+                }
+            }
+            else
+                RenderReentrancySafe();
+        }
+        
+        private void RenderReentrancySafe()
+        {
             lock (_lock)
             {
                 try
                 {
-                    _safeThread = Thread.CurrentThread;
-                    RenderCore();
+                    try
+                    {
+                        _safeThread = Thread.CurrentThread;
+                        RenderCore();
+                    }
+                    finally
+                    {
+                        NotifyBatchesRendered();
+                    }
                 }
                 finally
                 {
-                    NotifyBatchesRendered();
                     _safeThread = null;
                 }
-                
             }
         }
         

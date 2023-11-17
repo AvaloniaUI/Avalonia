@@ -21,6 +21,10 @@
     </Border>
   </Design.PreviewWith>
 
+  <Thickness x:Key="DateTimeFlyoutButtonBorderThickness">0</Thickness>
+  <Thickness x:Key="DateTimeFlyoutBorderThickness">1</Thickness>
+  <Thickness x:Key="DateTimeFlyoutBorderPadding">1</Thickness>
+
   <!--  Theme for the items displayed in the selectors  -->
   <ControlTheme x:Key="SimpleDateTimePickerItem"
                 BasedOn="{StaticResource {x:Type ListBoxItem}}"

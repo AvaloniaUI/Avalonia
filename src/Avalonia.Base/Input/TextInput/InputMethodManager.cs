@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Interactivity;
 using Avalonia.Reactive;
 
 namespace Avalonia.Input.TextInput
@@ -7,7 +8,8 @@ namespace Avalonia.Input.TextInput
     {
         private ITextInputMethodImpl? _im;
         private IInputElement? _focusedElement;
-        private ITextInputMethodClient? _client;
+        private Interactive? _visualRoot;
+        private TextInputMethodClient? _client;
         private readonly TransformTrackingHelper _transformTracker = new TransformTrackingHelper();
 
         public TextInputMethodManager()
@@ -16,17 +18,25 @@ namespace Avalonia.Input.TextInput
             InputMethod.IsInputMethodEnabledProperty.Changed.Subscribe(OnIsInputMethodEnabledChanged);
         }
 
-        private ITextInputMethodClient? Client
+        private TextInputMethodClient? Client
         {
             get => _client;
             set
             {
                 if(_client == value)
+                {
                     return;
+                }
+
                 if (_client != null)
                 {
                     _client.CursorRectangleChanged -= OnCursorRectangleChanged;
                     _client.TextViewVisualChanged -= OnTextViewVisualChanged;
+                    _client.ResetRequested -= OnResetRequested;
+
+                    _client = null;
+
+                    _im?.Reset();
                 }
 
                 _client = value;
@@ -35,28 +45,42 @@ namespace Avalonia.Input.TextInput
                 {
                     _client.CursorRectangleChanged += OnCursorRectangleChanged;
                     _client.TextViewVisualChanged += OnTextViewVisualChanged;
-
-                    _im?.Reset();
+                    _client.ResetRequested += OnResetRequested;
                     
-                    if (_focusedElement is StyledElement target)
-                    {
-                        _im?.SetOptions(TextInputOptions.FromStyledElement(target));
-                    }
-                    else
-                    {
-                        _im?.SetOptions(TextInputOptions.Default);
-                    }
-
-                    _transformTracker.SetVisual(_client?.TextViewVisual);
-                    
-                    _im?.SetClient(_client);
-                    UpdateCursorRect();
+                    PopulateImWithInitialValues();
                 }
                 else
                 {
                     _im?.SetClient(null);
                     _transformTracker.SetVisual(null);
                 }
+            }
+        }
+
+        void PopulateImWithInitialValues()
+        {
+            if (_focusedElement is StyledElement target)
+            {
+                _im?.SetOptions(TextInputOptions.FromStyledElement(target));
+            }
+            else
+            {
+                _im?.SetOptions(TextInputOptions.Default);
+            }
+
+            _transformTracker.SetVisual(_client?.TextViewVisual);
+                    
+            _im?.SetClient(_client);
+
+            UpdateCursorRect();
+        }
+
+        private void OnResetRequested(object? sender, EventArgs args)
+        {
+            if (_im != null && sender == _client)
+            {
+                _im.Reset();
+                PopulateImWithInitialValues();
             }
         }
 
@@ -96,8 +120,18 @@ namespace Avalonia.Input.TextInput
         {
             if(_focusedElement == element)
                 return;
+
+            if (_visualRoot != null)
+                InputMethod.RemoveTextInputMethodClientRequeryRequestedHandler(_visualRoot,
+                    TextInputMethodClientRequeryRequested);
+            
             _focusedElement = element;
 
+            _visualRoot = (element as Visual)?.VisualRoot as Interactive;
+            if (_visualRoot != null)
+                InputMethod.AddTextInputMethodClientRequeryRequestedHandler(_visualRoot,
+                    TextInputMethodClientRequeryRequested);
+            
             var inputMethod = ((element as Visual)?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
 
             if (_im != inputMethod)
@@ -106,8 +140,15 @@ namespace Avalonia.Input.TextInput
             }
             
             _im = inputMethod;
+            
 
             TryFindAndApplyClient();
+        }
+
+        private void TextInputMethodClientRequeryRequested(object? sender, RoutedEventArgs e)
+        {
+            if (_im != null)
+                TryFindAndApplyClient();
         }
 
         private void TryFindAndApplyClient()

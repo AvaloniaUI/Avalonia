@@ -19,6 +19,10 @@
         </Style>
       </UniformGrid.Styles>
       <StackPanel>
+        <TextBlock Text="MinimumPrefixLength: 0" />
+        <AutoCompleteBox MinimumPrefixLength="0" />
+      </StackPanel>
+      <StackPanel>
         <TextBlock Text="MinimumPrefixLength: 1" />
         <AutoCompleteBox MinimumPrefixLength="1" />
       </StackPanel>
@@ -42,7 +46,6 @@
         <TextBlock Text="Disabled" />
         <AutoCompleteBox IsEnabled="False" />
       </StackPanel>
-
       <StackPanel>
         <TextBlock Text="ValueMemberBinding" />
         <AutoCompleteBox ValueMemberBinding="{Binding Capital, x:DataType=models:StateData}" />

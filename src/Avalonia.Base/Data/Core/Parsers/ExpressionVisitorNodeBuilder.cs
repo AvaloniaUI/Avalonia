@@ -11,8 +11,8 @@ namespace Avalonia.Data.Core.Parsers
     class ExpressionVisitorNodeBuilder : ExpressionVisitor
     {
         private const string MultiDimensionalArrayGetterMethodName = "Get";
-        private static PropertyInfo AvaloniaObjectIndexer;
-        private static MethodInfo CreateDelegateMethod;
+        private static readonly PropertyInfo AvaloniaObjectIndexer;
+        private static readonly MethodInfo CreateDelegateMethod;
 
         private readonly bool _enableDataValidation;
 

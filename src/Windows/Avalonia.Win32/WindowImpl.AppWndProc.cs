@@ -59,7 +59,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_NCCALCSIZE:
                     {
-                        if (ToInt32(wParam) == 1 && !HasFullDecorations || _isClientAreaExtended)
+                        if (ToInt32(wParam) == 1 && (_windowProperties.Decorations == SystemDecorations.None || _isClientAreaExtended))
                         {
                             return IntPtr.Zero;
                         }
@@ -87,7 +87,7 @@ namespace Avalonia.Win32
                     {
                         // The first and foremost thing to do - notify the TopLevel
                         Closed?.Invoke();
-                        
+
                         if (UiaCoreTypesApi.IsNetComInteropAvailable)
                         {
                             UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
@@ -98,9 +98,9 @@ namespace Avalonia.Win32
                         {
                             Imm32InputMethod.Current.ClearLanguageAndWindow();
                         }
-                        
+
                         // Cleanup render targets
-                        (_gl as IDisposable)?.Dispose();
+                        (_glSurface as IDisposable)?.Dispose();
 
                         if (_dropTarget != null)
                         {
@@ -151,18 +151,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
                     {
-                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
-
-                        if (key != Key.None)
-                        {
-                            e = new RawKeyEventArgs(
-                                WindowsKeyboardDevice.Instance,
-                                timestamp,
-                                Owner,
-                                RawKeyEventType.KeyDown,
-                                key,
-                                WindowsKeyboardDevice.Instance.Modifiers);
-                        }
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam);
                         break;
                     }
 
@@ -181,18 +170,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYUP:
                 case WindowsMessage.WM_SYSKEYUP:
                     {
-                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
-
-                        if (key != Key.None)
-                        {
-                            e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            Owner,
-                            RawKeyEventType.KeyUp,
-                            key,
-                            WindowsKeyboardDevice.Instance.Modifiers);
-                        }
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam);
                         break;
                     }
                 case WindowsMessage.WM_CHAR:
@@ -724,26 +702,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_COMPOSITION:
                     {
-                        var flags = (GCS)ToInt32(lParam);
-
-                        if ((flags & GCS.GCS_COMPSTR) != 0)
-                        {
-                            var currentComposition = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_COMPSTR);
-
-                            Imm32InputMethod.Current.CompositionChanged(currentComposition);
-                        }
-
-                        if ((flags & GCS.GCS_RESULTSTR) != 0)
-                        {
-                            var result = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_RESULTSTR);
-
-                            if (!string.IsNullOrEmpty(result))
-                            {
-                                Imm32InputMethod.Current.Composition = result;
-
-                                _ignoreWmChar = true;
-                            }
-                        }
+                        Imm32InputMethod.Current.HandleComposition(wParam, lParam, timestamp);
 
                         break;
                     }
@@ -757,35 +716,16 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_NOTIFY:
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
-                    Imm32InputMethod.Current.Composition = null;
-
-                    if (Imm32InputMethod.Current.IsActive)
                     {
-                        Imm32InputMethod.Current.Client.SetPreeditText(null);
-                    }
+                        Imm32InputMethod.Current.HandleCompositionStart();
 
-                    Imm32InputMethod.Current.IsComposing = true;
-                    return IntPtr.Zero;
+                        return IntPtr.Zero;
+                    }
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
-                        var currentComposition = Imm32InputMethod.Current.Composition;
- 
-                        //In case composition has not been comitted yet we need to do that here.
-                        if (!string.IsNullOrEmpty(currentComposition))
-                        {
-                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, currentComposition);
-                        }
+                        Imm32InputMethod.Current.HandleCompositionEnd();
 
-                        //Cleanup composition state.
-                        Imm32InputMethod.Current.IsComposing = false;
-                        Imm32InputMethod.Current.Composition = null;
-
-                        if (Imm32InputMethod.Current.IsActive)
-                        {
-                            Imm32InputMethod.Current.Client.SetPreeditText(null);
-                        }
-
-                        break;
+                        return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
                     if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control)
@@ -813,12 +753,19 @@ namespace Avalonia.Win32
 
                 if (message == WindowsMessage.WM_KEYDOWN)
                 {
-                    // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
-                    // be ignored. This should be safe to do as WM_CHAR should only be produced in
-                    // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
-                    // is handled.
-                    _ignoreWmChar = e.Handled;
-                }
+                    if(e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
+                    {
+                        _ignoreWmChar = true;
+                    }
+                    else
+                    {
+                        // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
+                        // be ignored. This should be safe to do as WM_CHAR should only be produced in
+                        // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
+                        // is handled.
+                        _ignoreWmChar = e.Handled;
+                    }
+                 }
 
                 if (s_intermediatePointsPooledList.Count > 0)
                 {
@@ -830,7 +777,7 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
                 }
             }
-            
+
             return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
@@ -1203,6 +1150,29 @@ namespace Avalonia.Win32
             }
 
             return modifiers;
+        }
+
+        private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam)
+        {
+            var virtualKey = ToInt32(wParam);
+            var keyData = ToInt32(lParam);
+            var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
+            var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None)
+                return null;
+
+            var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            return new RawKeyEventArgs(
+                WindowsKeyboardDevice.Instance,
+                timestamp,
+                Owner,
+                eventType,
+                key,
+                WindowsKeyboardDevice.Instance.Modifiers,
+                physicalKey,
+                keySymbol);
         }
     }
 }

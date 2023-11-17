@@ -41,7 +41,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         private PixelRect? _lastReportedRect;
         private double _scaling = 1;
         private PixelPoint _windowPosition;
-        private ITextInputMethodClient? _client;
+        private TextInputMethodClient? _client;
 
         protected bool IsConnected => _currentName != null;
 
@@ -53,7 +53,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             _ = WatchAsync();
         }
 
-        public ITextInputMethodClient Client => _client;
+        public TextInputMethodClient? Client => _client;
 
         public bool IsActive => _client is not null;
 
@@ -62,9 +62,15 @@ namespace Avalonia.FreeDesktop.DBusIme
             foreach (var name in _knownNames)
             {
                 var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
-                _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
-                var nameOwner = await dbus.GetNameOwnerAsync(name);
-                OnNameChange(null, (name, null, nameOwner));
+                try
+                {
+                    _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
+                    var nameOwner = await dbus.GetNameOwnerAsync(name);
+                    OnNameChange(null, (name, null, nameOwner));
+                }
+                catch (DBusException)
+                {
+                }
             }
         }
 
@@ -184,6 +190,8 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         protected abstract Task SetCursorRectCore(PixelRect rect);
         protected abstract Task SetActiveCore(bool active);
+
+        protected virtual Task SetCapabilitiesCore(bool supportsPreedit, bool supportsSurroundingText) => Task.CompletedTask;
         protected abstract Task ResetContextCore();
         protected abstract Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode);
 
@@ -202,6 +210,17 @@ namespace Avalonia.FreeDesktop.DBusIme
                 }
             });
         }
+        
+        private void UpdateCapabilities(bool supportsPreedit, bool supportsSurroundingText)
+        {
+            _queue.Enqueue(async () =>
+            {
+                if(!IsConnected)
+                    return;
+
+                await SetCapabilitiesCore(supportsPreedit, supportsSurroundingText);
+            });
+        }
 
 
         void IX11InputMethodControl.SetWindowActive(bool active)
@@ -210,10 +229,11 @@ namespace Avalonia.FreeDesktop.DBusIme
             UpdateActive();
         }
 
-        void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
+        void ITextInputMethodImpl.SetClient(TextInputMethodClient? client)
         {
             _client = client;
             UpdateActive();
+            UpdateCapabilities(client?.SupportsPreedit ?? false, client?.SupportsSurroundingText ?? false);
         }
 
         bool IX11InputMethodControl.IsEnabled => IsConnected && _imeActive == true;
@@ -288,9 +308,9 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         void ITextInputMethodImpl.Reset()
         {
-            Reset();
             _queue.Enqueue(async () =>
             {
+                Reset();
                 if (!IsConnected)
                     return;
                 await ResetContextCore();

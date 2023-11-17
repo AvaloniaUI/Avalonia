@@ -159,8 +159,6 @@ namespace Avalonia.Input
 
                     _restoreFocusElement?.Focus();
                     _restoreFocusElement = null;
-                    
-                    e.Handled = true;
                 }
             }
             else if (_altIsDown)
@@ -185,7 +183,8 @@ namespace Avalonia.Input
                 var text = e.Key.ToString();
                 var matches = _registered
                     .Where(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
-                        && x.Element.IsEffectivelyVisible)
+                        && x.Element.IsEffectivelyVisible
+                        && x.Element.IsEffectivelyEnabled)
                     .Select(x => x.Element);
 
                 // If the menu is open, only match controls in the menu's visual tree.
@@ -200,7 +199,6 @@ namespace Avalonia.Input
                 if (match is not null)
                 {
                     match.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
-                    e.Handled = true;
                 }
             }
         }
@@ -225,7 +223,6 @@ namespace Avalonia.Input
                     else if (_showingAccessKeys && MainMenu != null)
                     {
                         MainMenu.Open();
-                        e.Handled = true;
                     }
 
                     break;

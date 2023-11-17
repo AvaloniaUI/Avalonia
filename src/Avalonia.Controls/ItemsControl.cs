@@ -23,7 +23,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IChildIndexProvider, IScrollSnapPointsInfo
+    public class ItemsControl : TemplatedControl, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -67,17 +67,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
             AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
 
-        /// <summary>
-        /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> AreHorizontalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreHorizontalSnapPointsRegular));
-
-        /// <summary>
-        /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreVerticalSnapPointsRegular));
+        private static readonly AttachedProperty<ControlTheme?> AppliedItemContainerTheme =
+            AvaloniaProperty.RegisterAttached<ItemsControl, Control, ControlTheme?>("AppliedItemContainerTheme");
 
         /// <summary>
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
@@ -249,64 +240,6 @@ namespace Avalonia.Controls
         /// </remarks>
         public event EventHandler<ContainerClearingEventArgs>? ContainerClearing;
 
-        /// <inheritdoc />
-        public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
-        {
-            add
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.HorizontalSnapPointsChanged += value;
-                }
-            }
-
-            remove
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.HorizontalSnapPointsChanged -= value;
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public event EventHandler<RoutedEventArgs> VerticalSnapPointsChanged
-        {
-            add
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.VerticalSnapPointsChanged += value;
-                }
-            }
-
-            remove
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.VerticalSnapPointsChanged -= value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets whether the horizontal snap points for the <see cref="ItemsControl"/> are equidistant from each other.
-        /// </summary>
-        public bool AreHorizontalSnapPointsRegular
-        {
-            get => GetValue(AreHorizontalSnapPointsRegularProperty);
-            set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets whether the vertical snap points for the <see cref="ItemsControl"/> are equidistant from each other.
-        /// </summary>
-        public bool AreVerticalSnapPointsRegular
-        {
-            get => GetValue(AreVerticalSnapPointsRegularProperty);
-            set => SetValue(AreVerticalSnapPointsRegularProperty, value);
-        }
-
         /// <summary>
         /// Gets a default recycle key that can be used when an <see cref="ItemsControl"/> supports
         /// a single container type.
@@ -372,7 +305,20 @@ namespace Avalonia.Controls
         /// <returns>
         /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
         /// </returns>
-        public static ItemsControl? ItemsControlFromItemContaner(Control container)
+        [Obsolete("Typo, use ItemsControlFromItemContainer instead")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
+        public static ItemsControl? ItemsControlFromItemContaner(Control container) =>
+            ItemsControlFromItemContainer(container);
+
+        /// <summary>
+        /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>
+        /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
+        /// </returns>
+        public static ItemsControl? ItemsControlFromItemContainer(Control container)
         {
             var c = container.Parent as Control;
 
@@ -733,13 +679,26 @@ namespace Avalonia.Controls
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {
-            var itemContainerTheme = ItemContainerTheme;
-
-            if (itemContainerTheme is not null &&
-                !container.IsSet(ThemeProperty) &&
-                StyledElement.GetStyleKey(container) == itemContainerTheme.TargetType)
+            // If the container has no theme set, or we've already applied our ItemContainerTheme
+            // (and it hasn't changed since) then we're in control of the container's Theme and may
+            // need to update it.
+            if (!container.IsSet(ThemeProperty) || container.GetValue(AppliedItemContainerTheme) == container.Theme)
             {
-                container.Theme = itemContainerTheme;
+                var itemContainerTheme = ItemContainerTheme;
+
+                if (itemContainerTheme?.TargetType?.IsAssignableFrom(GetStyleKey(container)) == true)
+                {
+                    // We have an ItemContainerTheme and it matches the container. Set the Theme
+                    // property, and mark the container as having had ItemContainerTheme applied.
+                    container.SetCurrentValue(ThemeProperty, itemContainerTheme);
+                    container.SetValue(AppliedItemContainerTheme, itemContainerTheme);
+                }
+                else
+                {
+                    // Otherwise clear the theme and the AppliedItemContainerTheme property.
+                    container.ClearValue(ThemeProperty);
+                    container.ClearValue(AppliedItemContainerTheme);
+                }
             }
 
             if (item is not Control)
@@ -895,20 +854,6 @@ namespace Avalonia.Controls
         {
             count = ItemsView.Count;
             return true;
-        }
-
-        /// <inheritdoc />
-        public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
-        {
-            return _itemsPresenter?.GetIrregularSnapPoints(orientation, snapPointsAlignment) ?? new List<double>();
-        }
-
-        /// <inheritdoc />
-        public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
-        {
-            offset = 0;
-
-            return _itemsPresenter?.GetRegularSnapPoints(orientation, snapPointsAlignment, out offset) ?? 0;
         }
     }
 }

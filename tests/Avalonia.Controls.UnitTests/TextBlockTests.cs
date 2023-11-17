@@ -116,6 +116,39 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_Inlines_Should_Reset_InlineUIContainer_VisualParent_On_Measure()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var control = new Control();
+
+                var run = new InlineUIContainer(control);
+
+                target.Inlines.Add(run);
+
+                target.Measure(Size.Infinity);
+
+                Assert.True(target.IsMeasureValid);
+
+                Assert.Equal(target, control.VisualParent);
+
+                target.Inlines = null;
+
+                Assert.Null(run.Parent);
+
+                target.Inlines = new InlineCollection { new Run("Hello World") };
+
+                Assert.Null(run.Parent);
+
+                target.Measure(Size.Infinity);
+
+                Assert.Null(control.VisualParent);
+            }
+        }
+
+        [Fact]
         public void InlineUIContainer_Child_Schould_Be_Arranged()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -137,6 +170,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Inlines.Add("123456");
 
                 target.Measure(Size.Infinity);
+                target.Arrange(new Rect(target.DesiredSize));
 
                 Assert.True(button.IsMeasureValid);
                 Assert.Equal(80, button.DesiredSize.Width);
@@ -167,6 +201,27 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("1234", target.Text);
 
                 Assert.Equal(0, target.Inlines.Count);
+            }
+        }
+        
+        [Fact]
+        public void Setting_TextDecorations_Should_Update_Inlines()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBlock();
+
+                target.Inlines.Add(new Run("Hello World"));
+
+                Assert.Equal(1, target.Inlines.Count);
+
+                Assert.Null(target.Inlines[0].TextDecorations);
+
+                var underline = TextDecorations.Underline;
+
+                target.TextDecorations = underline;
+
+                Assert.Equal(underline, target.Inlines[0].TextDecorations);
             }
         }
     }

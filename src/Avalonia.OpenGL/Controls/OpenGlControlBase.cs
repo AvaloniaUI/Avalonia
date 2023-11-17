@@ -46,8 +46,9 @@ namespace Avalonia.OpenGL.Controls
             }
 
             ElementComposition.SetElementChildVisual(this, null);
+
+            _updateQueued = false;
             _visual = null;
-            
             _resources?.DisposeAsync();
             _resources = null;
             _initialization = null;
@@ -105,11 +106,9 @@ namespace Avalonia.OpenGL.Controls
             }
             
             _visual = _compositor.CreateSurfaceVisual();
-            _visual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+            _visual.Size = new Vector(Bounds.Width, Bounds.Height);
             _visual.Surface = _resources.Surface;
             ElementComposition.SetElementChildVisual(this, _visual);
-            using (_resources.Context.MakeCurrent())
-                OnOpenGlInit(_resources.Context.GlInterface);
             return true;
 
         }
@@ -118,7 +117,7 @@ namespace Avalonia.OpenGL.Controls
         {
             if (_visual != null && change.Property == BoundsProperty)
             {
-                _visual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+                _visual.Size = new Vector(Bounds.Width, Bounds.Height);
                 RequestNextFrameRendering();
             }
 

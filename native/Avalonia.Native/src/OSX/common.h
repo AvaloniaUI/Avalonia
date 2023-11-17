@@ -6,11 +6,13 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #include <pthread.h>
+#include "noarc.h"
 
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
 extern void FreeAvnGCHandle(void* handle);
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl);
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnGlContext* gl);
+extern void PostDispatcherCallback(IAvnActionCallback* cb);
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
 extern IAvnSystemDialogs* CreateSystemDialogs();
 extern IAvnScreens* CreateScreens();
 extern IAvnClipboard* CreateClipboard(NSPasteboard*, NSPasteboardItem*);
@@ -21,6 +23,7 @@ extern NSString* GetAvnCustomDataType();
 extern AvnDragDropEffects ConvertDragDropEffects(NSDragOperation nsop);
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlDisplay* GetGlDisplay();
+extern IAvnMetalDisplay* GetMetalDisplay();
 extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
 extern IAvnTrayIcon* CreateTrayIcon();
 extern IAvnMenuItem* CreateAppMenuItem();
@@ -29,12 +32,14 @@ extern IAvnApplicationCommands* CreateApplicationCommands();
 extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern IAvnPlatformSettings* CreatePlatformSettings();
+extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer();
 extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
 
 extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate);
+extern void ReleaseAvnAppEvents();
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
 extern NSRect ToNSRect (AvnRect r);
@@ -55,6 +60,27 @@ template<typename T> inline T* objc_cast(id from) {
     }
     return nil;
 }
+
+template<typename T> class ObjCWrapper {
+public:
+    T* Value;
+    ObjCWrapper(T* value)
+    {
+        Value = value;
+    }
+    operator T*() const
+    {
+        return Value;
+    }
+    T* operator->() const
+    {
+        return Value;
+    }
+    ~ObjCWrapper()
+    {
+        Value = nil;
+    }
+};
 
 @interface ActionCallback : NSObject
 - (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
@@ -79,5 +105,8 @@ public:
     virtual HRESULT ShowAll() override;
     virtual HRESULT HideOthers() override;
 };
+#define NSApp [NSApplication sharedApplication]
+
+#define START_COM_ARP_CALL START_ARP_CALL; START_COM_CALL
 
 #endif

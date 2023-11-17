@@ -5,9 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Xml.Linq;
 using Avalonia.Controls.Selection;
-using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -171,7 +169,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs>? SelectionChanged
         {
-            add => AddHandler(SelectionChangedEvent, value); 
+            add => AddHandler(SelectionChangedEvent, value);
             remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
@@ -189,16 +187,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public int SelectedIndex
         {
-            get
-            {
+            get =>
                 // When a Begin/EndInit/DataContext update is in place we return the value to be
                 // updated here, even though it's not yet active and the property changed notification
                 // has not yet been raised. If we don't do this then the old value will be written back
                 // to the source when two-way bound, and the update value will be lost.
-                return _updateState?.SelectedIndex.HasValue == true ?
+                _updateState?.SelectedIndex.HasValue == true ?
                     _updateState.SelectedIndex.Value :
                     Selection.SelectedIndex;
-            }
             set
             {
                 if (_updateState is object)
@@ -217,13 +213,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public object? SelectedItem
         {
-            get
-            {
+            get =>
                 // See SelectedIndex setter for more information.
-                return _updateState?.SelectedItem.HasValue == true ?
+                _updateState?.SelectedItem.HasValue == true ?
                     _updateState.SelectedItem.Value :
                     Selection.SelectedItem;
-            }
             set
             {
                 if (_updateState is object)
@@ -308,12 +302,9 @@ namespace Avalonia.Controls.Primitives
         [AllowNull]
         protected ISelectionModel Selection
         {
-            get
-            {
-                return _updateState?.Selection.HasValue == true ?
+            get => _updateState?.Selection.HasValue == true ?
                     _updateState.Selection.Value :
                     GetOrCreateSelectionModel();
-            }
             set
             {
                 value ??= CreateDefaultSelectionModel();
@@ -369,7 +360,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool WrapSelection
         {
-            get => GetValue(WrapSelectionProperty); 
+            get => GetValue(WrapSelectionProperty);
             set => SetValue(WrapSelectionProperty, value);
         }
 
@@ -382,7 +373,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected SelectionMode SelectionMode
         {
-            get => GetValue(SelectionModeProperty); 
+            get => GetValue(SelectionModeProperty);
             set => SetValue(SelectionModeProperty, value);
         }
 
@@ -465,7 +456,10 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            AutoScrollToSelectedItemIfNecessary();
+            if (Selection?.AnchorIndex is int index)
+            {
+                AutoScrollToSelectedItemIfNecessary(index);
+            }
         }
 
         /// <inheritdoc />
@@ -476,7 +470,10 @@ namespace Avalonia.Controls.Primitives
             void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
             {
                 LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-                AutoScrollToSelectedItemIfNecessary();
+                if (Selection?.AnchorIndex is int index)
+                {
+                    AutoScrollToSelectedItemIfNecessary(index);
+                }
             }
 
             if (AutoScrollToSelectedItem)
@@ -529,7 +526,16 @@ namespace Avalonia.Controls.Primitives
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);
-            element.ClearValue(IsSelectedProperty);
+
+            try
+            {
+                _ignoreContainerSelectionChanged = true;
+                element.ClearValue(IsSelectedProperty);
+            }
+            finally
+            {
+                _ignoreContainerSelectionChanged = false;
+            }
         }
 
         /// <inheritdoc/>
@@ -625,7 +631,10 @@ namespace Avalonia.Controls.Primitives
 
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
-                AutoScrollToSelectedItemIfNecessary();
+                if (Selection?.AnchorIndex is int index)
+                {
+                    AutoScrollToSelectedItemIfNecessary(index);
+                }
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
@@ -909,8 +918,11 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
                 _hasScrolledToSelectedItem = false;
-                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(Selection.AnchorIndex));
-                AutoScrollToSelectedItemIfNecessary();
+                if (Selection?.AnchorIndex is int index)
+                {
+                    KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(index));
+                    AutoScrollToSelectedItemIfNecessary(index);
+                }
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
             {
@@ -1038,7 +1050,7 @@ namespace Avalonia.Controls.Primitives
                     return value;
                 }
                 else
-                { 
+                {
                     return AvaloniaProperty.UnsetValue;
                 }
             }
@@ -1096,16 +1108,19 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void AutoScrollToSelectedItemIfNecessary()
+        private void AutoScrollToSelectedItemIfNecessary(int anchorIndex)
         {
             if (AutoScrollToSelectedItem &&
                 !_hasScrolledToSelectedItem &&
                 Presenter is object &&
-                Selection.AnchorIndex >= 0 &&
+                anchorIndex >= 0 &&
                 IsAttachedToVisualTree)
             {
-                ScrollIntoView(Selection.AnchorIndex);
-                _hasScrolledToSelectedItem = true;
+                Dispatcher.UIThread.Post(state =>
+                {
+                    ScrollIntoView((int)state!);
+                    _hasScrolledToSelectedItem = true;
+                }, anchorIndex);
             }
         }
 
@@ -1351,10 +1366,7 @@ namespace Avalonia.Controls.Primitives
             public Optional<object?> SelectedValue
             {
                 get => _selectedValue;
-                set
-                {
-                    _selectedValue = value;
-                }
+                set => _selectedValue = value;
             }
         }
 
@@ -1373,10 +1385,8 @@ namespace Avalonia.Controls.Primitives
 
             public object Evaluate(object? dataContext)
             {
-                dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-
                 // Only update the DataContext if necessary
-                if (!dataContext.Equals(DataContext))
+                if (!Equals(dataContext, DataContext))
                     DataContext = dataContext;
 
                 return GetValue(ValueProperty);

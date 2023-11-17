@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace AppWithoutLifetime;
@@ -16,9 +17,10 @@ public partial class Sub : Window
         AvaloniaXamlLoader.Load(this);
     }
 
-    protected override void OnLoaded()
+    /// <inheritdoc/>
+    protected override void OnLoaded(RoutedEventArgs e)
     {
         this.AttachDevTools();
-        base.OnLoaded();
+        base.OnLoaded(e);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -32,7 +33,21 @@ namespace Avalonia.Automation.Peers
         public AutomationPeer? GetPeerFromPoint(Point p)
         {
             var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>(includeSelf: true);
-            return hit is object ? GetOrCreate(hit) : null;
+
+            if (hit is null)
+                return null;
+
+            var peer = GetOrCreate(hit);
+
+            while (peer != this && peer.GetProvider<IEmbeddedRootProvider>() is { } embedded)
+            {
+                var embeddedHit = embedded.GetPeerFromPoint(p);
+                if (embeddedHit is null)
+                    break;
+                peer = embeddedHit;
+            }
+
+            return peer;
         }
 
         protected void StartTrackingFocus()

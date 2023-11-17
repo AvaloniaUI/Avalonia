@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0-android</TargetFramework>
@@ -12,13 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AndroidResource Include="Icon.png">
+    <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
+    <ProjectReference Include="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidResource Include="..\..\build\Assets\Icon.png">
       <Link>Resources\drawable\Icon.png</Link>
     </AndroidResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
-    <ProjectReference Include="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" />
-  </ItemGroup>
 </Project>

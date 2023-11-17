@@ -430,7 +430,8 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new ComboBoxItem()
                         {
-                            Content = parentContent.Child
+                            Content = parentContent.Child,
+                            Template = null // ugly hack, so we can "attach" same child to the two different trees
                         }
                     },
                     Template = GetTemplate()

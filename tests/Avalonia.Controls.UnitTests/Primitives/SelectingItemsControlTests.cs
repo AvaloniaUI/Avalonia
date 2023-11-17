@@ -175,6 +175,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_SelectedIndex_During_Initialize_Should_Select_Item_When_AlwaysSelected_Is_Used()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var listBox = new ListBox
             {
                 SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected
@@ -1227,7 +1229,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_SelectedItem_With_Pointer_Should_Set_TabOnceActiveElement()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var target = new ListBox
                 {
@@ -1249,7 +1251,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_SelectedItem_Should_Clear_TabOnceActiveElement()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var items = new ObservableCollection<string>(new[] { "Foo", "Bar", "Baz " });
 
@@ -1348,7 +1350,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Should_Select_Correct_Item_When_Duplicate_Items_Are_Present()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var target = new ListBox
                 {
@@ -1366,7 +1368,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Should_Apply_Selected_Pseudoclass_To_Correct_Item_When_Duplicate_Items_Are_Present()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var target = new ListBox
                 {
@@ -1384,6 +1386,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_Item_Before_SelectedItem_Should_Update_SelectedIndex()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1409,6 +1413,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_Item_Before_SelectedItem_Should_Update_SelectedIndex()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1434,6 +1440,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Binding_SelectedIndex_Selects_Correct_Item()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Issue #4496 (part 2)
             var items = new ObservableCollection<string>();
 
@@ -1463,6 +1471,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Binding_SelectedItem_Selects_Correct_Item()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Issue #4496 (part 2)
             var items = new ObservableCollection<string>();
 
@@ -1493,6 +1503,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Replacing_Selected_Item_Should_Update_SelectedItem()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1518,6 +1530,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void AutoScrollToSelectedItem_Causes_Scroll_To_SelectedItem()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1536,13 +1550,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Prepare(target);
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
         [Fact]
         public void AutoScrollToSelectedItem_Causes_Scroll_To_Initial_SelectedItem()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1561,7 +1577,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
             Prepare(target);
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
@@ -1607,6 +1623,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void AutoScrollToSelectedItem_Scrolls_When_Reattached_To_Visual_Tree_If_Selection_Changed_While_Detached_From_Visual_Tree()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1632,13 +1650,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
             root.Child = null;
             target.SelectedIndex = 1;
             root.Child = target;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
         [Fact]
         public void AutoScrollToSelectedItem_Doesnt_Scroll_If_Reattached_To_Visual_Tree_With_No_Selection_Change()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1670,6 +1690,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void AutoScrollToSelectedItem_Causes_Scroll_When_Turned_On()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1689,17 +1711,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var raised = false;
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.False(raised);
 
             target.AutoScrollToSelectedItem = true;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
         [Fact]
         public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Issue #2969.
             var target = new ListBox();
             var selectedItems = new List<object>();
@@ -1891,6 +1915,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Does_The_Best_It_Can_With_AutoSelecting_ViewModel()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Tests the following scenario:
             //
             // - Items changes from empty to having 1 item
@@ -1932,6 +1958,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Preserves_Initial_SelectedItems_When_Bound()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Issue #4272 (there are two issues there, this addresses the second one).
             var vm = new SelectionViewModel
             {

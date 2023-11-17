@@ -28,6 +28,9 @@ namespace Avalonia.Win32.WinRT.Composition
         public static readonly Guid CLSID_D2D1Border =
             new Guid(0x2A2D49C0, 0x4ACF, 0x43C7, 0x8C, 0x6A, 0x7C, 0x4A, 0x27, 0x87, 0x4D, 0x27);
 
+        public static readonly Guid CLSID_D2D1Opacity =
+            new Guid("811d79a4-de28-4454-8094-c64685f8bd4c");
+
         public static readonly Guid CLSID_D2D1Brightness =
             new Guid(0x8CEA8D1E, 0x77B0, 0x4986, 0xB3, 0xB9, 0x2F, 0x0C, 0x0E, 0xAE, 0x78, 0x87);
 

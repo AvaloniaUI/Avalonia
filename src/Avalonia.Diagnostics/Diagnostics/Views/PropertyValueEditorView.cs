@@ -57,42 +57,11 @@ namespace Avalonia.Diagnostics.Views
             if (Property?.PropertyType is not { } propertyType)
                 return null;
 
-            TControl CreateControl<TControl>(AvaloniaProperty valueProperty,
-                IValueConverter? converter = null,
-                Action<TControl>? init = null,
-                AvaloniaProperty? readonlyProperty = null)
-                where TControl : Control, new()
-            {
-                var control = new TControl();
-                var bindingMode = Property.IsReadonly ? BindingMode.OneWay : BindingMode.TwoWay;
-
-                init?.Invoke(control);
-
-                control.Bind(valueProperty,
-                    new Binding(nameof(Property.Value), bindingMode)
-                    {
-                        Source = Property,
-                        Converter = converter ?? new ValueConverter(),
-                        ConverterParameter = propertyType
-                    }).DisposeWith(_cleanup);
-
-                if (readonlyProperty != null)
-                {
-                    control[readonlyProperty] = Property.IsReadonly;
-                }
-                else
-                {
-                    control.IsEnabled = !Property.IsReadonly;
-                }
-
-                return control;
-            }
-
             if (propertyType == typeof(bool))
                 return CreateControl<CheckBox>(ToggleButton.IsCheckedProperty);
 
             //TODO: Infinity, NaN not working with NumericUpDown
-            if (propertyType.IsPrimitive && propertyType != typeof(float) && propertyType != typeof(double))
+            if (IsValidNumeric(propertyType))
                 return CreateControl<NumericUpDown>(
                     NumericUpDown.ValueProperty,
                     new ValueToDecimalConverter(),
@@ -139,7 +108,8 @@ namespace Avalonia.Diagnostics.Views
                         ColorView.ColorProperty,
                         new Binding(nameof(Property.Value), BindingMode.TwoWay)
                         {
-                            Source = Property, Converter = Color2Brush
+                            Source = Property,
+                            Converter = Color2Brush
                         })
                     .DisposeWith(_cleanup);
 
@@ -261,6 +231,74 @@ namespace Avalonia.Diagnostics.Views
             }
 
             return tb;
+
+            TControl CreateControl<TControl>(AvaloniaProperty valueProperty,
+                    IValueConverter? converter = null,
+                    Action<TControl>? init = null,
+                    AvaloniaProperty? readonlyProperty = null)
+                    where TControl : Control, new()
+            {
+                var control = new TControl();
+                var bindingMode = Property.IsReadonly ? BindingMode.OneWay : BindingMode.TwoWay;
+
+                init?.Invoke(control);
+
+                control.Bind(valueProperty,
+                    new Binding(nameof(Property.Value), bindingMode)
+                    {
+                        Source = Property,
+                        Converter = converter ?? new ValueConverter(),
+                        ConverterParameter = propertyType
+                    }).DisposeWith(_cleanup);
+
+                if (readonlyProperty != null)
+                {
+                    control[readonlyProperty] = Property.IsReadonly;
+                }
+                else
+                {
+                    control.IsEnabled = !Property.IsReadonly;
+                }
+
+                return control;
+            }
+
+            static bool IsValidNumeric(Type? type)
+            {
+                if (type == null || type.IsEnum == true)
+                {
+                    return false;
+                }
+                var typeCode = Type.GetTypeCode(type);
+                if (typeCode == TypeCode.Object)
+                {
+                    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        typeCode = Type.GetTypeCode(Nullable.GetUnderlyingType(type));
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                switch (typeCode)
+                {
+                    case TypeCode.Byte:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.Int64:
+                    case TypeCode.SByte:
+                    case TypeCode.Single:
+                    case TypeCode.UInt16:
+                    case TypeCode.UInt32:
+                    case TypeCode.UInt64:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+
         }
 
         //HACK: ValueConverter that skips first target update

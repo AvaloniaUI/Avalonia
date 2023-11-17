@@ -6,8 +6,6 @@ using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -19,7 +17,7 @@ namespace Avalonia.Rendering.Composition
     /// <see cref="CompositionPropertySet"/> does not support a delete function – ensure you use <see cref="CompositionPropertySet"/>
     /// to store values that will be shared across the application.
     /// </summary>
-    public class CompositionPropertySet : CompositionObject
+    public sealed class CompositionPropertySet : CompositionObject
     {
         private readonly Dictionary<string, ExpressionVariant> _variants = new Dictionary<string, ExpressionVariant>();
         private readonly Dictionary<string, CompositionObject> _objects = new Dictionary<string, CompositionObject>();

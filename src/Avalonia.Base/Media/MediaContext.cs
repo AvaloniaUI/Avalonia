@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Avalonia.Animation;
+using System.Threading;
 using Avalonia.Layout;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -22,13 +20,14 @@ internal partial class MediaContext : ICompositorScheduler
     private readonly Action _render;
     private readonly Action _inputMarkerHandler;
     private readonly HashSet<Compositor> _requestedCommits = new();
-    private readonly Dictionary<Compositor, Batch> _pendingCompositionBatches = new();
+    private readonly Dictionary<Compositor, CompositionBatch> _pendingCompositionBatches = new();
+    private readonly Dispatcher _dispatcher;
     private record  TopLevelInfo(Compositor Compositor, CompositingRenderer Renderer, ILayoutManager LayoutManager);
 
     private List<Action>? _invokeOnRenderCallbacks;
     private readonly Stack<List<Action>> _invokeOnRenderCallbackListPool = new();
 
-    private DispatcherTimer _animationsTimer = new(DispatcherPriority.Render)
+    private readonly DispatcherTimer _animationsTimer = new(DispatcherPriority.Render)
     {
         // Since this timer is used to drive animations that didn't contribute to the previous frame at all
         // We can safely use 16ms interval until we fix our animation system to actually report the next expected 
@@ -36,13 +35,14 @@ internal partial class MediaContext : ICompositorScheduler
         Interval = TimeSpan.FromMilliseconds(16)
     };
 
-    private Dictionary<object, TopLevelInfo> _topLevels = new();
+    private readonly Dictionary<object, TopLevelInfo> _topLevels = new();
 
-    private MediaContext()
+    private MediaContext(Dispatcher dispatcher)
     {
         _render = Render;
         _inputMarkerHandler = InputMarkerHandler;
         _clock = new(this);
+        _dispatcher = dispatcher;
         _animationsTimer.Tick += (_, _) =>
         {
             _animationsTimer.Stop();
@@ -58,7 +58,7 @@ internal partial class MediaContext : ICompositorScheduler
             // and need to do a full reset for unit tests
             var context = AvaloniaLocator.Current.GetService<MediaContext>();
             if (context == null)
-                AvaloniaLocator.CurrentMutable.Bind<MediaContext>().ToConstant(context = new());
+                AvaloniaLocator.CurrentMutable.Bind<MediaContext>().ToConstant(context = new(Dispatcher.UIThread));
             return context;
         }
     }
@@ -84,16 +84,17 @@ internal partial class MediaContext : ICompositorScheduler
         
         if (_inputMarkerOp == null)
         {
-            _inputMarkerOp = Dispatcher.UIThread.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
+            _inputMarkerOp = _dispatcher.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
             _inputMarkerAddedAt = _time.Elapsed;
         }
         else if (!now && (_time.Elapsed - _inputMarkerAddedAt).TotalSeconds > MaxSecondsWithoutInput)
         {
             priority = DispatcherPriority.Input;
         }
-        
 
-        _nextRenderOp = Dispatcher.UIThread.InvokeAsync(_render, priority);
+        var renderOp = new DispatcherOperation(_dispatcher, priority, _render, throwOnUiThread: true);
+        _nextRenderOp = renderOp;
+        _dispatcher.InvokeAsyncImpl(renderOp, CancellationToken.None);
     }
     
     /// <summary>
@@ -131,12 +132,11 @@ internal partial class MediaContext : ICompositorScheduler
         // We are doing several iterations when it happens
         for (var c = 0; c < 10; c++)
         {
-            _clock.HasNewSubscriptions = false;
             FireInvokeOnRenderCallbacks();
             
             if (_clock.HasNewSubscriptions)
             {
-                _clock.Pulse(now);
+                _clock.PulseNewSubscriptions();
                 continue;
             }
 
@@ -214,10 +214,10 @@ internal partial class MediaContext : ICompositorScheduler
     }
 
     /// <summary>
-    /// Executes the <param name="callback">callback</param> in the next iteration of the current UI-thread
+    /// Executes the <paramref name="callback">callback</paramref> in the next iteration of the current UI-thread
     /// render loop / layout pass that.
     /// </summary>
-    /// <param name="callback">Code to execute.</param>
+    /// <param name="callback"></param>
     public void BeginInvokeOnRender(Action callback)
     {
         if (_invokeOnRenderCallbacks == null)

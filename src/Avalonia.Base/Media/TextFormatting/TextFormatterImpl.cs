@@ -607,19 +607,19 @@ namespace Avalonia.Media.TextFormatting
                                         }
 
                                         break;
-                                    }                              
+                                    }
 
                                     var clusterLength = Math.Max(0, nextInfo.GlyphCluster - currentInfo.GlyphCluster);
 
-                                    if(clusterLength == 0)
+                                    if (clusterLength == 0)
                                     {
                                         clusterLength = currentRun.Length - runLength;
                                     }
 
-                                    if(clusterLength == 0)
+                                    if (clusterLength == 0)
                                     {
                                         clusterLength = shapedTextCharacters.GlyphRun.Metrics.FirstCluster + currentRun.Length - currentInfo.GlyphCluster;
-                                    }   
+                                    }
 
                                     if (currentWidth + clusterWidth > paragraphWidth)
                                     {
@@ -684,7 +684,9 @@ namespace Avalonia.Media.TextFormatting
             var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
 
             var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
+
             line.FinalizeLine();
+
             return line;
         }
 
@@ -713,7 +715,35 @@ namespace Avalonia.Media.TextFormatting
 
             if(measuredLength == 0)
             {
+                if(paragraphProperties.TextWrapping == TextWrapping.NoWrap)
+                {
+                    for (int i = 0; i < textRuns.Count; i++)
+                    {
+                        measuredLength += textRuns[i].Length;
+                    }
+                }
+                else
+                {
+                    var firstRun = textRuns[0];
 
+                    if(firstRun is ShapedTextRun)
+                    {
+                        var graphemeEnumerator = new GraphemeEnumerator(firstRun.Text.Span);
+
+                        if(graphemeEnumerator.MoveNext(out var grapheme))
+                        {
+                            measuredLength = grapheme.Length;
+                        }
+                        else
+                        {
+                            measuredLength = 1;
+                        }
+                    }
+                    else
+                    {
+                        measuredLength = firstRun.Length;
+                    }
+                }
             }
 
             var currentLength = 0;
@@ -817,7 +847,7 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap)
+                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRun.Length)
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
@@ -832,12 +862,6 @@ namespace Avalonia.Media.TextFormatting
                     currentLength += currentRun.Length;
 
                     continue;
-                }
-
-                //We don't want to surpass the measuredLength with trailing whitespace when we are in a right to left setting.
-                if(currentPosition > measuredLength && resolvedFlowDirection == FlowDirection.RightToLeft)
-                {
-                    break;
                 }
 
                 measuredLength = currentPosition;

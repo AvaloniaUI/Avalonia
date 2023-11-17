@@ -21,11 +21,22 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<Geometry, Transform?>(nameof(Transform));
 
         private bool _isDirty = true;
+        private readonly bool _canInvaldate = true;
         private IGeometryImpl? _platformImpl;
 
         static Geometry()
         {
             TransformProperty.Changed.AddClassHandler<Geometry>((x,e) => x.TransformChanged(e));
+        }
+
+        internal Geometry()
+        {
+        }
+
+        private protected Geometry(IGeometryImpl? platformImpl)
+        {
+            _platformImpl = platformImpl;
+           _isDirty = _canInvaldate = false;
         }
 
         /// <summary>
@@ -114,6 +125,17 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets a <see cref="Geometry"/> that is the shape defined by the stroke on the Geometry
+        /// produced by the specified Pen.
+        /// </summary>
+        /// <param name="pen">The pen to use.</param>
+        /// <returns>The outlined geometry.</returns>
+        public Geometry GetWidenedGeometry(IPen pen)
+        {
+            return new ImmutableGeometry(PlatformImpl?.GetWidenedGeometry(pen));
+        }
+
+        /// <summary>
         /// Marks a property as affecting the geometry's <see cref="PlatformImpl"/>.
         /// </summary>
         /// <param name="properties">The properties.</param>
@@ -134,13 +156,16 @@ namespace Avalonia.Media
         /// Creates the platform implementation of the geometry, without the transform applied.
         /// </summary>
         /// <returns></returns>
-        protected abstract IGeometryImpl? CreateDefiningGeometry();
+        private protected abstract IGeometryImpl? CreateDefiningGeometry();
 
         /// <summary>
         /// Invalidates the platform implementation of the geometry.
         /// </summary>
         protected void InvalidateGeometry()
         {
+            if (!_canInvaldate)
+                return;
+
             _isDirty = true;
             _platformImpl = null;
             Changed?.Invoke(this, EventArgs.Empty);
