@@ -98,6 +98,40 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(minuteText.Text == "minute");
             }
         }
+        
+        [Fact]
+        [UseEmptyDesignatorCulture]
+        public void Using_12HourClock_On_Culture_With_Empty_Period_Should_Show_Period()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TimePicker timePicker = new TimePicker()
+                {
+                    Template = CreateTemplate(), ClockIdentifier = "12HourClock",
+                };
+                timePicker.ApplyTemplate();
+
+                var desc = timePicker.GetVisualDescendants();
+                Assert.True(desc.Count() > 1); //Should be layoutroot grid & button
+
+                Assert.True(desc.ElementAt(1) is Button);
+
+                var container = (desc.ElementAt(1) as Button).Content as Grid;
+                Assert.True(container != null);
+
+                var periodTextHost = container.Children[4] as Border;
+                Assert.NotNull(periodTextHost);
+                var periodText = periodTextHost.Child as TextBlock;
+                Assert.NotNull(periodTextHost);
+
+                TimeSpan ts = TimeSpan.FromHours(10);
+                timePicker.SelectedTime = ts;
+                Assert.False(string.IsNullOrEmpty(periodText.Text));
+
+                timePicker.SelectedTime = null;
+                Assert.False(string.IsNullOrEmpty(periodText.Text));
+            }
+        }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),

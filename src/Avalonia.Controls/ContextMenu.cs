@@ -393,9 +393,6 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup!).SetParent(null);
             }
 
-            // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            _previousFocus?.Focus();
-
             RaiseEvent(new RoutedEventArgs
             {
                 RoutedEvent = ClosedEvent,
