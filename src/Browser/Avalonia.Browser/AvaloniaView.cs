@@ -12,6 +12,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
@@ -101,7 +102,6 @@ namespace Avalonia.Browser
             InputHelper.SubscribeTextEvents(
                 _inputElement,
                 OnBeforeInput,
-                OnTextInput,
                 OnCompositionStart,
                 OnCompositionUpdate,
                 OnCompositionEnd);
@@ -139,11 +139,8 @@ namespace Avalonia.Browser
             }
             else
             {
-                //var rasterInitialized = _interop.InitRaster();
-                //Console.WriteLine("raster initialized: {0}", rasterInitialized);
-
-                //_topLevelImpl.SetSurface(ColorType,
-                // new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
+                Logger.TryGet(LogEventLevel.Error, LogArea.BrowserPlatform)?
+                    .Log(this, "[Avalonia]: Unable to initialize Canvas surface.");
             }
 
             CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
@@ -368,16 +365,6 @@ namespace Avalonia.Browser
             return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
         }
 
-        private bool OnTextInput (string type, string? data)
-        {
-            if(data == null || IsComposing)
-            {
-                return false;
-            }
-
-            return _topLevelImpl.RawTextEvent(data);
-        }
-
         private bool OnBeforeInput(JSObject arg, int start, int end)
         {
             var type = arg.GetPropertyAsString("inputType");
@@ -429,8 +416,15 @@ namespace Avalonia.Browser
                 return false;
 
             IsComposing = false;
+
             _client.SetPreeditText(null);
-            _topLevelImpl.RawTextEvent(args.GetPropertyAsString("data")!);
+
+            var text = args.GetPropertyAsString("data");
+
+            if(text != null)
+            {
+                return _topLevelImpl.RawTextEvent(text);
+            }
 
             return false;
         }
@@ -446,6 +440,7 @@ namespace Avalonia.Browser
                 return;
             }
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
             ManualTriggerRenderTimer.Instance.RaiseTick();
         }
 

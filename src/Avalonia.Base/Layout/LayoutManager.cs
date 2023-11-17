@@ -29,7 +29,7 @@ namespace Avalonia.Layout
         private bool _queued;
         private bool _running;
         private int _totalPassCount;
-        private Action _invokeOnRender;
+        private readonly Action _invokeOnRender;
 
         public LayoutManager(ILayoutRoot owner)
         {
@@ -423,12 +423,16 @@ namespace Avalonia.Layout
             // Translate the viewport into this control's coordinate space.
             viewport = viewport.Translate(-control.Bounds.Position);
 
-            if (control != target && control.RenderTransform is object)
+            if (control != target && control.RenderTransform is { } transform)
             {
-                var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
-                var offset = Matrix.CreateTranslation(origin);
-                var renderTransform = (-offset) * control.RenderTransform.Value.Invert() * (offset);
-                viewport = viewport.TransformToAABB(renderTransform);
+                if (transform.Value.TryInvert(out var invertedMatrix))
+                {
+                    var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
+                    var offset = Matrix.CreateTranslation(origin);
+                    viewport = viewport.TransformToAABB(-offset * invertedMatrix * offset);
+                }
+                else
+                    viewport = default;
             }
         }
 

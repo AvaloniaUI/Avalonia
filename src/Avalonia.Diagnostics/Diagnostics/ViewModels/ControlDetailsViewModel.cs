@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,13 +11,13 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable, IClassesChangedListener
     {
         private readonly AvaloniaObject _avaloniaObject;
+        private readonly ISet<string> _pinnedProperties;
         private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
@@ -24,19 +25,29 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _showInactiveStyles;
         private string? _styleStatus;
         private object? _selectedEntity;
-        private readonly Stack<(string Name,object Entry)> _selectedEntitiesStack = new();
+        private readonly Stack<(string Name, object Entry)> _selectedEntitiesStack = new();
         private string? _selectedEntityName;
         private string? _selectedEntityType;
         private bool _showImplementedInterfaces;
+        // new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group))
+        private readonly static IReadOnlyList<DataGridPathGroupDescription> GroupDescriptors = new DataGridPathGroupDescription[]
+        {
+            new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group))
+        };
 
-        public ControlDetailsViewModel(TreePageViewModel treePage, AvaloniaObject avaloniaObject)
+        private readonly static IReadOnlyList<DataGridSortDescription> SortDescriptions = new DataGridSortDescription[]
+        {
+            new DataGridComparerSortDescription(PropertyComparer.Instance!, ListSortDirection.Ascending),
+        };
+
+        public ControlDetailsViewModel(TreePageViewModel treePage, AvaloniaObject avaloniaObject, ISet<string> pinnedProperties)
         {
             _avaloniaObject = avaloniaObject;
-
+            _pinnedProperties = pinnedProperties;
             TreePage = treePage;
-                        Layout =  avaloniaObject is Visual visual 
-                ?  new ControlLayoutViewModel(visual)
-                : default;
+            Layout = avaloniaObject is Visual visual
+    ? new ControlLayoutViewModel(visual)
+    : default;
 
             NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());
 
@@ -84,7 +95,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             {
                                 var setterValue = regularSetter.Value;
 
-                                var resourceInfo =  GetResourceInfo(setterValue);
+                                var resourceInfo = GetResourceInfo(setterValue);
 
                                 SetterViewModel setterVm;
 
@@ -175,13 +186,13 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _selectedEntityName;
             set => RaiseAndSetIfChanged(ref _selectedEntityName, value);
         }
-        
+
         public string? SelectedEntityType
         {
             get => _selectedEntityType;
             set => RaiseAndSetIfChanged(ref _selectedEntityType, value);
         }
-        
+
         public PropertyViewModel? SelectedProperty
         {
             get => _selectedProperty;
@@ -395,14 +406,23 @@ namespace Avalonia.Diagnostics.ViewModels
             return !(arg is PropertyViewModel property) || TreePage.PropertiesFilter.Filter(property.Name);
         }
 
-        private class PropertyComparer : IComparer<PropertyViewModel>
+        private class PropertyComparer : IComparer<PropertyViewModel>, IComparer
         {
             public static PropertyComparer Instance { get; } = new PropertyComparer();
 
             public int Compare(PropertyViewModel? x, PropertyViewModel? y)
             {
-                var groupX = GroupIndex(x?.Group);
-                var groupY = GroupIndex(y?.Group);
+                if (x is null && y is null)
+                    return 0;
+
+                if (x is null && y is not null)
+                    return -1;
+
+                if (x is not null && y is null)
+                    return 1;
+
+                var groupX = GroupIndex(x!.Group);
+                var groupY = GroupIndex(y!.Group);
 
                 if (groupX != groupY)
                 {
@@ -410,7 +430,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
                 else
                 {
-                    return string.CompareOrdinal(x?.Name, y?.Name);
+                    return string.CompareOrdinal(x.Name, y.Name);
                 }
             }
 
@@ -418,12 +438,21 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 switch (group)
                 {
-                    case "Properties": return 0;
-                    case "Attached Properties": return 1;
-                    case "CLR Properties": return 2;
-                    default: return 3;
+                    case "Pinned":
+                        return -1;
+                    case "Properties":
+                        return 0;
+                    case "Attached Properties":
+                        return 1;
+                    case "CLR Properties":
+                        return 2;
+                    default:
+                        return 3;
                 }
             }
+
+            public int Compare(object? x, object? y) =>
+                Compare(x as PropertyViewModel, y as PropertyViewModel);
         }
 
         private static IEnumerable<PropertyInfo> GetAllPublicProperties(Type type)
@@ -438,8 +467,8 @@ namespace Avalonia.Diagnostics.ViewModels
             var selectedProperty = SelectedProperty;
             var selectedEntity = SelectedEntity;
             var selectedEntityName = SelectedEntityName;
-            if (selectedEntity == null 
-                || selectedProperty == null 
+            if (selectedEntity == null
+                || selectedProperty == null
                 || selectedProperty.PropertyType == typeof(string)
                 || selectedProperty.PropertyType.IsValueType)
                 return;
@@ -455,19 +484,19 @@ namespace Avalonia.Diagnostics.ViewModels
                     break;
 
                 case ClrPropertyViewModel clrProperty:
-                {
-                    property = GetAllPublicProperties(selectedEntity.GetType())
-                        .FirstOrDefault(pi => clrProperty.Property == pi)?
-                        .GetValue(selectedEntity);
+                    {
+                        property = GetAllPublicProperties(selectedEntity.GetType())
+                            .FirstOrDefault(pi => clrProperty.Property == pi)?
+                            .GetValue(selectedEntity);
 
-                    break;
-                }
+                        break;
+                    }
             }
 
-            if (property == null) 
+            if (property == null)
                 return;
 
-            _selectedEntitiesStack.Push((Name:selectedEntityName!, Entry:selectedEntity));
+            _selectedEntitiesStack.Push((Name: selectedEntityName!, Entry: selectedEntity));
 
             var propertyName = selectedProperty.Name;
 
@@ -492,7 +521,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 RaisePropertyChanged(nameof(CanNavigateToParentProperty));
             }
         }
-        
+
         protected void NavigateToProperty(object o, string? entityName)
         {
             var oldSelectedEntity = SelectedEntity;
@@ -514,17 +543,19 @@ namespace Avalonia.Diagnostics.ViewModels
 
             var properties = GetAvaloniaProperties(o)
                 .Concat(GetClrProperties(o, _showImplementedInterfaces))
-                .OrderBy(x => x, PropertyComparer.Instance)
-                .ThenBy(x => x.Name)
+                .Do(p =>
+                    {
+                        p.IsPinned = _pinnedProperties.Contains(p.FullName);
+                    })
                 .ToArray();
 
             _propertyIndex = properties
                 .GroupBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.ToArray());
 
-
             var view = new DataGridCollectionView(properties);
-            view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
+            view.GroupDescriptions.AddRange(GroupDescriptors);
+            view.SortDescriptions.AddRange(SortDescriptions);
             view.Filter = FilterProperty;
             PropertiesView = view;
 
@@ -539,7 +570,7 @@ namespace Avalonia.Diagnostics.ViewModels
                     break;
             }
         }
-        
+
         internal void SelectProperty(AvaloniaProperty property)
         {
             SelectedProperty = null;
@@ -547,10 +578,10 @@ namespace Avalonia.Diagnostics.ViewModels
             if (SelectedEntity != _avaloniaObject)
             {
                 NavigateToProperty(
-                    _avaloniaObject, 
-                    (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());    
+                    _avaloniaObject,
+                    (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());
             }
-            
+
             if (PropertiesView is null)
             {
                 return;
@@ -561,7 +592,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 if (o is AvaloniaPropertyViewModel propertyVm && propertyVm.Property == property)
                 {
                     SelectedProperty = propertyVm;
-                    
+
                     break;
                 }
             }
@@ -572,6 +603,25 @@ namespace Avalonia.Diagnostics.ViewModels
             _showImplementedInterfaces = showImplementedInterfaces;
             SelectedProperty = null;
             NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());
+        }
+
+        public void TogglePinnedProperty(object parameter)
+        {
+            if (parameter is PropertyViewModel model)
+            {
+                var fullname = model.FullName;
+                if (_pinnedProperties.Contains(fullname))
+                {
+                    _pinnedProperties.Remove(fullname);
+                    model.IsPinned = false;
+                }
+                else
+                {
+                    _pinnedProperties.Add(fullname);
+                    model.IsPinned = true;
+                }
+                PropertiesView?.Refresh();
+            }
         }
     }
 }

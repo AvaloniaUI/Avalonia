@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
@@ -56,6 +57,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
+                new AvaloniaXamlIlStyleValidatorTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
@@ -125,9 +127,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public List<IXamlAstGroupTransformer> GroupTransformers { get; }
 
-        public void TransformGroup(IReadOnlyCollection<IXamlDocumentResource> documents, bool strict = true)
+        public void TransformGroup(IReadOnlyCollection<IXamlDocumentResource> documents)
         {
-            var ctx = new AstGroupTransformationContext(documents, _configuration, strict);
+            var ctx = new AstGroupTransformationContext(documents, _configuration);
             foreach (var transformer in GroupTransformers)
             {
                 foreach (var doc in documents)
@@ -143,6 +145,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public XamlDocument Parse(string xaml, IXamlType overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
@@ -162,8 +167,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     new XamlAstClrTypeReference(classDirective,
                         _configuration.TypeSystem.GetType(((XamlAstTextNode)classDirective.Values[0]).Text),
                         false) :
-                    TypeReferenceResolver.ResolveType(CreateTransformationContext(parsed, true),
-                        (XamlAstXmlTypeReference)rootObject.Type, true);
+                    TypeReferenceResolver.ResolveType(CreateTransformationContext(parsed),
+                        (XamlAstXmlTypeReference)rootObject.Type);
 
 
             if (overrideRootType != null)
@@ -187,11 +192,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 _configuration.TypeMappings.XmlNamespaceInfoProvider == null ?
                     null :
                     tb.DefineSubType(_configuration.WellKnownTypes.Object,
-                        "__AvaloniaXamlIlNsInfo", false), (name, bt) => tb.DefineSubType(bt, name, false),
-                (s, returnType, parameters) => tb.DefineDelegateSubType(s, false, returnType, parameters), baseUri,
+                        "__AvaloniaXamlIlNsInfo", XamlVisibility.Private), (name, bt) => tb.DefineSubType(bt, name, XamlVisibility.Private),
+                (s, returnType, parameters) => tb.DefineDelegateSubType(s, XamlVisibility.Private, returnType, parameters), baseUri,
                 fileSource);
         }
-        
+
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
         {
             var parsed = Parse(xaml, overrideRootType);

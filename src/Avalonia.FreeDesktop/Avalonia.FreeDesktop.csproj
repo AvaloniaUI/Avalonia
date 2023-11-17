@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.15.0" />
-    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.8" PrivateAssets="All" />
+    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.11" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,19 +26,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="DBusXml/DBus.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/StatusNotifierWatcher.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/com.canonical.AppMenu.Registrar.xml" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/com.canonical.dbusmenu.xml" DBusGeneratorMode="Handler" />
+
     <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputContext.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputMethod.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputContext1.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputMethod1.xml" DBusGeneratorMode="Proxy" />
+
+    <AdditionalFiles Include="DBusXml/org.freedesktop.DBus.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.freedesktop.IBus.Portal.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.freedesktop.portal.FileChooser.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.freedesktop.portal.Request.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.freedesktop.portal.Settings.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/DBusMenu.xml" DBusGeneratorMode="Handler" />
-    <AdditionalFiles Include="DBusXml/StatusNotifierItem.xml" DBusGeneratorMode="Handler" />
+
+    <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierWatcher.xml" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierItem.xml" DBusGeneratorMode="Handler" />
   </ItemGroup>
 
 </Project>

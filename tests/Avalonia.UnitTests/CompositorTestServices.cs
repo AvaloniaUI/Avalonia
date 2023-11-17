@@ -46,7 +46,7 @@ public class CompositorTestServices : IDisposable
             AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(Timer);
 
             Compositor = new Compositor(new RenderLoop(Timer), null,
-                true, new DispatcherCompositorScheduler(), true);
+                true, new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             var impl = new TopLevelImpl(Compositor, size ?? new Size(1000, 1000));
             TopLevel = new EmbeddableControlRoot(impl)
             {

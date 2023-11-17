@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Avalonia.Compatibility;
 using Avalonia.Reactive;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Native.Interop
 {
@@ -46,6 +48,20 @@ namespace Avalonia.Native.Interop.Impl
         private AvaloniaNativeMenuExporter _exporter;
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
+
+        private void UpdateTitle(string title)
+        {
+            if (OperatingSystemEx.IsMacOS())
+            {
+                // macOS does not process access key markers, so remove them.
+                title = AccessText.RemoveAccessKeyMarker(title);
+            }
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                title = "";
+            }
+            SetTitle(title);
+        }
 
         public void RaiseNeedsUpdate()
         {
@@ -127,8 +143,7 @@ namespace Avalonia.Native.Interop.Impl
 
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
 
-            if (!string.IsNullOrWhiteSpace(title)) 
-                SetTitle(title);
+            UpdateTitle(title);
         }
 
         public void Deinitialise()

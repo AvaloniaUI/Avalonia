@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Data;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -49,7 +50,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public override string Group => _group;
+        public override string Group => IsPinned ? "Pinned" : _group;
 
         public override Type? DeclaringType { get; }
         public override Type PropertyType => _propertyType;
@@ -113,6 +114,15 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
             RaisePropertyChanged(nameof(Type));
+        }
+
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (e.PropertyName == nameof(IsPinned))
+            {
+                RaisePropertyChanged(nameof(Group));
+            }
         }
     }
 }

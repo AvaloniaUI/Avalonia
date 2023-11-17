@@ -85,8 +85,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? OnContent
         {
-            get { return GetValue(OnContentProperty); }
-            set { SetValue(OnContentProperty, value); }
+            get => GetValue(OnContentProperty);
+            set => SetValue(OnContentProperty, value);
         }
 
         /// <summary>
@@ -94,8 +94,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? OffContent
         {
-            get { return GetValue(OffContentProperty); }
-            set { SetValue(OffContentProperty, value); }
+            get => GetValue(OffContentProperty);
+            set => SetValue(OffContentProperty, value);
         }
 
         public ContentPresenter? OffContentPresenter
@@ -115,8 +115,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? OffContentTemplate
         {
-            get { return GetValue(OffContentTemplateProperty); }
-            set { SetValue(OffContentTemplateProperty, value); }
+            get => GetValue(OffContentTemplateProperty);
+            set => SetValue(OffContentTemplateProperty, value);
         }
 
         /// <summary>
@@ -124,8 +124,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? OnContentTemplate
         {
-            get { return GetValue(OnContentTemplateProperty); }
-            set { SetValue(OnContentTemplateProperty, value); }
+            get => GetValue(OnContentTemplateProperty);
+            set => SetValue(OnContentTemplateProperty, value);
         }
 
         /// <summary>
@@ -133,11 +133,11 @@ namespace Avalonia.Controls
         /// </summary>
         public Transitions KnobTransitions
         {
-            get { return GetValue(KnobTransitionsProperty); }
-            set { SetValue(KnobTransitionsProperty, value); }
+            get => GetValue(KnobTransitionsProperty);
+            set => SetValue(KnobTransitionsProperty, value);
         }
 
-        
+
 
         private void OffContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -243,10 +243,6 @@ namespace Avalonia.Controls
                 }
                 UpdateKnobTransitions();
             }
-            else
-            {
-                base.Toggle();
-            }
 
             _isDragging = false;
 
@@ -273,14 +269,6 @@ namespace Avalonia.Controls
                 {
                     Canvas.SetLeft(_knobsPanel!, System.Math.Min(_switchKnob!.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
                 }
-            }
-        }
-
-        protected override void Toggle()
-        {
-            if ((_switchKnob != null) && (!_switchKnob.IsPointerOver))
-            {
-                base.Toggle();
             }
         }
 

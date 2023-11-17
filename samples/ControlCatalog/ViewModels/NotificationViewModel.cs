@@ -11,17 +11,12 @@ namespace ControlCatalog.ViewModels
         {
             ShowCustomManagedNotificationCommand = MiniCommand.Create(() =>
             {
-                NotificationManager?.Show(new NotificationViewModel() { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" , NotificationManager = NotificationManager});
+                NotificationManager?.Show(new NotificationViewModel() { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" , NotificationManager = NotificationManager}, NotificationType.Warning);
             });
 
             ShowManagedNotificationCommand = MiniCommand.Create(() =>
             {
                 NotificationManager?.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
-            });
-
-            ShowNativeNotificationCommand = MiniCommand.Create(() =>
-            {
-                NotificationManager?.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
             });
 
             YesCommand = MiniCommand.Create(() =>
@@ -45,8 +40,5 @@ namespace ControlCatalog.ViewModels
         public MiniCommand ShowCustomManagedNotificationCommand { get; }
 
         public MiniCommand ShowManagedNotificationCommand { get; }
-
-        public MiniCommand ShowNativeNotificationCommand { get; }
-
     }
 }

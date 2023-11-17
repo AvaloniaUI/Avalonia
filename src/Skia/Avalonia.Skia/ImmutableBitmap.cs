@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Immutable Skia bitmap.
     /// </summary>
-    internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapImpl
+    internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapWithAlphaImpl
     {
         private readonly SKImage _image;
         private readonly SKBitmap? _bitmap;
@@ -177,6 +177,9 @@ namespace Avalonia.Skia
         }
 
         public PixelFormat? Format => _bitmap?.ColorType.ToAvalonia();
+
+        public AlphaFormat? AlphaFormat => _bitmap?.AlphaType.ToAlphaFormat();
+
         public ILockedFramebuffer Lock()
         {
             if (_bitmap is null)

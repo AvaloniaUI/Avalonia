@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Primitives
             return adorner.GetValue(AdornedElementProperty);
         }
 
-        public static void SetAdornedElement(Visual adorner, Visual adorned)
+        public static void SetAdornedElement(Visual adorner, Visual? adorned)
         {
             adorner.SetValue(AdornedElementProperty, adorned);
         }
