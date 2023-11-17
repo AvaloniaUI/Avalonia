@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
-
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
 namespace Avalonia.Rendering.Composition
 {
@@ -14,7 +14,7 @@ namespace Avalonia.Rendering.Composition
     /// Composition objects are the visual tree structure on which all other features of the composition API use and build on.
     /// The API allows developers to define and create one or many <see cref="CompositionVisual" /> objects each representing a single node in a Visual tree.
     /// </summary>
-    public abstract class CompositionObject : IDisposable
+    public abstract class CompositionObject : ICompositorSerializable
     {
         /// <summary>
         /// The collection of implicit animations attached to this object.
@@ -22,7 +22,7 @@ namespace Avalonia.Rendering.Composition
         public ImplicitAnimationCollection? ImplicitAnimations { get; set; }
 
         private protected InlineDictionary<CompositionProperty, IAnimationInstance> PendingAnimations;
-        internal CompositionObject(Compositor compositor, ServerObject? server)
+        internal CompositionObject(Compositor compositor, SimpleServerObject? server)
         {
             Compositor = compositor;
             Server = server;
@@ -32,16 +32,25 @@ namespace Avalonia.Rendering.Composition
         /// The associated Compositor
         /// </summary>
         public Compositor Compositor { get; }
-        internal ServerObject? Server { get; }
+
+        SimpleServerObject ICompositorSerializable.TryGetServer(Compositor c)
+        {
+            Debug.Assert(c == Compositor);
+            return Server ?? ThrowInvalidOperation();
+        }
+
+        internal SimpleServerObject? Server { get; }
         public bool IsDisposed { get; private set; }
         private bool _registeredForSerialization;
 
-        private static void ThrowInvalidOperation() =>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static SimpleServerObject ThrowInvalidOperation() =>
             throw new InvalidOperationException("There is no server-side counterpart for this object");
 
-        public void Dispose()
+        protected internal void Dispose()
         {
-            RegisterForSerialization();
+            if (!IsDisposed && Server != null)
+                Compositor.DisposeOnNextBatch(Server);
             IsDisposed = true;
         }
 
@@ -128,16 +137,15 @@ namespace Avalonia.Rendering.Composition
             Compositor.RegisterForSerialization(this);
         }
 
-        internal void SerializeChanges(BatchStreamWriter writer)
+        void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
+            Debug.Assert(c == Compositor);
             _registeredForSerialization = false;
             SerializeChangesCore(writer);
         }
 
         private protected virtual void SerializeChangesCore(BatchStreamWriter writer)
         {
-            if (Server is IDisposable)
-                writer.Write((byte)(IsDisposed ? 1 : 0));
         }
     }
 }

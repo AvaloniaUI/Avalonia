@@ -9,18 +9,14 @@ using Avalonia.Win32.Interop.Automation;
 namespace Avalonia.Win32.Automation
 {
     [RequiresUnreferencedCode("Requires .NET COM interop")]
-    internal class RootAutomationNode : AutomationNode,
-        IRawElementProviderFragmentRoot,
-        IRawElementProviderAdviseEvents
+    internal class RootAutomationNode : AutomationNode, IRawElementProviderFragmentRoot
     {
-        private int _raiseFocusChanged;
-
         public RootAutomationNode(AutomationPeer peer)
             : base(peer)
         {
             Peer = base.Peer.GetProvider<IRootProvider>() ?? throw new AvaloniaInternalException(
                 "Attempt to create RootAutomationNode from peer which does not implement IRootProvider.");
-            Peer.FocusChanged += FocusChanged;
+            Peer.FocusChanged += OnRootFocusChanged;
         }
 
         public override IRawElementProviderFragmentRoot? FragmentRoot => this;
@@ -33,8 +29,7 @@ namespace Avalonia.Win32.Automation
                 return null;
 
             var p = WindowImpl.PointToClient(new PixelPoint((int)x, (int)y));
-            var peer = (WindowBaseAutomationPeer)Peer;
-            var found = InvokeSync(() => peer.GetPeerFromPoint(p));
+            var found = InvokeSync(() => Peer.GetPeerFromPoint(p));
             var result = GetOrCreate(found) as IRawElementProviderFragment;
             return result;
         }
@@ -43,41 +38,6 @@ namespace Avalonia.Win32.Automation
         {
             var focus = InvokeSync(() => Peer.GetFocus());
             return GetOrCreate(focus);
-        }
-
-        void IRawElementProviderAdviseEvents.AdviseEventAdded(int eventId, int[] properties)
-        {
-            switch ((UiaEventId)eventId)
-            {
-                case UiaEventId.AutomationFocusChanged:
-                    ++_raiseFocusChanged;
-                    break;
-            }
-        }
-
-        void IRawElementProviderAdviseEvents.AdviseEventRemoved(int eventId, int[] properties)
-        {
-            switch ((UiaEventId)eventId)
-            {
-                case UiaEventId.AutomationFocusChanged:
-                    --_raiseFocusChanged;
-                    break;
-            }
-        }
-
-        protected void RaiseFocusChanged(AutomationNode? focused)
-        {
-            if (_raiseFocusChanged > 0)
-            {
-                UiaCoreProviderApi.UiaRaiseAutomationEvent(
-                    focused,
-                    (int)UiaEventId.AutomationFocusChanged);
-            }
-        }
-
-        public void FocusChanged(object? sender, EventArgs e)
-        {
-            RaiseFocusChanged(GetOrCreate(Peer.GetFocus()));
         }
 
         public Rect ToScreen(Rect rect)
@@ -101,6 +61,11 @@ namespace Avalonia.Win32.Automation
                 Marshal.ThrowExceptionForHR(hr);
                 return result;
             }
+        }
+
+        private void OnRootFocusChanged(object? sender, EventArgs e)
+        {
+            RaiseFocusChanged(GetOrCreate(Peer.GetFocus()));
         }
     }
 }

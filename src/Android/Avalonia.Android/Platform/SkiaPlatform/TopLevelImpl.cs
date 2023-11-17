@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
+using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
@@ -10,6 +12,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
+using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -27,6 +30,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
+using static System.Net.Mime.MediaTypeNames;
 using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -45,6 +49,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidInsetsManager _insetsManager;
         private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
+        private WindowTransparencyLevel _transparencyLevel;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -68,6 +73,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+            _transparencyLevel = WindowTransparencyLevel.None;
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
         }
@@ -91,7 +97,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<Rect> Paint { get; set; }
 
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
 
@@ -103,9 +109,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces);
-
+        public Compositor Compositor => AndroidPlatform.Compositor;
+        
         public virtual void Hide()
         {
             _view.Visibility = ViewStates.Invisible;
@@ -156,12 +161,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         protected virtual void OnResized(Size size)
         {
-            Resized?.Invoke(size, PlatformResizeReason.Unspecified);
+            Resized?.Invoke(size, WindowResizeReason.Unspecified);
         }
 
         internal void Resize(Size size)
         {
-            Resized?.Invoke(size, PlatformResizeReason.Layout);
+            Resized?.Invoke(size, WindowResizeReason.Layout);
         }
 
         class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo
@@ -274,7 +279,18 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action LostFocus { get; set; }
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel 
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
@@ -299,91 +315,64 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public double Scaling => RenderScaling;
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (TransparencyLevel != transparencyLevel)
+            if (_view.Context is not AvaloniaMainActivity activity)
+                return;
+
+            foreach (var level in transparencyLevels)
             {
-                bool isBelowR = Build.VERSION.SdkInt < BuildVersionCodes.R;
-                bool isAboveR = Build.VERSION.SdkInt > BuildVersionCodes.R;
-                if (_view.Context is AvaloniaMainActivity activity)
+                if (!IsSupported(level))
                 {
-                    switch (transparencyLevel)
-                    {
-                        case WindowTransparencyLevel.AcrylicBlur:
-                        case WindowTransparencyLevel.ForceAcrylicBlur:
-                        case WindowTransparencyLevel.Mica:
-                        case WindowTransparencyLevel.None:
-                            if (!isBelowR)
-                            {
-                                activity.SetTranslucent(false);
-                            }
-                            if (isAboveR)
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
-
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 0;
-
-                                    activity.Window.Attributes = attr;
-                                }
-                            }
-                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
-
-                            if(transparencyLevel != WindowTransparencyLevel.None)
-                            {
-                                return;
-                            }
-                            break;
-                        case WindowTransparencyLevel.Transparent:
-                            if (!isBelowR)
-                            {
-                                activity.SetTranslucent(true);
-                            }
-                            if (isAboveR)
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
-
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 0;
-
-                                    activity.Window.Attributes = attr;
-                                }
-                            }
-                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-                            break;
-                        case WindowTransparencyLevel.Blur:
-                            if (isAboveR)
-                            {
-                                activity.SetTranslucent(true);
-                                activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
-
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 120;
-
-                                    activity.Window.Attributes = attr;
-                                }
-                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-                            }
-                            else
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
-                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
-
-                                return;
-                            }
-                            break;
-                    }
-                    TransparencyLevel = transparencyLevel;
+                    continue;
                 }
+
+                if (level == TransparencyLevel)
+                {
+                    return;
+                }
+
+                if (level == WindowTransparencyLevel.None)
+                {
+                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    {
+                        activity.SetTranslucent(false);
+                    }
+
+                    activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.White));
+                }
+                else if (level == WindowTransparencyLevel.Transparent)
+                {
+                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    {
+                        activity.SetTranslucent(true);
+                        SetBlurBehind(activity, 0);
+                        activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                    }
+                }
+                else if (level == WindowTransparencyLevel.Blur)
+                {
+                    if (OperatingSystem.IsAndroidVersionAtLeast(31))
+                    {
+                        activity.SetTranslucent(true);
+                        SetBlurBehind(activity, 120);
+                        activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                    }
+                }
+
+                TransparencyLevel = level;
+                return;
             }
+
+            // If we get here, we didn't find a supported level. Use the default of None.
+            if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            {
+                activity.SetTranslucent(false);
+            }
+
+            activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.White));
         }
-        
+
         public virtual object TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IStorageProvider))
@@ -418,79 +407,212 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             return null;
         }
+
+        private static bool IsSupported(WindowTransparencyLevel level)
+        {
+            if (level == WindowTransparencyLevel.None)
+                return true;
+            if (level == WindowTransparencyLevel.Transparent)
+                return OperatingSystem.IsAndroidVersionAtLeast(30);
+            if (level == WindowTransparencyLevel.Blur)
+                return OperatingSystem.IsAndroidVersionAtLeast(31);
+            return false;
+        }
+
+        private static void SetBlurBehind(AvaloniaMainActivity activity, int radius)
+        {
+            if (radius == 0)
+                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+            else
+                activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(31) && activity.Window?.Attributes is { } attr)
+            {
+                attr.BlurBehindRadius = radius;
+                activity.Window.Attributes = attr;
+            }
+        }
+
+        internal void TextInput(string text)
+        {
+            if(Input != null)
+            {
+                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance, (ulong)DateTime.Now.Ticks, InputRoot, text);
+
+                Input(args);
+            }
+        }
+    }
+
+    internal class EditableWrapper : SpannableStringBuilder
+    {
+        private readonly AvaloniaInputConnection _inputConnection;
+
+        public event EventHandler<int> SelectionChanged;
+
+        public EditableWrapper(AvaloniaInputConnection inputConnection)
+        {
+            _inputConnection = inputConnection;
+        }
+
+        public TextSelection CurrentSelection => new TextSelection(Selection.GetSelectionStart(this), Selection.GetSelectionEnd(this));
+        public TextSelection CurrentComposition => new TextSelection(BaseInputConnection.GetComposingSpanStart(this), BaseInputConnection.GetComposingSpanEnd(this));
+
+        public bool IgnoreChange { get; set; }
+
+        public override IEditable Replace(int start, int end, ICharSequence tb)
+        {
+            if (!IgnoreChange && start != end)
+            {
+                SelectSurroundingTextForDeletion(start, end);
+            }
+
+            return base.Replace(start, end, tb);
+        }
+
+        public override IEditable Replace(int start, int end, ICharSequence tb, int tbstart, int tbend)
+        {
+            if (!IgnoreChange && start != end)
+            {
+                SelectSurroundingTextForDeletion(start, end);
+            }
+
+            return base.Replace(start, end, tb, tbstart, tbend);
+        }
+
+        private void SelectSurroundingTextForDeletion(int start, int end)
+        {
+            _inputConnection.InputMethod.Client.Selection = new TextSelection(start, end);
+        }
     }
 
     internal class AvaloniaInputConnection : BaseInputConnection
     {
-        private readonly TopLevelImpl _topLevel;
+        private readonly TopLevelImpl _toplevel;
         private readonly IAndroidInputMethod _inputMethod;
-        private readonly InputEditable _editable;
+        private readonly EditableWrapper _editable;
+        private bool _commitInProgress;
+        private int _batchLevel = 0;
 
-        public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
+        public AvaloniaInputConnection(TopLevelImpl toplevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
-            _topLevel = topLevel;
+            _toplevel = toplevel;
             _inputMethod = inputMethod;
-            _editable = new InputEditable(_topLevel, _inputMethod, this);
+            _editable = new EditableWrapper(this);
         }
+
+        public int ExtractedTextToken { get; private set; }
 
         public override IEditable Editable => _editable;
 
-        internal InputEditable InputEditable => _editable;
+        public EditableWrapper EditableWrapper => _editable;
+
+        public IAndroidInputMethod InputMethod => _inputMethod;
+
+        public TopLevelImpl Toplevel => _toplevel;
+
+        public bool IsInBatchEdit => _batchLevel > 0;
 
         public override bool SetComposingRegion(int start, int end)
         {
-            var ret = base.SetComposingRegion(start, end);
-
-            InputEditable.RaiseCompositionChanged();
-
-            return ret;
+            return base.SetComposingRegion(start, end);
         }
 
         public override bool SetComposingText(ICharSequence text, int newCursorPosition)
         {
-            var composingText = text.ToString();
+            BeginBatchEdit();
+            _editable.IgnoreChange = true;
 
-            if (string.IsNullOrEmpty(composingText))
+            try
             {
-                return CommitText(text, newCursorPosition);
+                if (_editable.CurrentComposition.Start > -1)
+                {
+                    // Select the composing region.
+                    InputMethod.Client.Selection = new TextSelection(_editable.CurrentComposition.Start, _editable.CurrentComposition.End);
+                }
+                var compositionText = text.SubSequence(0, text.Length());
+
+                if (_inputMethod.IsActive && !_commitInProgress)
+                {
+                    if (string.IsNullOrEmpty(compositionText))
+                        _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+
+                    else
+                        _toplevel.TextInput(compositionText);
+                }
+                base.SetComposingText(text, newCursorPosition);
             }
-            else
+            finally
             {
-                var ret = base.SetComposingText(text, newCursorPosition);
+                _editable.IgnoreChange = false;
 
-                InputEditable.RaiseCompositionChanged();
-
-                return ret;
+                EndBatchEdit();
             }
+
+            return true;
         }
 
         public override bool BeginBatchEdit()
         {
-            _editable.BeginBatchEdit();
-
+            _batchLevel = Interlocked.Increment(ref _batchLevel);
             return base.BeginBatchEdit();
         }
 
         public override bool EndBatchEdit()
         {
-            var ret = base.EndBatchEdit();
-            _editable.EndBatchEdit();
+            _batchLevel = Interlocked.Decrement(ref _batchLevel);
 
-            return ret;
-        }
-
-        public override bool FinishComposingText()
-        {
-            var ret = base.FinishComposingText();
-            InputEditable.RaiseCompositionChanged();
-            return ret;
+            _inputMethod.OnBatchEditedEnded();
+            return base.EndBatchEdit();
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
+            BeginBatchEdit();
+            _commitInProgress = true;
+
+            var composingRegion = _editable.CurrentComposition;
+
             var ret = base.CommitText(text, newCursorPosition);
-            InputEditable.RaiseCompositionChanged();
-            return ret;
+
+            if(composingRegion.Start != -1)
+            {
+                InputMethod.Client.Selection = composingRegion;
+            }
+
+            var committedText = text.SubSequence(0, text.Length());
+
+            if (_inputMethod.IsActive)
+                if (string.IsNullOrEmpty(committedText))
+                    _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+                else
+                    _toplevel.TextInput(committedText);
+
+            _commitInProgress = false;
+            EndBatchEdit();
+
+            return true;
+        }
+
+        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
+        {
+            if (InputMethod.IsActive)
+            {
+                EditableWrapper.IgnoreChange = true;
+            }
+
+            if (InputMethod.IsActive)
+            {
+                var selection = _editable.CurrentSelection;
+
+                InputMethod.Client.Selection = new TextSelection(selection.Start - beforeLength, selection.End + afterLength);
+
+                InputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+
+                EditableWrapper.IgnoreChange = true;
+            }
+
+            return true;
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)
@@ -502,9 +624,58 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                         _inputMethod.IMM.HideSoftInputFromWindow(_inputMethod.View.WindowToken, HideSoftInputFlags.ImplicitOnly);
                         break;
                     }
+                case ImeAction.Next:
+                    {
+                        FocusManager.GetFocusManager(_toplevel.InputRoot)?
+                            .TryMoveFocus(NavigationDirection.Next);
+                        break;
+                    }
             }
 
             return base.PerformEditorAction(actionCode);
+        }
+
+        public override ExtractedText GetExtractedText(ExtractedTextRequest request, [GeneratedEnum] GetTextFlags flags)
+        {
+            if (request == null)
+                return null;
+
+            ExtractedTextToken = request.Token;
+
+            var editable = Editable;
+
+            if (editable == null)
+            {
+                return null;
+            }
+
+            if (!_inputMethod.IsActive)
+            {
+                return null;
+            }
+
+            var selection = _editable.CurrentSelection;
+
+            ExtractedText extract = new ExtractedText
+            {
+                Flags = 0,
+                PartialStartOffset = -1,
+                PartialEndOffset = -1,
+                SelectionStart = selection.Start,
+                SelectionEnd = selection.End,
+                StartOffset = 0
+            };
+
+            if ((request.Flags & GetTextFlags.WithStyles) != 0)
+            {
+                extract.Text = new SpannableString(editable);
+            }
+            else
+            {
+                extract.Text = editable;
+            }
+
+            return extract;
         }
     }
 }

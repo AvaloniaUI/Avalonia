@@ -23,11 +23,15 @@ namespace Avalonia.Build.Tasks
     public static partial class XamlCompilerTaskExecutor
     {
         private const string CompiledAvaloniaXamlNamespace = "CompiledAvaloniaXaml";
-        
-        static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".paml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".axaml");
-        
+
+        static bool CheckXamlName(IResource r)
+        {
+            var name = r.Name;
+            return name.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".xaml",StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".paml", StringComparison.OrdinalIgnoreCase);
+        }
+
         public class CompileResult
         {
             public bool Success { get; set; }
@@ -59,8 +63,8 @@ namespace Avalonia.Build.Tasks
             try
             {
                 references = references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")).ToArray();
-                var typeSystem = new CecilTypeSystem(references, input);
-                var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
+                using var typeSystem = new CecilTypeSystem(references, input);
+                using var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
 
                 var asm = typeSystem.TargetAssemblyDefinition;
                 var refAsm = refTypeSystem?.TargetAssemblyDefinition;
@@ -149,7 +153,7 @@ namespace Avalonia.Build.Tasks
             {
                 var ctor = asm.MainModule.ImportReference(typeSystem.GetTypeReference(asmMetadata).Resolve()
                     .GetConstructors().First(c => c.Parameters.Count == 2).Resolve());
-                var strType = asm.MainModule.ImportReference(typeof(string));
+                var strType = asm.MainModule.TypeSystem.String;
                 var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
                 var arg2 = new CustomAttributeArgument(strType, defaultCompileBindings.ToString());
                 asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
@@ -288,6 +292,24 @@ namespace Avalonia.Build.Tasks
                             if (precompileText != "true")
                                 throw new XamlParseException("Invalid value for x:Precompile", precompileDirective);
                         }
+
+                        var classModifierDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
+                            .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "ClassModifier");
+                        bool? classModifierPublic = null;
+                        if (classModifierDirective != null)
+                        {
+                            var classModifierText = (classModifierDirective.Values[0] as XamlAstTextNode)?.Text.Trim()
+                                .ToLowerInvariant();
+                            if ("Public".Equals(classModifierText, StringComparison.OrdinalIgnoreCase))
+                                classModifierPublic = true;
+                            // XAML spec uses "Public" and "NotPublic" values,
+                            // When WPF documentation uses "public" and "internal".
+                            else if ("NotPublic".Equals(classModifierText, StringComparison.OrdinalIgnoreCase)
+                                     || "Internal".Equals(classModifierText, StringComparison.OrdinalIgnoreCase))
+                                classModifierPublic = false;
+                            else
+                                throw new XamlParseException("Invalid value for x:ClassModifier. Expected value are: Public, NotPublic (internal).", classModifierDirective);
+                        }
                         
                         var classDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Class");
@@ -297,8 +319,21 @@ namespace Avalonia.Build.Tasks
                             if (classDirective.Values.Count != 1 || !(classDirective.Values[0] is XamlAstTextNode tn))
                                 throw new XamlParseException("x:Class should have a string value", classDirective);
                             classType = typeSystem.TargetAssembly.FindType(tn.Text);
+
                             if (classType == null)
                                 throw new XamlParseException($"Unable to find type `{tn.Text}`", classDirective);
+
+                            var isClassPublic = typeSystem.GetTypeReference(classType).Resolve().IsPublic;
+                            classModifierPublic ??= isClassPublic;
+
+                            // We do not really need x:ClassModifier support for x:Class, but we can at least use it for validation here.
+                            if (classModifierPublic != isClassPublic)
+                            {
+                                throw new XamlParseException(
+                                    "XAML file x:ClassModifier doesn't match the x:Class type modifiers.",
+                                    precompileDirective);
+                            }
+                            
                             compiler.OverrideRootType(parsed,
                                 new XamlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
@@ -312,6 +347,8 @@ namespace Avalonia.Build.Tasks
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
 
+                        // All XAML files are public by default.
+                        classModifierPublic ??= true;
 
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
@@ -319,10 +356,23 @@ namespace Avalonia.Build.Tasks
 
                         ((List<XamlDocumentResource>)parsedXamlDocuments).Add(new XamlDocumentResource(
                             parsed, res.Uri, res, classType,
-                            populateBuilder,
-                            compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
-                                classTypeDefinition == null),
-                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true)));
+                            classModifierPublic.Value,
+                            () => new XamlDocumentTypeBuilderProvider(
+                                populateBuilder,
+                                compiler.DefinePopulateMethod(
+                                    populateBuilder,
+                                    parsed,
+                                    populateName,
+                                    classTypeDefinition == null && classModifierPublic.Value
+                                        ? XamlVisibility.Public
+                                        : XamlVisibility.Private),
+                                buildName == null ?
+                                    null :
+                                    compiler.DefineBuildMethod(
+                                        builder,
+                                        parsed,
+                                        buildName,
+                                        classModifierPublic.Value ? XamlVisibility.Public : XamlVisibility.Assembly))));
                     }
                     catch (Exception e)
                     {
@@ -353,10 +403,17 @@ namespace Avalonia.Build.Tasks
 
                 foreach (var document in parsedXamlDocuments)
                 {
+                    var res = (IResource)document.FileSource!;
+
+                    if (document.Usage == XamlDocumentUsage.Merged && !document.IsPublic)
+                    {
+                        res.Remove();
+                        continue;
+                    }
+
                     var parsed = document.XamlDocument;
-                    var res = (IResource)document.FileSource;
                     var classType = document.ClassType;
-                    var populateBuilder = document.TypeBuilder;
+                    var populateBuilder = document.TypeBuilderProvider.TypeBuilder;
 
                     try
                     {
@@ -365,21 +422,20 @@ namespace Avalonia.Build.Tasks
 
                         compiler.Compile(parsed, 
                             contextClass,
-                            document.PopulateMethod,
-                            document.BuildMethod,
-                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name,
-                                true),
+                            document.TypeBuilderProvider.PopulateMethod,
+                            document.TypeBuilderProvider.BuildMethod,
+                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, XamlVisibility.Public),
                             (closureName, closureBaseType) =>
-                                populateBuilder.DefineSubType(closureBaseType, closureName, false),
+                                populateBuilder.DefineSubType(closureBaseType, closureName, XamlVisibility.Private),
                             (closureName, returnType, parameterTypes) =>
-                                populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
+                                populateBuilder.DefineDelegateSubType(closureName, XamlVisibility.Private, returnType, parameterTypes),
                             res.Uri, res
                         );
 
                         if (classTypeDefinition != null)
                         {
                             var compiledPopulateMethod = typeSystem.GetTypeReference(populateBuilder).Resolve()
-                                .Methods.First(m => m.Name == document.PopulateMethod.Name);
+                                .Methods.First(m => m.Name == document.TypeBuilderProvider.PopulateMethod.Name);
 
                             var designLoaderFieldType = typeSystem
                                 .GetType("System.Action`1")
@@ -438,7 +494,7 @@ namespace Avalonia.Build.Tasks
 
                             var foundXamlLoader = false;
                             // Find AvaloniaXamlLoader.Load(this) or AvaloniaXamlLoader.Load(sp, this) and replace it with !XamlIlPopulateTrampoline(this)
-                            foreach (var method in classTypeDefinition.Methods.ToArray())
+                            foreach (var method in classTypeDefinition.Methods.Where(m => m.Body is not null).ToArray())
                             {
                                 var i = method.Body.Instructions;
                                 for (var c = 1; c < i.Count; c++)
@@ -502,12 +558,13 @@ namespace Avalonia.Build.Tasks
 
                         }
 
-                        if (document.BuildMethod != null || classTypeDefinition != null)
+                        if (document.IsPublic
+                            && (document.TypeBuilderProvider.BuildMethod != null || classTypeDefinition != null))
                         {
-                            var compiledBuildMethod = document.BuildMethod == null ?
+                            var compiledBuildMethod = document.TypeBuilderProvider.BuildMethod is not { } buildMethod ?
                                 null :
                                 typeSystem.GetTypeReference(builder).Resolve()
-                                    .Methods.First(m => m.Name == document.BuildMethod?.Name);
+                                    .Methods.First(m => m.Name == buildMethod.Name);
                             var parameterlessConstructor = compiledBuildMethod != null ?
                                 null :
                                 classTypeDefinition.GetConstructors().FirstOrDefault(c =>
@@ -626,7 +683,7 @@ namespace Avalonia.Build.Tasks
                     foreach (var ogMethod in wrappedOgType.Methods.Where(m => m.IsPublic && m.IsStatic))
                     {
                         var method = typeBuilder.DefineMethod(ogMethod.ReturnType, ogMethod.Parameters, ogMethod.Name,
-                            ogMethod.IsPublic, ogMethod.IsStatic, false);
+                            XamlVisibility.Public, ogMethod.IsStatic, false);
                         method.Generator.Ldnull();
                         method.Generator.Throw();
                     }

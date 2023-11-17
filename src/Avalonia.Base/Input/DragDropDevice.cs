@@ -2,9 +2,11 @@
 using Avalonia.VisualTree;
 using System.Linq;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
+    [PrivateApi]
     public class DragDropDevice : IDragDropDevice
     {
         public static readonly DragDropDevice Instance = new DragDropDevice();

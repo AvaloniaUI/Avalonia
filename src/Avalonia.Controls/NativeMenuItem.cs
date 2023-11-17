@@ -54,14 +54,14 @@ namespace Avalonia.Controls
             return value;
         }
 
-        public static readonly StyledProperty<IBitmap?> IconProperty =
-            AvaloniaProperty.Register<NativeMenuItem, IBitmap?>(nameof(Icon));
+        public static readonly StyledProperty<Bitmap?> IconProperty =
+            AvaloniaProperty.Register<NativeMenuItem, Bitmap?>(nameof(Icon));
 
-        public IBitmap? Icon
+        public Bitmap? Icon
         {
             get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
-        }  
+        }
 
         public static readonly StyledProperty<string?> HeaderProperty =
             AvaloniaProperty.Register<NativeMenuItem, string?>(nameof(Header));
@@ -70,6 +70,23 @@ namespace Avalonia.Controls
         {
             get => GetValue(HeaderProperty);
             set => SetValue(HeaderProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="ToolTip"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> ToolTipProperty =
+            AvaloniaProperty.Register<NativeMenuItem, string?>(nameof(ToolTip));
+
+        /// <summary>
+        /// Gets or sets the tooltip associated with the menu item.
+        /// This may not be supported by the native menu provider, but
+        /// will be passed on to the non-native fallback menu item if used.
+        /// </summary>
+        public string? ToolTip
+        {
+            get => GetValue(ToolTipProperty);
+            set => SetValue(ToolTipProperty, value);
         }
 
         public static readonly StyledProperty<KeyGesture?> GestureProperty =
@@ -136,8 +153,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? CommandParameter
         {
-            get { return GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
         }
 
         /// <summary>
@@ -175,7 +192,7 @@ namespace Avalonia.Controls
             }
         }
     }
-
+    
     public enum NativeMenuItemToggleType
     {
         None,

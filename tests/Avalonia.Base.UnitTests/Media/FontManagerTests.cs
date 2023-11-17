@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -25,9 +26,12 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Should_Throw_When_Default_FamilyName_Is_Null()
+        public void Should_Throw_When_Default_FamilyName_Is_Null_And_Installed_Font_Family_Names_Is_Empty()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new MockFontManagerImpl(null))))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
+               .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
+                   installedFontFamilyNames: new string[] { },
+                   defaultFamilyName: null))))
             {
                 Assert.Throws<InvalidOperationException>(() => FontManager.Current);
             }
@@ -39,11 +43,11 @@ namespace Avalonia.Base.UnitTests.Media
             var options = new FontManagerOptions { DefaultFamilyName = "MyFont" };
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new MockFontManagerImpl())))
+                .With(fontManagerImpl: new HeadlessFontManagerStub())))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
-                Assert.Equal("MyFont", FontManager.Current.DefaultFontFamilyName);
+                Assert.Equal("MyFont", FontManager.Current.DefaultFontFamily.Name);
             }
         }
 
@@ -62,7 +66,7 @@ namespace Avalonia.Base.UnitTests.Media
             };
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new MockFontManagerImpl())))
+                .With(fontManagerImpl: new HeadlessFontManagerStub())))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
@@ -70,6 +74,18 @@ namespace Avalonia.Base.UnitTests.Media
                     FontFamily.Default, null, out var typeface);
 
                 Assert.Equal("MyFont", typeface.FontFamily.Name);
+            }
+        }
+
+        [Fact]
+        public void Should_Return_First_Installed_Font_Family_Name_When_Default_Family_Name_Is_Null()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
+                .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
+                    installedFontFamilyNames: new[] { "DejaVu", "Verdana" },
+                    defaultFamilyName: null))))
+            {
+                Assert.Equal("DejaVu", FontManager.Current.DefaultFontFamily.Name);
             }
         }
     }

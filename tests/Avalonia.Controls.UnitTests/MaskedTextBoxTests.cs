@@ -7,12 +7,14 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -72,7 +74,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234",
                     ContextFlyout = new MenuFlyout
                     {
-                        Items = new List<MenuItem>
+                        Items =
                         {
                             new MenuItem { Header = "Item 1" },
                             new MenuItem {Header = "Item 2" },
@@ -657,7 +659,6 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Text = "1234",
-                    IsVisible = false
                 };
 
                 var root = new TestRoot { Child = target1 };
@@ -892,16 +893,16 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),
-            textShaperImpl: new MockTextShaperImpl(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            textShaperImpl: new HeadlessTextShaperStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            renderInterface: new MockPlatformRenderInterface(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),     
-            textShaperImpl: new MockTextShaperImpl(), 
-            fontManagerImpl: new MockFontManagerImpl());
+            textShaperImpl: new HeadlessTextShaperStub(), 
+            fontManagerImpl: new HeadlessFontManagerStub());
 
         private static IControlTemplate CreateTemplate()
         {
@@ -1004,14 +1005,13 @@ namespace Avalonia.Controls.UnitTests
                 _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
         {
             var clipboard = new Mock<ITopLevelImpl>();
-            clipboard.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(RendererMocks.CreateRenderer().Object);
+            clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
                 .Returns(new ClipboardStub());
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);

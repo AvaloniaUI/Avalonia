@@ -11,7 +11,7 @@ namespace Avalonia.Animation
     {
         private static readonly TransformOperationsAnimator s_operationsAnimator = new TransformOperationsAnimator();
 
-        public override IObservable<ITransform> DoTransition(
+        internal override IObservable<ITransform> DoTransition(
             IObservable<double> progress,
             ITransform oldValue,
             ITransform newValue)

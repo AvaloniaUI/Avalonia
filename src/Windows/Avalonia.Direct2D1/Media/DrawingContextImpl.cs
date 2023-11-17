@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using SharpDX;
@@ -25,6 +23,8 @@ namespace Avalonia.Direct2D1.Media
         private readonly bool _ownsDeviceContext;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private readonly Action _finishedCallback;
+
+        private readonly Stack<RenderOptions> _renderOptionsStack = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
@@ -76,6 +76,16 @@ namespace Avalonia.Direct2D1.Media
             set => throw new NotSupportedException();
         }
 
+        public RenderOptions RenderOptions
+        {
+            get => _renderOptions;
+            set
+            {
+                _renderOptions = value;
+                ApplyRenderOptions(value);
+            }
+        }
+
         /// <inheritdoc/>
         public void Clear(Color color)
         {
@@ -119,15 +129,14 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
+            using (var d2d = ((BitmapImpl)source).GetDirect2DBitmap(_deviceContext))
             {
-                var interpolationMode = GetInterpolationMode(bitmapInterpolationMode);
-                
+                var interpolationMode = GetInterpolationMode(RenderOptions.BitmapInterpolationMode);
+
                 // TODO: How to implement CompositeMode here?
-                
+
                 _deviceContext.DrawBitmap(
                     d2d.Value,
                     destRect.ToSharpDX(),
@@ -142,14 +151,15 @@ namespace Avalonia.Direct2D1.Media
         {
             switch (interpolationMode)
             {
+                case BitmapInterpolationMode.Unspecified:
                 case BitmapInterpolationMode.LowQuality:
-                    return InterpolationMode.NearestNeighbor;
-                case BitmapInterpolationMode.MediumQuality:
                     return InterpolationMode.Linear;
+                case BitmapInterpolationMode.MediumQuality:
+                    return InterpolationMode.MultiSampleLinear;
                 case BitmapInterpolationMode.HighQuality:
                     return InterpolationMode.HighQualityCubic;
-                case BitmapInterpolationMode.Default:
-                    return InterpolationMode.Linear;
+                case BitmapInterpolationMode.None:
+                    return InterpolationMode.NearestNeighbor;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
             }
@@ -158,15 +168,16 @@ namespace Avalonia.Direct2D1.Media
         public static CompositeMode GetCompositeMode(BitmapBlendingMode blendingMode)
         {
             switch (blendingMode)
-            {  
+            {
                 case BitmapBlendingMode.SourceIn:
                     return CompositeMode.SourceIn;
                 case BitmapBlendingMode.SourceOut:
                     return CompositeMode.SourceOut;
+                case BitmapBlendingMode.Unspecified:
                 case BitmapBlendingMode.SourceOver:
                     return CompositeMode.SourceOver;
                 case BitmapBlendingMode.SourceAtop:
-                    return CompositeMode.SourceAtop; 
+                    return CompositeMode.SourceAtop;
                 case BitmapBlendingMode.DestinationIn:
                     return CompositeMode.DestinationIn;
                 case BitmapBlendingMode.DestinationOut:
@@ -191,10 +202,12 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
-            using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
-            using (var sourceBrush = new BitmapBrush(_deviceContext, d2dSource.Value))
+            var interpolationMode = GetInterpolationMode(RenderOptions.BitmapInterpolationMode);
+
+            using (var d2dSource = ((BitmapImpl)source).GetDirect2DBitmap(_deviceContext))
+            using (var sourceBrush = new BitmapBrush1(_deviceContext, d2dSource.Value, new BitmapBrushProperties1 { InterpolationMode = interpolationMode }))
             using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
             using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(Direct2D1Platform.Direct2D1Factory, destRect.ToDirect2D()))
             {
@@ -384,13 +397,15 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IGlyphRunImpl glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Item.Bounds.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
             {
-                var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
+                var immutableGlyphRun = (GlyphRunImpl)glyphRun;
 
-                _renderTarget.DrawGlyphRun(glyphRun.Item.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
+                var dxGlyphRun = immutableGlyphRun.GlyphRun;
+
+                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), dxGlyphRun,
                     brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
@@ -433,22 +448,33 @@ namespace Avalonia.Direct2D1.Media
 
         readonly Stack<Layer> _layers = new Stack<Layer>();
         private readonly Stack<Layer> _layerPool = new Stack<Layer>();
+        private RenderOptions _renderOptions;
+
         /// <summary>
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
         /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public void PushOpacity(double opacity, Rect bounds)
+        public void PushOpacity(double opacity, Rect? bounds)
         {
             if (opacity < 1)
             {
+                if(bounds == null || bounds == default(Rect))
+                {
+                    bounds = new Rect(0, 0, _renderTarget.PixelSize.Width, _renderTarget.PixelSize.Height);
+                }
+
                 var parameters = new LayerParameters
                 {
-                    ContentBounds = bounds.ToDirect2D(),
                     MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
-                    Opacity = (float)opacity,
+                    Opacity = (float)opacity
                 };
+
+                if(bounds.HasValue)
+                {
+                    parameters.ContentBounds = bounds.Value.ToDirect2D();
+                }
 
                 var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_deviceContext);
                 _deviceContext.PushLayer(ref parameters, layer);
@@ -462,6 +488,18 @@ namespace Avalonia.Direct2D1.Media
         public void PopOpacity()
         {
             PopLayer();
+        }
+
+        public void PushRenderOptions(RenderOptions renderOptions)
+        {
+            _renderOptionsStack.Push(RenderOptions);
+
+            RenderOptions = RenderOptions.MergeWith(renderOptions);
+        }
+
+        public void PopRenderOptions()
+        {
+            RenderOptions = _renderOptionsStack.Pop();
         }
 
         private void PopLayer()
@@ -507,12 +545,12 @@ namespace Avalonia.Direct2D1.Media
                 // there is no Direct2D implementation of Conic Gradients so use Radial as a stand-in
                 return new SolidColorBrushImpl(conicGradientBrush, _deviceContext);
             }
-            else if (imageBrush?.Source != null)
+            else if (imageBrush?.Source?.Bitmap != null)
             {
                 return new ImageBrushImpl(
                     imageBrush,
                     _deviceContext,
-                    (BitmapImpl)imageBrush.Source.PlatformImpl.Item,
+                    (BitmapImpl)imageBrush.Source.Bitmap.Item,
                     destinationSize);
             }
             else if (sceneBrush != null || sceneBrushContent != null)
@@ -546,7 +584,7 @@ namespace Avalonia.Direct2D1.Media
                             return new ImageBrushImpl(
                                 sceneBrushContent.Brush,
                                 _deviceContext,
-                                new D2DBitmapImpl(intermediate.Bitmap),
+                                new D2DBitmapImpl(intermediate.Bitmap.QueryInterface<Bitmap1>()),
                                 destinationSize);
                         }
 
@@ -608,8 +646,27 @@ namespace Avalonia.Direct2D1.Media
         {
             PopLayer();
         }
-        
-        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
+
         public object GetFeature(Type t) => null;
+
+        private void ApplyRenderOptions(RenderOptions renderOptions)
+        {
+            _deviceContext.AntialiasMode = renderOptions.EdgeMode != EdgeMode.Aliased ? AntialiasMode.PerPrimitive : AntialiasMode.Aliased;
+            switch (renderOptions.TextRenderingMode)
+            {
+                case TextRenderingMode.Unspecified:
+                    _deviceContext.TextAntialiasMode = renderOptions.EdgeMode != EdgeMode.Aliased ? TextAntialiasMode.Default : TextAntialiasMode.Aliased;
+                    break;
+                case TextRenderingMode.Alias:
+                    _deviceContext.TextAntialiasMode = TextAntialiasMode.Aliased;
+                    break;
+                case TextRenderingMode.Antialias:
+                    _deviceContext.TextAntialiasMode = TextAntialiasMode.Grayscale;
+                    break;
+                case TextRenderingMode.SubpixelAntialias:
+                    _deviceContext.TextAntialiasMode = TextAntialiasMode.Cleartype;
+                    break;
+            }
+        }
     }
 }

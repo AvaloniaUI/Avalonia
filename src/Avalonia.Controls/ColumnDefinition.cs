@@ -46,8 +46,8 @@ namespace Avalonia.Controls
         /// <param name="value">The width of the column.</param>
         /// <param name="type">The width unit of the column.</param>
         public ColumnDefinition(double value, GridUnitType type)
+            : this(new GridLength(value, type))
         {
-            Width = new GridLength(value, type);
         }
 
         /// <summary>
@@ -69,14 +69,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double MaxWidth
         {
-            get
-            {
-                return GetValue(MaxWidthProperty);
-            }
-            set
-            {
-                SetValue(MaxWidthProperty, value);
-            }
+            get => GetValue(MaxWidthProperty);
+            set => SetValue(MaxWidthProperty, value);
         }
 
         /// <summary>
@@ -84,14 +78,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double MinWidth
         {
-            get
-            {
-                return GetValue(MinWidthProperty);
-            }
-            set
-            {
-                SetValue(MinWidthProperty, value);
-            }
+            get => GetValue(MinWidthProperty);
+            set => SetValue(MinWidthProperty, value);
         }
 
         /// <summary>
@@ -99,14 +87,8 @@ namespace Avalonia.Controls
         /// </summary>
         public GridLength Width
         {
-            get
-            {
-                return GetValue(WidthProperty);
-            }
-            set
-            {
-                SetValue(WidthProperty, value);
-            }
+            get => GetValue(WidthProperty);
+            set => SetValue(WidthProperty, value);
         }
 
         internal override GridLength UserSizeValueCache => this.Width;

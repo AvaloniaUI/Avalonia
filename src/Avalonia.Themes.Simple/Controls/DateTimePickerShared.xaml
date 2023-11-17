@@ -6,7 +6,8 @@
 -->
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Width="200"
             Padding="20">
@@ -19,6 +20,10 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
+
+  <Thickness x:Key="DateTimeFlyoutButtonBorderThickness">0</Thickness>
+  <Thickness x:Key="DateTimeFlyoutBorderThickness">1</Thickness>
+  <Thickness x:Key="DateTimeFlyoutBorderPadding">1</Thickness>
 
   <!--  Theme for the items displayed in the selectors  -->
   <ControlTheme x:Key="SimpleDateTimePickerItem"

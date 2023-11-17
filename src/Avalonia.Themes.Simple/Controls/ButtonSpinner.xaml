@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
 
   <ControlTheme x:Key="SimpleButtonSpinnerRepeatButton"
                 BasedOn="{StaticResource {x:Type RepeatButton}}"
@@ -70,7 +71,7 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^:left">
-      <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
+      <Style Selector="^ /template/ UniformGrid#PART_SpinnerPanel">
         <Setter Property="DockPanel.Dock" Value="Left" />
       </Style>
     </Style>

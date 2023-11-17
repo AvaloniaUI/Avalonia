@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
 using System.Threading;
-using System.Xml;
 using Avalonia.Controls;
 using Avalonia.DesignerSupport.Remote.HtmlTransport;
-using Avalonia.Input;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
@@ -20,6 +17,7 @@ namespace Avalonia.DesignerSupport.Remote
         private static ClientSupportedPixelFormatsMessage s_supportedPixelFormats;
         private static ClientViewportAllocatedMessage s_viewportAllocatedMessage;
         private static ClientRenderInfoMessage s_renderInfoMessage;
+        private static double s_lastRenderScaling = 1.0;
 
         private static IAvaloniaRemoteTransportConnection s_transport;
         class CommandLineArgs
@@ -140,6 +138,7 @@ namespace Avalonia.DesignerSupport.Remote
                 CommandLineArgs args, object obj)
             {
                 var builder = (AppBuilder)obj;
+                builder = builder.UseStandardRuntimePlatformSubsystem();
                 if (args.Method == Methods.AvaloniaRemote)
                     builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
                 if (args.Method == Methods.Html)
@@ -179,17 +178,9 @@ namespace Avalonia.DesignerSupport.Remote
             var entryPoint = asm.EntryPoint;
             if (entryPoint == null)
                 throw Die($"Assembly {args.AppPath} doesn't have an entry point");
-            var builderMethod = entryPoint.DeclaringType.GetMethod(
-                BuilderMethodName,
-                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy,
-                null,
-                Array.Empty<Type>(),
-                null);
-            if (builderMethod == null)
-                throw Die($"{entryPoint.DeclaringType.FullName} doesn't have a method named {BuilderMethodName}");
+            Log($"Obtaining AppBuilder instance from {entryPoint.DeclaringType!.FullName}");
+            var appBuilder = AppBuilder.Configure(entryPoint.DeclaringType);
             Design.IsDesignMode = true;
-            Log($"Obtaining AppBuilder instance from {builderMethod.DeclaringType.FullName}.{builderMethod.Name}");
-            var appBuilder = builderMethod.Invoke(null, null);
             Log($"Initializing application in design mode");
             var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer));
             transport = initializer.ConfigureApp(transport, args, appBuilder);
@@ -234,6 +225,9 @@ namespace Avalonia.DesignerSupport.Remote
             }
             if (obj is UpdateXamlMessage xaml)
             {
+                if (s_currentWindow is not null)
+                    s_lastRenderScaling = s_currentWindow.RenderScaling;
+
                 try
                 {
                     s_currentWindow?.Close();
@@ -245,7 +239,7 @@ namespace Avalonia.DesignerSupport.Remote
                 s_currentWindow = null;
                 try
                 {
-                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath, xaml.XamlFileProjectPath);
+                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath, xaml.XamlFileProjectPath, s_lastRenderScaling);
                     s_transport.Send(new UpdateXamlResultMessage(){Handle = s_currentWindow.PlatformImpl?.Handle?.Handle.ToString()});
                 }
                 catch (Exception e)

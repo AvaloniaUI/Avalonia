@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -8,7 +7,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
-    public class DrawingGroup : Drawing
+    public sealed class DrawingGroup : Drawing
     {
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<DrawingGroup, double>(nameof(Opacity), 1);
@@ -54,6 +53,8 @@ namespace Avalonia.Media
             set => SetValue(OpacityMaskProperty, value);
         }
 
+        internal RenderOptions? RenderOptions { get; set; }
+
         /// <summary>
         /// Gets or sets the collection that contains the child geometries.
         /// </summary>
@@ -69,14 +70,14 @@ namespace Avalonia.Media
 
         public DrawingContext Open() => new DrawingGroupDrawingContext(this);
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             var bounds = GetBounds();
-
             using (context.PushTransform(Transform?.Value ?? Matrix.Identity))
-            using (context.PushOpacity(Opacity, bounds))
+            using (context.PushOpacity(Opacity))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
             using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
+            using (RenderOptions != null ? context.PushRenderOptions(RenderOptions.Value) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -178,31 +179,33 @@ namespace Avalonia.Media
 
             protected override void PushClipCore(Rect rect)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.ClipGeometry = new RectangleGeometry(rect);
             }
 
             protected override void PushGeometryClipCore(Geometry clip)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.ClipGeometry = clip;
             }
 
-            protected override void PushOpacityCore(double opacity, Rect bounds)
+            protected override void PushOpacityCore(double opacity)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.Opacity = opacity;
             }
 
             protected override void PushOpacityMaskCore(IBrush mask, Rect bounds)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.OpacityMask = mask;
             }
 
-            protected override void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode)
-            {
-                throw new NotImplementedException();
-            }
-
-            internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-                BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+            internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
             {
                 throw new NotImplementedException();
             }
@@ -313,6 +316,15 @@ namespace Avalonia.Media
                 drawingGroup.Transform = new MatrixTransform(matrix);
             }
 
+            protected override void PushRenderOptionsCore(RenderOptions renderOptions)
+            {
+                // Instantiate a new drawing group and set it as the _currentDrawingGroup
+                var drawingGroup = PushNewDrawingGroup();
+
+                // Set the render options on the new DrawingGroup
+                drawingGroup.RenderOptions = renderOptions;
+            }
+
             protected override void PopClipCore() => Pop();
 
             protected override void PopGeometryClipCore() => Pop();
@@ -321,9 +333,9 @@ namespace Avalonia.Media
 
             protected override void PopOpacityMaskCore() => Pop();
 
-            protected override void PopBitmapBlendModeCore() => Pop();
-
             protected override void PopTransformCore() => Pop();
+
+            protected override void PopRenderOptionsCore() => Pop();
 
             /// <summary>
             /// Creates a new DrawingGroup for a Push* call by setting the

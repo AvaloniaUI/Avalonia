@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ApplicationId>com.avalonia.safeareademo</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <AndroidEnableProfiledAot>False</AndroidEnableProfiledAot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
+    <ProjectReference Include="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidResource Include="..\..\build\Assets\Icon.png">
+      <Link>Resources\drawable\Icon.png</Link>
+    </AndroidResource>
+  </ItemGroup>
+
+</Project>

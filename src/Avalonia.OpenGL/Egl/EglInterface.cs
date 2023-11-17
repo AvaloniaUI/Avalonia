@@ -35,9 +35,8 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load(string library)
         {
-            var dyn = AvaloniaLocator.Current.GetRequiredService<IDynamicLibraryLoader>();
-            var lib = dyn.LoadLibrary(library);
-            return (s) => dyn.GetProcAddress(lib, s, true);
+            var lib = NativeLibraryEx.Load(library);
+            return (s) => NativeLibraryEx.TryGetExport(lib, s, out var address) ? address : default;
         }
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
@@ -123,10 +122,13 @@ namespace Avalonia.OpenGL.Egl
                 return null;
             return Marshal.PtrToStringAnsi(rv);
         }
-        
+
         [GetProcAddress("eglCreatePbufferFromClientBuffer")]
         public partial IntPtr CreatePbufferFromClientBuffer(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int[]? attrib_list);
-        
+
+        [GetProcAddress("eglCreatePbufferFromClientBuffer")]
+        public partial IntPtr CreatePbufferFromClientBufferPtr(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int* attrib_list);
+
         [GetProcAddress("eglQueryDisplayAttribEXT", true)]
         public partial bool QueryDisplayAttribExt(IntPtr display, int attr, out IntPtr res);
 

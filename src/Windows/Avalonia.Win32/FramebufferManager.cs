@@ -2,6 +2,7 @@
 using System.Threading;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
@@ -60,6 +61,8 @@ namespace Avalonia.Win32
                 }
             }
         }
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
 
         public void Dispose()
         {
@@ -105,8 +108,7 @@ namespace Avalonia.Win32
 
         private static FramebufferData AllocateFramebufferData(int width, int height)
         {
-            var service = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
-            var bitmapBlob = service.AllocBlob(width * height * _bytesPerPixel);
+            var bitmapBlob = new UnmanagedBlob(width * height * _bytesPerPixel);
 
             return new FramebufferData(bitmapBlob, width, height);
         }
@@ -155,7 +157,7 @@ namespace Avalonia.Win32
 
         private readonly struct FramebufferData
         {
-            public IUnmanagedBlob Data { get; }
+            public UnmanagedBlob Data { get; }
 
             public PixelSize Size { get; }
 
@@ -163,7 +165,7 @@ namespace Avalonia.Win32
 
             public UnmanagedMethods.BITMAPINFOHEADER Header { get; }
 
-            public FramebufferData(IUnmanagedBlob data, int width, int height)
+            public FramebufferData(UnmanagedBlob data, int width, int height)
             {
                 Data = data;
                 Size = new PixelSize(width, height);

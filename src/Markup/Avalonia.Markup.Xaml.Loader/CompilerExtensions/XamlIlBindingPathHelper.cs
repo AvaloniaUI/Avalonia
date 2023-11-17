@@ -701,7 +701,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             .GetConstructor(new() { objectType, context.Configuration.TypeSystem.GetType("System.IntPtr") }));
                 }
 
-                if (_dependsOnProperties is { Count:> 1 })
+                if (_dependsOnProperties is { Count:> 0 })
                 {
                     using var dependsOnPropertiesArray = context.GetLocalOfType(context.Configuration.WellKnownTypes.String.MakeArrayType(1));
                     codeGen

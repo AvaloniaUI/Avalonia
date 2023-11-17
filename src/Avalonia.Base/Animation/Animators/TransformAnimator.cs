@@ -9,7 +9,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="Transform"/> properties.
     /// </summary>
-    public class TransformAnimator : Animator<double>
+    internal class TransformAnimator : Animator<double>
     {
         DoubleAnimator? _doubleAnimator;
 

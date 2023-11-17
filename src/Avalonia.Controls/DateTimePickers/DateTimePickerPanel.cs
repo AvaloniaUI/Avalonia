@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
@@ -165,7 +166,7 @@ namespace Avalonia.Controls.Primitives
             set
             {
                 if (value > MaximumValue || value < MinimumValue)
-                    throw new ArgumentOutOfRangeException("SelectedValue");
+                    throw new ArgumentOutOfRangeException(nameof(value));
 
                 var sel = CoerceSelected(value);
                 _selectedValue = sel;
@@ -195,7 +196,7 @@ namespace Avalonia.Controls.Primitives
             set
             {
                 if (value <= 0 || value > _range)
-                    throw new ArgumentOutOfRangeException("Increment");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 _increment = value;
                 UpdateHelperInfo();
                 var sel = CoerceSelected(SelectedValue);
@@ -406,7 +407,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void ScrollDown(int numItems = 1)
         {
-            var scrollHeight = _extent.Height - Viewport.Height;
+            var scrollHeight = Math.Max(Extent.Height - ItemHeight, 0);
             var newY = Math.Min(Offset.Y + (numItems * ItemHeight), scrollHeight);
             Offset = new Vector(0, newY);
         }
@@ -454,7 +455,7 @@ namespace Avalonia.Controls.Primitives
                 children.Add(new ListBoxItem
                 {
                     Height = ItemHeight,
-                    Classes = new Classes($"{PanelType}Item"),
+                    Classes = { $"{PanelType}Item" },
                     VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     Focusable = false
                 });
@@ -516,8 +517,7 @@ namespace Avalonia.Controls.Primitives
                 case DateTimePickerPanelType.Minute:
                     return new TimeSpan(0, value, 0).ToString(ItemFormat);
                 case DateTimePickerPanelType.TimePeriod:
-                    return value == MinimumValue ? CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator :
-                        CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator;
+                    return value == MinimumValue ? TimeUtils.GetAMDesignator() : TimeUtils.GetPMDesignator();
                 default:
                         return "";
             }

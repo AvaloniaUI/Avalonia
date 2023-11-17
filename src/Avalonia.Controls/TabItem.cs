@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
@@ -7,22 +8,24 @@ using Avalonia.Controls.Primitives;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// An item in  a <see cref="TabStrip"/> or <see cref="TabControl"/>.
+    /// An item in a <see cref="TabControl"/>.
     /// </summary>
     [PseudoClasses(":pressed", ":selected")]
     public class TabItem : HeaderedContentControl, ISelectable
     {
+        private Dock? _tabStripPlacement;
+
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
         /// </summary>
-        public static readonly StyledProperty<Dock> TabStripPlacementProperty =
-            TabControl.TabStripPlacementProperty.AddOwner<TabItem>();
+        public static readonly DirectProperty<TabItem, Dock?> TabStripPlacementProperty =
+            AvaloniaProperty.RegisterDirect<TabItem, Dock?>(nameof(TabStripPlacement), o => o.TabStripPlacement);
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TabItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TabItem>();
 
         /// <summary>
         /// Initializes static members of the <see cref="TabItem"/> class.
@@ -37,14 +40,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the tab strip placement.
+        /// Gets the placement of this tab relative to the outer <see cref="TabControl"/>, if there is one.
         /// </summary>
-        /// <value>
-        /// The tab strip placement.
-        /// </value>
-        public Dock TabStripPlacement
+        public Dock? TabStripPlacement
         {
-            get { return GetValue(TabStripPlacementProperty); }
+            get => _tabStripPlacement;
+            internal set => SetAndRaise(TabStripPlacementProperty, ref _tabStripPlacement, value);
         }
 
         /// <summary>
@@ -52,11 +53,16 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
+
+        [Obsolete("Owner manages its children properties by itself")]
+        protected void SubscribeToOwnerProperties(AvaloniaObject owner)
+        {
+        }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
@@ -83,7 +89,7 @@ namespace Avalonia.Controls
                 {
                     Header = obj.NewValue;
                 }
-            }          
+            }
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests
         {
             var registry = new AvaloniaPropertyRegistry();
             var metadata = new StyledPropertyMetadata<int>();
-            var property = new AttachedProperty<int>("test", typeof(object), metadata, true);
+            var property = new AttachedProperty<int>("test", typeof(object), typeof(object), metadata, true);
             registry.Register(typeof(object), property);
             registry.RegisterAttached(typeof(AvaloniaPropertyRegistryTests), property);
             property.AddOwner<Class4>();

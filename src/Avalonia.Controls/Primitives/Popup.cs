@@ -74,7 +74,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public PlacementMode PlacementMode
         {
             get => GetValue(PlacementProperty);
@@ -726,36 +726,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
-
-            var focusCheck = FocusManager.Instance?.Current;
-
-            // Focus is set to null as part of popup closing, so we only want to
-            // set focus to PlacementTarget if this is the case
-            if (focusCheck == null)
-            {
-                if (PlacementTarget != null)
-                {
-                    var e = (Control?)PlacementTarget;
-
-                    while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
-                    {
-                        e = e.VisualParent as Control;
-                    }
-
-                    if (e is object)
-                    {
-                        FocusManager.Instance?.Focus(e);
-                    }
-                }
-                else
-                {
-                    var anc = this.FindLogicalAncestorOfType<Control>();
-                    if (anc != null)
-                    {
-                        FocusManager.Instance?.Focus(anc);
-                    }
-                }
-            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)

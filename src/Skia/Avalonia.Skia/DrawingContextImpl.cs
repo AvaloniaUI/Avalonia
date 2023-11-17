@@ -5,12 +5,9 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
-using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 using Avalonia.Skia.Helpers;
+using Avalonia.Utilities;
 using SkiaSharp;
 using ISceneBrush = Avalonia.Media.ISceneBrush;
 
@@ -19,17 +16,18 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    internal class DrawingContextImpl : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
+    internal partial class DrawingContextImpl : IDrawingContextImpl,
+        IDrawingContextWithAcrylicLikeSupport,
+        IDrawingContextImplWithEffects
     {
         private IDisposable?[]? _disposables;
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
-        private readonly Stack<BitmapBlendingMode> _blendingModeStack = new();
+        private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
-        private BitmapBlendingMode _currentBlendingMode = BitmapBlendingMode.SourceOver;
-        private readonly bool _canTextUseLcdRendering;
+        private readonly bool _disableSubpixelTextRendering;
         private Matrix _currentTransform;
         private bool _disposed;
         private GRContext? _grContext;
@@ -62,11 +60,11 @@ namespace Avalonia.Skia
             /// Dpi of drawings.
             /// </summary>
             public Vector Dpi;
-            
+
             /// <summary>
-            /// Render text without Lcd rendering.
+            /// Render text without subpixel antialiasing.
             /// </summary>
-            public bool DisableTextLcdRendering;
+            public bool DisableSubpixelTextRendering;
 
             /// <summary>
             /// GPU-accelerated context (optional)
@@ -138,7 +136,7 @@ namespace Avalonia.Skia
 
             _dpi = createInfo.Dpi;
             _disposables = disposables;
-            _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
+            _disableSubpixelTextRendering = createInfo.DisableSubpixelTextRendering;
             _grContext = createInfo.GrContext;
             _gpu = createInfo.Gpu;
             if (_grContext != null)
@@ -169,6 +167,8 @@ namespace Avalonia.Skia
         public SKCanvas Canvas { get; }
         public SKSurface? Surface { get; }
 
+        public RenderOptions RenderOptions { get; set; }
+
         private void CheckLease()
         {
             if (_leased)
@@ -183,28 +183,29 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
             CheckLease();
-            var drawableImage = (IDrawableBitmapImpl)source.Item;
+            var drawableImage = (IDrawableBitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
 
             var paint = SKPaintCache.Shared.Get();
-            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * (_useOpacitySaveLayer ? 1 : _currentOpacity)));
-            paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
-            paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
+
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
+            paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
+            paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
 
             drawableImage.Draw(this, s, d, paint);
             SKPaintCache.Shared.ReturnReset(paint);
         }
 
         /// <inheritdoc />
-        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             CheckLease();
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
+            DrawBitmap(source, 1, new Rect(0, 0, source.PixelSize.Width, source.PixelSize.Height), destRect);
             PopOpacityMask();
         }
 
@@ -249,6 +250,12 @@ namespace Avalonia.Skia
             }
         }
 
+        private static float SkBlurRadiusToSigma(double radius) {
+            if (radius <= 0)
+                return 0.0f;
+            return 0.288675f * (float)radius + 0.5f;
+        }
+        
         private struct BoxShadowFilter : IDisposable
         {
             public readonly SKPaint Paint;
@@ -260,12 +267,6 @@ namespace Avalonia.Skia
                 Paint = paint;
                 _filter = filter;
                 ClipOperation = clipOperation;
-            }
-
-            private static float SkBlurRadiusToSigma(double radius) {
-                if (radius <= 0)
-                    return 0.0f;
-                return 0.288675f * (float)radius + 0.5f;
             }
 
             public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity)
@@ -377,7 +378,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && !boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         if (boxShadow.IsInset)
@@ -434,7 +435,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
@@ -507,7 +508,7 @@ namespace Avalonia.Skia
         }
        
         /// <inheritdoc />
-        public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
+        public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
         {
             CheckLease();
 
@@ -516,12 +517,30 @@ namespace Avalonia.Skia
                 return;
             }
 
-            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Bounds.Size))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Bounds.Size))
             {
-                var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
+                var glyphRunImpl = (GlyphRunImpl)glyphRun;
 
-                Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.Item.BaselineOrigin.X,
-                    (float)glyphRun.Item.BaselineOrigin.Y, paintWrapper.Paint);
+                var textRenderOptions = RenderOptions;
+
+                if (_disableSubpixelTextRendering)
+                {
+                    switch (textRenderOptions.TextRenderingMode)
+                    {
+                        case TextRenderingMode.Unspecified
+                            when textRenderOptions.EdgeMode == EdgeMode.Antialias || textRenderOptions.EdgeMode == EdgeMode.Unspecified:
+                        case TextRenderingMode.SubpixelAntialias:
+                            {
+                                textRenderOptions = textRenderOptions with { TextRenderingMode = TextRenderingMode.Antialias };
+                                break;
+                            }
+                    }
+                }
+
+                var textBlob = glyphRunImpl.GetTextBlob(textRenderOptions);
+
+                Canvas.DrawText(textBlob, (float)glyphRun.BaselineOrigin.X,
+                    (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
             }
         }
 
@@ -572,18 +591,32 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void PushOpacity(double opacity, Rect bounds)
+        public void PushOpacity(double opacity, Rect? bounds)
         {
             CheckLease();
 
-            if(_useOpacitySaveLayer)
+            _opacityStack.Push(_currentOpacity);
+
+            var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
+
+            if (useOpacitySaveLayer)
             {
-                var rect = bounds.ToSKRect();
-                Canvas.SaveLayer(rect, new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity)});
+                opacity = _currentOpacity * opacity; //Take current multiplied opacity
+
+                _currentOpacity = 1; //Opacity is applied via layering
+
+                if (bounds.HasValue)
+                {
+                    var rect = bounds.Value.ToSKRect();
+                    Canvas.SaveLayer(rect, new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
+                }
+                else
+                {
+                    Canvas.SaveLayer(new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
+                }
             }
             else
             {
-                _opacityStack.Push(_currentOpacity);
                 _currentOpacity *= opacity;
             }
         }
@@ -593,14 +626,29 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            if(_useOpacitySaveLayer)
+            var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
+
+            if (useOpacitySaveLayer)
             {
                 Canvas.Restore();
             }
-            else
-            {
-                _currentOpacity = _opacityStack.Pop();
-            }    
+
+            _currentOpacity = _opacityStack.Pop();
+        }
+
+        /// <inheritdoc />
+        public void PushRenderOptions(RenderOptions renderOptions)
+        {
+            CheckLease();
+
+            _renderOptionsStack.Push(RenderOptions);
+
+            RenderOptions = RenderOptions.MergeWith(renderOptions);
+        }
+
+        public void PopRenderOptions()
+        {
+            RenderOptions = _renderOptionsStack.Pop();
         }
 
         /// <inheritdoc />
@@ -648,27 +696,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.Restore();
-        }
-
-        /// <inheritdoc />
-        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-        {
-            CheckLease();
-            _blendingModeStack.Push(_currentBlendingMode);
-            _currentBlendingMode = blendingMode;
-        }
-
-        /// <inheritdoc />
-        public void PopBitmapBlendMode()
-        {
-            CheckLease();
-            _currentBlendingMode = _blendingModeStack.Pop();
-        }
-
-        public void Custom(ICustomDrawOperation custom)
-        {
-            CheckLease();
-            custom.Render(this);
         }
 
         /// <inheritdoc />
@@ -912,12 +939,14 @@ namespace Avalonia.Skia
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
+                context.RenderOptions = RenderOptions;
+
                 context.DrawBitmap(
-                    RefCountable.CreateUnownedNotClonable(tileBrushImage),
+                    tileBrushImage,
                     1,
                     sourceRect,
-                    targetRect,
-                    tileBrush.BitmapInterpolationMode);
+                    targetRect);
+
                 context.PopClip();
             }
 
@@ -987,6 +1016,7 @@ namespace Avalonia.Skia
 
                 using (var ctx = intermediate.CreateDrawingContext())
                 {
+                    ctx.RenderOptions = RenderOptions;
                     ctx.Clear(Colors.Transparent);
                     content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
                 }
@@ -1015,6 +1045,7 @@ namespace Avalonia.Skia
             using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _dpi);
             using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
             {
+                ctx.RenderOptions = RenderOptions;
                 ctx.PushClip(calc.IntermediateClip);
                 content.Render(ctx, transform);
                 ctx.PopClip();
@@ -1150,7 +1181,7 @@ namespace Avalonia.Skia
         {
             var paintWrapper = new PaintWrapper(paint);
 
-            paint.IsAntialias = true;
+            paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
             double opacity = brush.Opacity * (_useOpacitySaveLayer ? 1 :_currentOpacity);
 
@@ -1193,7 +1224,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                tileBrushImage = (tileBrush as IImageBrush)?.Source?.PlatformImpl.Item as IDrawableBitmapImpl;
+                tileBrushImage = (tileBrush as IImageBrush)?.Source?.Bitmap?.Item as IDrawableBitmapImpl;
             }
 
             if (tileBrush != null && tileBrushImage != null)
@@ -1233,53 +1264,15 @@ namespace Avalonia.Skia
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/paths/dots
             // TODO: Still something is off, dashes are now present, but don't look the same as D2D ones.
 
-            switch (pen.LineCap)
-            {
-                case PenLineCap.Round:
-                    paint.StrokeCap = SKStrokeCap.Round;
-                    break;
-                case PenLineCap.Square:
-                    paint.StrokeCap = SKStrokeCap.Square;
-                    break;
-                default:
-                    paint.StrokeCap = SKStrokeCap.Butt;
-                    break;
-            }
-
-            switch (pen.LineJoin)
-            {
-                case PenLineJoin.Miter:
-                    paint.StrokeJoin = SKStrokeJoin.Miter;
-                    break;
-                case PenLineJoin.Round:
-                    paint.StrokeJoin = SKStrokeJoin.Round;
-                    break;
-                default:
-                    paint.StrokeJoin = SKStrokeJoin.Bevel;
-                    break;
-            }
+            paint.StrokeCap = pen.LineCap.ToSKStrokeCap();
+            paint.StrokeJoin = pen.LineJoin.ToSKStrokeJoin();
 
             paint.StrokeMiter = (float) pen.MiterLimit;
 
-            if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+            if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
             {
-                var srcDashes = pen.DashStyle.Dashes;
-
-                var count = srcDashes.Count % 2 == 0 ? srcDashes.Count : srcDashes.Count * 2;
-
-                var dashesArray = new float[count];
-
-                for (var i = 0; i < count; ++i)
-                {
-                    dashesArray[i] = (float) srcDashes[i % srcDashes.Count] * paint.StrokeWidth;
-                }
-
-                var offset = (float)(pen.DashStyle.Offset * pen.Thickness);
-
-                var pe = SKPathEffect.CreateDash(dashesArray, offset);
-
-                paint.PathEffect = pe;
-                rv.AddDisposable(pe);
+                paint.PathEffect = dashEffect;
+                rv.AddDisposable(dashEffect);
             }
 
             return rv;
@@ -1301,7 +1294,7 @@ namespace Avalonia.Skia
                 Height = pixelSize.Height,
                 Dpi = _dpi,
                 Format = format,
-                DisableTextLcdRendering = !_canTextUseLcdRendering,
+                DisableTextLcdRendering = isLayer ? _disableSubpixelTextRendering : true,
                 GrContext = _grContext,
                 Gpu = _gpu,
                 Session = _session,

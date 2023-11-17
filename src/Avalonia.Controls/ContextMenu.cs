@@ -56,13 +56,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Placement"/> property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep PlacementModeProperty for backward compatibility.")]
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
             Popup.PlacementProperty.AddOwner<ContextMenu>();
 
         /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
@@ -112,7 +114,6 @@ namespace Avalonia.Controls
         /// </summary>
         static ContextMenu()
         {
-            ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
             PlacementProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
@@ -155,7 +156,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public PlacementMode PlacementMode
         {
             get => GetValue(PlacementProperty);
@@ -194,14 +195,14 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from false to true.
         /// </summary>
-        public event CancelEventHandler? ContextMenuOpening;
+        public event CancelEventHandler? Opening;
 
         /// <summary>
         /// Occurs when the value of the
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from true to false.
         /// </summary>
-        public event CancelEventHandler? ContextMenuClosing;
+        public event CancelEventHandler? Closing;
 
         /// <summary>
         /// Called when the <see cref="Control.ContextMenu"/> property changes on a control.
@@ -214,17 +215,22 @@ namespace Avalonia.Controls
             if (e.OldValue is ContextMenu oldMenu)
             {
                 control.ContextRequested -= ControlContextRequested;
+                control.AttachedToVisualTree -= ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree -= ControlDetachedFromVisualTree;
                 oldMenu._attachedControls?.Remove(control);
                 ((ISetLogicalParent?)oldMenu._popup)?.SetParent(null);
             }
 
-            if (e.NewValue is ContextMenu newMenu)
+            if (e.NewValue is ContextMenu)
             {
-                newMenu._attachedControls ??= new List<Control>();
-                newMenu._attachedControls.Add(control);
                 control.ContextRequested += ControlContextRequested;
+                control.AttachedToVisualTree += ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree += ControlDetachedFromVisualTree;
+            }
+            
+            if (control.IsAttachedToVisualTree)
+            {
+                AttachControlToContextMenu(control); 
             }
         }
 
@@ -283,7 +289,7 @@ namespace Avalonia.Controls
             }
         }
 
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             // ContextMenu can be assigned to the ContextMenu property in a setter. This overrides
             // the behavior defined in Control which requires controls to be wrapped in a <template>.
@@ -351,14 +357,14 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
 
         private void PopupOpened(object? sender, EventArgs e)
         {
-            _previousFocus = FocusManager.Instance?.Current;
+            _previousFocus = FocusManager.GetFocusManager(this)?.GetFocusedElement();
             Focus();
 
             _popupHostChangedHandler?.Invoke(_popup!.Host);
@@ -387,12 +393,9 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup!).SetParent(null);
             }
 
-            // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            FocusManager.Instance?.Focus(_previousFocus);
-
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
             
@@ -403,7 +406,7 @@ namespace Avalonia.Controls
         {
             if (IsOpen)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true
                     && !CancelClosing())
@@ -426,11 +429,25 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
         }
+        
+        
+        private static void ControlOnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            AttachControlToContextMenu(sender);
+        }
+
+        private static void AttachControlToContextMenu(object? sender)
+        {
+            if (sender is Control { ContextMenu: { } contextMenu } control)
+            {
+                contextMenu._attachedControls ??= new List<Control>();
+                contextMenu._attachedControls.Add(control);
+            }
+        }
 
         private static void ControlDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            if (sender is Control control
-                && control.ContextMenu is ContextMenu contextMenu)
+            if (sender is Control { ContextMenu: { } contextMenu } control)
             {
                 if (contextMenu._popup?.Parent == control)
                 {
@@ -438,20 +455,21 @@ namespace Avalonia.Controls
                 }
 
                 contextMenu.Close();
+                contextMenu._attachedControls?.Remove(control);
             }
         }
 
         private bool CancelClosing()
         {
             var eventArgs = new CancelEventArgs();
-            ContextMenuClosing?.Invoke(this, eventArgs);
+            Closing?.Invoke(this, eventArgs);
             return eventArgs.Cancel;
         }
 
         private bool CancelOpening()
         {
             var eventArgs = new CancelEventArgs();
-            ContextMenuOpening?.Invoke(this, eventArgs);
+            Opening?.Invoke(this, eventArgs);
             return eventArgs.Cancel;
         }
     }

@@ -3,7 +3,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Media
 {
-    public class TransformGroup : Transform
+    public sealed class TransformGroup : Transform
     {
         /// <summary>
         /// Defines the <see cref="Children"/> property.
@@ -11,6 +11,8 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Transforms> ChildrenProperty =
             AvaloniaProperty.Register<TransformGroup, Transforms>(nameof(Children));
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
             Children = new Transforms();

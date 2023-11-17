@@ -1,5 +1,7 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
@@ -34,6 +36,16 @@ namespace Avalonia.Data
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
         public IValueConverter? Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the culture in which to evaluate the converter.
+        /// </summary>
+        /// <value>The default value is null.</value>
+        /// <remarks>
+        /// If this property is not set then <see cref="CultureInfo.CurrentCulture"/> will be used.
+        /// </remarks>
+        [TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
+        public CultureInfo? ConverterCulture { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
@@ -76,7 +88,7 @@ namespace Avalonia.Data
             bool enableDataValidation);
 
         /// <inheritdoc/>
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
         public InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
@@ -120,6 +132,7 @@ namespace Avalonia.Data
                 fallback,
                 TargetNullValue,
                 converter ?? DefaultValueConverter.Instance,
+                ConverterCulture ?? CultureInfo.CurrentCulture,
                 ConverterParameter,
                 Priority);
 
@@ -234,7 +247,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected IObservable<object?> GetParentDataContext(AvaloniaObject target)
+        private IObservable<object?> GetParentDataContext(AvaloniaObject target)
         {
             // The DataContext is based on the visual parent and not the logical parent: this may
             // seem counter intuitive considering the fact that property inheritance works on the logical

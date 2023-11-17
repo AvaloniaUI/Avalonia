@@ -54,8 +54,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? Background
         {
-            get { return GetValue(BackgroundProperty); }
-            set { SetValue(BackgroundProperty, value); }
+            get => GetValue(BackgroundProperty);
+            set => SetValue(BackgroundProperty, value);
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        public bool TryGetTotalCount(out int count)
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
         {
             count = Children.Count;
             return true;

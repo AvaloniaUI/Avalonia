@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using XamlX.Emit;
@@ -33,6 +34,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType InheritDataTypeFromItemsAttribute { get; }
         public IXamlType MarkupExtensionOptionAttribute { get; }
         public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
+        public IXamlType AvaloniaListAttribute { get; }
+        public IXamlType AvaloniaList { get; }
         public IXamlType OnExtensionType { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
@@ -63,6 +66,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType Int { get; }
         public IXamlType Long { get; }
         public IXamlType Uri { get; }
+        public IXamlType IDictionaryT { get; }
         public IXamlType FontFamily { get; }
         public IXamlConstructor FontFamilyConstructorUriName { get; }
         public IXamlType Thickness { get; }
@@ -101,7 +105,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType TextDecorationCollection { get; }
         public IXamlType TextDecorations { get; }
         public IXamlType TextTrimming { get; }
-        public IXamlType ISetter { get; }
+        public IXamlType SetterBase { get; }
         public IXamlType IStyle { get; }
         public IXamlType StyleInclude { get; }
         public IXamlType ResourceInclude { get; }
@@ -109,10 +113,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IResourceDictionary { get; }
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
+        public IXamlType IThemeVariantProvider { get; }
         public IXamlType UriKind { get; }
         public IXamlConstructor UriConstructor { get; }
         public IXamlType Style { get; }
         public IXamlType ControlTheme { get; }
+        public IXamlType WindowTransparencyLevel { get; }
+        public IXamlType IReadOnlyListOfT { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -141,6 +148,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             InheritDataTypeFromItemsAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromItemsAttribute");
             MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
             MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
+            AvaloniaListAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.AvaloniaListAttribute");
+            AvaloniaList = cfg.TypeSystem.GetType("Avalonia.Collections.AvaloniaList`1");
             OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, AvaloniaObject,
                 AvaloniaProperty,
@@ -189,11 +198,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Int = cfg.TypeSystem.GetType("System.Int32");
             Long = cfg.TypeSystem.GetType("System.Int64");
             Uri = cfg.TypeSystem.GetType("System.Uri");
+            IDictionaryT = cfg.TypeSystem.GetType("System.Collections.Generic.IDictionary`2");
             FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
             ThemeVariant = cfg.TypeSystem.GetType("Avalonia.Styling.ThemeVariant");
+            WindowTransparencyLevel = cfg.TypeSystem.GetType("Avalonia.Controls.WindowTransparencyLevel");
 
-            (IXamlType, IXamlConstructor) GetNumericTypeInfo(string name, IXamlType componentType, int componentCount)
+            (IXamlType, IXamlConstructor) GetNumericTypeInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] string name, IXamlType componentType, int componentCount)
             {
                 var type = cfg.TypeSystem.GetType(name);
                 var ctor = type.GetConstructor(Enumerable.Range(0, componentCount).Select(_ => componentType).ToList());
@@ -237,7 +248,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TextDecorationCollection = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorationCollection");
             TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
             TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
-            ISetter = cfg.TypeSystem.GetType("Avalonia.Styling.ISetter");
+            SetterBase = cfg.TypeSystem.GetType("Avalonia.Styling.SetterBase");
             IStyle = cfg.TypeSystem.GetType("Avalonia.Styling.IStyle");
             StyleInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.StyleInclude");
             ResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.ResourceInclude");
@@ -248,10 +259,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
                     cfg.TypeSystem.GetType("System.IServiceProvider"),
                     XamlIlTypes.Object));
+            IThemeVariantProvider = cfg.TypeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
             Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
+            IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");
         }
     }
 

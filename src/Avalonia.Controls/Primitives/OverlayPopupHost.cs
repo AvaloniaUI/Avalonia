@@ -29,6 +29,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Explicit set")]
         public void SetChild(Control? control)
         {
             Content = control;
@@ -51,7 +52,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected internal override Interactive? InteractiveParent => Parent as Interactive;
+        internal override Interactive? InteractiveParent => Parent as Interactive;
 
         /// <inheritdoc />
         public void Dispose() => Hide();
@@ -109,6 +110,13 @@ namespace Avalonia.Controls.Primitives
             get
             {
                 var rc = new Rect(default, _overlayLayer.AvailableSize);
+                var topLevel = TopLevel.GetTopLevel(this);
+                if(topLevel != null)
+                {
+                    var padding = topLevel.InsetsManager?.SafeAreaPadding ?? default;
+                    rc = rc.Deflate(padding);
+                }
+
                 return new[] {new ManagedPopupPositionerScreenInfo(rc, rc)};
             }
         }
@@ -119,11 +127,11 @@ namespace Avalonia.Controls.Primitives
         void IManagedPopupPositionerPopup.MoveAndResize(Point devicePoint, Size virtualSize)
         {
             _lastRequestedPosition = devicePoint;
-            Dispatcher.UIThread.Post(() =>
+            MediaContext.Instance.BeginInvokeOnRender(() =>
             {
-                OverlayLayer.SetLeft(this, _lastRequestedPosition.X);
-                OverlayLayer.SetTop(this, _lastRequestedPosition.Y);
-            }, DispatcherPriority.Layout);
+                Canvas.SetLeft(this, _lastRequestedPosition.X);
+                Canvas.SetTop(this, _lastRequestedPosition.Y);
+            });
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;

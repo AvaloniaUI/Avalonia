@@ -46,8 +46,8 @@ namespace Avalonia.Controls
         /// <param name="value">The height of the row.</param>
         /// <param name="type">The height unit of the column.</param>
         public RowDefinition(double value, GridUnitType type)
+            : this(new GridLength(value, type))
         {
-            Height = new GridLength(value, type);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
         /// <param name="height">The height of the column.</param>
         public RowDefinition(GridLength height)
         {
-            Height = height;
+            SetCurrentValue(HeightProperty, height);
         }
 
         /// <summary>
@@ -69,14 +69,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double MaxHeight
         {
-            get
-            {
-                return GetValue(MaxHeightProperty);
-            }
-            set
-            {
-                SetValue(MaxHeightProperty, value);
-            }
+            get => GetValue(MaxHeightProperty);
+            set => SetValue(MaxHeightProperty, value);
         }
 
         /// <summary>
@@ -84,14 +78,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double MinHeight
         {
-            get
-            {
-                return GetValue(MinHeightProperty);
-            }
-            set
-            {
-                SetValue(MinHeightProperty, value);
-            }
+            get => GetValue(MinHeightProperty);
+            set => SetValue(MinHeightProperty, value);
         }
 
         /// <summary>
@@ -99,14 +87,8 @@ namespace Avalonia.Controls
         /// </summary>
         public GridLength Height
         {
-            get
-            {
-                return GetValue(HeightProperty);
-            }
-            set
-            {
-                SetValue(HeightProperty, value);
-            }
+            get => GetValue(HeightProperty);
+            set => SetValue(HeightProperty, value);
         }
 
         internal override GridLength UserSizeValueCache => this.Height;

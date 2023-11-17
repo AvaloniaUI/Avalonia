@@ -1,47 +1,91 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
+
+#nullable enable
 
 namespace Avalonia.X11
 {
-    internal class TransparencyHelper :  IDisposable, X11Globals.IGlobalsSubscriber
+    internal class TransparencyHelper :  IDisposable
     {
         private readonly X11Info _x11;
         private readonly IntPtr _window;
         private readonly X11Globals _globals;
         private WindowTransparencyLevel _currentLevel;
-        private WindowTransparencyLevel _requestedLevel;
+        private IReadOnlyList<WindowTransparencyLevel>? _requestedLevels;
         private bool _blurAtomsAreSet;
         
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
-        public WindowTransparencyLevel CurrentLevel => _currentLevel;
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
+        
+        public WindowTransparencyLevel CurrentLevel
+        {
+            get => _currentLevel;
+            set
+            {
+                if (_currentLevel != value)
+                {
+                    _currentLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public TransparencyHelper(X11Info x11, IntPtr window, X11Globals globals)
         {
             _x11 = x11;
             _window = window;
             _globals = globals;
-            _globals.AddSubscriber(this);
+            _globals.CompositionChanged += UpdateTransparency;
+            _globals.WindowManagerChanged += UpdateTransparency;
         }
 
-        public void SetTransparencyRequest(WindowTransparencyLevel level)
+        public void SetTransparencyRequest(IReadOnlyList<WindowTransparencyLevel> levels)
         {
-            _requestedLevel = level;
-            UpdateTransparency();
+            _requestedLevels = levels;
+
+            foreach (var level in levels)
+            {
+                if (!IsSupported(level))
+                    continue;
+
+                SetBlur(level == WindowTransparencyLevel.Blur);
+                CurrentLevel = level;
+                return;
+            }
+
+            // If we get here, we didn't find a supported level. Use the defualt of Transparent or
+            // None, depending on whether composition is enabled.
+            SetBlur(false);
+            CurrentLevel = _globals.IsCompositionEnabled ?
+                WindowTransparencyLevel.Transparent :
+                WindowTransparencyLevel.None;
+        }
+
+        private bool IsSupported(WindowTransparencyLevel level)
+        {
+            // None is suppported when composition is disabled.
+            if (level == WindowTransparencyLevel.None)
+                return !_globals.IsCompositionEnabled;
+
+            // Transparent is suppported when composition is enabled.
+            if (level == WindowTransparencyLevel.Transparent)
+                return _globals.IsCompositionEnabled;
+
+            // Blur is supported when composition is enabled and KWin is used.
+            if (level == WindowTransparencyLevel.Blur)
+                return _globals.IsCompositionEnabled && _globals.WmName == "KWin";
+            
+            return false;
         }
 
         private void UpdateTransparency()
         {
-            var newLevel = UpdateAtomsAndGetTransparency();
-            if (newLevel != _currentLevel)
-            {
-                _currentLevel = newLevel;
-                TransparencyLevelChanged?.Invoke(newLevel);
-            }
+            SetTransparencyRequest(_requestedLevels ?? Array.Empty<WindowTransparencyLevel>());
         }
-        
-        private WindowTransparencyLevel UpdateAtomsAndGetTransparency()
+
+        private void SetBlur(bool blur)
         {
-            if (_requestedLevel >= WindowTransparencyLevel.Blur)
+            if (blur)
             {
                 if (!_blurAtomsAreSet)
                 {
@@ -59,23 +103,12 @@ namespace Avalonia.X11
                     _blurAtomsAreSet = false;
                 }
             }
-
-            if (!_globals.IsCompositionEnabled)
-                return WindowTransparencyLevel.None;
-            if (_requestedLevel >= WindowTransparencyLevel.Blur && CanBlur)
-                return WindowTransparencyLevel.Blur;
-            return WindowTransparencyLevel.Transparent;
         }
-
-        private bool CanBlur => _globals.WmName == "KWin" && _globals.IsCompositionEnabled;
         
         public void Dispose()
         {
-            _globals.RemoveSubscriber(this);
+            _globals.WindowManagerChanged -= UpdateTransparency;
+            _globals.CompositionChanged -= UpdateTransparency;
         }
-
-        void X11Globals.IGlobalsSubscriber.WmChanged(string wmName) => UpdateTransparency();
-
-        void X11Globals.IGlobalsSubscriber.CompositionChanged(bool compositing) => UpdateTransparency();
     }
 }

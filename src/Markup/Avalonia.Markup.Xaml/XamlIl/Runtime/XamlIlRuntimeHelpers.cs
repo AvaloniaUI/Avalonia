@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 scope.Complete();
 
                 if(typeof(T) == typeof(Control))
-                    return new ControlTemplateResult((Control)obj, scope);
+                    return new TemplateResult<Control>((Control)obj, scope);
 
                 return new TemplateResult<T>((T)obj, scope);
             };
@@ -50,6 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             private readonly IServiceProvider? _parentProvider;
             private readonly List<IResourceNode>? _parentResourceNodes;
             private readonly INameScope _nameScope;
+            private IRuntimePlatform? _runtimePlatform;
 
             public DeferredParentServiceProvider(IServiceProvider? parentProvider, List<IResourceNode>? parentResourceNodes,
                 object rootObject, INameScope nameScope)
@@ -80,6 +81,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return this;
                 if (serviceType == typeof(IAvaloniaXamlIlControlTemplateProvider))
                     return this;
+                if (serviceType == typeof(IRuntimePlatform))
+                {
+                    if(_runtimePlatform == null)
+                        _runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+                    return _runtimePlatform;
+                }
                 return _parentProvider?.GetService(serviceType);
             }
 
@@ -147,7 +154,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var namespaces = _nsInfo.XmlNamespaces;
                 if (!namespaces.TryGetValue(ns, out var lst))
                     throw new ArgumentException("Unable to resolve namespace for type " + qualifiedTypeName);
-                foreach (var entry in lst)
+                var resolvable = lst.Where(static e => e.ClrAssemblyName is { Length: > 0 });
+                foreach (var entry in resolvable)
                 {
                     var asm = Assembly.Load(new AssemblyName(entry.ClrAssemblyName));
                     var resolved = asm.GetType(entry.ClrNamespace + "." + name);
@@ -157,7 +165,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
 
                 throw new ArgumentException(
                     $"Unable to resolve type {qualifiedTypeName} from any of the following locations: " +
-                    string.Join(",", lst.Select(e => $"`{e.ClrAssemblyName}:{e.ClrNamespace}.{name}`")));
+                    string.Join(",", resolvable.Select(e => $"`clr-namespace:{e.ClrNamespace};assembly={e.ClrAssemblyName}`")))
+                    { HelpLink = "https://docs.avaloniaui.net/guides/basics/introduction-to-xaml#valid-xaml-namespaces" };
             }
         }
 

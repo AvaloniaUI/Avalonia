@@ -7,6 +7,7 @@ using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia
 {
@@ -15,6 +16,7 @@ namespace Avalonia
         public static AppBuilder UseiOS(this AppBuilder builder)
         {
             return builder
+                .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(iOS.Platform.Register, "iOS")
                 .UseSkia();
         }
@@ -42,17 +44,12 @@ namespace Avalonia.iOS
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IRenderLoop>().ToSingleton<RenderLoop>()
                 .Bind<IRenderTimer>().ToConstant(Timer)
-                .Bind<IPlatformThreadingInterface>().ToConstant(new PlatformThreadingInterface())
+                .Bind<IDispatcherImpl>().ToConstant(DispatcherImpl.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 
-                Compositor = new Compositor(
-                    AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    AvaloniaLocator.Current.GetService<IPlatformGraphics>());
+                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
-
-
     }
 }
 

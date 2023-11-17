@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.AzurePipelines;
@@ -10,17 +11,23 @@ using static Nuke.Common.IO.PathConstruction;
 
 public partial class Build
 {
-    [Parameter("configuration")]
+    [Parameter(Name = "configuration")]
     public string Configuration { get; set; }
 
-    [Parameter("skip-tests")]
+    [Parameter(Name = "skip-tests")]
     public bool SkipTests { get; set; }
 
-    [Parameter("force-nuget-version")]
+    [Parameter(Name = "force-nuget-version")]
     public string ForceNugetVersion { get; set; }
 
-    [Parameter("skip-previewer")]
+    [Parameter(Name = "skip-previewer")]
     public bool SkipPreviewer { get; set; }
+
+    [Parameter(Name = "api-baseline")]
+    public string ApiValidationBaseline { get; set; }
+    
+    [Parameter(Name = "update-api-suppression")]
+    public bool? UpdateApiValidationSuppression { get; set; }
 
     public class BuildParameters
     {
@@ -32,7 +39,7 @@ public partial class Build
         public string RepositoryName { get; }
         public string RepositoryBranch { get; }
         public string ReleaseConfiguration { get; }
-        public string ReleaseBranchPrefix { get; }
+        public Regex ReleaseBranchRegex { get; }
         public string MSBuildSolution { get; }
         public bool IsLocalBuild { get; }
         public bool IsRunningOnUnix { get; }
@@ -57,7 +64,9 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
-
+        public string ApiValidationBaseline { get; }
+        public bool UpdateApiValidationSuppression { get; }
+        public AbsolutePath ApiValidationSuppressionFiles { get; }
 
         public BuildParameters(Build b)
         {
@@ -69,7 +78,7 @@ public partial class Build
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
             MasterBranch = "refs/heads/master";
-            ReleaseBranchPrefix = "refs/heads/release/";
+            ReleaseBranchRegex = new("^refs/heads/release/(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
             ReleaseConfiguration = "Release";
             MSBuildSolution = RootDirectory / "dirs.proj";
 
@@ -93,8 +102,7 @@ public partial class Build
                     RepositoryName);
             IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch,
                 RepositoryBranch);
-            IsReleaseBranch = RepositoryBranch?.StartsWith(ReleaseBranchPrefix, StringComparison.OrdinalIgnoreCase) ==
-                              true;
+            IsReleaseBranch = RepositoryBranch is not null && ReleaseBranchRegex.IsMatch(RepositoryBranch);
 
             IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
             IsMyGetRelease = IsReleasable;
@@ -103,6 +111,9 @@ public partial class Build
             // VERSION
             Version = b.ForceNugetVersion ?? GetVersion();
 
+            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version.Split('-', StringSplitOptions.None).First()).Major, 0).ToString();
+            UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
+            
             if (IsRunningOnAzure)
             {
                 if (!IsNuGetRelease)
@@ -125,6 +136,7 @@ public partial class Build
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
+            ApiValidationSuppressionFiles = RootDirectory / "api";
         }
 
         string GetVersion()

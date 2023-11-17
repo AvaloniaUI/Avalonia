@@ -9,15 +9,15 @@ internal static partial class StorageHelper
     public static partial bool HasNativeFilePicker();
 
     [JSImport("StorageProvider.selectFolderDialog", AvaloniaModule.StorageModuleName)]
-    public static partial Task<JSObject?> SelectFolderDialog(JSObject? startIn);
+    public static partial Task<JSObject?> SelectFolderDialog(JSObject? startIn, bool preferPolyfill);
 
     [JSImport("StorageProvider.openFileDialog", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> OpenFileDialog(JSObject? startIn, bool multiple,
-        [JSMarshalAs<JSType.Array<JSType.Any>>] object[]? types, bool excludeAcceptAllOption);
+        [JSMarshalAs<JSType.Array<JSType.Any>>] object[]? types, bool excludeAcceptAllOption, bool preferPolyfill);
 
     [JSImport("StorageProvider.saveFileDialog", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> SaveFileDialog(JSObject? startIn, string? suggestedName,
-        [JSMarshalAs<JSType.Array<JSType.Any>>] object[]? types, bool excludeAcceptAllOption);
+        [JSMarshalAs<JSType.Array<JSType.Any>>] object[]? types, bool excludeAcceptAllOption, bool preferPolyfill);
 
     [JSImport("StorageItem.createWellKnownDirectory", AvaloniaModule.StorageModuleName)]
     public static partial JSObject CreateWellKnownDirectory(string wellKnownDirectory);
@@ -39,6 +39,9 @@ internal static partial class StorageHelper
 
     [JSImport("StorageItem.openRead", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject> OpenRead(JSObject item);
+    
+    [JSImport("StorageItem.createFromHandle", AvaloniaModule.StorageModuleName)]
+    public static partial JSObject? StorageItemFromHandle(JSObject handle);
 
     [JSImport("StorageItem.getItemsIterator", AvaloniaModule.StorageModuleName)]
     [return: JSMarshalAs<JSType.Object>]

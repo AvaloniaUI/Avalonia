@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -596,7 +597,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, layout.TextLines.Count);
 
-                Assert.Equal(lineHeight, layout.Bounds.Height);
+                Assert.Equal(lineHeight, layout.Height);
             }
         }
 
@@ -724,7 +725,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var selectedRect = rects[0];
 
-                Assert.Equal(selectedText.Bounds.Width, selectedRect.Width, 2);
+                Assert.Equal(selectedText.WidthIncludingTrailingWhitespace, selectedRect.Width, 2);
             }
         }
 
@@ -846,7 +847,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     12,
                     Brushes.Black);
 
-                Assert.True(layout.Bounds.Height > 0);
+                Assert.True(layout.Height > 0);
             }
         }
 
@@ -1108,6 +1109,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 //First character should be covered
                 Assert.Equal(7.201171875, endX, 2);
+            }
+        }
+
+        [Fact]
+        public void Should_HitTestTextPosition_EndOfLine_RTL()
+        {
+            var text = "גש\r\n";
+
+            using (Start())
+            {
+                var textLayout = new TextLayout(text, Typeface.Default, 12, Brushes.Black, flowDirection: FlowDirection.RightToLeft);
+
+                var rect = textLayout.HitTestTextPosition(text.Length);
+
+                Assert.Equal(14.0625, rect.Top);
             }
         }
 

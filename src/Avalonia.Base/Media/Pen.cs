@@ -1,5 +1,9 @@
 using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -7,7 +11,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
-    public sealed class Pen : AvaloniaObject, IPen
+    public sealed class Pen : AvaloniaObject, IPen, ICompositionRenderResource<IPen>, ICompositorSerializable
     {
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
@@ -45,9 +49,7 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> MiterLimitProperty =
             AvaloniaProperty.Register<Pen, double>(nameof(MiterLimit), 10.0);
 
-        private EventHandler? _invalidated;
-        private IAffectsRender? _subscribedToBrush;
-        private IAffectsRender? _subscribedToDashes;
+        private DashStyle? _subscribedToDashes;
         private TargetWeakEventSubscriber<Pen, EventArgs>? _weakSubscriber;
 
         /// <summary>
@@ -110,8 +112,8 @@ namespace Avalonia.Media
             set => SetValue(BrushProperty, value);
         }
 
-        private static readonly WeakEvent<IAffectsRender, EventArgs> InvalidatedWeakEvent =
-            WeakEvent.Register<IAffectsRender>(
+        private static readonly WeakEvent<DashStyle, EventArgs> InvalidatedWeakEvent =
+            WeakEvent.Register<DashStyle>(
                 (s, h) => s.Invalidated += h,
                 (s, h) => s.Invalidated -= h);
 
@@ -162,23 +164,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Raised when the pen changes.
-        /// </summary>
-        public event EventHandler? Invalidated
-        {
-            add
-            {
-                _invalidated += value;
-                UpdateSubscriptions();
-            }
-            remove
-            {
-                _invalidated -= value; 
-                UpdateSubscriptions();
-            }
-        }
-
-        /// <summary>
         /// Creates an immutable clone of the brush.
         /// </summary>
         /// <returns>The immutable clone.</returns>
@@ -192,48 +177,79 @@ namespace Avalonia.Media
                 LineJoin,
                 MiterLimit);
         }
+        
+        void RegisterForSerialization()
+        {
+            _resource.RegisterForInvalidationOnAllCompositors(this);
+        }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            _invalidated?.Invoke(this, EventArgs.Empty);
-            if(change.Property == BrushProperty)
-                UpdateSubscription(ref _subscribedToBrush, Brush);
+            RegisterForSerialization();
+            
+            if (change.Property == BrushProperty) 
+                _resource.ProcessPropertyChangeNotification(change);
+            
             if(change.Property == DashStyleProperty)
-                UpdateSubscription(ref _subscribedToDashes, DashStyle);
+                UpdateDashStyleSubscription();
             base.OnPropertyChanged(change);
         }
 
         
-        void UpdateSubscription(ref IAffectsRender? field, object? value)
+        void UpdateDashStyleSubscription()
         {
-            if ((_invalidated == null || field != value) && field != null)
+            var newValue = _resource.IsAttached ? DashStyle as DashStyle : null;
+            
+            if(ReferenceEquals(_subscribedToDashes, newValue))
+                return;
+
+            if (_subscribedToDashes != null && _weakSubscriber != null)
             {
-                if (_weakSubscriber != null)
-                    InvalidatedWeakEvent.Unsubscribe(field, _weakSubscriber);
-                field = null;
+                InvalidatedWeakEvent.Unsubscribe(_subscribedToDashes, _weakSubscriber);
+                _subscribedToDashes = null;
             }
 
-            if (_invalidated != null && field != value && value is IAffectsRender affectsRender)
+            if (newValue != null)
             {
-                if (_weakSubscriber == null)
-                {
-                    _weakSubscriber = new TargetWeakEventSubscriber<Pen, EventArgs>(
-                        this, static (target, _, ev, _) =>
-                        {
-                            if (ev == InvalidatedWeakEvent)
-                                target._invalidated?.Invoke(target, EventArgs.Empty);
-                        });
-                }
+                _weakSubscriber ??= new TargetWeakEventSubscriber<Pen, EventArgs>(
+                    this, static (target, _, ev, _) =>
+                    {
+                        if (ev == InvalidatedWeakEvent)
+                            target.RegisterForSerialization();
+                    });
+                InvalidatedWeakEvent.Subscribe(newValue, _weakSubscriber);
+                _subscribedToDashes = newValue;
+            }
+        }
+        
+        private CompositorResourceHolder<ServerCompositionSimplePen> _resource;
+        
+        IPen ICompositionRenderResource<IPen>.GetForCompositor(Compositor c) => _resource.GetForCompositor(c);
 
-                InvalidatedWeakEvent.Subscribe(affectsRender, _weakSubscriber);
-                field = affectsRender;
+        void ICompositionRenderResource.AddRefOnCompositor(Compositor c)
+        {
+            if (_resource.CreateOrAddRef(c, this, out _, static c => new ServerCompositionSimplePen(c.Server)))
+            {
+                (Brush as ICompositionRenderResource)?.AddRefOnCompositor(c);
+                UpdateDashStyleSubscription();
             }
         }
 
-        void UpdateSubscriptions()
+        void ICompositionRenderResource.ReleaseOnCompositor(Compositor c)
         {
-            UpdateSubscription(ref _subscribedToBrush, Brush);
-            UpdateSubscription(ref _subscribedToDashes, DashStyle);
+            if (_resource.Release(c))
+            {
+                (Brush as ICompositionRenderResource)?.ReleaseOnCompositor(c);
+                UpdateDashStyleSubscription();
+            }
+        }
+
+        SimpleServerObject? ICompositorSerializable.TryGetServer(Compositor c) => _resource.TryGetForCompositor(c);
+
+        void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            ServerCompositionSimplePen.SerializeAllChanges(writer,
+                Brush.GetServer(c), DashStyle?.ToImmutable(), LineCap, LineJoin, MiterLimit, Thickness);
         }
     }
 }

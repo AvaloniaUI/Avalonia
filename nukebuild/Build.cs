@@ -35,9 +35,11 @@ using MicroCom.CodeGenerator;
 
 partial class Build : NukeBuild
 {
-    [Solution("Avalonia.sln")] readonly Solution Solution;
-
     BuildParameters Parameters { get; set; }
+
+    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
+    Tool ApiCompatTool;
+
     protected override void OnBuildInitialized()
     {
         Parameters = new BuildParameters(this);
@@ -143,10 +145,12 @@ partial class Build : NukeBuild
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
-        var project = Solution.GetProject(projectName).NotNull("project != null");
+        var project = RootDirectory.GlobFiles(@$"**\{projectName}.csproj").FirstOrDefault()
+            ?? throw new InvalidOperationException($"Project {projectName} doesn't exist");
+
         // Nuke and MSBuild tools have build-in helpers to get target frameworks from the project.
         // Unfortunately, it gets broken with every second SDK update, so we had to do it manually.
-        var fileXml = XDocument.Parse(File.ReadAllText(project.Path));
+        var fileXml = XDocument.Parse(File.ReadAllText(project));
         var targetFrameworks = fileXml.Descendants("TargetFrameworks")
             .FirstOrDefault()?.Value.Split(';').Select(f => f.Trim());
         if (targetFrameworks is null)
@@ -212,6 +216,8 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
+            RunCoreTest("Avalonia.Headless.NUnit.UnitTests");
+            RunCoreTest("Avalonia.Headless.XUnit.UnitTests");
         });
 
     Target RunRenderTests => _ => _
@@ -273,8 +279,21 @@ partial class Build : NukeBuild
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
+            RefAssemblyGenerator.GenerateRefAsmsInPackage(
+                Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.nupkg",
+                Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
-
+    
+    Target ValidateApiDiff => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(async () =>
+        {
+            await Task.WhenAll(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffValidation.ValidatePackage(
+                    ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
+                    Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
+        });
+    
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
@@ -284,7 +303,8 @@ partial class Build : NukeBuild
 
     Target Package => _ => _
         .DependsOn(RunTests)
-        .DependsOn(CreateNugetPackages);
+        .DependsOn(CreateNugetPackages)
+        .DependsOn(ValidateApiDiff);
 
     Target CiAzureLinux => _ => _
         .DependsOn(RunTests);

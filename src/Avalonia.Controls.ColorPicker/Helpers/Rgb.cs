@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives
     /// Contains and allows modification of Red, Green and Blue components.
     /// </summary>
     /// <remarks>
-    ///   The is a specialized struct optimized for permanence and memory:
+    ///   The is a specialized struct optimized for performance and memory:
     ///   <list type="bullet">
     ///     <item>This is not a read-only struct like <see cref="Color"/> and allows editing the fields</item>
     ///     <item>Removes the alpha component unnecessary in core calculations</item>

@@ -86,10 +86,10 @@ namespace Avalonia.Controls
             TickBar.TicksProperty.AddOwner<Slider>();
 
         // Slider required parts
-        protected bool _isDragging;
-        protected Track? _track;
-        protected Button? _decreaseButton;
-        protected Button? _increaseButton;
+        private bool _isDragging;
+        private Track? _track;
+        private Button? _decreaseButton;
+        private Button? _increaseButton;
         private IDisposable? _decreaseButtonPressDispose;
         private IDisposable? _decreaseButtonReleaseDispose;
         private IDisposable? _increaseButtonSubscription;
@@ -110,7 +110,7 @@ namespace Avalonia.Controls
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
                 RoutingStrategies.Bubble);
 
-            ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
+            ValueProperty.OverrideMetadata<Slider>(new(enableDataValidation: true));
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Slider>(AutomationControlType.Slider);
         }
 
@@ -136,8 +136,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         /// <summary>
@@ -149,8 +149,8 @@ namespace Avalonia.Controls
         /// </value>
         public bool IsDirectionReversed
         {
-            get { return GetValue(IsDirectionReversedProperty); }
-            set { SetValue(IsDirectionReversedProperty, value); }
+            get => GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, value);
         }
 
         /// <summary>
@@ -158,8 +158,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSnapToTickEnabled
         {
-            get { return GetValue(IsSnapToTickEnabledProperty); }
-            set { SetValue(IsSnapToTickEnabledProperty, value); }
+            get => GetValue(IsSnapToTickEnabledProperty);
+            set => SetValue(IsSnapToTickEnabledProperty, value);
         }
 
         /// <summary>
@@ -167,8 +167,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double TickFrequency
         {
-            get { return GetValue(TickFrequencyProperty); }
-            set { SetValue(TickFrequencyProperty, value); }
+            get => GetValue(TickFrequencyProperty);
+            set => SetValue(TickFrequencyProperty, value);
         }
 
         /// <summary>
@@ -177,9 +177,19 @@ namespace Avalonia.Controls
         /// </summary>
         public TickPlacement TickPlacement
         {
-            get { return GetValue(TickPlacementProperty); }
-            set { SetValue(TickPlacementProperty, value); }
+            get => GetValue(TickPlacementProperty);
+            set => SetValue(TickPlacementProperty, value);
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="Slider"/> is currently being dragged.
+        /// </summary>
+        protected bool IsDragging => _isDragging;
+
+        /// <summary>
+        /// Gets the <see cref="Track"/> part of the <see cref="Slider"/>.
+        /// </summary>
+        protected Track? Track => _track;
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -246,11 +256,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Home:
-                    Value = Minimum;
+                    SetCurrentValue(ValueProperty, Minimum);
                     break;
 
                 case Key.End:
-                    Value = Maximum;
+                    SetCurrentValue(ValueProperty, Maximum);
                     break;
 
                 default:
@@ -313,7 +323,7 @@ namespace Avalonia.Controls
             // Update if we've found a better value
             if (Math.Abs(next - value) > Tolerance)
             {
-                Value = next;
+                SetCurrentValue(ValueProperty, next);
             }
         }
 
@@ -366,7 +376,7 @@ namespace Avalonia.Controls
             var range = Maximum - Minimum;
             var finalValue = calcVal * range + Minimum;
 
-            Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
+            SetCurrentValue(ValueProperty, IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue);
         }
 
         /// <inheritdoc />

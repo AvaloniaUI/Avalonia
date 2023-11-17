@@ -37,62 +37,62 @@ namespace Avalonia.Benchmarks.Styling
         }
 
         [Benchmark]
-        public SelectorMatch IsSelector_NoMatch()
+        public void IsSelector_NoMatch()
         {
-            return _isCalendarSelector.Match(_notMatchingControl);
+            _isCalendarSelector.Match(_notMatchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch IsSelector_Match()
+        public void IsSelector_Match()
         {
-            return _isCalendarSelector.Match(_matchingControl);
+            _isCalendarSelector.Match(_matchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch ClassSelector_NoMatch()
+        public void ClassSelector_NoMatch()
         {
-            return _classSelector.Match(_notMatchingControl);
+            _classSelector.Match(_notMatchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch ClassSelector_Match()
+        public void ClassSelector_Match()
         {
-            return _classSelector.Match(_matchingControl);
+            _classSelector.Match(_matchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch OrSelector_One_Match()
+        public void OrSelector_One_Match()
         {
-            return _orSelectorTwo.Match(_matchingControl);
+            _orSelectorTwo.Match(_matchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch OrSelector_Five_Match()
+        public void OrSelector_Five_Match()
         {
-            return _orSelectorFive.Match(_matchingControl);
+            _orSelectorFive.Match(_matchingControl);
         }
     }
 
     internal class AlwaysMatchSelector : Selector
     {
-        public override bool InTemplate => false;
+        internal override bool InTemplate => false;
 
-        public override bool IsCombinator => false;
+        internal override bool IsCombinator => false;
 
-        public override Type TargetType => null;
+        internal override Type TargetType => null;
 
         public override string ToString(Style owner)
         {
             return "Always";
         }
 
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle parent, bool subscribe)
         {
             return SelectorMatch.AlwaysThisType;
         }
 
-        protected override Selector MovePrevious() => null;
+        private protected override Selector MovePrevious() => null;
 
-        protected override Selector MovePreviousOrParent() => null;
+        private protected override Selector MovePreviousOrParent() => null;
     }
 }

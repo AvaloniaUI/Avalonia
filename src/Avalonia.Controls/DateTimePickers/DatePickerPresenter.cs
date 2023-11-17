@@ -323,10 +323,11 @@ namespace Avalonia.Controls
                     e.Handled = true;
                     break;
                 case Key.Tab:
-                    if (FocusManager.Instance?.Current is IInputElement focus)
+                    var focusManager = FocusManager.GetFocusManager(this);
+                    if (focusManager?.GetFocusedElement() is { } focus)
                     {
                         var nextFocus = KeyboardNavigationHandler.GetNext(focus, NavigationDirection.Next);
-                        KeyboardDevice.Instance?.SetFocusedElement(nextFocus, NavigationMethod.Tab, KeyModifiers.None);
+                        nextFocus?.Focus(NavigationMethod.Tab);
                         e.Handled = true;
                     }
                     break;
@@ -366,11 +367,11 @@ namespace Avalonia.Controls
             var dt = Date;
             if (DayVisible)
             {
+                _daySelector.FormatDate = dt.Date;
                 var maxDays = _calendar.GetDaysInMonth(dt.Year, dt.Month);
                 _daySelector.MaximumValue = maxDays;
                 _daySelector.MinimumValue = 1;
                 _daySelector.SelectedValue = dt.Day;
-                _daySelector.FormatDate = dt.Date;
             }
 
             if (MonthVisible)
@@ -449,15 +450,15 @@ namespace Avalonia.Controls
 
             if (monthCol < dayCol && monthCol < yearCol)
             {
-                KeyboardDevice.Instance?.SetFocusedElement(_monthSelector, NavigationMethod.Pointer, KeyModifiers.None);
+                _monthSelector?.Focus(NavigationMethod.Pointer);
             }
             else if (dayCol < monthCol && dayCol < yearCol)
             {
-                KeyboardDevice.Instance?.SetFocusedElement(_daySelector, NavigationMethod.Pointer, KeyModifiers.None);
+                _monthSelector?.Focus(NavigationMethod.Pointer);
             }
             else if (yearCol < monthCol && yearCol < dayCol)
             {
-                KeyboardDevice.Instance?.SetFocusedElement(_yearSelector, NavigationMethod.Pointer, KeyModifiers.None);
+                _yearSelector?.Focus(NavigationMethod.Pointer);
             }
         }
 

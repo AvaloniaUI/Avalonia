@@ -12,18 +12,18 @@
 {
     ComPtr<WindowBaseImpl> _parent;
     NSTrackingArea* _area;
-    NSMutableAttributedString* _markedText;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
-    bool _lastKeyHandled;
     AvnPixelSize _lastPixelSize;
-    NSObject<IRenderTarget>* _renderTarget;
+    NSObject<IRenderTarget>* _currentRenderTarget;
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
-    NSMutableString* _text;
-    NSRange _selection;
+    NSMutableAttributedString* _text;
+    NSRange _selectedRange;
+    NSRange _markedRange;
+    NSEvent* _lastKeyDownEvent;
 }
 
 - (void)onClosed
@@ -41,15 +41,39 @@
 
 - (void) updateRenderTarget
 {
-    [_renderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
-    [self setNeedsDisplayInRect:[self frame]];
+    if(_currentRenderTarget) {
+        [_currentRenderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
+        [self setNeedsDisplayInRect:[self frame]];
+    }
+}
+
+
+-(void) setRenderTarget:(NSObject<IRenderTarget>*)target
+{
+    if([self layer])
+    {
+        [self layer].delegate = nil;
+    }
+    _currentRenderTarget = target;
+    auto layer = [target layer];
+    [self setLayer: layer];
+    [layer setDelegate: self];
+    layer.needsDisplayOnBoundsChange = YES;
+    [self updateRenderTarget];
+}
+
+-(void)displayLayer: (CALayer*)layer
+{
+    [self updateLayer];
 }
 
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
-    _renderTarget = parent->renderTarget;
     [self setWantsLayer:YES];
+    [self setLayerContentsPlacement: NSViewLayerContentsPlacementTopLeft];
+
+    [self setCanDrawSubviewsIntoLayer: NO];
     [self setLayerContentsRedrawPolicy: NSViewLayerContentsRedrawDuringViewResize];
 
     _parent = parent;
@@ -59,6 +83,11 @@
     [self registerForDraggedTypes: @[@"public.data", GetAvnCustomDataType()]];
 
     _modifierState = AvnInputModifiersNone;
+    
+    _text = [[NSMutableAttributedString alloc] initWithString:@""];
+    _markedRange = NSMakeRange(0, 0);
+    _selectedRange = NSMakeRange(0, 0);
+    
     return self;
 }
 
@@ -70,12 +99,6 @@
 - (BOOL)wantsUpdateLayer
 {
     return YES;
-}
-
-- (void)setLayer:(CALayer *)layer
-{
-    [_renderTarget setNewLayer: layer];
-    [super setLayer: layer];
 }
 
 - (BOOL)isOpaque
@@ -157,14 +180,6 @@
 - (void)drawRect:(NSRect)dirtyRect
 {
     return;
-}
-
--(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose
-{
-    @autoreleasepool {
-        [_renderTarget setSwFrame:fb];
-        dispose->Release();
-    }
 }
 
 - (AvnPoint) translateLocalPoint:(AvnPoint)pt
@@ -270,7 +285,7 @@
         delta.Y = [event deltaY];
     }
 
-    uint32 timestamp = static_cast<uint32>([event timestamp] * 1000);
+    uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
     if(type != Move ||
@@ -432,34 +447,21 @@
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput: false])
+    if([self ignoreUserInput: false] || _parent == nullptr)
     {
         return;
     }
 
-    auto key = s_KeyMap[[event keyCode]];
-
-    uint32_t timestamp = static_cast<uint32_t>([event timestamp] * 1000);
+    auto scanCode = [event keyCode];
+    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
+    auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
+    
+    auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    if(_parent != nullptr)
-    {
-        auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
-        if (key != LeftCtrl && key != RightCtrl) {
-          _lastKeyHandled = handled;
-        } else {
-          _lastKeyHandled = false;
-        }
-    }
-}
-
-- (BOOL)performKeyEquivalent:(NSEvent *)event
-{
-    bool result = _lastKeyHandled;
-
-    _lastKeyHandled = false;
-
-    return result;
+    _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -475,7 +477,6 @@
     bool isControlPressed = (newModifierState & Control) == Control;
     bool isShiftPressed = (newModifierState & Shift) == Shift;
     bool isCommandPressed = (newModifierState & Windows) == Windows;
-
 
     if (isAltPressed && !isAltCurrentlyPressed)
     {
@@ -519,17 +520,73 @@
     [super flagsChanged:event];
 }
 
+- (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
+    return _parent->BaseEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
+}
+
 - (void)keyDown:(NSEvent *)event
 {
-    [self keyboardEvent:event withType:KeyDown];
-    _lastKeyHandled = [[self inputContext] handleEvent:event];
-    [super keyDown:event];
+    if([self ignoreUserInput: false] || _parent == nullptr)
+    {
+        return;
+    }
+    
+    _lastKeyDownEvent = event;
+    
+    auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+    
+    auto scanCode = [event keyCode];
+    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
+    
+    auto modifiers = [self getModifiers:[event modifierFlags]];
+    
+    //InputMethod is active
+    if(_parent->InputMethod->IsActive()){
+        auto hasInputModifier = modifiers != AvnInputModifiersNone;
+        
+        //Handle keyDown first if an input modifier is present
+        if(hasInputModifier){
+            if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
+                //User code has handled the event
+                return;
+            }
+        }
+        
+        if([[self inputContext] handleEvent:event] == NO){
+            //KeyDown has not been consumed by the input context
+                
+            //Only raise a keyDown if we don't have a modifier
+            if(!hasInputModifier){
+                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
+            }
+        }
+        
+    }
+    //InputMethod not active
+    else{
+        auto keyDownHandled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
+        
+        //Raise text input event for unhandled key down if there is some key symbol and no input modifier is present
+        if(!keyDownHandled && modifiers == AvnInputModifiersNone && keySymbol != NULL){
+            _parent->BaseEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
+        }
+    }
+    
+    _lastKeyDownEvent = nullptr;
 }
 
 - (void)keyUp:(NSEvent *)event
 {
     [self keyboardEvent:event withType:KeyUp];
     [super keyUp:event];
+}
+
+- (void) doCommandBySelector:(SEL)selector{
+    if(_lastKeyDownEvent != nullptr){
+        [self keyboardEvent:_lastKeyDownEvent withType:KeyDown];
+    }
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -561,50 +618,50 @@
 
 - (BOOL)hasMarkedText
 {
-    return [_markedText length] > 0;
+    return _markedRange.length > 0;
 }
 
 - (NSRange)markedRange
 {
-    if([_markedText length] > 0)
-        return NSMakeRange(0, [_markedText length] - 1);
-    return NSMakeRange(NSNotFound, 0);
+    return _markedRange;
 }
 
 - (NSRange)selectedRange
 {
-    return _selection;
+    return _selectedRange;
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
+    NSString* markedText;
+        
     if([string isKindOfClass:[NSAttributedString class]])
     {
-        _markedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
+        markedText = [string string];
     }
     else
     {
-        _markedText = [[NSMutableAttributedString alloc] initWithString:string];
+        markedText = (NSString*) string;
     }
     
-    if(!_parent->InputMethod->IsActive()){
-        return;
+    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
+        
+    if(_parent->InputMethod->IsActive()){
+        _parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
-    
-    _parent->InputMethod->Client->SetPreeditText((char*)[_markedText.string UTF8String]);
 }
 
 - (void)unmarkText
 {
-    [[_markedText mutableString] setString:@""];
-    
-    [[self inputContext] discardMarkedText];
-    
-    if(!_parent->InputMethod->IsActive()){
-        return;
+    if(_parent->InputMethod->IsActive()){
+        _parent->InputMethod->Client->SetPreeditText(nullptr);
     }
     
-    _parent->InputMethod->Client->SetPreeditText(nullptr);
+    _markedRange = NSMakeRange(_selectedRange.location, 0);
+    
+    if([self inputContext]) {
+        [[self inputContext] discardMarkedText];
+    }
 }
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
@@ -614,19 +671,37 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    return nullptr;
+    if(actualRange){
+        range = *actualRange;
+    }
+    
+    NSAttributedString* subString = [_text attributedSubstringFromRange:range];
+    
+    return subString;
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    [self unmarkText];
-
-    if(_parent != nullptr)
-    {
-        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+    if(_parent == nullptr){
+        return;
     }
     
-    [[self inputContext] invalidateCharacterCoordinates];
+    NSString* text;
+        
+    if([string isKindOfClass:[NSAttributedString class]])
+    {
+        text = [string string];
+    }
+    else
+    {
+        text = (NSString*) string;
+    }
+    
+    [self unmarkText];
+        
+    uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
+        
+    _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -746,15 +821,11 @@
 }
 
 - (void) setText:(NSString *)text{
-    [_text setString:text];
-    
-    [[self inputContext] discardMarkedText];
+    [[_text mutableString] setString:text];
 }
 
 - (void) setSelection:(int)start :(int)end{
-    _selection = NSMakeRange(start, end - start);
-    
-    [[self inputContext] invalidateCharacterCoordinates];
+    _selectedRange = NSMakeRange(start, end - start);
 }
 
 - (void) setCursorRect:(AvnRect)rect{
@@ -766,7 +837,9 @@
     
     _cursorRect = windowRectOnScreen;
     
-    [[self inputContext] invalidateCharacterCoordinates];
+    if([self inputContext]) {
+        [[self inputContext] invalidateCharacterCoordinates];
+    }
 }
 
 @end

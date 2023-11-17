@@ -35,8 +35,8 @@ namespace Avalonia.UnitTests
             return _customTypefaces.Select(x => x.FontFamily!.Name).ToArray();
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
-            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+            FontStretch fontStretch, CultureInfo culture, out Typeface fontKey)
         {
             foreach (var customTypeface in _customTypefaces)
             {
@@ -57,7 +57,7 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
             glyphTypeface = new HarfBuzzGlyphTypefaceImpl(stream);
 

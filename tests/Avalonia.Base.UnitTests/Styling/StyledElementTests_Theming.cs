@@ -12,9 +12,9 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Styling;
 
-public class StyledElementTests_Theming
+public class StyledElementTests_Theming : ScopedTestBase
 {
-    public class InlineTheme
+    public class InlineTheme : ScopedTestBase
     {
         [Fact]
         public void Theme_Is_Applied_When_Attached_To_Logical_Tree()
@@ -342,7 +342,7 @@ public class StyledElementTests_Theming
         }
     }
 
-    public class ImplicitTheme
+    public class ImplicitTheme : ScopedTestBase
     {
         [Fact]
         public void Implicit_Theme_Is_Applied_When_Attached_To_Logical_Tree()
@@ -445,7 +445,7 @@ public class StyledElementTests_Theming
         }
     }
 
-    public class ThemeFromStyle
+    public class ThemeFromStyle : ScopedTestBase
     {
         [Fact]
         public void Theme_Is_Applied_When_Attached_To_Logical_Tree()

@@ -10,16 +10,19 @@ internal static class StorageProviderHelpers
 {
     public static IStorageItem? TryCreateBclStorageItem(string path)
     {
-        var directory = new DirectoryInfo(path);
-        if (directory.Exists)
+        if (!string.IsNullOrWhiteSpace(path))
         {
-            return new BclStorageFolder(directory);
-        }
-        
-        var file = new FileInfo(path);
-        if (file.Exists)
-        {
-            return new BclStorageFile(file);
+            var directory = new DirectoryInfo(path);
+            if (directory.Exists)
+            {
+                return new BclStorageFolder(directory);
+            }
+
+            var file = new FileInfo(path);
+            if (file.Exists)
+            {
+                return new BclStorageFile(file);
+            }
         }
 
         return null;
@@ -50,7 +53,8 @@ internal static class StorageProviderHelpers
         }
     }
     
-    public static string NameWithExtension(string path, string? defaultExtension, FilePickerFileType? filter)
+    [return: NotNullIfNotNull(nameof(path))]
+    public static string? NameWithExtension(string? path, string? defaultExtension, FilePickerFileType? filter)
     {
         var name = Path.GetFileName(path);
         if (name != null && !Path.HasExtension(name))

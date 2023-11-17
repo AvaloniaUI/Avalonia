@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
@@ -1253,5 +1255,61 @@ namespace Avalonia.Base.UnitTests.Input
 
             Assert.Same(expected, result);
         }
+
+        [Fact]
+        public void Focuses_First_Child_From_No_Focus()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var button = new Button();
+            var root = new TestRoot(button);
+            var target = new KeyboardNavigationHandler();
+
+            target.SetOwner(root);
+
+            root.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Tab,
+            });
+
+            Assert.True(button.IsFocused);
+        }
+
+        [Fact]
+        public void Next_Skip_Button_When_Command_CanExecute_Is_False()
+        {
+            Button current;
+            Button expected;
+            bool executed = false;
+
+            var top = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    new StackPanel
+                    {
+                        Children =
+                        {
+                            (current = new Button { Name = "Button1" }),
+                            new Button
+                            {
+                                Name = "Button2",
+                                Command = new Utilities.DelegateCommand(()=>executed = true,
+                                    _ => false),
+                            },
+                            (expected = new Button { Name = "Button3" }),
+                        }
+                    }
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next) as Button;
+
+            Assert.Equal(expected.Name, result?.Name);
+            Assert.False(executed);
+        }
+
+
     }
 }

@@ -10,7 +10,7 @@ namespace Avalonia.Media.Imaging
     /// Represents a bitmap image.
     /// </summary>
     [NotClientImplementable]
-    public interface IBitmap : IImage, IDisposable
+    internal interface IBitmap : IImage, IDisposable
     {
         /// <summary>
         /// Gets the dots per inch (DPI) of the image.

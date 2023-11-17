@@ -182,6 +182,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Scrolled_ScrollViewer_Determines_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -207,6 +208,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Moving_Parent_Updates_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -234,6 +236,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Translate_Transform_Doesnt_Affect_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -256,6 +259,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Translate_Transform_On_Parent_Affects_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -286,6 +290,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Rotate_Transform_On_Parent_Affects_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -333,6 +338,32 @@ namespace Avalonia.Base.UnitTests.Layout
                 await ExecuteInitialLayoutPass(root);
 
                 Assert.Equal(1, raised);
+            });
+        }
+
+        // https://github.com/AvaloniaUI/Avalonia/issues/12452
+        [Fact]
+        public async Task Zero_ScaleTransform_Sets_Empty_EffectiveViewport()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var effectiveViewport = new Rect(Size.Infinity);
+
+                var root = CreateRoot();
+                var target = new Canvas { Width = 100, Height = 100 };
+                var parent = new Border { Width = 100, Height = 100, Child = target };
+
+                target.EffectiveViewportChanged += (_, e) => effectiveViewport = e.EffectiveViewport;
+
+                root.Child = parent;
+
+                await ExecuteInitialLayoutPass(root);
+
+                parent.RenderTransform = new ScaleTransform(0, 0);
+
+                await ExecuteLayoutPass(root);
+
+                Assert.Equal(new Rect(0, 0, 0, 0), effectiveViewport);
             });
         }
 
@@ -384,31 +415,17 @@ namespace Avalonia.Base.UnitTests.Layout
                     new ScrollContentPresenter
                     {
                         Name = "PART_ContentPresenter",
-                        [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
-                        [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
-                        [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
-                        [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
-                        [~ScrollContentPresenter.CanHorizontallyScrollProperty] = control[~ScrollViewer.CanHorizontallyScrollProperty],
-                        [~ScrollContentPresenter.CanVerticallyScrollProperty] = control[~ScrollViewer.CanVerticallyScrollProperty],
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
                         Name = "horizontalScrollBar",
                         Orientation = Orientation.Horizontal,
-                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
-                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
-                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
-                        [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
                         Name = "verticalScrollBar",
                         Orientation = Orientation.Vertical,
-                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
-                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
-                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
-                        [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
                     }.RegisterInNameScope(scope),
                 },

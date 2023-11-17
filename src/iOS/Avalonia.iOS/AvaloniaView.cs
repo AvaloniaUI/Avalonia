@@ -27,7 +27,7 @@ namespace Avalonia.iOS
         private TopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
-        private ITextInputMethodClient _client;
+        private TextInputMethodClient _client;
         private IAvaloniaViewController _controller;
 
         public AvaloniaView()
@@ -38,7 +38,7 @@ namespace Avalonia.iOS
 
             _topLevel.Prepare();
 
-            _topLevel.Renderer.Start();
+            _topLevel.StartRendering();
 
             var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
@@ -110,9 +110,7 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) =>
-                new CompositingRenderer(root, Platform.Compositor, () => Surfaces);
-
+            public Compositor Compositor => Platform.Compositor;
 
             public void Invalidate(Rect rect)
             {
@@ -139,7 +137,7 @@ namespace Avalonia.iOS
                 return null;
             }
 
-            public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+            public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
             {
                 // No-op
             }
@@ -150,7 +148,7 @@ namespace Avalonia.iOS
             public IEnumerable<object> Surfaces { get; set; }
             public Action<RawInputEventArgs> Input { get; set; }
             public Action<Rect> Paint { get; set; }
-            public Action<Size, PlatformResizeReason> Resized { get; set; }
+            public Action<Size, WindowResizeReason> Resized { get; set; }
             public Action<double> ScalingChanged { get; set; }
             public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
             public Action Closed { get; set; }
@@ -159,8 +157,8 @@ namespace Avalonia.iOS
 
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();
-            public WindowTransparencyLevel TransparencyLevel { get; }
-            
+            public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
             public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
             {
                 // TODO adjust status bar depending on full screen mode.
@@ -225,7 +223,7 @@ namespace Avalonia.iOS
 
         public override void LayoutSubviews()
         {
-            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, PlatformResizeReason.Layout);
+            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
             base.LayoutSubviews();
         }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
@@ -43,7 +44,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
             InsertAfter<PropertyReferenceResolver>(
                 new AvaloniaXamlIlAvaloniaPropertyResolver(),
-                new AvaloniaXamlIlReorderClassesPropertiesTransformer()
+                new AvaloniaXamlIlReorderClassesPropertiesTransformer(),
+                new AvaloniaXamlIlClassesTransformer()
             );
 
             InsertBefore<ContentConvertTransformer>(
@@ -57,7 +59,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
-                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
+                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
+                new AvaloniaXamlIlThemeVariantProviderTransformer()
             );
             InsertBefore<ConvertPropertyValuesToAssignmentsTransformer>(
                 new AvaloniaXamlIlOptionMarkupExtensionTransformer());
@@ -141,6 +144,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public XamlDocument Parse(string xaml, IXamlType overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
@@ -177,17 +183,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return parsed;
         }
 
-        public void Compile(XamlDocument document, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlMethodBuilder<IXamlILEmitter> populateMethod, IXamlMethodBuilder<IXamlILEmitter> buildMethod, string baseUri, IFileSource fileSource)
+        public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string baseUri, IFileSource fileSource)
         {
-            Compile(document, _contextType, populateMethod, buildMethod,
+            var tb = typeBuilderProvider.TypeBuilder;
+
+            Compile(document, _contextType, typeBuilderProvider.PopulateMethod, typeBuilderProvider.BuildMethod,
                 _configuration.TypeMappings.XmlNamespaceInfoProvider == null ?
                     null :
                     tb.DefineSubType(_configuration.WellKnownTypes.Object,
-                        "__AvaloniaXamlIlNsInfo", false), (name, bt) => tb.DefineSubType(bt, name, false),
-                (s, returnType, parameters) => tb.DefineDelegateSubType(s, false, returnType, parameters), baseUri,
+                        "__AvaloniaXamlIlNsInfo", XamlVisibility.Private), (name, bt) => tb.DefineSubType(bt, name, XamlVisibility.Private),
+                (s, returnType, parameters) => tb.DefineDelegateSubType(s, XamlVisibility.Private, returnType, parameters), baseUri,
                 fileSource);
         }
-        
+
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
         {
             var parsed = Parse(xaml, overrideRootType);

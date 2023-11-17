@@ -11,6 +11,27 @@ public class BrowserPlatformOptions
     /// If null, default path resolved depending on the backend (browser or blazor) is used.
     /// </summary>
     public Func<string, string>? FrameworkAssetPathResolver { get; set; }
+
+    /// <summary>
+    /// Defines if the service worker used by Avalonia should be registered.
+    /// If registered, service worker can work as a save file picker fallback on the browsers that don't support native implementation.
+    /// For more details, see https://github.com/jimmywarting/native-file-system-adapter#a-note-when-downloading-with-the-polyfilled-version.
+    /// </summary>
+    public bool RegisterAvaloniaServiceWorker { get; set; }
+
+    /// <summary>
+    /// If <see cref="RegisterAvaloniaServiceWorker"/> is enabled, it is possible to redefine scope for the worker.
+    /// By default, current domain root is used as a scope.
+    /// </summary>
+    public string? AvaloniaServiceWorkerScope { get; set; }
+    
+    /// <summary>
+    /// Avalonia uses "native-file-system-adapter" polyfill for the file dialogs.
+    /// If native implementation is available, by default it is used.
+    /// This property forces polyfill to be always used.
+    /// For more details, see https://github.com/jimmywarting/native-file-system-adapter#a-note-when-downloading-with-the-polyfilled-version.
+    /// </summary>
+    public bool PreferFileDialogPolyfill { get; set; }
 }
 
 public static class BrowserAppBuilder
@@ -77,6 +98,7 @@ public static class BrowserAppBuilder
         this AppBuilder builder)
     {
         return builder
+            .UseBrowserRuntimePlatformSubsystem()
             .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
             .UseSkia();
     }

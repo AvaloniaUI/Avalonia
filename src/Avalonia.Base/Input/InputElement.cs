@@ -225,6 +225,12 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+
+            // Gesture only handlers
+            PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerMoved(e), handledEventsToo: true);
+            PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerPressed(e), handledEventsToo: true);
+            PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerReleased(e), handledEventsToo: true);
+            PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerCaptureLost(e), handledEventsToo: true);
         }
 
         public InputElement()
@@ -458,9 +464,10 @@ namespace Avalonia.Input
                 SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
                 PseudoClasses.Set(":disabled", !value);
 
-                if (!IsEffectivelyEnabled && FocusManager.Instance?.Current == this)
+                if (!IsEffectivelyEnabled && FocusManager.GetFocusManager(this) is {} focusManager
+                    && Equals(focusManager.GetFocusedElement(), this))
                 {
-                    FocusManager.Instance?.Focus(null);
+                    focusManager.ClearFocus();
                 }
             }
         }
@@ -491,12 +498,10 @@ namespace Avalonia.Input
         public GestureRecognizerCollection GestureRecognizers
             => _gestureRecognizers ?? (_gestureRecognizers = new GestureRecognizerCollection(this));
 
-        /// <summary>
-        /// Focuses the control.
-        /// </summary>
-        public void Focus()
+        /// <inheritdoc />
+        public bool Focus(NavigationMethod method = NavigationMethod.Unspecified, KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            FocusManager.Instance?.Focus(this);
+            return FocusManager.GetFocusManager(this)?.Focus(this, method, keyModifiers) ?? false; 
         }
 
         /// <inheritdoc/>
@@ -506,7 +511,7 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.Instance?.Focus(null);
+                FocusManager.GetFocusManager(this)?.ClearFocusOnElementRemoved(this, e.Parent);
             }
         }
 
@@ -584,10 +589,6 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerMoved(PointerEventArgs e)
         {
-            if (_gestureRecognizers?.HandlePointerMoved(e) == true)
-            {
-                e.Handled = true;
-            }
         }
 
         /// <summary>
@@ -596,10 +597,6 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (_gestureRecognizers?.HandlePointerPressed(e) == true)
-            {
-                e.Handled = true;
-            }
         }
 
         /// <summary>
@@ -608,10 +605,38 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (_gestureRecognizers?.HandlePointerReleased(e) == true)
-            {
-                e.Handled = true;
-            }
+        }
+
+        private void OnGesturePointerReleased(PointerReleasedEventArgs e)
+        {
+            if (!e.IsGestureRecognitionSkipped)
+                if (_gestureRecognizers?.HandlePointerReleased(e) == true)
+                {
+                    e.Handled = true;
+                }
+        }
+
+        private void OnGesturePointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            _gestureRecognizers?.HandleCaptureLost(e.Pointer);
+        }
+
+        private void OnGesturePointerPressed(PointerPressedEventArgs e)
+        {
+            if (!e.IsGestureRecognitionSkipped)
+                if (_gestureRecognizers?.HandlePointerPressed(e) == true)
+                {
+                    e.Handled = true;
+                }
+        }
+
+        private void OnGesturePointerMoved(PointerEventArgs e)
+        {
+            if (!e.IsGestureRecognitionSkipped)
+                if (_gestureRecognizers?.HandlePointerMoved(e) == true)
+                {
+                    e.Handled = true;
+                }
         }
 
         /// <summary>
@@ -620,7 +645,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
-            _gestureRecognizers?.HandlePointerCaptureLost(e);
+
         }
 
         /// <summary>
@@ -646,6 +671,10 @@ namespace Avalonia.Input
             else if (change.Property == IsKeyboardFocusWithinProperty)
             {
                 PseudoClasses.Set(":focus-within", change.GetNewValue<bool>());
+            }
+            else if (change.Property == IsVisibleProperty && !change.GetNewValue<bool>() && IsFocused)
+            {
+                FocusManager.GetFocusManager(this)?.ClearFocus();
             }
         }
 

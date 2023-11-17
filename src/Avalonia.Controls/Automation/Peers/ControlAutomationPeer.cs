@@ -18,7 +18,7 @@ namespace Avalonia.Automation.Peers
 
         public ControlAutomationPeer(Control owner)
         {
-            Owner = owner ?? throw new ArgumentNullException("owner");
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             Initialize();
         }
 
@@ -31,10 +31,30 @@ namespace Avalonia.Automation.Peers
             return CreatePeerForElement(element);
         }
 
+        /// <summary>
+        /// Gets the <see cref="AutomationPeer"/> for a <see cref="Control"/>, creating it if
+        /// necessary.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The automation peer.</returns>
+        /// <remarks>
+        /// Despite the name (which comes from the analogous WPF API), this method does not create
+        /// a new peer if one already exists: instead it returns the existing peer.
+        /// </remarks>
         public static AutomationPeer CreatePeerForElement(Control element)
         {
             return element.GetOrCreateAutomationPeer();
         }
+
+        /// <summary>
+        /// Gets an existing <see cref="AutomationPeer"/> for a <see cref="Control"/>.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The automation peer if already created; otherwise null.</returns>
+        /// <remarks>
+        /// To ensure that a peer is created, use <see cref="CreatePeerForElement(Control)"/>.
+        /// </remarks>
+        public static AutomationPeer? FromElement(Control element) => element.GetAutomationPeer();
 
         protected override void BringIntoViewCore() => Owner.BringIntoView();
 
@@ -88,16 +108,23 @@ namespace Avalonia.Automation.Peers
 
             if (string.IsNullOrWhiteSpace(result) && GetLabeledBy() is AutomationPeer labeledBy)
             {
-                return labeledBy.GetName();
+                result = labeledBy.GetName();
             }
 
-            return null;
+            return result;
         }
 
         protected override AutomationPeer? GetParentCore()
         {
             EnsureConnected();
             return _parent;
+        }
+
+        protected override AutomationPeer? GetVisualRootCore()
+        {
+            if (Owner.GetVisualRoot() is Control c)
+                return CreatePeerForElement(c);
+            return null;
         }
 
         /// <summary>
@@ -151,7 +178,7 @@ namespace Avalonia.Automation.Peers
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
         protected override bool IsContentElementCore() => true;
         protected override bool IsControlElementCore() => true;
-        protected override bool IsEnabledCore() => Owner.IsEnabled;
+        protected override bool IsEnabledCore() => Owner.IsEffectivelyEnabled;
         protected override bool IsKeyboardFocusableCore() => Owner.Focusable;
         protected override void SetFocusCore() => Owner.Focus();
 

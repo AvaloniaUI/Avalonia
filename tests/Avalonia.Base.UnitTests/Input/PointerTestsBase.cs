@@ -7,6 +7,8 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 
@@ -14,7 +16,7 @@ namespace Avalonia.Base.UnitTests.Input;
 
 public abstract class PointerTestsBase
 {
-    protected static void SetHit(Mock<IRenderer> renderer, Control? hit)
+    private protected static void SetHit(Mock<IHitTester> renderer, Control? hit)
     {
         renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
             .Returns(hit is null ? Array.Empty<Control>() : new[] { hit });
@@ -29,27 +31,28 @@ public abstract class PointerTestsBase
             .Callback(() => element.RaiseEvent(CreatePointerMovedArgs(root, element)));
     }
 
-    protected static Mock<IWindowImpl> CreateTopLevelImplMock(IRenderer renderer)
+    private protected static Mock<IWindowImpl> CreateTopLevelImplMock()
     {
         var impl = new Mock<IWindowImpl>();
         impl.DefaultValue = DefaultValue.Mock;
         impl.SetupAllProperties();
         impl.SetupGet(r => r.RenderScaling).Returns(1);
         impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
-        impl.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer);
+        impl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
         impl.Setup(r => r.PointToScreen(It.IsAny<Point>())).Returns<Point>(p => new PixelPoint((int)p.X, (int)p.Y));
         impl.Setup(r => r.PointToClient(It.IsAny<PixelPoint>())).Returns<PixelPoint>(p => new Point(p.X, p.Y));
         return impl;
     }
 
-    protected static IInputRoot CreateInputRoot(IWindowImpl impl, Control child)
+    private protected static TopLevel CreateInputRoot(IWindowImpl impl, Control child, IHitTester hitTester)
     {
         var root = new Window(impl)
         {
             Width = 100,
             Height = 100,
             Content = child,
-            Template = new FuncControlTemplate<Window>((w, _) => new ContentPresenter { Content = w.Content })
+            Template = new FuncControlTemplate<Window>((w, _) => new ContentPresenter { Content = w.Content }),
+            HitTesterOverride = hitTester
         };
         root.Show();
         return root;

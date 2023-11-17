@@ -300,6 +300,27 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 target.Source = new[] { 1, 2, 3 };
             }
+
+            [Fact]
+            public void Can_Change_Source_In_SelectedItem_Change_Handler()
+            {
+                // Issue #11617
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedItem) && raised == 0)
+                    {
+                        ++raised;
+                        target.Source = new[] { "foo", "baz", "bar" };
+                    }
+                };
+
+                target.SelectedIndex = 1;
+
+                Assert.Equal(-1, target.SelectedIndex);
+            }
         }
 
         public class SelectedIndex

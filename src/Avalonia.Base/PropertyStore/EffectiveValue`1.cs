@@ -17,7 +17,7 @@ namespace Avalonia.PropertyStore
     {
         private readonly StyledPropertyMetadata<T> _metadata;
         private T? _baseValue;
-        private UncommonFields? _uncommon;
+        private readonly UncommonFields? _uncommon;
 
         public EffectiveValue(
             AvaloniaObject owner,
@@ -208,7 +208,7 @@ namespace Avalonia.PropertyStore
             IsOverridenCurrentValue = isOverriddenCurrentValue;
             IsCoercedDefaultValue = isCoercedDefaultValue;
 
-            if (_uncommon?._coerce is { } coerce)
+            if (!isCoercedDefaultValue && _uncommon?._coerce is { } coerce)
                 v = coerce(owner.Owner, value);
 
             if (priority <= Priority)
@@ -216,7 +216,7 @@ namespace Avalonia.PropertyStore
                 valueChanged = !EqualityComparer<T>.Default.Equals(Value, v);
                 Value = v;
                 Priority = priority;
-                if (_uncommon is not null)
+                if (!isCoercedDefaultValue && _uncommon is not null)
                     _uncommon._uncoercedValue = value;
             }
 
@@ -225,7 +225,7 @@ namespace Avalonia.PropertyStore
                 baseValueChanged = !EqualityComparer<T>.Default.Equals(_baseValue, v);
                 _baseValue = v;
                 BasePriority = priority;
-                if (_uncommon is not null)
+                if (!isCoercedDefaultValue && _uncommon is not null)
                     _uncommon._uncoercedBaseValue = value;
             }
 
@@ -262,7 +262,8 @@ namespace Avalonia.PropertyStore
             if (_uncommon?._coerce is { } coerce)
             {
                 v = coerce(owner.Owner, value);
-                bv = coerce(owner.Owner, baseValue);
+                if (priority != basePriority)
+                    bv = coerce(owner.Owner, baseValue);
             }
 
             if (!EqualityComparer<T>.Default.Equals(Value, v))

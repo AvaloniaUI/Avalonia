@@ -99,14 +99,15 @@ namespace Avalonia.Threading
             }
         }
 
-        public static RestoreContext Ensure(DispatcherPriority priority)
+        public static RestoreContext Ensure(DispatcherPriority priority) => Ensure(Dispatcher.UIThread, priority);
+        public static RestoreContext Ensure(Dispatcher dispatcher, DispatcherPriority priority)
         {
             if (Current is AvaloniaSynchronizationContext avaloniaContext 
                 && avaloniaContext.Priority == priority)
                 return default;
             var oldContext = Current;
-            Dispatcher.UIThread.VerifyAccess();
-            SetSynchronizationContext(Dispatcher.UIThread.GetContextWithPriority(priority));
+            dispatcher.VerifyAccess();
+            SetSynchronizationContext(dispatcher.GetContextWithPriority(priority));
             return new RestoreContext(oldContext);
         }
     }

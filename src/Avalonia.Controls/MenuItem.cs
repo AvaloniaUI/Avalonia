@@ -54,12 +54,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MenuItem, KeyGesture?>(nameof(InputGesture));
 
         /// <summary>
-        /// Defines the <see cref="IsSelected"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<MenuItem>();
-
-        /// <summary>
         /// Defines the <see cref="IsSubMenuOpen"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
@@ -170,8 +164,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs>? Click
         {
-            add { AddHandler(ClickEvent, value); }
-            remove { RemoveHandler(ClickEvent, value); }
+            add => AddHandler(ClickEvent, value);
+            remove => RemoveHandler(ClickEvent, value);
         }
 
         /// <summary>
@@ -182,8 +176,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public event EventHandler<RoutedEventArgs>? PointerEnteredItem
         {
-            add { AddHandler(PointerEnteredItemEvent, value); }
-            remove { RemoveHandler(PointerEnteredItemEvent, value); }
+            add => AddHandler(PointerEnteredItemEvent, value);
+            remove => RemoveHandler(PointerEnteredItemEvent, value);
         }
 
         /// <summary>
@@ -194,8 +188,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public event EventHandler<RoutedEventArgs>? PointerExitedItem
         {
-            add { AddHandler(PointerExitedItemEvent, value); }
-            remove { RemoveHandler(PointerExitedItemEvent, value); }
+            add => AddHandler(PointerExitedItemEvent, value);
+            remove => RemoveHandler(PointerExitedItemEvent, value);
         }
 
         /// <summary>
@@ -203,8 +197,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs>? SubmenuOpened
         {
-            add { AddHandler(SubmenuOpenedEvent, value); }
-            remove { RemoveHandler(SubmenuOpenedEvent, value); }
+            add => AddHandler(SubmenuOpenedEvent, value);
+            remove => RemoveHandler(SubmenuOpenedEvent, value);
         }
 
         /// <summary>
@@ -221,8 +215,8 @@ namespace Avalonia.Controls
         /// </summary>
         public KeyGesture? HotKey
         {
-            get { return GetValue(HotKeyProperty); }
-            set { SetValue(HotKeyProperty, value); }
+            get => GetValue(HotKeyProperty);
+            set => SetValue(HotKeyProperty, value);
         }
 
         /// <summary>
@@ -231,8 +225,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? CommandParameter
         {
-            get { return GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
         }
 
         /// <summary>
@@ -240,8 +234,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? Icon
         {
-            get { return GetValue(IconProperty); }
-            set { SetValue(IconProperty, value); }
+            get => GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
         }
 
         /// <summary>
@@ -253,8 +247,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public KeyGesture? InputGesture
         {
-            get { return GetValue(InputGestureProperty); }
-            set { SetValue(InputGestureProperty, value); }
+            get => GetValue(InputGestureProperty);
+            set => SetValue(InputGestureProperty, value);
         }
 
         /// <summary>
@@ -262,8 +256,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
         }
 
         /// <summary>
@@ -272,8 +266,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSubMenuOpen
         {
-            get { return GetValue(IsSubMenuOpenProperty); }
-            set { SetValue(IsSubMenuOpenProperty, value); }
+            get => GetValue(IsSubMenuOpenProperty);
+            set => SetValue(IsSubMenuOpenProperty, value);
         }
 
         /// <summary>
@@ -282,8 +276,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool StaysOpenOnClick
         {
-            get { return GetValue(StaysOpenOnClickProperty); }
-            set { SetValue(StaysOpenOnClickProperty, value); }
+            get => GetValue(StaysOpenOnClickProperty);
+            set => SetValue(StaysOpenOnClickProperty, value);
         }
 
         /// <summary>
@@ -317,10 +311,7 @@ namespace Avalonia.Controls
                     (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
-            set
-            {
-                SelectedIndex = value is Control c ? IndexFromContainer(c) : -1;
-            }
+            set => SelectedIndex = value is Control c ? IndexFromContainer(c) : -1;
         }
 
         /// <inheritdoc/>
@@ -345,8 +336,22 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
-        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new MenuItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            if (item is MenuItem or Separator)
+            {
+                recycleKey = null;
+                return false;
+            }
+
+            recycleKey = DefaultRecycleKey;
+            return true;
+        }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
@@ -384,6 +389,14 @@ namespace Avalonia.Controls
             }
 
             _isEmbeddedInMenu = parent?.FindLogicalAncestorOfType<IMenu>(true) != null;
+        }
+
+        /// <inheritdoc />
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            
+            TryUpdateCanExecute();
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

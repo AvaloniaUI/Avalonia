@@ -1,6 +1,10 @@
+using System;
 using Avalonia.Logging;
+using Avalonia.Media;
 using Avalonia.Platform;
 using SharpDX.Direct2D1;
+using Geometry = SharpDX.Direct2D1.Geometry;
+using PathGeometry = SharpDX.Direct2D1.PathGeometry;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -27,7 +31,37 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public Rect GetRenderBounds(Avalonia.Media.IPen pen)
         {
-            return Geometry.GetWidenedBounds((float)(pen?.Thickness ?? 0)).ToAvalonia();
+            if (pen == null || Math.Abs(pen.Thickness) < float.Epsilon)
+                return Geometry.GetBounds().ToAvalonia();
+            var originalBounds = Geometry.GetWidenedBounds((float)pen.Thickness).ToAvalonia();
+            switch (pen.LineCap)
+            {
+                case PenLineCap.Flat:
+                    return originalBounds;
+                case PenLineCap.Round:
+                    return originalBounds.Inflate(pen.Thickness / 2);
+                case PenLineCap.Square:
+                    return originalBounds.Inflate(pen.Thickness);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public IGeometryImpl GetWidenedGeometry(IPen pen)
+        {
+            var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
+
+            using (var sink = result.Open())
+            {
+                Geometry.Widen(
+                    (float)pen.Thickness,
+                    pen.ToDirect2DStrokeStyle(Direct2D1Platform.Direct2D1Factory),
+                    0.25f,
+                    sink);
+                sink.Close();
+            }
+
+            return new StreamGeometryImpl(result);
         }
 
         /// <inheritdoc/>

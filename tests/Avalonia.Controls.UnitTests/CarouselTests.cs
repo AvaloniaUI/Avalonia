@@ -261,6 +261,71 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Can_Move_Forward_Back_Forward()
+        {
+            using var app = Start();
+            var items = new[] { "foo", "bar" };
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = items,
+            };
+
+            Prepare(target);
+
+            target.SelectedIndex = 1;
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+
+            target.SelectedIndex = 0;
+            Layout(target);
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.SelectedIndex = 1;
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Can_Move_Forward_Back_Forward_With_Control_Items()
+        {
+            // Issue #11119
+            using var app = Start();
+            var items = new[] { new Canvas(), new Canvas() };
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = items,
+            };
+
+            Prepare(target);
+
+            target.SelectedIndex = 1;
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+
+            target.SelectedIndex = 0;
+            Layout(target);
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.SelectedIndex = 1;
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == Carousel.SelectedIndexProperty)
+                {
+                }
+            };
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
         private static IDisposable Start() => UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
         private static void Prepare(Carousel target)
@@ -301,12 +366,6 @@ namespace Avalonia.Controls.UnitTests
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
-                            [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
-                            [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
-                            [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
-                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
-                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
                         }.RegisterInNameScope(scope),
                     }
                 });

@@ -106,6 +106,7 @@ namespace Avalonia.Controls
         {
             SublevelIndentProperty.Changed.AddClassHandler<DataGridRowGroupHeader>((x,e) => x.OnSublevelIndentChanged(e));
             PressedMixin.Attach<DataGridRowGroupHeader>();
+            IsTabStopProperty.OverrideDefaultValue<DataGridRowGroupHeader>(false);
         }
 
         /// <summary>
@@ -301,8 +302,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    //if (!e.Handled && OwningGrid.IsTabStop)
-                    if (!e.Handled)
+                    if (!e.Handled && OwningGrid.IsTabStop)
                     {
                         OwningGrid.Focus();
                     }

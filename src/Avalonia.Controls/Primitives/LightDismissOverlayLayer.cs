@@ -46,13 +46,12 @@ namespace Avalonia.Controls.Primitives
             return manager?.LightDismissOverlayLayer;
         }
 
+        /// <inheritdoc />
         public bool HitTest(Point point)
         {
             if (InputPassThroughElement is Visual v)
             {
-                var hit = ((Visual?)VisualRoot)?.GetVisualAt(point, x => x != this);
-
-                if (hit is object)
+                if (VisualRoot is IInputElement ie && ie.InputHitTest(point, x => x != this) is Visual hit)
                 {
                     return !v.IsVisualAncestorOf(hit);
                 }

@@ -35,7 +35,12 @@ namespace Avalonia.Data.Converters
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             value = Inner?.Convert(value, targetType, parameter, culture) ?? value;
-            return string.Format(culture, Format, value);
+            var format = Format!;
+            if (!format.Contains('{'))
+            {
+                format = $"{{0:{format}}}";
+            }
+            return string.Format(culture, format, value);
         }
 
         /// <inheritdoc/>

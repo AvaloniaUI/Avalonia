@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:VirtualizationDemo.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="VirtualizationDemo.Views.ExpanderPageView"
+             x:DataType="vm:ExpanderPageViewModel">
+  <ListBox ItemsSource="{Binding Items}">
+    <ListBox.ItemTemplate>
+      <DataTemplate>
+        <Expander Header="{Binding Header}" IsExpanded="{Binding IsExpanded}">
+          <Border Width="200" Height="300"/>
+        </Expander>
+      </DataTemplate>
+    </ListBox.ItemTemplate>
+  </ListBox>
+</UserControl>

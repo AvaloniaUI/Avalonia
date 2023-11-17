@@ -26,8 +26,8 @@ namespace Avalonia.Controls
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public partial class CalendarDatePicker : TemplatedControl
     {
-        protected const string pcPressed    = ":pressed";
-        protected const string pcFlyoutOpen = ":flyout-open";
+        private const string pcPressed    = ":pressed";
+        private const string pcFlyoutOpen = ":flyout-open";
 
         private const string ElementTextBox = "PART_TextBox";
         private const string ElementButton = "PART_Button";
@@ -875,10 +875,11 @@ namespace Avalonia.Controls
         {
             if (_textBox != null)
             {
+                SetCurrentValue(TextProperty, String.Empty);
+                
                 if (string.IsNullOrEmpty(Watermark) && !UseFloatingWatermark)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
-                    SetCurrentValue(TextProperty, string.Empty);
                     _defaultText = string.Empty;
                     var watermarkFormat = "<{0}>";
                     string watermarkText;
@@ -916,6 +917,14 @@ namespace Avalonia.Controls
         private static bool IsValidDateFormatString(string formatString)
         {
             return !string.IsNullOrWhiteSpace(formatString);
+        }
+
+        /// <summary>
+        /// Clear <see cref="SelectedDate"/>.
+        /// </summary>
+        public void Clear()
+        {
+            SetCurrentValue(SelectedDateProperty, null);
         }
     }
 }

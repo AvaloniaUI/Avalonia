@@ -16,6 +16,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="validate">
@@ -23,14 +24,15 @@ namespace Avalonia
         /// <para>This method is not part of the property's metadata and so cannot be changed after registration.</para>
         /// </param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
-        public StyledProperty(
+        internal StyledProperty(
             string name,
             Type ownerType,
+            Type hostType,
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
             Func<TValue, bool>? validate = null,
             Action<AvaloniaObject, bool>? notifying = null)
-                : base(name, ownerType, metadata, notifying)
+                : base(name, ownerType, hostType, metadata, notifying)
         {
             Inherits = inherits;
             ValidateValue = validate;
@@ -219,7 +221,7 @@ namespace Avalonia
             return target.Bind<TValue>(this, source, priority);
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
         private bool ShouldSetValue(AvaloniaObject target, object? value, [NotNullWhen(true)] out TValue? converted)
         {
             if (value == BindingOperations.DoNothing)

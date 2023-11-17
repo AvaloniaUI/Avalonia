@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -164,6 +164,16 @@ namespace Avalonia.Controls
         /// SetValue, etc.
         /// </summary>
         private bool _allowWrite;
+
+        /// <summary>
+        /// A boolean indicating if a cancellation was requested
+        /// </summary>
+        private bool _cancelRequested;
+
+        /// <summary>
+        /// A boolean indicating if filtering is in action
+        /// </summary>
+        private bool _filterInAction;
 
         /// <summary>
         /// The TextBox template part.
@@ -419,9 +429,9 @@ namespace Avalonia.Controls
         /// ItemsSourceProperty property changed handler.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private void OnItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            OnItemsChanged((IEnumerable?)e.NewValue);
+            OnItemsSourceChanged((IEnumerable?)e.NewValue);
         }
 
         private void OnItemTemplatePropertyChanged(AvaloniaPropertyChangedEventArgs e)
@@ -461,7 +471,7 @@ namespace Avalonia.Controls
             SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSearchTextPropertyChanged(e));
             FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnFilterModePropertyChanged(e));
             ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemFilterPropertyChanged(e));
-            ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsPropertyChanged(e));
+            ItemsSourceProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsSourcePropertyChanged(e));
             ItemTemplateProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemTemplatePropertyChanged(e));
             IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnControlIsEnabledChanged(e));
         }
@@ -559,7 +569,7 @@ namespace Avalonia.Controls
                     _adapter.Commit -= OnAdapterSelectionComplete;
                     _adapter.Cancel -= OnAdapterSelectionCanceled;
                     _adapter.Cancel -= OnAdapterSelectionComplete;
-                    _adapter.Items = null;
+                    _adapter.ItemsSource = null;
                 }
 
                 _adapter = value;
@@ -570,7 +580,7 @@ namespace Avalonia.Controls
                     _adapter.Commit += OnAdapterSelectionComplete;
                     _adapter.Cancel += OnAdapterSelectionCanceled;
                     _adapter.Cancel += OnAdapterSelectionComplete;
-                    _adapter.Items = _view;
+                    _adapter.ItemsSource = _view;
                 }
             }
         }
@@ -762,7 +772,7 @@ namespace Avalonia.Controls
         /// otherwise, false.</returns>
         protected bool HasFocus()
         {
-            Visual? focused = FocusManager.Instance?.Current as Visual;
+            Visual? focused = FocusManager.GetFocusManager(this)?.GetFocusedElement() as Visual;
 
             while (focused != null)
             {
@@ -816,12 +826,41 @@ namespace Avalonia.Controls
             }
             else
             {
-                SetCurrentValue(IsDropDownOpenProperty, false);
+                // Check if we still have focus in the parent's focus scope
+                if (GetFocusScope() is { } scope &&
+                    (FocusManager.GetFocusManager(this)?.GetFocusedElement(scope) is not { } focused ||
+                    (focused != this &&
+                    (focused is Visual v && !this.IsVisualAncestorOf(v)))))
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+
                 _userCalledPopulate = false;
                 ClearTextBoxSelection();
             }
 
             _isFocused = hasFocus;
+
+            IFocusScope? GetFocusScope()
+            {
+                IInputElement? c = this;
+
+                while (c != null)
+                {
+                    if (c is IFocusScope scope &&
+                        c is Visual v &&
+                        v.VisualRoot is Visual root &&
+                        root.IsVisible)
+                    {
+                        return scope;
+                    }
+
+                    c = (c as Visual)?.GetVisualParent<IInputElement>() ??
+                        ((c as IHostedVisualTreeRoot)?.Host as IInputElement);
+                }
+
+                return null;
+            }
         }
 
         /// <summary>
@@ -894,8 +933,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged
         {
-            add { AddHandler(SelectionChangedEvent, value); }
-            remove { RemoveHandler(SelectionChangedEvent, value); }
+            add => AddHandler(SelectionChangedEvent, value);
+            remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
         /// <summary>
@@ -1128,7 +1167,7 @@ namespace Avalonia.Controls
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        SetCurrentValue(ItemsProperty, resultList);
+                        SetCurrentValue(ItemsSourceProperty, resultList);
                         PopulateComplete();
                     }
                 });
@@ -1320,17 +1359,14 @@ namespace Avalonia.Controls
             // Evaluate the conditions needed for completion.
             // 1. Minimum prefix length
             // 2. If a delay timer is in use, use it
-            bool populateReady = newText.Length >= MinimumPrefixLength && MinimumPrefixLength >= 0;
-            if (populateReady && MinimumPrefixLength == 0 && String.IsNullOrEmpty(newText) && String.IsNullOrEmpty(SearchText))
-            {
-                populateReady = false;
-            }
-            _userCalledPopulate = populateReady ? userInitiated : false;
+            bool minimumLengthReached = newText.Length >= MinimumPrefixLength && MinimumPrefixLength >= 0;
+
+            _userCalledPopulate = minimumLengthReached && userInitiated;
 
             // Update the interface and values only as necessary
             UpdateTextValue(newText, userInitiated);
 
-            if (populateReady)
+            if (minimumLengthReached)
             {
                 _ignoreTextSelectionChange = true;
 
@@ -1382,6 +1418,15 @@ namespace Avalonia.Controls
         /// </summary>
         private void RefreshView()
         {
+            // If we have a running filter, trigger a request first
+            if (_filterInAction)
+            {
+                _cancelRequested = true;
+            }
+
+            // Indicate that filtering is ongoing
+            _filterInAction = true;
+
             if (_items == null)
             {
                 ClearView();
@@ -1394,79 +1439,62 @@ namespace Avalonia.Controls
             // Determine if any filtering mode is on
             bool stringFiltering = TextFilter != null;
             bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
-
-            int view_index = 0;
-            int view_count = _view!.Count;
+            
             List<object> items = _items;
+
+            // cache properties
+            var textFilter = TextFilter;
+            var itemFilter = ItemFilter;
+            var _newViewItems = new Collection<object>();
+            
+            // if the mode is objectFiltering and itemFilter is null, we throw an exception
+            if (objectFiltering && itemFilter is null)
+            {
+                // indicate that filtering is not ongoing anymore
+                _filterInAction = false;
+                _cancelRequested = false;
+                
+                throw new Exception(
+                    "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+            }
+
             foreach (object item in items)
             {
+                // Exit the fitter when requested if cancellation is requested
+                if (_cancelRequested)
+                {
+                    return;
+                }
+
                 bool inResults = !(stringFiltering || objectFiltering);
+
                 if (!inResults)
                 {
                     if (stringFiltering)
                     {
-                        inResults = TextFilter!(text, FormatValue(item));
+                        inResults = textFilter!(text, FormatValue(item));
                     }
-                    else
+                    else if (objectFiltering)
                     {
-                        if (ItemFilter is null)
-                        {
-                            throw new Exception("ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
-                        }
-                        else
-                        {
-                            inResults = ItemFilter(text, item);
-                        }
+                        inResults = itemFilter!(text, item);
                     }
                 }
 
-                if (view_count > view_index && inResults && _view[view_index] == item)
+                if (inResults)
                 {
-                    // Item is still in the view
-                    view_index++;
-                }
-                else if (inResults)
-                {
-                    // Insert the item
-                    if (view_count > view_index && _view[view_index] != item)
-                    {
-                        // Replace item
-                        // Unfortunately replacing via index throws a fatal
-                        // exception: View[view_index] = item;
-                        // Cost: O(n) vs O(1)
-                        _view.RemoveAt(view_index);
-                        _view.Insert(view_index, item);
-                        view_index++;
-                    }
-                    else
-                    {
-                        // Add the item
-                        if (view_index == view_count)
-                        {
-                            // Constant time is preferred (Add).
-                            _view.Add(item);
-                        }
-                        else
-                        {
-                            _view.Insert(view_index, item);
-                        }
-                        view_index++;
-                        view_count++;
-                    }
-                }
-                else if (view_count > view_index && _view[view_index] == item)
-                {
-                    // Remove the item
-                    _view.RemoveAt(view_index);
-                    view_count--;
+                    _newViewItems.Add(item);
                 }
             }
+
+            _view?.Clear();
+            _view?.AddRange(_newViewItems);
 
             // Clear the evaluator to discard a reference to the last item
-            if (_valueBindingEvaluator != null)
-            {
-                _valueBindingEvaluator.ClearDataContext();
-            }
+            _valueBindingEvaluator?.ClearDataContext();
+
+            // indicate that filtering is not ongoing anymore
+            _filterInAction = false;
+            _cancelRequested = false;
         }
 
         /// <summary>
@@ -1475,7 +1503,7 @@ namespace Avalonia.Controls
         /// adapter's ItemsSource to the view if appropriate.
         /// </summary>
         /// <param name="newValue">The new enumerable reference.</param>
-        private void OnItemsChanged(IEnumerable? newValue)
+        private void OnItemsSourceChanged(IEnumerable? newValue)
         {
             // Remove handler for oldValue.CollectionChanged (if present)
             _collectionChangeSubscription?.Dispose();
@@ -1492,9 +1520,9 @@ namespace Avalonia.Controls
 
             // Clear and set the view on the selection adapter
             ClearView();
-            if (SelectionAdapter != null && SelectionAdapter.Items != _view)
+            if (SelectionAdapter != null && SelectionAdapter.ItemsSource != _view)
             {
-                SelectionAdapter.Items = _view;
+                SelectionAdapter.ItemsSource = _view;
             }
             if (IsDropDownOpen)
             {
@@ -1545,9 +1573,9 @@ namespace Avalonia.Controls
             {
                 // Significant changes to the underlying data.
                 ClearView();
-                if (Items != null)
+                if (ItemsSource != null)
                 {
-                    _items = new List<object>(Items.Cast<object>());
+                    _items = new List<object>(ItemsSource.Cast<object>());
                 }
             }
 
@@ -1582,9 +1610,9 @@ namespace Avalonia.Controls
             PopulatedEventArgs populated = new PopulatedEventArgs(new ReadOnlyCollection<object>(_view!));
             OnPopulated(populated);
 
-            if (SelectionAdapter != null && SelectionAdapter.Items != _view)
+            if (SelectionAdapter != null && SelectionAdapter.ItemsSource != _view)
             {
-                SelectionAdapter.Items = _view;
+                SelectionAdapter.ItemsSource = _view;
             }
 
             bool isDropDownOpen = _userCalledPopulate && (_view!.Count > 0);
@@ -2042,6 +2070,8 @@ namespace Avalonia.Controls
             /// <summary>
             /// Identifies the Value dependency property.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1002:AvaloniaProperty objects should not be owned by a generic type",
+                Justification = "This property is not supposed to be used from XAML.")]
             public static readonly StyledProperty<T> ValueProperty =
                 AvaloniaProperty.Register<BindingEvaluator<T>, T>(nameof(Value));
 

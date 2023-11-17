@@ -27,11 +27,11 @@ namespace RenderDemo.Pages
         
         class CustomDrawOp : ICustomDrawOperation
         {
-            private readonly GlyphRun _noSkia;
+            private readonly IImmutableGlyphRunReference _noSkia;
 
             public CustomDrawOp(Rect bounds, GlyphRun noSkia)
             {
-                _noSkia = noSkia;
+                _noSkia = noSkia.TryCreateImmutableGlyphRunReference();
                 Bounds = bounds;
             }
             
@@ -44,11 +44,11 @@ namespace RenderDemo.Pages
             public bool HitTest(Point p) => false;
             public bool Equals(ICustomDrawOperation other) => false;
             static Stopwatch St = Stopwatch.StartNew();
-            public void Render(IDrawingContextImpl context)
+            public void Render(ImmediateDrawingContext context)
             {
-                var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
+                var leaseFeature = context.TryGetFeature<ISkiaSharpApiLeaseFeature>();
                 if (leaseFeature == null)
-                    context.DrawGlyphRun(Brushes.Black, _noSkia.PlatformImpl);
+                    context.DrawGlyphRun(Brushes.Black, _noSkia);
                 else
                 {
                     using var lease = leaseFeature.Lease();

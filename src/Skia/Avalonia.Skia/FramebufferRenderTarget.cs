@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -13,12 +12,12 @@ namespace Avalonia.Skia
     /// </summary>
     internal class FramebufferRenderTarget : IRenderTarget
     {
-        private readonly IFramebufferPlatformSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
         private SKSurface? _framebufferSurface;
         private PixelFormatConversionShim? _conversionShim;
         private IDisposable? _preFramebufferCopyHandler;
+        private IFramebufferRenderTarget? _renderTarget;
 
         /// <summary>
         /// Create new framebuffer render target using a target surface.
@@ -26,19 +25,24 @@ namespace Avalonia.Skia
         /// <param name="platformSurface">Target surface.</param>
         public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface)
         {
-            _platformSurface = platformSurface;
+            _renderTarget = platformSurface.CreateFramebufferRenderTarget();
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
+            _renderTarget?.Dispose();
+            _renderTarget = null;
             FreeSurface();
         }
 
         /// <inheritdoc />
         public IDrawingContextImpl CreateDrawingContext()
         {
-            var framebuffer = _platformSurface.Lock();
+            if (_renderTarget == null)
+                throw new ObjectDisposedException(nameof(FramebufferRenderTarget));
+            
+            var framebuffer = _renderTarget.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(),
                 framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
@@ -54,8 +58,7 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi,
-                DisableTextLcdRendering = true
+                Dpi = framebuffer.Dpi
             };
 
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);

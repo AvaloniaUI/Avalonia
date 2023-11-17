@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
@@ -16,7 +17,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private int _exitCode;
         private CancellationTokenSource? _cts;
         private bool _isShuttingDown;
-        private readonly HashSet<Window> _windows = new();
+        private readonly AvaloniaList<Window> _windows = new();
 
         private static ClassicDesktopStyleApplicationLifetime? s_activeLifetime;
 
@@ -35,7 +36,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         private static void OnWindowOpened(object? sender, RoutedEventArgs e)
         {
-            s_activeLifetime?._windows.Add((Window)sender!);
+            var window = (Window)sender!;
+            if (s_activeLifetime is not null && !s_activeLifetime._windows.Contains(window))
+            {
+                s_activeLifetime._windows.Add(window);
+            }
         }
 
         public ClassicDesktopStyleApplicationLifetime()
@@ -67,7 +72,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         public Window? MainWindow { get; set; }
 
         /// <inheritdoc />
-        public IReadOnlyList<Window> Windows => _windows.ToArray();
+        public IReadOnlyList<Window> Windows => _windows;
 
         private void HandleWindowClosed(Window? window)
         {
@@ -161,7 +166,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
                 // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
                 // owners.
-                foreach (var w in Windows)
+                foreach (var w in Windows.ToArray())
                 {
                     if (w.Owner is null)
                     {

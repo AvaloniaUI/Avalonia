@@ -45,7 +45,7 @@ namespace Avalonia.Direct2D1.RenderTests
         private static readonly TestDispatcherImpl threadingInterface =
             new TestDispatcherImpl();
 
-        private static readonly IAssetLoader assetLoader = new AssetLoader();
+        private static readonly IAssetLoader assetLoader = new StandardAssetLoader();
         
         static TestBase()
         {
@@ -107,25 +107,21 @@ namespace Avalonia.Direct2D1.RenderTests
             
             var timer = new ManualRenderTimer();
 
-            var compositor = new Compositor(new RenderLoop(timer, Dispatcher.UIThread), null);
+            var compositor = new Compositor(new RenderLoop(timer), null, true,
+                new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat, factory.DefaultAlphaFormat))
             {
                 var root = new TestRenderRoot(dpiVector.X / 96, null!);
                 using (var renderer = new CompositingRenderer(root, compositor, () => new[]
                        {
                            new BitmapFramebufferSurface(writableBitmap)
-                       }) { RenderOnlyOnRenderThread = false })
+                       }))
                 {
                     root.Initialize(renderer, target);
                     renderer.Start();
                     Dispatcher.UIThread.RunJobs();
                     timer.TriggerTick();
                 }
-
-                // Free pools
-                for (var c = 0; c < 11; c++)
-                    foreach (var dp in Dispatcher.SnapshotTimersForUnitTests())
-                        dp.ForceFire();
                 writableBitmap.Save(compositedPath);
             }
         }
@@ -139,7 +135,10 @@ namespace Avalonia.Direct2D1.RenderTests
                 _bitmap = bitmap;
             }
             
-            public ILockedFramebuffer Lock() => _bitmap.Lock();
+            public IFramebufferRenderTarget CreateFramebufferRenderTarget()
+            {
+                return new FuncFramebufferRenderTarget(() => _bitmap.Lock());
+            }
         }
 
         protected void CompareImages([CallerMemberName] string testName = "",

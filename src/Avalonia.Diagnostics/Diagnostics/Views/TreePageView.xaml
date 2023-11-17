@@ -26,6 +26,20 @@
           <Setter Property="Background" Value="Transparent" />
         </Style>
       </TreeView.Styles>
+      <TreeView.ContextFlyout>
+        <MenuFlyout>
+          <MenuItem Header="Copy">
+            <MenuItem Header="Copy individual node selector" Command="{Binding CopySelector}" />
+            <MenuItem Header="Copy selector from template parent" Command="{Binding CopySelectorFromTemplateParent}" />
+          </MenuItem>
+          <MenuItem Header="-" />
+          <MenuItem Header="Expand recursively" Command="{Binding ExpandRecursively}" />
+          <MenuItem Header="Collapse children" Command="{Binding CollapseChildren}" />
+          <MenuItem Header="Capture node screenshot" Command="{Binding CaptureNodeScreenshot}" />
+          <MenuItem Header="Bring into view" Command="{Binding BringIntoView}" />
+          <MenuItem Header="Focus" Command="{Binding Focus}" />
+        </MenuFlyout>
+      </TreeView.ContextFlyout>
     </TreeView>
 
     <GridSplitter Background="{DynamicResource ThemeControlMidBrush}" Width="1" Grid.Column="1"/>

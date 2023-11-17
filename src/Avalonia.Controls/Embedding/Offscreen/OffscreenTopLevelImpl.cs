@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 
 namespace Avalonia.Controls.Embedding.Offscreen
 {
@@ -16,7 +13,6 @@ namespace Avalonia.Controls.Embedding.Offscreen
     {
         private double _scaling = 1;
         private Size _clientSize;
-        private ManualRenderTimer _manualRenderTimer = new();
 
         public IInputRoot? InputRoot { get; private set; }
         public bool IsDisposed { get; private set; }
@@ -26,28 +22,20 @@ namespace Avalonia.Controls.Embedding.Offscreen
             IsDisposed = true;
         }
 
-        class ManualRenderTimer : IRenderTimer
-        {
-            static Stopwatch St = Stopwatch.StartNew(); 
-            public event Action<TimeSpan>? Tick;
-            public bool RunsInBackground => false;
-            public void TriggerTick() => Tick?.Invoke(St.Elapsed);
-        }
+        public Compositor Compositor { get; }
 
-
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, new Compositor(new RenderLoop(_manualRenderTimer, Dispatcher.UIThread), null),
-                () => Surfaces);
+        public OffscreenTopLevelImplBase()
+            => Compositor = new Compositor(null);
 
         public abstract IEnumerable<object> Surfaces { get; }
 
         public Size ClientSize
         {
-            get { return _clientSize; }
+            get => _clientSize;
             set
             {
                 _clientSize = value;
-                Resized?.Invoke(value, PlatformResizeReason.Unspecified);
+                Resized?.Invoke(value, WindowResizeReason.Unspecified);
             }
         }
 
@@ -55,24 +43,23 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public double RenderScaling
         {
-            get { return _scaling; }
+            get => _scaling;
             set
             {
                 _scaling = value;
                 ScalingChanged?.Invoke(value);
             }
         }
-        
+
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
-        /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
@@ -89,9 +76,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action? LostFocus { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public IPopupImpl? CreatePopup() => null;
         

@@ -155,6 +155,42 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/12676
+        [Fact]
+        public void Similar_Runs_Have_Same_InkBounds_After_Blob_Creation()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14);
+                var shapedBuffer = TextShaper.Current.ShapeText("F", options);
+
+                var glyphRun1 = CreateGlyphRun(shapedBuffer);
+                var bounds1 = glyphRun1.InkBounds;
+                ((GlyphRunImpl)glyphRun1.PlatformImpl.Item).GetTextBlob(new RenderOptions { TextRenderingMode = TextRenderingMode.SubpixelAntialias });
+
+                var bounds2 = CreateGlyphRun(shapedBuffer).InkBounds;
+
+                Assert.Equal(bounds1, bounds2);
+            }
+        }
+
+        [Fact]
+        public void GlyphRun_With_Leading_Space_Has_Correct_InkBounds()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14);
+                var shapedBuffer = TextShaper.Current.ShapeText(" I", options);
+
+                var glyphRun1 = CreateGlyphRun(shapedBuffer);
+                var bounds = glyphRun1.InkBounds;
+
+                Assert.True(bounds.Left > 0);
+            }
+        }
+
         private static List<Rect> BuildRects(GlyphRun glyphRun)
         {
             var height = glyphRun.Bounds.Height;

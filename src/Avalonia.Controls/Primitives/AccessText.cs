@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Reactive;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using System;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -52,15 +53,15 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool ShowAccessKey
         {
-            get { return GetValue(ShowAccessKeyProperty); }
-            set { SetValue(ShowAccessKeyProperty, value); }
+            get => GetValue(ShowAccessKeyProperty);
+            set => SetValue(ShowAccessKeyProperty, value);
         }
 
         /// <summary>
         /// Renders the <see cref="AccessText"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        protected internal override void RenderCore(DrawingContext context)
+        private protected override void RenderCore(DrawingContext context)
         {
             base.RenderCore(context);
             int underscore = Text?.IndexOf('_') ?? -1;
@@ -68,11 +69,15 @@ namespace Avalonia.Controls.Primitives
             if (underscore != -1 && ShowAccessKey)
             {
                 var rect = TextLayout!.HitTestTextPosition(underscore);
-                var offset = new Vector(0, -1.5);
+
+                var x1 = Math.Round(rect.Left, MidpointRounding.AwayFromZero);
+                var x2 = Math.Round(rect.Right, MidpointRounding.AwayFromZero);
+                var y = Math.Round(rect.Bottom, MidpointRounding.AwayFromZero) - 1.5;
+
                 context.DrawLine(
                     new Pen(Foreground, 1),
-                    rect.BottomLeft + offset,
-                    rect.BottomRight + offset);
+                    new Point(x1, y),
+                    new Point(x2, y));
             }
         }
 
@@ -86,7 +91,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _accessKeys = (e.Root as IInputRoot)?.AccessKeyHandler;
+            _accessKeys = (e.Root as TopLevel)?.AccessKeyHandler;
 
             if (_accessKeys != null && AccessKey != 0)
             {

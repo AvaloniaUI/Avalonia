@@ -5,8 +5,6 @@ using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Threading;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Transport;
 
 /// <summary>
@@ -19,19 +17,22 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
     int _usage;
     readonly int[] _usageStatistics = new int[10];
     int _usageStatisticsSlot;
-    bool _reclaimImmediately;
+    readonly bool _reclaimImmediately;
 
     public int CurrentUsage => _usage;
     public int CurrentPool => _pool.Count;
 
-    public BatchStreamPoolBase(bool needsFinalize, Action<Func<bool>>? startTimer = null)
+    public BatchStreamPoolBase(bool needsFinalize, bool reclaimImmediately, Action<Func<bool>>? startTimer = null)
     {
         if(!needsFinalize)
             GC.SuppressFinalize(needsFinalize);
 
         var updateRef = new WeakReference<BatchStreamPoolBase<T>>(this);
-        if (AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() == null
-            && AvaloniaLocator.Current.GetService<IDispatcherImpl>() == null)
+        if (
+            reclaimImmediately 
+            || (
+            AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() == null
+            && AvaloniaLocator.Current.GetService<IDispatcherImpl>() == null))
             _reclaimImmediately = true;
         else
             StartUpdateTimer(startTimer, updateRef);
@@ -134,7 +135,8 @@ internal sealed class BatchStreamObjectPool<T> : BatchStreamPoolBase<T[]> where 
 {
     public int ArraySize { get; }
 
-    public BatchStreamObjectPool(int arraySize = 128, Action<Func<bool>>? startTimer = null) : base(false, startTimer)
+    public BatchStreamObjectPool(bool reclaimImmediately = false, int arraySize = 128, Action<Func<bool>>? startTimer = null) 
+        : base(false, reclaimImmediately, startTimer)
     {
         ArraySize = arraySize;
     }
@@ -154,7 +156,8 @@ internal sealed class BatchStreamMemoryPool : BatchStreamPoolBase<IntPtr>
 {
     public int BufferSize { get; }
 
-    public BatchStreamMemoryPool(int bufferSize = 1024, Action<Func<bool>>? startTimer = null) : base(true, startTimer)
+    public BatchStreamMemoryPool(bool reclaimImmediately, int bufferSize = 1024, Action<Func<bool>>? startTimer = null) 
+        : base(true, reclaimImmediately, startTimer)
     {
         BufferSize = bufferSize;
     }

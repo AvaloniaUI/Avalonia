@@ -9,6 +9,7 @@ namespace Avalonia.Controls.Primitives
         private const int ChromeZIndex = int.MaxValue - 99;
         private const int LightDismissOverlayZIndex = int.MaxValue - 98;
         private const int OverlayZIndex = int.MaxValue - 97;
+        private const int TextSelectorLayerZIndex = int.MaxValue - 96;
 
         private ILogicalRoot? _logicalRoot;
         private readonly List<Control> _layers = new();
@@ -29,6 +30,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031",
+            Justification = "A hack to make ChromeOverlayLayer lazily creatable. It is expected that GetValue(ChromeOverlayLayerProperty) alone won't work.")]
         public ChromeOverlayLayer ChromeOverlayLayer
         {
             get
@@ -58,6 +62,19 @@ namespace Avalonia.Controls.Primitives
                 var rv = FindLayer<OverlayLayer>();
                 if (rv == null)
                     AddLayer(rv = new OverlayLayer(), OverlayZIndex);
+                return rv;
+            }
+        }
+
+        public TextSelectorLayer? TextSelectorLayer
+        {
+            get
+            {
+                if (IsPopup)
+                    return null;
+                var rv = FindLayer<TextSelectorLayer>();
+                if (rv == null)
+                    AddLayer(rv = new TextSelectorLayer(), TextSelectorLayerZIndex);
                 return rv;
             }
         }
@@ -101,7 +118,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        internal override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             foreach (var l in _layers)
                 ((ILogical)l).NotifyResourcesChanged(e);

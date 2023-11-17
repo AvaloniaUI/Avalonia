@@ -32,10 +32,7 @@ using Avalonia.Rendering.Composition;
                 Dispatcher.UIThread.Post(() => _inputQueue.HandleEvent(e), DispatcherPriority.Send ));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor, () => Surfaces);
-        }
+        public Compositor Compositor => LinuxFramebufferPlatform.Compositor;
 
         public void Dispose()
         {
@@ -65,7 +62,7 @@ using Avalonia.Rendering.Composition;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
@@ -75,9 +72,9 @@ using Avalonia.Rendering.Composition;
 
         public Size ScaledSize => _outputBackend.PixelSize.ToSize(RenderScaling);
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 

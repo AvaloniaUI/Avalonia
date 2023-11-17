@@ -117,24 +117,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { child2, child1 }, panel.GetLogicalChildren());
             Assert.Equal(new[] { child2, child1 }, panel.GetVisualChildren());
         }
-
-        [Fact]
-        public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new Panel()
-            {
-                Background = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Background).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
+        
         [Fact]
         public void Adding_Null_Child_Should_Throw()
         {

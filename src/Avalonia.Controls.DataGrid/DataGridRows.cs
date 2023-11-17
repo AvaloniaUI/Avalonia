@@ -1589,6 +1589,23 @@ namespace Avalonia.Controls
             CorrectSlotsAfterDeletion(slot, isRow);
 
             OnRemovedElement(slot, item);
+            
+            // Synchronize CurrentCellCoordinates, CurrentColumn, CurrentColumnIndex, CurrentItem
+            // and CurrentSlot with the currently edited cell, since OnRemovingElement called
+            // SetCurrentCellCore(-1, -1) to temporarily reset the current cell.
+            if (_temporarilyResetCurrentCell &&
+                _editingColumnIndex != -1 &&
+                _previousCurrentItem != null &&
+                EditingRow != null &&
+                EditingRow.Slot != -1)
+            {
+                ProcessSelectionAndCurrency(
+                    columnIndex: _editingColumnIndex,
+                    item: _previousCurrentItem,
+                    backupSlot: this.EditingRow.Slot,
+                    action: DataGridSelectionAction.None,
+                    scrollIntoView: false);
+            }
         }
 
         private void RemoveNonDisplayedRows(int newFirstDisplayedSlot, int newLastDisplayedSlot)
@@ -2952,11 +2969,8 @@ namespace Avalonia.Controls
                 var detailsContent = RowDetailsTemplate.Build(dataItem);
                 if (detailsContent != null)
                 {
+                    detailsContent.DataContext = dataItem;
                     _rowsPresenter.Children.Add(detailsContent);
-                    if (dataItem != null)
-                    {
-                        detailsContent.DataContext = dataItem;
-                    }
                     detailsContent.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                     RowDetailsHeightEstimate = detailsContent.DesiredSize.Height;
                     _rowsPresenter.Children.Remove(detailsContent);

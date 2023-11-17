@@ -12,6 +12,8 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Logging;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -41,7 +43,7 @@ namespace Avalonia.Browser
         private const SKColorType ColorType = SKColorType.Rgba8888;
 
         private bool _useGL;        
-        private ITextInputMethodClient? _client;
+        private TextInputMethodClient? _client;
 
         /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
         public AvaloniaView(string divId)
@@ -90,6 +92,8 @@ namespace Avalonia.Browser
 
             _topLevel.Renderer.Start();
 
+            InputHelper.InitializeBackgroundHandlers();
+
             InputHelper.SubscribeKeyEvents(
                 _containerElement,
                 OnKeyDown,
@@ -98,7 +102,6 @@ namespace Avalonia.Browser
             InputHelper.SubscribeTextEvents(
                 _inputElement,
                 OnBeforeInput,
-                OnTextInput,
                 OnCompositionStart,
                 OnCompositionUpdate,
                 OnCompositionEnd);
@@ -136,11 +139,8 @@ namespace Avalonia.Browser
             }
             else
             {
-                //var rasterInitialized = _interop.InitRaster();
-                //Console.WriteLine("raster initialized: {0}", rasterInitialized);
-
-                //_topLevelImpl.SetSurface(ColorType,
-                // new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
+                Logger.TryGet(LogEventLevel.Error, LogArea.BrowserPlatform)?
+                    .Log(this, "[Avalonia]: Unable to initialize Canvas surface.");
             }
 
             CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
@@ -365,16 +365,6 @@ namespace Avalonia.Browser
             return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
         }
 
-        private bool OnTextInput (string type, string? data)
-        {
-            if(data == null || IsComposing)
-            {
-                return false;
-            }
-
-            return _topLevelImpl.RawTextEvent(data);
-        }
-
         private bool OnBeforeInput(JSObject arg, int start, int end)
         {
             var type = arg.GetPropertyAsString("inputType");
@@ -394,7 +384,7 @@ namespace Avalonia.Browser
 
             if(start != -1 && end != -1 && _client != null)
             {
-                _client.SelectInSurroundingText(start, end);
+                _client.Selection = new TextSelection(start, end);
             }
             return false;
         }
@@ -426,8 +416,15 @@ namespace Avalonia.Browser
                 return false;
 
             IsComposing = false;
+
             _client.SetPreeditText(null);
-            _topLevelImpl.RawTextEvent(args.GetPropertyAsString("data")!);
+
+            var text = args.GetPropertyAsString("data");
+
+            if(text != null)
+            {
+                return _topLevelImpl.RawTextEvent(text);
+            }
 
             return false;
         }
@@ -443,6 +440,7 @@ namespace Avalonia.Browser
                 return;
             }
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
             ManualTriggerRenderTimer.Instance.RaiseTick();
         }
 
@@ -470,7 +468,7 @@ namespace Avalonia.Browser
 
             if (_topLevel.Renderer is CompositingRenderer dr)
             {
-                dr.CompositionTarget.ImmediateUIThreadRender();
+                MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget);
             }
         }
 
@@ -510,7 +508,7 @@ namespace Avalonia.Browser
             InputHelper.FocusElement(_containerElement);
         }
 
-        void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
+        void ITextInputMethodImpl.SetClient(TextInputMethodClient? client)
         {
             if (_client != null)
             {
@@ -531,9 +529,10 @@ namespace Avalonia.Browser
                 InputHelper.ShowElement(_inputElement);
                 InputHelper.FocusElement(_inputElement);
 
-                var surroundingText = _client.SurroundingText;
+                var surroundingText = _client.SurroundingText ?? "";
+                var selection = _client.Selection;
 
-                InputHelper.SetSurroundingText(_inputElement, surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+                InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
             }
             else
             {
@@ -545,16 +544,17 @@ namespace Avalonia.Browser
         {
             if (_client != null)
             {
-                var surroundingText = _client.SurroundingText;
+                var surroundingText = _client.SurroundingText ?? "";
+                var selection = _client.Selection;
 
-                InputHelper.SetSurroundingText(_inputElement, surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+                InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
             }
         }
 
         void ITextInputMethodImpl.SetCursorRect(Rect rect)
         {
             InputHelper.FocusElement(_inputElement);
-            InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, _client?.SurroundingText.CursorOffset ?? 0);
+            InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, _client?.Selection.End ?? 0);
             InputHelper.FocusElement(_inputElement);
         }
 

@@ -4,6 +4,7 @@ using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -11,9 +12,9 @@ using Avalonia.Metadata;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
+    /// Displays <see cref="Content"/> according to an <see cref="IDataTemplate"/>.
     /// </summary>
-    [TemplatePart("PART_ContentPresenter", typeof(IContentPresenter))]
+    [TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
     public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
         /// <summary>
@@ -42,7 +43,19 @@ namespace Avalonia.Controls
 
         static ContentControl()
         {
-            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
+            TemplateProperty.OverrideDefaultValue<ContentControl>(new FuncControlTemplate((_, ns) => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [~BackgroundProperty] = new TemplateBinding(BackgroundProperty),
+                [~BorderBrushProperty] = new TemplateBinding(BorderBrushProperty),
+                [~BorderThicknessProperty] = new TemplateBinding(BorderThicknessProperty),
+                [~CornerRadiusProperty] = new TemplateBinding(CornerRadiusProperty),
+                [~ContentTemplateProperty] = new TemplateBinding(ContentTemplateProperty),
+                [~ContentProperty] = new TemplateBinding(ContentProperty),
+                [~PaddingProperty] = new TemplateBinding(PaddingProperty),
+                [~VerticalContentAlignmentProperty] = new TemplateBinding(VerticalContentAlignmentProperty),
+                [~HorizontalContentAlignmentProperty] = new TemplateBinding(HorizontalContentAlignmentProperty)
+            }.RegisterInNameScope(ns)));
         }
 
         /// <summary>
@@ -52,8 +65,8 @@ namespace Avalonia.Controls
         [DependsOn(nameof(ContentTemplate))]
         public object? Content
         {
-            get { return GetValue(ContentProperty); }
-            set { SetValue(ContentProperty, value); }
+            get => GetValue(ContentProperty);
+            set => SetValue(ContentProperty, value);
         }
 
         /// <summary>
@@ -61,14 +74,14 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? ContentTemplate
         {
-            get { return GetValue(ContentTemplateProperty); }
-            set { SetValue(ContentTemplateProperty, value); }
+            get => GetValue(ContentTemplateProperty);
+            set => SetValue(ContentTemplateProperty, value);
         }
 
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
-        public IContentPresenter? Presenter
+        public ContentPresenter? Presenter
         {
             get;
             private set;
@@ -79,8 +92,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -88,24 +101,34 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
-        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
         }
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ContentProperty)
+            {
+                ContentChanged(change);
+            }
+        }
 
         /// <summary>
-        /// Called when an <see cref="IContentPresenter"/> is registered with the control.
+        /// Called when an <see cref="ContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual bool RegisterContentPresenter(ContentPresenter presenter)
         {
             if (presenter.Name == "PART_ContentPresenter")
             {
@@ -116,19 +139,14 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected virtual void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+        private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateLogicalTree(e.OldValue, e.NewValue);
-        }
-
-        protected void UpdateLogicalTree(object? toRemove, object? toAdd)
-        {
-            if (toRemove is ILogical oldChild)
+            if (e.OldValue is ILogical oldChild)
             {
                 LogicalChildren.Remove(oldChild);
             }
 
-            if (toAdd is ILogical newChild)
+            if (e.NewValue is ILogical newChild)
             {
                 LogicalChildren.Add(newChild);
             }

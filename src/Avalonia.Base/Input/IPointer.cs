@@ -1,3 +1,4 @@
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Metadata;
 
 namespace Avalonia.Input

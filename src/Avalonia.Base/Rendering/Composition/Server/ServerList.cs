@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Transport;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -24,17 +22,6 @@ namespace Avalonia.Rendering.Composition.Server
                     List.Add(reader.ReadObject<T>());
             }
             base.DeserializeChangesCore(reader, committedAt);
-        }
-
-        public override long LastChangedBy
-        {
-            get
-            {
-                var seq = base.LastChangedBy;
-                foreach (var i in List)
-                    seq = Math.Max(i.LastChangedBy, seq);
-                return seq;
-            }
         }
 
         public List<T>.Enumerator GetEnumerator() => List.GetEnumerator();

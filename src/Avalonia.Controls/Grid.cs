@@ -157,8 +157,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ShowGridLines
         {
-            get { return GetValue(ShowGridLinesProperty); }
-            set { SetValue(ShowGridLinesProperty, value); }
+            get => GetValue(ShowGridLinesProperty);
+            set => SetValue(ShowGridLinesProperty, value);
         }
 
         /// <summary>
@@ -630,8 +630,8 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool MeasureOverrideInProgress
         {
-            get { return CheckFlags(Flags.MeasureOverrideInProgress); }
-            set { SetFlags(value, Flags.MeasureOverrideInProgress); }
+            get => CheckFlags(Flags.MeasureOverrideInProgress);
+            set => SetFlags(value, Flags.MeasureOverrideInProgress);
         }
 
         /// <summary>
@@ -639,8 +639,8 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool ArrangeOverrideInProgress
         {
-            get { return CheckFlags(Flags.ArrangeOverrideInProgress); }
-            set { SetFlags(value, Flags.ArrangeOverrideInProgress); }
+            get => CheckFlags(Flags.ArrangeOverrideInProgress);
+            set => SetFlags(value, Flags.ArrangeOverrideInProgress);
         }
 
         /// <summary>
@@ -2415,7 +2415,7 @@ namespace Avalonia.Controls
         /// </summary>
         private IReadOnlyList<DefinitionBase> DefinitionsU
         {
-            get { return _extData!.DefinitionsU!; }
+            get => _extData!.DefinitionsU!;
         }
 
         /// <summary>
@@ -2423,7 +2423,7 @@ namespace Avalonia.Controls
         /// </summary>
         private IReadOnlyList<DefinitionBase> DefinitionsV
         {
-            get { return _extData!.DefinitionsV!; }
+            get => _extData!.DefinitionsV!;
         }
 
         /// <summary>
@@ -2506,7 +2506,7 @@ namespace Avalonia.Controls
         /// </summary>
         private CellCache[] PrivateCells
         {
-            get { return _extData!.CellCachesCollection!; }
+            get => _extData!.CellCachesCollection!;
         }
 
         /// <summary>
@@ -2514,8 +2514,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool CellsStructureDirty
         {
-            get { return !CheckFlags(Flags.ValidCellsStructure); }
-            set { SetFlags(!value, Flags.ValidCellsStructure); }
+            get => !CheckFlags(Flags.ValidCellsStructure);
+            set => SetFlags(!value, Flags.ValidCellsStructure);
         }
 
         /// <summary>
@@ -2523,8 +2523,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool ListenToNotifications
         {
-            get { return CheckFlags(Flags.ListenToNotifications); }
-            set { SetFlags(value, Flags.ListenToNotifications); }
+            get => CheckFlags(Flags.ListenToNotifications);
+            set => SetFlags(value, Flags.ListenToNotifications);
         }
 
         /// <summary>
@@ -2532,8 +2532,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentU
         {
-            get { return CheckFlags(Flags.SizeToContentU); }
-            set { SetFlags(value, Flags.SizeToContentU); }
+            get => CheckFlags(Flags.SizeToContentU);
+            set => SetFlags(value, Flags.SizeToContentU);
         }
 
         /// <summary>
@@ -2541,8 +2541,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentV
         {
-            get { return CheckFlags(Flags.SizeToContentV); }
-            set { SetFlags(value, Flags.SizeToContentV); }
+            get => CheckFlags(Flags.SizeToContentV);
+            set => SetFlags(value, Flags.SizeToContentV);
         }
 
         /// <summary>
@@ -2550,8 +2550,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsU
         {
-            get { return CheckFlags(Flags.HasStarCellsU); }
-            set { SetFlags(value, Flags.HasStarCellsU); }
+            get => CheckFlags(Flags.HasStarCellsU);
+            set => SetFlags(value, Flags.HasStarCellsU);
         }
 
         /// <summary>
@@ -2559,8 +2559,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsV
         {
-            get { return CheckFlags(Flags.HasStarCellsV); }
-            set { SetFlags(value, Flags.HasStarCellsV); }
+            get => CheckFlags(Flags.HasStarCellsV);
+            set => SetFlags(value, Flags.HasStarCellsV);
         }
 
         /// <summary>
@@ -2568,8 +2568,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasGroup3CellsInAutoRows
         {
-            get { return CheckFlags(Flags.HasGroup3CellsInAutoRows); }
-            set { SetFlags(value, Flags.HasGroup3CellsInAutoRows); }
+            get => CheckFlags(Flags.HasGroup3CellsInAutoRows);
+            set => SetFlags(value, Flags.HasGroup3CellsInAutoRows);
         }
 
         /// <summary>
@@ -2826,18 +2826,18 @@ namespace Avalonia.Controls
             /// <summary>
             /// Returns start index of the span.
             /// </summary>
-            internal int Start { get { return (_start); } }
+            internal int Start { get => (_start); }
 
             /// <summary>
             /// Returns span count.
             /// </summary>
-            internal int Count { get { return (_count); } }
+            internal int Count { get => (_count); }
 
             /// <summary>
             /// Returns <c>true</c> if this is a column span.
             /// <c>false</c> if this is a row span.
             /// </summary>
-            internal bool U { get { return (_u); } }
+            internal bool U { get => (_u); }
 
             private int _start;
             private int _count;

@@ -5,7 +5,7 @@ using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Diagnostics.Controls
 {
-    class Application : AvaloniaObject
+    internal class Application : TopLevelGroup
        , Input.ICloseable, IDisposable
 
     {
@@ -16,7 +16,8 @@ namespace Avalonia.Diagnostics.Controls
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
         
-        public Application(Avalonia.Application application)
+        public Application(ClassicDesktopStyleApplicationLifetimeTopLevelGroup group, Avalonia.Application application)
+            : base(group)
         {
             _application = application;
 
@@ -37,7 +38,7 @@ namespace Avalonia.Diagnostics.Controls
                 _ => null
             };
 
-            RequestedThemeVariant = application.RequestedThemeVariant;
+            SetCurrentValue(RequestedThemeVariantProperty, application.RequestedThemeVariant);
             _application.PropertyChanged += ApplicationOnPropertyChanged;
         }
 
@@ -57,15 +58,6 @@ namespace Avalonia.Diagnostics.Controls
         /// </value>
         public Avalonia.Controls.Templates.DataTemplates DataTemplates =>
             _application.DataTemplates;
-
-        /// <summary>
-        /// Gets the application's focus manager.
-        /// </summary>
-        /// <value>
-        /// The application's focus manager.
-        /// </value>
-        public Input.IFocusManager? FocusManager =>
-            _application.FocusManager;
 
         /// <summary>
         /// Gets the application's input manager.
@@ -131,7 +123,7 @@ namespace Avalonia.Diagnostics.Controls
         {
             if (e.Property == Avalonia.Application.RequestedThemeVariantProperty)
             {
-                RequestedThemeVariant = e.GetNewValue<ThemeVariant>();
+                SetCurrentValue(RequestedThemeVariantProperty, e.GetNewValue<ThemeVariant>());
             }
         }
 

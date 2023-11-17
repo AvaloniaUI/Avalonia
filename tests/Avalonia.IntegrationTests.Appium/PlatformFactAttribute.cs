@@ -44,11 +44,11 @@ namespace Avalonia
         private bool IsSupported()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return Platforms.HasAnyFlag(TestPlatforms.Windows);
+                return Platforms.HasFlag(TestPlatforms.Windows);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                return Platforms.HasAnyFlag(TestPlatforms.MacOS);
+                return Platforms.HasFlag(TestPlatforms.MacOS);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                return Platforms.HasAnyFlag(TestPlatforms.Linux);
+                return Platforms.HasFlag(TestPlatforms.Linux);
             return false;
         }
     }

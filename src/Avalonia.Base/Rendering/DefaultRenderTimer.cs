@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering
@@ -10,9 +12,9 @@ namespace Avalonia.Rendering
     /// This class may be overridden by platform implementations to use a specialized timer
     /// implementation.
     /// </remarks>
+    [PrivateApi]
     public class DefaultRenderTimer : IRenderTimer
     {
-        private IRuntimePlatform? _runtime;
         private int _subscriberCount;
         private Action<TimeSpan>? _tick;
         private IDisposable? _subscription;
@@ -78,11 +80,9 @@ namespace Avalonia.Rendering
         /// </remarks>
         protected virtual IDisposable StartCore(Action<TimeSpan> tick)
         {
-            _runtime ??= AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
+            var interval = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
-            return _runtime.StartSystemTimer(
-                TimeSpan.FromSeconds(1.0 / FramesPerSecond),
-                () => tick(TimeSpan.FromMilliseconds(Environment.TickCount)));
+            return new Timer(_ => tick(TimeSpan.FromMilliseconds(Environment.TickCount)), null, interval, interval);
         }
 
         /// <summary>

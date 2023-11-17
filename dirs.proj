@@ -9,15 +9,16 @@
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
-    <!-- Exclude iOS, Android and Web samples from build -->
+    <!-- Exclude iOS, Android and Browser samples from build -->
     <ProjectReference Remove="samples/*.iOS/*.csproj" />
     <ProjectReference Remove="samples/*.Android/*.csproj" />
-    <ProjectReference Remove="samples/*.Web/*.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">
-    <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
-    <ProjectReference Remove="samples/interop/**/*.*proj" />
+    <ProjectReference Remove="samples/*.Browser/*.csproj" />
+    <ProjectReference Remove="samples/*.Blazor/*.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
+  </ItemGroup>
+  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
+    <ProjectReference Remove="src/Windows/Avalonia.Win32.Interoperability/Avalonia.Win32.Interoperability.csproj" />
+    <ProjectReference Remove="samples/interop/**/*.*proj" />
   </ItemGroup>
 
   <!-- Build android and iOS projects only on Windows, where we have installed android workload -->

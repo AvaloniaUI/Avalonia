@@ -15,14 +15,14 @@ namespace Avalonia.Controls.Primitives
     [PseudoClasses(":vertical", ":horizontal")]
     public class Track : Control
     {
-        public static readonly DirectProperty<Track, double> MinimumProperty =
-            RangeBase.MinimumProperty.AddOwner<Track>(o => o.Minimum, (o, v) => o.Minimum = v);
+        public static readonly StyledProperty<double> MinimumProperty =
+            RangeBase.MinimumProperty.AddOwner<Track>();
 
-        public static readonly DirectProperty<Track, double> MaximumProperty =
-            RangeBase.MaximumProperty.AddOwner<Track>(o => o.Maximum, (o, v) => o.Maximum = v);
+        public static readonly StyledProperty<double> MaximumProperty =
+            RangeBase.MaximumProperty.AddOwner<Track>();
 
-        public static readonly DirectProperty<Track, double> ValueProperty =
-            RangeBase.ValueProperty.AddOwner<Track>(o => o.Value, (o, v) => o.Value = v);
+        public static readonly StyledProperty<double> ValueProperty =
+            RangeBase.ValueProperty.AddOwner<Track>();
 
         public static readonly StyledProperty<double> ViewportSizeProperty =
             ScrollBar.ViewportSizeProperty.AddOwner<Track>();
@@ -45,16 +45,14 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IgnoreThumbDrag));
 
-        private double _minimum;
-        private double _maximum = 100.0;
-        private double _value;
+        private Vector _lastDrag;
 
         static Track()
         {
             ThumbProperty.Changed.AddClassHandler<Track>((x, e) => x.ThumbChanged(e));
             IncreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             DecreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
-            AffectsArrange<Track>(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
+            AffectsArrange<Track>(IsDirectionReversedProperty, MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
         }
 
         public Track()
@@ -64,63 +62,63 @@ namespace Avalonia.Controls.Primitives
 
         public double Minimum
         {
-            get { return _minimum; }
-            set { SetAndRaise(MinimumProperty, ref _minimum, value); }
+            get => GetValue(MinimumProperty);
+            set => SetValue(MinimumProperty, value);
         }
 
         public double Maximum
         {
-            get { return _maximum; }
-            set { SetAndRaise(MaximumProperty, ref _maximum, value); }
+            get => GetValue(MaximumProperty);
+            set => SetValue(MaximumProperty, value);
         }
 
         public double Value
         {
-            get { return _value; }
-            set { SetAndRaise(ValueProperty, ref _value, value); }
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
 
         public double ViewportSize
         {
-            get { return GetValue(ViewportSizeProperty); }
-            set { SetValue(ViewportSizeProperty, value); }
+            get => GetValue(ViewportSizeProperty);
+            set => SetValue(ViewportSizeProperty, value);
         }
 
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         [Content]
         public Thumb? Thumb
         {
-            get { return GetValue(ThumbProperty); }
-            set { SetValue(ThumbProperty, value); }
+            get => GetValue(ThumbProperty);
+            set => SetValue(ThumbProperty, value);
         }
 
         public Button? IncreaseButton
         {
-            get { return GetValue(IncreaseButtonProperty); }
-            set { SetValue(IncreaseButtonProperty, value); }
+            get => GetValue(IncreaseButtonProperty);
+            set => SetValue(IncreaseButtonProperty, value);
         }
 
         public Button? DecreaseButton
         {
-            get { return GetValue(DecreaseButtonProperty); }
-            set { SetValue(DecreaseButtonProperty, value); }
+            get => GetValue(DecreaseButtonProperty);
+            set => SetValue(DecreaseButtonProperty, value);
         }
 
         public bool IsDirectionReversed
         {
-            get { return GetValue(IsDirectionReversedProperty); }
-            set { SetValue(IsDirectionReversedProperty, value); }
+            get => GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, value);
         }
 
         public bool IgnoreThumbDrag
         {
-            get { return GetValue(IgnoreThumbDragProperty); }
-            set { SetValue(IgnoreThumbDragProperty, value); }
+            get => GetValue(IgnoreThumbDragProperty);
+            set => SetValue(IgnoreThumbDragProperty, value);
         }
 
         private double ThumbCenterOffset { get; set; }
@@ -231,25 +229,22 @@ namespace Avalonia.Controls.Primitives
                 offset = offset.WithY(isDirectionReversed ? decreaseButtonLength + thumbLength : 0.0);
                 pieceSize = pieceSize.WithHeight(increaseButtonLength);
 
-                if (IncreaseButton != null)
-                {
-                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                IncreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithY(isDirectionReversed ? 0.0 : increaseButtonLength + thumbLength);
                 pieceSize = pieceSize.WithHeight(decreaseButtonLength);
 
-                if (DecreaseButton != null)
-                {
-                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                DecreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithY(isDirectionReversed ? decreaseButtonLength : increaseButtonLength);
                 pieceSize = pieceSize.WithHeight(thumbLength);
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.Y + (thumbLength * 0.5);
@@ -263,30 +258,28 @@ namespace Avalonia.Controls.Primitives
                 offset = offset.WithX(isDirectionReversed ? increaseButtonLength + thumbLength : 0.0);
                 pieceSize = pieceSize.WithWidth(decreaseButtonLength);
 
-                if (DecreaseButton != null)
-                {
-                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                DecreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithX(isDirectionReversed ? 0.0 : decreaseButtonLength + thumbLength);
                 pieceSize = pieceSize.WithWidth(increaseButtonLength);
 
-                if (IncreaseButton != null)
-                {
-                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
-                }
+                IncreaseButton?.Arrange(new Rect(offset, pieceSize));
 
                 offset = offset.WithX(isDirectionReversed ? increaseButtonLength : decreaseButtonLength);
                 pieceSize = pieceSize.WithWidth(thumbLength);
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.X + (thumbLength * 0.5);
             }
 
+            _lastDrag = default;
             return arrangeSize;
         }
 
@@ -298,6 +291,12 @@ namespace Avalonia.Controls.Primitives
             {
                 UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
+        }
+
+        private Vector CalculateThumbAdjustment(Thumb thumb, Rect newThumbBounds)
+        {
+            var thumbDelta = newThumbBounds.Position - thumb.Bounds.Position;
+            return _lastDrag - thumbDelta;
         }
 
         private static void CoerceLength(ref double componentLength, double trackLength)
@@ -443,11 +442,18 @@ namespace Avalonia.Controls.Primitives
         {
             if (IgnoreThumbDrag)
                 return;
-                
-            Value = MathUtilities.Clamp(
-                Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
+
+            var value = Value;
+            var delta = ValueFromDistance(e.Vector.X, e.Vector.Y);
+            var factor = e.Vector / delta;
+
+            SetCurrentValue(ValueProperty, MathUtilities.Clamp(
+                value + delta,
                 Minimum,
-                Maximum);
+                Maximum));
+            
+            // Record the part of the drag that actually had effect as the last drag delta.
+            _lastDrag = (Value - value) * factor;
         }
 
         private void ShowChildren(bool visible)

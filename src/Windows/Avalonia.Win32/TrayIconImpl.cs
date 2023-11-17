@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.LogicalTree;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -15,7 +16,9 @@ namespace Avalonia.Win32
 {
     internal class TrayIconImpl : ITrayIconImpl
     {
-        private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
+        private static readonly Win32Icon s_emptyIcon = new(new WriteableBitmap(new PixelSize(32, 32),
+            new Vector(96, 96),
+            PixelFormats.Bgra8888, AlphaFormat.Unpremul));
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private bool _iconAdded;
@@ -41,9 +44,9 @@ namespace Avalonia.Win32
 
         internal static void ProcWnd(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.ContainsKey(wParam.ToInt32()))
+            if (msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.TryGetValue(wParam.ToInt32(), out var value))
             {
-                s_trayIcons[wParam.ToInt32()].WndProc(hWnd, msg, wParam, lParam);
+                value.WndProc(hWnd, msg, wParam, lParam);
             }
 
             if (msg == WM_TASKBARCREATED)
@@ -91,7 +94,7 @@ namespace Avalonia.Win32
             {
                 iconData.uFlags = NIF.TIP | NIF.MESSAGE | NIF.ICON;
                 iconData.uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE;
-                iconData.hIcon = _icon?.HIcon ?? s_emptyIcon;
+                iconData.hIcon = _icon?.HIcon ?? s_emptyIcon.Handle;
                 iconData.szTip = _tooltipText ?? "";
 
                 if (!_iconAdded)
@@ -147,7 +150,7 @@ namespace Avalonia.Win32
                 SystemDecorations = SystemDecorations.None,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,
-                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
                     ItemsSource = menuItems
@@ -170,9 +173,9 @@ namespace Avalonia.Win32
             WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024,
         }
 
-        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter, IStyleable
+        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter
         {
-            Type IStyleable.StyleKey => typeof(MenuFlyoutPresenter);
+            protected override Type StyleKeyOverride => typeof(MenuFlyoutPresenter);
 
             public override void Close()
             {
@@ -212,7 +215,7 @@ namespace Avalonia.Win32
                 if (PlatformImpl is { } platformImpl)
                 {
                     platformImpl.Move(position);
-                    platformImpl.Resize(size, PlatformResizeReason.Layout);
+                    platformImpl.Resize(size, WindowResizeReason.Layout);
                 }
             }
 

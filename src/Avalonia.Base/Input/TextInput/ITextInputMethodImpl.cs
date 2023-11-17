@@ -5,7 +5,7 @@ namespace Avalonia.Input.TextInput
     [Unstable]
     public interface ITextInputMethodImpl
     {
-        void SetClient(ITextInputMethodClient? client);
+        void SetClient(TextInputMethodClient? client);
         void SetCursorRect(Rect rect);
         void SetOptions(TextInputOptions options);
         void Reset();

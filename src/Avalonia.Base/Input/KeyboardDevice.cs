@@ -3,9 +3,11 @@ using System.Runtime.CompilerServices;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
+    [PrivateApi]
     public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
         private IInputElement? _focusedElement;
@@ -13,7 +15,7 @@ namespace Avalonia.Input
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public static IKeyboardDevice? Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+        internal static KeyboardDevice? Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>() as KeyboardDevice;
 
         public IInputManager? InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
 
@@ -187,13 +189,14 @@ namespace Avalonia.Input
                             ? InputElement.KeyDownEvent
                             : InputElement.KeyUpEvent;
 
-                        KeyEventArgs ev = new KeyEventArgs
+                        var ev = new KeyEventArgs
                         {
                             RoutedEvent = routedEvent,
-                            Device = this,
                             Key = keyInput.Key,
                             KeyModifiers = keyInput.Modifiers.ToKeyModifiers(),
-                            Source = element,
+                            PhysicalKey = keyInput.PhysicalKey,
+                            KeySymbol = keyInput.KeySymbol,
+                            Source = element
                         };
                         
                         var currentHandler = element as Visual;
@@ -239,7 +242,6 @@ namespace Avalonia.Input
             {
                 var ev = new TextInputEventArgs()
                 {
-                    Device = this,
                     Text = text.Text,
                     Source = element,
                     RoutedEvent = InputElement.TextInputEvent

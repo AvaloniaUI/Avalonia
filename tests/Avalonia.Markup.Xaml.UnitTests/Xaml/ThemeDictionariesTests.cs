@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -108,6 +111,39 @@ public class ThemeDictionariesTests : XamlTestBase
     }
 
     [Fact]
+    public void DynamicResource_In_ResourceProvider_Updated_When_Control_Theme_Changed()
+    {
+        var themeVariantScope = new ThemeVariantScope
+        {
+            RequestedThemeVariant = ThemeVariant.Light,
+            Resources = new ResourceDictionary
+            {
+                ThemeDictionaries =
+                {
+                    [ThemeVariant.Dark] = new ResourceDictionary { ["DemoBackground"] = Brushes.Black },
+                    [ThemeVariant.Light] = new ResourceDictionary { ["DemoBackground"] = Brushes.White }
+                }
+            },
+            Child = new Border()
+        };
+        
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(@"
+<ResourceDictionary xmlns='https://github.com/avaloniaui' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <GeometryDrawing x:Key='Geo' Brush='{DynamicResource DemoBackground}' />
+</ResourceDictionary>");
+        
+        themeVariantScope.Resources.MergedDictionaries.Add(resources);
+        var geo = (GeometryDrawing)themeVariantScope.FindResource("Geo");
+        
+        Assert.NotNull(geo);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)geo.Brush)!.Color);
+
+        themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
+        
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)geo.Brush)!.Color);
+    }
+
+    [Fact]
     public void Intermediate_StaticResource_Can_Be_Reached_From_ThemeDictionaries()
     {
         var themeVariantScope = (ThemeVariantScope)AvaloniaRuntimeXamlLoader.Load(@"
@@ -140,7 +176,7 @@ public class ThemeDictionariesTests : XamlTestBase
         Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
     }
 
-    [Fact(Skip = "Not implemented")]
+    [Fact]
     public void StaticResource_Inside_Of_ThemeDictionaries_Should_Use_Same_Theme_Key()
     {
         var themeVariantScope = (ThemeVariantScope)AvaloniaRuntimeXamlLoader.Load(@"
@@ -182,6 +218,135 @@ public class ThemeDictionariesTests : XamlTestBase
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
         Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+    }
+    
+    [Fact]
+    public void StaticResource_Inside_Of_ThemeDictionaries_Should_Use_Same_Theme_Key_From_Inner_File()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Inner.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <StaticResource x:Key='InnerKey' ResourceKey='OuterKey' />
+</ResourceDictionary>"),
+            new RuntimeXamlLoaderDocument(@"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key='Default'>
+            <Color x:Key='OuterKey'>Green</Color>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source='avares://Tests/Inner.xaml'/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key='Dark'>
+            <Color x:Key='OuterKey'>White</Color>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source='avares://Tests/Inner.xaml'/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>")
+        };
+        
+        var parsed = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+        var dictionary = (ResourceDictionary)parsed[1]!;
+        
+        dictionary.TryGetResource("InnerKey", ThemeVariant.Dark, out var resource);
+        var colorResource = Assert.IsType<Color>(resource);
+        Assert.Equal(Colors.White, colorResource);
+        
+        dictionary.TryGetResource("InnerKey", ThemeVariant.Light, out resource);
+        colorResource = Assert.IsType<Color>(resource);
+        Assert.Equal(Colors.Green, colorResource);
+    }
+    
+    [Fact]
+    public void DynamicResource_Inside_Of_ThemeDictionaries_Should_Use_Same_Theme_Key_From_Inner_File()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Inner.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <SolidColorBrush x:Key='InnerKey' Color='{DynamicResource OuterKey}' />
+</ResourceDictionary>"),
+            new RuntimeXamlLoaderDocument(@"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key='Default'>
+            <Color x:Key='OuterKey'>Green</Color>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source='avares://Tests/Inner.xaml'/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key='Dark'>
+            <Color x:Key='OuterKey'>White</Color>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source='avares://Tests/Inner.xaml'/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>")
+        };
+        
+        var parsed = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+        var dictionary1 = (ResourceDictionary)parsed[0]!;
+        var dictionary2 = (ResourceDictionary)parsed[1]!;
+        var ownerApp = new Application(); // DynamicResource needs an owner to work
+        ownerApp.RequestedThemeVariant = new ThemeVariant("FakeOne", null);
+        ownerApp.Resources.MergedDictionaries.Add(dictionary1);
+        ownerApp.Resources.MergedDictionaries.Add(dictionary2);
+        
+        dictionary2.TryGetResource("InnerKey", ThemeVariant.Dark, out var resource);
+        var colorResource = Assert.IsAssignableFrom<ISolidColorBrush>(resource);
+        Assert.Equal(Colors.White, colorResource.Color);
+        
+        dictionary2.TryGetResource("InnerKey", ThemeVariant.Light, out resource);
+        colorResource = Assert.IsAssignableFrom<ISolidColorBrush>(resource);
+        Assert.Equal(Colors.Green, colorResource.Color);
+    }
+    
+    [Fact]
+    public void DynamicResource_Inside_Control_Inside_Of_ThemeDictionaries_Should_Use_Control_Theme_Variant()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(@"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key='Light'>
+            <Color x:Key='ResourceKey'>Green</Color>
+            <Template x:Key='Template'>
+                <ThemeVariantScope RequestedThemeVariant='Dark' TextElement.Foreground='{DynamicResource ResourceKey}' />
+            </Template>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key='Dark'>
+            <Color x:Key='ResourceKey'>White</Color>
+            <Template x:Key='Template'>
+                <ThemeVariantScope RequestedThemeVariant='Light' TextElement.Foreground='{DynamicResource ResourceKey}' />
+            </Template>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>")
+        };
+        
+        var parsed = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+        var dictionary = (ResourceDictionary)parsed[0]!;
+        
+        dictionary.TryGetResource("Template", ThemeVariant.Dark, out var resource);
+        var control = Assert.IsType<ThemeVariantScope>((resource as Template)?.Build());
+        control.Resources.MergedDictionaries.Add(dictionary);
+        Assert.Equal(Colors.Green, ((ISolidColorBrush)control[TextElement.ForegroundProperty]!).Color);
+        control.Resources.MergedDictionaries.Remove(dictionary);
+
+        dictionary.TryGetResource("Template", ThemeVariant.Light, out resource);
+        control = Assert.IsType<ThemeVariantScope>((resource as Template)?.Build());
+        control.Resources.MergedDictionaries.Add(dictionary);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)control[TextElement.ForegroundProperty]!).Color);
     }
 
     [Fact]

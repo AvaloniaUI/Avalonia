@@ -176,7 +176,7 @@ public class DispatcherOperation
         GetTask().GetAwaiter().GetResult();
     }
 
-    private class DispatcherOperationFrame : DispatcherFrame
+    private sealed class DispatcherOperationFrame : DispatcherFrame
     {
         // Note: we pass "exitWhenRequested=false" to the base
         // DispatcherFrame construsctor because we do not want to exit
@@ -224,8 +224,8 @@ public class DispatcherOperation
 
         private void OnCompletedOrAborted(object? sender, EventArgs e) => Exit();
 
-        private DispatcherOperation _operation;
-        private Timer? _waitTimer;
+        private readonly DispatcherOperation _operation;
+        private readonly Timer? _waitTimer;
     }
 
     public Task GetTask() => GetTaskCore();
@@ -258,7 +258,7 @@ public class DispatcherOperation
 
         try
         {
-            using (AvaloniaSynchronizationContext.Ensure(Priority))
+            using (AvaloniaSynchronizationContext.Ensure(Dispatcher, Priority))
                 InvokeCore();
         }
         finally
@@ -331,6 +331,8 @@ public class DispatcherOperation<T> : DispatcherOperation
 
     private TaskCompletionSource<T> TaskCompletionSource => (TaskCompletionSource<T>)TaskSource!;
 
+    public new TaskAwaiter<T> GetAwaiter() => GetTask().GetAwaiter();
+
     public new Task<T> GetTask() => TaskCompletionSource!.Task;
 
     protected override Task GetTaskCore() => GetTask();
@@ -371,7 +373,7 @@ public class DispatcherOperation<T> : DispatcherOperation
     }
 }
 
-internal class SendOrPostCallbackDispatcherOperation : DispatcherOperation
+internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperation
 {
     private readonly object? _arg;
 

@@ -268,6 +268,22 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.True(called);
         }
 
+        [Fact]
+        public void Handles_Null_SelectedItem_When_SelectedValueBinding_Assigned()
+        {
+            // Issue #11220
+            var items = new object[] { null };
+            var sic = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                SelectedIndex = 0,
+                SelectedValueBinding = new Binding("Name"),
+                Template = Template()
+            };
+
+            Assert.Null(sic.SelectedValue);
+        }
+
         private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>

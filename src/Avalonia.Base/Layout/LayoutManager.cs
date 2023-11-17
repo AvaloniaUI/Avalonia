@@ -3,6 +3,8 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Logging;
+using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -14,23 +16,25 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
+    [PrivateApi]
     public class LayoutManager : ILayoutManager, IDisposable
     {
-        private const int MaxPasses = 3;
+        private const int MaxPasses = 10;
         private readonly Layoutable _owner;
         private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
-        private readonly Action _executeLayoutPass;
+        private readonly List<Layoutable> _toArrangeAfterMeasure = new();
         private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
         private bool _disposed;
         private bool _queued;
         private bool _running;
         private int _totalPassCount;
+        private readonly Action _invokeOnRender;
 
         public LayoutManager(ILayoutRoot owner)
         {
             _owner = owner as Layoutable ?? throw new ArgumentNullException(nameof(owner));
-            _executeLayoutPass = ExecuteQueuedLayoutPass;
+            _invokeOnRender = ExecuteQueuedLayoutPass;
         }
 
         public virtual event EventHandler? LayoutUpdated;
@@ -64,7 +68,6 @@ namespace Avalonia.Layout
             }
 
             _toMeasure.Enqueue(control);
-            _toArrange.Enqueue(control);
             QueueLayoutPass();
         }
 
@@ -98,7 +101,7 @@ namespace Avalonia.Layout
             QueueLayoutPass();
         }
 
-        private void ExecuteQueuedLayoutPass()
+        internal void ExecuteQueuedLayoutPass()
         {
             if (!_queued)
             {
@@ -249,10 +252,12 @@ namespace Avalonia.Layout
             {
                 var control = _toMeasure.Dequeue();
 
-                if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+                if (!control.IsMeasureValid)
                 {
                     Measure(control);
                 }
+
+                _toArrange.Enqueue(control);
             }
         }
 
@@ -262,11 +267,16 @@ namespace Avalonia.Layout
             {
                 var control = _toArrange.Dequeue();
 
-                if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+                if (!control.IsArrangeValid)
                 {
-                    Arrange(control);
+                    if (Arrange(control) == ArrangeResult.AncestorMeasureInvalid)
+                        _toArrangeAfterMeasure.Add(control);
                 }
             }
+
+            foreach (var i in _toArrangeAfterMeasure)
+                InvalidateArrange(i);
+            _toArrangeAfterMeasure.Clear();
         }
 
         private bool Measure(Layoutable control)
@@ -302,18 +312,21 @@ namespace Avalonia.Layout
             return true;
         }
 
-        private bool Arrange(Layoutable control)
+        private ArrangeResult Arrange(Layoutable control)
         {
             if (!control.IsVisible || !control.IsAttachedToVisualTree)
-                return false;
+                return ArrangeResult.NotVisible;
 
             if (control.VisualParent is Layoutable parent)
             {
-                if (!Arrange(parent))
-                    return false;
+                if (Arrange(parent) is var parentResult && parentResult != ArrangeResult.Arranged)
+                    return parentResult;
             }
 
-            if (control.IsMeasureValid && !control.IsArrangeValid)
+            if (!control.IsMeasureValid)
+                return ArrangeResult.AncestorMeasureInvalid;
+
+            if (!control.IsArrangeValid)
             {
                 if (control is IEmbeddedLayoutRoot embeddedRoot)
                     control.Arrange(new Rect(embeddedRoot.AllocatedSize));
@@ -327,7 +340,7 @@ namespace Avalonia.Layout
                 }
             }
 
-            return true;
+            return ArrangeResult.Arranged;
         }
 
         private void QueueLayoutPass()
@@ -335,7 +348,7 @@ namespace Avalonia.Layout
             if (!_queued && !_running)
             {
                 _queued = true;
-                Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
+                MediaContext.Instance.BeginInvokeOnRender(_invokeOnRender);
             }
         }
 
@@ -410,12 +423,16 @@ namespace Avalonia.Layout
             // Translate the viewport into this control's coordinate space.
             viewport = viewport.Translate(-control.Bounds.Position);
 
-            if (control != target && control.RenderTransform is object)
+            if (control != target && control.RenderTransform is { } transform)
             {
-                var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
-                var offset = Matrix.CreateTranslation(origin);
-                var renderTransform = (-offset) * control.RenderTransform.Value.Invert() * (offset);
-                viewport = viewport.TransformToAABB(renderTransform);
+                if (transform.Value.TryInvert(out var invertedMatrix))
+                {
+                    var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
+                    var offset = Matrix.CreateTranslation(origin);
+                    viewport = viewport.TransformToAABB(-offset * invertedMatrix * offset);
+                }
+                else
+                    viewport = default;
             }
         }
 
@@ -429,6 +446,13 @@ namespace Avalonia.Layout
 
             public Layoutable Listener { get; }
             public Rect Viewport { get; set; }
+        }
+
+        private enum ArrangeResult
+        {
+            Arranged,
+            NotVisible,
+            AncestorMeasureInvalid,
         }
     }
 }

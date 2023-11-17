@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
@@ -23,7 +22,7 @@ namespace ControlCatalog.Pages
                 $"Text was dragged {++textCount} times"), DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
 
             SetupDnd("Custom", d => d.Set(CustomFormat, "Test123"), DragDropEffects.Move);
-            SetupDnd("Files", d => d.Set(DataFormats.Files, new[] { Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName }), DragDropEffects.Copy);
+            SetupDnd("Files", async d => d.Set(DataFormats.Files, new[] { await (VisualRoot as TopLevel)!.StorageProvider.TryGetFileFromPathAsync(Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName) }), DragDropEffects.Copy);
         }
 
         void SetupDnd(string suffix, Action<DataObject> factory, DragDropEffects effects)
@@ -99,7 +98,7 @@ namespace ControlCatalog.Pages
                     {
                         if (item is IStorageFile file)
                         {
-                            var content = await DialogsPage.ReadTextFromFile(file, 1000);
+                            var content = await DialogsPage.ReadTextFromFile(file, 500);
                             contentStr += $"File {item.Name}:{Environment.NewLine}{content}{Environment.NewLine}{Environment.NewLine}";
                         }
                         else if (item is IStorageFolder folder)

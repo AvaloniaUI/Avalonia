@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -242,6 +243,67 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 50, 50));
 
             Assert.Equal(new Size(110, 110), target.Extent);
+        }
+
+        [Fact]
+        public void Extent_Should_Include_Content_Margin_Scaled_With_Layout_Rounding()
+        {
+            var root = new TestRoot
+            {
+                LayoutScaling = 1.25,
+                UseLayoutRounding = true
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = new Border
+                {
+                    Width = 200,
+                    Height = 200,
+                    Margin = new Thickness(2)
+                }
+            };
+
+            root.Child = target;
+            target.UpdateChild();
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            Assert.Equal(new Size(203.2, 203.2), target.Viewport);
+            Assert.Equal(new Size(203.2, 203.2), target.Extent);
+        }
+
+        [Fact]
+        public void Extent_Should_Be_Rounded_To_Viewport_When_Close()
+        {
+            var root = new TestRoot
+            {
+                LayoutScaling = 1.75,
+                UseLayoutRounding = true
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = new Border
+                {
+                    Width = 164.57142857142858,
+                    Height = 164.57142857142858,
+                    Margin = new Thickness(6)
+                }
+            };
+
+            root.Child = target;
+            target.UpdateChild();
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            Assert.Equal(new Size(176.00000000000003, 176.00000000000003), target.Child!.DesiredSize);
+            Assert.Equal(new Size(176, 176), target.Viewport);
+            Assert.Equal(new Size(176, 176), target.Extent);
         }
 
         [Fact]

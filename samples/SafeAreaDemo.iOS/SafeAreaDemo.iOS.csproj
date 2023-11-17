@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <ProvisioningType>manual</ProvisioningType>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
+    <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
+  </ItemGroup>
+</Project>

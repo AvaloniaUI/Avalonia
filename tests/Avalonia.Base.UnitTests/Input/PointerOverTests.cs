@@ -20,11 +20,13 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Close_Should_Remove_PointerOver()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+            using var app = UnitTestApplication.Start(new TestServices(
+                inputManager: new InputManager(),
+                focusManager: new FocusManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var device = CreatePointerDeviceMock().Object;
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             Canvas canvas;
             var root = CreateInputRoot(impl.Object, new Panel
@@ -33,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     (canvas = new Canvas())
                 }
-            });
+            }, renderer.Object);
 
             SetHit(renderer, canvas);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
@@ -50,9 +52,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var device = CreatePointerDeviceMock().Object;
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             Canvas canvas;
             Border border;
@@ -68,7 +70,7 @@ namespace Avalonia.Base.UnitTests.Input
                         Child = decorator = new Decorator(),
                     })
                 }
-            });
+            }, renderer.Object);
 
             SetHit(renderer, decorator);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
@@ -93,9 +95,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var device = CreatePointerDeviceMock(pointerType: PointerType.Touch).Object;
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             Canvas canvas;
 
@@ -105,7 +107,7 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     (canvas = new Canvas())
                 }
-            });
+            }, renderer.Object);
 
             SetHit(renderer, canvas);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
@@ -119,10 +121,10 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var pointer = new Mock<IPointer>();
             var device = CreatePointerDeviceMock(pointer.Object).Object;
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             Canvas canvas;
             Border border;
@@ -138,7 +140,7 @@ namespace Avalonia.Base.UnitTests.Input
                         Child = decorator = new Decorator(),
                     })
                 }
-            });
+            }, renderer.Object);
 
             SetHit(renderer, canvas);
             pointer.SetupGet(p => p.Captured).Returns(decorator);
@@ -155,9 +157,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var device = CreatePointerDeviceMock().Object;
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             Canvas canvas;
             Border border;
@@ -173,7 +175,7 @@ namespace Avalonia.Base.UnitTests.Input
                         Child = decorator = new Decorator(),
                     })
                 }
-            });
+            }, renderer.Object);
 
             SetHit(renderer, canvas);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
@@ -201,9 +203,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var deviceMock = CreatePointerDeviceMock();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
             var result = new List<(object?, string)>();
 
             void HandleEvent(object? sender, PointerEventArgs e)
@@ -225,7 +227,7 @@ namespace Avalonia.Base.UnitTests.Input
                         Child = decorator = new Decorator(),
                     })
                 }
-            });
+            }, renderer.Object);
 
             AddEnteredExitedHandlers(HandleEvent, canvas, decorator);
 
@@ -256,9 +258,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var deviceMock = CreatePointerDeviceMock();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
             var result = new List<(object?, string)>();
 
             void HandleEvent(object? sender, PointerEventArgs e)
@@ -280,7 +282,7 @@ namespace Avalonia.Base.UnitTests.Input
                         Child = decorator = new Decorator(),
                     })
                 }
-            });
+            }, renderer.Object);
 
             SetHit(renderer, canvas);
             impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root));
@@ -307,9 +309,9 @@ namespace Avalonia.Base.UnitTests.Input
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
             var expectedPosition = new Point(15, 15);
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var deviceMock = CreatePointerDeviceMock();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
             var result = new List<(object?, string, Point)>();
 
             void HandleEvent(object? sender, PointerEventArgs e)
@@ -325,7 +327,7 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     (canvas = new Canvas())
                 }
-            });
+            }, renderer.Object);
 
             AddEnteredExitedHandlers(HandleEvent, root, canvas);
 
@@ -346,14 +348,17 @@ namespace Avalonia.Base.UnitTests.Input
                 result);
         }
 
+        void RaiseSceneInvalidated(TopLevel tl) =>
+            tl.Renderer.TriggerSceneInvalidatedForUnitTests(new Rect(0, 0, 10000, 10000));
+
         [Fact]
         public void Render_Invalidation_Should_Affect_PointerOver()
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var deviceMock = CreatePointerDeviceMock();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             var invalidateRect = new Rect(0, 0, 15, 15);
             var lastClientPosition = new Point(1, 5);
@@ -372,7 +377,7 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     (canvas = new Canvas())
                 }
-            });
+            }, renderer.Object);
             AddEnteredExitedHandlers(HandleEvent, root, canvas);
 
             // Let input know about latest device.
@@ -381,12 +386,12 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.True(canvas.IsPointerOver);
 
             SetHit(renderer, canvas);
-            renderer.Raise(r => r.SceneInvalidated += null, new SceneInvalidatedEventArgs((IRenderRoot)root, invalidateRect));
+            RaiseSceneInvalidated(root);
             Assert.True(canvas.IsPointerOver);
 
             // Raise SceneInvalidated again, but now hide element from the hittest.
             SetHit(renderer, null);
-            renderer.Raise(r => r.SceneInvalidated += null, new SceneInvalidatedEventArgs((IRenderRoot)root, invalidateRect));
+            RaiseSceneInvalidated(root);
             Assert.False(canvas.IsPointerOver);
 
             Assert.Equal(
@@ -405,9 +410,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var deviceMock = CreatePointerDeviceMock();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             var invalidateRect = new Rect(0, 0, 15, 15);
 
@@ -420,7 +425,7 @@ namespace Avalonia.Base.UnitTests.Input
                     (canvas1 = new Canvas()),
                     (canvas2 = new Canvas())
                 }
-            });
+            }, renderer.Object);
 
             canvas1.PointerMoved += (s, a) => a.Pointer.Capture(canvas1);
 
@@ -431,7 +436,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.False(canvas2.IsPointerOver);
 
             SetHit(renderer, canvas2);
-            renderer.Raise(r => r.SceneInvalidated += null, new SceneInvalidatedEventArgs((IRenderRoot)root, invalidateRect));
+            RaiseSceneInvalidated(root);
             Assert.False(canvas1.IsPointerOver);
             Assert.True(canvas2.IsPointerOver);
         }
@@ -442,9 +447,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var deviceMock = CreatePointerDeviceMock();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             var lastClientPosition = new Point(1, 5);
             var invalidateRect = new Rect(0, 0, 15, 15);
@@ -463,7 +468,7 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     (canvas = new Canvas())
                 }
-            });
+            }, renderer.Object);
 
             AddEnteredExitedHandlers(HandleEvent, root, canvas);
 

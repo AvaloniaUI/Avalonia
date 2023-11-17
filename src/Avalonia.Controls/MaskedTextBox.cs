@@ -7,10 +7,11 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
-    public class MaskedTextBox : TextBox, IStyleable
+    public class MaskedTextBox : TextBox
     {
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
@@ -183,7 +184,7 @@ namespace Avalonia.Controls
             set => SetValue(ResetOnSpaceProperty, value);
         }
 
-        Type IStyleable.StyleKey => typeof(TextBox);
+        protected override Type StyleKeyOverride => typeof(TextBox);
 
         /// <inheritdoc />
         protected override void OnGotFocus(GotFocusEventArgs e)
@@ -204,7 +205,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 

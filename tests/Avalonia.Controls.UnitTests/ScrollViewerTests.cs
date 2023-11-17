@@ -1,17 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ScrollViewerTests
+    public class ScrollViewerTests : ScopedTestBase
     {
+        private readonly MouseTestHelper _mouse = new();
+
         [Fact]
         public void Content_Is_Created()
         {
@@ -21,45 +26,20 @@ namespace Avalonia.Controls.UnitTests
                 Content = "Foo",
             };
 
-            target.ApplyTemplate();
-            ((ContentPresenter)target.Presenter).UpdateChild();
+            InitializeScrollViewer(target);
 
             Assert.IsType<TextBlock>(target.Presenter.Child);
         }
 
         [Fact]
-        public void CanHorizontallyScroll_Should_Track_HorizontalScrollBarVisibility()
-        {
-            var target = new ScrollViewer();
-            var values = new List<bool>();
-
-            target.GetObservable(ScrollViewer.CanHorizontallyScrollProperty).Subscribe(x => values.Add(x));
-            target.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
-            target.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            Assert.Equal(new[] { false, true }, values);
-        }
-
-        [Fact]
-        public void CanVerticallyScroll_Should_Track_VerticalScrollBarVisibility()
-        {
-            var target = new ScrollViewer();
-            var values = new List<bool>();
-
-            target.GetObservable(ScrollViewer.CanVerticallyScrollProperty).Subscribe(x => values.Add(x));
-            target.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-            target.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            Assert.Equal(new[] { true, false, true }, values);
-        }
-
-        [Fact]
         public void Offset_Should_Be_Coerced_To_Viewport()
         {
-            var target = new ScrollViewer();
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(20, 20));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
-            target.Offset = new Vector(12, 12);
+            var target = new ScrollViewer
+            {
+                Extent = new Size(20, 20),
+                Viewport = new Size(10, 10),
+                Offset = new Vector(12, 12)
+            };
 
             Assert.Equal(new Vector(10, 10), target.Offset);
         }
@@ -67,10 +47,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Test_ScrollToHome()
         {
-            var target = new ScrollViewer();
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
-            target.Offset = new Vector(25, 25);
+            var target = new ScrollViewer
+            {
+                Extent = new Size(50, 50),
+                Viewport = new Size(10, 10),
+                Offset = new Vector(25, 25)
+            };
             target.ScrollToHome();
 
             Assert.Equal(new Vector(0, 0), target.Offset);
@@ -79,10 +61,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Test_ScrollToEnd()
         {
-            var target = new ScrollViewer();
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
-            target.Offset = new Vector(25, 25);
+            var target = new ScrollViewer
+            {
+                Extent = new Size(50, 50),
+                Viewport = new Size(10, 10),
+                Offset = new Vector(25, 25)
+            };
             target.ScrollToEnd();
 
             Assert.Equal(new Vector(0, 40), target.Offset);
@@ -99,9 +83,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LargeChange_Should_Be_Viewport()
         {
-            var target = new ScrollViewer();
-
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(104, 143));
+            var target = new ScrollViewer
+            {
+                Viewport = new Size(104, 143)
+            };
             Assert.Equal(new Size(104, 143), target.LargeChange);
         }
 
@@ -120,8 +105,7 @@ namespace Avalonia.Controls.UnitTests
                 Content = child.Object,
             };
 
-            target.ApplyTemplate();
-            ((ContentPresenter)target.Presenter).UpdateChild();
+            InitializeScrollViewer(target);
 
             Assert.Equal(new Size(12, 43), target.SmallChange);
         }
@@ -141,8 +125,7 @@ namespace Avalonia.Controls.UnitTests
                 Content = child.Object,
             };
 
-            target.ApplyTemplate();
-            ((ContentPresenter)target.Presenter).UpdateChild();
+            InitializeScrollViewer(target);
 
             Assert.Equal(new Size(45, 67), target.LargeChange);
         }
@@ -154,8 +137,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new Size(100, 100);
+            target.Viewport = new Size(50, 50);
             target.Offset = new Vector(10, 10);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -168,7 +151,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(111, 112));
+            target.Extent = new Size(111, 112);
 
             Assert.Equal(0, raised);
 
@@ -184,8 +167,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new Size(100, 100);
+            target.Viewport = new Size(50, 50);
             target.Offset = new Vector(10, 10);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -214,8 +197,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new Size(100, 100);
+            target.Viewport = new Size(50, 50);
             target.Offset = new Vector(10, 10);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -228,7 +211,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(56, 58));
+            target.Viewport = new Size(56, 58);
 
             Assert.Equal(0, raised);
 
@@ -247,8 +230,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new (100, 100);
+            target.Viewport = new(50, 50);
             target.Offset = new Vector(50, 50);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -261,7 +244,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(70, 70));
+            target.Extent = new(70, 70);
 
             Assert.Equal(0, raised);
 
@@ -271,7 +254,193 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(20, 20), target.Offset); 
         }
 
-        private Control CreateTemplate(ScrollViewer control, INameScope scope)
+        [Fact]
+        public void Scroll_Does_Not_Jump_When_Viewport_Becomes_Smaller_While_Dragging_ScrollBar_Thumb()
+        {
+            var content = new TestContent
+            {
+                MeasureSize = new Size(1000, 10000),
+            };
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(new Size(1000, 10000), target.Extent);
+            Assert.Equal(new Size(1000, 1000), target.Viewport);
+
+            // We're working in absolute coordinates (i.e. relative to the root) and clicking on
+            // the center of the vertical thumb.
+            var thumb = GetVerticalThumb(target);
+            var p = GetRootPoint(thumb, thumb.Bounds.Center);
+
+            // Press the mouse button in the center of the thumb.
+            _mouse.Down(thumb, position: p);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Drag the thumb down 300 pixels.
+            _mouse.Move(thumb, p += new Vector(0, 300));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(new Vector(0, 3000), target.Offset);
+            Assert.Equal(300, thumb.Bounds.Top);
+
+            // Now the extent changes from 10,000 to 5000.
+            content.MeasureSize /= 2;
+            content.InvalidateMeasure();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Due to the extent change, the thumb moves down but the value remains the same.
+            Assert.Equal(600, thumb.Bounds.Top);
+            Assert.Equal(new Vector(0, 3000), target.Offset);
+
+            // Drag the thumb down another 100 pixels.
+            _mouse.Move(thumb, p += new Vector(0, 100));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // The drag should not cause the offset/thumb to jump *up* to the current absolute
+            // mouse position, i.e. it should move down in the direction of the drag even if the
+            // absolute mouse position is now above the thumb.
+            Assert.Equal(700, thumb.Bounds.Top);
+            Assert.Equal(new Vector(0, 3500), target.Offset);
+        }
+
+        [Fact]
+        public void Thumb_Does_Not_Become_Detached_From_Mouse_Position_When_Scrolling_Past_The_Start()
+        {
+            var content = new TestContent();
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(new Size(1000, 2000), target.Extent);
+            Assert.Equal(new Size(1000, 1000), target.Viewport);
+
+            // We're working in absolute coordinates (i.e. relative to the root) and clicking on
+            // the center of the vertical thumb.
+            var thumb = GetVerticalThumb(target);
+            var p = GetRootPoint(thumb, thumb.Bounds.Center);
+
+            // Press the mouse button in the center of the thumb.
+            _mouse.Down(thumb, position: p);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Drag the thumb down 100 pixels.
+            _mouse.Move(thumb, p += new Vector(0, 100));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(new Vector(0, 200), target.Offset);
+            Assert.Equal(100, thumb.Bounds.Top);
+
+            // Drag the thumb up 200 pixels - 100 pixels past the top of the scrollbar.
+            _mouse.Move(thumb, p -= new Vector(0, 200));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(new Vector(0, 0), target.Offset);
+            Assert.Equal(0, thumb.Bounds.Top);
+
+            // Drag the thumb back down 200 pixels.
+            _mouse.Move(thumb, p += new Vector(0, 200));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // We should now be back in the state after we first scrolled down 100 pixels.
+            Assert.Equal(new Vector(0, 200), target.Offset);
+            Assert.Equal(100, thumb.Bounds.Top);
+        }
+
+        [Fact]
+        public void BringIntoViewOnFocusChange_Scrolls_Child_Control_Into_View_When_Focused()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var content = new StackPanel
+            {
+                Children =
+                {
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                }
+            };
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var button = (Button)content.Children[1];
+            button.Focus();
+
+            Assert.Equal(new Vector(0, 800), target.Offset);
+        }
+
+        [Fact]
+        public void BringIntoViewOnFocusChange_False_Does_Not_Scroll_Child_Control_Into_View_When_Focused()
+        {
+            var content = new StackPanel
+            {
+                Children =
+                {
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                }
+            };
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var button = (Button)content.Children[1];
+            button.Focus();
+
+            Assert.Equal(new Vector(0, 0), target.Offset);
+        }
+
+        private Point GetRootPoint(Visual control, Point p)
+        {
+            if (control.GetVisualRoot() is Visual root &&
+                control.TransformToVisual(root) is Matrix m)
+            {
+                return p.Transform(m);
+            }
+
+            throw new InvalidOperationException("Could not get the point in root coordinates.");
+        }
+
+        internal static Control CreateTemplate(ScrollViewer control, INameScope scope)
         {
             return new Grid
             {
@@ -290,34 +459,82 @@ namespace Avalonia.Controls.UnitTests
                     new ScrollContentPresenter
                     {
                         Name = "PART_ContentPresenter",
-                        [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
-                        [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
-                        [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
-                        [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
-                        [~ScrollContentPresenter.CanHorizontallyScrollProperty] = control[~ScrollViewer.CanHorizontallyScrollProperty],
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
-                        Name = "horizontalScrollBar",
+                        Name = "PART_HorizontalScrollBar",
                         Orientation = Orientation.Horizontal,
-                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
-                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
-                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
+                        Template = new FuncControlTemplate<ScrollBar>(CreateScrollBarTemplate),
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
-                        Name = "verticalScrollBar",
+                        Name = "PART_VerticalScrollBar",
                         Orientation = Orientation.Vertical,
-                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
-                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
-                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
+                        Template = new FuncControlTemplate<ScrollBar>(CreateScrollBarTemplate),
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
                     }.RegisterInNameScope(scope),
                 },
             };
+        }
+
+        private static Control CreateScrollBarTemplate(ScrollBar scrollBar, INameScope scope)
+        {
+            return new Border
+            {
+                Child = new Track
+                {
+                    Name = "track",
+                    IsDirectionReversed = true,
+                    [!Track.MinimumProperty] = scrollBar[!RangeBase.MinimumProperty],
+                    [!Track.MaximumProperty] = scrollBar[!RangeBase.MaximumProperty],
+                    [!!Track.ValueProperty] = scrollBar[!!RangeBase.ValueProperty],
+                    [!Track.ViewportSizeProperty] = scrollBar[!ScrollBar.ViewportSizeProperty],
+                    [!Track.OrientationProperty] = scrollBar[!ScrollBar.OrientationProperty],
+                    Thumb = new Thumb
+                    {
+                        Template = new FuncControlTemplate<Thumb>(CreateThumbTemplate),
+                    },
+                }.RegisterInNameScope(scope),
+            };
+        }
+
+        private static Control CreateThumbTemplate(Thumb control, INameScope scope)
+        {
+            return new Border
+            {
+                Background = Brushes.Gray,
+            };
+        }
+
+        private Thumb GetVerticalThumb(ScrollViewer target)
+        {
+            var scrollbar = Assert.IsType<ScrollBar>(
+                target.GetTemplateChildren().FirstOrDefault(x => x.Name == "PART_VerticalScrollBar"));
+            var track = Assert.IsType<Track>(
+                scrollbar.GetTemplateChildren().FirstOrDefault(x => x.Name == "track"));
+            return Assert.IsType<Thumb>(track.Thumb);
+        }
+
+        private static void InitializeScrollViewer(ScrollViewer target)
+        {
+            target.ApplyTemplate();
+
+            var presenter = (ScrollContentPresenter)target.Presenter;
+            presenter.AttachToScrollViewer();
+            presenter.UpdateChild();
+        }
+
+        private class TestContent : Control
+        {
+            public Size MeasureSize { get; set; } = new Size(1000, 2000);
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                return MeasureSize;
+            }
         }
     }
 }

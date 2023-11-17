@@ -35,6 +35,9 @@ namespace Avalonia.Controls
         static Menu()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(Menu),
+                KeyboardNavigationMode.Once);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<Menu>(AccessibilityView.Control);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Menu>(AutomationControlType.Menu);
         }
@@ -57,7 +60,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
         }
@@ -74,7 +77,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
@@ -84,7 +87,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var inputRoot = e.Root as IInputRoot;
+            var inputRoot = e.Root as TopLevel;
 
             if (inputRoot?.AccessKeyHandler != null)
             {

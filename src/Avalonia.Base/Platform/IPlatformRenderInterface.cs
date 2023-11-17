@@ -11,14 +11,14 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines the main platform-specific interface for the rendering subsystem.
     /// </summary>
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterface
     {
         /// <summary>
         /// Creates an ellipse geometry implementation.
         /// </summary>
         /// <param name="rect">The bounds of the ellipse.</param>
-        /// <returns>An ellipse geometry..</returns>
+        /// <returns>An ellipse geometry.</returns>
         IGeometryImpl CreateEllipseGeometry(Rect rect);
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace Avalonia.Platform
         bool IsSupportedBitmapPixelFormat(PixelFormat format);
     }
 
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterfaceContext : IOptionalFeatureProvider, IDisposable
     {
         /// <summary>

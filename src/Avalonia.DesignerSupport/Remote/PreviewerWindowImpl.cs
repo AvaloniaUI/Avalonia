@@ -53,21 +53,25 @@ namespace Avalonia.DesignerSupport.Remote
             // In previewer mode we completely ignore client-side viewport size
             if (obj is ClientViewportAllocatedMessage alloc)
             {
-                Dispatcher.UIThread.Post(() => SetDpi(new Vector(alloc.DpiX, alloc.DpiY)));
+                Dispatcher.UIThread.Post(() =>
+                {
+                    RenderScaling = alloc.DpiX / 96.0;
+                    RenderAndSendFrameIfNeeded();
+                });
                 return;
             }
             base.OnMessage(transport, obj);
         }
         
-        public void Resize(Size clientSize, PlatformResizeReason reason)
+        public void Resize(Size clientSize, WindowResizeReason reason)
         {
             _transport.Send(new RequestViewportResizeMessage
             {
-                Width = clientSize.Width,
-                Height = clientSize.Height
+                Width = Math.Ceiling(clientSize.Width * RenderScaling),
+                Height = Math.Ceiling(clientSize.Height * RenderScaling)
             });
             ClientSize = clientSize;
-            RenderIfNeeded();
+            RenderAndSendFrameIfNeeded();
         }
 
         public void Move(PixelPoint point)

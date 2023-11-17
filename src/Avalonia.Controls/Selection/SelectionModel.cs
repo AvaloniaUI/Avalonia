@@ -277,7 +277,7 @@ namespace Avalonia.Controls.Selection
         {
             if (base.Source != value)
             {
-                if (_operation is not null)
+                if (_operation?.UpdateCount > 0)
                 {
                     throw new InvalidOperationException("Cannot change source while update is in progress.");
                 }

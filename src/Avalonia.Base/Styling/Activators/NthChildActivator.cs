@@ -1,6 +1,4 @@
-﻿#nullable enable
-using System;
-using Avalonia.LogicalTree;
+﻿using Avalonia.LogicalTree;
 
 namespace Avalonia.Styling.Activators
 {
@@ -14,7 +12,7 @@ namespace Avalonia.Styling.Activators
         private readonly int _step;
         private readonly int _offset;
         private readonly bool _reversed;
-        private int _index = -1;
+        private int? _index;
 
         public NthChildActivator(
             ILogical control,
@@ -30,7 +28,7 @@ namespace Avalonia.Styling.Activators
 
         protected override bool EvaluateIsActive()
         {
-            var index = _index >= 0 ? _index : _provider.GetChildIndex(_control);
+            var index = _index ?? _provider.GetChildIndex(_control);
             return NthChildSelector.Evaluate(index, _provider, _step, _offset, _reversed).IsMatch;
         }
 
@@ -50,8 +48,7 @@ namespace Avalonia.Styling.Activators
             // 1. Subscribed child index was changed
             // 2. Child indexes were reset
             // 3. We're a reversed (nth-last-child) selector and total count has changed
-            if ((e.Child == _control || e.Action == ChildIndexChangedAction.ChildIndexesReset) ||
-                (_reversed && e.Action == ChildIndexChangedAction.TotalCountChanged))
+            switch (e.Action)
             {
                 // We're using the _index field to pass the index of the child to EvaluateIsActive
                 // *only* when the active state is re-evaluated via this event handler. The docs
@@ -65,16 +62,17 @@ namespace Avalonia.Styling.Activators
                 // IChildIndexProvider.GetChildIndex. This is because this event can be fired during
                 // the process of realizing an element of a virtualized list; in this case calling
                 // GetChildIndex may not return the correct index as the element isn't yet realized.
-                _index = e.Index;
-                ReevaluateIsActive();
-                _index = -1;
+                case ChildIndexChangedAction.ChildIndexChanged when e.Child == _control:
+                    _index = e.Index;
+                    ReevaluateIsActive();
+                    _index = null;
+                    break;
+                case ChildIndexChangedAction.ChildIndexesReset:
+                case ChildIndexChangedAction.TotalCountChanged when _reversed:
+                    _index = null;
+                    ReevaluateIsActive();
+                    break;
             }
-        }
-
-        private void TotalCountChanged(object? sender, EventArgs e)
-        {
-            if (_reversed)
-                ReevaluateIsActive();
         }
     }
 }

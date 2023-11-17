@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
@@ -29,12 +30,12 @@ namespace Avalonia.Base.UnitTests.Input
                     inputManager: new InputManager(),
                     dispatcherImpl: dispatcherMock.Object));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var device = new MouseDevice();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             var control = new Control();
-            var root = CreateInputRoot(impl.Object, control);
+            var root = CreateInputRoot(impl.Object, control, renderer.Object);
            
             MouseButton button = default;
 
@@ -64,9 +65,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var device = new MouseDevice();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             Canvas control;
             Panel rootChild;
@@ -76,7 +77,7 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     (control = new Canvas())
                 }
-            });
+            }, renderer.Object);
 
             // Synthesize event to receive a pointer.
             IPointer result = null;
@@ -102,9 +103,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var device = new MouseDevice();
-            var impl = CreateTopLevelImplMock(renderer.Object);
+            var impl = CreateTopLevelImplMock();
 
             Border border;
             var root = CreateInputRoot(impl.Object, new Panel
@@ -117,7 +118,7 @@ namespace Avalonia.Base.UnitTests.Input
                         RenderTransform = new TranslateTransform(10, 0),
                     })
                 }
-            });
+            }, renderer.Object);
            
            
             Point? result = null;

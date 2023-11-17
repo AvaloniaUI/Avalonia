@@ -15,6 +15,7 @@ namespace Avalonia.Input
         /// <remarks>
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
+        [PrivateApi]
         void SetOwner(IInputRoot owner);
 
         /// <summary>

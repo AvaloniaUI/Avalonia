@@ -1,10 +1,15 @@
 using System;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
-    [Unstable]
+    /// <summary>
+    /// The <see cref="IPlatformSettings"/> interface represents a contract for accessing platform-specific settings and information.
+    /// Some of these settings might be changed by used globally in the OS in runtime.
+    /// </summary>
+    [NotClientImplementable]
     public interface IPlatformSettings
     {
         /// <summary>
@@ -32,6 +37,11 @@ namespace Avalonia.Platform
         /// Holding duration between pointer press and when event is fired.
         /// </summary>
         TimeSpan HoldWaitDuration { get; }
+        
+        /// <summary>
+        /// Get a configuration for platform-specific hotkeys in an Avalonia application.
+        /// </summary>
+        PlatformHotkeyConfiguration HotkeyConfiguration { get; }
         
         /// <summary>
         /// Gets current system color values including dark mode and accent colors.

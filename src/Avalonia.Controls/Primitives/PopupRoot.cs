@@ -72,12 +72,26 @@ namespace Avalonia.Controls.Primitives
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        protected internal override Interactive? InteractiveParent => (Interactive?)Parent;
+        internal override Interactive? InteractiveParent => (Interactive?)Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        Visual? IHostedVisualTreeRoot.Host => VisualParent;
+        Visual? IHostedVisualTreeRoot.Host
+        {
+            get
+            {
+                // If the parent is attached to a visual tree, then return that. However the parent
+                // will possibly be a standalone Popup (i.e. a Popup not attached to a visual tree,
+                // created by e.g. a ContextMenu): if this is the case, return the ParentTopLevel
+                // if set. This helps to allow the focus manager to restore the focus to the outer
+                // scope when the popup is closed.
+                var parentVisual = Parent as Visual;
+                if (parentVisual?.IsAttachedToVisualTree == true)
+                    return parentVisual;
+                return ParentTopLevel ?? parentVisual;
+            }
+        }
 
         /// <summary>
         /// Gets the styling parent of the popup root.
@@ -90,7 +104,6 @@ namespace Avalonia.Controls.Primitives
         public void Dispose()
         {
             PlatformImpl?.Dispose();
-            HandleClosed();
         }
 
         private void UpdatePosition()

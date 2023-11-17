@@ -1,33 +1,39 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Threading;
+using Avalonia.Data;
 
 namespace Avalonia.Controls;
 
 /// <summary>
-/// Displays <see cref="ContentControl.Content"/> according to a <see cref="FuncDataTemplate"/>.
-/// Uses <see cref="PageTransition"/> to move between the old and new content values. 
+/// Displays <see cref="ContentControl.Content"/> according to an <see cref="IDataTemplate"/>,
+/// using a <see cref="PageTransition"/> to move between the old and new content. 
 /// </summary>
 public class TransitioningContentControl : ContentControl
 {
-    private CancellationTokenSource? _lastTransitionCts;
-    private object? _currentContent;
+    private CancellationTokenSource? _currentTransition;
+    private ContentPresenter? _presenter2;
+    private bool _isFirstFull;
+    private bool _shouldAnimate;
 
     /// <summary>
     /// Defines the <see cref="PageTransition"/> property.
     /// </summary>
     public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
-        AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(nameof(PageTransition),
-            new CrossFade(TimeSpan.FromSeconds(0.125)));
-    
+        AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(
+            nameof(PageTransition),
+            defaultValue: new ImmutableCrossFade(TimeSpan.FromMilliseconds(125)));
+
     /// <summary>
-    /// Defines the <see cref="CurrentContent"/> property.
+    /// Defines the <see cref="IsTransitionReversed"/> property.
     /// </summary>
-    public static readonly DirectProperty<TransitioningContentControl, object?> CurrentContentProperty =
-        AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(nameof(CurrentContent),
-            o => o.CurrentContent);
+    public static readonly StyledProperty<bool> IsTransitionReversedProperty =
+        AvaloniaProperty.Register<TransitioningContentControl, bool>(
+            nameof(IsTransitionReversed),
+            defaultValue: false);
 
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
@@ -39,73 +45,129 @@ public class TransitioningContentControl : ContentControl
     }
 
     /// <summary>
-    /// Gets the content currently displayed on the screen.
+    /// Gets or sets a value indicating whether the control will be animated in the reverse direction.
     /// </summary>
-    public object? CurrentContent
+    /// <remarks>May not apply to all transitions.</remarks>
+    public bool IsTransitionReversed
     {
-        get => _currentContent;
-        private set => SetAndRaise(CurrentContentProperty, ref _currentContent, value);
+        get => GetValue(IsTransitionReversedProperty);
+        set => SetValue(IsTransitionReversedProperty, value);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var result = base.ArrangeOverride(finalSize);
+
+        if (_shouldAnimate)
+        {
+            _currentTransition?.Cancel();
+
+            if (_presenter2 is not null &&
+                Presenter is Visual presenter &&
+                PageTransition is { } transition)
+            {   
+                _shouldAnimate = false;
+                
+                var cancel = new CancellationTokenSource();
+                _currentTransition = cancel;
+
+                var from = _isFirstFull ? _presenter2 : presenter;
+                var to = _isFirstFull ? presenter : _presenter2;
+
+                transition.Start(from, to, !IsTransitionReversed, cancel.Token).ContinueWith(x =>
+                {
+                    if (!cancel.IsCancellationRequested)
+                    {
+                        HideOldPresenter();
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+            }
+
+            _shouldAnimate = false;
+        }
+
+        return result;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-
-        Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
+        UpdateContent(false);
     }
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override bool RegisterContentPresenter(ContentPresenter presenter)
     {
-        base.OnDetachedFromVisualTree(e);
-        
-        _lastTransitionCts?.Cancel();
+        if (base.RegisterContentPresenter(presenter))
+        {
+            return true;
+        }
+
+        if (presenter is ContentPresenter p &&
+            p.Name == "PART_ContentPresenter2")
+        {
+            _presenter2 = p;
+            _presenter2.IsVisible = false;
+            UpdateContent(false);
+            return true;
+        }
+
+        return false;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-
         if (change.Property == ContentProperty)
         {
-            Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
+            UpdateContent(true);
+            return;
         }
-        else if (change.Property == CurrentContentProperty)
-        {
-            UpdateLogicalTree(change.OldValue, change.NewValue);
-        }
+
+        base.OnPropertyChanged(change);
     }
 
-    protected override void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+    private void UpdateContent(bool withTransition)
     {
-        // We do nothing becuse we should not remove old Content until the animation is over
-    }
-
-    /// <summary>
-    /// Updates the content with transitions.
-    /// </summary>
-    /// <param name="content">New content to set.</param>
-    private async void UpdateContentWithTransition(object? content)
-    {
-        if (VisualRoot is null)
+        if (VisualRoot is null || _presenter2 is null || Presenter is null)
         {
             return;
         }
 
-        _lastTransitionCts?.Cancel();
-        _lastTransitionCts = new CancellationTokenSource();
-        var localToken = _lastTransitionCts.Token;
+        var currentPresenter = _isFirstFull ? _presenter2 : Presenter;
+        currentPresenter.Content = Content;
+        currentPresenter.IsVisible = true;
 
-        if (PageTransition != null)
-            await PageTransition.Start(this, null, true, localToken);
+        _isFirstFull = !_isFirstFull;
 
-        if (localToken.IsCancellationRequested)
+        if (PageTransition is not null && withTransition)
         {
-            return;
+            _shouldAnimate = true;
+            InvalidateArrange();
         }
+        else
+        {
+            HideOldPresenter();
+        }
+    }
 
-        CurrentContent = content;
+    private void HideOldPresenter()
+    {
+        var oldPresenter = _isFirstFull ? _presenter2 : Presenter;
+        if (oldPresenter is not null)
+        {
+            oldPresenter.Content = null;
+            oldPresenter.IsVisible = false;
+        }
+    }
 
-        if (PageTransition != null)
-            await PageTransition.Start(null, this, true, localToken);
+    private class ImmutableCrossFade : IPageTransition
+    {
+        private readonly CrossFade _inner;
+
+        public ImmutableCrossFade(TimeSpan duration) => _inner = new CrossFade(duration);
+
+        public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+        {
+            return _inner.Start(from, to, cancellationToken);
+        }
     }
 }

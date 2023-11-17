@@ -1,0 +1,26 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="RemoveAvaloniaRefAssemblies" AfterTargets="ResolveTargetingPackAssets" Condition="'$(AvaloniaAccessUnstablePrivateApis.ToLowerInvariant())'=='true'">
+    <ItemGroup>
+      <ReferencesToRemove Include="@(Reference)" Condition="'%(Reference.NuGetPackageId)' == 'Avalonia'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Remove="@(ReferencesToRemove)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="PreventPackingAvaloniaUnstableApis" BeforeTargets="Pack">
+    <Error Condition="'$(IsPackable.ToLowerInvariant())' == 'true' and '$(AvaloniaAccessUnstablePrivateApis.ToLowerInvariant())' == 'true' and '$(Avalonia_I_Want_To_Use_Private_Apis_In_Nuget_Package_And_Promise_To_Pin_The_Exact_Avalonia_Version_In_Package_Dependency)' != 'true'"
+           Text="It seems that you are using private APIs in a nuget package, please follow this guide https://github.com/AvaloniaUI/Avalonia/wiki/Using-private-apis-in-nuget-packages" />
+  </Target>
+  <Target Name="AddReferencePathsToRealAvaloniaAssemblies" BeforeTargets="CoreCompile" Condition="'$(AvaloniaAccessUnstablePrivateApis.ToLowerInvariant())'=='true'">
+    <PropertyGroup>
+      <AvaloniaUnstableApiFrameworkToUse>net6.0</AvaloniaUnstableApiFrameworkToUse>
+      <AvaloniaUnstableApiFrameworkToUse Condition="$(TargetFramework.StartsWith('net4')) == 'true' or $(TargetFramework.StartsWith('net5')) == 'true' or $(TargetFramework.StartsWith('netsta')) == 'true' or $(TargetFramework.StartsWith('netcore')) == 'true'">netstandard2.0</AvaloniaUnstableApiFrameworkToUse>
+    </PropertyGroup>
+    <ItemGroup>
+      <Reference Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
+      <ReferencePath Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
+      <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
+    </ItemGroup>
+    <Warning Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may be depending on APIs which may change or be removed in future versions of Avalonia. Set AvaloniaAccessUnstablePrivateApis to 'False' to disable this warning." />
+  </Target>
+</Project>

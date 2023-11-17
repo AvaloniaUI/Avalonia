@@ -11,7 +11,7 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TValue">The type of the value.</typeparam>
-    public class SingleOrDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
+    internal class SingleOrDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         where TKey : notnull
     {
         private KeyValuePair<TKey, TValue>? _singleValue;
@@ -99,7 +99,7 @@ namespace Avalonia.Utilities
 
         private class SingleEnumerator<T> : IEnumerator<T>
         {
-            private T value;
+            private readonly T value;
             private int index = -1;
 
             public SingleEnumerator(T value)

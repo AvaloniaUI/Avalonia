@@ -6,7 +6,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Threading;
 
-[Unstable]
+[PrivateApi]
 public interface IDispatcherImpl
 {
     bool CurrentThreadIsLoopThread { get; }
@@ -19,7 +19,7 @@ public interface IDispatcherImpl
     void UpdateTimer(long? dueTimeInMs);
 }
 
-[Unstable]
+[PrivateApi]
 public interface IDispatcherImplWithPendingInput : IDispatcherImpl
 {
     // Checks if dispatcher implementation can 
@@ -28,14 +28,14 @@ public interface IDispatcherImplWithPendingInput : IDispatcherImpl
     bool HasPendingInput { get; }
 }
 
-[Unstable]
+[PrivateApi]
 public interface IDispatcherImplWithExplicitBackgroundProcessing : IDispatcherImpl
 {
     event Action ReadyForBackgroundProcessing;
     void RequestBackgroundProcessing();
 }
 
-[Unstable]
+[PrivateApi]
 public interface IControlledDispatcherImpl : IDispatcherImplWithPendingInput
 {
     // Runs the event loop
@@ -46,7 +46,7 @@ internal class LegacyDispatcherImpl : IDispatcherImpl
 {
     private readonly IPlatformThreadingInterface _platformThreading;
     private IDisposable? _timer;
-    private Stopwatch _clock = Stopwatch.StartNew();
+    private readonly Stopwatch _clock = Stopwatch.StartNew();
 
     public LegacyDispatcherImpl(IPlatformThreadingInterface platformThreading)
     {

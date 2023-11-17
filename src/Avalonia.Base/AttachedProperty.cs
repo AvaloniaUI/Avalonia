@@ -6,23 +6,25 @@ namespace Avalonia
     /// An attached avalonia property.
     /// </summary>
     /// <typeparam name="TValue">The type of the property's value.</typeparam>
-    public class AttachedProperty<TValue> : StyledProperty<TValue>
+    public sealed class AttachedProperty<TValue> : StyledProperty<TValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttachedProperty{TValue}"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The class that is registering the property.</param>
+        /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="validate">A value validation callback.</param>
-        public AttachedProperty(
+        internal AttachedProperty(
             string name,
             Type ownerType,
+            Type hostType,
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
             Func<TValue, bool>? validate = null)
-            : base(name, ownerType, metadata, inherits, validate)
+            : base(name, ownerType, hostType, metadata, inherits, validate)
         {
             IsAttached = true;
         }

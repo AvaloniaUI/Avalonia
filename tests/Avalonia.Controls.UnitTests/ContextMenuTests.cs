@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 
 using Moq;
@@ -35,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -138,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -167,7 +168,7 @@ namespace Avalonia.Controls.UnitTests
 
                 bool opened = false;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     opened = true;
                 };
@@ -220,7 +221,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int closedCount = 0;
 
-                sut.MenuClosed += (sender, args) =>
+                sut.Closed += (sender, args) =>
                 {
                     closedCount++;
                 };
@@ -258,7 +259,7 @@ namespace Avalonia.Controls.UnitTests
                 var tracker = 0;
 
                 var c = new ContextMenu();
-                c.ContextMenuClosing += (s, e) =>
+                c.Closing += (s, e) =>
                 {
                     tracker++;
                     e.Cancel = true;
@@ -430,7 +431,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 new Window { Content = target };
 
-                sut.ContextMenuOpening += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Opening += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 _mouse.Click(target, MouseButton.Right);
 
@@ -574,7 +575,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = PreparedWindow(target);
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
-                sut.ContextMenuClosing += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Closing += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 window.Show();
 
@@ -593,12 +594,61 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Closing_Should_Restore_Focus()
+        {
+            using (Application())
+            {
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
+                popupImpl.Setup(x => x.Hide()).Verifiable();
+
+                var item = new MenuItem();
+                var sut = new ContextMenu
+                {
+                    Items = { item }
+                };
+
+                var button = new Button();
+                var target = new Panel
+                {
+                    Children =
+                    {
+                        button,
+                    },
+                    ContextMenu = sut
+                };
+
+                var window = PreparedWindow(target);
+                var focusManager = Assert.IsType<FocusManager>(window.FocusManager);
+
+                // Show the window and focus the button.
+                window.Show();
+                button.Focus();
+                Assert.Same(button, focusManager.GetFocusedElement());
+
+                // Click to show the context menu.
+                _mouse.Click(target, MouseButton.Right);
+                Assert.True(sut.IsOpen);
+
+                // Hover over the context menu item: this should focus it.
+                _mouse.Enter(item);
+                Assert.Same(item, focusManager.GetFocusedElement());
+
+                // Click the menu item to close the menu.
+                _mouse.Click(item);
+                Assert.False(sut.IsOpen);
+
+                // Focus should be restored to the button.
+                Assert.Same(button, focusManager.GetFocusedElement());
+            }
+        }
+
         private static Window PreparedWindow(object content = null)
         {
-            var renderer = RendererMocks.CreateRenderer();
+            
             var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
 
             var w = new Window(windowImpl.Object) { Content = content };
             w.ApplyStyling();
@@ -622,6 +672,8 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
+                                        focusManager: new FocusManager(),
+                                        keyboardDevice: () => new KeyboardDevice(),
                                         inputManager: new InputManager(),
                                         windowImpl: windowImpl.Object,
                                         windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));

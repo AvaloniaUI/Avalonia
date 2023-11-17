@@ -1,6 +1,6 @@
 namespace Avalonia.Data.Core
 {
-    public static class CommonPropertyNames
+    internal static class CommonPropertyNames
     {
         public const string IndexerName = "Item";
     }

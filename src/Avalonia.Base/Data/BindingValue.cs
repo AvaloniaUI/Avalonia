@@ -237,7 +237,7 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="value">The untyped value.</param>
         /// <returns>The typed binding value.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConversionRequiresUnreferencedCodeMessage)]
         public static BindingValue<T> FromUntyped(object? value)
         {
             return FromUntyped(value, typeof(T));
@@ -251,7 +251,7 @@ namespace Avalonia.Data
         /// <param name="value">The untyped value.</param>
         /// <param name="targetType">The runtime target type.</param>
         /// <returns>The typed binding value.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConversionRequiresUnreferencedCodeMessage)]
         public static BindingValue<T> FromUntyped(object? value, Type targetType)
         {
             if (value == AvaloniaProperty.UnsetValue)

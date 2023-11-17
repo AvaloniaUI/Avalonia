@@ -1,24 +1,20 @@
-using System;
-using Avalonia.Collections;
-using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Data;
-using Avalonia.Data.Converters;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.Templates;
-using Avalonia.Media;
-using Avalonia.Media.Immutable;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml;
-using Xunit;
+using Avalonia.Collections;
+using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Presenters;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
-using Avalonia.Themes.Simple;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -260,6 +256,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Grid xmlns='https://github.com/avaloniaui'
         ColumnDefinitions='100,Auto,*,100*'
         RowDefinitions='100,Auto,*,100*'>
+</Grid>";
+
+            var grid = AvaloniaRuntimeXamlLoader.Parse<Grid>(xaml);
+
+
+            Assert.Equal(4, grid.ColumnDefinitions.Count);
+            Assert.Equal(4, grid.RowDefinitions.Count);
+
+            var expected1 = new GridLength(100);
+            var expected2 = GridLength.Auto;
+            var expected3 = new GridLength(1, GridUnitType.Star);
+            var expected4 = new GridLength(100, GridUnitType.Star);
+
+            Assert.Equal(expected1, grid.ColumnDefinitions[0].Width);
+            Assert.Equal(expected2, grid.ColumnDefinitions[1].Width);
+            Assert.Equal(expected3, grid.ColumnDefinitions[2].Width);
+            Assert.Equal(expected4, grid.ColumnDefinitions[3].Width);
+
+            Assert.Equal(expected1, grid.RowDefinitions[0].Height);
+            Assert.Equal(expected2, grid.RowDefinitions[1].Height);
+            Assert.Equal(expected3, grid.RowDefinitions[2].Height);
+            Assert.Equal(expected4, grid.RowDefinitions[3].Height);
+        }
+        
+        [Fact]
+        public void Grid_Row_Col_Definitions_Are_Parsed_Space_Delimiter()
+        {
+            var xaml = @"
+<Grid xmlns='https://github.com/avaloniaui'
+        ColumnDefinitions='100 Auto * 100*'
+        RowDefinitions='100 Auto * 100*'>
 </Grid>";
 
             var grid = AvaloniaRuntimeXamlLoader.Parse<Grid>(xaml);
@@ -609,7 +636,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var control = new ContentControl();
 
-            var result = (ContentPresenter)template.Build(control).Control;
+            var result = (ContentPresenter)template.Build(control).Result;
 
             Assert.NotNull(result);
         }
@@ -910,7 +937,49 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("World", target.Test2);
             Assert.Equal("Hello", target.Test1);
         }
-        
+
+        [Fact]
+        public void Can_Specify_Button_Classes()
+        {
+            var xaml = "<Button xmlns='https://github.com/avaloniaui' Classes='foo bar'/>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Button_Classes_Longform()
+        {
+            var xaml = @"
+<Button xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Button.Classes>
+    <x:String>foo</x:String>
+    <x:String>bar</x:String>
+  </Button.Classes>
+</Button>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Flyout_FlyoutPresenterClasses()
+        {
+            var xaml = "<Flyout xmlns='https://github.com/avaloniaui' FlyoutPresenterClasses='foo bar'/>";
+            var target = (Flyout)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.FlyoutPresenterClasses);
+        }
+
+        [Fact]
+        public void Trying_To_Bind_ItemsControl_Items_Throws()
+        {
+            var xaml = "<ItemsControl xmlns='https://github.com/avaloniaui' Items='{Binding}'/>";
+
+            Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
@@ -921,7 +990,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             public IList SelectedItems
             {
-                get { return _selectedItems; }
+                get => _selectedItems;
                 set
                 {
                     _selectedItems = value;

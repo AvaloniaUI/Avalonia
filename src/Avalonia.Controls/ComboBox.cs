@@ -21,8 +21,9 @@ namespace Avalonia.Controls
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
-        public const string pcDropdownOpen = ":dropdownopen";
-        public const string pcPressed = ":pressed";
+        internal const string pcDropdownOpen = ":dropdownopen";
+        internal const string pcPressed = ":pressed";
+
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
@@ -164,14 +165,21 @@ namespace Avalonia.Controls
             UpdateSelectionBoxItem(SelectedItem);
         }
 
-        public override void InvalidateMirrorTransform()
+        protected internal override void InvalidateMirrorTransform()
         {
             base.InvalidateMirrorTransform();
             UpdateFlowDirection();
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new ComboBoxItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ComboBoxItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new ComboBoxItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<ComboBoxItem>(item, out recycleKey);
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -223,8 +231,7 @@ namespace Avalonia.Controls
                 var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
                 {
-                    FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
-                    e.Handled = true;
+                    e.Handled = firstChild.Focus(NavigationMethod.Directional);
                 }
             }
         }
@@ -263,6 +270,7 @@ namespace Avalonia.Controls
             {
                 if (_popup?.IsInsidePopup(source) == true)
                 {
+                    e.Handled = true;
                     return;
                 }
             }
@@ -354,19 +362,6 @@ namespace Avalonia.Controls
 
             _subscriptionsOnOpen.Clear();
 
-            var toplevel = TopLevel.GetTopLevel(this);
-            if (toplevel != null)
-            {
-                toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
-                {
-                    //eat wheel scroll event outside dropdown popup while it's open
-                    if (IsDropDownOpen && (ev.Source as Visual)?.GetVisualRoot() == toplevel)
-                    {
-                        ev.Handled = true;
-                    }
-                }, Interactivity.RoutingStrategies.Tunnel).DisposeWith(_subscriptionsOnOpen);
-            }
-
             this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
 
             foreach (var parent in this.GetVisualAncestors().OfType<Control>())
@@ -443,7 +438,22 @@ namespace Avalonia.Controls
             }
             else
             {
-                SelectionBoxItem = item;
+                if(ItemTemplate is null && DisplayMemberBinding is { } binding)
+                {
+                    var template = new FuncDataTemplate<object?>((_, _) =>
+                    new TextBlock
+                    {
+                        [TextBlock.DataContextProperty] = item,
+                        [!TextBlock.TextProperty] = binding,
+                    });
+                    var text = template.Build(item);
+                    SelectionBoxItem = text;
+                }
+                else
+                {
+                    SelectionBoxItem = item;
+                }
+                
             }
         }
 
@@ -506,6 +516,15 @@ namespace Avalonia.Controls
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Clears the selection
+        /// </summary>
+        public void Clear()
+        {
+            SelectedItem = null;
+            SelectedIndex = -1;
         }
     }
 }

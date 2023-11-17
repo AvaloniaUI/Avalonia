@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
@@ -18,9 +20,43 @@ namespace Avalonia
         public static AppBuilder UseAndroid(this AppBuilder builder)
         {
             return builder
+                .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
                 .UseSkia();
         }
+    }
+
+    /// <summary>
+    /// Represents the rendering mode for platform graphics.
+    /// </summary>
+    public enum AndroidRenderingMode
+    {
+        /// <summary>
+        /// Avalonia is rendered into a framebuffer.
+        /// </summary>
+        Software = 1,
+
+        /// <summary>
+        /// Enables android EGL rendering.
+        /// </summary>
+        Egl = 2
+    }
+
+    public sealed class AndroidPlatformOptions
+    {
+        /// <summary>
+        /// Gets or sets Avalonia rendering modes with fallbacks.
+        /// The first element in the array has the highest priority.
+        /// The default value is: <see cref="AndroidRenderingMode.Egl"/>, <see cref="AndroidRenderingMode.Software"/>.
+        /// </summary>
+        /// <remarks>
+        /// If application should work on as wide range of devices as possible, at least add <see cref="AndroidRenderingMode.Software"/> as a fallback value.
+        /// </remarks>
+        /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
+        public IReadOnlyList<AndroidRenderingMode> RenderingMode { get; set; } = new[]
+        {
+            AndroidRenderingMode.Egl, AndroidRenderingMode.Software
+        };
     }
 }
 
@@ -45,25 +81,41 @@ namespace Avalonia.Android
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
-            if (Options.UseGpu)
+            var graphics = InitializeGraphics(Options);
+            if (graphics is not null)
             {
-                EglPlatformGraphics.TryInitialize();
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(graphics);
             }
-            
-            Compositor = new Compositor(
-                AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                AvaloniaLocator.Current.GetService<IPlatformGraphics>());
-            
 
+            Compositor = new Compositor(graphics);
         }
-    }
+        
+        private static IPlatformGraphics InitializeGraphics(AndroidPlatformOptions opts)
+        {
+            if (opts.RenderingMode is null || !opts.RenderingMode.Any())
+            {
+                throw new InvalidOperationException($"{nameof(AndroidPlatformOptions)}.{nameof(AndroidPlatformOptions.RenderingMode)} must not be empty or null");
+            }
 
-    public sealed class AndroidPlatformOptions
-    {
-        public bool UseDeferredRendering { get; set; } = false;
-        public bool UseGpu { get; set; } = true;
+            foreach (var renderingMode in opts.RenderingMode)
+            {
+                if (renderingMode == AndroidRenderingMode.Software)
+                {
+                    return null;
+                }
+
+                if (renderingMode == AndroidRenderingMode.Egl)
+                {
+                    if (EglPlatformGraphics.TryCreate() is { } egl)
+                    {
+                        return egl;
+                    }
+                }
+            }
+
+            throw new InvalidOperationException($"{nameof(AndroidPlatformOptions)}.{nameof(AndroidPlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
+        }
     }
 }

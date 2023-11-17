@@ -122,9 +122,9 @@ namespace Avalonia.Controls
                 // We need to use the raw ItemsSource as opposed to DataSource because DataSource
                 // may be the ItemsSource wrapped in a collection view, in which case we wouldn't
                 // be able to take T to be the type if we're given IEnumerable<T>
-                if (_dataType == null && _owner.Items != null)
+                if (_dataType == null && _owner.ItemsSource != null)
                 {
-                    _dataType = _owner.Items.GetItemType();
+                    _dataType = _owner.ItemsSource.GetItemType();
                 }
                 return _dataType;
             }
@@ -193,18 +193,17 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>Try get number of DataSource itmes.</summary>
+        /// <summary>Try get number of DataSource items.</summary>
         /// <param name="allowSlow">When "allowSlow" is false, method will not use Linq.Count() method and will return 0 or 1 instead.</param>
         /// <param name="getAny">If "getAny" is true, method can use Linq.Any() method to speedup.</param>
-        /// <param name="count">number of DataSource itmes.</param>
-        /// <returns>true if able to retrieve number of DataSource itmes; otherwise, false.</returns>
+        /// <param name="count">number of DataSource items.</param>
+        /// <returns>true if able to retrieve number of DataSource items; otherwise, false.</returns>
         internal bool TryGetCount(bool allowSlow, bool getAny, out int count)
         {
             bool result;
             (result, count) = DataSource switch
             {
                 ICollection collection => (true, collection.Count),
-                DataGridCollectionView cv => (true, cv.Count),
                 IEnumerable enumerable when allowSlow && !getAny => (true, enumerable.Cast<object>().Count()),
                 IEnumerable enumerable when getAny => (true, enumerable.Cast<object>().Any() ? 1 : 0),
                 _ => (false, 0)

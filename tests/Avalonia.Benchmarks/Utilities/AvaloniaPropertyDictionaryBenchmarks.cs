@@ -172,7 +172,7 @@ internal sealed class AvaloniaPropertyValueStoreOld<TValue>
 
 internal class MockProperty : StyledProperty<int>
 {
-    public MockProperty(string name) : base(name, typeof(object), new StyledPropertyMetadata<int>())
+    public MockProperty(string name) : base(name, typeof(object), typeof(object), new StyledPropertyMetadata<int>())
     {
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -15,9 +16,10 @@ namespace Avalonia.Themes.Fluent
     /// <summary>
     /// Includes the fluent theme in an application.
     /// </summary>
-    public class FluentTheme : Styles
+    public class FluentTheme : Styles, IResourceNode
     {
-        private readonly Styles _compactStyles;
+        private readonly ResourceDictionary _compactStyles;
+        private DensityStyle _densityStyle;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FluentTheme"/> class.
@@ -27,10 +29,11 @@ namespace Avalonia.Themes.Fluent
         {
             AvaloniaXamlLoader.Load(sp, this);
             
-            _compactStyles = (Styles)GetAndRemove("CompactStyles");
+            _compactStyles = (ResourceDictionary)GetAndRemove("CompactStyles");
 
-            EnsureCompactStyles();
-
+            Palettes = Resources.MergedDictionaries.OfType<ColorPaletteResourcesCollection>().FirstOrDefault()
+                ?? throw new InvalidOperationException("FluentTheme was initialized with missing ColorPaletteResourcesCollection.");
+            
             object GetAndRemove(string key)
             {
                 var val = Resources[key]
@@ -39,39 +42,41 @@ namespace Avalonia.Themes.Fluent
                 return val;
             }
         }
-        
-        public static readonly StyledProperty<DensityStyle> DensityStyleProperty =
-            AvaloniaProperty.Register<FluentTheme, DensityStyle>(nameof(DensityStyle));
+
+        public static readonly DirectProperty<FluentTheme, DensityStyle> DensityStyleProperty = AvaloniaProperty.RegisterDirect<FluentTheme, DensityStyle>(
+            nameof(DensityStyle), o => o.DensityStyle, (o, v) => o.DensityStyle = v);
 
         /// <summary>
         /// Gets or sets the density style of the fluent theme (normal, compact).
         /// </summary>
         public DensityStyle DensityStyle
         {
-            get => GetValue(DensityStyleProperty);
-            set => SetValue(DensityStyleProperty, value);
+            get => _densityStyle;
+            set => SetAndRaise(DensityStyleProperty, ref _densityStyle, value);
         }
         
+        public IDictionary<ThemeVariant, ColorPaletteResources> Palettes { get; }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == DensityStyleProperty)
             {
-                EnsureCompactStyles();
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
             }
         }
 
-        private void EnsureCompactStyles()
+        bool IResourceNode.TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
-            if (DensityStyle == DensityStyle.Compact)
+            // DensityStyle dictionary should be checked first
+            if (_densityStyle == DensityStyle.Compact
+                && _compactStyles.TryGetResource(key, theme, out value))
             {
-                Add(_compactStyles);
+                return true;
             }
-            else
-            {
-                Remove(_compactStyles);
-            }
+
+            return base.TryGetResource(key, theme, out value);
         }
     }
 }

@@ -18,8 +18,8 @@ namespace Avalonia.Controls.Shapes
 
         public Geometry Data
         {
-            get { return GetValue(DataProperty); }
-            set { SetValue(DataProperty, value); }
+            get => GetValue(DataProperty);
+            set => SetValue(DataProperty, value);
         }
 
         private EventHandler? GeometryChangedHandler => _geometryChangedHandler ??= GeometryChanged;

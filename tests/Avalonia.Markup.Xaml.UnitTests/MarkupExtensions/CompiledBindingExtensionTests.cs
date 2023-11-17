@@ -472,7 +472,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -694,7 +694,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -727,7 +727,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -760,7 +760,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -1189,7 +1189,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.DataContext = new TestDataContext() { StringProperty = "Foo" };
 
-                Assert.Equal("Foo+Bar", textBlock.Text);
+                Assert.Equal($"Foo+Bar+{CultureInfo.CurrentCulture}", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void SupportConverterWithCulture()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext' x:CompileBindings='True'>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Converter={x:Static local:AppendConverter.Instance}, ConverterCulture=ar-SA}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.DataContext = new TestDataContext() { StringProperty = "Foo" };
+
+                Assert.Equal($"Foo++ar-SA", textBlock.Text);
             }
         }
 
@@ -1690,7 +1712,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:MethodAsCommandDataContext'>
-    <Button Name='button' Command='{CompiledBinding Do}' CommandParameter='{CompiledBinding Parameter, Mode=OneWay}'/>
+    <Button Name='button' Command='{CompiledBinding Do}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
@@ -1795,7 +1817,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(123, comboBox.SelectedItem);
             }
         }
-        
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Should_Use_StringFormat_Without_Braces(bool compileBindings)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='{compileBindings}'>
+    <TextBlock Name='textBlock' Text='{{Binding DecimalValue, StringFormat=c2}}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext();
+                window.DataContext = dataContext;
+
+                Assert.Equal(string.Format("{0:c2}", TestDataContext.ExpectedDecimal)
+                    , textBlock.GetValue(TextBlock.TextProperty));
+            }
+        }
+
         static void Throws(string type, Action cb)
         {
             try
@@ -1850,7 +1898,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public static IValueConverter Instance { get; } = new AppendConverter();
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => string.Format("{0}+{1}", value, parameter);
+            => string.Format("{0}+{1}+{2}", value, parameter, culture);
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
@@ -1891,17 +1939,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public static string StaticProperty => "World";
 
         public ListItemCollectionView<int> GenericProperty { get; } = new();
-        
+
+        public const decimal ExpectedDecimal = 15.756m;
+        public decimal DecimalValue { get; set; } = ExpectedDecimal;
+
         public class NonIntegerIndexer : NotifyingBase, INonIntegerIndexerDerived
         {
             private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();
 
             public string this[string key]
             {
-                get
-                {
-                    return _storage[key];
-                }
+                get => _storage[key];
                 set
                 {
                     _storage[key] = value;
@@ -1940,10 +1988,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         object _parameter;
         public object Parameter
         {
-            get
-            {
-                return _parameter;
-            }
+            get => _parameter;
             set
             {
                 if (_parameter == value)
@@ -1963,7 +2008,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Metadata.DependsOn(nameof(Parameter))]
         public bool CanDo(object parameter)
         {
-            return ReferenceEquals(null, parameter) == false;
+            return ReferenceEquals(null, Parameter) == false;
         }
     }
 
@@ -1978,7 +2023,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         public bool Match(object data) => FancyDataType?.IsInstanceOfType(data) ?? true;
 
-        public Control Build(object data) => TemplateContent.Load(Content)?.Control;
+        public Control Build(object data) => TemplateContent.Load(Content)?.Result;
     }
     
     public class CustomDataTemplateInherit : CustomDataTemplate { }
@@ -1999,8 +2044,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         private IEnumerable _items;
         public IEnumerable Items
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => _items;
+            set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         public AvaloniaList<DataGridLikeColumn> Columns { get; } = new();

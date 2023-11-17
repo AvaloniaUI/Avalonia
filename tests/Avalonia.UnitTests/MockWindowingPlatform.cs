@@ -3,6 +3,8 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Moq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Controls;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.UnitTests
 {
@@ -23,18 +25,16 @@ namespace Avalonia.UnitTests
         public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600)
         {
             var windowImpl = new Mock<IWindowImpl>();
-            var position = new PixelPoint();
             var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(() => RendererMocks.CreateRenderer().Object);
+            var compositor = RendererMocks.CreateDummyCompositor();
+            windowImpl.Setup(x => x.Compositor).Returns(compositor);
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
-            windowImpl.Setup(x => x.Position).Returns(() => position);
 
             windowImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
 
@@ -50,12 +50,18 @@ namespace Avalonia.UnitTests
 
             windowImpl.Setup(x => x.Move(It.IsAny<PixelPoint>())).Callback<PixelPoint>(x =>
             {
-                position = x;
+                windowImpl.Setup(x => x.Position).Returns(x);
                 windowImpl.Object.PositionChanged?.Invoke(x);
             });
 
-            windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
-                .Callback<Size, PlatformResizeReason>((x, y) =>
+            windowImpl.Setup(x => x.PointToScreen(It.IsAny<Point>()))
+                .Returns<Point>((point) => PixelPoint.FromPoint(point, 1) + windowImpl.Object.Position);
+
+            windowImpl.Setup(x => x.PointToClient(It.IsAny<PixelPoint>()))
+                .Returns<PixelPoint>(point => (point - windowImpl.Object.Position).ToPoint(1));
+
+            windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<WindowResizeReason>()))
+                .Callback<Size, WindowResizeReason>((x, y) =>
             {
                 var constrainedSize = x.Constrain(s_screenSize);
                 
@@ -68,12 +74,9 @@ namespace Avalonia.UnitTests
 
             windowImpl.Setup(x => x.Show(true, It.IsAny<bool>())).Callback(() =>
             {
-                windowImpl.Object.Resized?.Invoke(windowImpl.Object.ClientSize, PlatformResizeReason.Unspecified);
+                windowImpl.Object.Resized?.Invoke(windowImpl.Object.ClientSize, WindowResizeReason.Unspecified);
                 windowImpl.Object.Activated?.Invoke();
             });
-
-            windowImpl.Setup(x => x.PointToScreen(It.IsAny<Point>()))
-                .Returns((Point p) => PixelPoint.FromPoint(p, 1D) + position);
 
             return windowImpl;
         }
@@ -82,23 +85,34 @@ namespace Avalonia.UnitTests
         {
             var popupImpl = new Mock<IPopupImpl>();
             var clientSize = new Size();
+            var position = new PixelPoint();
 
             var positionerHelper = new ManagedPopupPositionerPopupImplHelper(parent, (pos, size, scale) =>
             {
                 clientSize = size.Constrain(s_screenSize);
+                position = pos;
                 popupImpl.Object.PositionChanged?.Invoke(pos);
-                popupImpl.Object.Resized?.Invoke(clientSize, PlatformResizeReason.Unspecified);
+                popupImpl.Object.Resized?.Invoke(clientSize, WindowResizeReason.Unspecified);
             });
             
             var positioner = new ManagedPopupPositioner(positionerHelper);
 
             popupImpl.SetupAllProperties();
-            popupImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(() => RendererMocks.CreateRenderer().Object);
+            var compositor = RendererMocks.CreateDummyCompositor();
+            popupImpl.Setup(x => x.Compositor).Returns(compositor);
             popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             popupImpl.Setup(x => x.RenderScaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
+            popupImpl.Setup(x => x.Position).Returns(()=>position);
+
+            popupImpl.Setup(x => x.PointToScreen(It.IsAny<Point>()))
+                .Returns<Point>((point) => PixelPoint.FromPoint(point, 1) + position);
+
+            popupImpl.Setup(x => x.PointToClient(It.IsAny<PixelPoint>()))
+                .Returns<PixelPoint>(point => (point - position).ToPoint(1));
+
+
 
             popupImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
             popupImpl.Setup(x => x.Dispose()).Callback(() =>

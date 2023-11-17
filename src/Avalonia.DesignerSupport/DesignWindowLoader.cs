@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -13,6 +14,9 @@ namespace Avalonia.DesignerSupport
     public class DesignWindowLoader
     {
         public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath)
+            => LoadDesignerWindow(xaml, assemblyPath, xamlFileProjectPath, 1.0);
+
+        public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath, double renderScaling)
         {
             Window window;
             Control control;
@@ -25,7 +29,7 @@ namespace Avalonia.DesignerSupport
                 if (assemblyPath != null)
                 {
                     if (xamlFileProjectPath == null)
-                        xamlFileProjectPath = "/Designer/Fake.xaml";
+                        xamlFileProjectPath = "/Fake.xaml";
                     //Fabricate fake Uri
                     baseUri =
                         new Uri($"avares://{Path.GetFileNameWithoutExtension(assemblyPath)}{xamlFileProjectPath}");
@@ -39,7 +43,7 @@ namespace Avalonia.DesignerSupport
                 {
                     LocalAssembly = localAsm,
                     DesignMode = true,
-                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue ) && parsedValue 
+                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue) && parsedValue
                 });
                 var style = loaded as IStyle;
                 var resources = loaded as ResourceDictionary;
@@ -86,15 +90,18 @@ namespace Avalonia.DesignerSupport
                         };
                 }
                 else if (loaded is Application)
-                    control = new TextBlock {Text = "Application can't be previewed in design view"};
+                    control = new TextBlock { Text = "This file cannot be previewed in design view" };
                 else
-                    control = (Control) loaded;
+                    control = (Control)loaded;
 
                 window = control as Window;
                 if (window == null)
                 {
-                    window = new Window() {Content = (Control)control};
+                    window = new Window() { Content = (Control)control };
                 }
+
+                if (window.PlatformImpl is OffscreenTopLevelImplBase offscreenImpl)
+                    offscreenImpl.RenderScaling = renderScaling;
 
                 Design.ApplyDesignModeProperties(window, control);
 

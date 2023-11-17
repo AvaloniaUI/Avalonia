@@ -5,7 +5,7 @@ using Avalonia.Rendering;
 using Avalonia.Utilities;
 using SharpDX;
 using SharpDX.Direct2D1;
-using D2DBitmap = SharpDX.Direct2D1.Bitmap;
+using D2DBitmap = SharpDX.Direct2D1.Bitmap1;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
@@ -14,7 +14,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
         private readonly BitmapRenderTarget _renderTarget;
 
         public D2DRenderTargetBitmapImpl(BitmapRenderTarget renderTarget)
-            : base(renderTarget.Bitmap)
+            : base(renderTarget.Bitmap.QueryInterface<Bitmap1>())
         {
             _renderTarget = renderTarget;
         }
@@ -53,7 +53,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
 
         public override OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target)
         {
-            return new OptionalDispose<D2DBitmap>(_renderTarget.Bitmap, false);
+            return new OptionalDispose<D2DBitmap>(_renderTarget.Bitmap.QueryInterface<Bitmap1>(), false);
         }
 
         public override void Save(Stream stream, int? quality = null)
@@ -63,7 +63,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
                 using (var dc = wic.CreateDrawingContext(null))
                 {
                     dc.DrawBitmap(
-                        RefCountable.CreateUnownedNotClonable(this),
+                        this,
                         1,
                         new Rect(PixelSize.ToSizeWithDpi(Dpi.X)),
                         new Rect(PixelSize.ToSizeWithDpi(Dpi.X)));

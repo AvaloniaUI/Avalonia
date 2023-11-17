@@ -15,9 +15,11 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class FontManager
     {
-        internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts");
+        internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts", UriKind.Absolute);
 
         public const string FontCollectionScheme = "fonts";
+        public const string SystemFontScheme = "systemfont";
+        public const string CompositeFontScheme = "compositefont";
 
         private readonly ConcurrentDictionary<Uri, IFontCollection> _fontCollections = new ConcurrentDictionary<Uri, IFontCollection>();
         private readonly IReadOnlyList<FontFallback>? _fontFallbacks;
@@ -26,18 +28,13 @@ namespace Avalonia.Media
         {
             PlatformImpl = platformImpl;
 
-            var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
+            AddFontCollection(new SystemFontCollection(this));
 
+            var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
 
-            DefaultFontFamilyName = options?.DefaultFamilyName ?? PlatformImpl.GetDefaultFontFamilyName();
-
-            if (string.IsNullOrEmpty(DefaultFontFamilyName))
-            {
-                throw new InvalidOperationException("Default font family name can't be null or empty.");
-            }
-
-            AddFontCollection(new SystemFontCollection(this));
+            var defaultFontFamilyName = GetDefaultFontFamilyName(options);
+            DefaultFontFamily = new FontFamily(defaultFontFamilyName);
         }
 
         /// <summary>
@@ -65,9 +62,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets the system's default font family's name.
+        ///     Gets the system's default font family.
         /// </summary>
-        public string DefaultFontFamilyName
+        public FontFamily DefaultFontFamily
         {
             get;
         }
@@ -93,53 +90,86 @@ namespace Avalonia.Media
 
             var fontFamily = typeface.FontFamily;
 
-            if (fontFamily.Key is FontFamilyKey key)
+            if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
-                var source = key.Source;
+                return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+            }
 
-                if (!source.IsAbsoluteUri)
+            if (fontFamily.Key is FontFamilyKey)
+            {
+                if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
-                    if (key.BaseUri == null)
+                    for (int i = 0; i < compositeKey.Keys.Count; i++)
                     {
-                        throw new NotSupportedException($"{nameof(key.BaseUri)} can't be null.");
-                    }
+                        var key = compositeKey.Keys[i];
 
-                    source = new Uri(key.BaseUri, source);
-                }
+                        var familyName = fontFamily.FamilyNames[i];
 
-                if (!_fontCollections.TryGetValue(source, out var fontCollection) && (source.IsAbsoluteResm() || source.IsAvares()))
-                {
-                    var embeddedFonts = new EmbeddedFontCollection(source, source);
-
-                    embeddedFonts.Initialize(PlatformImpl);
-
-                    if (embeddedFonts.Count > 0 && _fontCollections.TryAdd(source, embeddedFonts))
-                    {
-                        fontCollection = embeddedFonts;
+                        if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
+                            glyphTypeface.FamilyName.Contains(familyName))
+                        {
+                            return true;
+                        }
                     }
                 }
-
-                if (fontCollection != null && fontCollection.TryGetGlyphTypeface(fontFamily.FamilyNames.PrimaryFamilyName,
-                    typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+                else
                 {
-                    return true;
-                }
+                    if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, fontFamily.FamilyNames.PrimaryFamilyName, out glyphTypeface))
+                    {
+                        return true;
+                    }
 
-                if (!fontFamily.FamilyNames.HasFallbacks)
-                {
                     return false;
                 }
             }
-
-            foreach (var familyName in fontFamily.FamilyNames)
+            else
             {
-                if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+                if (SystemFonts.TryGetGlyphTypeface(fontFamily.FamilyNames.PrimaryFamilyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {
                     return true;
                 }
             }
 
-            return TryGetGlyphTypeface(new Typeface(DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+            if (typeface.FontFamily == DefaultFontFamily)
+            {
+                return false;
+            }
+
+            //Nothing was found so use the default
+            return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+        }
+
+        private bool TryGetGlyphTypefaceByKeyAndName(Typeface typeface, FontFamilyKey key, string familyName, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            var source = key.Source;
+
+            if (!source.IsAbsoluteUri)
+            {
+                if (key.BaseUri == null)
+                {
+                    throw new NotSupportedException($"{nameof(key.BaseUri)} can't be null.");
+                }
+
+                source = new Uri(key.BaseUri, source);
+            }
+
+            if (source.Scheme == SystemFontScheme)
+            {
+                return SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
+            }
+
+            if (TryGetFontCollection(source, out var fontCollection) &&
+                fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+            {
+                if (glyphTypeface.FamilyName.Contains(familyName))
+                {
+                    return true;
+                }
+            }
+
+            glyphTypeface = null;
+
+            return false;
         }
 
         /// <summary>
@@ -199,16 +229,77 @@ namespace Avalonia.Media
             {
                 foreach (var fallback in _fontFallbacks)
                 {
-                    typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
+                    if (fallback.UnicodeRange.IsInRange(codepoint))
+                    {
+                        typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                    if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            //Try to match against fallbacks first
+            if (fontFamily != null && fontFamily.Key is CompositeFontFamilyKey compositeKey)
+            {
+                for (int i = 0; i < compositeKey.Keys.Count; i++)
+                {
+                    var key = compositeKey.Keys[i];
+                    var familyName = fontFamily.FamilyNames[i];
+
+                    if (TryGetFontCollection(key.Source, out var fontCollection) &&
+                        fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
                     {
                         return true;
                     }
                 }
             }
 
-            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily, culture, out typeface);
+            //Try to find a match with the system font manager
+            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out typeface);
+        }
+
+        private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
+        {
+            if (source.Scheme == SystemFontScheme)
+            {
+                source = SystemFontsKey;
+            }
+
+            if (!_fontCollections.TryGetValue(source, out fontCollection) && (source.IsAbsoluteResm() || source.IsAvares()))
+            {
+                var embeddedFonts = new EmbeddedFontCollection(source, source);
+
+                embeddedFonts.Initialize(PlatformImpl);
+
+                if (embeddedFonts.Count > 0 && _fontCollections.TryAdd(source, embeddedFonts))
+                {
+                    fontCollection = embeddedFonts;
+                }
+            }
+
+            return fontCollection != null;
+        }
+
+        private string GetDefaultFontFamilyName(FontManagerOptions? options)
+        {
+            var defaultFontFamilyName = options?.DefaultFamilyName
+                ?? PlatformImpl.GetDefaultFontFamilyName();
+
+            if (string.IsNullOrEmpty(defaultFontFamilyName) && SystemFonts.Count > 0)
+            {
+                defaultFontFamilyName = SystemFonts[0].Name;
+            }
+
+            if (string.IsNullOrEmpty(defaultFontFamilyName))
+            {
+                throw new InvalidOperationException(
+                    "Default font family name can't be null or empty.");
+            }
+
+            return defaultFontFamilyName;
         }
     }
 }

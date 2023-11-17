@@ -9,6 +9,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -44,7 +45,13 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="OverlayInputPassThroughElement"/> property
         /// </summary>
         public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
-            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>();
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
+        
+        /// <summary>
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property
+        /// </summary>
+        public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
+            Popup.PlacementConstraintAdjustmentProperty.AddOwner<PopupFlyoutBase>();
         
         private readonly Lazy<Popup> _popupLazy;
         private Rect? _enlargedPopupRect;
@@ -118,6 +125,13 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(OverlayInputPassThroughElementProperty, value);
         }
 
+        /// <inheritdoc cref="Popup.PlacementConstraintAdjustment"/>
+        public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
+        {
+            get => GetValue(PlacementConstraintAdjustmentProperty);
+            set => SetValue(PlacementConstraintAdjustmentProperty, value);
+        }
+        
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
 
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged
@@ -250,15 +264,12 @@ namespace Avalonia.Controls.Primitives
                 // Try and focus content inside Flyout
                 if (Popup.Child.Focusable)
                 {
-                    FocusManager.Instance?.Focus(Popup.Child);
+                    Popup.Child.Focus();
                 }
                 else
                 {
                     var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
-                    if (nextFocus != null)
-                    {
-                        FocusManager.Instance?.Focus(nextFocus);
-                    }
+                    nextFocus?.Focus();
                 }
             }
             else if (ShowMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
@@ -392,7 +403,7 @@ namespace Avalonia.Controls.Primitives
                 && IsOpen
                 && Target?.ContextFlyout == this)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
                 {
@@ -426,9 +437,7 @@ namespace Avalonia.Controls.Primitives
             else
             {
                 Popup.Placement = Placement;
-                Popup.PlacementConstraintAdjustment =
-                    PopupPositioning.PopupPositionerConstraintAdjustment.SlideX |
-                    PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
+                Popup.PlacementConstraintAdjustment = PlacementConstraintAdjustment;
             }
         }
 

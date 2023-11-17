@@ -54,23 +54,20 @@ namespace Avalonia.Native
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
-        private bool _gpu = false;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly ICursorFactory _cursorFactory;
         private Size _savedLogicalSize;
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
-        private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
         private IStorageProvider _storageProvider;
         private PlatformBehaviorInhibition _platformBehaviorInhibition;
+        private WindowTransparencyLevel _transparencyLevel = WindowTransparencyLevel.None;
 
-        internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativeGlPlatformGraphics glFeature)
+        internal WindowBaseImpl(IAvaloniaNativeFactory factory)
         {
             _factory = factory;
-            _gpu = opts.UseGpu && glFeature != null;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
@@ -81,9 +78,8 @@ namespace Avalonia.Native
         {
             _native = window;
 
+            Surfaces = new object[] { new GlPlatformSurface(window), new MetalPlatformSurface(window), this };
             Handle = new MacOSTopLevelWindowHandle(window);
-            if (_gpu)
-                _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
 
             _savedLogicalSize = ClientSize;
@@ -95,7 +91,7 @@ namespace Avalonia.Native
             var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
 
-            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
         }
 
         public IAvnWindowBase Native => _native;
@@ -132,35 +128,61 @@ namespace Avalonia.Native
             }
         }
 
-        public IEnumerable<object> Surfaces => new[] {
-            (_gpu ? _glSurface : (object)null),
-            this 
-        };
+        public IEnumerable<object> Surfaces { get; private set; }
 
         public INativeControlHostImpl NativeControlHost => _nativeControlHost;
 
-        public ILockedFramebuffer Lock()
+
+        IFramebufferRenderTarget IFramebufferPlatformSurface.CreateFramebufferRenderTarget()
         {
-            var w = _savedLogicalSize.Width * _savedScaling;
-            var h = _savedLogicalSize.Height * _savedScaling;
-            var dpi = _savedScaling * 96;
-            return new DeferredFramebuffer(cb =>
+            if (!Dispatcher.UIThread.CheckAccess())
+                throw new RenderTargetNotReadyException();
+            return new FramebufferRenderTarget(this, _native.CreateSoftwareRenderTarget());
+        }
+
+        class FramebufferRenderTarget : IFramebufferRenderTarget
+        {
+            private readonly WindowBaseImpl _parent;
+            private IAvnSoftwareRenderTarget? _target;
+
+            public FramebufferRenderTarget(WindowBaseImpl parent, IAvnSoftwareRenderTarget target)
             {
-                lock (_syncRoot)
+                _parent = parent;
+                _target = target;
+            }
+
+            public void Dispose()
+            {
+                lock (_parent._syncRoot)
                 {
-                    if (_native == null)
-                        return false;
-                    cb(_native);
-                    _lastRenderedLogicalSize = _savedLogicalSize;
-                    return true;
+                    _target?.Dispose();
+                    _target = null;
                 }
-            }, (int)w, (int)h, new Vector(dpi, dpi));
+            }
+            
+            public ILockedFramebuffer Lock()
+            {
+                var w = _parent._savedLogicalSize.Width * _parent._savedScaling;
+                var h = _parent._savedLogicalSize.Height * _parent._savedScaling;
+                var dpi = _parent._savedScaling * 96;
+                return new DeferredFramebuffer(_target, cb =>
+                {
+                    lock (_parent._syncRoot)
+                    {
+                        if (_parent._native != null && _target != null)
+                        {
+                            cb(_parent._native);
+                            _parent._lastRenderedLogicalSize = _parent._savedLogicalSize;
+                        }
+                    }
+                }, (int)w, (int)h, new Vector(dpi, dpi));
+            }
         }
 
         public Action LostFocus { get; set; }
         
         public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
@@ -200,7 +222,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Paint()
             {
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
                 var s = _parent.ClientSize;
                 _parent.Paint?.Invoke(new Rect(0, 0, s.Width, s.Height));
             }
@@ -211,7 +233,7 @@ namespace Avalonia.Native
                 {
                     var s = new Size(size->Width, size->Height);
                     _parent._savedLogicalSize = s;
-                    _parent.Resized?.Invoke(s, (PlatformResizeReason)reason);
+                    _parent.Resized?.Invoke(s, (WindowResizeReason)reason);
                 }
             }
 
@@ -220,17 +242,17 @@ namespace Avalonia.Native
                 _parent.PositionChanged?.Invoke(position.ToAvaloniaPixelPoint());
             }
 
-            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
             {
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
-            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol)
             {
-                return _parent.RawKeyEvent(type, timeStamp, modifiers, key).AsComBool();
+                return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol).AsComBool();
             }
 
-            int IAvnWindowBaseEvents.RawTextInputEvent(uint timeStamp, string text)
+            int IAvnWindowBaseEvents.RawTextInputEvent(ulong timeStamp, string text)
             {
                 return _parent.RawTextInputEvent(timeStamp, text).AsComBool();
             }
@@ -243,7 +265,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
             }
             
             void IAvnWindowBaseEvents.LostFocus()
@@ -286,7 +308,7 @@ namespace Avalonia.Native
             _native?.Activate();
         }
 
-        public bool RawTextInputEvent(uint timeStamp, string text)
+        public bool RawTextInputEvent(ulong timeStamp, string text)
         {
             if (_inputRoot is null) 
                 return false;
@@ -300,14 +322,28 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
-        public bool RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+        public bool RawKeyEvent(
+            AvnRawKeyEventType type,
+            ulong timeStamp,
+            AvnInputModifiers modifiers,
+            AvnKey key,
+            AvnPhysicalKey physicalKey,
+            string keySymbol)
         {
             if (_inputRoot is null) 
                 return false;
             
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
+            var args = new RawKeyEventArgs(
+                _keyboard,
+                timeStamp,
+                _inputRoot,
+                (RawKeyEventType)type,
+                (Key)key,
+                (RawInputModifiers)modifiers,
+                (PhysicalKey)physicalKey,
+                keySymbol);
 
             Input?.Invoke(args);
 
@@ -319,7 +355,7 @@ namespace Avalonia.Native
             return false;
         }
 
-        public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+        public void RawMouseEvent(AvnRawMouseEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
         {
             if (_inputRoot is null) 
                 return;
@@ -360,18 +396,12 @@ namespace Avalonia.Native
             }
         }
 
-        public void Resize(Size clientSize, PlatformResizeReason reason)
+        public void Resize(Size clientSize, WindowResizeReason reason)
         {
             _native?.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
-            {
-                RenderOnlyOnRenderThread = false
-            };
-        }
+        public Compositor Compositor => AvaloniaNativePlatform.Compositor;
 
         public virtual void Dispose()
         {
@@ -485,26 +515,47 @@ namespace Avalonia.Native
             _native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) 
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) 
         {
-            if (TransparencyLevel != transparencyLevel)
+            foreach (var level in transparencyLevels)
             {
-                if (transparencyLevel > WindowTransparencyLevel.Transparent)
-                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                AvnWindowTransparencyMode? mode = null;
 
-                TransparencyLevel = transparencyLevel;
+                if (level == WindowTransparencyLevel.None)
+                    mode = AvnWindowTransparencyMode.Opaque;
+                if (level == WindowTransparencyLevel.Transparent)
+                    mode = AvnWindowTransparencyMode.Transparent;
+                else if (level == WindowTransparencyLevel.AcrylicBlur)
+                    mode = AvnWindowTransparencyMode.Blur;
 
-                _native.SetTransparencyMode(transparencyLevel == WindowTransparencyLevel.None
-                    ? AvnWindowTransparencyMode.Opaque 
-                    : transparencyLevel == WindowTransparencyLevel.Transparent 
-                        ? AvnWindowTransparencyMode.Transparent
-                        : AvnWindowTransparencyMode.Blur);
+                if (mode.HasValue && level != TransparencyLevel)
+                {
+                    _native?.SetTransparencyMode(mode.Value);
+                    TransparencyLevel = level;
+                    return;
+                }
+            }
 
-                TransparencyLevelChanged?.Invoke(TransparencyLevel);
+            // If we get here, we didn't find a supported level. Use the default of None.
+            if (TransparencyLevel != WindowTransparencyLevel.None)
+            {
+                _native?.SetTransparencyMode(AvnWindowTransparencyMode.Opaque);
+                TransparencyLevel = WindowTransparencyLevel.None;
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {

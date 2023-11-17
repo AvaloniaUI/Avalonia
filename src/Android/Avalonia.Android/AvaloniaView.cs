@@ -67,7 +67,7 @@ namespace Avalonia.Android
                     _timerSubscription = timer.SubscribeView(this);
                 }
 
-                _root.Renderer.Start();
+                _root.StartRendering();
 
                 if (_view.TryGetFeature<IInsetsManager>(out var insetsManager) == true)
                 {
@@ -76,7 +76,7 @@ namespace Avalonia.Android
             }
             else
             {
-                _root.Renderer.Stop();
+                _root.StopRendering();
                 _timerSubscription?.Dispose();
             }
         }

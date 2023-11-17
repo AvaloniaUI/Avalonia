@@ -90,7 +90,7 @@ namespace Avalonia.Media
         /// <param name="color">The RGB color to convert to HSL.</param>
         public HslColor(Color color)
         {
-            var hsl = Color.ToHsl(color);
+            var hsl = color.ToHsl();
 
             A = hsl.A;
             H = hsl.H;
@@ -98,43 +98,13 @@ namespace Avalonia.Media
             L = hsl.L;
         }
 
-        /// <summary>
-        /// Gets the Alpha (transparency) component in the range from 0..1 (percentage).
-        /// </summary>
-        /// <remarks>
-        /// <list type="bullet">
-        ///   <item>0 is fully transparent.</item>
-        ///   <item>1 is fully opaque.</item>
-        /// </list>
-        /// </remarks>
+        /// <inheritdoc cref="HsvColor.A"/>
         public double A { get; }
 
-        /// <summary>
-        /// Gets the Hue component in the range from 0..360 (degrees).
-        /// This is the color's location, in degrees, on a color wheel/circle from 0 to 360.
-        /// Note that 360 is equivalent to 0 and will be adjusted automatically.
-        /// </summary>
-        /// <remarks>
-        /// <list type="bullet">
-        ///   <item>0/360 degrees is Red.</item>
-        ///   <item>60 degrees is Yellow.</item>
-        ///   <item>120 degrees is Green.</item>
-        ///   <item>180 degrees is Cyan.</item>
-        ///   <item>240 degrees is Blue.</item>
-        ///   <item>300 degrees is Magenta.</item>
-        /// </list>
-        /// </remarks>
+        /// <inheritdoc cref="HsvColor.H"/>
         public double H { get; }
 
-        /// <summary>
-        /// Gets the Saturation component in the range from 0..1 (percentage).
-        /// </summary>
-        /// <remarks>
-        /// <list type="bullet">
-        ///   <item>0 is a shade of gray (no color).</item>
-        ///   <item>1 is the full color.</item>
-        /// </list>
-        /// </remarks>
+        /// <inheritdoc cref="HsvColor.S"/>
         public double S { get; }
 
         /// <summary>
@@ -195,8 +165,16 @@ namespace Avalonia.Media
         /// <returns>The RGB equivalent color.</returns>
         public Color ToRgb()
         {
-            // Use the by-component conversion method directly for performance
             return HslColor.ToRgb(H, S, L, A);
+        }
+
+        /// <summary>
+        /// Returns the HSV color model equivalent of this HSL color.
+        /// </summary>
+        /// <returns>The HSV equivalent color.</returns>
+        public HsvColor ToHsv()
+        {
+            return HslColor.ToHsv(H, S, L, A);
         }
 
         /// <inheritdoc/>
@@ -278,7 +256,7 @@ namespace Avalonia.Media
 
             if (workingString.Length >= 11 &&
                 workingString.StartsWith("hsla(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal))
+                workingString.EndsWith(')'))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
                 prefixMatched = true;
@@ -287,7 +265,7 @@ namespace Avalonia.Media
             if (prefixMatched == false &&
                 workingString.Length >= 10 &&
                 workingString.StartsWith("hsl(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal))
+                workingString.EndsWith(')'))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
                 prefixMatched = true;
@@ -380,16 +358,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSL color to its RGB color equivalent.
-        /// </summary>
-        /// <param name="hslColor">The color in the HSL color model.</param>
-        /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSLA values.</returns>
-        public static Color ToRgb(HslColor hslColor)
-        {
-            return HslColor.ToRgb(hslColor.H, hslColor.S, hslColor.L, hslColor.A);
-        }
-
-        /// <summary>
         /// Converts the given HSLA color component values to their RGB color equivalent.
         /// </summary>
         /// <param name="hue">The Hue component in the HSL color model in the range from 0..360.</param>
@@ -472,11 +440,65 @@ namespace Avalonia.Media
                 b1 = x;
             }
 
-            return Color.FromArgb(
+            return new Color(
                 (byte)Math.Round(255 * alpha),
                 (byte)Math.Round(255 * (r1 + m)),
                 (byte)Math.Round(255 * (g1 + m)),
                 (byte)Math.Round(255 * (b1 + m)));
+        }
+
+        /// <summary>
+        /// Converts the given HSLA color component values to their HSV color equivalent.
+        /// </summary>
+        /// <param name="hue">The Hue component in the HSL color model in the range from 0..360.</param>
+        /// <param name="saturation">The Saturation component in the HSL color model in the range from 0..1.</param>
+        /// <param name="lightness">The Lightness component in the HSL color model in the range from 0..1.</param>
+        /// <param name="alpha">The Alpha component in the range from 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> equivalent to the given HSLA values.</returns>
+        public static HsvColor ToHsv(
+            double hue,
+            double saturation,
+            double lightness,
+            double alpha = 1.0)
+        {
+            // We want the hue to be between 0 and 359,
+            // so we first ensure that that's the case.
+            while (hue >= 360.0)
+            {
+                hue -= 360.0;
+            }
+
+            while (hue < 0.0)
+            {
+                hue += 360.0;
+            }
+
+            // We similarly clamp saturation, lightness and alpha between 0 and 1.
+            saturation = saturation < 0.0 ? 0.0 : saturation;
+            saturation = saturation > 1.0 ? 1.0 : saturation;
+
+            lightness = lightness < 0.0 ? 0.0 : lightness;
+            lightness = lightness > 1.0 ? 1.0 : lightness;
+
+            alpha = alpha < 0.0 ? 0.0 : alpha;
+            alpha = alpha > 1.0 ? 1.0 : alpha;
+
+            // The conversion algorithm is from the below link
+            // https://en.wikipedia.org/wiki/HSL_and_HSV#Interconversion
+
+            double s;
+            double v = lightness + (saturation * Math.Min(lightness, 1.0 - lightness));
+
+            if (v <= 0)
+            {
+                s = 0;
+            }
+            else
+            {
+                s = 2.0 * (1.0 - (lightness / v));
+            }
+
+            return new HsvColor(alpha, hue, s, v);
         }
 
         /// <summary>

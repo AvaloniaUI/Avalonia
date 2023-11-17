@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Reactive;
 using ObservableEx = Avalonia.Reactive.Observable;
 
@@ -13,7 +14,7 @@ namespace Avalonia.Data
     /// *instanced* by calling <see cref="IBinding.Initiate(AvaloniaObject, AvaloniaProperty, object, bool)"/>
     /// on a target object.
     /// </remarks>
-    public class InstancedBinding
+    public sealed class InstancedBinding
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
@@ -49,7 +50,7 @@ namespace Avalonia.Data
         /// </summary>
         public IObservable<object?> Source { get; }
 
-        [Obsolete("Use Source property")]
+        [Obsolete("Use Source property"), EditorBrowsable(EditorBrowsableState.Never)]
         public IObservable<object?> Observable => Source;
 
         /// <summary>

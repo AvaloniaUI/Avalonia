@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Collections;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
+    [AvaloniaList(Separators = new [] { ",", " " })]
     public abstract class DefinitionList<T> : AvaloniaList<T> where T : DefinitionBase
     {
         public DefinitionList()

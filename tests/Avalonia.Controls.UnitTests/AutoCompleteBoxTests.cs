@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using Moq;
 using Xunit;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -89,7 +83,7 @@ namespace Avalonia.Controls.UnitTests
                 bool closeEvent = false;
                 control.DropDownOpened += (s, e) => openEvent = true;
                 control.DropDownClosed += (s, e) => closeEvent = true;
-                control.Items = CreateSimpleStringArray();
+                control.ItemsSource = CreateSimpleStringArray();
 
                 textbox.Text = "a";
                 Dispatcher.UIThread.RunJobs();
@@ -258,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
                 control.FilterMode = AutoCompleteFilterMode.None;
                 control.Populating += (s, e) =>
                 {
-                    control.Items = new string[] { custom };
+                    control.ItemsSource = new string[] { custom };
                     Assert.Equal(search, e.Parameter);
                 };
                 control.Populated += (s, e) =>
@@ -380,7 +374,7 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
-                object selectedItem = control.Items.Cast<object>().First();
+                object selectedItem = control.ItemsSource.Cast<object>().First();
                 string input = "42";
 
                 control.TextSelector = (text, item) => text + item;
@@ -397,7 +391,7 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
-                object selectedItem = control.Items.Cast<object>().First();
+                object selectedItem = control.ItemsSource.Cast<object>().First();
                 string input = "42";
 
                 control.ItemSelector = (text, item) => text + item;
@@ -436,6 +430,29 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
                 Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+            });
+        }
+
+        [Fact]
+        public void Explicit_Dropdown_Open_Request_MinimumPrefixLength_0()
+        {
+            RunTest((control, textbox) =>
+            {
+                control.Text = "";
+                control.MinimumPrefixLength = 0;
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.False(control.IsDropDownOpen);
+
+                control.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down
+                });
+
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.True(control.IsDropDownOpen);
             });
         }
 
@@ -1053,7 +1070,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 AutoCompleteBox control = CreateControl();
-                control.Items = CreateSimpleStringArray();
+                control.ItemsSource = CreateSimpleStringArray();
                 TextBox textBox = GetTextBox(control);
                 var window = new Window {Content = control};
                 window.ApplyStyling();
@@ -1072,14 +1089,14 @@ namespace Avalonia.Controls.UnitTests
 
         private AutoCompleteBox CreateControl()
         {
-            var datePicker =
+            var autoCompleteBox =
                 new AutoCompleteBox
                 {
                     Template = CreateTemplate()
                 };
 
-            datePicker.ApplyTemplate();
-            return datePicker;
+            autoCompleteBox.ApplyTemplate();
+            return autoCompleteBox;
         }
         private TextBox GetTextBox(AutoCompleteBox control)
         {

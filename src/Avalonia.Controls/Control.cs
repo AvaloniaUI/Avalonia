@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
         /// <inheritdoc/>
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             if (setter is Setter s && s.Property == ContextFlyoutProperty)
             {
@@ -316,7 +316,8 @@ namespace Avalonia.Controls
                 ((ILogical)this).IsAttachedToLogicalTree)
             {
                 _isLoaded = true;
-                OnLoaded();
+
+                OnLoaded(new RoutedEventArgs(LoadedEvent, this));
             }
         }
 
@@ -333,28 +334,36 @@ namespace Avalonia.Controls
                 _loadedQueue.Remove(this);
 
                 _isLoaded = false;
-                OnUnloaded();
+
+                OnUnloaded(new RoutedEventArgs(UnloadedEvent, this));
             }
         }
 
         /// <summary>
         /// Invoked just before the <see cref="Loaded"/> event.
         /// </summary>
-        protected virtual void OnLoaded()
+        /// <param name="e">The event args.</param>
+        protected virtual void OnLoaded(RoutedEventArgs e)
         {
-            var eventArgs = new RoutedEventArgs(LoadedEvent);
-            eventArgs.Source = null;
-            RaiseEvent(eventArgs);
+            RaiseEvent(e);
         }
 
         /// <summary>
         /// Invoked just before the <see cref="Unloaded"/> event.
         /// </summary>
-        protected virtual void OnUnloaded()
+        /// <param name="e">The event args.</param>
+        protected virtual void OnUnloaded(RoutedEventArgs e)
         {
-            var eventArgs = new RoutedEventArgs(UnloadedEvent);
-            eventArgs.Source = null;
-            RaiseEvent(eventArgs);
+            RaiseEvent(e);
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="SizeChanged"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            RaiseEvent(e);
         }
 
         /// <inheritdoc/>
@@ -362,19 +371,19 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
-            AddHandler(Gestures.HoldingEvent, OnHoldEvent);
-
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
+
+            Holding += OnHoldEvent;
         }
 
         private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
         {
-            if(e.HoldingState == HoldingState.Started)
+            if (!e.Handled && e.HoldingState == HoldingState.Started)
             {
                 // Trigger ContentRequest when hold has started
-                RaiseEvent(new ContextRequestedEventArgs());
+                RaiseEvent(e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs());
             }
         }
 
@@ -383,9 +392,9 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTreeCore(e);
 
-            RemoveHandler(Gestures.HoldingEvent, OnHoldEvent);
-
             OnUnloadedCore();
+
+            Holding -= OnHoldEvent;
         }
 
         /// <inheritdoc/>
@@ -403,7 +412,9 @@ namespace Avalonia.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = GetValue(FocusAdornerProperty) ?? adornerLayer.DefaultFocusAdorner;
+                        var template = IsSet(FocusAdornerProperty)
+                            ? GetValue(FocusAdornerProperty)
+                            : adornerLayer.DefaultFocusAdorner;
 
                         if (template != null)
                         {
@@ -433,9 +444,19 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Returns a new, type-specific <see cref="AutomationPeer"/> implementation for the control.
+        /// </summary>
+        /// <returns>The type-specific <see cref="AutomationPeer"/> implementation.</returns>
         protected virtual AutomationPeer OnCreateAutomationPeer()
         {
             return new NoneAutomationPeer(this);
+        }
+
+        internal AutomationPeer? GetAutomationPeer()
+        {
+            VerifyAccess();
+            return _automationPeer;
         }
 
         internal AutomationPeer GetOrCreateAutomationPeer()
@@ -451,6 +472,7 @@ namespace Avalonia.Controls
             return _automationPeer;
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
@@ -465,6 +487,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
@@ -472,7 +495,7 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.OpenContextMenu;
+                var keymap = TopLevel.GetTopLevel(this)?.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
 
                 if (keymap is null)
                 {
@@ -523,7 +546,7 @@ namespace Avalonia.Controls
                         previousSize: new Size(oldValue.Width, oldValue.Height),
                         newSize: new Size(newValue.Width, newValue.Height));
 
-                    RaiseEvent(sizeChangedEventArgs);
+                    OnSizeChanged(sizeChangedEventArgs);
                 }
             }
         }

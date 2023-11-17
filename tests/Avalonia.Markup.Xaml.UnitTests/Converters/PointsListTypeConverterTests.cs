@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
-    public class PointsListTypeConverterTests
+    public class PointsListTypeConverterTests : XamlTestBase
     {
         static PointsListTypeConverterTests()
         {

@@ -58,7 +58,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public override bool InTemplate => _previous?.InTemplate ?? false;
+        internal override bool InTemplate => _previous?.InTemplate ?? false;
 
         /// <summary>
         /// Gets the name of the control to match.
@@ -66,10 +66,10 @@ namespace Avalonia.Styling
         public string? Name { get; set; }
 
         /// <inheritdoc/>
-        public override Type? TargetType => _targetType ?? _previous?.TargetType;
+        internal override Type? TargetType => _targetType ?? _previous?.TargetType;
 
         /// <inheritdoc/>
-        public override bool IsCombinator => false;
+        internal override bool IsCombinator => false;
 
         /// <summary>
         /// Whether the selector matches the concrete <see cref="TargetType"/> or any object which
@@ -89,11 +89,11 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (TargetType != null)
             {
-                var controlType = ((IStyleable)control).StyleKey ?? control.GetType();
+                var controlType = StyledElement.GetStyleKey(control) ?? control.GetType();
 
                 if (IsConcreteType)
                 {
@@ -134,8 +134,8 @@ namespace Avalonia.Styling
             return Name == null ? SelectorMatch.AlwaysThisType : SelectorMatch.AlwaysThisInstance;
         }
 
-        protected override Selector? MovePrevious() => _previous;
-        protected override Selector? MovePreviousOrParent() => _previous;
+        private protected override Selector? MovePrevious() => _previous;
+        private protected override Selector? MovePreviousOrParent() => _previous;
 
         private string BuildSelectorString(Style? owner)
         {

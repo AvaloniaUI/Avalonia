@@ -46,6 +46,7 @@ namespace ControlCatalog.ViewModels
 
 
         private Bitmap _SelectedImage;
+        private bool _Reversed;
 
         /// <summary>
         /// Gets or Sets the selected image
@@ -97,6 +98,15 @@ namespace ControlCatalog.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the animation is reversed.
+        /// </summary>
+        public bool Reversed
+        {
+            get => _Reversed;
+            set => this.RaiseAndSetIfChanged(ref _Reversed, value);
+        }
+
         private void SetupTransitions()
         {
             if (PageTransitions.Count == 0)
@@ -127,6 +137,7 @@ namespace ControlCatalog.ViewModels
 
         public void NextImage()
         {
+            Reversed = false;
             var index = Images.IndexOf(SelectedImage) + 1;
             
             if (index >= Images.Count)
@@ -139,6 +150,7 @@ namespace ControlCatalog.ViewModels
 
         public void PrevImage()
         {
+            Reversed = true;
             var index = Images.IndexOf(SelectedImage) - 1;
 
             if (index < 0)
@@ -216,7 +228,6 @@ namespace ControlCatalog.ViewModels
             {
                 var animation = new Animation
                 {
-                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame
@@ -247,7 +258,6 @@ namespace ControlCatalog.ViewModels
                 to.IsVisible = true;
                 var animation = new Animation
                 {
-                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame

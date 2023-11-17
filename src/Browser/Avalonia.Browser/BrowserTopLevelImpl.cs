@@ -13,7 +13,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
 [assembly: SupportedOSPlatform("browser")]
@@ -39,7 +38,6 @@ namespace Avalonia.Browser
         {
             Surfaces = Enumerable.Empty<object>();
             _avaloniaView = avaloniaView;
-            TransparencyLevel = WindowTransparencyLevel.None;
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
@@ -74,7 +72,7 @@ namespace Avalonia.Browser
                     surface.Size = new PixelSize((int)newSize.Width, (int)newSize.Height);
                 }
 
-                Resized?.Invoke(newSize, PlatformResizeReason.User);
+                Resized?.Invoke(newSize, WindowResizeReason.User);
 
                 (_insetsManager as BrowserInsetsManager)?.NotifySafeAreaPaddingChanged();
             }
@@ -132,32 +130,29 @@ namespace Avalonia.Browser
             return false;
         }
 
-        public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
+        public bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
         {
-            if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
-            {
-                if (_inputRoot is { })
-                {
-                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+            if (_inputRoot is null)
+                return false;
 
-                    Input?.Invoke(args);
+            var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
+            var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
+            var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
 
-                    return args.Handled;
-                }
-            }
-            else if (Keycodes.KeyCodes.TryGetValue(key, out avkey))
-            {
-                if (_inputRoot is { })
-                {
-                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+            var args = new RawKeyEventArgs(
+                KeyboardDevice,
+                Timestamp,
+                _inputRoot,
+                type,
+                key,
+                modifiers,
+                physicalKey,
+                keySymbol
+            );
 
-                    Input?.Invoke(args);
+            Input?.Invoke(args);
 
-                    return args.Handled;
-                }
-            }
-
-            return false;
+            return args.Handled;
         }
 
         public bool RawTextEvent(string text)
@@ -187,12 +182,7 @@ namespace Avalonia.Browser
 
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
-            return new CompositingRenderer(root,
-                new Compositor(loop, AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>()), () => Surfaces);
-        }
+        public Compositor Compositor { get; } = new(AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
 
         public void Invalidate(Rect rect)
         {
@@ -223,13 +213,8 @@ namespace Avalonia.Browser
             return null;
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            if (transparencyLevel == WindowTransparencyLevel.None
-                || transparencyLevel == WindowTransparencyLevel.Transparent)
-            {
-                TransparencyLevel = transparencyLevel;
-            }
         }
 
         public Size ClientSize => _clientSize;
@@ -241,7 +226,7 @@ namespace Avalonia.Browser
         public Action<string>? SetCssCursor { get; set; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
         public Action? Closed { get; set; }
@@ -249,7 +234,7 @@ namespace Avalonia.Browser
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.

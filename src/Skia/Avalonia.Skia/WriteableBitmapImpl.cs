@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
@@ -97,21 +98,12 @@ namespace Avalonia.Skia
             SKColorType colorType = format.ToSkColorType();
             SKAlphaType alphaType = alphaFormat.ToSkAlphaType();
 
-            var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+            _bitmap = new SKBitmap();
 
-            if (runtimePlatform != null)
-            {
-                _bitmap = new SKBitmap();
+            var nfo = new SKImageInfo(size.Width, size.Height, colorType, alphaType);
+            var blob = new UnmanagedBlob(nfo.BytesSize);
 
-                var nfo = new SKImageInfo(size.Width, size.Height, colorType, alphaType);
-                var blob = runtimePlatform.AllocBlob(nfo.BytesSize);
-
-                _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, s_releaseDelegate, blob);
-            }
-            else
-            {
-                _bitmap = new SKBitmap(size.Width, size.Height, colorType, alphaType);
-            }
+            _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, s_releaseDelegate, blob);
 
             _bitmap.Erase(SKColor.Empty);
         }
@@ -131,7 +123,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void Dispose()
+        public virtual void Dispose()
         {
             _bitmap.Dispose();
         }
@@ -156,6 +148,8 @@ namespace Avalonia.Skia
 
         public PixelFormat? Format => _bitmap.ColorType.ToAvalonia();
 
+        public AlphaFormat? AlphaFormat => _bitmap.AlphaType.ToAlphaFormat();
+
         /// <inheritdoc />
         public ILockedFramebuffer Lock() => new BitmapFramebuffer(this, _bitmap);
 
@@ -176,7 +170,7 @@ namespace Avalonia.Skia
         /// <param name="ctx">Blob.</param>
         private static void ReleaseProc(IntPtr address, object ctx)
         {
-            ((IUnmanagedBlob)ctx).Dispose();
+            ((UnmanagedBlob)ctx).Dispose();
         }
 
         /// <summary>

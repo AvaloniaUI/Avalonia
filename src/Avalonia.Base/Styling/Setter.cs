@@ -14,7 +14,7 @@ namespace Avalonia.Styling
     /// A <see cref="Setter"/> is used to set a <see cref="AvaloniaProperty"/> value on a
     /// <see cref="AvaloniaObject"/> depending on a condition.
     /// </remarks>
-    public class Setter : ISetter, IValueEntry, ISetterInstance, IAnimationSetter
+    public class Setter : SetterBase, IValueEntry, ISetterInstance, IAnimationSetter
     {
         private object? _value;
         private DirectPropertySetterInstance? _direct;
@@ -65,8 +65,8 @@ namespace Avalonia.Styling
 
         void IValueEntry.Unsubscribe() { }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
-        ISetterInstance ISetter.Instance(IStyleInstance instance, StyledElement target)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
+        internal override ISetterInstance Instance(IStyleInstance instance, StyledElement target)
         {
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Don't know how to instance a style on this type.");

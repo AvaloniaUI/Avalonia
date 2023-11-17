@@ -1,8 +1,6 @@
 using System;
 using System.Numerics;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Animations
 {
     /// <summary>
@@ -19,6 +17,12 @@ namespace Avalonia.Rendering.Composition.Animations
         
         public static ScalarInterpolator Instance { get; } = new ScalarInterpolator();
     }
+    class DoubleInterpolator : IInterpolator<double>
+    {
+        public double Interpolate(double @from, double to, float progress) => @from + (to - @from) * progress;
+        
+        public static DoubleInterpolator Instance { get; } = new ();
+    }
 
     class Vector2Interpolator : IInterpolator<Vector2>
     {
@@ -28,12 +32,31 @@ namespace Avalonia.Rendering.Composition.Animations
         public static Vector2Interpolator Instance { get; } = new Vector2Interpolator();
     }
     
+    class VectorInterpolator : IInterpolator<Vector>
+    {
+        public Vector Interpolate(Vector @from, Vector to, float progress)
+            => new(DoubleInterpolator.Instance.Interpolate(from.X, to.X, progress),
+                DoubleInterpolator.Instance.Interpolate(from.Y, to.Y, progress));
+        
+        public static VectorInterpolator Instance { get; } = new ();
+    }
+    
     class Vector3Interpolator : IInterpolator<Vector3>
     {
         public Vector3 Interpolate(Vector3 @from, Vector3 to, float progress) 
             => Vector3.Lerp(@from, to, progress);
         
         public static Vector3Interpolator Instance { get; } = new Vector3Interpolator();
+    }
+    
+    class Vector3DInterpolator : IInterpolator<Vector3D>
+    {
+        public Vector3D Interpolate(Vector3D @from, Vector3D to, float progress)
+            => new(DoubleInterpolator.Instance.Interpolate(from.X, to.X, progress),
+                DoubleInterpolator.Instance.Interpolate(from.Y, to.Y, progress),
+                DoubleInterpolator.Instance.Interpolate(from.Z, to.Z, progress));
+        
+        public static Vector3DInterpolator Instance { get; } = new ();
     }
     
     class Vector4Interpolator : IInterpolator<Vector4>

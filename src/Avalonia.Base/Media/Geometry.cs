@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Platform;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Reactive;
 
@@ -20,11 +21,22 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<Geometry, Transform?>(nameof(Transform));
 
         private bool _isDirty = true;
+        private readonly bool _canInvaldate = true;
         private IGeometryImpl? _platformImpl;
 
         static Geometry()
         {
             TransformProperty.Changed.AddClassHandler<Geometry>((x,e) => x.TransformChanged(e));
+        }
+
+        internal Geometry()
+        {
+        }
+
+        private protected Geometry(IGeometryImpl? platformImpl)
+        {
+            _platformImpl = platformImpl;
+           _isDirty = _canInvaldate = false;
         }
 
         /// <summary>
@@ -40,7 +52,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.
         /// </summary>
-        public IGeometryImpl? PlatformImpl
+        internal IGeometryImpl? PlatformImpl
         {
             get
             {
@@ -113,6 +125,17 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets a <see cref="Geometry"/> that is the shape defined by the stroke on the Geometry
+        /// produced by the specified Pen.
+        /// </summary>
+        /// <param name="pen">The pen to use.</param>
+        /// <returns>The outlined geometry.</returns>
+        public Geometry GetWidenedGeometry(IPen pen)
+        {
+            return new ImmutableGeometry(PlatformImpl?.GetWidenedGeometry(pen));
+        }
+
+        /// <summary>
         /// Marks a property as affecting the geometry's <see cref="PlatformImpl"/>.
         /// </summary>
         /// <param name="properties">The properties.</param>
@@ -133,13 +156,16 @@ namespace Avalonia.Media
         /// Creates the platform implementation of the geometry, without the transform applied.
         /// </summary>
         /// <returns></returns>
-        protected abstract IGeometryImpl? CreateDefiningGeometry();
+        private protected abstract IGeometryImpl? CreateDefiningGeometry();
 
         /// <summary>
         /// Invalidates the platform implementation of the geometry.
         /// </summary>
         protected void InvalidateGeometry()
         {
+            if (!_canInvaldate)
+                return;
+
             _isDirty = true;
             _platformImpl = null;
             Changed?.Invoke(this, EventArgs.Empty);
@@ -193,6 +219,12 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets the geometry's total length as if all its contours are placed
+        /// in a straight line.
+        /// </summary>
+        public double ContourLength => PlatformImpl?.ContourLength ?? 0;
+
+        /// <summary>
         /// Combines the two geometries using the specified <see cref="GeometryCombineMode"/> and applies the specified transform to the resulting geometry.
         /// </summary>
         /// <param name="geometry1">The first geometry to combine.</param>
@@ -203,6 +235,67 @@ namespace Avalonia.Media
         public static Geometry Combine(Geometry geometry1, RectangleGeometry geometry2, GeometryCombineMode combineMode, Transform? transform = null)
         {
             return new CombinedGeometry(combineMode, geometry1, geometry2, transform);
+        }
+
+        /// <summary>
+        /// Attempts to get the corresponding point at the
+        /// specified distance
+        /// </summary>
+        /// <param name="distance">The contour distance to get from.</param>
+        /// <param name="point">The point in the specified distance.</param>
+        /// <returns>If there's valid point at the specified distance.</returns>
+        public bool TryGetPointAtDistance(double distance, out Point point)
+        {
+            if (PlatformImpl == null)
+            {
+                point = default;
+                return false;
+            }
+
+            return PlatformImpl.TryGetPointAtDistance(distance, out point);
+        }
+
+        /// <summary>
+        /// Attempts to get the corresponding point and
+        /// tangent from the specified distance along the
+        /// contour of the geometry.
+        /// </summary>
+        /// <param name="distance">The contour distance to get from.</param>
+        /// <param name="point">The point in the specified distance.</param>
+        /// <param name="tangent">The tangent in the specified distance.</param>
+        /// <returns>If there's valid point and tangent at the specified distance.</returns>
+        public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
+        {
+            if (PlatformImpl == null)
+            {
+                point = tangent = default;
+                return false;
+            }
+
+            return PlatformImpl.TryGetPointAndTangentAtDistance(distance, out point, out tangent);
+        }
+
+        /// <summary>
+        /// Attempts to get the corresponding path segment
+        /// given by the two distances specified.
+        /// Imagine it like snipping a part of the current
+        /// geometry.
+        /// </summary>
+        /// <param name="startDistance">The contour distance to start snipping from.</param>
+        /// <param name="stopDistance">The contour distance to stop snipping to.</param>
+        /// <param name="startOnBeginFigure">If ture, the resulting snipped path will start with a BeginFigure call.</param>
+        /// <param name="segmentGeometry">The resulting snipped path.</param>
+        /// <returns>If the snipping operation is successful.</returns>
+        public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure,
+            [NotNullWhen(true)] out Geometry? segmentGeometry)
+        {
+            segmentGeometry = null;
+            if (PlatformImpl == null)
+                return false;
+            if (!PlatformImpl.TryGetSegment(startDistance, stopDistance, startOnBeginFigure, out var segment))
+                return false;
+            segmentGeometry = new PlatformGeometry(segment);
+            return true;
         }
     }
 

@@ -190,9 +190,11 @@ namespace Avalonia.Input.Navigation
         private static IInputElement? FocusedElement(IInputElement? e)
         {
             // Focus delegation is enabled only if keyboard focus is outside the container
-            if (e != null && !e.IsKeyboardFocusWithin)
+            if (e != null && !e.IsKeyboardFocusWithin && e is IFocusScope scope)
             {
-                var focusedElement = (FocusManager.Instance as FocusManager)?.GetFocusedElement(e);
+                var focusManager = FocusManager.GetFocusManager(e);
+
+                var focusedElement = focusManager?.GetFocusedElement(scope);
                 if (focusedElement != null)
                 {
                     if (!IsFocusScope(e))
@@ -647,12 +649,12 @@ namespace Avalonia.Input.Navigation
         private static bool IsTabStop(IInputElement e)
         {
             if (e is InputElement ie)
-                return ie.Focusable && KeyboardNavigation.GetIsTabStop(ie) && ie.IsVisible && ie.IsEnabled;
+                return ie.Focusable && KeyboardNavigation.GetIsTabStop(ie) && ie.IsVisible && ie.IsEffectivelyEnabled;
             return false;
         }
 
         private static bool IsTabStopOrGroup(IInputElement e) => IsTabStop(e) || IsGroup(e);
         private static bool IsVisible(IInputElement e) => (e as Visual)?.IsVisible ?? true;
-        private static bool IsVisibleAndEnabled(IInputElement e) => IsVisible(e) && e.IsEnabled;
+        private static bool IsVisibleAndEnabled(IInputElement e) => IsVisible(e) && e.IsEffectivelyEnabled;
     }
 }

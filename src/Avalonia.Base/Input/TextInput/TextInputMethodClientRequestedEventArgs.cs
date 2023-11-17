@@ -7,6 +7,6 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Set this property to a valid text input client to enable input method interaction
         /// </summary>
-        public ITextInputMethodClient? Client { get; set; }
+        public TextInputMethodClient? Client { get; set; }
     }
 }

@@ -30,8 +30,7 @@ namespace Avalonia.Skia
         [ThreadStatic] private static string[]? t_languageTagBuffer;
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch,
-            FontFamily? fontFamily, CultureInfo? culture, out Typeface fontKey)
+            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface fontKey)
         {
             SKFontStyle skFontStyle;
 
@@ -60,35 +59,13 @@ namespace Avalonia.Skia
             t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
             t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
 
-            if (fontFamily is not null && fontFamily.FamilyNames.HasFallbacks)
+            var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+
+            if (skTypeface != null)
             {
-                var familyNames = fontFamily.FamilyNames;
+                fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight, fontStretch);
 
-                for (var i = 1; i < familyNames.Count; i++)
-                {
-                    var skTypeface =
-                        _skFontManager.MatchCharacter(familyNames[i], skFontStyle, t_languageTagBuffer, codepoint);
-
-                    if (skTypeface == null)
-                    {
-                        continue;
-                    }
-
-                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight, fontStretch);
-
-                    return true;
-                }
-            }
-            else
-            {
-                var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
-
-                if (skTypeface != null)
-                {
-                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight, fontStretch);
-
-                    return true;
-                }
+                return true;
             }
 
             fontKey = default;
@@ -96,7 +73,7 @@ namespace Avalonia.Skia
             return false;
         }
 
-        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
@@ -107,12 +84,6 @@ namespace Avalonia.Skia
             var skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
             if (skTypeface is null)
-            {
-                return false;
-            }
-
-            //MatchFamily can return a font other than we requested so we have to verify we got the expected.
-            if (!skTypeface.FamilyName.ToLower(CultureInfo.InvariantCulture).Equals(familyName.ToLower(CultureInfo.InvariantCulture), StringComparison.Ordinal))
             {
                 return false;
             }
@@ -134,13 +105,13 @@ namespace Avalonia.Skia
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             var skTypeface = SKTypeface.FromStream(stream);
 
             if (skTypeface != null)
             {
-                glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+                glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
 
                 return true;
             }

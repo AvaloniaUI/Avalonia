@@ -6,13 +6,16 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -93,7 +96,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234",
                     ContextFlyout = new MenuFlyout
                     {
-                        Items = new List<MenuItem>
+                        Items =
                         {
                             new MenuItem { Header = "Item 1" },
                             new MenuItem {Header = "Item 2" },
@@ -594,7 +597,6 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Text = "1234",
-                    IsVisible = false
                 };
 
                 var root = new TestRoot { Child = target1 };
@@ -884,7 +886,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "ABC",
                     MaxLines = 1,
-                    AcceptsReturn= true
+                    AcceptsReturn = true
                 };
 
                 var impl = CreateMockTopLevelImpl();
@@ -896,7 +898,10 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.ApplyTemplate();
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
+                target.ApplyTemplate();
                 target.Measure(Size.Infinity);
+
+                var initialHeight = target.DesiredSize.Height;
 
                 topLevel.Clipboard?.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
 
@@ -905,7 +910,86 @@ namespace Avalonia.Controls.UnitTests
 
                 RaiseTextEvent(target, Environment.NewLine);
 
-                Assert.Equal("ABC", target.Text);
+                target.InvalidateMeasure();
+                target.Measure(Size.Infinity);
+
+                Assert.Equal(initialHeight, target.DesiredSize.Height);
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void MaxLines_Sets_ScrollViewer_MaxHeight(int maxLines)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    MaxLines = maxLines,
+
+                    // Define explicit whole number line height for predictable calculations
+                    LineHeight = 20
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.Equal("PART_TextPresenter", textPresenter.Name);
+                Assert.Equal(new Thickness(0), textPresenter.Margin); // Test assumes no margin on TextPresenter
+
+                var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
+                Assert.Equal(maxLines * target.LineHeight, scrollViewer.MaxHeight);
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void MaxLines_Sets_ScrollViewer_MaxHeight_With_TextPresenter_Margin(int maxLines)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    MaxLines = maxLines,
+
+                    // Define explicit whole number line height for predictable calculations
+                    LineHeight = 20
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.Equal("PART_TextPresenter", textPresenter.Name);
+                var textPresenterMargin = new Thickness(horizontal: 0, vertical: 3);
+                textPresenter.Margin = textPresenterMargin;
+
+                target.InvalidateMeasure();
+                target.Measure(Size.Infinity);
+
+                var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
+                Assert.Equal((maxLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MaxHeight);
             }
         }
 
@@ -1098,25 +1182,70 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData("A\nBB\nCCC\nDDDD", 0, 0)]
+        [InlineData("A\nBB\nCCC\nDDDD", 1, 2)]
+        [InlineData("A\nBB\nCCC\nDDDD", 2, 5)]
+        [InlineData("A\nBB\nCCC\nDDDD", 3, 9)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 0, 0)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 1, 5)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 2, 11)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 3, 17)]
+        public void Should_Scroll_Caret_To_Line(string text, int targetLineIndex, int expectedCaretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = text
+                };
+                tb.ApplyTemplate();
+                tb.ScrollToLine(targetLineIndex);
+                Assert.Equal(expectedCaretIndex, tb.CaretIndex);
+            }
+        }
+
+        [Fact]
+        public void Should_Throw_ArgumentOutOfRange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = string.Empty
+                };
+                tb.ApplyTemplate();
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(-1));
+                Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(1));
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new MockTextShaperImpl(),
-            fontManagerImpl: new MockFontManagerImpl());
+            textShaperImpl: new HeadlessTextShaperStub(),
+            fontManagerImpl: new HeadlessFontManagerStub());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            renderInterface: new MockPlatformRenderInterface(),
-            textShaperImpl: new MockTextShaperImpl(), 
-            fontManagerImpl: new MockFontManagerImpl());
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            textShaperImpl: new HeadlessTextShaperStub(), 
+            fontManagerImpl: new HeadlessFontManagerStub());
 
         private IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<TextBox>((control, scope) =>
-                new TextPresenter
+            new ScrollViewer
+            {
+                Name = "PART_ScrollViewer",
+                Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTests.CreateTemplate),
+                Content = new TextPresenter
                 {
                     Name = "PART_TextPresenter",
                     [!!TextPresenter.TextProperty] = new Binding
@@ -1133,7 +1262,8 @@ namespace Avalonia.Controls.UnitTests
                         Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     }
-                }.RegisterInNameScope(scope));
+                }.RegisterInNameScope(scope)
+            }.RegisterInNameScope(scope));
         }
 
         private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
@@ -1208,14 +1338,13 @@ namespace Avalonia.Controls.UnitTests
                 _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
         {
             var clipboard = new Mock<ITopLevelImpl>();
-            clipboard.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(RendererMocks.CreateRenderer().Object);
+            clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
                 .Returns(new ClipboardStub());
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);

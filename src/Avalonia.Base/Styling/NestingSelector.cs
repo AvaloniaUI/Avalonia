@@ -7,13 +7,13 @@ namespace Avalonia.Styling
     /// </summary>
     internal class NestingSelector : Selector
     {
-        public override bool InTemplate => false;
-        public override bool IsCombinator => false;
-        public override Type? TargetType => null;
+        internal override bool InTemplate => false;
+        internal override bool IsCombinator => false;
+        internal override Type? TargetType => null;
 
         public override string ToString(Style? owner) => owner?.Parent?.ToString() ?? "^";
 
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (parent is Style s && s.Selector is not null)
             {
@@ -23,7 +23,7 @@ namespace Avalonia.Styling
             {
                 if (theme.TargetType is null)
                     throw new InvalidOperationException("ControlTheme has no TargetType.");
-                return theme.TargetType.IsAssignableFrom(((IStyleable)control).StyleKey) ?
+                return theme.TargetType.IsAssignableFrom(StyledElement.GetStyleKey(control)) ?
                     SelectorMatch.AlwaysThisType :
                     SelectorMatch.NeverThisType;
             }
@@ -32,7 +32,7 @@ namespace Avalonia.Styling
                 "Nesting selector was specified but cannot determine parent selector.");
         }
 
-        protected override Selector? MovePrevious() => null;
-        protected override Selector? MovePreviousOrParent() => null;
+        private protected override Selector? MovePrevious() => null;
+        private protected override Selector? MovePreviousOrParent() => null;
     }
 }

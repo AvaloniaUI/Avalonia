@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
   <ControlTheme x:Key="{x:Type WindowNotificationManager}"
                 TargetType="WindowNotificationManager">
     <Setter Property="Margin" Value="0 0 8 8" />
@@ -37,6 +38,11 @@
       <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
 
+    <Style Selector="^:topcenter /template/ ReversibleStackPanel#PART_Items">
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
     <Style Selector="^:bottomleft /template/ ReversibleStackPanel#PART_Items">
       <Setter Property="ReverseOrder" Value="True" />
       <Setter Property="VerticalAlignment" Value="Bottom" />
@@ -47,6 +53,12 @@
       <Setter Property="ReverseOrder" Value="True" />
       <Setter Property="VerticalAlignment" Value="Bottom" />
       <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+    <Style Selector="^:bottomcenter /template/ ReversibleStackPanel#PART_Items">
+      <Setter Property="ReverseOrder" Value="True" />
+      <Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>
