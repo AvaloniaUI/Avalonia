@@ -13,11 +13,11 @@
       <SubType>Designer</SubType>
     </AvaloniaResource>
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
   </ItemGroup>
-  
+
   <Import Project="..\..\build\BuildTargets.targets" />
 
 </Project>

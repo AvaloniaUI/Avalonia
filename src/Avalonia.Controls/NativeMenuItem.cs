@@ -72,6 +72,23 @@ namespace Avalonia.Controls
             set => SetValue(HeaderProperty, value);
         }
 
+        /// <summary>
+        /// Defines the <see cref="ToolTip"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> ToolTipProperty =
+            AvaloniaProperty.Register<NativeMenuItem, string?>(nameof(ToolTip));
+
+        /// <summary>
+        /// Gets or sets the tooltip associated with the menu item.
+        /// This may not be supported by the native menu provider, but
+        /// will be passed on to the non-native fallback menu item if used.
+        /// </summary>
+        public string? ToolTip
+        {
+            get => GetValue(ToolTipProperty);
+            set => SetValue(ToolTipProperty, value);
+        }
+
         public static readonly StyledProperty<KeyGesture?> GestureProperty =
             AvaloniaProperty.Register<NativeMenuItem, KeyGesture?>(nameof(Gesture));
 
@@ -136,8 +153,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? CommandParameter
         {
-            get { return GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
         }
 
         /// <summary>

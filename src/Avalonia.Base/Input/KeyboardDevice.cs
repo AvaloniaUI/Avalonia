@@ -189,12 +189,14 @@ namespace Avalonia.Input
                             ? InputElement.KeyDownEvent
                             : InputElement.KeyUpEvent;
 
-                        KeyEventArgs ev = new KeyEventArgs
+                        var ev = new KeyEventArgs
                         {
                             RoutedEvent = routedEvent,
                             Key = keyInput.Key,
                             KeyModifiers = keyInput.Modifiers.ToKeyModifiers(),
-                            Source = element,
+                            PhysicalKey = keyInput.PhysicalKey,
+                            KeySymbol = keyInput.KeySymbol,
+                            Source = element
                         };
                         
                         var currentHandler = element as Visual;

@@ -32,14 +32,20 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var stack = serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>();
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
             var targetObject = provideTarget?.TargetObject;
-            var targetProperty = provideTarget?.TargetProperty;
+            var targetProperty = provideTarget?.TargetProperty switch
+            {
+                AvaloniaProperty ap => ap,
+                PropertyInfo pi => new Avalonia.Data.Core.ReflectionClrPropertyInfo(pi),
+                _ => provideTarget?.TargetProperty,
+            };
+
             var themeVariant = (targetObject as IThemeVariantHost)?.ActualThemeVariant
                 ?? GetDictionaryVariant(serviceProvider);
 
             var targetType = targetProperty switch
             {
                 AvaloniaProperty ap => ap.PropertyType,
-                PropertyInfo pi => pi.PropertyType,
+                Avalonia.Data.Core.IPropertyInfo cpi => cpi.PropertyType,
                 _ => null
             };
 
@@ -62,7 +68,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             }
 
             if (targetObject is Control target &&
-                targetProperty is PropertyInfo property)
+                targetProperty is Avalonia.Data.Core.IPropertyInfo property)
             {
                 // This is stored locally to avoid allocating closure in the outer scope.
                 var localTargetType = targetType;

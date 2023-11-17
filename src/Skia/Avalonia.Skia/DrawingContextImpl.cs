@@ -6,6 +6,7 @@ using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Skia.Helpers;
 using Avalonia.Utilities;
 using SkiaSharp;
 using ISceneBrush = Avalonia.Media.ISceneBrush;
@@ -23,6 +24,7 @@ namespace Avalonia.Skia
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
+        private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
@@ -189,7 +191,8 @@ namespace Avalonia.Skia
             var d = destRect.ToSKRect();
 
             var paint = SKPaintCache.Shared.Get();
-            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * (_useOpacitySaveLayer ? 1 : _currentOpacity)));
+
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
             paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
 
@@ -375,7 +378,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && !boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         if (boxShadow.IsInset)
@@ -432,7 +435,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
@@ -592,8 +595,16 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            if(_useOpacitySaveLayer)
+            _opacityStack.Push(_currentOpacity);
+
+            var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
+
+            if (useOpacitySaveLayer)
             {
+                opacity = _currentOpacity * opacity; //Take current multiplied opacity
+
+                _currentOpacity = 1; //Opacity is applied via layering
+
                 if (bounds.HasValue)
                 {
                     var rect = bounds.Value.ToSKRect();
@@ -606,7 +617,6 @@ namespace Avalonia.Skia
             }
             else
             {
-                _opacityStack.Push(_currentOpacity);
                 _currentOpacity *= opacity;
             }
         }
@@ -616,14 +626,29 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            if(_useOpacitySaveLayer)
+            var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
+
+            if (useOpacitySaveLayer)
             {
                 Canvas.Restore();
             }
-            else
-            {
-                _currentOpacity = _opacityStack.Pop();
-            }    
+
+            _currentOpacity = _opacityStack.Pop();
+        }
+
+        /// <inheritdoc />
+        public void PushRenderOptions(RenderOptions renderOptions)
+        {
+            CheckLease();
+
+            _renderOptionsStack.Push(RenderOptions);
+
+            RenderOptions = RenderOptions.MergeWith(renderOptions);
+        }
+
+        public void PopRenderOptions()
+        {
+            RenderOptions = _renderOptionsStack.Pop();
         }
 
         /// <inheritdoc />
@@ -1239,53 +1264,15 @@ namespace Avalonia.Skia
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/paths/dots
             // TODO: Still something is off, dashes are now present, but don't look the same as D2D ones.
 
-            switch (pen.LineCap)
-            {
-                case PenLineCap.Round:
-                    paint.StrokeCap = SKStrokeCap.Round;
-                    break;
-                case PenLineCap.Square:
-                    paint.StrokeCap = SKStrokeCap.Square;
-                    break;
-                default:
-                    paint.StrokeCap = SKStrokeCap.Butt;
-                    break;
-            }
-
-            switch (pen.LineJoin)
-            {
-                case PenLineJoin.Miter:
-                    paint.StrokeJoin = SKStrokeJoin.Miter;
-                    break;
-                case PenLineJoin.Round:
-                    paint.StrokeJoin = SKStrokeJoin.Round;
-                    break;
-                default:
-                    paint.StrokeJoin = SKStrokeJoin.Bevel;
-                    break;
-            }
+            paint.StrokeCap = pen.LineCap.ToSKStrokeCap();
+            paint.StrokeJoin = pen.LineJoin.ToSKStrokeJoin();
 
             paint.StrokeMiter = (float) pen.MiterLimit;
 
-            if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+            if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
             {
-                var srcDashes = pen.DashStyle.Dashes;
-
-                var count = srcDashes.Count % 2 == 0 ? srcDashes.Count : srcDashes.Count * 2;
-
-                var dashesArray = new float[count];
-
-                for (var i = 0; i < count; ++i)
-                {
-                    dashesArray[i] = (float) srcDashes[i % srcDashes.Count] * paint.StrokeWidth;
-                }
-
-                var offset = (float)(pen.DashStyle.Offset * pen.Thickness);
-
-                var pe = SKPathEffect.CreateDash(dashesArray, offset);
-
-                paint.PathEffect = pe;
-                rv.AddDisposable(pe);
+                paint.PathEffect = dashEffect;
+                rv.AddDisposable(dashEffect);
             }
 
             return rv;

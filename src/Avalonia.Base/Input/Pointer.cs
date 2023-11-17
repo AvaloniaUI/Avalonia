@@ -56,6 +56,11 @@ namespace Avalonia.Input
 
             if (Captured != null)
                 CaptureGestureRecognizer(null);
+
+            if(Captured == null && CapturedGestureRecognizer == null)
+            {
+                IsGestureRecognitionSkipped = false;
+            }
         }
 
         static IInputElement? GetNextCapture(Visual parent)
@@ -79,9 +84,14 @@ namespace Avalonia.Input
         /// </summary>
         internal GestureRecognizer? CapturedGestureRecognizer { get; private set; }
 
+        public bool IsGestureRecognitionSkipped { get; set; }
+
         public void Dispose()
         {
-            Capture(null);
+            if (Captured != null)
+            {
+                Capture(null);
+            }
         }
 
         /// <summary>
@@ -91,12 +101,16 @@ namespace Avalonia.Input
         internal void CaptureGestureRecognizer(GestureRecognizer? gestureRecognizer)
         {
             if (CapturedGestureRecognizer != gestureRecognizer)
+            {
                 CapturedGestureRecognizer?.PointerCaptureLostInternal(this);
-
-            if (gestureRecognizer != null)
-                Capture(null);
+            }
 
             CapturedGestureRecognizer = gestureRecognizer;
+
+            if (gestureRecognizer != null)
+            {
+                Capture(null);
+            }
         }
     }
 }

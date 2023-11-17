@@ -57,6 +57,7 @@
                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                    Text="{TemplateBinding Text}"
+                   TextAlignment="{TemplateBinding TextAlignment}"
                    AcceptsReturn="False"
                    TextWrapping="NoWrap" />
         </ButtonSpinner>

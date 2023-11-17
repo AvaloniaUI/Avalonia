@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Logging;
 
 namespace Avalonia.Markup.Data
@@ -56,11 +57,11 @@ namespace Avalonia.Markup.Data
         /// <param name="target">The control.</param>
         /// <param name="property">The property on the control to bind to.</param>
         /// <param name="value">A function which returns the value.</param>
-        public static void Add(StyledElement target, PropertyInfo property, Func<StyledElement, object?> value)
+        public static void Add(StyledElement target, IPropertyInfo property, Func<StyledElement, object?> value)
         {
             if (target.IsInitialized)
             {
-                property.SetValue(target, value(target));
+                property.Set(target, value(target));
             }
             else
             {
@@ -125,20 +126,20 @@ namespace Avalonia.Markup.Data
 
         private class ClrPropertyValueEntry : Entry
         {
-            public ClrPropertyValueEntry(PropertyInfo property, Func<StyledElement, object?> value)
+            public ClrPropertyValueEntry(IPropertyInfo property, Func<StyledElement, object?> value)
             {
                 Property = property;
                 Value = value;
             }
 
-            public PropertyInfo Property { get; }
+            public IPropertyInfo Property { get; }
             public Func<StyledElement, object?> Value { get; }
 
             public override void Apply(StyledElement control)
             {
                 try
                 {
-                    Property.SetValue(control, Value(control));
+                    Property.Set(control, Value(control));
                 }
                 catch (Exception e)
                 {

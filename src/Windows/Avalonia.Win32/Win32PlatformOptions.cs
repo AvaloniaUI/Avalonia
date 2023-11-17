@@ -26,6 +26,27 @@ public enum Win32RenderingMode
 }
 
 /// <summary>
+/// Represents the DPI Awareness for the application.
+/// </summary>
+public enum Win32DpiAwareness
+{
+    /// <summary>
+    /// The application is DPI unaware.
+    /// </summary>
+    Unaware,
+
+    /// <summary>
+    /// The application is system DPI aware. It will query DPI once and will not adjust to new DPI changes
+    /// </summary>
+    SystemDpiAware,
+
+    /// <summary>
+    /// The application is per-monitor DPI aware. It adjust its scale factor whenever DPI changes.
+    /// </summary>
+    PerMonitorDpiAware
+}
+
+/// <summary>
 /// Represents the Win32 window composition mode.
 /// </summary>
 public enum Win32CompositionMode
@@ -40,14 +61,14 @@ public enum Win32CompositionMode
     /// </remarks>
     WinUIComposition = 1,
 
-    // /// <summary>
-    // /// Render Avalonia to a texture inside the DirectComposition tree.
-    // /// </summary>
-    // /// <remarks>
-    // /// Supported on Windows 8 and above. Ignored on other versions.<br/>
-    // /// Can only be applied with <see cref="Win32PlatformOptions.RenderingMode"/>=<see cref="Win32RenderingMode.AngleEgl"/>.
-    // /// </remarks>
-    // DirectComposition = 2,
+    /// <summary>
+    /// Render Avalonia to a texture inside the DirectComposition tree.
+    /// </summary>
+    /// <remarks>
+    /// Supported on Windows 8 and above. Ignored on other versions.<br/>
+    /// Can only be applied with <see cref="Win32PlatformOptions.RenderingMode"/>=<see cref="Win32RenderingMode.AngleEgl"/>.
+    /// </remarks>
+    DirectComposition = 2,
 
     /// <summary>
     /// When <see cref="LowLatencyDxgiSwapChain"/> is active, renders Avalonia through a low-latency Dxgi Swapchain.
@@ -96,7 +117,7 @@ public class Win32PlatformOptions
     /// <summary>
     /// Gets or sets Avalonia composition modes with fallbacks.
     /// The first element in the array has the highest priority.
-    /// The default value is: <see cref="Win32CompositionMode.WinUIComposition"/>, <see cref="Win32CompositionMode.RedirectionSurface"/>.
+    /// The default value is: <see cref="Win32CompositionMode.WinUIComposition"/>, <see cref="Win32CompositionMode.DirectComposition"/>, <see cref="Win32CompositionMode.RedirectionSurface"/>.
     /// </summary>
     /// <remarks>
     /// If application should work on as wide range of devices as possible, at least add <see cref="Win32CompositionMode.RedirectionSurface"/> as a fallback value.
@@ -104,7 +125,7 @@ public class Win32PlatformOptions
     /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
     public IReadOnlyList<Win32CompositionMode> CompositionMode { get; set; } = new[]
     {
-        Win32CompositionMode.WinUIComposition, Win32CompositionMode.RedirectionSurface
+        Win32CompositionMode.WinUIComposition, Win32CompositionMode.DirectComposition, Win32CompositionMode.RedirectionSurface
     };
 
     /// <summary>
@@ -137,4 +158,9 @@ public class Win32PlatformOptions
     /// and <see cref="CompositionMode"/> only accepts null or <see cref="Win32CompositionMode.RedirectionSurface"/>.
     /// </summary>
     public IPlatformGraphics? CustomPlatformGraphics { get; set; }
+
+    /// <summary>
+    /// Gets or sets the application's DPI awareness.
+    /// </summary>
+    public Win32DpiAwareness DpiAwareness { get; set; } = Win32DpiAwareness.PerMonitorDpiAware;
 }

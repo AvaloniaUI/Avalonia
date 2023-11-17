@@ -20,17 +20,17 @@ namespace Avalonia.Animation
         private bool _playbackReversed;
         private FillMode _fillMode;
         private PlaybackDirection _playbackDirection;
-        private Animator<T> _animator;
-        private Animation _animation;
-        private Animatable _targetControl;
+        private readonly Animator<T> _animator;
+        private readonly Animation _animation;
+        private readonly Animatable _targetControl;
         private T _neutralValue;
         private double _speedRatioConv;
         private TimeSpan _initialDelay;
         private TimeSpan _iterationDelay;
         private TimeSpan _duration;
         private Easings.Easing? _easeFunc;
-        private Action? _onCompleteAction;
-        private Func<double, T, T> _interpolator;
+        private readonly Action? _onCompleteAction;
+        private readonly Func<double, T, T> _interpolator;
         private IDisposable? _timerSub;
         private readonly IClock _baseClock;
         private IClock? _clock;
@@ -176,6 +176,7 @@ namespace Avalonia.Animation
                 var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
                 _lastInterpValue = _interpolator(easedTime, _neutralValue);
                 DoComplete();
+                return;
             }
 
             if (playbackTime <= iterDuration)

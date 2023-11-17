@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Shapes
 {
@@ -15,9 +16,9 @@ namespace Avalonia.Controls.Shapes
 
         public Polygon()
         {
-            Points = new Points();
+            SetValue(PointsProperty, new Points(), BindingPriority.Template);
         }
-        
+
         public IList<Point> Points
         {
             get => GetValue(PointsProperty);
