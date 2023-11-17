@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using XamlX;
 using XamlX.Compiler;
 using XamlX.Emit;
 using XamlX.Transform;
@@ -19,10 +20,13 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
         foreach (var additionalType in additionalTypes)
             mappings.XmlnsAttributes.Add(typeSystem.GetType(additionalType));
 
+        var diagnosticsHandler = new XamlDiagnosticsHandler();
+        
         var configuration = new TransformerConfiguration(
             typeSystem,
             typeSystem.Assemblies.First(),
-            mappings);
+            mappings,
+            diagnosticsHandler: diagnosticsHandler);
         return new MiniCompiler(configuration);
     }
         

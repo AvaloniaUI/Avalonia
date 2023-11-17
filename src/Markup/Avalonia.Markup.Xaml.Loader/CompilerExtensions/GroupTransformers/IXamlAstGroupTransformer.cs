@@ -9,55 +9,32 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 
 internal class AstGroupTransformationContext : AstTransformationContext
 {
-    public AstGroupTransformationContext(IReadOnlyCollection<IXamlDocumentResource> documents, TransformerConfiguration configuration, bool strictMode = true)
-        : base(configuration, null, strictMode)
+    public AstGroupTransformationContext(
+        IReadOnlyCollection<IXamlDocumentResource> documents,
+        TransformerConfiguration configuration)
+        : base(configuration, null)
     {
         Documents = documents;
     }
 
+    public override string Document => CurrentDocument?.FileSource?.FilePath ?? "{unknown document}";
     public IXamlDocumentResource CurrentDocument { get; set; }
     
     public IReadOnlyCollection<IXamlDocumentResource> Documents { get; }
 
-    public new IXamlAstNode ParseError(string message, IXamlAstNode node) =>
-        Error(node, new XamlDocumentParseException(CurrentDocument?.FileSource?.FilePath, message, node));
-
-    public new IXamlAstNode ParseError(string message, IXamlAstNode offender, IXamlAstNode ret) =>
-        Error(ret, new XamlDocumentParseException(CurrentDocument?.FileSource?.FilePath, message, offender));
-
-    class Visitor : IXamlAstVisitor
+    class Visitor : ContextXamlAstVisitor
     {
-        private readonly AstGroupTransformationContext _context;
         private readonly IXamlAstGroupTransformer _transformer;
 
-        public Visitor(AstGroupTransformationContext context, IXamlAstGroupTransformer transformer)
+        public Visitor(AstGroupTransformationContext context, IXamlAstGroupTransformer transformer) : base(context)
         {
-            _context = context;
             _transformer = transformer;
         }
-            
-        public IXamlAstNode Visit(IXamlAstNode node)
-        {
-#if Xaml_DEBUG
-                return _transformer.Transform(_context, node);
-#else
-            try
-            {
-                return _transformer.Transform(_context, node);
-            }
-            catch (Exception e) when (!(e is XmlException))
-            {
-                throw new XamlDocumentParseException(
-                    _context.CurrentDocument?.FileSource?.FilePath,
-                    "Internal compiler error while transforming node " + node + ":\n" + e,
-                    node);
-            }
-#endif
-        }
 
-        public void Push(IXamlAstNode node) => _context.PushParent(node);
+        public override string GetTransformerInfo() => _transformer.GetType().Name;
 
-        public void Pop() => _context.PopParent();
+        public override IXamlAstNode VisitCore(AstTransformationContext context, IXamlAstNode node) =>
+            _transformer.Transform((AstGroupTransformationContext)context, node);
     }
     
     public IXamlAstNode Visit(IXamlAstNode root, IXamlAstGroupTransformer transformer)

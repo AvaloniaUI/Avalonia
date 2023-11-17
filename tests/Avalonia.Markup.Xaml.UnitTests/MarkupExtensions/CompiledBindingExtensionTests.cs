@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -496,7 +497,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Window.DataTemplates>
     <ContentControl Name='target' Content='{CompiledBinding}' />
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -514,7 +515,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
     </ContentControl>
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+            }
+        }
+
+        [Fact]
+        public void ReportsMultipleErrorsOnDataContextAndBindingPathErrors()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <ContentControl Content='{CompiledBinding NoDataContext}'
+                    Tag='{CompiledBinding NonExistentProp, DataType=local:TestDataContext}'
+                    Height='{CompiledBinding invalid.}' />
+</Window>";
+                var ex = Assert.Throws<AggregateException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Collection(
+                    ex.InnerExceptions,
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner));
             }
         }
 
@@ -663,7 +686,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         </ItemsControl.DataTemplates>
     </ItemsControl>
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
         
@@ -1148,7 +1171,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:CompileBindings='true'>
     <TextBlock Text='{Binding InvalidPath}' Name='textBlock' />
 </Window>";
-                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -1227,7 +1250,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:DataType='local:TestDataContext'
         x:CompileBindings='notabool'>
 </Window>";
-                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -1843,25 +1866,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     , textBlock.GetValue(TextBlock.TextProperty));
             }
         }
-
-        static void Throws(string type, Action cb)
-        {
-            try
-            {
-                cb();
-            }
-            catch (Exception e) when (e.GetType().Name == type)
-            {
-                return;
-            }
-
-            throw new Exception("Expected " + type);
-        }
-
-        static void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
-        static void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
-
-
+        
         static void PerformClick(Button button)
         {
             button.RaiseEvent(new KeyEventArgs
