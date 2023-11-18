@@ -150,9 +150,9 @@ internal struct PooledInlineList<T> : IDisposable, IEnumerable<T> where T : clas
     
     public struct Enumerator : IEnumerator<T>
     {
-        private T? _singleItem;
+        private readonly T? _singleItem;
         private int _index;
-        private SimplePooledList? _list;
+        private readonly SimplePooledList? _list;
         
         public Enumerator(object? item)
         {

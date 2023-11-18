@@ -10,10 +10,23 @@
              x:DataType="vm:ControlDetailsViewModel">
 
   <UserControl.Resources>
-    <conv:BoolToOpacityConverter x:Key="BoolToOpacity" Opacity="0.6"/>
-    <conv:GetTypeNameConverter x:Key="GetTypeName"/>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="/Assets/Icons.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+      <conv:BoolToOpacityConverter x:Key="BoolToOpacity" Opacity="0.6"/>
+      <conv:GetTypeNameConverter x:Key="GetTypeName"/>
+      <conv:BoolToImageConverter x:Key="pc"
+                                 TrueImage="{StaticResource PinIcon}"
+                                 FalseImage="{StaticResource UnpinIcon}"/>
+    </ResourceDictionary>
   </UserControl.Resources>
 
+  <UserControl.Styles>
+    <Style Selector="TextBlock.Pinned">
+      <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+  </UserControl.Styles>
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
@@ -59,7 +72,38 @@
                 CanUserResizeColumns="true"
                 DoubleTapped="PropertiesGrid_OnDoubleTapped">
         <DataGrid.Columns>
-          <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
+          <DataGridTemplateColumn Header="Property"  IsReadOnly="True" x:DataType="vm:PropertyViewModel">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate DataType="vm:PropertyViewModel">
+                <!--
+                Do not remove the DockPanel background set to Transparent
+                because if Background is null HitTest on empty space returns false
+                -->
+                <DockPanel Background="Transparent">
+                  <DockPanel.Styles>
+                    <Style Selector="DockPanel[IsPointerOver=False] > ToggleButton">
+                      <Setter Property="IsVisible" Value="False"/>
+                    </Style>
+                  </DockPanel.Styles>
+                  <ToggleButton
+                    IsChecked="{Binding IsPinned}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    DockPanel.Dock="Right"
+                    Command="{Binding #Main.((vm:ControlDetailsViewModel)DataContext).TogglePinnedProperty}"
+                    CommandParameter="{Binding}">
+                    <Image Source="{Binding IsPinned, Converter={StaticResource pc}}" 
+                           Width="12" 
+                           Height="12"/>
+                  </ToggleButton>
+                  <TextBlock Text="{Binding Name}"
+                             Classes.Pinned="{Binding IsPinned}"
+                             VerticalAlignment="Center"
+                             />
+                </DockPanel>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
           <DataGridTemplateColumn Header="Value" Width="100">
               <DataTemplate>
                 <local:PropertyValueEditorView />

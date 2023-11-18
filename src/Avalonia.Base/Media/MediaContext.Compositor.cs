@@ -1,6 +1,6 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Transport;
@@ -22,7 +22,8 @@ partial class MediaContext
         _requestedCommits.Remove(compositor);
         _pendingCompositionBatches[compositor] = commit;
         commit.Processed.ContinueWith(_ =>
-            Dispatcher.UIThread.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send));
+            _dispatcher.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send),
+            TaskContinuationOptions.ExecuteSynchronously);
         return commit;
     }
     
@@ -95,7 +96,7 @@ partial class MediaContext
         // Unit tests are assuming that they can call any API without setting up platforms
         if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() == null)
             return;
-        
+
         if (compositor is
             {
                 UseUiThreadForSynchronousCommits: false,

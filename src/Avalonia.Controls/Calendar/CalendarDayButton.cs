@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsCurrent
         {
-            get { return _isCurrent; }
+            get => _isCurrent;
             set
             {
                 if (_isCurrent != value)
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsBlackout
         {
-            get { return _isBlackout; }
+            get => _isBlackout;
             set
             {
                 if (_isBlackout != value)
@@ -110,7 +110,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsToday
         {
-            get { return _isToday; }
+            get => _isToday;
             set
             {
                 if (_isToday != value)
@@ -125,7 +125,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsInactive
         {
-            get { return _isInactive; }
+            get => _isInactive;
             set
             {
                 if (_isInactive != value)
@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsSelected
         {
-            get { return _isSelected; }
+            get => _isSelected;
             set
             {
                 if (_isSelected != value)

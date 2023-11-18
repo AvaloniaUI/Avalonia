@@ -31,7 +31,7 @@ namespace Avalonia.Input
         }
     }
 
-    public class ScrollGestureInertiaStartingEventArgs : RoutedEventArgs
+    public sealed class ScrollGestureInertiaStartingEventArgs : RoutedEventArgs
     {
         public int Id { get; }
         public Vector Inertia { get; }

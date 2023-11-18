@@ -369,7 +369,7 @@ namespace Avalonia
 
         private class BindingAdaptor : IBinding
         {
-            private IObservable<object?> _source;
+            private readonly IObservable<object?> _source;
 
             public BindingAdaptor(IObservable<object?> source)
             {

@@ -21,7 +21,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<Geometry, Transform?>(nameof(Transform));
 
         private bool _isDirty = true;
-        private bool _canInvaldate = true;
+        private readonly bool _canInvaldate = true;
         private IGeometryImpl? _platformImpl;
 
         static Geometry()

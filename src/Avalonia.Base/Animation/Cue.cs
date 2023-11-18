@@ -34,7 +34,7 @@ namespace Avalonia.Animation
         {
             string v = value;
 
-            if (value.EndsWith("%"))
+            if (value.EndsWith('%'))
             {
                 v = v.TrimEnd('%');
             }

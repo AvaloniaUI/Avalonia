@@ -39,6 +39,13 @@
 
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+
+
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="Black" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
+      
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <Color x:Key="ThemeBackgroundColor">#FF282828</Color>
@@ -75,6 +82,12 @@
 
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+
+
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
   <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Inter#Inter, $Default</FontFamily>

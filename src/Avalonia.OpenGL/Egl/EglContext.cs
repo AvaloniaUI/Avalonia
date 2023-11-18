@@ -48,6 +48,7 @@ namespace Avalonia.OpenGL.Egl
         public int SampleCount { get; }
         public int StencilSize { get; }
         public EglDisplay Display => _disp;
+        public EglInterface EglInterface => _egl;
 
         private class RestoreContext : IDisposable
         {

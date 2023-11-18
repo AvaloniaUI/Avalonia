@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
-    <EmccInitialHeapSize>16384000</EmccInitialHeapSize> <!-- must be a multiple of 64KiB, 1024000 * num MB, number grows -->
+    <ShouldIncludeAvaloniaJavaScript Condition=" '$(ShouldIncludeAvaloniaJavaScript)' == '' ">True</ShouldIncludeAvaloniaJavaScript>
+    <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">True</ShouldIncludeNativeSkiaSharp>
+    <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">True</ShouldIncludeNativeHarfBuzzSharp>
   </PropertyGroup>
 </Project>
