@@ -25,16 +25,13 @@
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"
                      Grid.Row="1"
-                     Orientation="Horizontal"
-                     Cursor="Arrow"/>
+                     Orientation="Horizontal"/>
           <ScrollBar Name="PART_VerticalScrollBar"
                      Grid.Column="1"
-                     Orientation="Vertical"
-                     Cursor="Arrow"/>
+                     Orientation="Vertical"/>
           <Panel Grid.Row="1"
                  Grid.Column="1"
-                 Background="{DynamicResource ThemeControlMidBrush}"
-                 Cursor="Arrow"/>
+                 Background="{DynamicResource ThemeControlMidBrush}"/>
         </Grid>
       </ControlTemplate>
     </Setter>
