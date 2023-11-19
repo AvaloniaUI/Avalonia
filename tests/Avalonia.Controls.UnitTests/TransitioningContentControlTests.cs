@@ -211,6 +211,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(target.LogicalChildren[0], childControl);
         }
 
+        [Fact]
+        public void Old_Content_Should_Be_Null_When_New_Content_Is_Old_one()
+        {
+            using var app = Start();
+            var (target, transition) = CreateTarget("");
+            var presenter2 = GetContentPresenters2(target);
+            target.PageTransition = null;
+
+            var childControl = new Control();
+            target.Presenter!.Content = childControl;
+
+            const string fakePage1 = "fakePage1";
+            const string fakePage2 = "fakePage2";
+
+            target.Presenter!.Content = fakePage1;
+            target.Presenter!.Content = fakePage2;
+            target.Presenter!.Content = fakePage1;
+
+            Assert.Equal(fakePage1, target.Presenter!.Content);
+            Assert.Equal(null, presenter2.Content);
+        }
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(

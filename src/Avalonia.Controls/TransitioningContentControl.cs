@@ -15,6 +15,7 @@ namespace Avalonia.Controls;
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _currentTransition;
+    private ContentPresenter? _lastPresenter;
     private ContentPresenter? _presenter2;
     private bool _isFirstFull;
     private bool _shouldAnimate;
@@ -115,8 +116,15 @@ public class TransitioningContentControl : ContentControl
         }
 
         var currentPresenter = _isFirstFull ? _presenter2 : Presenter;
+
+        if (_lastPresenter != null &&
+            _lastPresenter != currentPresenter &&
+            _lastPresenter.Content == Content)
+            _lastPresenter.Content = null;
+
         currentPresenter.Content = Content;
         currentPresenter.IsVisible = true;
+        _lastPresenter = currentPresenter;
 
         _isFirstFull = !_isFirstFull;
 
