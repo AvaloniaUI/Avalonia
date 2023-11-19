@@ -13,6 +13,20 @@ namespace Avalonia.Skia.UnitTests.Media
     {
         private static string s_fontUri = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
 
+        [Win32Fact("Only run on Windows")]
+        public void Should_Get_SystemFont_With_Localized_Name()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("微软雅黑"), out var glyphTypeface));
+
+                    Assert.Equal("Microsoft YaHei", glyphTypeface.FamilyName);
+                }
+            }
+        }
+
         [Fact]
         public void Should_Create_Typeface_From_Fallback()
         {
