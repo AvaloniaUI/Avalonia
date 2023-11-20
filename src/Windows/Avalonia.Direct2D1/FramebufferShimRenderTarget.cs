@@ -1,8 +1,9 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
 using SharpDX.WIC;
 using PixelFormat = Avalonia.Platform.PixelFormat;

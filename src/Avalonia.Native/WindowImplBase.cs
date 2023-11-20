@@ -143,7 +143,7 @@ namespace Avalonia.Native
         class FramebufferRenderTarget : IFramebufferRenderTarget
         {
             private readonly WindowBaseImpl _parent;
-            private IAvnSoftwareRenderTarget? _target;
+            private IAvnSoftwareRenderTarget _target;
 
             public FramebufferRenderTarget(WindowBaseImpl parent, IAvnSoftwareRenderTarget target)
             {
