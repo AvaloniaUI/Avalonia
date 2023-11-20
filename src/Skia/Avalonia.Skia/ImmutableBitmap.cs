@@ -161,13 +161,13 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Save(string fileName, int? quality = null)
         {
-            ImageSavingHelper.SaveImage(_image, fileName);
+            ImageSavingHelper.SaveImage(_image, fileName, quality);
         }
 
         /// <inheritdoc />
         public void Save(Stream stream, int? quality = null)
         {
-            ImageSavingHelper.SaveImage(_image, stream);
+            ImageSavingHelper.SaveImage(_image, stream, quality);
         }
 
         /// <inheritdoc />
