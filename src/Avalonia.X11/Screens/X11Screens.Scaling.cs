@@ -174,7 +174,7 @@ internal partial class X11Screens
             try
             {
                 var split = screenFactorsString.Split(';').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-                if (split[0].Contains("="))
+                if (split[0].Contains('='))
                 {
                     userConfig = new UserScalingConfiguration
                     {

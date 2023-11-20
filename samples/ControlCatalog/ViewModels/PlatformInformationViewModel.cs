@@ -1,11 +1,9 @@
-using System;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Platform;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels;
-#nullable enable
 
 public class PlatformInformationViewModel : ViewModelBase
 {
@@ -46,11 +44,7 @@ public class PlatformInformationViewModel : ViewModelBase
                 }
             }
         }
-        else
-        {
-            
-        }
     }
     
-    public string PlatformInfo { get; }
+    public string? PlatformInfo { get; }
 }
