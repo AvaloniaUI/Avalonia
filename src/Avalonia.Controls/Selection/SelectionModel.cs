@@ -674,6 +674,8 @@ namespace Avalonia.Controls.Selection
                         indexesChanged |= CommitDeselect(range.Begin, range.End) > 0;
                     }
                 }
+                
+                
 
                 if (raisePropertyChanged)
                 {
@@ -703,7 +705,7 @@ namespace Avalonia.Controls.Selection
                     {
                         RaisePropertyChanged(nameof(SelectedItems));
                     }
-                }
+                } 
                 
                 if (SelectionChanged is not null || _untypedSelectionChanged is not null)
                 {
