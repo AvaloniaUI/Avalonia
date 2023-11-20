@@ -188,6 +188,9 @@
     <Style Selector="^:disabled /template/ Border#border">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     </Style>
+    <Style Selector="^ /template/ TextBlock#floatingWatermark">
+      <Setter Property="Cursor" Value="IBeam"/>
+    </Style>
 
     <Style Selector="^.clearButton[AcceptsReturn=False][IsReadOnly=False]:focus:not(TextBox:empty)">
       <Setter Property="InnerRightContent">

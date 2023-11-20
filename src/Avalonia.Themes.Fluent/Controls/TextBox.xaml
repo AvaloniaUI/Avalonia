@@ -232,6 +232,10 @@
       <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
     </Style>
 
+    <Style Selector="^ /template/ TextBlock#PART_FloatingWatermark">
+      <Setter Property="Cursor" Value="IBeam"/>
+    </Style>
+    
     <Style Selector="^[UseFloatingWatermark=true]:not(:empty) /template/ TextBlock#PART_FloatingWatermark">
       <Setter Property="IsVisible" Value="True" />
     </Style>
