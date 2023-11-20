@@ -624,6 +624,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                         _inputMethod.IMM.HideSoftInputFromWindow(_inputMethod.View.WindowToken, HideSoftInputFlags.ImplicitOnly);
                         break;
                     }
+                case ImeAction.Next:
+                    {
+                        FocusManager.GetFocusManager(_toplevel.InputRoot)?
+                            .TryMoveFocus(NavigationDirection.Next);
+                        break;
+                    }
             }
 
             return base.PerformEditorAction(actionCode);

@@ -1,0 +1,42 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:ControlCatalog.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="viewModels:DataValidationViewModel"
+             x:Class="ControlCatalog.Pages.DataValidationPage">
+  <UserControl.DataContext>
+    <viewModels:DataValidationViewModel />
+  </UserControl.DataContext>
+  <StackPanel TextBlock.TextWrapping="Wrap">
+    <Label Target="Email1" Content="Email validation" />
+    <TextBox x:Name="Email1"
+             MaxWidth="400"
+             HorizontalAlignment="Left"
+             Text="{Binding DataAnnotationsSample}" />
+
+    <Label Target="Email2" Content="Email validation with custom error converter"
+           Margin="0, 10, 0, 0" />
+    <TextBox x:Name="Email2"
+             Text="{Binding DataAnnotationsSample}"
+             MaxWidth="400"
+             HorizontalAlignment="Left"
+             DataValidationErrors.ErrorConverter="{Binding Converter}" />
+    
+    <Label Target="SetterException" Content="Setter exception with custom error converter and tooltip error"
+           Margin="0, 10, 0, 0" />
+    <TextBox x:Name="SetterException"
+             Text="{Binding ExceptionInsideSetterSample}"
+             MaxWidth="400"
+             HorizontalAlignment="Left"
+             DataValidationErrors.ErrorConverter="{Binding ExceptionConverter}">
+      <TextBox.Styles>
+        <Style Selector="DataValidationErrors">
+          <Setter Property="Theme" Value="{DynamicResource TooltipDataValidationErrors}" />
+        </Style>
+      </TextBox.Styles>
+    </TextBox>
+  </StackPanel>
+</UserControl>
+
