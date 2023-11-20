@@ -166,8 +166,6 @@ namespace Avalonia.DesignerSupport.Remote
             };
         }
 
-        private const string BuilderMethodName = "BuildAvaloniaApp";
-        
         public static void Main(string[] cmdline)
         {
             var args = ParseCommandLineArgs(cmdline);
