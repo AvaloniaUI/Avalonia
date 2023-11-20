@@ -30,17 +30,25 @@ namespace Avalonia.Android.Platform
             {
                 _displayEdgeToEdge = value;
 
-                if(Build.VERSION.SdkInt >= BuildVersionCodes.P)
+                var window = _activity.Window;
+
+                if (OperatingSystem.IsAndroidVersionAtLeast(28) && window?.Attributes is { } attributes)
                 {
-                    _activity.Window.Attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
+                    attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
                 }
 
-                WindowCompat.SetDecorFitsSystemWindows(_activity.Window, !value);
+                if (window is not null)
+                {
+                    WindowCompat.SetDecorFitsSystemWindows(_activity.Window, !value);
+                }
 
                 if(value)
                 {
-                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentStatus);
-                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+                    if (window is not null)
+                    {
+                        window.AddFlags(WindowManagerFlags.TranslucentStatus);
+                        window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+                    }
                 }
                 else
                 {
@@ -57,14 +65,17 @@ namespace Avalonia.Android.Platform
 
             _callback.InsetsManager = this;
 
-            ViewCompat.SetOnApplyWindowInsetsListener(_activity.Window.DecorView, this);
+            if (_activity.Window is { } window)
+            {
+                ViewCompat.SetOnApplyWindowInsetsListener(window.DecorView, this);
 
-            ViewCompat.SetWindowInsetsAnimationCallback(_activity.Window.DecorView, _callback);
+                ViewCompat.SetWindowInsetsAnimationCallback(window.DecorView, _callback);
+            }
 
-            if(Build.VERSION.SdkInt < BuildVersionCodes.R)
+            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
             {
                 _usesLegacyLayouts = true;
-                _activity.Window.DecorView.ViewTreeObserver.AddOnGlobalLayoutListener(this);
+                _activity.Window?.DecorView.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
             }
 
             DisplayEdgeToEdge = false;
@@ -74,7 +85,7 @@ namespace Avalonia.Android.Platform
         {
             get
             {
-                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+                var insets = _activity.Window is { } window ? ViewCompat.GetRootWindowInsets(window.DecorView) : null;
 
                 if (insets != null)
                 {
@@ -127,7 +138,7 @@ namespace Avalonia.Android.Platform
 
                     return compat.AppearanceLightStatusBars ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
-                catch (Exception _)
+                catch (Exception)
                 {
                     return Controls.Platform.SystemBarTheme.Light;
                 }
@@ -135,8 +146,6 @@ namespace Avalonia.Android.Platform
             set
             {
                 _statusBarTheme = value;
-
-                var isDefault = _statusBarTheme == null;
 
                 if (!_topLevel.View.IsShown)
                 {
@@ -150,7 +159,7 @@ namespace Avalonia.Android.Platform
                     _isDefaultSystemBarLightTheme = compat.AppearanceLightStatusBars;
                 }
 
-                if (value == null && _isDefaultSystemBarLightTheme != null)
+                if (value == null)
                 {
                     value = (bool)_isDefaultSystemBarLightTheme ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
