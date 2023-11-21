@@ -502,4 +502,25 @@ public class DispatcherTests
             t.GetAwaiter().GetResult();
         }
     }
+    
+    [Fact]
+    public void DispatcherHandlesException()
+    {
+        var impl = new SimpleControlledDispatcherImpl();
+        var disp = new Dispatcher(impl);
+        var handled = false;
+        var executed = false;
+        disp.DispatcherUnhandledException += (sender, args) =>
+        {
+            handled = true;
+            args.Handled = true;
+        };
+        disp.Post(() => throw new Exception("Test"));
+        disp.Post(() => executed = true);
+
+        impl.ExecuteSignal();
+        
+        Assert.True(handled);
+        Assert.True(executed);
+    }
 }

@@ -288,6 +288,11 @@ public class DispatcherOperation
                     tcs.SetException(e);
             }
 
+            if (Dispatcher.TryHandleUnhandledException(e))
+            {
+                return;
+            }
+
             if (ThrowOnUiThread)
                 throw;
         }

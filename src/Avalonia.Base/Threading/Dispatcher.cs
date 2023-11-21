@@ -88,4 +88,15 @@ public partial class Dispatcher : IDispatcher
         var index = priority - DispatcherPriority.MinValue;
         return _priorityContexts[index] ??= new(priority);
     }
+
+    /// <summary>
+    /// Occurs when an exception is thrown by a Dispatcher event but not handled.
+    /// </summary>
+    public event EventHandler<DispatcherUnhandledExceptionEventArgs>? DispatcherUnhandledException;
+    internal bool TryHandleUnhandledException(Exception exception)
+    {
+        var args = new DispatcherUnhandledExceptionEventArgs(this, exception);
+        DispatcherUnhandledException?.Invoke(this, args);
+        return args.Handled;
+    }
 }

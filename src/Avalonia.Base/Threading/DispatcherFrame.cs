@@ -120,6 +120,13 @@ public class DispatcherFrame
                 Dispatcher.RequestProcessing();
                 impl.RunLoop(_cancellationTokenSource.Token);
             }
+            catch (Exception ex)
+            {
+                if (!Dispatcher.TryHandleUnhandledException(ex))
+                {
+                    throw;
+                }
+            }
             finally
             {
                 lock (Dispatcher.InstanceLock)
