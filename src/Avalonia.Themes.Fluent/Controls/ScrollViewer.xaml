@@ -44,10 +44,10 @@
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"
                      Orientation="Horizontal"
-                     Grid.Row="1" />
+                     Grid.Row="1"/>
           <ScrollBar Name="PART_VerticalScrollBar"
                      Orientation="Vertical"
-                     Grid.Column="1" />
+                     Grid.Column="1"/>
           <Panel x:Name="PART_ScrollBarsSeparator"
                  Grid.Row="1"
                  Grid.Column="1"
