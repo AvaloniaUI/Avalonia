@@ -41,12 +41,12 @@ namespace ControlCatalog.Pages
             SetPullHandlers(this.Find<Border>("RightPullZone"), true);
             SetPullHandlers(this.Find<Border>("LeftPullZone"), false);
 
-            var image = this.Find<Image>("PinchImage");
+            var image = this.Get<Image>("PinchImage");
             SetPinchHandlers(image);
 
-            var reset = this.Find<Button>("ResetButton");
+            var reset = this.Get<Button>("ResetButton");
 
-            reset!.Click += (s, e) =>
+            reset.Click += (_, _) =>
             {
                 var compositionVisual = ElementComposition.GetElementVisual(image);
 

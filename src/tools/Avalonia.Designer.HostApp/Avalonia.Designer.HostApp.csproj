@@ -22,6 +22,7 @@
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerDynamicDependencies.cs" />
     <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
     <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
+    <Compile Include="..\..\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.22045.20230930" />

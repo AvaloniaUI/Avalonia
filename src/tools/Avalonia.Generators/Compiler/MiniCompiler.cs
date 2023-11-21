@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using XamlX;
 using XamlX.Compiler;
 using XamlX.Emit;
 using XamlX.Transform;
@@ -13,16 +15,20 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
 {
     public const string AvaloniaXmlnsDefinitionAttribute = "Avalonia.Metadata.XmlnsDefinitionAttribute";
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = TrimmingMessages.Roslyn)]
     public static MiniCompiler CreateDefault(RoslynTypeSystem typeSystem, params string[] additionalTypes)
     {
         var mappings = new XamlLanguageTypeMappings(typeSystem);
         foreach (var additionalType in additionalTypes)
             mappings.XmlnsAttributes.Add(typeSystem.GetType(additionalType));
 
+        var diagnosticsHandler = new XamlDiagnosticsHandler();
+        
         var configuration = new TransformerConfiguration(
             typeSystem,
             typeSystem.Assemblies.First(),
-            mappings);
+            mappings,
+            diagnosticsHandler: diagnosticsHandler);
         return new MiniCompiler(configuration);
     }
         
