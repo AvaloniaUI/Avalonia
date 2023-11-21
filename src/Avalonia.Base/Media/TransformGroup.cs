@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Collections;
 using Avalonia.Metadata;
 
@@ -11,25 +12,17 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Transforms> ChildrenProperty =
             AvaloniaProperty.Register<TransformGroup, Transforms>(nameof(Children));
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+        private IDisposable? _childrenNotificationSubscription;
+        private readonly EventHandler _childTransformChangedHandler;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
+            _childTransformChangedHandler = (_, _) => RaiseChanged();
             Children = new Transforms();
-            Children.ResetBehavior = ResetBehavior.Remove;
-            Children.CollectionChanged += delegate
-            {
-                Children.ForEachItem(
-                    (tr) => tr.Changed += ChildTransform_Changed,
-                    (tr) => tr.Changed -= ChildTransform_Changed,
-                    () => { });
-            };
         }
 
-        private void ChildTransform_Changed(object? sender, System.EventArgs e)
-        {
-            this.RaiseChanged();
-        }
 
         /// <summary>
         /// Gets or sets the children.
@@ -59,6 +52,31 @@ namespace Avalonia.Media
                 }
 
                 return result;
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == ChildrenProperty)
+            {
+                _childrenNotificationSubscription?.Dispose();
+                if (change.OldValue is Transforms oldTransforms)
+                {
+                    foreach (var item in oldTransforms)
+                    {
+                        item.Changed -= _childTransformChangedHandler;
+                    }
+                }
+                if (change.NewValue is Transforms newTransforms)
+                {
+                    // Ensure reset behavior is Remove
+                    newTransforms.ResetBehavior = ResetBehavior.Remove;
+                    _childrenNotificationSubscription = newTransforms.ForEachItem(
+                        (tr) => tr.Changed += _childTransformChangedHandler,
+                        (tr) => tr.Changed -= _childTransformChangedHandler,
+                        () => { });
+                }
             }
         }
     }
