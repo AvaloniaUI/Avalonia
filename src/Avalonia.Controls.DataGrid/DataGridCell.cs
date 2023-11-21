@@ -32,7 +32,7 @@ namespace Avalonia.Controls
         static DataGridCell()
         {
             PointerPressedEvent.AddClassHandler<DataGridCell>(
-                (x,e) => x.DataGridCell_PointerPressed(e));
+                (x,e) => x.DataGridCell_PointerPressed(e), handledEventsToo: true);
             FocusableProperty.OverrideDefaultValue<DataGridCell>(true);
             IsTabStopProperty.OverrideDefaultValue<DataGridCell>(false);
         }
