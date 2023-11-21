@@ -44,7 +44,6 @@ namespace Avalonia.Input
             {
                 var currentPosition = e.GetPosition(visual);
                 Capture(e.Pointer);
-                e.PreventGestureRecognition();
 
                 Vector delta = default;
                 switch (PullDirection)
