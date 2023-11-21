@@ -38,6 +38,8 @@ namespace Avalonia.Native.Interop.Impl
             SetTitle(title);
         }
 
+        private void UpdateToolTip(string toolTip) => SetToolTip(toolTip ?? "");
+
         private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
         private void UpdateToggleType(NativeMenuItemToggleType toggleType)
@@ -107,6 +109,8 @@ namespace Avalonia.Native.Interop.Impl
             {
                 UpdateTitle(item.Header);
 
+                UpdateToolTip(item.ToolTip);
+
                 UpdateGesture(item.Gesture);
 
                 UpdateAction(ManagedMenuItem as NativeMenuItem);
@@ -119,6 +123,9 @@ namespace Avalonia.Native.Interop.Impl
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
                     .Subscribe(x => UpdateTitle(x)));
+
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.ToolTipProperty)
+                    .Subscribe(x => UpdateToolTip(x)));
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
                     .Subscribe(x => UpdateGesture(x)));

@@ -88,7 +88,7 @@ namespace Avalonia.Direct2D1.Media
             return false;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
             var fontLoader = new DWriteResourceFontLoader(Direct2D1Platform.DirectWriteFactory, new[] { stream });
 

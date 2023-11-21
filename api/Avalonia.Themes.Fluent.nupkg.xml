@@ -405,6 +405,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Controls/UserControl.xaml</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Controls/Window.xaml</Target>
     <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
