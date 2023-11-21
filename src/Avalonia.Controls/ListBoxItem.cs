@@ -101,7 +101,11 @@ namespace Avalonia.Controls
                 {
                     if (owner.UpdateSelectionFromPointerEvent(this, e))
                     {
-                        e.Handled = true;
+                        // As we only update selection from touch/pen on pointer release, we only
+                        // mark the event as handled if the pointer is a mouse.
+                        if (e.Pointer.Type == PointerType.Mouse)
+                            e.Handled = true;
+
                     }
                 }
             }
