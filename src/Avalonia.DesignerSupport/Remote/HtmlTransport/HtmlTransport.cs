@@ -112,7 +112,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     }
                     else
                     {
-                        if (req.Headers.TryGetValue("Origin", out var origin) && origin == _listenUri.OriginalString)
+                        if (IsValidOrigin(req))
                         {
                             var socket = await req.AcceptWebSocket();
                             SocketReceiveWorker(socket);
@@ -124,11 +124,17 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                         }
                         else
                         {
-                            throw new Exception("Origin doesen't match Url");
+                            throw new Exception("Origin doesn't match Url");
                         }
                     }
                 }
             }
+        }
+        
+        bool IsValidOrigin(SimpleWebSocketHttpRequest request)
+        {
+            return request.Headers.TryGetValue("Origin", out var origin) &&
+                   (origin == _listenUri.OriginalString || origin.StartsWith("vscode-webview:"));
         }
 
         async void SocketReceiveWorker(SimpleWebSocket socket)

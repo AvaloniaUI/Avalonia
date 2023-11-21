@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Diagnostics;
 
 namespace Avalonia.Collections
@@ -14,13 +13,13 @@ namespace Avalonia.Collections
     public enum ResetBehavior
     {
         /// <summary>
-        /// Clearing the list notifies with the <see cref="CollectionChanged"/> event with a
+        /// Clearing the list notifies with the <see cref="INotifyCollectionChanged.CollectionChanged"/> event with a
         /// <see cref="NotifyCollectionChangedAction.Reset"/> action.
         /// </summary>
         Reset,
 
         /// <summary>
-        /// Clearing the list notifies with the <see cref="CollectionChanged"/> event with a
+        /// Clearing the list notifies with the <see cref="INotifyCollectionChanged.CollectionChanged"/> event with a
         /// <see cref="NotifyCollectionChangedAction.Remove"/> action.
         /// </summary>
         Remove,

@@ -631,5 +631,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
             }
         }
+        
+        [Fact]
+        public void Multiple_Errors_Are_Reported()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='5' />
+        <Style Selector='NonExistentType' />
+        <Style Selector='Border:normal' />
+        <Style Selector='Border+invalid' />
+    </Window.Styles>
+</Window>";
+                var ex = Assert.Throws<AggregateException>(() => (Window)AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Collection(
+                    ex.InnerExceptions,
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner));
+            }
+        }
     }
 }

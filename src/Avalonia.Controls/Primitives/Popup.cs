@@ -726,33 +726,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
-
-            var focusCheck = FocusManager.GetFocusManager(this)?.GetFocusedElement();
-
-            // Focus is set to null as part of popup closing, so we only want to
-            // set focus to PlacementTarget if this is the case
-            if (focusCheck == null)
-            {
-                if (PlacementTarget != null)
-                {
-                    var e = (Control?)PlacementTarget;
-
-                    while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
-                    {
-                        e = e.VisualParent as Control;
-                    }
-
-                    if (e is object)
-                    {
-                        e.Focus();
-                    }
-                }
-                else
-                {
-                    var anc = this.FindLogicalAncestorOfType<Control>();
-                    anc?.Focus();
-                }
-            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)

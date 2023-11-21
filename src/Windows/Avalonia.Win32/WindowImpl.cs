@@ -1087,6 +1087,8 @@ namespace Avalonia.Win32
                     throw new ArgumentException("Invalid WindowState.");
             }
 
+            newWindowProperties.WindowState = state;
+
             UpdateWindowProperties(newWindowProperties);
 
             if (command.HasValue)
@@ -1292,7 +1294,7 @@ namespace Avalonia.Win32
                 if (IsWindowVisible(_hwnd))
                     style |= WindowStyles.WS_VISIBLE;
 
-                if (newProperties.IsResizable)
+                if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
                 {
                     style |= WindowStyles.WS_SIZEFRAME;
                     style |= WindowStyles.WS_MAXIMIZEBOX;
@@ -1303,7 +1305,7 @@ namespace Avalonia.Win32
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1313,7 +1315,7 @@ namespace Avalonia.Win32
                 {
                     style &= ~fullDecorationFlags;
 
-                    if (newProperties.Decorations == SystemDecorations.BorderOnly && WindowState != WindowState.Maximized)
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
                     }
@@ -1487,6 +1489,7 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
+            public WindowState WindowState;
         }
 
         private struct ResizeReasonScope : IDisposable
