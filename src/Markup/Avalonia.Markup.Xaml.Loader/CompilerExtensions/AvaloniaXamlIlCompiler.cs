@@ -57,6 +57,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
+                new AvaloniaXamlIlStyleValidatorTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
@@ -132,9 +133,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public List<IXamlAstGroupTransformer> GroupTransformers { get; }
 
-        public void TransformGroup(IReadOnlyCollection<IXamlDocumentResource> documents, bool strict = true)
+        public void TransformGroup(IReadOnlyCollection<IXamlDocumentResource> documents)
         {
-            var ctx = new AstGroupTransformationContext(documents, _configuration, strict);
+            var ctx = new AstGroupTransformationContext(documents, _configuration);
             foreach (var transformer in GroupTransformers)
             {
                 foreach (var doc in documents)
@@ -172,8 +173,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     new XamlAstClrTypeReference(classDirective,
                         _configuration.TypeSystem.GetType(((XamlAstTextNode)classDirective.Values[0]).Text),
                         false) :
-                    TypeReferenceResolver.ResolveType(CreateTransformationContext(parsed, true),
-                        (XamlAstXmlTypeReference)rootObject.Type, true);
+                    TypeReferenceResolver.ResolveType(CreateTransformationContext(parsed),
+                        (XamlAstXmlTypeReference)rootObject.Type);
 
 
             if (overrideRootType != null)

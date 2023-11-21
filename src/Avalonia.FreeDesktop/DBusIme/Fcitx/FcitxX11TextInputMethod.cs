@@ -46,11 +46,11 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             return true;
         }
 
-        private void OnPreedit(Exception? arg1, ((string, int)[] str, int cursorpos) args)
+        private void OnPreedit(Exception? arg1, ((string?, int)[]? str, int cursorpos) args)
         {
             int? cursor = null;
-            string preeditString = null;
-            if (args.str != null! && args.str.Length > 0)
+            string? preeditString = null;
+            if (args.str != null && args.str.Length > 0)
             {
                 preeditString = string.Join("", args.str.Select(x => x.Item1));
 
