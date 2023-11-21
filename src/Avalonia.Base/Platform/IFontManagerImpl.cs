@@ -53,10 +53,11 @@ namespace Avalonia.Platform
         ///     Tries to create a glyph typeface from specified stream.
         /// </summary>
         /// <param name="stream">A stream that holds the font's data.</param>
+        /// <param name="fontSimulations">Specifies algorithmic style simulations.</param>
         /// <param name="glyphTypeface">The created glyphTypeface</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
-        bool TryCreateGlyphTypeface(Stream stream, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
+        bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
     }
 }

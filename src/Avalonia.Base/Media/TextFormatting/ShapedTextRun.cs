@@ -107,15 +107,29 @@ namespace Avalonia.Media.TextFormatting
             for (var i = 0; i < ShapedBuffer.Length; i++)
             {
                 var advance = ShapedBuffer[i].GlyphAdvance;
+                var currentCluster = ShapedBuffer[i].GlyphCluster;
 
                 if (currentWidth + advance > availableWidth)
                 {
                     break;
                 }
 
-                Codepoint.ReadAt(charactersSpan, length, out var count);
+                if(i + 1 < ShapedBuffer.Length)
+                {
+                    var nextCluster = ShapedBuffer[i + 1].GlyphCluster;
 
-                length += count;
+                    var count = nextCluster - currentCluster;
+
+                    length += count;
+                }
+                else
+                {
+                    Codepoint.ReadAt(charactersSpan, length, out var count);
+
+                    length += count;
+                }
+
+             
                 currentWidth += advance;
             }
 

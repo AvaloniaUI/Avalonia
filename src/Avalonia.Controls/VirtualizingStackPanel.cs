@@ -55,7 +55,6 @@ namespace Avalonia.Controls
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
 
-        private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private static readonly object s_itemIsItsOwnContainer = new object();
         private readonly Action<Control, int> _recycleElement;
         private readonly Action<Control> _recycleElementOnItemRemoved;
@@ -67,8 +66,8 @@ namespace Avalonia.Controls
         private double _lastEstimatedElementSizeU = 25;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
-        private ScrollViewer? _scrollViewer;
-        private Rect _viewport = s_invalidViewport;
+        private IScrollAnchorProvider? _scrollAnchorProvider;
+        private Rect _viewport;
         private Dictionary<object, Stack<Control>>? _recyclePool;
         private Control? _focusedElement;
         private int _focusedIndex = -1;
@@ -211,7 +210,7 @@ namespace Avalonia.Controls
                             new Rect(u, 0, sizeU, finalSize.Height) :
                             new Rect(0, u, finalSize.Width, sizeU);
                         e.Arrange(rect);
-                        _scrollViewer?.RegisterAnchorCandidate(e);
+                        _scrollAnchorProvider?.RegisterAnchorCandidate(e);
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
                 }
@@ -229,13 +228,13 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+            _scrollAnchorProvider = this.FindAncestorOfType<IScrollAnchorProvider>();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _scrollViewer = null;
+            _scrollAnchorProvider = null;
         }
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
@@ -438,18 +437,17 @@ namespace Avalonia.Controls
 
             // If the control has not yet been laid out then the effective viewport won't have been set.
             // Try to work it out from an ancestor control.
-            var viewport = _viewport != s_invalidViewport ? _viewport : EstimateViewport();
+            var viewport = _viewport;
 
             // Get the viewport in the orientation direction.
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
             // Get or estimate the anchor element from which to start realization.
-            var itemCount = items?.Count ?? 0;
             var (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
                 viewportStart,
                 viewportEnd,
-                itemCount,
+                items.Count,
                 ref _lastEstimatedElementSizeU);
 
             // Check if the anchor element is not within the currently realized elements.
@@ -489,32 +487,6 @@ namespace Avalonia.Controls
             if (result >= 0)
                 _lastEstimatedElementSizeU = result;
             return _lastEstimatedElementSizeU;
-        }
-
-        private Rect EstimateViewport()
-        {
-            var c = this.GetVisualParent();
-            var viewport = new Rect();
-
-            if (c is null)
-            {
-                return viewport;
-            }
-
-            while (c is not null)
-            {
-                if ((c.Bounds.Width != 0 || c.Bounds.Height != 0) &&
-                    c.TransformToVisual(this) is Matrix transform)
-                {
-                    viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
-                        .TransformToAABB(transform);
-                    break;
-                }
-
-                c = c?.GetVisualParent();
-            }
-
-            return viewport.Intersect(new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity));
         }
 
         private void RealizeElements(
@@ -689,7 +661,7 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
             
-            _scrollViewer?.UnregisterAnchorCandidate(element);
+            _scrollAnchorProvider?.UnregisterAnchorCandidate(element);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
 

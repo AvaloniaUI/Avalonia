@@ -69,7 +69,8 @@
         
         <Border ClipToBounds="{Binding ClipToBounds}" Margin="5">
             <TransitioningContentControl Content="{Binding SelectedImage}"
-                                         PageTransition="{Binding SelectedTransition.Transition}" >
+                                         PageTransition="{Binding SelectedTransition.Transition}" 
+                                         IsTransitionReversed="{Binding Reversed}">
                 <TransitioningContentControl.ContentTemplate>
                     <DataTemplate DataType="Bitmap">
                         <Image Source="{Binding}"  />

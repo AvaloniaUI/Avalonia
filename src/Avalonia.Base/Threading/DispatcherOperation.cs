@@ -176,7 +176,7 @@ public class DispatcherOperation
         GetTask().GetAwaiter().GetResult();
     }
 
-    private class DispatcherOperationFrame : DispatcherFrame
+    private sealed class DispatcherOperationFrame : DispatcherFrame
     {
         // Note: we pass "exitWhenRequested=false" to the base
         // DispatcherFrame construsctor because we do not want to exit
@@ -373,7 +373,7 @@ public class DispatcherOperation<T> : DispatcherOperation
     }
 }
 
-internal class SendOrPostCallbackDispatcherOperation : DispatcherOperation
+internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperation
 {
     private readonly object? _arg;
 

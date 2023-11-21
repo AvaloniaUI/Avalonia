@@ -27,7 +27,7 @@ public class DispatcherPriorityAwaitable : INotifyCompletion
     public DispatcherPriorityAwaitable GetAwaiter() => this;
 }
 
-public class DispatcherPriorityAwaitable<T> : DispatcherPriorityAwaitable
+public sealed class DispatcherPriorityAwaitable<T> : DispatcherPriorityAwaitable
 {
     internal DispatcherPriorityAwaitable(Dispatcher dispatcher, Task<T> task, DispatcherPriority priority) : base(
         dispatcher, task, priority)

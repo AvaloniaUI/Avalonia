@@ -17,6 +17,9 @@
                           Content="Allow auto hide" />
             <ToggleSwitch IsChecked="{Binding EnableInertia}"
                           Content="Enable Inertia" />
+            <ToggleSwitch IsChecked="{Binding #ScrollViewer.IsDeferredScrollingEnabled}"
+                          ToolTip.Tip="When enabled, dragging a scroll bar thumb won't affect the scrolling content until the pointer is released."
+                          Content="Enable Deferred Scrolling" />
 
             <StackPanel Orientation="Vertical"
                         Spacing="4">

@@ -71,7 +71,7 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^:left">
-      <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
+      <Style Selector="^ /template/ UniformGrid#PART_SpinnerPanel">
         <Setter Property="DockPanel.Dock" Value="Left" />
       </Style>
     </Style>

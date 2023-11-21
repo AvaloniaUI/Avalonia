@@ -212,14 +212,6 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
-        static Control()
-        {
-            Gestures.HoldingEvent.AddClassHandler<Control>((control, e) =>
-            {
-                control.OnHoldEvent(control, e);
-            });
-        }
-
         /// <inheritdoc/>
         void ISetterValue.Initialize(SetterBase setter)
         {
@@ -382,6 +374,8 @@ namespace Avalonia.Controls
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
+
+            Holding += OnHoldEvent;
         }
 
         private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
@@ -399,6 +393,8 @@ namespace Avalonia.Controls
             base.OnDetachedFromVisualTreeCore(e);
 
             OnUnloadedCore();
+
+            Holding -= OnHoldEvent;
         }
 
         /// <inheritdoc/>

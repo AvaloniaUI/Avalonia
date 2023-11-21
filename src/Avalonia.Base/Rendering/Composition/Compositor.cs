@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -85,7 +86,7 @@ namespace Avalonia.Rendering.Composition
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
-            DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
+            DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
         }
 
         /// <summary>
@@ -107,7 +108,8 @@ namespace Avalonia.Rendering.Composition
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
-                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send));
+                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
+                        TaskContinuationOptions.ExecuteSynchronously);
                 else
                     _triggerCommitRequested();
             }

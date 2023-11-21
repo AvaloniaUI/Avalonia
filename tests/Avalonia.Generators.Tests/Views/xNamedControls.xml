@@ -8,7 +8,8 @@
         <TextBox x:Name="PasswordTextBox"
                  Watermark="Password input"
                  UseFloatingWatermark="True" />
+        <!-- Name generator should still generate members, even if XAML is invalid -->
         <Button x:Name="SignUpButton"
-                Content="Sign up" />
+                Content="{x:Static NonExistent.Member}" />
     </StackPanel>
 </Window>

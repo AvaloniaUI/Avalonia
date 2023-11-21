@@ -125,7 +125,7 @@
                       DisplayDateStart="{TemplateBinding DisplayDateStart}"
                       FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
                       IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
-                      SelectedDate="{TemplateBinding SelectedDate,
+                      SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate,
                                                      Mode=TwoWay}" />
           </Popup>
         </Grid>

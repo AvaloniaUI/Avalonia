@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Layout;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -90,9 +91,10 @@ internal partial class MediaContext : ICompositorScheduler
         {
             priority = DispatcherPriority.Input;
         }
-        
 
-        _nextRenderOp = _dispatcher.InvokeAsync(_render, priority);
+        var renderOp = new DispatcherOperation(_dispatcher, priority, _render, throwOnUiThread: true);
+        _nextRenderOp = renderOp;
+        _dispatcher.InvokeAsyncImpl(renderOp, CancellationToken.None);
     }
     
     /// <summary>

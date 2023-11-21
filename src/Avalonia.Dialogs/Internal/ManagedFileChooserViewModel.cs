@@ -46,13 +46,13 @@ namespace Avalonia.Dialogs.Internal
         public string Location
         {
             get => _location;
-            private set => this.RaiseAndSetIfChanged(ref _location, value);
+            set => this.RaiseAndSetIfChanged(ref _location, value);
         }
 
         public string FileName
         {
             get => _fileName;
-            private set => this.RaiseAndSetIfChanged(ref _fileName, value);
+            set => this.RaiseAndSetIfChanged(ref _fileName, value);
         }
 
         public bool SelectingFolder => _selectingDirectory;

@@ -2,10 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.LogicalTree;
-using Avalonia.Metadata;
-using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -14,12 +10,13 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private TreeNode? _selectedNode;
         private ControlDetailsViewModel? _details;
+        private readonly ISet<string> _pinnedProperties;
 
-        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
+        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes, ISet<string> pinnedProperties)
         {
             MainView = mainView;
             Nodes = nodes;
-
+            _pinnedProperties = pinnedProperties;
             PropertiesFilter = new FilterViewModel();
             PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView?.Refresh();
 
@@ -45,7 +42,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
-                        new ControlDetailsViewModel(this, value.Visual) :
+                        new ControlDetailsViewModel(this, value.Visual, _pinnedProperties) :
                         null;
                     Details?.UpdatePropertiesView(MainView.ShowImplementedInterfaces);
                     Details?.UpdateStyleFilters();

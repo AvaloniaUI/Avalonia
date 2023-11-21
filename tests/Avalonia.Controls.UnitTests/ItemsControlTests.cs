@@ -717,7 +717,7 @@ namespace Avalonia.Controls.UnitTests
             var target = CreateTarget(
                 dataContext: "Base",
                 itemsSource: items,
-                dataTemplates: new[] { dataTemplate });
+                itemTemplate: dataTemplate);
             var panel = Assert.IsAssignableFrom<Panel>(target.ItemsPanelRoot);
             var dataContexts = panel.Children
                 .Do(x => (x as ContentPresenter)?.UpdateChild())
@@ -1182,7 +1182,6 @@ namespace Avalonia.Controls.UnitTests
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
                         }.RegisterInNameScope(scope),
                         new ScrollBar
                         {
