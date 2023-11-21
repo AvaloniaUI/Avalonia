@@ -46,14 +46,12 @@ namespace Avalonia.Win32
 
         private WndProc? _wndProcDelegate;
         private IntPtr _hwnd;
-        private IControlledDispatcherImpl _dispatcher;
-        private Win32DispatcherImpl _win32DispatcherImpl;
+        private Win32DispatcherImpl _dispatcher;
 
         public Win32Platform()
         {
             CreateMessageWindow();
-            _win32DispatcherImpl = new Win32DispatcherImpl(_hwnd);
-            _dispatcher = new DispatcherImplExceptionWrapper(_win32DispatcherImpl);
+            _dispatcher = new Win32DispatcherImpl(_hwnd);
         }
 
         internal static Win32Platform Instance => s_instance;

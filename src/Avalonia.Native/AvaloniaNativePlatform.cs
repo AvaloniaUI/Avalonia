@@ -101,7 +101,7 @@ namespace Avalonia.Native
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IDispatcherImpl>()
-                .ToConstant(new DispatcherImplExceptionWrapper(new DispatcherImpl(_factory.CreatePlatformThreadingInterface())))
+                .ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
