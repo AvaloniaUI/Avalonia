@@ -577,7 +577,7 @@ namespace Avalonia.X11
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS && _platform.Options.EnableInputFocusProxy)
                     {
                         IntPtr time = ev.ClientMessageEvent.ptr2;
-                        XSetInputFocus(_x11.Display, _focusProxy._handle, RevertTo.Parent, time);
+                        XSetInputFocus(_x11.Display, _focusProxy!._handle, RevertTo.Parent, time);
                     }
                 }
             }
@@ -787,8 +787,8 @@ namespace Avalonia.X11
                 return;
 
             Input?.Invoke(args);
-            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
-                Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
+            if (!args.Handled && args is RawKeyEventArgsWithText { Text: { Length: > 0 } text })
+                Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text));
         }
 
         public void ScheduleXI2Input(RawInputEventArgs args)
@@ -977,7 +977,7 @@ namespace Avalonia.X11
             return false;
         }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
             if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);
@@ -1122,7 +1122,9 @@ namespace Avalonia.X11
             else
             {
                 XRaiseWindow(_x11.Display, _handle);
-                XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
+
+                if (_focusProxy is not null)
+                    XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
             }
         }
 

@@ -714,11 +714,6 @@ namespace Avalonia.Controls
             SelectedItem = null;
         }
 
-        private void UpdateLayout()
-        {
-            (VisualRoot as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
-        }
-
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
         void IClickableControl.RaiseClick()
