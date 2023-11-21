@@ -12,14 +12,14 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Transforms> ChildrenProperty =
             AvaloniaProperty.Register<TransformGroup, Transforms>(nameof(Children));
 
-        private IDisposable? _childrenNofiticationSubscription = default;
-        private readonly EventHandler ChildTransform_Changed_Handler;
+        private IDisposable? _childrenNotificationSubscription;
+        private readonly EventHandler _childTransformChangedHandler;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
-            ChildTransform_Changed_Handler = (_, _) => RaiseChanged();
+            _childTransformChangedHandler = (_, _) => RaiseChanged();
             Children = new Transforms();
         }
 
@@ -60,21 +60,21 @@ namespace Avalonia.Media
             base.OnPropertyChanged(change);
             if (change.Property == ChildrenProperty)
             {
-                _childrenNofiticationSubscription?.Dispose();
+                _childrenNotificationSubscription?.Dispose();
                 if (change.OldValue is Transforms oldTransforms)
                 {
                     foreach (var item in oldTransforms)
                     {
-                        item.Changed -= ChildTransform_Changed_Handler;
+                        item.Changed -= _childTransformChangedHandler;
                     }
                 }
                 if (change.NewValue is Transforms newTransforms)
                 {
                     // Ensure reset behavior is Remove
                     newTransforms.ResetBehavior = ResetBehavior.Remove;
-                    _childrenNofiticationSubscription = newTransforms.ForEachItem(
-                        (tr) => tr.Changed += ChildTransform_Changed_Handler,
-                        (tr) => tr.Changed -= ChildTransform_Changed_Handler,
+                    _childrenNotificationSubscription = newTransforms.ForEachItem(
+                        (tr) => tr.Changed += _childTransformChangedHandler,
+                        (tr) => tr.Changed -= _childTransformChangedHandler,
                         () => { });
                 }
             }
