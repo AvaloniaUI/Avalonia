@@ -137,7 +137,7 @@ namespace Avalonia.Win32
             if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM 
                 && wParam.ToInt64() == Win32DispatcherImpl.SignalW 
                 && lParam.ToInt64() == Win32DispatcherImpl.SignalL) 
-                _win32DispatcherImpl?.DispatchWorkItem();
+                _dispatcher?.DispatchWorkItem();
 
             if(msg == (uint)WindowsMessage.WM_QUERYENDSESSION)
             {
@@ -168,7 +168,7 @@ namespace Avalonia.Win32
             if (msg == (uint)WindowsMessage.WM_TIMER)
             {
                 if (wParam == (IntPtr)TIMERID_DISPATCHER)
-                    _win32DispatcherImpl?.FireTimer();
+                    _dispatcher?.FireTimer();
             }
             
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
