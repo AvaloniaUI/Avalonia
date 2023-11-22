@@ -115,9 +115,9 @@ namespace Avalonia.Dialogs.Internal
                                               .GetService<ManagedFileChooserSources>()
                                               ?? new ManagedFileChooserSources();
 
-            var sub1 = AvaloniaLocator.Current
-                                      .GetRequiredService<IMountedVolumeInfoProvider>()
-                                      .Listen(ManagedFileChooserSources.MountedVolumes);
+            var sub1 = (AvaloniaLocator.Current.GetService<IMountedVolumeInfoProvider>()
+                        ?? new BclMountedVolumeInfoProvider())
+                .Listen(ManagedFileChooserSources.MountedVolumes);
 
             var sub2 = ManagedFileChooserSources.MountedVolumes.GetWeakCollectionChangedObservable()
                 .Subscribe(x => Dispatcher.UIThread.Post(() => RefreshQuickLinks(quickSources)));
