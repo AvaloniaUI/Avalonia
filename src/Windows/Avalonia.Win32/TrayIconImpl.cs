@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.LogicalTree;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -15,7 +16,9 @@ namespace Avalonia.Win32
 {
     internal class TrayIconImpl : ITrayIconImpl
     {
-        private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
+        private static readonly Win32Icon s_emptyIcon = new(new WriteableBitmap(new PixelSize(32, 32),
+            new Vector(96, 96),
+            PixelFormats.Bgra8888, AlphaFormat.Unpremul));
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private bool _iconAdded;
@@ -91,7 +94,7 @@ namespace Avalonia.Win32
             {
                 iconData.uFlags = NIF.TIP | NIF.MESSAGE | NIF.ICON;
                 iconData.uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE;
-                iconData.hIcon = _icon?.HIcon ?? s_emptyIcon;
+                iconData.hIcon = _icon?.HIcon ?? s_emptyIcon.Handle;
                 iconData.szTip = _tooltipText ?? "";
 
                 if (!_iconAdded)

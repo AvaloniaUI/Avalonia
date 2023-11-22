@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -31,11 +32,13 @@ internal class RoslynTypeSystem : IXamlTypeSystem
         Assemblies
             .FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase));
 
+    [UnconditionalSuppressMessage("Trimming", "IL2092", Justification = TrimmingMessages.Roslyn)]
     public IXamlType FindType(string name) =>
         _assemblies
             .Select(assembly => assembly.FindType(name))
             .FirstOrDefault(type => type != null);
 
+    [UnconditionalSuppressMessage("Trimming", "IL2092", Justification = TrimmingMessages.Roslyn)]
     public IXamlType FindType(string name, string assembly) =>
         _assemblies
             .Select(assemblyInstance => assemblyInstance.FindType(name))

@@ -208,6 +208,12 @@ dotnet_diagnostic.AVA2001.severity = error
 # Xaml files
 [*.{xaml,axaml}]
 indent_size = 2
+# DuplicateSetterError
+avalonia_xaml_diagnostic.AVLN2203.severity = error
+# StyleInMergedDictionaries
+avalonia_xaml_diagnostic.AVLN2204.severity = error
+# Obsolete
+avalonia_xaml_diagnostic.AVLN5001.severity = error
 
 # Xml project files
 [*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]

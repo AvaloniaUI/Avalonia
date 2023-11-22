@@ -32,7 +32,7 @@ namespace Avalonia.Utilities
     /// <summary>
     /// VECTOR: A series of spans
     /// </summary>
-    internal class SpanVector : IEnumerable
+    internal sealed class SpanVector : IEnumerable
     {
         private static readonly Equals s_referenceEquals = object.ReferenceEquals;
         private static readonly Equals s_equals = object.Equals;
@@ -67,7 +67,7 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Delete n elements of vector
         /// </summary>
-        internal virtual void Delete(int index, int count, ref SpanPosition latestPosition)
+        internal void Delete(int index, int count, ref SpanPosition latestPosition)
         {
             DeleteInternal(index, count);
 

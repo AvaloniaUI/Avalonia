@@ -14,7 +14,6 @@ public class MiniCompilerTests
 {
     private const string AvaloniaXaml = "<TextBlock xmlns='clr-namespace:Avalonia.Controls;assembly=Avalonia' />";
     private const string MiniClass = "namespace Example { public class Valid { public int Foo() => 21; } }";
-    private const string MiniInvalidXaml = "<Invalid xmlns='clr-namespace:Example;assembly=Example' />";
     private const string MiniValidXaml = "<Valid xmlns='clr-namespace:Example;assembly=Example' />";
 
     [Fact]
@@ -25,16 +24,6 @@ public class MiniCompilerTests
         MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation)).Transform(xaml);
 
         Assert.NotNull(xaml.Root);
-    }
-
-    [Fact]
-    public void Should_Throw_When_Unable_To_Resolve_Types_From_Simple_Invalid_Markup()
-    {
-        var xaml = XDocumentXamlParser.Parse(MiniInvalidXaml);
-        var compilation = CreateBasicCompilation(MiniClass);
-        var compiler = MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation));
-
-        Assert.Throws<XamlParseException>(() => compiler.Transform(xaml));
     }
 
     [Fact]

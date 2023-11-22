@@ -70,9 +70,6 @@ public class RefAssemblyGenerator
     
     static void ProcessType(TypeDefinition type, MethodReference obsoleteCtor)
     {
-        foreach (var nested in type.NestedTypes)
-            ProcessType(nested, obsoleteCtor);
-
         var hideMembers = (type.IsInterface && type.Name.EndsWith("Impl"))
                           || HasPrivateApi(type.CustomAttributes);
 
@@ -97,7 +94,7 @@ public class RefAssemblyGenerator
 
         foreach (var m in type.Methods)
         {
-            if (hideMembers || HasPrivateApi(m.CustomAttributes))
+            if (!m.IsPrivate && (hideMembers || HasPrivateApi(m.CustomAttributes)))
             {
                 HideMethod(m);
             }
@@ -108,30 +105,27 @@ public class RefAssemblyGenerator
         {
             if (HasPrivateApi(p.CustomAttributes))
             {
-                if (p.SetMethod != null)
-                    HideMethod(p.SetMethod);
-                if (p.GetMethod != null)
-                    HideMethod(p.GetMethod);
+                if (p.SetMethod is { IsPrivate: false } setMethod)
+                    HideMethod(setMethod);
+                if (p.GetMethod is { IsPrivate: false } getMethod)
+                    HideMethod(getMethod);
             }
         }
 
         foreach (var f in type.Fields)
         {
-            if (hideMembers || HasPrivateApi(f.CustomAttributes))
+            if (!f.IsPrivate && (hideMembers || HasPrivateApi(f.CustomAttributes)))
             {
-                var dflags = FieldAttributes.Public | FieldAttributes.Family | FieldAttributes.FamORAssem |
-                             FieldAttributes.FamANDAssem | FieldAttributes.Assembly;
-                f.Attributes = ((f.Attributes | dflags) ^ dflags) | FieldAttributes.Assembly;
+                f.IsAssembly = true;
             }
         }
 
         foreach (var cl in type.NestedTypes)
         {
             ProcessType(cl, obsoleteCtor);
-            if (hideMembers)
+            if (hideMembers && cl.IsNestedPublic)
             {
-                var dflags = TypeAttributes.Public;
-                cl.Attributes = ((cl.Attributes | dflags) ^ dflags) | TypeAttributes.NotPublic;
+                cl.IsNestedAssembly = true;
             }
         }
 
@@ -143,9 +137,7 @@ public class RefAssemblyGenerator
 
     static void HideMethod(MethodDefinition m)
     {
-        var dflags = MethodAttributes.Public | MethodAttributes.Family | MethodAttributes.FamORAssem |
-                     MethodAttributes.FamANDAssem | MethodAttributes.Assembly;
-        m.Attributes = ((m.Attributes | dflags) ^ dflags) | MethodAttributes.Assembly;
+        m.IsAssembly = true;
     }
     
     static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, ICustomAttribute? unstableAttribute)

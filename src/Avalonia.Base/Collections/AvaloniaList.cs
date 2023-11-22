@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Diagnostics;
 
 namespace Avalonia.Collections
@@ -14,14 +13,14 @@ namespace Avalonia.Collections
     public enum ResetBehavior
     {
         /// <summary>
-        /// Clearing the list notifies a with a 
-        /// <see cref="NotifyCollectionChangedAction.Reset"/>.
+        /// Clearing the list notifies with the <see cref="INotifyCollectionChanged.CollectionChanged"/> event with a
+        /// <see cref="NotifyCollectionChangedAction.Reset"/> action.
         /// </summary>
         Reset,
 
         /// <summary>
-        /// Clearing the list notifies a with a
-        /// <see cref="NotifyCollectionChangedAction.Remove"/>.
+        /// Clearing the list notifies with the <see cref="INotifyCollectionChanged.CollectionChanged"/> event with a
+        /// <see cref="NotifyCollectionChangedAction.Remove"/> action.
         /// </summary>
         Remove,
     }
@@ -42,11 +41,9 @@ namespace Avalonia.Collections
     /// <see cref="NotifyCollectionChangedAction.Remove"/> action instead of a
     /// <see cref="NotifyCollectionChangedAction.Reset"/> when the list is cleared by
     /// setting <see cref="ResetBehavior"/> to <see cref="ResetBehavior.Remove"/>.
-    /// removed
     /// </item>
     /// <item>
     /// A <see cref="Validate"/> function can be used to validate each item before insertion.
-    /// removed
     /// </item>
     /// </list>
     /// </remarks>

@@ -86,8 +86,17 @@ namespace Avalonia.X11.Screens
 
         public int ScreenCount => _impl.Screens.Length;
 
-        public IReadOnlyList<Screen> AllScreens =>
-            _impl.Screens.Select((s, i) => new Screen(_scaling.GetScaling(s, i), s.Bounds, s.WorkingArea, s.IsPrimary))
-                .ToArray();
+        public IReadOnlyList<Screen> AllScreens
+        {
+            get
+            {
+                var rawScreens = _impl.Screens;
+                if (!rawScreens.Any(s => s.IsPrimary) && rawScreens.Length > 0)
+                    rawScreens[0].IsPrimary = true;
+                return rawScreens.Select((s, i) =>
+                        new Screen(_scaling.GetScaling(s, i), s.Bounds, s.WorkingArea, s.IsPrimary))
+                    .ToArray();
+            }
+        }
     }
 }

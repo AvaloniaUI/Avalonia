@@ -181,10 +181,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = ListBoxTemplate(),
                     DataContext = "Base",
-                    DataTemplates =
-                    {
-                        new FuncDataTemplate<Item>((x, _) => new Button { Content = x })
-                    },
+                    ItemTemplate = new FuncDataTemplate<Item>((x, _) => new Button { Content = x }),
                     ItemsSource = items,
                 };
 

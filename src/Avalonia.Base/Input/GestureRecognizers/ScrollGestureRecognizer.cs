@@ -124,8 +124,6 @@ namespace Avalonia.Input.GestureRecognizers
                             _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? ScrollStartDistance : -ScrollStartDistance));
 
                         Capture(e.Pointer);
-
-                        e.PreventGestureRecognition();
                     }
                 }
 

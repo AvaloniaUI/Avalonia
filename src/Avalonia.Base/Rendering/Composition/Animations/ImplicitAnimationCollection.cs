@@ -17,7 +17,7 @@ namespace Avalonia.Rendering.Composition.Animations
     /// When expression is used in ImplicitAnimationCollection a special keyword `this.FinalValue` will represent
     /// the final value of the animated property that was changed 
     /// </remarks>
-    public class ImplicitAnimationCollection : CompositionObject, IDictionary<string, ICompositionAnimationBase>
+    public sealed class ImplicitAnimationCollection : CompositionObject, IDictionary<string, ICompositionAnimationBase>
     {
         private readonly Dictionary<string, ICompositionAnimationBase> _inner = new Dictionary<string, ICompositionAnimationBase>();
         private readonly IDictionary<string, ICompositionAnimationBase> _innerface;

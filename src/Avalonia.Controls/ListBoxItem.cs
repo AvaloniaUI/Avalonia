@@ -55,7 +55,7 @@ namespace Avalonia.Controls
             if (e.Handled)
                 return;
 
-            if (!e.Handled && ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
+            if (!e.Handled && ItemsControl.ItemsControlFromItemContainer(this) is ListBox owner)
             {
                 var p = e.GetCurrentPoint(this);
 
@@ -97,7 +97,7 @@ namespace Avalonia.Controls
 
                 if (new Rect(Bounds.Size).ContainsExclusive(point.Position) &&
                     tapRect.ContainsExclusive(point.Position) &&
-                    ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
+                    ItemsControl.ItemsControlFromItemContainer(this) is ListBox owner)
                 {
                     if (owner.UpdateSelectionFromPointerEvent(this, e))
                     {
