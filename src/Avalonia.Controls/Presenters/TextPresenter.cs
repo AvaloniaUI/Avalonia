@@ -34,6 +34,9 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
 
+        public static readonly StyledProperty<int> CaretBlinkIntervalProperty =
+            AvaloniaProperty.Register<TextPresenter, int>(nameof(CaretBlinkInterval), defaultValue: 500);
+
         public static readonly StyledProperty<int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
 
@@ -88,7 +91,7 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextPresenter>();
 
-        private readonly DispatcherTimer _caretTimer;
+        private DispatcherTimer? _caretTimer;
         private bool _caretBlink;
         private TextLayout? _textLayout;
         private Size _constraint;
@@ -104,10 +107,7 @@ namespace Avalonia.Controls.Presenters
             AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, TextElement.ForegroundProperty);
         }
 
-        public TextPresenter()
-        {
-            _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        }
+        public TextPresenter() { }
 
         public event EventHandler? CaretBoundsChanged;
 
@@ -288,6 +288,12 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(CaretBrushProperty, value);
         }
 
+        public int CaretBlinkInterval
+        {
+            get => GetValue(CaretBlinkIntervalProperty);
+            set => SetValue(CaretBlinkIntervalProperty, value);
+        }
+
         public int SelectionStart
         {
             get => GetValue(SelectionStartProperty);
@@ -443,7 +449,7 @@ namespace Avalonia.Controls.Presenters
         public void ShowCaret()
         {
             _caretBlink = true;
-            _caretTimer.Start();
+            _caretTimer?.Start();
             InvalidateVisual();
         }
 
@@ -454,7 +460,7 @@ namespace Avalonia.Controls.Presenters
             {
                 TextSelectionHandleCanvas.ShowHandles = false;
             }
-            _caretTimer.Stop();
+            _caretTimer?.Stop();
             InvalidateVisual();
         }
 
@@ -465,18 +471,18 @@ namespace Avalonia.Controls.Presenters
                 return;
             }
 
-            if (_caretTimer.IsEnabled)
+            if (_caretTimer?.IsEnabled ?? false)
             {
                 _caretBlink = true;
-                _caretTimer.Stop();
-                _caretTimer.Start();
+                _caretTimer?.Stop();
+                _caretTimer?.Start();
                 InvalidateVisual();
             }
             else
             {
-                _caretTimer.Start();
+                _caretTimer?.Start();
                 InvalidateVisual();
-                _caretTimer.Stop();
+                _caretTimer?.Stop();
             }
 
             if (IsMeasureValid)
@@ -855,7 +861,13 @@ namespace Avalonia.Controls.Presenters
         {
             base.OnAttachedToVisualTree(e);
 
-            _caretTimer.Tick += CaretTimerTick;
+            if (CaretBlinkInterval > 0)
+            {
+                _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(CaretBlinkInterval) };
+                _caretTimer.Tick += CaretTimerTick;
+            }
+            else
+                _caretTimer = null;
 
             if (TextSelectionHandleCanvas is { } canvas && _layer != null && !_layer.Children.Contains(canvas))
                 _layer?.Add(TextSelectionHandleCanvas);
@@ -882,9 +894,11 @@ namespace Avalonia.Controls.Presenters
                 c.SetPresenter(null);
             }
 
-            _caretTimer.Stop();
-
-            _caretTimer.Tick -= CaretTimerTick;
+            if (_caretTimer != null)
+            {
+                _caretTimer.Stop();
+                _caretTimer.Tick -= CaretTimerTick;
+            }
         }
         
         private void OnPreeditChanged(string? preeditText, int? cursorPosition)
