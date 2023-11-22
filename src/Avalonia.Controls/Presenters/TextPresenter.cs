@@ -722,6 +722,33 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
+        private void ResetCaretTimer()
+        {
+            bool isEnabled = false;
+
+            if (_caretTimer != null)
+            {
+                _caretTimer.Tick -= CaretTimerTick;
+
+                if (_caretTimer.IsEnabled)
+                {
+                    _caretTimer.Stop();
+                    isEnabled = true;
+                }
+
+                _caretTimer = null;
+            }
+
+            if (CaretBlinkInterval > 0) 
+            {
+                _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(CaretBlinkInterval) };
+                _caretTimer.Tick += CaretTimerTick;
+
+                if (isEnabled)
+                    _caretTimer.Start();
+            }
+        }
+
         public CharacterHit GetNextCharacterHit(LogicalDirection direction = LogicalDirection.Forward)
         {
             if (Text is null)
@@ -861,13 +888,7 @@ namespace Avalonia.Controls.Presenters
         {
             base.OnAttachedToVisualTree(e);
 
-            if (CaretBlinkInterval > 0)
-            {
-                _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(CaretBlinkInterval) };
-                _caretTimer.Tick += CaretTimerTick;
-            }
-            else
-                _caretTimer = null;
+            ResetCaretTimer();
 
             if (TextSelectionHandleCanvas is { } canvas && _layer != null && !_layer.Children.Contains(canvas))
                 _layer?.Add(TextSelectionHandleCanvas);
@@ -951,6 +972,11 @@ namespace Avalonia.Controls.Presenters
                 {
                     SetCurrentValue(PreeditTextProperty, null);
                 }
+            }
+
+            if (change.Property == CaretBlinkIntervalProperty)
+            {
+                ResetCaretTimer();
             }
 
             switch (change.Property.Name)
