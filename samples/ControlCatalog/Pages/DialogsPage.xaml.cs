@@ -238,7 +238,7 @@ namespace ControlCatalog.Pages
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     DefaultExtension = fileTypes?.Any() == true ? "txt" : null,
-                    ShowOverwritePrompt = false
+                    ShowOverwritePrompt = true
                 });
 
                 if (file is not null)
@@ -436,7 +436,7 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         {
             var forceManaged = this.Get<CheckBox>("ForceManaged").IsChecked ?? false;
             return forceManaged
-                ? new ManagedStorageProvider<Window>(GetWindow(), null)
+                ? new ManagedStorageProvider(GetWindow())
                 : GetTopLevel().StorageProvider;
         }
 
