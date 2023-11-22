@@ -1,8 +1,7 @@
-#nullable enable
-
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -10,25 +9,31 @@ using Avalonia.Platform.Storage;
 
 namespace Avalonia.Dialogs
 {
+#if NET6_0_OR_GREATER
+    [SupportedOSPlatform("windows"), SupportedOSPlatform("macos"), SupportedOSPlatform("linux")]
+#endif
     public static class ManagedFileDialogExtensions
     {
-        internal class ManagedStorageProviderFactory<T> : IStorageProviderFactory where T : Window, new()
+        internal class ManagedStorageProviderFactory : IStorageProviderFactory
         {
+            private readonly Func<ContentControl>? _customFactory;
+
+            public ManagedStorageProviderFactory(Func<ContentControl>? customFactory)
+            {
+                _customFactory = customFactory;
+            }
+            
             public IStorageProvider CreateProvider(TopLevel topLevel)
             {
-                if (topLevel is Window window)
-                {
-                    var options = AvaloniaLocator.Current.GetService<ManagedFileDialogOptions>();
-                    return new ManagedStorageProvider<T>(window, options);
-                }
-                throw new InvalidOperationException("Current platform doesn't support managed picker dialogs");
+                var options = AvaloniaLocator.Current.GetService<ManagedFileDialogOptions>();
+                return new ManagedStorageProvider(topLevel, _customFactory, options);
             }
         }
 
         public static AppBuilder UseManagedSystemDialogs(this AppBuilder builder)
         {
             builder.AfterSetup(_ =>
-                AvaloniaLocator.CurrentMutable.Bind<IStorageProviderFactory>().ToSingleton<ManagedStorageProviderFactory<Window>>());
+                AvaloniaLocator.CurrentMutable.Bind<IStorageProviderFactory>().ToConstant(new ManagedStorageProviderFactory(null)));
             return builder;
         }
 
@@ -36,7 +41,7 @@ namespace Avalonia.Dialogs
             where TWindow : Window, new()
         {
             builder.AfterSetup(_ =>
-                AvaloniaLocator.CurrentMutable.Bind<IStorageProviderFactory>().ToSingleton<ManagedStorageProviderFactory<TWindow>>());
+                AvaloniaLocator.CurrentMutable.Bind<IStorageProviderFactory>().ToConstant(new ManagedStorageProviderFactory(() => new TWindow())));
             return builder;
         }
 
@@ -48,7 +53,7 @@ namespace Avalonia.Dialogs
         public static async Task<string[]> ShowManagedAsync<TWindow>(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions? options = null) where TWindow : Window, new()
         {
-            var impl = new ManagedStorageProvider<TWindow>(parent, options);
+            var impl = new ManagedStorageProvider(parent, () => new TWindow(), options);
 
             var files = await impl.OpenFilePickerAsync(dialog.ToFilePickerOpenOptions());
             return files
