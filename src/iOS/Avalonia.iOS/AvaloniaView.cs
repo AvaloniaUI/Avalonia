@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
@@ -89,6 +91,7 @@ namespace Avalonia.iOS
             private readonly IStorageProvider _storageProvider;
             internal readonly InsetsManager _insetsManager;
             private readonly ClipboardImpl _clipboard;
+            private IDisposable _paddingInsets;
 
             public AvaloniaView View => _view;
 
@@ -98,9 +101,19 @@ namespace Avalonia.iOS
                 _nativeControlHost = new NativeControlHostImpl(view);
                 _storageProvider = new IOSStorageProvider(view);
                 _insetsManager = new InsetsManager(view);
-                _insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
+                _insetsManager.DisplayEdgeToEdgeChanged += (sender, edgeToEdge) =>
                 {
-                    view._topLevel.Padding = b ? default : _insetsManager.SafeAreaPadding;
+                    // iOS doesn't add any paddings/margins to the application by itself.
+                    // Application is fully responsible for safe area paddings.
+                    // So, unlikely to android, we need to "fake" safe area insets when edge to edge is disabled. 
+                    _paddingInsets?.Dispose();
+                    if (!edgeToEdge)
+                    {
+                        _paddingInsets = view._topLevel.SetValue(
+                            TemplatedControl.PaddingProperty,
+                            view._controller.SafeAreaPadding,
+                            BindingPriority.Style); // lower priority, so it can be redefined by user
+                    }
                 };
                 _clipboard = new ClipboardImpl();
             }

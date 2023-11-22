@@ -327,6 +327,8 @@ namespace Avalonia.Markup.Xaml.UnitTests
         [Fact]
         public void Style_Parser_Throws_For_Duplicate_Setter()
         {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
@@ -340,13 +342,27 @@ namespace Avalonia.Markup.Xaml.UnitTests
     </Window.Styles>
     <TextBlock/>
 </Window>";
-            AssertThrows(() => AvaloniaRuntimeXamlLoader.Load(xaml, typeof(XamlIlTests).Assembly, designMode: true),
-                e => e.Message.StartsWith("Duplicate setter encountered for property 'Height'"));
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            // We still have a runtime check in the StyleInstance class, but in this test we only care about compile warnings.
+            Assert.Throws<InvalidOperationException>(() => AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml), new RuntimeXamlLoaderConfiguration
+            {
+                LocalAssembly = typeof(XamlIlTests).Assembly,
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            }));
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
+            Assert.StartsWith("Duplicate setter encountered for property 'Height'", warning.Title);
         }
 
         [Fact]
         public void Control_Theme_Parser_Throws_For_Duplicate_Setter()
         {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
@@ -361,8 +377,20 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
     <u:TestTemplatedControl Theme='{StaticResource MyTheme}'/>
 </Window>";
-            AssertThrows(() => AvaloniaRuntimeXamlLoader.Load(xaml, typeof(XamlIlTests).Assembly, designMode: true),
-                e => e.Message.StartsWith("Duplicate setter encountered for property 'Height'"));
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            // We still have a runtime check in the StyleInstance class, but in this test we only care about compile warnings.
+            Assert.Throws<InvalidOperationException>(() => AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml), new RuntimeXamlLoaderConfiguration
+            {
+                LocalAssembly = typeof(XamlIlTests).Assembly,
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            }));
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
+            Assert.StartsWith("Duplicate setter encountered for property 'Height'", warning.Title);
         }
     }
 

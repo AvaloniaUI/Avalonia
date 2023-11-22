@@ -7,11 +7,8 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Automation;
 using Avalonia.Reactive;
@@ -85,8 +82,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
-        private static readonly FuncTemplate<Panel?> DefaultPanel =
-            new(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
