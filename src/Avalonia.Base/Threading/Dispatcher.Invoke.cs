@@ -120,6 +120,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of retuturn value of <paramref name="callback"/></typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -138,6 +139,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of retuturn value of <paramref name="callback"/></typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -158,6 +160,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of retuturn value of <paramref name="callback"/></typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -185,6 +188,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of retuturn value of <paramref name="callback"/></typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -319,6 +323,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of retuturn value of <paramref name="callback"/></typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -357,6 +362,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of retuturn value of <paramref name="callback"/></typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
