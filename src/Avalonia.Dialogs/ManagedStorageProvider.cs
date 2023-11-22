@@ -16,13 +16,11 @@ namespace Avalonia.Dialogs;
 internal class ManagedStorageProvider : BclStorageProvider
 {
     private readonly TopLevel? _parent;
-    private readonly Func<ContentControl>? _customFactory;
     private readonly ManagedFileDialogOptions _managedOptions;
 
-    public ManagedStorageProvider(TopLevel? parent, Func<ContentControl>? customFactory = null, ManagedFileDialogOptions? managedOptions = null)
+    public ManagedStorageProvider(TopLevel? parent, ManagedFileDialogOptions? managedOptions = null)
     {
         _parent = parent;
-        _customFactory = customFactory;
         _managedOptions = managedOptions ?? new ManagedFileDialogOptions();
     }
 
@@ -58,7 +56,7 @@ internal class ManagedStorageProvider : BclStorageProvider
 
     private ContentControl PrepareRoot(ManagedFileChooserViewModel model)
     {
-        var root = _customFactory?.Invoke();
+        var root = _managedOptions.ContentRootFactory?.Invoke();
 
         if (root is null)
         {
