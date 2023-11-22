@@ -95,8 +95,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="CaretBlinkInterval"/> property
         /// </summary>
-        public static readonly StyledProperty<int> CaretBlinkIntervalProperty =
-            AvaloniaProperty.Register<TextBox, int>(nameof(CaretBlinkInterval), defaultValue: 500);
+        public static readonly StyledProperty<TimeSpan> CaretBlinkIntervalProperty =
+            AvaloniaProperty.Register<TextBox, TimeSpan>(nameof(CaretBlinkInterval), defaultValue: TimeSpan.FromMilliseconds(500));
 
         /// <summary>
         /// Defines the <see cref="SelectionStart"/> property
@@ -452,7 +452,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a brush that is used for the text caret
         /// </summary>
-        public int CaretBlinkInterval
+        public TimeSpan CaretBlinkInterval
         {
             get => GetValue(CaretBlinkIntervalProperty);
             set => SetValue(CaretBlinkIntervalProperty, value);

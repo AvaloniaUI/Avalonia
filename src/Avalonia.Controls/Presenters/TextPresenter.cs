@@ -34,8 +34,8 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
 
-        public static readonly StyledProperty<int> CaretBlinkIntervalProperty =
-            AvaloniaProperty.Register<TextPresenter, int>(nameof(CaretBlinkInterval), defaultValue: 500);
+        public static readonly StyledProperty<TimeSpan> CaretBlinkIntervalProperty =
+            AvaloniaProperty.Register<TextPresenter, TimeSpan>(nameof(CaretBlinkInterval), defaultValue: TimeSpan.FromMilliseconds(500));
 
         public static readonly StyledProperty<int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
@@ -288,7 +288,7 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(CaretBrushProperty, value);
         }
 
-        public int CaretBlinkInterval
+        public TimeSpan CaretBlinkInterval
         {
             get => GetValue(CaretBlinkIntervalProperty);
             set => SetValue(CaretBlinkIntervalProperty, value);
@@ -739,9 +739,9 @@ namespace Avalonia.Controls.Presenters
                 _caretTimer = null;
             }
 
-            if (CaretBlinkInterval > 0) 
+            if (CaretBlinkInterval.TotalMilliseconds > 0) 
             {
-                _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(CaretBlinkInterval) };
+                _caretTimer = new DispatcherTimer { Interval = CaretBlinkInterval };
                 _caretTimer.Tick += CaretTimerTick;
 
                 if (isEnabled)
