@@ -1299,8 +1299,6 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var overhangAfter = Math.Max(0, bounds.Bottom - height);
-
             var width = widthIncludingWhitespace;
 
             for (var i = _textRuns.Length - 1; i >= 0; i--)
@@ -1327,15 +1325,20 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
-            var overhangLeading = Math.Max(0, bounds.Left - start);
-            var overhangTrailing = Math.Max(0, bounds.Width - widthIncludingWhitespace);
+            //The width of overhanging pixels at the bottom
+            var overhangAfter = Math.Max(0, bounds.Bottom - height);
+            //The width of overhanging pixels at the origin
+            var overhangLeading = Math.Abs(Math.Min(bounds.Left, 0));
+            //The width of overhanging pixels at the end
+            var overhangTrailing = Math.Max(0, bounds.Right - widthIncludingWhitespace);
             var hasOverflowed = width > _paragraphWidth;
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
                 height = lineHeight;
             }
+
+            var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 
             return new TextLineMetrics
             {

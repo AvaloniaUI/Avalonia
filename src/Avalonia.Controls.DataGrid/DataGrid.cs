@@ -412,6 +412,21 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsScrollInertiaEnabledProperty =
+            ScrollViewer.IsScrollInertiaEnabledProperty.AddOwner<DataGrid>();
+
+        /// <summary>
+        /// Gets or sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public bool IsScrollInertiaEnabled
+        {
+            get => GetValue(IsScrollInertiaEnabledProperty);
+            set => SetValue(IsScrollInertiaEnabledProperty, value);
+        }
+
         private bool _isValid = true;
 
         public static readonly DirectProperty<DataGrid, bool> IsValidProperty =
@@ -4145,13 +4160,8 @@ namespace Avalonia.Controls
 
                         if (editingElement != null)
                         {
-                            var errorList =
-                                binding.ValidationErrors
-                                       .SelectMany(ValidationUtil.UnpackException)
-                                       .Select(ValidationUtil.UnpackDataValidationException)
-                                       .ToList();
-
-                            DataValidationErrors.SetErrors(editingElement, errorList);
+                            DataValidationErrors.SetError(editingElement,
+                                new AggregateException(binding.ValidationErrors));
                         }
                     }
                 }

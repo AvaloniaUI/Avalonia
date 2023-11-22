@@ -18,10 +18,9 @@ namespace SafeAreaDemo.Views
             base.OnLoaded(e);
 
             var insetsManager = TopLevel.GetTopLevel(this)?.InsetsManager;
-            if (insetsManager != null && DataContext is MainViewModel viewModel)
-            {
-                viewModel.InsetsManager = insetsManager;
-            }
+            var viewModel = new MainViewModel();
+            viewModel.Initialize(this, insetsManager);
+            DataContext = viewModel;
         }
     }
 }

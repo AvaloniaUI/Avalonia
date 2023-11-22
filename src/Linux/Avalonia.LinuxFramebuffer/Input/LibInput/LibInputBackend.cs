@@ -27,7 +27,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             _rawEventGrouper = new(DispatchInput);
             new Thread(InputThread)
             {
-                IsBackground = false,
+                IsBackground = true,
                 Name = "Input Manager Worker",
                 Priority = ThreadPriority.Lowest
             }.Start(ctx);
