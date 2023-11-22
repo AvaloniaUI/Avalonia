@@ -7,7 +7,6 @@ namespace Avalonia.Controls.Platform
     /// <summary>
     /// Listener for the platform's input pane(eg, software keyboard). Provides access to the input pane height and state.
     /// </summary>
-    [Unstable]
     [NotClientImplementable]
     public interface IInputPane
     {
