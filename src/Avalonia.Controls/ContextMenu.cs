@@ -7,11 +7,8 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Automation;
 using Avalonia.Reactive;
@@ -85,8 +82,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
-        private static readonly FuncTemplate<Panel?> DefaultPanel =
-            new(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
@@ -114,7 +109,6 @@ namespace Avalonia.Controls
         /// </summary>
         static ContextMenu()
         {
-            ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
             PlacementProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
@@ -216,17 +210,22 @@ namespace Avalonia.Controls
             if (e.OldValue is ContextMenu oldMenu)
             {
                 control.ContextRequested -= ControlContextRequested;
+                control.AttachedToVisualTree -= ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree -= ControlDetachedFromVisualTree;
                 oldMenu._attachedControls?.Remove(control);
                 ((ISetLogicalParent?)oldMenu._popup)?.SetParent(null);
             }
 
-            if (e.NewValue is ContextMenu newMenu)
+            if (e.NewValue is ContextMenu)
             {
-                newMenu._attachedControls ??= new List<Control>();
-                newMenu._attachedControls.Add(control);
                 control.ContextRequested += ControlContextRequested;
+                control.AttachedToVisualTree += ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree += ControlDetachedFromVisualTree;
+            }
+            
+            if (control.IsAttachedToVisualTree)
+            {
+                AttachControlToContextMenu(control); 
             }
         }
 
@@ -389,9 +388,6 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup!).SetParent(null);
             }
 
-            // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            _previousFocus?.Focus();
-
             RaiseEvent(new RoutedEventArgs
             {
                 RoutedEvent = ClosedEvent,
@@ -428,11 +424,25 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
         }
+        
+        
+        private static void ControlOnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            AttachControlToContextMenu(sender);
+        }
+
+        private static void AttachControlToContextMenu(object? sender)
+        {
+            if (sender is Control { ContextMenu: { } contextMenu } control)
+            {
+                contextMenu._attachedControls ??= new List<Control>();
+                contextMenu._attachedControls.Add(control);
+            }
+        }
 
         private static void ControlDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            if (sender is Control control
-                && control.ContextMenu is ContextMenu contextMenu)
+            if (sender is Control { ContextMenu: { } contextMenu } control)
             {
                 if (contextMenu._popup?.Parent == control)
                 {
@@ -440,6 +450,7 @@ namespace Avalonia.Controls
                 }
 
                 contextMenu.Close();
+                contextMenu._attachedControls?.Remove(control);
             }
         }
 

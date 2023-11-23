@@ -10,25 +10,25 @@
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <Import Project="..\..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\..\build\SkiaSharp.props" />
-  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-  <Import Project="..\..\..\build\NullableEnable.props" />
-  <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="../../../build/BuildTargets.targets" />
+  <Import Project="../../../build/SkiaSharp.props" />
+  <Import Project="../../../build/HarfBuzzSharp.props" />
+  <Import Project="../../../build/NullableEnable.props" />
+  <Import Project="../../../build/TrimmingEnable.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
-    <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="../../../packages/Avalonia/Avalonia.csproj" />
+    <ProjectReference Include="../../Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="*.props">
       <Pack>true</Pack>
-      <PackagePath>build\</PackagePath>
+      <PackagePath>build/</PackagePath>
     </Content>
     <Content Include="*.targets">
       <Pack>true</Pack>
-      <PackagePath>build\;buildTransitive\</PackagePath>
+      <PackagePath>build/;buildTransitive/</PackagePath>
     </Content>
     <Content Include="interop.js">
       <Pack>true</Pack>
@@ -36,7 +36,7 @@
     </Content>
     <Content Include="wwwroot/**/*.*">
       <Pack>true</Pack>
-      <PackagePath>build\wwwroot;buildTransitive\wwwroot</PackagePath>
+      <PackagePath>build/wwwroot;buildTransitive/wwwroot</PackagePath>
     </Content>
   </ItemGroup>
 
@@ -52,5 +52,5 @@
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Browser.Blazor, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
-  
+
 </Project>

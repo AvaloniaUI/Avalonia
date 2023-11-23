@@ -67,9 +67,14 @@ namespace Avalonia.DesignerSupport.Remote
                     }));
         }
 
-        class DummyRenderTimer : IRenderTimer
+        private sealed class DummyRenderTimer : IRenderTimer
         {
-            public event Action<TimeSpan> Tick;
+            public event Action<TimeSpan> Tick
+            {
+                add { }
+                remove { }
+            }
+
             public bool RunsInBackground => false;
         }
 

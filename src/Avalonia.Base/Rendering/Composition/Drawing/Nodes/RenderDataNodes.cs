@@ -211,3 +211,18 @@ abstract class RenderDataBrushAndPenNode : IRenderDataItemWithServerResources
     public abstract Rect? Bounds { get; }
     public abstract bool HitTest(Point p);
 }
+
+class RenderDataRenderOptionsNode : RenderDataPushNode
+{
+    public RenderOptions RenderOptions { get; set; }
+
+    public override void Push(ref RenderDataNodeRenderContext context)
+    {
+        context.Context.PushRenderOptions(RenderOptions);
+    }
+
+    public override void Pop(ref RenderDataNodeRenderContext context)
+    {
+        context.Context.PopRenderOptions();
+    }
+}

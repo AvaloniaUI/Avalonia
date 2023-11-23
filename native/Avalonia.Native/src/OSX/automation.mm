@@ -73,6 +73,13 @@ private:
     if (peer->IsRootProvider())
     {
         auto window = peer->RootProvider_GetWindow();
+        
+        if (window == nullptr)
+        {
+            NSLog(@"IRootProvider.PlatformImpl returned null or a non-WindowBaseImpl.");
+            return nil;
+        }
+        
         auto holder = dynamic_cast<INSWindowHolder*>(window);
         auto view = holder->GetNSView();
         return [[AvnRootAccessibilityElement alloc] initWithPeer:peer owner:view];
@@ -284,8 +291,8 @@ private:
 
 - (id)accessibilityWindow
 {
-    id topLevel = [self accessibilityTopLevelUIElement];
-    return [topLevel isKindOfClass:[NSWindow class]] ? topLevel : nil;
+    auto rootPeer = _peer->GetVisualRoot();
+    return [AvnAccessibilityElement acquire:rootPeer];
 }
 
 - (BOOL)isAccessibilityExpanded

@@ -13,8 +13,8 @@ public interface IDispatcherImpl
 
     // Asynchronously triggers Signaled callback
     void Signal();
-    event Action Signaled;
-    event Action Timer;
+    event Action? Signaled;
+    event Action? Timer;
     long Now { get; }
     void UpdateTimer(long? dueTimeInMs);
 }
@@ -31,7 +31,7 @@ public interface IDispatcherImplWithPendingInput : IDispatcherImpl
 [PrivateApi]
 public interface IDispatcherImplWithExplicitBackgroundProcessing : IDispatcherImpl
 {
-    event Action ReadyForBackgroundProcessing;
+    event Action? ReadyForBackgroundProcessing;
     void RequestBackgroundProcessing();
 }
 
@@ -46,7 +46,7 @@ internal class LegacyDispatcherImpl : IDispatcherImpl
 {
     private readonly IPlatformThreadingInterface _platformThreading;
     private IDisposable? _timer;
-    private Stopwatch _clock = Stopwatch.StartNew();
+    private readonly Stopwatch _clock = Stopwatch.StartNew();
 
     public LegacyDispatcherImpl(IPlatformThreadingInterface platformThreading)
     {
@@ -82,7 +82,7 @@ internal class LegacyDispatcherImpl : IDispatcherImpl
     }
 }
 
-class NullDispatcherImpl : IDispatcherImpl
+internal sealed class NullDispatcherImpl : IDispatcherImpl
 {
     public bool CurrentThreadIsLoopThread => true;
 
@@ -91,8 +91,17 @@ class NullDispatcherImpl : IDispatcherImpl
         
     }
     
-    public event Action? Signaled;
-    public event Action? Timer;
+    public event Action? Signaled
+    {
+        add { }
+        remove { }
+    }
+
+    public event Action? Timer
+    {
+        add { }
+        remove { }
+    }
 
     public long Now => 0;
 

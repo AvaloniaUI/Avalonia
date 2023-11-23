@@ -59,37 +59,49 @@ namespace ControlCatalog.Pages
 
             List<FileDialogFilter> GetFilters()
             {
-                if (this.Get<CheckBox>("UseFilters").IsChecked != true)
-                    return new List<FileDialogFilter>();
-                return new List<FileDialogFilter>
-                            {
-                                new FileDialogFilter
-                                {
-                                    Name = "Text files (.txt)", Extensions = new List<string> {"txt"}
-                                },
-                                new FileDialogFilter
-                                {
-                                    Name = "All files",
-                                    Extensions = new List<string> {"*"}
-                                }
-                            };
+                return GetFileTypes()?.Select(f => new FileDialogFilter
+                {
+                    Name = f.Name, Extensions = f.Patterns!.ToList()
+                }).ToList() ?? new List<FileDialogFilter>();
             }
 
             List<FilePickerFileType>? GetFileTypes()
             {
-                if (this.Get<CheckBox>("UseFilters").IsChecked != true)
-                    return null;
-                return new List<FilePickerFileType>
-                            {
-                                FilePickerFileTypes.All,
-                                FilePickerFileTypes.TextPlain,
-                                new("Binary Log")
-                                {
-                                    Patterns = new[] { "*.binlog", "*.buildlog" },
-                                    MimeTypes = new[] { "application/binlog", "application/buildlog" },
-                                    AppleUniformTypeIdentifiers = new []{ "public.data" }
-                                }
-                            };
+                var selectedItem = (this.Get<ComboBox>("FilterSelector").SelectedItem as ComboBoxItem)?.Content
+                    ?? "None";
+
+                var binLogType = new FilePickerFileType("Binary Log")
+                {
+                    Patterns = new[] { "*.binlog", "*.buildlog" },
+                    MimeTypes = new[] { "application/binlog", "application/buildlog" },
+                    AppleUniformTypeIdentifiers = new[] { "public.data" }
+                };
+
+                return selectedItem switch
+                {
+                    "All + TXT + BinLog" => new List<FilePickerFileType>
+                    {
+                        FilePickerFileTypes.All, FilePickerFileTypes.TextPlain, binLogType
+                    },
+                    "Binlog" => new List<FilePickerFileType> { binLogType },
+                    "TXT extension only" => new List<FilePickerFileType>
+                    {
+                        new("TXT") { Patterns = FilePickerFileTypes.TextPlain.Patterns }
+                    },
+                    "TXT mime only" => new List<FilePickerFileType>
+                    {
+                        new("TXT") { MimeTypes = FilePickerFileTypes.TextPlain.MimeTypes }
+                    },
+                    "TXT apple type id only" => new List<FilePickerFileType>
+                    {
+                        new("TXT")
+                        {
+                            AppleUniformTypeIdentifiers =
+                                FilePickerFileTypes.TextPlain.AppleUniformTypeIdentifiers
+                        }
+                    },
+                    _ => null
+                };
             }
 
             this.Get<Button>("OpenFile").Click += async delegate
@@ -148,7 +160,7 @@ namespace ControlCatalog.Pages
                 }
                 else
                 {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
+                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result!));
                     results.ItemsSource = new[] { result };
                     resultsVisible.IsVisible = true;
                 }
@@ -226,7 +238,7 @@ namespace ControlCatalog.Pages
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     DefaultExtension = fileTypes?.Any() == true ? "txt" : null,
-                    ShowOverwritePrompt = false
+                    ShowOverwritePrompt = true
                 });
 
                 if (file is not null)
@@ -424,7 +436,7 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         {
             var forceManaged = this.Get<CheckBox>("ForceManaged").IsChecked ?? false;
             return forceManaged
-                ? new ManagedStorageProvider<Window>(GetWindow(), null)
+                ? new ManagedStorageProvider(GetWindow())
                 : GetTopLevel().StorageProvider;
         }
 

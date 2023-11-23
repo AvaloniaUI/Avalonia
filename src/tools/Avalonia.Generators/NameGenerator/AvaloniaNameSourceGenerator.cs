@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using Avalonia.Generators.Common;
 using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
@@ -10,6 +13,8 @@ namespace Avalonia.Generators.NameGenerator;
 [Generator]
 public class AvaloniaNameSourceGenerator : ISourceGenerator
 {
+    private const string SourceItemGroupMetadata = "build_metadata.AdditionalFiles.SourceItemGroup";
+
     public void Initialize(GeneratorInitializationContext context) { }
 
     public void Execute(GeneratorExecutionContext context)
@@ -22,7 +27,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
                 return;
             }
 
-            var partials = generator.GenerateNameReferences(context.AdditionalFiles, context.CancellationToken);
+            var partials = generator.GenerateNameReferences(ResolveAdditionalFiles(context), context.CancellationToken);
             foreach (var (fileName, content) in partials)
             {
                 if(context.CancellationToken.IsCancellationRequested)
@@ -40,6 +45,16 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
         {
             context.ReportNameGeneratorUnhandledError(exception);
         }
+    }
+
+    private static IEnumerable<AdditionalText> ResolveAdditionalFiles(GeneratorExecutionContext context)
+    {
+        return context
+            .AdditionalFiles
+            .Where(f => context.AnalyzerConfigOptions
+                .GetOptions(f)
+                .TryGetValue(SourceItemGroupMetadata, out var sourceItemGroup)
+                && sourceItemGroup == "AvaloniaXaml");
     }
 
     private static INameGenerator CreateNameGenerator(GeneratorExecutionContext context)

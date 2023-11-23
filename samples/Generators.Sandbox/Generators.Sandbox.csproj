@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -8,7 +8,7 @@
   <ItemGroup>
     <AvaloniaResource Include="**\*.xaml"/>
     <!-- Note this AdditionalFiles directive. -->
-    <AdditionalFiles Include="**\*.xaml"/>
+    <AdditionalFiles Include="**\*.xaml" SourceItemGroup="AvaloniaXaml" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
@@ -13,8 +12,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         public AvaloniaPropertyConverterTest()
         {
             // Ensure properties are registered.
-            var foo = Class1.FooProperty;
-            var attached = AttachedOwner.AttachedProperty;
+            _ = Class1.FooProperty;
+            _ = AttachedOwner.AttachedProperty;
         }
 
         [Fact]
@@ -114,13 +113,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         {
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>("Foo");
-
-            public ThemeVariant ThemeVariant 
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public event EventHandler ThemeVariantChanged;
         }
 
         private class AttachedOwner

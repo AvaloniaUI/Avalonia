@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <PackageId>Avalonia.X11</PackageId>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
-        <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
-        <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
-        <Compile Include="..\Shared\RawEventGrouping.cs" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
+    <Compile Include="..\Shared\RawEventGrouping.cs" />
   </ItemGroup>
   <Import Project="..\..\build\SourceGenerators.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />

@@ -147,8 +147,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public Size Extent
         {
-            get { return _extent; }
-            private set { SetAndRaise(ExtentProperty, ref _extent, value); }
+            get => _extent;
+            private set => SetAndRaise(ExtentProperty, ref _extent, value);
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public Size Viewport
         {
-            get { return _viewport; }
-            private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+            get => _viewport;
+            private set => SetAndRaise(ViewportProperty, ref _viewport, value);
         }
 
         /// <summary>
@@ -323,6 +323,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             _ownerSubscriptions?.Dispose();
+            _owner = owner;
 
             var subscriptionDisposables = new IDisposable?[]
             {
@@ -333,7 +334,6 @@ namespace Avalonia.Controls.Presenters
                 IfUnset(ContentProperty, p => Bind(p, owner.GetBindingObservable(ContentProperty), Data.BindingPriority.Template)),
             }.Where(d => d != null).Cast<IDisposable>().ToArray();
 
-            _owner = owner;
             _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
 
             static bool NotDisabled(ScrollBarVisibility v) => v != ScrollBarVisibility.Disabled;
@@ -473,18 +473,31 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
+            Extent = ComputeExtent(finalSize);
+            _isAnchorElementDirty = true;
 
+            return finalSize;
+        }
+
+        private Size ComputeExtent(Size viewportSize)
+        {
             var childMargin = Child!.Margin;
+
             if (Child.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(Child);
                 childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
             }
 
-            Extent = Child!.Bounds.Size.Inflate(childMargin);
-            _isAnchorElementDirty = true;
+            var extent = Child!.Bounds.Size.Inflate(childMargin);
 
-            return finalSize;
+            if (MathUtilities.AreClose(extent.Width, viewportSize.Width, LayoutHelper.LayoutEpsilon))
+                extent = extent.WithWidth(viewportSize.Width);
+
+            if (MathUtilities.AreClose(extent.Height, viewportSize.Height, LayoutHelper.LayoutEpsilon))
+                extent = extent.WithHeight(viewportSize.Height);
+
+            return extent;
         }
 
         private void OnScrollGesture(object? sender, ScrollGestureEventArgs e)

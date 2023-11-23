@@ -2,6 +2,7 @@
 #include "AvnString.h"
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
 -(AvnAppDelegate* _Nonnull) initWithEvents: (IAvnApplicationEvents* _Nonnull) events;
+-(void) releaseEvents;
 @end
 
 NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
@@ -13,6 +14,11 @@ ComPtr<IAvnApplicationEvents> _events;
 {
     _events = events;
     return self;
+}
+
+- (void)releaseEvents
+{
+    _events = nil;
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
@@ -102,6 +108,18 @@ extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDeleg
         NSApplication* app = [AvnApplication sharedApplication];
         id delegate = [[AvnAppDelegate alloc] initWithEvents:events];
         [app setDelegate:delegate];
+    }
+}
+
+extern void ReleaseAvnAppEvents()
+{
+    NSApplication* app = [AvnApplication sharedApplication];
+    id delegate = [app delegate];
+    if ([delegate isMemberOfClass:[AvnAppDelegate class]])
+    {
+        AvnAppDelegate* avnDelegate = delegate;
+        [avnDelegate releaseEvents];
+        [app setDelegate:nil];
     }
 }
 

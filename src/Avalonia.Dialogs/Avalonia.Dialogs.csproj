@@ -18,8 +18,8 @@
     <!-- For managed dialogs dev testing -->
     <InternalsVisibleTo Include="ControlCatalog, PublicKey=$(AvaloniaPublicKey)" />    
   </ItemGroup>
-  
-  <Import Project="..\..\build\ApiDiff.props" />
+
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

@@ -1,7 +1,7 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -12,7 +12,7 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class Bitmap : IBitmap, IImageBrushSource
     {
-        private bool _isTranscoded;
+        private readonly bool _isTranscoded;
         /// <summary>
         /// Loads a Bitmap from a stream and decodes at the desired width. Aspect ratio is maintained.
         /// This is more efficient than loading and then resizing.
@@ -108,19 +108,23 @@ namespace Avalonia.Media.Imaging
                 PlatformImpl = RefCountable.Create(factory.LoadBitmap(format, alphaFormat, data, size, dpi, stride));
             else
             {
-                var transcoded = Marshal.AllocHGlobal(size.Width * size.Height * 4);
-                var transcodedStride = size.Width * 4;
-                try
+                using (var transcoded = new BitmapMemory(PixelFormat.Rgba8888, Platform.AlphaFormat.Unpremul, size))
                 {
-                    PixelFormatReader.Transcode(transcoded, data, size, stride, transcodedStride, format);
-                    var transcodedAlphaFormat = format.HasAlpha ? alphaFormat : AlphaFormat.Opaque;
-                    
+                    var transcodedAlphaFormat = format.HasAlpha ? alphaFormat : Platform.AlphaFormat.Opaque;
+
+                    PixelFormatTranscoder.Transcode(
+                        data,
+                        size,
+                        stride,
+                        format,
+                        alphaFormat,
+                        transcoded.Address,
+                        transcoded.RowBytes,
+                        transcoded.Format,
+                        transcodedAlphaFormat);
+
                     PlatformImpl = RefCountable.Create(factory.LoadBitmap(PixelFormat.Rgba8888, transcodedAlphaFormat,
-                        transcoded, size, dpi, transcodedStride));
-                }
-                finally
-                {
-                    Marshal.FreeHGlobal(transcoded);
+                        transcoded.Address, size, dpi, transcoded.RowBytes));
                 }
 
                 _isTranscoded = true;
@@ -173,6 +177,8 @@ namespace Avalonia.Media.Imaging
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
 
+        public virtual AlphaFormat? AlphaFormat => (PlatformImpl.Item as IReadableBitmapWithAlphaImpl)?.AlphaFormat;
+
         private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
             ILockedFramebuffer fb)
         {
@@ -222,6 +228,44 @@ namespace Avalonia.Media.Imaging
                 CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
         }
 
+        /// <summary>
+        /// Copies pixels to the target buffer and transcodes the pixel and alpha format if needed.
+        /// </summary>
+        /// <param name="buffer">The target buffer.</param>
+        /// <param name="alphaFormat">The alpha format.</param>
+        /// <exception cref="NotSupportedException"></exception>
+        public void CopyPixels(ILockedFramebuffer buffer, AlphaFormat alphaFormat)
+        {
+            if (PlatformImpl.Item is not IReadableBitmapWithAlphaImpl readable || readable.Format == null || readable.AlphaFormat == null)
+            {
+                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
+            }
+
+            if (buffer.Format != readable.Format || alphaFormat != readable.AlphaFormat)
+            {
+                using (var fb = readable.Lock())
+                {
+                    PixelFormatTranscoder.Transcode(
+                        fb.Address,
+                        fb.Size,
+                        fb.RowBytes,
+                        fb.Format,
+                        readable.AlphaFormat.Value, 
+                        buffer.Address, 
+                        buffer.RowBytes,
+                        buffer.Format,
+                        alphaFormat);
+                }
+            }
+            else
+            {
+                using (var fb = readable.Lock())
+                {
+                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, fb.RowBytes, fb);
+                }
+            }
+        }
+
         /// <inheritdoc/>
         void IImage.Draw(
             DrawingContext context,
@@ -240,6 +284,16 @@ namespace Avalonia.Media.Imaging
             return AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
 
-        IRef<IBitmapImpl> IImageBrushSource.Bitmap => PlatformImpl;
+        IRef<IBitmapImpl>? IImageBrushSource.Bitmap
+        {
+            get
+            {
+                // TODO12: We should probably make PlatformImpl to be nullable or make it possible to check
+                // and fix IRef<T> in general (right now Item is not nullable while it internally is)
+                if (PlatformImpl.Item == null!)
+                    return null;
+                return PlatformImpl;
+            }
+        }
     }
 }

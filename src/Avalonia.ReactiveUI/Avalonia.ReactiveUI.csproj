@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-    <PackageId>Avalonia.ReactiveUI</PackageId>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
@@ -9,7 +8,6 @@
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ReactiveUI.props" />
-  <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />

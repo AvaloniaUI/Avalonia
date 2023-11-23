@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-    <PackageId>Avalonia.Controls.DataGrid</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
@@ -14,7 +13,6 @@
   </ItemGroup>
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
 
   <ItemGroup Label="InternalsVisibleTo">

@@ -8,12 +8,13 @@ namespace Avalonia.Media
         public EdgeMode EdgeMode { get; init; }
         public TextRenderingMode TextRenderingMode { get; init; }
         public BitmapBlendingMode BitmapBlendingMode { get; init; }
+        public bool? RequiresFullOpacityHandling { get; init; }
 
         /// <summary>
         /// Gets the value of the BitmapInterpolationMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
-        /// <returns>The control's left coordinate.</returns>
+        /// <returns>The value.</returns>
         public static BitmapInterpolationMode GetBitmapInterpolationMode(Visual visual)
         {
             return visual.RenderOptions.BitmapInterpolationMode;
@@ -23,7 +24,7 @@ namespace Avalonia.Media
         /// Sets the value of the BitmapInterpolationMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
-        /// <param name="value">The left value.</param>
+        /// <param name="value">The value.</param>
         public static void SetBitmapInterpolationMode(Visual visual, BitmapInterpolationMode value)
         {
             visual.RenderOptions = visual.RenderOptions with { BitmapInterpolationMode = value };
@@ -33,7 +34,7 @@ namespace Avalonia.Media
         /// Gets the value of the BitmapBlendingMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
-        /// <returns>The control's left coordinate.</returns>
+        /// <returns>The value.</returns>
         public static BitmapBlendingMode GetBitmapBlendingMode(Visual visual)
         {
             return visual.RenderOptions.BitmapBlendingMode;
@@ -53,7 +54,7 @@ namespace Avalonia.Media
         /// Gets the value of the EdgeMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
-        /// <returns>The control's left coordinate.</returns>
+        /// <returns>The value.</returns>
         public static EdgeMode GetEdgeMode(Visual visual)
         {
             return visual.RenderOptions.EdgeMode;
@@ -63,7 +64,7 @@ namespace Avalonia.Media
         /// Sets the value of the EdgeMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
-        /// <param name="value">The left value.</param>
+        /// <param name="value">The value.</param>
         public static void SetEdgeMode(Visual visual, EdgeMode value)
         {
             visual.RenderOptions = visual.RenderOptions with { EdgeMode = value };
@@ -73,7 +74,7 @@ namespace Avalonia.Media
         /// Gets the value of the TextRenderingMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
-        /// <returns>The control's left coordinate.</returns>
+        /// <returns>The value.</returns>
         public static TextRenderingMode GetTextRenderingMode(Visual visual)
         {
             return visual.RenderOptions.TextRenderingMode;
@@ -83,10 +84,30 @@ namespace Avalonia.Media
         /// Sets the value of the TextRenderingMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
-        /// <param name="value">The left value.</param>
+        /// <param name="value">The value.</param>
         public static void SetTextRenderingMode(Visual visual, TextRenderingMode value)
         {
             visual.RenderOptions = visual.RenderOptions with { TextRenderingMode = value };
+        }
+
+        /// <summary>
+        /// Gets the value of the RequiresFullOpacityHandling attached property for a visual.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <returns>The value.</returns>
+        public static bool? GetRequiresFullOpacityHandling(Visual visual)
+        {
+            return visual.RenderOptions.RequiresFullOpacityHandling;
+        }
+
+        /// <summary>
+        /// Sets the value of the RequiresFullOpacityHandling attached property for a visual.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <param name="value">The value.</param>
+        public static void SetRequiresFullOpacityHandling(Visual visual, bool? value)
+        {
+            visual.RenderOptions = visual.RenderOptions with { RequiresFullOpacityHandling = value };
         }
 
         public RenderOptions MergeWith(RenderOptions other)
@@ -119,12 +140,20 @@ namespace Avalonia.Media
                 bitmapBlendingMode = other.BitmapBlendingMode;
             }
 
+            var requiresFullOpacityHandling = RequiresFullOpacityHandling;
+
+            if (requiresFullOpacityHandling == null)
+            {
+                requiresFullOpacityHandling = other.RequiresFullOpacityHandling;
+            }
+
             return new RenderOptions
             {
                 BitmapInterpolationMode = bitmapInterpolationMode,
                 EdgeMode = edgeMode,
                 TextRenderingMode = textRenderingMode,
-                BitmapBlendingMode = bitmapBlendingMode
+                BitmapBlendingMode = bitmapBlendingMode,
+                RequiresFullOpacityHandling = requiresFullOpacityHandling
             };
         }
     }

@@ -10,7 +10,7 @@ internal class InsetsManager : IInsetsManager
 {
     private readonly AvaloniaView _view;
     private IAvaloniaViewController? _controller;
-    private bool _displayEdgeToEdge;
+    private bool _displayEdgeToEdge = true;
 
     public InsetsManager(AvaloniaView view)
     {
@@ -27,29 +27,6 @@ internal class InsetsManager : IInsetsManager
                 SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
                 DisplayEdgeToEdgeChanged?.Invoke(this, _displayEdgeToEdge);
             };
-        }
-    }
-
-    public SystemBarTheme? SystemBarTheme
-    {
-        get => _controller?.PreferredStatusBarStyle switch
-        {
-            UIStatusBarStyle.LightContent => Controls.Platform.SystemBarTheme.Dark,
-            UIStatusBarStyle.DarkContent => Controls.Platform.SystemBarTheme.Light,
-            _ => null
-        };
-        set
-        {
-            if (_controller != null)
-            {
-                _controller.PreferredStatusBarStyle = value switch
-                {
-                    Controls.Platform.SystemBarTheme.Light => UIStatusBarStyle.DarkContent,
-                    Controls.Platform.SystemBarTheme.Dark => UIStatusBarStyle.LightContent,
-                    null => UIStatusBarStyle.Default,
-                    _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
-                };
-            }
         }
     }
 
@@ -76,11 +53,12 @@ internal class InsetsManager : IInsetsManager
             {
                 _displayEdgeToEdge = value;
                 DisplayEdgeToEdgeChanged?.Invoke(this, value);
+                SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
             }
         }
     }
 
-    public Thickness SafeAreaPadding => _controller?.SafeAreaPadding ?? default;
+    public Thickness SafeAreaPadding => _displayEdgeToEdge ? _controller?.SafeAreaPadding ?? default : default;
 
     public Color? SystemBarColor { get; set; }
 }

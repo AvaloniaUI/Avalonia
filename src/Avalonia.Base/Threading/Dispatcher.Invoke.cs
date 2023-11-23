@@ -98,7 +98,7 @@ public partial class Dispatcher
         if (timeout.TotalMilliseconds < 0 &&
             timeout != TimeSpan.FromMilliseconds(-1))
         {
-            throw new ArgumentOutOfRangeException("timeout");
+            throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
         // Fast-Path: if on the same thread, and invoking at Send priority,
@@ -106,7 +106,7 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            using (AvaloniaSynchronizationContext.Ensure(priority))
+            using (AvaloniaSynchronizationContext.Ensure(this, priority))
                 callback();
             return;
         }
@@ -120,6 +120,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -138,6 +139,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -158,6 +160,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -185,6 +188,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -220,7 +224,7 @@ public partial class Dispatcher
         if (timeout.TotalMilliseconds < 0 &&
             timeout != TimeSpan.FromMilliseconds(-1))
         {
-            throw new ArgumentOutOfRangeException("timeout");
+            throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
         // Fast-Path: if on the same thread, and invoking at Send priority,
@@ -228,7 +232,7 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            using (AvaloniaSynchronizationContext.Ensure(priority))
+            using (AvaloniaSynchronizationContext.Ensure(this, priority))
                 return callback();
         }
 
@@ -319,6 +323,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -357,6 +362,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -619,4 +625,16 @@ public partial class Dispatcher
         _ = action ?? throw new ArgumentNullException(nameof(action));
         InvokeAsyncImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true), CancellationToken.None);
     }
+
+    /// <summary>
+    /// Returns a task awaitable that would invoke continuation on specified dispatcher priority
+    /// </summary>
+    public DispatcherPriorityAwaitable AwaitWithPriority(Task task, DispatcherPriority priority) =>
+        new(this, task, priority);
+    
+    /// <summary>
+    /// Returns a task awaitable that would invoke continuation on specified dispatcher priority
+    /// </summary>
+    public DispatcherPriorityAwaitable<T> AwaitWithPriority<T>(Task<T> task, DispatcherPriority priority) =>
+        new(this, task, priority);
 }

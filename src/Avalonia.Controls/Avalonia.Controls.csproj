@@ -6,7 +6,6 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" />
   </ItemGroup>
-  <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />

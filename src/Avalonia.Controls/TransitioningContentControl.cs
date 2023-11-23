@@ -15,6 +15,7 @@ namespace Avalonia.Controls;
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _currentTransition;
+    private ContentPresenter? _lastPresenter;
     private ContentPresenter? _presenter2;
     private bool _isFirstFull;
     private bool _shouldAnimate;
@@ -28,12 +29,30 @@ public class TransitioningContentControl : ContentControl
             defaultValue: new ImmutableCrossFade(TimeSpan.FromMilliseconds(125)));
 
     /// <summary>
+    /// Defines the <see cref="IsTransitionReversed"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsTransitionReversedProperty =
+        AvaloniaProperty.Register<TransitioningContentControl, bool>(
+            nameof(IsTransitionReversed),
+            defaultValue: false);
+
+    /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
     /// </summary>
     public IPageTransition? PageTransition
     {
         get => GetValue(PageTransitionProperty);
         set => SetValue(PageTransitionProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the control will be animated in the reverse direction.
+    /// </summary>
+    /// <remarks>May not apply to all transitions.</remarks>
+    public bool IsTransitionReversed
+    {
+        get => GetValue(IsTransitionReversedProperty);
+        set => SetValue(IsTransitionReversedProperty, value);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -56,7 +75,7 @@ public class TransitioningContentControl : ContentControl
                 var from = _isFirstFull ? _presenter2 : presenter;
                 var to = _isFirstFull ? presenter : _presenter2;
 
-                transition.Start(from, to, true, cancel.Token).ContinueWith(x =>
+                transition.Start(from, to, !IsTransitionReversed, cancel.Token).ContinueWith(x =>
                 {
                     if (!cancel.IsCancellationRequested)
                     {
@@ -79,8 +98,12 @@ public class TransitioningContentControl : ContentControl
 
     protected override bool RegisterContentPresenter(ContentPresenter presenter)
     {
-        if (!base.RegisterContentPresenter(presenter) &&
-            presenter is ContentPresenter p &&
+        if (base.RegisterContentPresenter(presenter))
+        {
+            return true;
+        }
+
+        if (presenter is ContentPresenter p &&
             p.Name == "PART_ContentPresenter2")
         {
             _presenter2 = p;
@@ -94,12 +117,13 @@ public class TransitioningContentControl : ContentControl
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-
         if (change.Property == ContentProperty)
         {
             UpdateContent(true);
+            return;
         }
+
+        base.OnPropertyChanged(change);
     }
 
     private void UpdateContent(bool withTransition)
@@ -110,8 +134,15 @@ public class TransitioningContentControl : ContentControl
         }
 
         var currentPresenter = _isFirstFull ? _presenter2 : Presenter;
+
+        if (_lastPresenter != null &&
+            _lastPresenter != currentPresenter &&
+            _lastPresenter.Content == Content)
+            _lastPresenter.Content = null;
+
         currentPresenter.Content = Content;
         currentPresenter.IsVisible = true;
+        _lastPresenter = currentPresenter;
 
         _isFirstFull = !_isFirstFull;
 

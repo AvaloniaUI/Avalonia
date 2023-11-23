@@ -47,7 +47,7 @@ namespace Avalonia.Animation
         public TimeSpan Duration { get; set; }
 
         /// <summary>
-        /// Gets the duration of the animation.
+        /// Gets the orientation of the animation.
         /// </summary>
         public SlideAxis Orientation { get; set; }
         

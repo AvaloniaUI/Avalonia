@@ -4,6 +4,7 @@ using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -42,7 +43,19 @@ namespace Avalonia.Controls
 
         static ContentControl()
         {
-            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
+            TemplateProperty.OverrideDefaultValue<ContentControl>(new FuncControlTemplate((_, ns) => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [~BackgroundProperty] = new TemplateBinding(BackgroundProperty),
+                [~BorderBrushProperty] = new TemplateBinding(BorderBrushProperty),
+                [~BorderThicknessProperty] = new TemplateBinding(BorderThicknessProperty),
+                [~CornerRadiusProperty] = new TemplateBinding(CornerRadiusProperty),
+                [~ContentTemplateProperty] = new TemplateBinding(ContentTemplateProperty),
+                [~ContentProperty] = new TemplateBinding(ContentProperty),
+                [~PaddingProperty] = new TemplateBinding(PaddingProperty),
+                [~VerticalContentAlignmentProperty] = new TemplateBinding(VerticalContentAlignmentProperty),
+                [~HorizontalContentAlignmentProperty] = new TemplateBinding(HorizontalContentAlignmentProperty)
+            }.RegisterInNameScope(ns)));
         }
 
         /// <summary>
@@ -52,8 +65,8 @@ namespace Avalonia.Controls
         [DependsOn(nameof(ContentTemplate))]
         public object? Content
         {
-            get { return GetValue(ContentProperty); }
-            set { SetValue(ContentProperty, value); }
+            get => GetValue(ContentProperty);
+            set => SetValue(ContentProperty, value);
         }
 
         /// <summary>
@@ -61,8 +74,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? ContentTemplate
         {
-            get { return GetValue(ContentTemplateProperty); }
-            set { SetValue(ContentTemplateProperty, value); }
+            get => GetValue(ContentTemplateProperty);
+            set => SetValue(ContentTemplateProperty, value);
         }
 
         /// <summary>
@@ -79,8 +92,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -88,8 +101,8 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
         /// <inheritdoc/>
@@ -99,6 +112,16 @@ namespace Avalonia.Controls
         bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
+        }
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ContentProperty)
+            {
+                ContentChanged(change);
+            }
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls.Platform;
 using Avalonia.Utilities;
 
+
 namespace Avalonia.Dialogs.Internal
 {
     internal class ManagedFileChooserSources
@@ -26,7 +27,7 @@ namespace Avalonia.Dialogs.Internal
             return sources.GetUserDirectories().Concat(sources.GetFileSystemRoots()).ToArray();
         }
 
-        private static Environment.SpecialFolder[] s_folders = new[]
+        private static readonly Environment.SpecialFolder[] s_folders = new[]
         {
             Environment.SpecialFolder.Desktop,
             Environment.SpecialFolder.UserProfile,
@@ -63,7 +64,7 @@ namespace Avalonia.Dialogs.Internal
 
                        try
                        {
-                           Directory.GetFiles(x.VolumePath);
+                           Directory.GetFiles(x.VolumePath!);
                        }
                        catch (Exception)
                        {
@@ -78,7 +79,7 @@ namespace Avalonia.Dialogs.Internal
                        };
                    })
                    .Where(x => x != null)
-                   .ToArray();
+                   .ToArray()!;
         }
     }
 }

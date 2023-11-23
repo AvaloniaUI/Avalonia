@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
-using SdBitmap = System.Drawing.Bitmap;
-using SdPixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace Avalonia.Win32
 {
@@ -34,7 +35,7 @@ namespace Avalonia.Win32
                 IntPtr cursor = UnmanagedMethods.LoadCursor(mh, new IntPtr(id));
                 if (cursor != IntPtr.Zero)
                 {
-                    Cache.Add(cursorType, new CursorImpl(cursor, false));
+                    Cache.Add(cursorType, new CursorImpl(cursor));
                 }
             }
         }
@@ -82,8 +83,7 @@ namespace Avalonia.Win32
             if (!Cache.TryGetValue(cursorType, out var rv))
             {
                 rv = new CursorImpl(
-                    UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(CursorTypeMapping[cursorType])),
-                    false);
+                    UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(CursorTypeMapping[cursorType])));
                 Cache.Add(cursorType, rv);
             }
 
@@ -92,89 +92,22 @@ namespace Avalonia.Win32
 
         public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
         {
-            using var source = LoadSystemDrawingBitmap(cursor);
-            using var mask = AlphaToMask(source);
-
-            var info = new UnmanagedMethods.ICONINFO
-            {
-                IsIcon = false,
-                xHotspot = hotSpot.X,
-                yHotspot = hotSpot.Y,
-                MaskBitmap = mask.GetHbitmap(),
-                ColorBitmap = source.GetHbitmap(),
-            };
-
-            return new CursorImpl(UnmanagedMethods.CreateIconIndirect(ref info), true);
-        }
-
-        private static SdBitmap LoadSystemDrawingBitmap(IBitmapImpl bitmap)
-        {
-            using var memoryStream = new MemoryStream();
-            bitmap.Save(memoryStream);
-            return new SdBitmap(memoryStream);
-        }
-
-        private unsafe SdBitmap AlphaToMask(SdBitmap source)
-        {
-            var dest = new SdBitmap(source.Width, source.Height, SdPixelFormat.Format1bppIndexed);
-
-            if (source.PixelFormat == SdPixelFormat.Format32bppPArgb)
-            {
-                throw new NotSupportedException(
-                    "Images with premultiplied alpha not yet supported as cursor images.");
-            }
-
-            if (source.PixelFormat != SdPixelFormat.Format32bppArgb)
-            {
-                return dest;
-            }
-
-            var sourceData = source.LockBits(
-                new Rectangle(default, source.Size),
-                ImageLockMode.ReadOnly,
-                SdPixelFormat.Format32bppArgb);
-            var destData = dest.LockBits(
-                new Rectangle(default, source.Size),
-                ImageLockMode.ReadOnly,
-                SdPixelFormat.Format1bppIndexed);
-
-            try
-            {
-                var pSource = (byte*)sourceData.Scan0.ToPointer();
-                var pDest = (byte*)destData.Scan0.ToPointer();
-
-                for (var y = 0; y < dest.Height; ++y)
-                {
-                    for (var x = 0; x < dest.Width; ++x)
-                    {
-                        if (pSource[x * 4] == 0)
-                        {
-                            pDest[x / 8] |= (byte)(1 << (x % 8));
-                        }
-                    }
-
-                    pSource += sourceData.Stride;
-                    pDest += destData.Stride;
-                }
-
-                return dest;
-            }
-            finally
-            {
-                source.UnlockBits(sourceData);
-                dest.UnlockBits(destData);
-            }
+            return new CursorImpl(new Win32Icon(cursor, hotSpot));
         }
     }
 
     internal class CursorImpl : ICursorImpl, IPlatformHandle
     {
-        private readonly bool _isCustom;
+        private Win32Icon? _icon;
 
-        public CursorImpl(IntPtr handle, bool isCustom)
+        public CursorImpl(Win32Icon icon) : this(icon.Handle)
+        {
+            _icon = icon;
+        }
+        
+        public CursorImpl(IntPtr handle)
         {
             Handle = handle;
-            _isCustom = isCustom;
         }
 
         public IntPtr Handle { get; private set; }
@@ -182,9 +115,10 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            if (_isCustom && Handle != IntPtr.Zero)
+            if (_icon != null)
             {
-                UnmanagedMethods.DestroyIcon(Handle);
+                _icon.Dispose();
+                _icon = null;
                 Handle = IntPtr.Zero;
             }
         }

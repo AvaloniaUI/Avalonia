@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="Avalonia.BuildServices" Version="0.0.28" />
+      <PackageReference Include="Avalonia.BuildServices" Version="0.0.29" />
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj">
         <PrivateAssets>all</PrivateAssets>
@@ -57,6 +57,10 @@
       <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>
     <Content Include="AvaloniaItemSchema.xaml">
+      <Pack>true</Pack>
+      <PackagePath>build\;buildTransitive\</PackagePath>
+    </Content>
+    <Content Include="AvaloniaRules.Project.xml">
       <Pack>true</Pack>
       <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>

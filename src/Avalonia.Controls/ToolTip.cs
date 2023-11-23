@@ -3,6 +3,7 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -227,6 +228,7 @@ namespace Avalonia.Controls
 
                     toolTip = tip as ToolTip ?? new ToolTip { Content = tip };
                     control.SetValue(ToolTipProperty, toolTip);
+                    toolTip.SetValue(ThemeVariant.RequestedThemeVariantProperty, control.ActualThemeVariant);
                 }
 
                 toolTip.Open(control);

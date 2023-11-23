@@ -1,11 +1,10 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia.Compatibility;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -41,14 +40,13 @@ namespace Avalonia.Native
         {
             if (options.AvaloniaNativeLibraryPath != null)
             {
-                var loader = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                    (IDynLoader)new Win32Loader() :
-                    new UnixLoader();
-
-                var lib = loader.LoadLibrary(options.AvaloniaNativeLibraryPath);
-                var proc = loader.GetProcAddress(lib, "CreateAvaloniaNative", false);
+                var lib = NativeLibraryEx.Load(options.AvaloniaNativeLibraryPath);
+                if (!NativeLibraryEx.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
+                {
+                    throw new InvalidOperationException(
+                        "Unable to get \"CreateAvaloniaNative\" export from AvaloniaNativeLibrary library");
+                }
                 var d = Marshal.GetDelegateForFunctionPointer<CreateAvaloniaNativeDelegate>(proc);
-
 
                 return Initialize(d(), options);
             }
@@ -110,7 +108,7 @@ namespace Avalonia.Native
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer())))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
@@ -163,6 +161,14 @@ namespace Avalonia.Native
             
 
             Compositor = new Compositor(_platformGraphics, true);
+
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        }
+
+        private void OnProcessExit(object? sender, EventArgs e)
+        {
+            AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+            _factory.Dispose();
         }
 
         public ITrayIconImpl CreateTrayIcon()

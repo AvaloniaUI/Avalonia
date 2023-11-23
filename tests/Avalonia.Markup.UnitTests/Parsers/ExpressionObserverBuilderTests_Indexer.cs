@@ -369,10 +369,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
 
             public string this[string key]
             {
-                get
-                {
-                    return _storage[key];
-                }
+                get => _storage[key];
                 set
                 {
                     _storage[key] = value;

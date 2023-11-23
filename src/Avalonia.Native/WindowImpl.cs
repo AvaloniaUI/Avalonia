@@ -1,21 +1,17 @@
 ﻿using System;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
-using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
     internal class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly AvaloniaNativeGlPlatformGraphics _graphics;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;

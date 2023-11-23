@@ -32,12 +32,14 @@ extern IAvnApplicationCommands* CreateApplicationCommands();
 extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern IAvnPlatformSettings* CreatePlatformSettings();
+extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer();
 extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
 
 extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate);
+extern void ReleaseAvnAppEvents();
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
 extern NSRect ToNSRect (AvnRect r);

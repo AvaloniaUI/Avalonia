@@ -112,11 +112,11 @@ public partial class DispatcherTimer
             bool updateOSTimer = false;
 
             if (value.TotalMilliseconds < 0)
-                throw new ArgumentOutOfRangeException("value",
+                throw new ArgumentOutOfRangeException(nameof(value),
                     "TimeSpan period must be greater than or equal to zero.");
 
             if (value.TotalMilliseconds > Int32.MaxValue)
-                throw new ArgumentOutOfRangeException("value",
+                throw new ArgumentOutOfRangeException(nameof(value),
                     "TimeSpan period must be less than or equal to Int32.MaxValue.");
 
             lock (_instanceLock)
@@ -259,14 +259,14 @@ public partial class DispatcherTimer
         DispatcherPriority.Validate(priority, "priority");
         if (priority == DispatcherPriority.Inactive)
         {
-            throw new ArgumentException("Specified priority is not valid.", "priority");
+            throw new ArgumentException("Specified priority is not valid.", nameof(priority));
         }
 
         if (interval.TotalMilliseconds < 0)
-            throw new ArgumentOutOfRangeException("interval", "TimeSpan period must be greater than or equal to zero.");
+            throw new ArgumentOutOfRangeException(nameof(interval), "TimeSpan period must be greater than or equal to zero.");
 
         if (interval.TotalMilliseconds > Int32.MaxValue)
-            throw new ArgumentOutOfRangeException("interval",
+            throw new ArgumentOutOfRangeException(nameof(interval),
                 "TimeSpan period must be less than or equal to Int32.MaxValue.");
 
 
@@ -334,15 +334,15 @@ public partial class DispatcherTimer
     }
 
     // This is the object we use to synchronize access.
-    private object _instanceLock = new object();
+    private readonly object _instanceLock = new object();
 
     // Note: We cannot BE a dispatcher-affinity object because we can be
     // created by a worker thread.  We are still associated with a
     // dispatcher (where we post the item) but we can be accessed
     // by any thread.
-    private Dispatcher _dispatcher;
+    private readonly Dispatcher _dispatcher;
 
-    private DispatcherPriority _priority; // NOTE: should be Priority
+    private readonly DispatcherPriority _priority; // NOTE: should be Priority
     private TimeSpan _interval;
     private DispatcherOperation? _operation;
     private bool _isEnabled;

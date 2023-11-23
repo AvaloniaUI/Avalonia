@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Skia.Helpers;
+using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -43,46 +45,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool StrokeContains(IPen? pen, Point point)
         {
-            // Skia requires to compute stroke path to check for point containment.
-            // Due to that we are caching using stroke width.
-            // Usually this function is being called with same stroke width per path, so this saves a lot of Skia traffic.
+            _pathCache.UpdateIfNeeded(StrokePath, pen);
 
-            var strokeWidth = (float)(pen?.Thickness ?? 0);
-
-            if (!_pathCache.HasCacheFor(strokeWidth))
-            {
-                UpdatePathCache(strokeWidth);
-            }
-
-            return PathContainsCore(_pathCache.CachedStrokePath, point);
+            return PathContainsCore(_pathCache.ExpandedPath, point);
         }
-
-        /// <summary>
-        /// Update path cache for given stroke width.
-        /// </summary>
-        /// <param name="strokeWidth">Stroke width.</param>
-        private void UpdatePathCache(float strokeWidth)
-        {
-            var strokePath = new SKPath();
-
-            // For stroke widths close to 0 simply use empty path. Render bounds are cached from fill path.
-            if (Math.Abs(strokeWidth) < float.Epsilon)
-            {
-                _pathCache.Cache(strokePath, strokeWidth, Bounds);
-            }
-            else
-            {
-                var paint = SKPaintCache.Shared.Get();
-                paint.IsStroke = true;
-                paint.StrokeWidth = strokeWidth;
-                paint.GetFillPath(StrokePath, strokePath);
-
-                SKPaintCache.Shared.ReturnReset(paint);
-
-                _pathCache.Cache(strokePath, strokeWidth, strokePath.TightBounds.ToAvaloniaRect());
-            }
-        }
-
+        
         /// <summary>
         /// Check Skia path if it contains a point.
         /// </summary>
@@ -106,14 +73,21 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Rect GetRenderBounds(IPen? pen)
         {
-            var strokeWidth = (float)(pen?.Thickness ?? 0);
+            _pathCache.UpdateIfNeeded(StrokePath, pen);
+            return _pathCache.RenderBounds;
+        }
 
-            if (!_pathCache.HasCacheFor(strokeWidth))
+        public IGeometryImpl GetWidenedGeometry(IPen pen)
+        {
+            if (StrokePath is not null && SKPathHelper.CreateStrokedPath(StrokePath, pen) is { } path)
             {
-                UpdatePathCache(strokeWidth);
+                // The path returned to us by skia here does not have closed figures.
+                // Fix that by calling CreateClosedPath.
+                var closed = SKPathHelper.CreateClosedPath(path);
+                return new StreamGeometryImpl(closed, closed);
             }
-
-            return _pathCache.CachedGeometryRenderBounds;
+            
+            return new StreamGeometryImpl(new SKPath(), null);
         }
 
         /// <inheritdoc />
@@ -180,65 +154,46 @@ namespace Avalonia.Skia
         /// </summary>
         protected void InvalidateCaches()
         {
-            _pathCache.Invalidate();
+            _pathCache.Dispose();
+            _pathCache = default;
         }
 
-        private struct PathCache
+        private struct PathCache : IDisposable
         {
-            private float _cachedStrokeWidth;
+            private int _penHash;
+            private SKPath? _path, _cachedFor;
+            private Rect? _renderBounds;
+            private static readonly SKPath s_emptyPath = new();
+            
+            public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).Bounds.ToAvaloniaRect();
+            public SKPath ExpandedPath => _path ?? s_emptyPath;
 
-            /// <summary>
-            /// Tolerance for two stroke widths to be deemed equal
-            /// </summary>
-            public const float Tolerance = float.Epsilon;
-
-            /// <summary>
-            /// Cached contour path.
-            /// </summary>
-            public SKPath? CachedStrokePath { get; private set; }
-
-            /// <summary>
-            /// Cached geometry render bounds.
-            /// </summary>
-            public Rect CachedGeometryRenderBounds { get; private set; }
-
-            /// <summary>
-            /// Is cached valid for given stroke width.
-            /// </summary>
-            /// <param name="strokeWidth">Stroke width to check.</param>
-            /// <returns>True, if CachedStrokePath can be used for given stroke width.</returns>
-            public bool HasCacheFor(float strokeWidth)
+            public void UpdateIfNeeded(SKPath? strokePath, IPen? pen)
             {
-                return CachedStrokePath != null && Math.Abs(_cachedStrokeWidth - strokeWidth) < Tolerance;
-            }
-
-            /// <summary>
-            /// Cache path for given stroke width. Takes ownership of a passed path.
-            /// </summary>
-            /// <param name="path">Path to cache.</param>
-            /// <param name="strokeWidth">Stroke width to cache.</param>
-            /// <param name="geometryRenderBounds">Render bounds to use.</param>
-            public void Cache(SKPath path, float strokeWidth, Rect geometryRenderBounds)
-            {
-                if (CachedStrokePath != path)
+                if (PenHelper.GetHashCode(pen, includeBrush: false) is { } penHash &&
+                    penHash == _penHash &&
+                    strokePath == _cachedFor)
                 {
-                    CachedStrokePath?.Dispose();
+                    // We are up to date
+                    return;
                 }
 
-                CachedStrokePath = path;
-                CachedGeometryRenderBounds = geometryRenderBounds;
-                _cachedStrokeWidth = strokeWidth;
+                _renderBounds = null;
+                _cachedFor = strokePath;
+                _penHash = penHash;
+                _path?.Dispose();
+
+                if (strokePath is not null && pen is not null)
+                    _path = SKPathHelper.CreateStrokedPath(strokePath, pen);
+                else
+                    _path = null;
+
             }
 
-            /// <summary>
-            /// Invalidate cache state.
-            /// </summary>
-            public void Invalidate()
+            public void Dispose()
             {
-                CachedStrokePath?.Dispose();
-                CachedStrokePath = null;
-                CachedGeometryRenderBounds = default;
-                _cachedStrokeWidth = default;
+                _path?.Dispose();
+                _path = null;
             }
         }
     }

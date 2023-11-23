@@ -23,6 +23,8 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private SimpleWebSocket _pendingSocket;
         private bool _disposed;
         private object _lock = new object();
+        private Uri _listenUri;
+        private Guid _secretCookie;
         private AutoResetEvent _wakeup = new AutoResetEvent(false);
         private FrameMessage _lastFrameMessage = null;
         private FrameMessage _lastSentFrameMessage = null;
@@ -42,6 +44,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             if (listenUri.Scheme != "http")
                 throw new ArgumentException("URI scheme is not HTTP.", nameof(listenUri));
 
+            _listenUri = listenUri;
             var resourcePrefix = "Avalonia.DesignerSupport.Remote.HtmlTransport.webapp.build.";
             _resources = typeof(HtmlWebSocketTransport).Assembly.GetManifestResourceNames()
                 .Where(r => r.StartsWith(resourcePrefix, StringComparison.OrdinalIgnoreCase)
@@ -57,10 +60,21 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                         {
                             var ms = new MemoryStream();
                             s.CopyTo(ms);
-                            return ms.ToArray();
+                            var currentIndexBytes = ms.ToArray();
+                            if (r == resourcePrefix + "index.html.gz" && ms.CanWrite)
+                            { 
+                                _secretCookie = Guid.NewGuid();
+                                var resultIndexString = Encoding.Default.GetString(currentIndexBytes)
+                                                                        .Replace("PREVIEWER_SECURITY_COOKIE", _secretCookie.ToString());
+                                var resultIndexBytes = Encoding.UTF8.GetBytes(resultIndexString);
+                                
+                                ms.Write(resultIndexBytes, 0, resultIndexBytes.Length);
+                                return resultIndexBytes;
+                            }
+                            return currentIndexBytes;
                         }
                     });
-            
+
             _signalTransport = signalTransport;
             var address = IPAddress.Parse(listenUri.Host);
             
@@ -98,29 +112,48 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     }
                     else
                     {
-                        var socket = await req.AcceptWebSocket();
-                        SocketReceiveWorker(socket);
-                        lock (_lock)
+                        if (IsValidOrigin(req))
                         {
-                            _pendingSocket?.Dispose();
-                            _pendingSocket = socket;
+                            var socket = await req.AcceptWebSocket();
+                            SocketReceiveWorker(socket);
+                            lock (_lock)
+                            {
+                                _pendingSocket?.Dispose();
+                                _pendingSocket = socket;
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Origin doesn't match Url");
                         }
                     }
                 }
             }
+        }
+        
+        bool IsValidOrigin(SimpleWebSocketHttpRequest request)
+        {
+            return request.Headers.TryGetValue("Origin", out var origin) &&
+                   (origin == _listenUri.OriginalString || origin.StartsWith("vscode-webview:"));
         }
 
         async void SocketReceiveWorker(SimpleWebSocket socket)
         {
             try
             {
+                if((await socket.ReceiveMessage().ConfigureAwait(false)).AsString() != _secretCookie.ToString())
+                {
+                    socket.Dispose();
+                    return;
+                }
+
                 while (true)
                 {
                     var msg = await socket.ReceiveMessage().ConfigureAwait(false);
                     if(msg != null && msg.IsText)
                     {
                         var message = ParseMessage(msg.AsString());
-                        if (message != null)
+                        if (message != null) 
                             _onMessage?.Invoke(this, message);
                     }
                 }

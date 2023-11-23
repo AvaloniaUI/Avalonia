@@ -17,6 +17,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -29,19 +30,19 @@ namespace Avalonia.X11
             new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
-        public IX11Screens X11Screens { get; private set; }
+        public X11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        public XResources Resources { get; private set; }
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
-        [DllImport("libc")]
-        private static extern void setlocale(int type, string s);
+
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
-            
+
             bool useXim = false;
             if (EnableIme(options))
             {
@@ -49,9 +50,6 @@ namespace Avalonia.X11
                 if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
                     useXim = true;
             }
-
-            // We have problems with text input otherwise
-            setlocale(0, "");
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
@@ -64,9 +62,10 @@ namespace Avalonia.X11
             OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
                 IntPtr.Zero);
             XError.Init();
-            
+
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
+            Resources = new XResources(this);
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
@@ -84,8 +83,7 @@ namespace Avalonia.X11
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = X11.X11Screens.Init(this);
-            Screens = new X11Screens(X11Screens);
+            Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
                 var xi2 = new XI2Manager();
@@ -285,7 +283,13 @@ namespace Avalonia
         /// Input method editor is a component that enables users to generate characters not natively available 
         /// on their input devices by using sequences of characters or mouse operations that are natively available on their input devices.
         /// </remarks>
-        public bool? EnableIme { get; set; }
+        public bool? EnableIme { get; set; } = true;
+
+        /// <summary>
+        /// Determines whether to use Input Focus Proxy.
+        /// The default value is false.
+        /// </summary> 
+        public bool EnableInputFocusProxy { get; set; }
         
         /// <summary>
         /// Determines whether to enable support for the

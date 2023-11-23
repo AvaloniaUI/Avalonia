@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Core;
-using Avalonia.Markup.Parsers;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
-    public class ExpressionObserverTests_DataValidation : IClassFixture<InvariantCultureFixture>
+    [InvariantCulture]
+    public class ExpressionObserverTests_DataValidation
     {
         ////[Fact]
         ////public void Doesnt_Send_DataValidationError_When_DataValidatation_Not_Enabled()
