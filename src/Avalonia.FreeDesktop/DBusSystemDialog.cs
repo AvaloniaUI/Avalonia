@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Tmds.DBus.Protocol;
@@ -14,7 +13,7 @@ namespace Avalonia.FreeDesktop
 {
     internal class DBusSystemDialog : BclStorageProvider
     {
-        internal static async Task<IStorageProvider?> TryCreateAsync(IPlatformHandle handle)
+        internal static async Task<IStorageProvider?> TryCreateAsync(string handle)
         {
             if (DBusHelper.Connection is null)
                 return null;
@@ -35,10 +34,10 @@ namespace Avalonia.FreeDesktop
 
         private readonly Connection _connection;
         private readonly OrgFreedesktopPortalFileChooser _fileChooser;
-        private readonly IPlatformHandle _handle;
+        private readonly string _handle;
         private readonly uint _version;
 
-        private DBusSystemDialog(Connection connection, IPlatformHandle handle, OrgFreedesktopPortalFileChooser fileChooser, uint version)
+        private DBusSystemDialog(Connection connection, string handle, OrgFreedesktopPortalFileChooser fileChooser, uint version)
         {
             _connection = connection;
             _fileChooser = fileChooser;
@@ -54,7 +53,6 @@ namespace Avalonia.FreeDesktop
 
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
-            var parentWindow = $"x11:{_handle.Handle:X}";
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, DBusVariantItem>();
             var filters = ParseFilters(options.FileTypeFilter);
@@ -65,7 +63,7 @@ namespace Avalonia.FreeDesktop
                 chooserOptions.Add("current_folder", new DBusVariantItem("ay", new DBusByteArrayItem(Encoding.UTF8.GetBytes(folderPath + "\0"))));
             chooserOptions.Add("multiple", new DBusVariantItem("b", new DBusBoolItem(options.AllowMultiple)));
 
-            objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
+            objectPath = await _fileChooser.OpenFileAsync(_handle, options.Title ?? string.Empty, chooserOptions);
 
             var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
@@ -83,7 +81,6 @@ namespace Avalonia.FreeDesktop
 
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
-            var parentWindow = $"x11:{_handle.Handle:X}";
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, DBusVariantItem>();
             var filters = ParseFilters(options.FileTypeChoices);
@@ -95,7 +92,7 @@ namespace Avalonia.FreeDesktop
             if (options.SuggestedStartLocation?.TryGetLocalPath()  is { } folderPath)
                 chooserOptions.Add("current_folder", new DBusVariantItem("ay", new DBusByteArrayItem(Encoding.UTF8.GetBytes(folderPath + "\0"))));
 
-            objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
+            objectPath = await _fileChooser.SaveFileAsync(_handle, options.Title ?? string.Empty, chooserOptions);
             var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
@@ -119,7 +116,6 @@ namespace Avalonia.FreeDesktop
 
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
         {
-            var parentWindow = $"x11:{_handle.Handle:X}";
             var chooserOptions = new Dictionary<string, DBusVariantItem>
             {
                 { "directory", new DBusVariantItem("b", new DBusBoolItem(true)) },
@@ -127,8 +123,8 @@ namespace Avalonia.FreeDesktop
             };
             if (options.SuggestedStartLocation?.TryGetLocalPath()  is { } folderPath && _version >= 4)
                 chooserOptions.Add("current_folder", new DBusVariantItem("ay", new DBusByteArrayItem(Encoding.UTF8.GetBytes(folderPath + "\0"))));
-            
-            var objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
+
+            var objectPath = await _fileChooser.OpenFileAsync(_handle, options.Title ?? string.Empty, chooserOptions);
             var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
