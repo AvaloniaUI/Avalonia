@@ -23,7 +23,7 @@ namespace Avalonia.Controls.Platform
         /// <summary>
         /// Occurs when the input pane's state has changed.
         /// </summary>
-        event EventHandler<InputPaneStateEventArgs> StateChanged;
+        event EventHandler<InputPaneStateEventArgs>? StateChanged;
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Platform
     /// <summary>
     /// Provides state change information about the input pane.
     /// </summary>
-    public class InputPaneStateEventArgs : EventArgs
+    public sealed class InputPaneStateEventArgs : EventArgs
     {
         /// <summary>
         /// The new state of the input pane

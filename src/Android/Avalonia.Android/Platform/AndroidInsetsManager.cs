@@ -11,7 +11,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Android.Platform
 {
-    internal class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
+    internal sealed class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
     {
         private readonly AvaloniaMainActivity _activity;
         private readonly TopLevelImpl _topLevel;
@@ -304,7 +304,7 @@ namespace Avalonia.Android.Platform
         }
     }
 
-    internal class AnimationEasing : Easing
+    internal sealed class AnimationEasing : Easing
     {
         private readonly IInterpolator _interpolator;
 
