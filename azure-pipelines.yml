@@ -6,19 +6,18 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-  - task: PowerShell@2
-    displayName: Get PR Number
-    inputs:
-      targetType: 'inline'
-      script: |
-        $prId = '$(System.PullRequest.PullRequestId)'
+  - pwsh: |
+        $prId = $env:PR_ID
         Write-Host "PR Number  is:-" $prId
-
+    
         if (!([string]::IsNullOrWhiteSpace($prId)))
         {
-          Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
+          Set-Content -Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY\prId.txt -Value $prId
         }
-      
+    displayName: Get PR Number
+    env:
+      PR_ID: $(System.PullRequest.PullRequestId)
+
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
