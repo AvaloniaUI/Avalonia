@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
@@ -12,6 +13,7 @@ using Avalonia.Wayland;
 using NWayland.Protocols.FractionalScaleV1;
 using NWayland.Protocols.Plasma.Blur;
 using NWayland.Protocols.PointerGesturesUnstableV1;
+using NWayland.Protocols.TextInputUnstableV3;
 using NWayland.Protocols.Viewporter;
 using NWayland.Protocols.Wayland;
 using NWayland.Protocols.XdgActivationV1;
@@ -42,6 +44,7 @@ namespace Avalonia.Wayland
             ZxdgDecorationManager = WlRegistryHandler.Bind(ZxdgDecorationManagerV1.BindFactory, ZxdgDecorationManagerV1.InterfaceName, ZxdgDecorationManagerV1.InterfaceVersion);
             ZxdgExporter = WlRegistryHandler.Bind(ZxdgExporterV2.BindFactory, ZxdgExporterV2.InterfaceName, ZxdgExporterV2.InterfaceVersion);
             ZwpPointerGestures = WlRegistryHandler.Bind(ZwpPointerGesturesV1.BindFactory, ZwpPointerGesturesV1.InterfaceName, ZwpPointerGesturesV1.InterfaceVersion);
+            ZwpTextInputManagerV3 = WlRegistryHandler.Bind(ZwpTextInputManagerV3.BindFactory, ZwpTextInputManagerV3.InterfaceName, ZwpTextInputManagerV3.InterfaceVersion);
             KdeKwinBlurManager = WlRegistryHandler.Bind(OrgKdeKwinBlurManager.BindFactory, OrgKdeKwinBlurManager.InterfaceName, OrgKdeKwinBlurManager.InterfaceVersion);
 
             XdgWmBase.Events = this;
@@ -68,25 +71,11 @@ namespace Avalonia.Wayland
 
             DBusHelper.TryInitialize();
 
-            IPlatformGraphics? platformGraphics = null;
+            var graphics = InitializeGraphics(options);
+            if (graphics is not null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(graphics);
 
-            if (options.UseGpu)
-            {
-                const int EGL_PLATFORM_WAYLAND_KHR = 0x31D8;
-                platformGraphics = EglPlatformGraphics.TryCreate(() => new EglDisplay(new EglDisplayCreationOptions
-                {
-                    Egl = new EglInterface(),
-                    PlatformType = EGL_PLATFORM_WAYLAND_KHR,
-                    PlatformDisplay = WlDisplay.Handle,
-                    SupportsContextSharing = true,
-                    SupportsMultipleContexts = true
-                }));
-
-                if (platformGraphics is not null)
-                    AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(platformGraphics);
-            }
-
-            Compositor = new Compositor(platformGraphics);
+            Compositor = new Compositor(graphics);
         }
 
         internal WaylandPlatformOptions Options { get; }
@@ -119,6 +108,8 @@ namespace Avalonia.Wayland
 
         internal ZwpPointerGesturesV1? ZwpPointerGestures { get; }
 
+        internal ZwpTextInputManagerV3? ZwpTextInputManagerV3 { get; }
+
         internal OrgKdeKwinBlurManager? KdeKwinBlurManager { get; }
 
         internal WlScreens WlScreens { get; }
@@ -149,6 +140,7 @@ namespace Avalonia.Wayland
             KdeKwinBlurManager?.Dispose();
             ZxdgDecorationManager?.Dispose();
             ZxdgExporter?.Dispose();
+            ZwpTextInputManagerV3?.Dispose();
             ZwpPointerGestures?.Dispose();
             WlDataDeviceManager.Dispose();
             WlRawEventGrouper.Dispose();
@@ -162,6 +154,38 @@ namespace Avalonia.Wayland
             WlCompositor.Dispose();
             WlRegistryHandler.Dispose();
             WlDisplay.Dispose();
+        }
+
+
+        private IPlatformGraphics? InitializeGraphics(WaylandPlatformOptions opts)
+        {
+            if (opts.RenderingMode is null || opts.RenderingMode.Count == 0)
+                throw new InvalidOperationException($"{nameof(WaylandPlatformOptions)}.{nameof(WaylandPlatformOptions.RenderingMode)} must not be null or empty.");
+
+            foreach (var renderingMode in opts.RenderingMode)
+            {
+                switch (renderingMode)
+                {
+                    case WaylandRenderingMode.Software:
+                        return null;
+                    case WaylandRenderingMode.Egl:
+                        const int EGL_PLATFORM_WAYLAND_KHR = 0x31D8;
+                        var platformGraphics = EglPlatformGraphics.TryCreate(() => new EglDisplay(new EglDisplayCreationOptions
+                        {
+                            Egl = new EglInterface(),
+                            PlatformType = EGL_PLATFORM_WAYLAND_KHR,
+                            PlatformDisplay = WlDisplay.Handle,
+                            SupportsContextSharing = true,
+                            SupportsMultipleContexts = true
+                        }));
+
+                        if (platformGraphics is not null)
+                            return platformGraphics;
+                        break;
+                }
+            }
+
+            throw new InvalidOperationException($"{nameof(WaylandPlatformOptions)}.{nameof(WaylandPlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
         }
     }
 }
@@ -184,9 +208,19 @@ namespace Avalonia
     public class WaylandPlatformOptions
     {
         /// <summary>
-        /// Determines whether to use GPU for rendering in your project. The default value is true.
+        /// Gets or sets Avalonia rendering modes with fallbacks.
+        /// The first element in the array has the highest priority.
+        /// The default value is: <see cref="WaylandRenderingMode.Egl"/>, <see cref="WaylandRenderingMode.Software"/>.
         /// </summary>
-        public bool UseGpu { get; set; } = true;
+        /// <remarks>
+        /// If application should work on as wide range of devices as possible, at least add <see cref="WaylandRenderingMode.Software"/> as a fallback value.
+        /// </remarks>
+        /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
+        public IReadOnlyList<WaylandRenderingMode> RenderingMode { get; set; } = new[]
+        {
+            WaylandRenderingMode.Egl,
+            WaylandRenderingMode.Software
+        };
 
         /// <summary>
         /// The app ID identifies the general class of applications to which the surface belongs. <br/>
@@ -194,5 +228,15 @@ namespace Avalonia
         /// As a best practice, it is suggested to select app ID's that match the basename of the application's .desktop file. For example, "org.freedesktop.FooViewer" where the .desktop file is "org.freedesktop.FooViewer.desktop".
         /// </summary>
         public string? AppId { get; set; }
+
+        /// <summary>
+        /// Determines whether to use IME.
+        /// IME would be enabled by default if the current user input language is one of the following: Mandarin, Japanese, Vietnamese or Korean.
+        /// </summary>
+        /// <remarks>
+        /// Input method editor is a component that enables users to generate characters not natively available 
+        /// on their input devices by using sequences of characters or mouse operations that are natively available on their input devices.
+        /// </remarks>
+        public bool? EnableIme { get; set; }
     }
 }

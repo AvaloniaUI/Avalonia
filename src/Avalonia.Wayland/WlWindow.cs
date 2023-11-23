@@ -201,8 +201,6 @@ namespace Avalonia.Wayland
         {
             if (featureType == typeof(IClipboard))
                 return _platform.WlDataHandler;
-            if (featureType == typeof(ITextInputMethodImpl))
-                return _platform.WlInputDevice;
             return null;
         }
 

@@ -124,7 +124,7 @@ namespace Avalonia.Wayland
             _xdgToplevel?.SetTitle(title ?? string.Empty);
         }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
             if (parent is not WlToplevel wlToplevel || _xdgToplevel is null)
                 return;
