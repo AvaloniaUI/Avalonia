@@ -28,14 +28,14 @@ namespace Avalonia.Controls
             if (e.OldValue != null)
             {
                 control.PointerEntered -= ControlPointerEntered;
-                control.PointerExited -= ControlPointerExited;
+                control.PointerMoved -= ControlOnPointerMoved;
                 control.RemoveHandler(InputElement.PointerPressedEvent, ControlPointerPressed);
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEntered += ControlPointerEntered;
-                control.PointerExited += ControlPointerExited;
+                control.PointerMoved += ControlOnPointerMoved;
                 control.AddHandler(InputElement.PointerPressedEvent, ControlPointerPressed,
                     RoutingStrategies.Bubble | RoutingStrategies.Tunnel | RoutingStrategies.Direct, true);
             }
@@ -88,8 +88,9 @@ namespace Avalonia.Controls
         private void ControlPointerEntered(object? sender, PointerEventArgs e)
         {
             StopTimer();
-
             var control = (Control)sender!;
+            e.Pointer.Capture(control);
+            
             var showDelay = ToolTip.GetShowDelay(control);
             if (showDelay == 0)
             {
@@ -102,14 +103,22 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the pointer leaves a control with an attached tooltip.
+        /// Called when the pointer moves above a control with an attached tooltip.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerExited(object? sender, PointerEventArgs e)
+        private void ControlOnPointerMoved(object? sender, PointerEventArgs e)
         {
             var control = (Control)sender!;
-            Close(control);
+            // check if the (captured) mouse is still above the control (even if it is covered by another control)
+            var position = e.GetPosition(control);
+            var rect = new Rect(0, 0, control.Bounds.Width, control.Bounds.Height);
+            if (!rect.Contains(position))
+            {
+                e.Pointer.Capture(null);
+                Close(control);
+            }
+
         }
 
         private void ControlPointerPressed(object? sender, PointerPressedEventArgs e)
