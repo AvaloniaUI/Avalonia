@@ -64,7 +64,7 @@ namespace Avalonia.Dialogs.Internal
 
                        try
                        {
-                           Directory.GetFiles(x.VolumePath);
+                           Directory.GetFiles(x.VolumePath!);
                        }
                        catch (Exception)
                        {
@@ -79,7 +79,7 @@ namespace Avalonia.Dialogs.Internal
                        };
                    })
                    .Where(x => x != null)
-                   .ToArray();
+                   .ToArray()!;
         }
     }
 }

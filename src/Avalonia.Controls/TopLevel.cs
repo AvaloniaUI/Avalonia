@@ -102,6 +102,14 @@ namespace Avalonia.Controls
                 inherits: true);
 
         /// <summary>
+        /// Defines the AutoSafeAreaPadding attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> AutoSafeAreaPaddingProperty =
+            AvaloniaProperty.RegisterAttached<TopLevel, Control, bool>(
+                "AutoSafeAreaPadding",
+                defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="BackRequested"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> BackRequestedEvent = 
@@ -153,6 +161,12 @@ namespace Avalonia.Controls
                         insets.SystemBarColor = colorBrush.Color;
                     }
                 }
+            });
+
+            AutoSafeAreaPaddingProperty.Changed.AddClassHandler<Control>((view, e) =>
+            {
+                var topLevel = view as TopLevel ?? view.Parent as TopLevel;
+                topLevel?.InvalidateChildInsetsPadding();
             });
 
             PointerOverElementProperty.Changed.AddClassHandler<TopLevel>((topLevel, e) =>
@@ -478,23 +492,42 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for setting the color of the platform's system bars
+        /// Helper for setting the color of the platform's system bars.
         /// </summary>
-        /// <param name="control">The main view attached to the toplevel, or the toplevel</param>
-        /// <param name="color">The color to set</param>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel.</param>
+        /// <param name="color">The color to set.</param>
         public static void SetSystemBarColor(Control control, SolidColorBrush? color)
         {
             control.SetValue(SystemBarColorProperty, color);
         }
 
         /// <summary>
-        /// Helper for getting the color of the platform's system bars
+        /// Helper for getting the color of the platform's system bars.
         /// </summary>
-        /// <param name="control">The main view attached to the toplevel, or the toplevel</param>
-        /// <returns>The current color of the platform's system bars</returns>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel.</param>
+        /// <returns>The current color of the platform's system bars.</returns>
         public static SolidColorBrush? GetSystemBarColor(Control control)
         {
             return control.GetValue(SystemBarColorProperty);
+        }
+
+        /// <summary>
+        /// Enabled or disables whenever TopLevel should automatically adjust paddings depending on the safe area.
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel.</param>
+        /// <param name="value">Value to be set.</param>
+        public static void SetAutoSafeAreaPadding(Control control, bool value)
+        {
+            control.SetValue(AutoSafeAreaPaddingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets if auto safe area padding is enabled.
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel.</param>
+        public static bool GetAutoSafeAreaPadding(Control control)
+        {
+            return control.GetValue(AutoSafeAreaPaddingProperty);
         }
 
         /// <inheritdoc/>
@@ -586,12 +619,41 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (_platformImplBindings.TryGetValue(change.Property, out var bindingAction))
+            if (change.Property == ContentProperty)
+            {
+                InvalidateChildInsetsPadding();
+            }
+            else if (_platformImplBindings.TryGetValue(change.Property, out var bindingAction))
             {
                 bindingAction();
             }
         }
-        
+
+        private IDisposable? _insetsPaddings;
+        private void InvalidateChildInsetsPadding()
+        {
+            if (Content is Control child
+                && InsetsManager is {} insetsManager)
+            {
+                insetsManager.SafeAreaChanged -= InsetsManagerOnSafeAreaChanged;
+                _insetsPaddings?.Dispose();
+
+                if (child.GetValue(AutoSafeAreaPaddingProperty))
+                {
+                    insetsManager.SafeAreaChanged += InsetsManagerOnSafeAreaChanged;
+                    _insetsPaddings = child.SetValue(
+                        PaddingProperty,
+                        insetsManager.SafeAreaPadding,
+                        BindingPriority.Style); // lower priority, so it can be redefined by user
+                }
+
+                void InsetsManagerOnSafeAreaChanged(object? sender, SafeAreaChangedArgs e)
+                {
+                    InvalidateChildInsetsPadding();
+                }
+            }
+        }
+
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
