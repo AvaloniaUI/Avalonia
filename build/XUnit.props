@@ -13,5 +13,6 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\avalonia.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>False</SignAssembly>
+    <NoWarn>$(NoWarn);CS8002</NoWarn> <!-- ignore signing warnings for unit tests -->
   </PropertyGroup>
 </Project>
