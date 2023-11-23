@@ -2222,6 +2222,56 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(0, selectedItemChangedRaised);
         }
+        
+        [Fact]
+        public void Should_First_Raise_Property_Changed_Notification_Then_Fire_Selection_Changed_Event()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            // Issue #11006
+            var items = new ObservableCollection<string>();
+            
+            var vm = new SelectionViewModel
+            {
+                SelectedItem = "" ,
+            };
+            
+            var theListBox = new ListBox
+            {
+                DataContext = vm,
+                Template = Template(), 
+                ItemsSource = items, 
+                SelectionMode = SelectionMode.AlwaysSelected,
+                [!ListBox.SelectedItemProperty] = new Binding("SelectedItem"),
+            };
+            
+            var target = new TextBox
+            {
+                Text = "",
+            };
+
+            Prepare(theListBox);
+            
+            items.Add("Default");
+            items.Add("First");
+            items.Add("Second");
+            items.Add("Third");
+            
+            theListBox.SelectionChanged += (s, e) =>
+            {
+                target.Text = (string)vm.SelectedItem;
+            };
+            
+            theListBox.SelectedIndex = 1;
+            Assert.Equal("First", target.Text);
+
+            theListBox.SelectedIndex = 2;
+            Assert.Equal("Second", target.Text);
+
+            theListBox.SelectedIndex = 3;
+            Assert.Equal("Third", target.Text);
+
+        }
 
         [Fact]
         public void Ensure_ItemsSource_Set_Before_SelectedValue()
@@ -2430,12 +2480,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
             get => base.SelectionMode;
             set => base.SelectionMode = value;
         }
-        public IReadOnlyList<(string Property, object NewValue, object OldValue)> PropertyChangeLog { get => _propertysSetSequence; }
 
-        public new bool MoveSelection(NavigationDirection direction, bool wrap)
+        public bool MoveSelection(NavigationDirection direction, bool wrap)
         {
             return base.MoveSelection(direction, wrap);
         }
+
+        public IReadOnlyList<(string Property, object NewValue, object OldValue)> PropertyChangeLog { get => _propertysSetSequence; }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

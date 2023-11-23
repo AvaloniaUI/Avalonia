@@ -2,34 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Vulkan;
 using Silk.NET.Core;
-using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using SilkNetDemo;
 using SkiaSharp;
 using D3DDevice = SharpDX.Direct3D11.Device;
-using DxgiDevice = SharpDX.DXGI.Device;
 
 namespace GpuInterop.VulkanDemo;
 
 public unsafe class VulkanContext : IDisposable
 {
-    public Vk Api { get; init; }
-    public Instance Instance { get; init; }
-    public PhysicalDevice PhysicalDevice { get; init; }
-    public Device Device { get; init; }
-    public Queue Queue { get; init; }
-    public uint QueueFamilyIndex { get; init; }
-    public VulkanCommandBufferPool Pool { get; init; }
-    public GRContext GrContext { get; init; }
-    public DescriptorPool DescriptorPool { get; init; }
-    public D3DDevice? D3DDevice { get; init; }
+    public required Vk Api { get; init; }
+    public required Instance Instance { get; init; }
+    public required PhysicalDevice PhysicalDevice { get; init; }
+    public required Device Device { get; init; }
+    public required Queue Queue { get; init; }
+    public required uint QueueFamilyIndex { get; init; }
+    public required VulkanCommandBufferPool Pool { get; init; }
+    public required GRContext GrContext { get; init; }
+    public required DescriptorPool DescriptorPool { get; init; }
+    public required D3DDevice? D3DDevice { get; init; }
 
     public static (VulkanContext? result, string info) TryCreate(ICompositionGpuInterop gpuInterop)
     {
@@ -58,10 +55,8 @@ public unsafe class VulkanContext : IDisposable
         enabledExtensions.Add("VK_EXT_debug_utils");
         if (IsLayerAvailable(api, "VK_LAYER_KHRONOS_validation"))
             enabledLayers.Add("VK_LAYER_KHRONOS_validation");
-        
 
-        Instance vkInstance = default;
-        Silk.NET.Vulkan.PhysicalDevice physicalDevice = default;
+
         Device device = default;
         DescriptorPool descriptorPool = default;
         VulkanCommandBufferPool? pool = null;
@@ -78,7 +73,7 @@ public unsafe class VulkanContext : IDisposable
                 EnabledExtensionCount = pRequiredExtensions.UCount,
                 PpEnabledLayerNames = pEnabledLayers,
                 EnabledLayerCount = pEnabledLayers.UCount
-            }, null, out vkInstance).ThrowOnError();
+            }, null, out var vkInstance).ThrowOnError();
 
 
             if (api.TryGetInstanceExtension(vkInstance, out ExtDebugUtils debugUtils))
@@ -95,7 +90,7 @@ public unsafe class VulkanContext : IDisposable
                     PfnUserCallback = new PfnDebugUtilsMessengerCallbackEXT(LogCallback),
                 };
 
-                debugUtils.CreateDebugUtilsMessenger(vkInstance, debugCreateInfo, null, out var messenger);
+                debugUtils.CreateDebugUtilsMessenger(vkInstance, debugCreateInfo, null, out _);
             }
 
             var requireDeviceExtensions = new List<string>
@@ -158,11 +153,11 @@ public unsafe class VulkanContext : IDisposable
                 else if (gpuInterop.DeviceUuid != null)
                 {
                     if (!new Span<byte>(physicalDeviceIDProperties.DeviceUuid, 16)
-                            .SequenceEqual(gpuInterop?.DeviceUuid))
+                            .SequenceEqual(gpuInterop.DeviceUuid))
                         continue;
                 }
 
-                physicalDevice = physicalDevices[c];
+                var physicalDevice = physicalDevices[c];
 
                 var name = Marshal.PtrToStringAnsi(new IntPtr(physicalDeviceProperties2.Properties.DeviceName))!;
 
@@ -251,8 +246,7 @@ public unsafe class VulkanContext : IDisposable
                         RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         d3dDevice = D3DMemoryHelper.CreateDeviceByLuid(
                             new Span<byte>(physicalDeviceIDProperties.DeviceLuid, 8));
-                    
-                    var dxgiDevice = d3dDevice?.QueryInterface<DxgiDevice>();
+
                     return (new VulkanContext
                     {
                         Api = api,

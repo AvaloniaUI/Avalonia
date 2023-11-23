@@ -488,7 +488,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of visible lines.
+        /// Gets or sets the maximum number of characters that the <see cref="TextBox"/> can accept.
+        /// This constraint only applies for manually entered (user-inputted) text.
         /// </summary>
         public int MaxLength
         {
@@ -497,7 +498,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of lines the TextBox can contain
+        /// Gets or sets the maximum number of visible lines to size to.
         /// </summary>
         public int MaxLines
         {
