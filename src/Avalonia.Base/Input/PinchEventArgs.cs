@@ -24,7 +24,7 @@ namespace Avalonia.Input
 
         /// <summary>
         /// Gets the angle of the pinch gesture, in degrees.
-        /// <summary>
+        /// </summary>
         /// <remarks>
         /// A pinch gesture is the movement of two pressed points closer together. This property is the measured angle of the line between those two points. Remember zero degrees is a line pointing up.
         /// </remarks>
