@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
@@ -12,7 +14,6 @@ using Avalonia.Input.TextInput;
 using Avalonia.iOS.Storage;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using CoreAnimation;
 using Foundation;
@@ -25,12 +26,15 @@ namespace Avalonia.iOS
 {
     public partial class AvaloniaView : UIView, ITextInputMethodImpl
     {
-        internal IInputRoot InputRoot { get; private set; }
-        private TopLevelImpl _topLevelImpl;
-        private EmbeddableControlRoot _topLevel;
-        private TouchHandler _touches;
-        private TextInputMethodClient _client;
-        private IAvaloniaViewController _controller;
+        internal IInputRoot InputRoot
+            => _inputRoot ?? throw new InvalidOperationException($"{nameof(IWindowImpl.SetInputRoot)} must have been called");
+
+        private readonly TopLevelImpl _topLevelImpl;
+        private readonly EmbeddableControlRoot _topLevel;
+        private readonly TouchHandler _touches;
+        private TextInputMethodClient? _client;
+        private IAvaloniaViewController? _controller;
+        private IInputRoot? _inputRoot;
 
         public AvaloniaView()
         {
@@ -60,7 +64,7 @@ namespace Avalonia.iOS
         public override bool CanResignFirstResponder => true;
 
         /// <inheritdoc />
-        public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+        public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
         {
             base.TraitCollectionDidChange(previousTraitCollection);
             
@@ -91,7 +95,7 @@ namespace Avalonia.iOS
             private readonly IStorageProvider _storageProvider;
             internal readonly InsetsManager _insetsManager;
             private readonly ClipboardImpl _clipboard;
-            private IDisposable _paddingInsets;
+            private IDisposable? _paddingInsets;
 
             public AvaloniaView View => _view;
 
@@ -101,17 +105,17 @@ namespace Avalonia.iOS
                 _nativeControlHost = new NativeControlHostImpl(view);
                 _storageProvider = new IOSStorageProvider(view);
                 _insetsManager = new InsetsManager(view);
-                _insetsManager.DisplayEdgeToEdgeChanged += (sender, edgeToEdge) =>
+                _insetsManager.DisplayEdgeToEdgeChanged += (_, edgeToEdge) =>
                 {
                     // iOS doesn't add any paddings/margins to the application by itself.
                     // Application is fully responsible for safe area paddings.
-                    // So, unlikely to android, we need to "fake" safe area insets when edge to edge is disabled. 
+                    // So, unlikely to android, we need to "fake" safe area insets when edge to edge is disabled.
                     _paddingInsets?.Dispose();
-                    if (!edgeToEdge)
+                    if (!edgeToEdge && view._controller is { } controller)
                     {
                         _paddingInsets = view._topLevel.SetValue(
                             TemplatedControl.PaddingProperty,
-                            view._controller.SafeAreaPadding,
+                            controller.SafeAreaPadding,
                             BindingPriority.Style); // lower priority, so it can be redefined by user
                     }
                 };
@@ -132,19 +136,19 @@ namespace Avalonia.iOS
 
             public void SetInputRoot(IInputRoot inputRoot)
             {
-                _view.InputRoot = inputRoot;
+                _view._inputRoot = inputRoot;
             }
 
             public Point PointToClient(PixelPoint point) => new Point(point.X, point.Y);
 
             public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
 
-            public void SetCursor(ICursorImpl _)
+            public void SetCursor(ICursorImpl? cursor)
             {
                 // no-op
             }
 
-            public IPopupImpl CreatePopup()
+            public IPopupImpl? CreatePopup()
             {
                 // In-window popups
                 return null;
@@ -158,18 +162,16 @@ namespace Avalonia.iOS
             public Size ClientSize => new Size(_view.Bounds.Width, _view.Bounds.Height);
             public Size? FrameSize => null;
             public double RenderScaling => _view.ContentScaleFactor;
-            public IEnumerable<object> Surfaces { get; set; }
-            public Action<RawInputEventArgs> Input { get; set; }
-            public Action<Rect> Paint { get; set; }
-            public Action<Size, WindowResizeReason> Resized { get; set; }
-            public Action<double> ScalingChanged { get; set; }
-            public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
-            public Action Closed { get; set; }
+            public IEnumerable<object> Surfaces { get; set; } = Array.Empty<object>();
+            public Action<RawInputEventArgs>? Input { get; set; }
+            public Action<Rect>? Paint { get; set; }
+            public Action<Size, WindowResizeReason>? Resized { get; set; }
+            public Action<double>? ScalingChanged { get; set; }
+            public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
+            public Action? Closed { get; set; }
 
-            public Action LostFocus { get; set; }
+            public Action? LostFocus { get; set; }
 
-            // legacy no-op
-            public IMouseDevice MouseDevice { get; } = new MouseDevice();
             public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
             public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
@@ -226,13 +228,13 @@ namespace Avalonia.iOS
             return new Class(typeof(CAEAGLLayer));
         }
 
-        public override void TouchesBegan(NSSet touches, UIEvent evt) => _touches.Handle(touches, evt);
+        public override void TouchesBegan(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
 
-        public override void TouchesMoved(NSSet touches, UIEvent evt) => _touches.Handle(touches, evt);
+        public override void TouchesMoved(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
 
-        public override void TouchesEnded(NSSet touches, UIEvent evt) => _touches.Handle(touches, evt);
+        public override void TouchesEnded(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
 
-        public override void TouchesCancelled(NSSet touches, UIEvent evt) => _touches.Handle(touches, evt);
+        public override void TouchesCancelled(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
 
         public override void LayoutSubviews()
         {
@@ -240,9 +242,9 @@ namespace Avalonia.iOS
             base.LayoutSubviews();
         }
 
-        public Control Content
+        public Control? Content
         {
-            get => (Control)_topLevel.Content;
+            get => (Control?)_topLevel.Content;
             set => _topLevel.Content = value;
         }
     }

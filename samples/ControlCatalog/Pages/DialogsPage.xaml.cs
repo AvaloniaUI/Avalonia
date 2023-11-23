@@ -160,7 +160,7 @@ namespace ControlCatalog.Pages
                 }
                 else
                 {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
+                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result!));
                     results.ItemsSource = new[] { result };
                     resultsVisible.IsVisible = true;
                 }
