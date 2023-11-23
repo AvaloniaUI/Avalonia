@@ -11,8 +11,8 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        $prId = $env:System_PullRequest_PullRequestNumber
-        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
+        $prId = $(System.PullRequest.PullRequestId)
+        Write-Host "PR Number  is:-" $(System.PullRequest.PullRequestId)
 
         if (!([string]::IsNullOrWhiteSpace($prId)))
         {
