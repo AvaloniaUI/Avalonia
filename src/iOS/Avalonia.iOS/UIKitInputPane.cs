@@ -40,15 +40,14 @@ internal sealed class UIKitInputPane : IInputPane
         var curve = (UIViewAnimationOptions)UIKeyboard.AnimationCurveFromNotification(notification);
         IEasing? easing =
             curve.HasFlag(UIViewAnimationOptions.CurveLinear) ? new LinearEasing()
-            : curve.HasFlag(UIViewAnimationOptions.CurveEaseIn) ? new QuadraticEaseIn()
-            : curve.HasFlag(UIViewAnimationOptions.CurveEaseOut) ? new QuadraticEaseOut()
-            : curve.HasFlag(UIViewAnimationOptions.CurveEaseInOut) ? new QuadraticEaseInOut()
+            : curve.HasFlag(UIViewAnimationOptions.CurveEaseIn) ? new SineEaseIn()
+            : curve.HasFlag(UIViewAnimationOptions.CurveEaseOut) ? new SineEaseOut()
+            : curve.HasFlag(UIViewAnimationOptions.CurveEaseInOut) ? new SineEaseInOut()
             : null;
 
         var startRect = new Rect(startFrame.X, startFrame.Y, startFrame.Width, startFrame.Height);
         OccludedRect = new Rect(endFrame.X, endFrame.Y, endFrame.Width, endFrame.Height);
 
-        Debug.WriteLine($"iOS {State} {startFrame} {endFrame} {duration} {curve}");
         StateChanged?.Invoke(this, new InputPaneStateEventArgs(
             State, startRect, OccludedRect, TimeSpan.FromSeconds(duration), easing));
     }
