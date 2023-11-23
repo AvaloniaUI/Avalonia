@@ -1,12 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.FreeDesktop;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Wayland
 {
     internal static class LibXkbCommon
     {
-        private const string XkbCommon = "libxkbcommon.so.0";
+        private const string XkbCommon = "libxkbcommon.so";
 
         [DllImport(XkbCommon)]
         public static extern IntPtr xkb_context_new(int flags);
@@ -21,7 +22,7 @@ namespace Avalonia.Wayland
         public static extern uint xkb_keymap_num_layouts_for_key(IntPtr keymap, uint key);
 
         [DllImport(XkbCommon)]
-        public static extern uint xkb_state_mod_name_is_active(IntPtr keymap, string name, XkbStateComponent type);
+        public static extern uint xkb_state_mod_name_is_active(IntPtr keymap, Utf8Buffer name, XkbStateComponent type);
 
         [DllImport(XkbCommon)]
         public static extern unsafe int xkb_keymap_key_get_syms_by_level(IntPtr keymap, uint code, uint layout, uint level, uint** syms_out);
@@ -42,9 +43,6 @@ namespace Avalonia.Wayland
         public static extern void xkb_state_update_mask(IntPtr state, uint modsDepressed, uint modsLatched, uint modsLocked, uint layoutDepressed, uint layoutLatched, uint layoutLocked);
 
         [DllImport(XkbCommon)]
-        public static extern uint xkb_state_serialize_mods(IntPtr state, XkbStateComponent components);
-
-        [DllImport(XkbCommon)]
         public static extern uint xkb_state_key_get_level(IntPtr state, uint code, uint layout);
 
         [DllImport(XkbCommon)]
@@ -57,7 +55,7 @@ namespace Avalonia.Wayland
         public static extern void xkb_state_unref(IntPtr state);
 
         [DllImport(XkbCommon)]
-        public static extern IntPtr xkb_compose_table_new_from_locale(IntPtr context, string locale, int flags);
+        public static extern IntPtr xkb_compose_table_new_from_locale(IntPtr context, Utf8Buffer locale, int flags);
 
         [DllImport(XkbCommon)]
         public static extern void xkb_compose_table_unref(IntPtr composeTable);
@@ -76,6 +74,9 @@ namespace Avalonia.Wayland
 
         [DllImport(XkbCommon)]
         public static extern void xkb_compose_state_reset(IntPtr composeState);
+
+        [DllImport(XkbCommon)]
+        public static extern void xkb_compose_state_unref(IntPtr composeState);
 
         [Flags]
         public enum XkbStateComponent
