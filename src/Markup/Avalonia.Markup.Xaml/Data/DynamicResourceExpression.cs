@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Logging;
 using Avalonia.Markup.Xaml.Converters;
@@ -22,7 +23,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public DynamicResourceExpression(
             object resourceKey,
             object? anchor,
-            ThemeVariant? themeVariant)
+            ThemeVariant? themeVariant,
+            BindingPriority priority)
+            : base(priority)
         {
             _resourceKey = resourceKey;
             _anchor = anchor;

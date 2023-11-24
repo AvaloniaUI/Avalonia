@@ -8,7 +8,9 @@ internal class UntypedObservableBindingExpression : UntypedBindingExpressionBase
     private IDisposable? _subscription;
 
     public UntypedObservableBindingExpression(
-        IObservable<object?> observable)
+        IObservable<object?> observable,
+        BindingPriority priority)
+        : base(priority)
     {
         _observable = observable;
     }

@@ -21,10 +21,12 @@ namespace Avalonia.Data
         private bool _isSetterValue;
 
         public TemplateBinding()
+            : base(BindingPriority.Template)
         {
         }
 
         public TemplateBinding(AvaloniaProperty property)
+            : base(BindingPriority.Template)
         {
             Property = property;
         }
@@ -52,7 +54,11 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
-        public BindingMode Mode { get; set; }
+        public new BindingMode Mode 
+        { 
+            get => base.Mode;
+            set => base.Mode = value;
+        }
 
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.
@@ -73,7 +79,7 @@ namespace Avalonia.Data
             return new(target, InstanceCore(), Mode, BindingPriority.Template);
         }
 
-        IBindingExpression IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property)
         {
             return InstanceCore();
         }

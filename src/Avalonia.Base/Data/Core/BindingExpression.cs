@@ -43,6 +43,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// Whether data validation should be enabled for the binding.
     /// </param>
     /// <param name="mode">The binding mode.</param>
+    /// <param name="priority">The binding priority.</param>
     /// <param name="stringFormat">The format string to use.</param>
     /// <param name="targetNullValue">The null target value.</param>
     /// <param name="targetTypeConverter">
@@ -57,10 +58,11 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         object? converterParameter = null,
         bool enableDataValidation = false,
         BindingMode mode = BindingMode.OneWay,
+        BindingPriority priority = BindingPriority.LocalValue,
         string? stringFormat = null,
         object? targetNullValue = null,
         TargetTypeConverter? targetTypeConverter = null)
-            : base(enableDataValidation)
+            : base(priority, enableDataValidation)
     {
         if (mode == BindingMode.Default)
             throw new ArgumentException("Binding mode cannot be Default.", nameof(mode));
@@ -154,6 +156,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         bool enableDataValidation = false,
         Optional<object?> fallbackValue = default,
         BindingMode mode = BindingMode.OneWay,
+        BindingPriority priority = BindingPriority.LocalValue,
         object? targetNullValue = null,
         bool allowReflection = true)
             where TIn : class?
@@ -170,6 +173,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             converterParameter: converterParameter,
             enableDataValidation: enableDataValidation,
             mode: mode,
+            priority: priority,
             targetNullValue: targetNullValue,
             targetTypeConverter: allowReflection ?
                 TargetTypeConverter.GetReflectionConverter() :

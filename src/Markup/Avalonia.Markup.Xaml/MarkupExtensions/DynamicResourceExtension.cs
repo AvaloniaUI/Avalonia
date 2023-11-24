@@ -1,11 +1,12 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    public class DynamicResourceExtension : IBinding
+    public class DynamicResourceExtension : IBinding2
     {
         private object? _anchor;
         private BindingPriority _priority;
@@ -49,8 +50,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
             if (ResourceKey is null)
                 return null;
-            var expression = new DynamicResourceExpression(ResourceKey, _anchor, _themeVariant);
+            var expression = new DynamicResourceExpression(ResourceKey, _anchor, _themeVariant, _priority);
             return new InstancedBinding(target, expression, BindingMode.OneWay, _priority);
+        }
+
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty targetProperty)
+        {
+            if (ResourceKey is null)
+                throw new InvalidOperationException("DynamicResource must have a ResourceKey.");
+            return new DynamicResourceExpression(ResourceKey, _anchor, _themeVariant, _priority);
         }
     }
 }

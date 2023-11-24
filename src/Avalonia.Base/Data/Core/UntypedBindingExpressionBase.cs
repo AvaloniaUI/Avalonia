@@ -16,7 +16,6 @@ namespace Avalonia.Data.Core;
 /// </summary>
 [PrivateApi]
 public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
-    IBindingExpression,
     IDisposable,
     IDescription,
     IValueEntry
@@ -36,9 +35,15 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <summary>
     /// Initializes a new instance of the <see cref="UntypedBindingExpressionBase"/> class.
     /// </summary>
+    /// <param name="defaultPriority">
+    /// The default binding priority for the expression.
+    /// </param>
     /// <param name="isDataValidationEnabled">Whether data validation is enabled.</param>
-    public UntypedBindingExpressionBase(bool isDataValidationEnabled = false)
+    public UntypedBindingExpressionBase(
+        BindingPriority defaultPriority,
+        bool isDataValidationEnabled = false)
     {
+        Priority = defaultPriority;
         _isDataValidationEnabled = isDataValidationEnabled;
     }
 
@@ -65,6 +70,10 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <summary>
     /// Gets the priority of the binding expression.
     /// </summary>
+    /// <remarks>
+    /// Before being attached to a value store, this property describes the default priority of the
+    /// binding expression; this may change when the expression is attached to a value store.
+    /// </remarks>
     public BindingPriority Priority { get; private set; }
 
     /// <summary>
@@ -92,7 +101,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <summary>
     /// Terminates the binding.
     /// </summary>
-    public virtual void Dispose()
+    public override void Dispose()
     {
         if (_sink is null)
             return;
@@ -144,7 +153,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
     /// <summary>
     /// Starts the binding expression following a call to 
-    /// <see cref="Attach(IBindingExpressionSink, AvaloniaObject, AvaloniaProperty, BindingPriority)"/>.
+    /// <see cref="AttachCore(IBindingExpressionSink, AvaloniaObject, AvaloniaProperty, BindingPriority)"/>.
     /// </summary>
     public void Start() => Start(produceValue: true);
 
@@ -177,28 +186,13 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
     void IValueEntry.Unsubscribe() => Stop();
 
-    /// <summary>
-    /// Attaches the binding expression to a subscriber with the specified subscriber but does not
-    /// start it.
-    /// </summary>
-    /// <param name="sink">The subscriber.</param>
-    /// <param name="target">The target object.</param>
-    /// <param name="targetProperty">The target property.</param>
-    /// <param name="priority">The priority of the binding.</param>
-    internal void Attach(
-        IBindingExpressionSink sink,
+    internal override void Attach(
+        ValueStore valueStore,
         AvaloniaObject target,
         AvaloniaProperty targetProperty,
         BindingPriority priority)
     {
-        if (_sink is not null)
-            throw new InvalidOperationException("BindingExpression was already attached.");
-
-        _sink = sink;
-        _target = new(target);
-        TargetProperty = targetProperty;
-        TargetType = targetProperty.PropertyType;
-        Priority = priority;
+        AttachCore(valueStore, target, targetProperty, priority);
     }
 
     /// <summary>
@@ -215,7 +209,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         AvaloniaProperty targetProperty,
         BindingPriority priority)
     {
-        Attach(subscriber, target, targetProperty, priority);
+        AttachCore(subscriber, target, targetProperty, priority);
         Start(produceValue: true);
     }
 
@@ -284,6 +278,23 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// True if the value could be written to the binding source; otherwise false.
     /// </returns>
     internal virtual bool WriteValueToSource(object? value) => false;
+
+    private void AttachCore(
+        IBindingExpressionSink sink,
+        AvaloniaObject target,
+        AvaloniaProperty targetProperty,
+        BindingPriority priority)
+    {
+        if (_sink is not null)
+            throw new InvalidOperationException("BindingExpression was already attached.");
+
+        _sink = sink;
+        _target = new(target);
+        TargetProperty = targetProperty;
+        TargetType = targetProperty.PropertyType;
+        Priority = priority;
+    }
+
 
     /// <summary>
     /// Converts a value using a value converter, logging a warning if necessary.

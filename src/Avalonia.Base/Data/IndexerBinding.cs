@@ -31,7 +31,7 @@ namespace Avalonia.Data
             return new InstancedBinding(expression, Mode, BindingPriority.LocalValue);
         }
 
-        IBindingExpression IBinding2.Instance(AvaloniaObject target, AvaloniaProperty targetProperty)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty targetProperty)
         {
             return new IndexerBindingExpression(Source, Property, target, targetProperty, Mode);
         }

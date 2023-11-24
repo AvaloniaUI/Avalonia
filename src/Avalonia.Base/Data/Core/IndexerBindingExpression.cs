@@ -16,6 +16,7 @@ internal class IndexerBindingExpression : UntypedBindingExpressionBase
         AvaloniaObject target,
         AvaloniaProperty? targetProperty,
         BindingMode mode)
+        : base(BindingPriority.LocalValue)
     {
         _source = source;
         _sourceProperty = sourceProperty;

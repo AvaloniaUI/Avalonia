@@ -237,7 +237,7 @@ namespace Avalonia
         /// can be used to provide this context.
         /// </param>
         /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
-        [Obsolete]
+        [Obsolete("Use AvaloniaObject.Bind(AvaloniaProperty, IBinding")]
         public static IDisposable Bind(
             this AvaloniaObject target,
             AvaloniaProperty property,
@@ -248,20 +248,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             binding = binding ?? throw new ArgumentNullException(nameof(binding));
 
-            var result = binding.Initiate(
-                target,
-                property,
-                anchor,
-                property.GetMetadata(target.GetType()).EnableDataValidation ?? false);
-
-            if (result != null)
-            {
-                return BindingOperations.Apply(target, property, result, anchor);
-            }
-            else
-            {
-                return Disposable.Empty;
-            }
+            return target.Bind(property, binding);
         }
 
         /// <summary>
@@ -384,13 +371,13 @@ namespace Avalonia
                 object? anchor = null,
                 bool enableDataValidation = false)
             {
-                var expression = new UntypedObservableBindingExpression(_source);
+                var expression = new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
                 return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.LocalValue);
             }
 
-            IBindingExpression IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property)
+            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property)
             {
-                return new UntypedObservableBindingExpression(_source);
+                return new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
             }
         }
 

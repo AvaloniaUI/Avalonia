@@ -462,7 +462,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object>();
 
-            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+            target.Bind(Class1.QuxProperty, source);
 
             source.OnNext(AvaloniaProperty.UnsetValue);
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
@@ -477,7 +477,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object>();
 
-            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+            target.Bind(Class1.QuxProperty, source);
 
             source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));

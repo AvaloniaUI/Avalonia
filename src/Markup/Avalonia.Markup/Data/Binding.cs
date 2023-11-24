@@ -71,7 +71,7 @@ namespace Avalonia.Data
             return new InstancedBinding(target, expression, Mode, Priority);
         }
 
-        private protected override IBindingExpression Instance(AvaloniaProperty targetProperty, AvaloniaObject target)
+        private protected override BindingExpressionBase Instance(AvaloniaProperty targetProperty, AvaloniaObject target)
         {
             var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
             return InstanceCore(targetProperty, target, enableDataValidation);

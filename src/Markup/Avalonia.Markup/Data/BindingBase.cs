@@ -88,7 +88,7 @@ namespace Avalonia.Data
             object? anchor = null,
             bool enableDataValidation = false);
 
-        private protected abstract IBindingExpression Instance(AvaloniaProperty targetProperty, AvaloniaObject target);
+        private protected abstract BindingExpressionBase Instance(AvaloniaProperty targetProperty, AvaloniaObject target);
 
         private protected BindingMode ResolveBindingMode(AvaloniaObject target, AvaloniaProperty? targetProperty)
         {
@@ -99,6 +99,6 @@ namespace Avalonia.Data
             return targetProperty.GetMetadata(target.GetType()).DefaultBindingMode;
         }
 
-        IBindingExpression IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property) => Instance(property, target);
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property) => Instance(property, target);
     }
 }

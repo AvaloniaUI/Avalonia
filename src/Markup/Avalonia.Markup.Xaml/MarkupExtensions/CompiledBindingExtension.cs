@@ -57,7 +57,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return new InstancedBinding(target, expression, Mode, Priority);
         }
 
-        private protected override IBindingExpression Instance(AvaloniaProperty targetProperty, AvaloniaObject target)
+        private protected override BindingExpressionBase Instance(AvaloniaProperty targetProperty, AvaloniaObject target)
         {
             var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
             return InstanceCore(target, targetProperty, enableDataValidation);
