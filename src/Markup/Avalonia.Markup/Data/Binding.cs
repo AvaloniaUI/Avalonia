@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
+using Avalonia.Diagnostics;
 using Avalonia.Markup.Parsers;
 using Avalonia.Utilities;
 
@@ -59,55 +60,21 @@ namespace Avalonia.Data
         /// </summary>
         public Func<string?, string, Type>? TypeResolver { get; set; }
 
+        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public override InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            var nodes = new List<ExpressionNode>();
-            var isRooted = false;
-
-            // Build the expression nodes from the binding path.
-            if (!string.IsNullOrEmpty(Path))
-            {
-                var reader = new CharacterReader(Path.AsSpan());
-                var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
-                ExpressionNodeFactory.CreateFromAst(
-                    astNodes,
-                    TypeResolver,
-                    GetNameScope(),
-                    nodes,
-                    out isRooted);
-            }
-
-            // If the binding isn't rooted (i.e. doesn't have a Source or start with $parent, $self,
-            // #elementName etc.) then we need to add a source node. The type of source node will
-            // depend on the ElementName and RelativeSource properties of the binding and if
-            // neither of those are set will default to a data context node.
-            if (Source == AvaloniaProperty.UnsetValue && !isRooted && CreateSourceNode(targetProperty) is { } sourceNode)
-                nodes.Insert(0, sourceNode);
-
-            // If the first node is an ISourceNode then allow it to select the source; otherwise
-            // use the binding source if specified, falling back to the target.
-            var source = nodes.Count > 0 && nodes[0] is SourceNode sn ?
-                sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target) :
-                Source != AvaloniaProperty.UnsetValue ? Source : target;
-
-            // Create the binding expression and wrap it in an InstancedBinding.
-            var expression = new BindingExpression(
-                source,
-                nodes,
-                FallbackValue,
-                converter: Converter,
-                converterCulture: ConverterCulture,
-                converterParameter: ConverterParameter,
-                enableDataValidation: enableDataValidation,
-                mode: ResolveBindingMode(target, targetProperty),
-                stringFormat: StringFormat,
-                targetNullValue: TargetNullValue,
-                targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
+            var expression = InstanceCore(targetProperty, target, enableDataValidation);
             return new InstancedBinding(target, expression, Mode, Priority);
+        }
+
+        private protected override IBindingExpression Instance(AvaloniaProperty targetProperty, AvaloniaObject target)
+        {
+            var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
+            return InstanceCore(targetProperty, target, enableDataValidation);
         }
 
         /// <summary>
@@ -118,6 +85,7 @@ namespace Avalonia.Data
         /// Ideally we'd do this in a more generic way but didn't have time to refactor
         /// ITreeDataTemplate in time for 11.0. We should revisit this in 12.0.
         /// </remarks>
+        // TODO12: Refactor
         internal BindingExpression CreateObservableForTreeDataTemplate(object source)
         {
             if (!string.IsNullOrEmpty(ElementName))
@@ -152,6 +120,54 @@ namespace Avalonia.Data
                 converter: Converter,
                 converterParameter: ConverterParameter,
                 targetNullValue: TargetNullValue);
+        }
+
+        private UntypedBindingExpressionBase InstanceCore(
+            AvaloniaProperty? targetProperty, 
+            AvaloniaObject target,
+            bool enableDataValidation)
+        {
+            var nodes = new List<ExpressionNode>();
+            var isRooted = false;
+
+            // Build the expression nodes from the binding path.
+            if (!string.IsNullOrEmpty(Path))
+            {
+                var reader = new CharacterReader(Path.AsSpan());
+                var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
+                ExpressionNodeFactory.CreateFromAst(
+                    astNodes,
+                    TypeResolver,
+                    GetNameScope(),
+                    nodes,
+                    out isRooted);
+            }
+
+            // If the binding isn't rooted (i.e. doesn't have a Source or start with $parent, $self,
+            // #elementName etc.) then we need to add a source node. The type of source node will
+            // depend on the ElementName and RelativeSource properties of the binding and if
+            // neither of those are set will default to a data context node.
+            if (Source == AvaloniaProperty.UnsetValue && !isRooted && CreateSourceNode(targetProperty) is { } sourceNode)
+                nodes.Insert(0, sourceNode);
+
+            // If the first node is an ISourceNode then allow it to select the source; otherwise
+            // use the binding source if specified, falling back to the target.
+            var source = nodes.Count > 0 && nodes[0] is SourceNode sn ?
+                sn.SelectSource(Source, target, DefaultAnchor?.Target) :
+                Source != AvaloniaProperty.UnsetValue ? Source : target;
+
+            return new BindingExpression(
+                source,
+                nodes,
+                FallbackValue,
+                converter: Converter,
+                converterCulture: ConverterCulture,
+                converterParameter: ConverterParameter,
+                enableDataValidation: enableDataValidation,
+                mode: ResolveBindingMode(target, targetProperty),
+                stringFormat: StringFormat,
+                targetNullValue: TargetNullValue,
+                targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
         }
 
         private INameScope? GetNameScope()

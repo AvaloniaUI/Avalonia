@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Data.Core;
-using Avalonia.Logging;
-using Avalonia.Markup.Xaml.Converters;
-using Avalonia.Media;
 using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions

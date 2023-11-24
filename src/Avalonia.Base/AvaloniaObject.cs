@@ -7,6 +7,7 @@ using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia
@@ -408,6 +409,24 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="binding">The binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        public IBindingExpression Bind(AvaloniaProperty property, IBinding binding)
+        {
+            if (binding is not IBinding2 b)
+                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
+            if (b.Instance(this, property) is not UntypedBindingExpressionBase expression)
+                throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+
+            return property.RouteBind(this, expression);
+        }
+
+        /// <summary>
         /// Binds a <see cref="AvaloniaProperty"/> to an observable.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -611,10 +630,9 @@ namespace Avalonia
 
         internal IDisposable Bind(
             AvaloniaProperty property,
-            UntypedBindingExpressionBase expression,
-            BindingPriority priority)
+            UntypedBindingExpressionBase expression)
         {
-            return property.RouteBind(this, expression, priority);
+            return property.RouteBind(this, expression);
         }
 
         /// <summary>

@@ -228,12 +228,9 @@ namespace Avalonia
             return target.Bind<TValue>(this, source, priority);
         }
 
-        internal override IDisposable RouteBind(
-            AvaloniaObject o,
-            UntypedBindingExpressionBase source,
-            BindingPriority priority)
+        internal override IBindingExpression RouteBind(AvaloniaObject o, UntypedBindingExpressionBase source)
         {
-            return o.GetValueStore().AddBinding(this, source, priority);
+            return o.GetValueStore().AddBinding(this, source);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]

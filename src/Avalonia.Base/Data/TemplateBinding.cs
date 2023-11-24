@@ -13,6 +13,7 @@ namespace Avalonia.Data
     /// </summary>
     public partial class TemplateBinding : UntypedBindingExpressionBase,
         IBinding,
+        IBinding2,
         IDescription,
         ISetterValue,
         IDisposable
@@ -69,32 +70,12 @@ namespace Avalonia.Data
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            if (Mode is BindingMode.OneTime or BindingMode.OneWayToSource)
-                throw new NotSupportedException("TemplateBinding does not support OneTime or OneWayToSource bindings.");
+            return new(target, InstanceCore(), Mode, BindingPriority.Template);
+        }
 
-            // Usually each `TemplateBinding` will only be instantiated once; in this case we can
-            // use the `TemplateBinding` object itself as the binding expression in order to save
-            // allocating a new object.
-            //
-            // If the binding appears in a `Setter`, then make a clone and instantiate that because
-            // because the setter can outlive the control and cause a leak.
-            if (!_isSetterValue)
-            {
-                return new(target, this, Mode, BindingPriority.Template);
-            }
-            else
-            {
-                var clone = new TemplateBinding
-                {
-                    Converter = Converter,
-                    ConverterCulture = ConverterCulture,
-                    ConverterParameter = ConverterParameter,
-                    Mode = Mode,
-                    Property = Property,
-                };
-
-                return clone.Initiate(target, targetProperty, anchor, enableDataValidation);
-            }
+        IBindingExpression IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property)
+        {
+            return InstanceCore();
         }
 
         internal override bool WriteValueToSource(object? value)
@@ -137,6 +118,36 @@ namespace Avalonia.Data
                 {
                     target.PropertyChanged -= OnTargetPropertyChanged;
                 }
+            }
+        }
+
+        private TemplateBinding InstanceCore()
+        {
+            if (Mode is BindingMode.OneTime or BindingMode.OneWayToSource)
+                throw new NotSupportedException("TemplateBinding does not support OneTime or OneWayToSource bindings.");
+
+            // Usually each `TemplateBinding` will only be instantiated once; in this case we can
+            // use the `TemplateBinding` object itself as the binding expression in order to save
+            // allocating a new object.
+            //
+            // If the binding appears in a `Setter`, then make a clone and instantiate that because
+            // because the setter can outlive the control and cause a leak.
+            if (!_isSetterValue)
+            {
+                return this;
+            }
+            else
+            {
+                var clone = new TemplateBinding
+                {
+                    Converter = Converter,
+                    ConverterCulture = ConverterCulture,
+                    ConverterParameter = ConverterParameter,
+                    Mode = Mode,
+                    Property = Property,
+                };
+
+                return clone;
             }
         }
 

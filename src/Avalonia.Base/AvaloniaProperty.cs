@@ -566,11 +566,9 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object instance.</param>
         /// <param name="source">The binding source.</param>
-        /// <param name="priority">The priority.</param>
-        internal abstract IDisposable RouteBind(
+        internal abstract IBindingExpression RouteBind(
             AvaloniaObject o,
-            UntypedBindingExpressionBase source,
-            BindingPriority priority);
+            UntypedBindingExpressionBase source);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.

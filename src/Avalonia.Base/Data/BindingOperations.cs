@@ -1,5 +1,5 @@
 using System;
-using Avalonia.Data.Core;
+using Avalonia.Diagnostics;
 using Avalonia.Reactive;
 
 namespace Avalonia.Data
@@ -15,6 +15,7 @@ namespace Avalonia.Data
         /// <param name="property">The property to bind.</param>
         /// <param name="binding">The instanced binding.</param>
         /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
+        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public static IDisposable Apply(
             AvaloniaObject target,
             AvaloniaProperty property,
@@ -26,7 +27,7 @@ namespace Avalonia.Data
 
             if (binding.Expression is { } expression)
             {
-                return target.Bind(property, expression, binding.Priority);
+                return target.Bind(property, expression);
             }
 
             var mode = binding.Mode;

@@ -175,10 +175,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override IDisposable RouteBind(
-                AvaloniaObject o,
-                UntypedBindingExpressionBase source,
-                BindingPriority priority)
+            internal override IBindingExpression RouteBind(AvaloniaObject o, UntypedBindingExpressionBase source)
             {
                 throw new NotImplementedException();
             }

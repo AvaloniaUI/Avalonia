@@ -5,10 +5,11 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Diagnostics;
 
 namespace Avalonia.Data
 {
-    public abstract class BindingBase : IBinding
+    public abstract class BindingBase : IBinding, IBinding2
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Binding"/> class.
@@ -80,11 +81,14 @@ namespace Avalonia.Data
 
         /// <inheritdoc/>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
+        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public abstract InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false);
+
+        private protected abstract IBindingExpression Instance(AvaloniaProperty targetProperty, AvaloniaObject target);
 
         private protected BindingMode ResolveBindingMode(AvaloniaObject target, AvaloniaProperty? targetProperty)
         {
@@ -94,5 +98,7 @@ namespace Avalonia.Data
                 return BindingMode.OneWay;
             return targetProperty.GetMetadata(target.GetType()).DefaultBindingMode;
         }
+
+        IBindingExpression IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property) => Instance(property, target);
     }
 }

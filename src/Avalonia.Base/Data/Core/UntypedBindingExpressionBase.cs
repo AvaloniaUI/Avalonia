@@ -15,7 +15,8 @@ namespace Avalonia.Data.Core;
 /// Base class for binding expressions which produce untyped values.
 /// </summary>
 [PrivateApi]
-public abstract class UntypedBindingExpressionBase : BindingExpressionBase, 
+public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
+    IBindingExpression,
     IDisposable,
     IDescription,
     IValueEntry

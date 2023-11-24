@@ -43,11 +43,12 @@ namespace Avalonia.PropertyStore
             ReevaluateEffectiveValues();
         }
 
-        public IDisposable AddBinding<T>(
+        public IBindingExpression AddBinding<T>(
             StyledProperty<T> property,
-            UntypedBindingExpressionBase source,
-            BindingPriority priority)
+            UntypedBindingExpressionBase source)
         {
+            var priority = source.Priority;
+
             if (priority == BindingPriority.LocalValue)
             {
                 DisposeExistingLocalValueBinding(property);
@@ -155,7 +156,7 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public IDisposable AddBinding<T>(DirectPropertyBase<T> property, UntypedBindingExpressionBase source)
+        public IBindingExpression AddBinding<T>(DirectPropertyBase<T> property, UntypedBindingExpressionBase source)
         {
             DisposeExistingLocalValueBinding(property);
             _localValueBindings ??= new();
