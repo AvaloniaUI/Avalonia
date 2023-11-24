@@ -141,6 +141,13 @@ namespace Avalonia.Controls
                 defaultValue: true);
 
         /// <summary>
+        /// Defines the <see cref="IsDeferredScrollingEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsDeferredScrollingEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(IsDeferredScrollingEnabled));
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -368,6 +375,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsScrollInertiaEnabledProperty);
             set => SetValue(IsScrollInertiaEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether dragging of <see cref="Thumb"/> elements should update the <see cref="ScrollViewer"/> only when the user releases the mouse.
+        /// </summary>
+        public bool IsDeferredScrollingEnabled
+        {
+            get => GetValue(IsDeferredScrollingEnabledProperty);
+            set => SetValue(IsDeferredScrollingEnabledProperty, value);
         }
 
         /// <summary>
@@ -625,6 +641,16 @@ namespace Avalonia.Controls
         {
             control.SetValue(IsScrollInertiaEnabledProperty, value);
         }
+
+        /// <summary>
+        /// Gets whether dragging of <see cref="Thumb"/> elements should update the <see cref="ScrollViewer"/> only when the user releases the mouse.
+        /// </summary>
+        public static bool GetIsDeferredScrollingEnabled(Control control) => control.GetValue(IsDeferredScrollingEnabledProperty);
+
+        /// <summary>
+        /// Sets whether dragging of <see cref="Thumb"/> elements should update the <see cref="ScrollViewer"/> only when the user releases the mouse.
+        /// </summary>
+        public static void SetIsDeferredScrollingEnabled(Control control, bool value) => control.SetValue(IsDeferredScrollingEnabledProperty, value);
 
         /// <inheritdoc/>
         public void RegisterAnchorCandidate(Control element)

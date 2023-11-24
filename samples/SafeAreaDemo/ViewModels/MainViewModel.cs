@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using MiniMvvm;
 
@@ -7,15 +8,16 @@ namespace SafeAreaDemo.ViewModels
     public class MainViewModel : ViewModelBase
     {
         private bool _useSafeArea = true;
-        private bool _fullscreen;
+        private bool _displayEdgeToEdge;
         private IInsetsManager? _insetsManager;
         private bool _hideSystemBars;
+        private bool _autoSafeAreaPadding;
 
         public Thickness SafeAreaPadding
         {
             get
             {
-                return _insetsManager?.SafeAreaPadding ?? default;
+                return !_autoSafeAreaPadding ? _insetsManager?.SafeAreaPadding ?? default : default;
             }
         }
 
@@ -40,12 +42,12 @@ namespace SafeAreaDemo.ViewModels
             }
         }
 
-        public bool Fullscreen
+        public bool DisplayEdgeToEdge
         {
-            get => _fullscreen;
+            get => _displayEdgeToEdge;
             set
             {
-                _fullscreen = value;
+                _displayEdgeToEdge = value;
 
                 if (_insetsManager != null)
                 {
@@ -76,25 +78,34 @@ namespace SafeAreaDemo.ViewModels
             }
         }
 
-        internal IInsetsManager? InsetsManager
+        public bool AutoSafeAreaPadding
         {
-            get => _insetsManager; 
+            get => _autoSafeAreaPadding;
             set
             {
-                if (_insetsManager != null)
-                {
-                    _insetsManager.SafeAreaChanged -= InsetsManager_SafeAreaChanged;
-                }
+                _autoSafeAreaPadding = value;
+                
+                RaisePropertyChanged();
+                RaiseSafeAreaChanged();
+            }
+        }
 
-                _insetsManager = value;
+        internal void Initialize(Control mainView, IInsetsManager? InsetsManager)
+        {
+            if (_insetsManager != null)
+            {
+                _insetsManager.SafeAreaChanged -= InsetsManager_SafeAreaChanged;
+            }
 
-                if (_insetsManager != null)
-                {
-                    _insetsManager.SafeAreaChanged += InsetsManager_SafeAreaChanged;
+            _autoSafeAreaPadding = mainView.GetValue(TopLevel.AutoSafeAreaPaddingProperty);
+            _insetsManager = InsetsManager;
 
-                    _insetsManager.DisplayEdgeToEdge = _fullscreen;
-                    _insetsManager.IsSystemBarVisible = !_hideSystemBars;
-                }
+            if (_insetsManager != null)
+            {
+                _insetsManager.SafeAreaChanged += InsetsManager_SafeAreaChanged;
+
+                _displayEdgeToEdge = _insetsManager.DisplayEdgeToEdge;
+                _hideSystemBars = !(_insetsManager.IsSystemBarVisible ?? false);
             }
         }
 

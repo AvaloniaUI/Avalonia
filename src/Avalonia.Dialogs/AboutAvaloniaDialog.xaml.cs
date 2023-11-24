@@ -10,7 +10,7 @@ namespace Avalonia.Dialogs
 {
     public class AboutAvaloniaDialog : Window
     {
-        private static readonly Version s_version = typeof(AboutAvaloniaDialog).Assembly.GetName().Version;
+        private static readonly Version s_version = typeof(AboutAvaloniaDialog).Assembly.GetName().Version!;
 
         public static string Version { get; } = $@"v{s_version.ToString(2)}";
 
@@ -45,7 +45,7 @@ namespace Avalonia.Dialogs
             {
                 if (waitForExit)
                 {
-                    process.WaitForExit();
+                    process?.WaitForExit();
                 }
             }
         }
@@ -61,7 +61,7 @@ namespace Avalonia.Dialogs
             }
             else
             {
-                using Process process = Process.Start(new ProcessStartInfo
+                using Process? process = Process.Start(new ProcessStartInfo
                 {
                     FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
                     Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",

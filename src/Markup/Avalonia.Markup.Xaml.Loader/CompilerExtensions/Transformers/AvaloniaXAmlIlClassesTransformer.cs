@@ -11,12 +11,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     /// <remarks>
     /// Converts the property assignment `Classes="foo bar"` to:
     /// 
-    /// <code>
+    /// <code><![CDATA[
     ///     <StyledElement.Classes>
-    ///         <x:String>foo</String>
-    ///         <x:String>bar</String>
+    ///         <x:String>foo</x:String>
+    ///         <x:String>bar</x:String>
     ///     </StyledElement.Classes>
-    /// </code>
+    /// ]]></code>
     /// </remarks>
     class AvaloniaXamlIlClassesTransformer : IXamlAstTransformer
     {

@@ -22,14 +22,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes
             _values = values;
             
             Type = new XamlAstClrTypeReference(lineInfo, arrayType, false);
-
-            foreach (var element in values)
-            {
-                if (!elementType.IsAssignableFrom(element.Type.GetClrType()))
-                {
-                    throw new XamlParseException("x:Array element is not assignable to the array element type!", lineInfo);
-                }
-            }
         }
 
         public IXamlAstTypeReference Type { get; }
