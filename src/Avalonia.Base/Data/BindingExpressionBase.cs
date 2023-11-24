@@ -14,7 +14,13 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance
 
     public virtual void Dispose()
     {
+        GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// Forces a data transfer from the binding source to the binding target.
+    /// </summary>
+    public virtual void UpdateTarget() { }
 
     /// <summary>
     /// When overridden in a derived class, attaches the binding expression to a value store but

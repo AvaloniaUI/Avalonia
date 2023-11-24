@@ -131,6 +131,19 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     public ExpressionNode LeafNode => _nodes[_nodes.Count - 1];
     public string? StringFormat => _uncommon?._stringFormat;
 
+    public override void UpdateTarget()
+    {
+        if (_nodes.Count == 0)
+            return;
+
+        var source = _nodes[0].Source;
+
+        for (var i = 0; i < _nodes.Count; ++i)
+            _nodes[i].SetSource(null, null);
+
+        _nodes[0].SetSource(source, null);
+    }
+
     /// <summary>
     /// Creates an <see cref="BindingExpression"/> from an expression tree.
     /// </summary>

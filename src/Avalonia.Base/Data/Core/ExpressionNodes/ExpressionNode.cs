@@ -127,6 +127,9 @@ internal abstract class ExpressionNode
         if (source == AvaloniaProperty.UnsetValue)
             source = null;
 
+        if (source == oldSource)
+            return;
+
         if (oldSource is not null)
             Unsubscribe(oldSource);
 
@@ -139,7 +142,7 @@ internal abstract class ExpressionNode
             // binding change.
             _value = BindingExpression._nullReference;
         }
-        else if (source != oldSource)
+        else
         {
             try { OnSourceChanged(source, dataValidationError); }
             catch (Exception e) { SetError(e); }

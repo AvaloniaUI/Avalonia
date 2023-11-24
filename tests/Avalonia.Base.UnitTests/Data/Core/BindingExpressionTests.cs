@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
@@ -271,6 +272,22 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
+        [Fact]
+        public void Can_Use_UpdateTarget_To_Update_From_Non_INPC_Data()
+        {
+            var data = new NonInpcClass { StringValue = "foo" };
+            var target = new Control { DataContext = data };
+            var expression = target.Bind(Control.TagProperty, new Binding(nameof(data.StringValue)));
+
+            Assert.Equal("foo", target.Tag);
+
+            data.StringValue = "bar";
+            Assert.Equal("foo", target.Tag);
+
+            expression.UpdateTarget();
+            Assert.Equal("bar", target.Tag);
+        }
+
         private class Class1 : NotifyingBase
         {
             private string _stringValue;
@@ -287,6 +304,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 get { return _doubleValue; }
                 set { _doubleValue = value; RaisePropertyChanged(); }
             }
+        }
+
+        private class NonInpcClass
+        {
+            public string StringValue { get; set; }
         }
 
         private class TargetProperties : AvaloniaObject
