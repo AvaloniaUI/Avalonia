@@ -143,7 +143,7 @@ namespace Avalonia.Controls
             // The pointer has exited the tooltip. Close the tooltip unless the pointer is over the
             // adorned control.
             if (sender is ToolTip toolTip &&
-                toolTip.GetValue(ToolTip.ToolTipAdornedControlProperty) is { } control &&
+                toolTip.AdornedControl is { } control &&
                 !control.IsPointerOver)
             {
                 Close(control);
