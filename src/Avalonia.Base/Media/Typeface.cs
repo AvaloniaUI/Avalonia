@@ -88,8 +88,8 @@ namespace Avalonia.Media
                 {
                     return glyphTypeface;
                 }
-
-                throw new InvalidOperationException("Could not create glyphTypeface.");
+                
+                throw new InvalidOperationException($"Could not create glyphTypeface for {this.FontFamily}.");
             }
         }
 
