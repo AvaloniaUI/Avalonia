@@ -205,8 +205,8 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
                 ConvertAndPublishValue(value, error);
             }
 
-            // If the binding mode is OneTime, then stop the binding.
-            if (_mode == BindingMode.OneTime)
+            // If the binding mode is OneTime, then stop the binding if a valid value was published.
+            if (_mode == BindingMode.OneTime && GetValue() != AvaloniaProperty.UnsetValue)
                 Stop();
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)

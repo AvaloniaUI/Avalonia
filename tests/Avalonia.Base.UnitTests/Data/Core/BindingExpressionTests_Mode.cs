@@ -58,6 +58,24 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.Equal("foo", target.Tag);
         }
 
+        [Fact]
+        public void OneTime_Binding_Waits_For_DataContext_With_Matching_Property_Type()
+        {
+            var data1 = new { Bar = new object() };
+            var data2 = new ViewModel();
+            var binding = new Binding(nameof(data2.Bar), BindingMode.OneTime);
+            var target = new Control { DataContext = data1 };
+
+            target.Bind(Control.OpacityProperty, binding);
+            Assert.Equal(1, target.Opacity);
+
+            target.DataContext = data2;
+            Assert.Equal(0.5, target.Opacity);
+
+            data2.Bar = 0.2;
+            Assert.Equal(0.5, target.Opacity);
+        }
+
         private class ViewModel : NotifyingBase
         {
             private string _foo;
