@@ -43,7 +43,7 @@ namespace Avalonia.PropertyStore
             ReevaluateEffectiveValues();
         }
 
-        public IBindingExpression AddBinding<T>(
+        public BindingExpressionBase AddBinding<T>(
             StyledProperty<T> property,
             UntypedBindingExpressionBase source)
         {
@@ -156,7 +156,7 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public IBindingExpression AddBinding<T>(DirectPropertyBase<T> property, UntypedBindingExpressionBase source)
+        public BindingExpressionBase AddBinding<T>(DirectPropertyBase<T> property, UntypedBindingExpressionBase source)
         {
             DisposeExistingLocalValueBinding(property);
             _localValueBindings ??= new();

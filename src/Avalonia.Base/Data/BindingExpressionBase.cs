@@ -1,9 +1,10 @@
-﻿using Avalonia.PropertyStore;
+﻿using System;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 
-namespace Avalonia.Data.Core;
+namespace Avalonia.Data;
 
-public abstract class BindingExpressionBase : IBindingExpression, ISetterInstance
+public abstract class BindingExpressionBase : IDisposable, ISetterInstance
 {
     private protected BindingExpressionBase()
     {

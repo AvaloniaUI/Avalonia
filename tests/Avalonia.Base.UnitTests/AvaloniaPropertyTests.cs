@@ -175,7 +175,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override IBindingExpression RouteBind(AvaloniaObject o, UntypedBindingExpressionBase source)
+            internal override BindingExpressionBase RouteBind(AvaloniaObject o, UntypedBindingExpressionBase source)
             {
                 throw new NotImplementedException();
             }

@@ -566,7 +566,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object instance.</param>
         /// <param name="source">The binding source.</param>
-        internal abstract IBindingExpression RouteBind(
+        internal abstract BindingExpressionBase RouteBind(
             AvaloniaObject o,
             UntypedBindingExpressionBase source);
 

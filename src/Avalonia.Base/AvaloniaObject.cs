@@ -416,7 +416,7 @@ namespace Avalonia
         /// <returns>
         /// A disposable which can be used to terminate the binding.
         /// </returns>
-        public IBindingExpression Bind(AvaloniaProperty property, IBinding binding)
+        public BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding)
         {
             if (binding is not IBinding2 b)
                 throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
