@@ -156,6 +156,8 @@ namespace Avalonia.Data
                 sn.SelectSource(Source, target, DefaultAnchor?.Target) :
                 Source != AvaloniaProperty.UnsetValue ? Source : target;
 
+            var (mode, trigger) = ResolveDefaultsFromMetadata(target, targetProperty);
+
             return new BindingExpression(
                 source,
                 nodes,
@@ -164,10 +166,11 @@ namespace Avalonia.Data
                 converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,
                 enableDataValidation: enableDataValidation,
-                mode: ResolveBindingMode(target, targetProperty),
+                mode: mode,
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
-                targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
+                targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
+                updateSourceTrigger: trigger);
         }
 
         private INameScope? GetNameScope()

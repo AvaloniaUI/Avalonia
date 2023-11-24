@@ -8,6 +8,8 @@ using System.Text;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.Utilities;
 
@@ -49,6 +51,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// <param name="targetTypeConverter">
     /// A final type converter to be run on the produced value.
     /// </param>
+    /// <param name="updateSourceTrigger">The trigger for updating the source value.</param>
     public BindingExpression(
         object? source,
         IReadOnlyList<ExpressionNode> nodes,
@@ -61,11 +64,14 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         BindingPriority priority = BindingPriority.LocalValue,
         string? stringFormat = null,
         object? targetNullValue = null,
-        TargetTypeConverter? targetTypeConverter = null)
+        TargetTypeConverter? targetTypeConverter = null,
+        UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
             : base(priority, enableDataValidation)
     {
         if (mode == BindingMode.Default)
             throw new ArgumentException("Binding mode cannot be Default.", nameof(mode));
+        if (updateSourceTrigger == UpdateSourceTrigger.Default)
+            throw new ArgumentException("UpdateSourceTrigger cannot be Default.", nameof(updateSourceTrigger));
 
         if (source == AvaloniaProperty.UnsetValue)
             source = null;
@@ -79,8 +85,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             converterCulture is not null ||
             converterParameter is not null ||
             fallbackValue != AvaloniaProperty.UnsetValue ||
+            !string.IsNullOrWhiteSpace(stringFormat) ||
             (targetNullValue is not null && targetNullValue != AvaloniaProperty.UnsetValue) ||
-            !string.IsNullOrWhiteSpace(stringFormat))
+            updateSourceTrigger is not UpdateSourceTrigger.PropertyChanged)
         {
             _uncommon = new()
             {
@@ -88,13 +95,14 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
                 _converterCulture = converterCulture,
                 _converterParameter = converterParameter,
                 _fallbackValue = fallbackValue,
-                _targetNullValue = targetNullValue ?? AvaloniaProperty.UnsetValue,
                 _stringFormat = stringFormat switch
                 {
                     string s when string.IsNullOrWhiteSpace(s) => null,
                     string s when !s.Contains('{') => $"{{0:{stringFormat}}}",
                     _ => stringFormat,
                 },
+                _targetNullValue = targetNullValue ?? AvaloniaProperty.UnsetValue,
+                _updateSourceTrigger = updateSourceTrigger,
             };
         }
 
@@ -127,9 +135,16 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     public CultureInfo ConverterCulture => _uncommon?._converterCulture ?? CultureInfo.CurrentCulture;
     public object? ConverterParameter => _uncommon?._converterParameter;
     public object? FallbackValue => _uncommon is not null ? _uncommon._fallbackValue : AvaloniaProperty.UnsetValue;
-    public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
     public ExpressionNode LeafNode => _nodes[_nodes.Count - 1];
     public string? StringFormat => _uncommon?._stringFormat;
+    public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
+    public UpdateSourceTrigger UpdateSourceTrigger => _uncommon?._updateSourceTrigger ?? UpdateSourceTrigger.PropertyChanged;
+
+    public override void UpdateSource()
+    {
+        if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
+            WriteTargetValueToSource();
+    }
 
     public override void UpdateTarget()
     {
@@ -353,7 +368,12 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
                 if (_mode is BindingMode.OneWayToSource)
                     PublishValue(target.GetValue(TargetProperty));
 
-                target.PropertyChanged += OnTargetPropertyChanged;
+                var trigger = UpdateSourceTrigger;
+
+                if (trigger is UpdateSourceTrigger.PropertyChanged)
+                    target.PropertyChanged += OnTargetPropertyChanged;
+                else if (trigger is UpdateSourceTrigger.LostFocus && target is IInputElement ie)
+                    ie.LostFocus += OnTargetLostFocus;
             }
         }
         else
@@ -370,7 +390,12 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
             TryGetTarget(out var target))
         {
-            target.PropertyChanged -= OnTargetPropertyChanged;
+            var trigger = UpdateSourceTrigger;
+
+            if (trigger is UpdateSourceTrigger.PropertyChanged)
+                target.PropertyChanged += OnTargetPropertyChanged;
+            else if (trigger is UpdateSourceTrigger.LostFocus && target is IInputElement ie)
+                ie.LostFocus += OnTargetLostFocus;
         }
     }
 
@@ -450,7 +475,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
 
     private void WriteTargetValueToSource()
     {
-        Debug.Assert(_mode == BindingMode.OneWayToSource);
+        Debug.Assert(_mode is BindingMode.TwoWay or BindingMode.OneWayToSource);
 
         if (TryGetTarget(out var target) &&
             TargetProperty is not null &&
@@ -461,14 +486,20 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         }
     }
 
+    private void OnTargetLostFocus(object? sender, RoutedEventArgs e)
+    {
+        Debug.Assert(UpdateSourceTrigger is UpdateSourceTrigger.LostFocus);
+
+        WriteTargetValueToSource();
+    }
+
     private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         Debug.Assert(_mode is BindingMode.TwoWay or BindingMode.OneWayToSource);
+        Debug.Assert(UpdateSourceTrigger is UpdateSourceTrigger.PropertyChanged);
 
         if (e.Property == TargetProperty)
-        {
             WriteValueToSource(e.NewValue);
-        }
     }
 
     private object? ConvertFallback(object? fallback, string fallbackName)
@@ -512,5 +543,6 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         public object? _fallbackValue;
         public string? _stringFormat;
         public object? _targetNullValue;
+        public UpdateSourceTrigger _updateSourceTrigger;
     }
 }

@@ -75,6 +75,12 @@ namespace Avalonia.Data
         /// </summary>
         public string? StringFormat { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that determines the timing of binding source updates for
+        /// <see cref="BindingMode.TwoWay"/> and <see cref="BindingMode.OneWayToSource"/> bindings.
+        /// </summary>
+        public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
+
         public WeakReference? DefaultAnchor { get; set; }
 
         public WeakReference<INameScope?>? NameScope { get; set; }
@@ -90,13 +96,23 @@ namespace Avalonia.Data
 
         private protected abstract BindingExpressionBase Instance(AvaloniaProperty targetProperty, AvaloniaObject target);
 
-        private protected BindingMode ResolveBindingMode(AvaloniaObject target, AvaloniaProperty? targetProperty)
+        private protected (BindingMode, UpdateSourceTrigger) ResolveDefaultsFromMetadata(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty)
         {
-            if (Mode != BindingMode.Default)
-                return Mode;
-            if (targetProperty is null)
-                return BindingMode.OneWay;
-            return targetProperty.GetMetadata(target.GetType()).DefaultBindingMode;
+            var mode = Mode;
+            var trigger = UpdateSourceTrigger == UpdateSourceTrigger.Default ?
+                UpdateSourceTrigger.PropertyChanged : UpdateSourceTrigger;
+
+            if (mode == BindingMode.Default)
+            {
+                if (targetProperty?.GetMetadata(target.GetType()) is { } metadata)
+                    mode = metadata.DefaultBindingMode;
+                else
+                    mode = BindingMode.OneWay;
+            }
+
+            return (mode, trigger);
         }
 
         BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property) => Instance(property, target);

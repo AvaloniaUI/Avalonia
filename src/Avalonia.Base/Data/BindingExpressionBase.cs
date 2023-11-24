@@ -18,6 +18,21 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance
     }
 
     /// <summary>
+    /// Sends the current binding target value to the binding source property in 
+    /// <see cref="BindingMode.TwoWay"/> or <see cref="BindingMode.OneWayToSource"/> bindings.
+    /// </summary>
+    /// <remarks>
+    /// This method does nothing when the Mode of the binding is not 
+    /// <see cref="BindingMode.TwoWay"/> or <see cref="BindingMode.OneWayToSource"/>.
+    /// 
+    /// If the UpdateSourceTrigger value of your binding is set to
+    /// <see cref="UpdateSourceTrigger.Explicit"/>, you must call the 
+    /// <see cref="UpdateSource"/> method or the changes will not propagate back to the
+    /// source.
+    /// </remarks>
+    public virtual void UpdateSource() { }
+
+    /// <summary>
     /// Forces a data transfer from the binding source to the binding target.
     /// </summary>
     public virtual void UpdateTarget() { }

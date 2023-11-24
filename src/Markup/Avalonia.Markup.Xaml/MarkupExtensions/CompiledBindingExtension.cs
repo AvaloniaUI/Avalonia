@@ -114,7 +114,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 ? sn.SelectSource(Source, target, DefaultAnchor?.Target)
                 : Source != AvaloniaProperty.UnsetValue ? Source : target;
 
-           return new BindingExpression(
+            var (mode, trigger) = ResolveDefaultsFromMetadata(target, targetProperty);
+
+            return new BindingExpression(
                 source,
                 nodes,
                 FallbackValue,
@@ -122,10 +124,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,
                 enableDataValidation: enableDataValidation,
-                mode: ResolveBindingMode(target, targetProperty),
+                mode: mode,
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
-                targetTypeConverter: TargetTypeConverter.GetDefaultConverter());
+                targetTypeConverter: TargetTypeConverter.GetDefaultConverter(),
+                updateSourceTrigger: trigger);
         }
     }
 }
