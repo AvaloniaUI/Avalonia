@@ -13,7 +13,7 @@ namespace Avalonia.Vulkan
         private readonly CommandPool _commandPool;
 
         private readonly List<VulkanCommandBuffer> _usedCommandBuffers = new();
-        private object _lock = new object();
+        private readonly object _lock = new();
 
         public unsafe VulkanCommandBufferPool(Vk api, Device device, Queue queue, uint queueFamilyIndex)
         {
@@ -167,7 +167,7 @@ namespace Avalonia.Vulkan
                 ReadOnlySpan<PipelineStageFlags> waitDstStageMask = default,
                 ReadOnlySpan<Semaphore> signalSemaphores = default,
                 Fence? fence = null,
-                KeyedMutexSubmitInfo keyedMutex = null)
+                KeyedMutexSubmitInfo? keyedMutex = null)
             {
                 EndRecording();
 

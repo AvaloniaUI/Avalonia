@@ -58,7 +58,18 @@ namespace ControlCatalog.Pages
                     image.InvalidateMeasure();
                 }
             };
-                
+
+
+
+            if (this.Find<Slider>("AngleSlider") is { } slider &&
+                this.Find<Panel>("RotationGesture") is { } rotationGesture
+               )
+            {
+                rotationGesture.AddHandler(Gestures.PinchEvent, (s, e) =>
+                {
+                    slider.Value = e.Angle;
+                });
+            }
         }
 
         private void SetPinchHandlers(Control? control)

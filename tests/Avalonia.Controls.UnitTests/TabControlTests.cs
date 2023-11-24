@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -545,6 +544,32 @@ namespace Avalonia.Controls.UnitTests
 
             item = target.ContainerFromIndex(2);
             Assert.Same(item, root.FocusManager.GetFocusedElement());
+        }
+
+        [Fact]
+        public void TabItem_Header_Should_Be_Settable_By_Style_When_DataContext_Is_Set()
+        {
+            var tabItem = new TabItem
+            {
+                DataContext = "Some DataContext"
+            };
+
+            _ = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<TabItem>())
+                    {
+                        Setters =
+                        {
+                            new Setter(HeaderedContentControl.HeaderProperty, "Header from style")
+                        }
+                    }
+                },
+                Child = tabItem
+            };
+
+            Assert.Equal("Header from style", tabItem.Header);
         }
 
         private static IControlTemplate TabControlTemplate()
