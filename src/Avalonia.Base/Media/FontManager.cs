@@ -92,6 +92,7 @@ namespace Avalonia.Media
 
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
+                Console.WriteLine("Branch 1");
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
 
@@ -104,6 +105,7 @@ namespace Avalonia.Media
                         var key = compositeKey.Keys[i];
 
                         var familyName = fontFamily.FamilyNames[i];
+                        Console.WriteLine("Branch 2");
 
                         if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
                             glyphTypeface.FamilyName.Contains(familyName))
@@ -114,6 +116,7 @@ namespace Avalonia.Media
                 }
                 else
                 {
+                    Console.WriteLine("Branch 3");
                     if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, fontFamily.FamilyNames.PrimaryFamilyName, out glyphTypeface))
                     {
                         return true;
@@ -124,6 +127,7 @@ namespace Avalonia.Media
             }
             else
             {
+                Console.WriteLine("Branch 4");
                 if (SystemFonts.TryGetGlyphTypeface(fontFamily.FamilyNames.PrimaryFamilyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {
                     return true;
@@ -132,8 +136,11 @@ namespace Avalonia.Media
 
             if (typeface.FontFamily == DefaultFontFamily)
             {
+                Console.WriteLine("Branch 5");
                 return false;
             }
+            
+            Console.WriteLine("Branch 6");
 
             //Nothing was found so use the default
             return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
