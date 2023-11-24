@@ -169,8 +169,6 @@ namespace Avalonia.Skia
 
         public RenderOptions RenderOptions { get; set; }
 
-        public Vector Dpi => _dpi;
-
         private void CheckLease()
         {
             if (_leased)

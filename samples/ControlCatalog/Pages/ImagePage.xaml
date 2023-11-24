@@ -16,7 +16,7 @@
           <Setter Property="DockPanel.Dock" Value="Top"/>
         </Style>
       </UniformGrid.Styles>
-      
+
       <DockPanel>
         <TextBlock Classes="h3">Bitmap</TextBlock>
         <ComboBox Name="bitmapStretch" DockPanel.Dock="Top" SelectedIndex="2" SelectionChanged="BitmapStretchChanged">
@@ -41,7 +41,7 @@
         </ComboBox>
         <Image Name="croppedImage">
           <Image.Source>
-            <CroppedBitmap  Source="/Assets/delicate-arch-896885_640.jpg" SourceRect="0 0 320 240"/>  
+            <CroppedBitmap  Source="/Assets/delicate-arch-896885_640.jpg" SourceRect="0 0 320 240"/>
           </Image.Source>
         </Image>
       </DockPanel>
@@ -72,14 +72,7 @@
         </Image>
       </DockPanel>
 
-      <DockPanel IsVisible="{OnPlatform False, Windows=True}">
-        <TextBlock Classes="h3">Win32 Icon (<Run Text="{Binding #IconSizeSlider.Value}"/>px)</TextBlock>
-        <Slider DockPanel.Dock="Top" Name="IconSizeSlider" Minimum="16" Maximum="256" Value="32" TickFrequency="16" IsSnapToTickEnabled="True"/>
-        <Image Name="iconImage" Source="{DynamicResource AvaloniaIcon}" Width="{Binding #IconSizeSlider.Value}" Height="{Binding #IconSizeSlider.Value}" 
-               ZIndex="-1" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-      </DockPanel>
-      
     </UniformGrid>
-    
+
   </DockPanel>
 </UserControl>
