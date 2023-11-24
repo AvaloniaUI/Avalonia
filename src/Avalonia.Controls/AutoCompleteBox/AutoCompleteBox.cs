@@ -2094,7 +2094,7 @@ namespace Avalonia.Controls
                 {
                     _binding = value;
                     if (value is not null)
-                        AvaloniaObjectExtensions.Bind(this, ValueProperty, value);
+                        Bind(ValueProperty, value);
                 }
             }
 
