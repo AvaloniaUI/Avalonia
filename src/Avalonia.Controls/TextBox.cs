@@ -450,7 +450,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a brush that is used for the text caret
+        /// Gets or sets the caret blink rate
         /// </summary>
         public TimeSpan CaretBlinkInterval
         {

@@ -288,6 +288,9 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(CaretBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the caret blink rate
+        /// </summary>
         public TimeSpan CaretBlinkInterval
         {
             get => GetValue(CaretBlinkIntervalProperty);
