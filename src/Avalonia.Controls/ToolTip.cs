@@ -61,6 +61,12 @@ namespace Avalonia.Controls
         internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip?>("ToolTip");
 
+        /// <summary>
+        /// Stores the control that a <see cref="ToolTip"/> is being shown on.
+        /// </summary>
+        internal static readonly AttachedProperty<Control?> ToolTipAdornedControlProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, ToolTip, Control?>("ToolTipAdornedControl");
+
         private IPopupHost? _popupHost;
         private Action<IPopupHost?>? _popupHostChangedHandler;
 
@@ -77,6 +83,8 @@ namespace Avalonia.Controls
             VerticalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
             PlacementProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
         }
+
+        internal event EventHandler? Closed;
 
         /// <summary>
         /// Gets the value of the ToolTip.Tip attached property.
@@ -214,14 +222,13 @@ namespace Avalonia.Controls
         {
             var control = (Control)e.Sender;
             var newValue = (bool)e.NewValue!;
-            ToolTip? toolTip;
 
             if (newValue)
             {
                 var tip = GetTip(control);
                 if (tip == null) return;
 
-                toolTip = control.GetValue(ToolTipProperty);
+                var toolTip = control.GetValue(ToolTipProperty);
                 if (toolTip == null || (tip != toolTip && tip != toolTip.Content))
                 {
                     toolTip?.Close();
@@ -231,15 +238,16 @@ namespace Avalonia.Controls
                     toolTip.SetValue(ThemeVariant.RequestedThemeVariantProperty, control.ActualThemeVariant);
                 }
 
+                toolTip.SetValue(ToolTipAdornedControlProperty, control);
                 toolTip.Open(control);
+                toolTip?.UpdatePseudoClasses(newValue);
             }
-            else
+            else if (control.GetValue(ToolTipProperty) is { } toolTip)
             {
-                toolTip = control.GetValue(ToolTipProperty);
-                toolTip?.Close();
+                toolTip.ClearValue(ToolTipAdornedControlProperty);
+                toolTip.Close();
+                toolTip?.UpdatePseudoClasses(newValue);
             }
-
-            toolTip?.UpdatePseudoClasses(newValue);
         }
 
         private static void RecalculatePositionOnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
@@ -293,6 +301,7 @@ namespace Avalonia.Controls
                 _popupHost.Dispose();
                 _popupHost = null;
                 _popupHostChangedHandler?.Invoke(null);
+                Closed?.Invoke(this, EventArgs.Empty);
             }
         }
 
