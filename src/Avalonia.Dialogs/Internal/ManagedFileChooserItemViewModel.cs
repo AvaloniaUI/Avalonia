@@ -4,20 +4,20 @@ namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserItemViewModel : AvaloniaDialogsInternalViewModelBase
     {
-        private string _displayName;
-        private string _path;
-         private DateTime _modified;
-        private string _type;
+        private string? _displayName;
+        private string? _path;
+        private DateTime _modified;
+        private string? _type;
         private long _size;
         private ManagedFileChooserItemType _itemType;
 
-        public string DisplayName
+        public string? DisplayName
         {
             get => _displayName;
             set => this.RaiseAndSetIfChanged(ref _displayName, value);
         }
 
-        public string Path
+        public string? Path
         {
             get => _path;
             set => this.RaiseAndSetIfChanged(ref _path, value);
@@ -29,7 +29,7 @@ namespace Avalonia.Dialogs.Internal
             set => this.RaiseAndSetIfChanged(ref _modified, value);
         }
 
-        public string Type
+        public string? Type
         {
             get => _type;
             set => this.RaiseAndSetIfChanged(ref _type, value);

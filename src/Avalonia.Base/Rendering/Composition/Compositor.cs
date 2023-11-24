@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -20,20 +21,20 @@ namespace Avalonia.Rendering.Composition
     {
         internal IRenderLoop Loop { get; }
         internal bool UseUiThreadForSynchronousCommits { get; }
-        private ServerCompositor _server;
+        private readonly ServerCompositor _server;
         private CompositionBatch? _nextCommit;
-        private BatchStreamObjectPool<object?> _batchObjectPool;
-        private BatchStreamMemoryPool _batchMemoryPool;
-        private Queue<ICompositorSerializable> _objectSerializationQueue = new();
-        private HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
+        private readonly BatchStreamObjectPool<object?> _batchObjectPool;
+        private readonly BatchStreamMemoryPool _batchMemoryPool;
+        private readonly Queue<ICompositorSerializable> _objectSerializationQueue = new();
+        private readonly HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
         private Queue<Action> _invokeBeforeCommitWrite = new(), _invokeBeforeCommitRead = new();
-        private HashSet<IDisposable> _disposeOnNextBatch = new();
+        private readonly HashSet<IDisposable> _disposeOnNextBatch = new();
         internal ServerCompositor Server => _server;
         private CompositionBatch? _pendingBatch;
         private readonly object _pendingBatchLock = new();
-        private List<Action> _pendingServerCompositorJobs = new();
+        private readonly List<Action> _pendingServerCompositorJobs = new();
         private DiagnosticTextRenderer? _diagnosticTextRenderer;
-        private Action _triggerCommitRequested;
+        private readonly Action _triggerCommitRequested;
 
         internal IEasing DefaultEasing { get; }
 
@@ -85,7 +86,7 @@ namespace Avalonia.Rendering.Composition
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
-            DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
+            DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
         }
 
         /// <summary>
@@ -107,7 +108,8 @@ namespace Avalonia.Rendering.Composition
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
-                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send));
+                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
+                        TaskContinuationOptions.ExecuteSynchronously);
                 else
                     _triggerCommitRequested();
             }

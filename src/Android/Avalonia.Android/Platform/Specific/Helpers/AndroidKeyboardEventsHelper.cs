@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using Android.Views;
 using Avalonia.Android.Platform.Input;
@@ -30,11 +32,11 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return DispatchKeyEventInternal(e, out callBase);
         }
 
-        static string UnicodeTextInput(KeyEvent keyEvent)
+        static string? UnicodeTextInput(KeyEvent keyEvent)
         {
             return keyEvent.Action == KeyEventActions.Multiple
                 && keyEvent.RepeatCount == 0
-                && !string.IsNullOrEmpty(keyEvent?.Characters)
+                && !string.IsNullOrEmpty(keyEvent.Characters)
                 ? keyEvent.Characters
                 : null;
         }
@@ -49,6 +51,9 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 return null;
             }
 
+            var physicalKey = AndroidKeyInterop.PhysicalKeyFromScanCode(e.ScanCode);
+            var keySymbol = GetKeySymbol(e.UnicodeChar, physicalKey);
+
             var rawKeyEvent = new RawKeyEventArgs(
                           AndroidKeyboardDevice.Instance,
                           Convert.ToUInt64(e.EventTime),
@@ -56,8 +61,8 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                           e.Action == KeyEventActions.Down ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                           AndroidKeyboardDevice.ConvertKey(e.KeyCode),
                           GetModifierKeys(e),
-                          PhysicalKey.None,
-                          e.DisplayLabel == '\0' ? null : new string(e.DisplayLabel, 1));
+                          physicalKey,
+                          keySymbol);
 
             _view.Input(rawKeyEvent);
 
@@ -92,6 +97,31 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             if (e.IsShiftPressed) rv |= RawInputModifiers.Shift;
 
             return rv;
+        }
+
+        private static string? GetKeySymbol(int unicodeChar, PhysicalKey physicalKey)
+        {
+            // Handle a very limited set of control characters so that we're consistent with other platforms
+            // (matches KeySymbolHelper.IsAllowedAsciiKeySymbol)
+            switch (physicalKey)
+            {
+                case PhysicalKey.Backspace:
+                    return "\b";
+                case PhysicalKey.Tab:
+                    return "\t";
+                case PhysicalKey.Enter:
+                case PhysicalKey.NumPadEnter:
+                    return "\r";
+                case PhysicalKey.Escape:
+                    return "\u001B";
+                default:
+                    if (unicodeChar <= 0x7F)
+                    {
+                        var asciiChar = (char)unicodeChar;
+                        return KeySymbolHelper.IsAllowedAsciiKeySymbol(asciiChar) ? asciiChar.ToString() : null;
+                    }
+                    return char.ConvertFromUtf32(unicodeChar);
+            }
         }
 
         public void Dispose()

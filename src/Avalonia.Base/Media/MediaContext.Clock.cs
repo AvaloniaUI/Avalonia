@@ -15,8 +15,8 @@ internal partial class MediaContext
     class MediaContextClock : IGlobalClock
     {
         private readonly MediaContext _parent;
-        private List<IObserver<TimeSpan>> _observers = new();
-        private List<IObserver<TimeSpan>> _newObservers = new();
+        private readonly List<IObserver<TimeSpan>> _observers = new();
+        private readonly List<IObserver<TimeSpan>> _newObservers = new();
         private Queue<Action<TimeSpan>> _queuedAnimationFrames = new();
         private Queue<Action<TimeSpan>> _queuedAnimationFramesNext = new();
         private TimeSpan _currentAnimationTimestamp;

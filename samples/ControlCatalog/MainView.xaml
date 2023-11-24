@@ -16,7 +16,7 @@
     </Grid.Styles>
     <controls:HamburgerMenu Name="Sidebar">
       <TabItem Header="Composition">
-        <pages:CompositionPage/>
+        <pages:CompositionPage />
       </TabItem>
       <TabItem Header="Acrylic">
         <pages:AcrylicPage />
@@ -67,12 +67,15 @@
         <pages:CursorPage />
       </TabItem>
       <TabItem Header="Custom Drawing" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:CustomDrawing/>
+        <pages:CustomDrawing />
       </TabItem>
       <TabItem Header="DataGrid"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:DataGridPage />
+      </TabItem>
+      <TabItem Header="Data Validation">
+        <pages:DataValidationPage />
       </TabItem>
       <TabItem Header="Date/Time Picker">
         <pages:DateTimePickerPage />
@@ -188,6 +191,9 @@
       </TabItem>
       <TabItem Header="Window Customizations">
         <pages:WindowCustomizationsPage />
+      </TabItem>
+      <TabItem Header="HeaderedContentControl">
+        <pages:HeaderedContentPage />
       </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>

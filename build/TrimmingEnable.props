@@ -1,10 +1,12 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
+
   <!-- Remove check for the AOT when we get rid of dependencies with reflection -->
   <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.0' and '$(PublishAot)' != 'true'">
     <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
@@ -13,4 +15,11 @@
     <!-- NativeAOT warnings -->
     <WarningsAsErrors>$(WarningsAsErrors);IL3050;IL3051;IL3052;IL3053;IL3054;IL3055;IL3056</WarningsAsErrors>
   </PropertyGroup>
+
+  <!-- UnconditionalSuppressMessage doesn't work correctly with .NET Standard, keep trim warnings in .NET only -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+  </PropertyGroup>
+
 </Project>

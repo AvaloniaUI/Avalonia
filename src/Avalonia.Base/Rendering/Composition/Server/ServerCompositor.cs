@@ -26,12 +26,12 @@ namespace Avalonia.Rendering.Composition.Server
         public long LastBatchId { get; private set; }
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
-        private List<ServerCompositionTarget> _activeTargets = new();
-        private HashSet<IServerClockItem> _clockItems = new();
-        private List<IServerClockItem> _clockItemsToUpdate = new();
+        private readonly List<ServerCompositionTarget> _activeTargets = new();
+        private readonly HashSet<IServerClockItem> _clockItems = new();
+        private readonly List<IServerClockItem> _clockItemsToUpdate = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
-        private object _lock = new object();
+        private readonly object _lock = new object();
         private Thread? _safeThread;
         private bool _uiThreadIsInsideRender;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
@@ -57,8 +57,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
-        List<CompositionBatch> _reusableToNotifyProcessedList = new();
-        List<CompositionBatch> _reusableToNotifyRenderedList = new();
+        readonly List<CompositionBatch> _reusableToNotifyProcessedList = new();
+        readonly List<CompositionBatch> _reusableToNotifyRenderedList = new();
         void ApplyPendingBatches()
         {
             while (true)

@@ -12,7 +12,7 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class Bitmap : IBitmap, IImageBrushSource
     {
-        private bool _isTranscoded;
+        private readonly bool _isTranscoded;
         /// <summary>
         /// Loads a Bitmap from a stream and decodes at the desired width. Aspect ratio is maintained.
         /// This is more efficient than loading and then resizing.
@@ -284,6 +284,16 @@ namespace Avalonia.Media.Imaging
             return AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
 
-        IRef<IBitmapImpl> IImageBrushSource.Bitmap => PlatformImpl;
+        IRef<IBitmapImpl>? IImageBrushSource.Bitmap
+        {
+            get
+            {
+                // TODO12: We should probably make PlatformImpl to be nullable or make it possible to check
+                // and fix IRef<T> in general (right now Item is not nullable while it internally is)
+                if (PlatformImpl.Item == null!)
+                    return null;
+                return PlatformImpl;
+            }
+        }
     }
 }

@@ -183,7 +183,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             {
                 _queuedSceneInvalidation = false;
                 SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
-            }, DispatcherPriority.Input));
+            }, DispatcherPriority.Input), TaskContinuationOptions.ExecuteSynchronously);
         }
     }
 

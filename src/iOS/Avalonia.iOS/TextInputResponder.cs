@@ -182,6 +182,10 @@ partial class AvaloniaView
 
                 switch (ReturnKeyType)
                 {
+                    case UIReturnKeyType.Next:
+                        FocusManager.GetFocusManager(_view._topLevel)?
+                            .TryMoveFocus(NavigationDirection.Next);
+                        break;
                     case UIReturnKeyType.Done:
                     case UIReturnKeyType.Go:
                     case UIReturnKeyType.Send:

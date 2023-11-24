@@ -80,9 +80,9 @@ interface IShellItem : IUnknown
 
     HRESULT GetParent([out] IShellItem** ppsi);
 
-    HRESULT GetDisplayName(
+    int GetDisplayName(
         [in] uint sigdnName,
-        [out, string, annotation("_Outptr_result_nullonfailure_")] WCHAR** ppszName);
+        [string, annotation("_Outptr_result_nullonfailure_")] WCHAR** ppszName);
 
     HRESULT GetAttributes(
         [in] ULONG sfgaoMask,

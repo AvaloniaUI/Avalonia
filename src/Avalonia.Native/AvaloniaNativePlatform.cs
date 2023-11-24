@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia.Compatibility;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -39,14 +40,13 @@ namespace Avalonia.Native
         {
             if (options.AvaloniaNativeLibraryPath != null)
             {
-                var loader = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                    (IDynLoader)new Win32Loader() :
-                    new UnixLoader();
-
-                var lib = loader.LoadLibrary(options.AvaloniaNativeLibraryPath);
-                var proc = loader.GetProcAddress(lib, "CreateAvaloniaNative", false);
+                var lib = NativeLibraryEx.Load(options.AvaloniaNativeLibraryPath);
+                if (!NativeLibraryEx.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
+                {
+                    throw new InvalidOperationException(
+                        "Unable to get \"CreateAvaloniaNative\" export from AvaloniaNativeLibrary library");
+                }
                 var d = Marshal.GetDelegateForFunctionPointer<CreateAvaloniaNativeDelegate>(proc);
-
 
                 return Initialize(d(), options);
             }

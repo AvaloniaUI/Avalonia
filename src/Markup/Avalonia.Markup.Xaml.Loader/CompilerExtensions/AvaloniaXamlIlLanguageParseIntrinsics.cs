@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using Avalonia.Media;
+using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.TypeSystem;
@@ -16,6 +17,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     {
         public static bool TryConvert(AstTransformationContext context, IXamlAstValueNode node, string text, IXamlType type, AvaloniaXamlIlWellKnownTypes types, out IXamlAstValueNode result)
         {
+            bool ReturnOnParseError(string title, out IXamlAstValueNode result)
+            {
+                context.ReportDiagnostic(new XamlDiagnostic(
+                    AvaloniaXamlDiagnosticCodes.AvaloniaIntrinsicsError,
+                    XamlDiagnosticSeverity.Error,
+                    title,
+                    node)
+                {
+                    // Only one instance when we can lower Error to a Warning
+                    MinSeverity = XamlDiagnosticSeverity.Warning
+                });
+                result = null;
+                return false;
+            }
+
             if (type.FullName == "System.TimeSpan")
             {
                 var tsText = text.Trim();
@@ -24,11 +40,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     // // shorthand seconds format (ie. "0.25")
                     if (!tsText.Contains(":") && double.TryParse(tsText,
-                        NumberStyles.Float | NumberStyles.AllowThousands,
-                        CultureInfo.InvariantCulture, out var seconds))
+                            NumberStyles.Float | NumberStyles.AllowThousands,
+                            CultureInfo.InvariantCulture, out var seconds))
                         timeSpan = TimeSpan.FromSeconds(seconds);
                     else
-                        throw new XamlX.XamlLoadException($"Unable to parse {text} as a time span", node);
+                    {
+                        return ReturnOnParseError($"Unable to parse {text} as a time span", out result);
+                    }
                 }
 
                 result = new XamlStaticOrTargetedReturnMethodCallNode(node,
@@ -56,7 +74,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a thickness", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a thickness", out result);
                 }
             }
 
@@ -73,7 +91,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a point", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a point", out result);
                 }
             }
 
@@ -90,7 +108,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a vector", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a vector", out result);
                 }
             }
 
@@ -107,7 +125,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a size", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a size", out result);
                 }
             }
 
@@ -124,7 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a matrix", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a matrix", out result);
                 }
             }
 
@@ -141,7 +159,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a corner radius", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a corner radius", out result);
                 }
             }
 
@@ -149,7 +167,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 if (!Color.TryParse(text, out Color color))
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a color", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a color", out result);
                 }
 
                 result = new XamlStaticOrTargetedReturnMethodCallNode(node,
@@ -179,7 +197,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a relative point", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a relative point", out result);
                 }
             }
 
@@ -195,7 +213,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a grid length", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a grid length", out result);
                 }
             }
             
@@ -218,7 +236,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 catch
                 {
-                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a grid length", node);
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a grid length", out result);
                 }
             }
 
@@ -295,7 +313,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 if (string.IsNullOrWhiteSpace(uriText) || !Uri.TryCreate(uriText, kind, out var _))
                 {
-                        throw new XamlX.XamlLoadException($"Unable to parse text {uriText} as a {kind} uri.", node);
+                    return ReturnOnParseError($"Unable to parse text \"{uriText}\" as a {kind} uri", out result);
                 }
                 result = new XamlAstNewClrObjectNode(node
                     , new(node, types.Uri, false)
@@ -341,7 +359,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     }
                     else
                     {
-                        throw new XamlX.XamlLoadException($"Invalid PointsList.", node);
+                        return ReturnOnParseError($"Unable to parse text \"{text}\" as a Points list", out result);
                     }
                 }
                 else
@@ -388,6 +406,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     nodes[index] = itemNode;
                 }
 
+                foreach (var element in nodes)
+                {
+                    if (!elementType.IsAssignableFrom(element.Type.GetClrType()))
+                    {
+                        return ReturnOnParseError($"x:Array element {element.Type.GetClrType().Name} is not assignable to the array element type {elementType.Name}", out result);
+                    }
+                }
+                
                 if (types.AvaloniaList.MakeGenericType(elementType).IsAssignableFrom(type))
                 {
                     result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, type, elementType, nodes);
@@ -416,6 +442,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         private static IXamlType GetElementType(IXamlType type, XamlTypeWellKnownTypes types)
         {
+            if (type.IsArray)
+            {
+                return type.ArrayElementType;
+            }
+
             return type.GetAllInterfaces().FirstOrDefault(i =>
                     i.FullName.StartsWith(types.IEnumerableT.FullName))?
                 .GenericArguments[0];

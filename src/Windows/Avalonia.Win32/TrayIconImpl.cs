@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.LogicalTree;
+using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -15,7 +16,9 @@ namespace Avalonia.Win32
 {
     internal class TrayIconImpl : ITrayIconImpl
     {
-        private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
+        private static readonly Win32Icon s_emptyIcon = new(new WriteableBitmap(new PixelSize(32, 32),
+            new Vector(96, 96),
+            PixelFormats.Bgra8888, AlphaFormat.Unpremul));
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private static nint s_taskBarMonitor;
@@ -24,7 +27,7 @@ namespace Avalonia.Win32
         private bool _iconAdded;
         private IWindowIconImpl? _iconImpl;
         private bool _iconStale;
-        private Icon? _icon;
+        private Win32Icon? _icon;
         private string? _tooltipText;
         private readonly Win32NativeToManagedMenuExporter _exporter;
         private static readonly Dictionary<int, TrayIconImpl> s_trayIcons = new();
@@ -134,7 +137,7 @@ namespace Avalonia.Win32
 
         private void UpdateIcon(bool remove = false)
         {
-            Icon? newIcon = null;
+            Win32Icon? newIcon = null;
             if (_iconStale && _iconImpl is not null)
             {
                 var scaling = 1.0;
@@ -167,7 +170,7 @@ namespace Avalonia.Win32
             {
                 iconData.uFlags = NIF.TIP | NIF.MESSAGE | NIF.ICON;
                 iconData.uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE;
-                iconData.hIcon = (_iconStale ? newIcon : _icon)?.Handle ?? s_emptyIcon;
+                iconData.hIcon = (_iconStale ? newIcon : _icon)?.Handle ?? s_emptyIcon.Handle;
                 iconData.szTip = _tooltipText ?? "";
 
                 if (!_iconAdded)

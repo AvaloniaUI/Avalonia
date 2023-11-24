@@ -323,8 +323,8 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     header.Length64 = (ulong) IPAddress.HostToNetworkOrder((long) length);
                 }
 
-                var endOfMessage = true;
-                header.Mask = (byte) (((endOfMessage ? 1u : 0u) << 7) | ((byte) (type) & 0xf));
+                const byte endOfMessageBit = (byte)1u << 7;
+                header.Mask = (byte) (endOfMessageBit | ((byte) type & 0xf));
                 unsafe
                 {
                     Marshal.Copy(new IntPtr(&header), _sendHeaderBuffer, 0, headerLength);

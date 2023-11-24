@@ -16,6 +16,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia

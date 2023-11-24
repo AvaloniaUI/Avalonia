@@ -21,6 +21,7 @@ namespace Avalonia.Platform
                 _ => new(4, 4),
             };
         }
+
         public virtual Size GetDoubleTapSize(PointerType type)
         {
             return type switch
@@ -29,6 +30,7 @@ namespace Avalonia.Platform
                 _ => new(4, 4),
             };
         }
+
         public virtual TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
 
         public virtual TimeSpan HoldWaitDuration => TimeSpan.FromMilliseconds(300);

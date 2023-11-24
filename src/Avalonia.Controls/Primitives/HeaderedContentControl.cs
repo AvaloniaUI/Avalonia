@@ -1,3 +1,4 @@
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
@@ -7,6 +8,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A <see cref="ContentControl"/> with a header.
     /// </summary>
+    [TemplatePart("PART_HeaderPresenter", typeof(ContentPresenter))]
     public class HeaderedContentControl : ContentControl, IHeadered
     {
         /// <summary>

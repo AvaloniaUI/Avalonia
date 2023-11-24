@@ -65,7 +65,7 @@ namespace Avalonia.X11
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _usePositioningFlags = false;
-        private X11FocusProxy _focusProxy;
+        private X11FocusProxy? _focusProxy;
 
         private enum XSyncState
         {
@@ -159,8 +159,13 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
 
             Handle = new PlatformHandle(_handle, "XID");
-            _focusProxy = new X11FocusProxy(platform, _handle, OnEvent);
-            SetWmClass(_focusProxy._handle, "FocusProxy");
+            
+            if (platform.Options.EnableInputFocusProxy)
+            {
+                _focusProxy = new X11FocusProxy(platform, _handle, OnEvent);
+                SetWmClass(_focusProxy._handle, "FocusProxy");
+            }
+            
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -215,9 +220,14 @@ namespace Avalonia.X11
                 _nativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
             _nativeControlHost = new X11NativeControlHost(_platform, this);
             InitializeIme();
+
+            var data = new List<IntPtr> { _x11.Atoms.WM_DELETE_WINDOW, _x11.Atoms._NET_WM_SYNC_REQUEST };
             
+            if(platform.Options.EnableInputFocusProxy)
+                data.Add(_x11.Atoms.WM_TAKE_FOCUS);
+
             XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
-                PropertyMode.Replace, new[] { _x11.Atoms.WM_DELETE_WINDOW, _x11.Atoms.WM_TAKE_FOCUS, _x11.Atoms._NET_WM_SYNC_REQUEST }, 3);
+                    PropertyMode.Replace, data.ToArray(), data.Count);
 
             if (_x11.HasXSync)
             {
@@ -307,19 +317,30 @@ namespace Avalonia.X11
 
         private void UpdateSizeHints(PixelSize? preResize)
         {
-            if(_overrideRedirect)
+            if (_overrideRedirect)
                 return;
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
             if (!_canResize)
-                max = min = _realSize;
-            
-            if (preResize.HasValue)
             {
-                var desired = preResize.Value;
-                max = new PixelSize(Math.Max(desired.Width, max.Width), Math.Max(desired.Height, max.Height));
-                min = new PixelSize(Math.Min(desired.Width, min.Width), Math.Min(desired.Height, min.Height));
+                if (preResize.HasValue)
+                {
+                    max = min = preResize.Value;
+                }
+                else
+                {
+                    max = min = _realSize;
+                }
+            }
+            else
+            {
+                if (preResize.HasValue)
+                {
+                    var desired = preResize.Value;
+                    max = new PixelSize(Math.Max(desired.Width, max.Width), Math.Max(desired.Height, max.Height));
+                    min = new PixelSize(Math.Min(desired.Width, min.Width), Math.Min(desired.Height, min.Height));
+                }
             }
 
             var hints = new XSizeHints
@@ -563,10 +584,10 @@ namespace Avalonia.X11
                         _xSyncValue.Hi = ev.ClientMessageEvent.ptr4.ToInt32();
                         _xSyncState = XSyncState.WaitConfigure;
                     }
-                    else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS)
+                    else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS && _platform.Options.EnableInputFocusProxy)
                     {
                         IntPtr time = ev.ClientMessageEvent.ptr2;
-                        XSetInputFocus(_x11.Display, _focusProxy._handle, RevertTo.Parent, time);
+                        XSetInputFocus(_x11.Display, _focusProxy!._handle, RevertTo.Parent, time);
                     }
                 }
             }
@@ -776,8 +797,8 @@ namespace Avalonia.X11
                 return;
 
             Input?.Invoke(args);
-            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
-                Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
+            if (!args.Handled && args is RawKeyEventArgsWithText { Text: { Length: > 0 } text })
+                Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text));
         }
 
         public void ScheduleXI2Input(RawInputEventArgs args)
@@ -954,7 +975,7 @@ namespace Avalonia.X11
                 _renderHandle = IntPtr.Zero;
             }
 
-            _focusProxy.Cleanup();
+            _focusProxy?.Cleanup();
         }
 
         private bool ActivateTransientChildIfNeeded()
@@ -968,7 +989,7 @@ namespace Avalonia.X11
             return false;
         }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
             if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);
@@ -1013,8 +1034,10 @@ namespace Avalonia.X11
 
         private void Resize(Size clientSize, bool force, WindowResizeReason reason)
         {
-            if (!force && clientSize == ClientSize)
+            if (!force && (clientSize == ClientSize))
+            {
                 return;
+            }
             
             var needImmediatePopupResize = clientSize != ClientSize;
 
@@ -1090,6 +1113,7 @@ namespace Avalonia.X11
                 {
                     _position = value;
                     PositionChanged?.Invoke(value);
+                    UpdateScaling();
                 }
             }
         }
@@ -1110,7 +1134,9 @@ namespace Avalonia.X11
             else
             {
                 XRaiseWindow(_x11.Display, _handle);
-                XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
+
+                if (_focusProxy is not null)
+                    XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
             }
         }
 
