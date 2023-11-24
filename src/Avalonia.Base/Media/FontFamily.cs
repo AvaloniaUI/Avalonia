@@ -7,7 +7,7 @@ namespace Avalonia.Media
 {
     public sealed class FontFamily
     {
-        public const string DefaultFontFamilyName = "Inter";
+        public const string DefaultFontFamilyName = "$Default";
 
         static FontFamily()
         {
