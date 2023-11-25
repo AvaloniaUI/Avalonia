@@ -145,7 +145,7 @@ namespace SafeAreaDemo.ViewModels
         private void InputPaneOnStateChanged(object? sender, InputPaneStateEventArgs e)
         {
             InputPaneDuration = e.AnimationDuration;
-            InputPaneEasing = e.Easing;
+            InputPaneEasing = e.Easing ?? new LinearEasing();
             RaiseKeyboardChanged();
         }
 

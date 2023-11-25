@@ -52,8 +52,9 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
 
     private Rect ScreenRectToClient(UnmanagedMethods.RECT screenRect)
     {
-        var pixelRect = new PixelRect(screenRect.left, screenRect.top, screenRect.Width, screenRect.Height);
-        return pixelRect.ToRect(_windowImpl.DesktopScaling);
+        var position = new PixelPoint(screenRect.left, screenRect.top);
+        var size = new PixelSize(screenRect.Width, screenRect.Height);
+        return new Rect(_windowImpl.PointToClient(position), size.ToSize(_windowImpl.DesktopScaling));
     }
 
     public void Dispose()
