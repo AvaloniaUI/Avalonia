@@ -21,7 +21,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     IValueEntry
 {
     protected static readonly object UnchangedValue = new();
-    internal static readonly WeakReference<object?> _nullReference = new(null);
     private readonly bool _isDataValidationEnabled;
     private object? _defaultValue;
     private BindingError? _error;
@@ -30,7 +29,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     private bool _produceValue;
     private IBindingExpressionSink? _sink;
     private WeakReference<AvaloniaObject?>? _target;
-    private WeakReference<object?>? _value;
+    private object? _value = AvaloniaProperty.UnsetValue;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UntypedBindingExpressionBase"/> class.
@@ -92,7 +91,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         get
         {
             Start(produceValue: false);
-            return _value is not null;
+            return true;
         }
     }
 
@@ -127,14 +126,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     {
         if (!IsRunning)
             throw new InvalidOperationException("BindingExpression has not been started.");
-        if (_value is null)
-            return AvaloniaProperty.UnsetValue;
-        else if (_value == _nullReference)
-            return null;
-        else if (_value.TryGetTarget(out var value))
-            return value;
-        else
-            return AvaloniaProperty.UnsetValue;
+        return _value;
     }
 
     /// <summary>
@@ -441,7 +433,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         var hasErrorChanged = error is not null || _error is not null;
 
         if (hasValueChanged)
-            _value = value is null ? _nullReference : new(value);
+            _value = value;
         _error = error;
 
         if (!_produceValue || _sink is null)
@@ -516,7 +508,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     {
         StopCore();
         _isRunning = false;
-        _value = null;
+        _value = AvaloniaProperty.UnsetValue;
     }
 
     /// <summary>
@@ -566,7 +558,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         IAvaloniaSubject<object?>
     {
         private readonly UntypedBindingExpressionBase _expression;
-        private WeakReference<object?>? _value;
+        private object? _value = AvaloniaProperty.UnsetValue;
 
         public ObservableSink(UntypedBindingExpressionBase expression) => _expression = expression;
 
@@ -607,18 +599,13 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
         protected override void Subscribed(IObserver<object> observer, bool first)
         {
-            if (!first && _value is not null)
-            {
-                if (_value == _nullReference)
-                    base.PublishNext(null);
-                else if (_value.TryGetTarget(out var value))
-                    base.PublishNext(value);
-            }
+            if (!first && _value != AvaloniaProperty.UnsetValue)
+                base.PublishNext(_value);
         }
 
         private new void PublishNext(object? value)
         {
-            _value = (value is null) ? _nullReference : new(value);
+            _value = value;
             base.PublishNext(value);
         }
     }

@@ -330,7 +330,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         }
 
         // Don't set the value if it's unchanged.
-        if (LeafNode.IsValueAlive && TypeUtilities.IdentityEquals(LeafNode.Value, value, type))
+        if (TypeUtilities.IdentityEquals(LeafNode.Value, value, type))
             return true;
 
         try

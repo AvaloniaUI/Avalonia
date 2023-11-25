@@ -12,7 +12,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 internal abstract class ExpressionNode
 {
     private WeakReference<object?>? _source;
-    private WeakReference<object?>? _value;
+    private object? _value = AvaloniaProperty.UnsetValue;
 
     /// <summary>
     /// Gets the index of the node in the binding path.
@@ -40,29 +40,7 @@ internal abstract class ExpressionNode
     /// <summary>
     /// Gets the current value of the node.
     /// </summary>
-    public object? Value
-    {
-        get
-        {
-            if (_value is null)
-                return AvaloniaProperty.UnsetValue;
-            _value.TryGetTarget(out var value);
-            return value;
-        }
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether the node's <see cref="Value"/> is alive, i.e. 
-    /// initialized and not a GC'd object.
-    /// </summary>
-    public bool IsValueAlive
-    {
-        get
-        {
-            return _value == UntypedBindingExpressionBase._nullReference || 
-                _value?.TryGetTarget(out _) == true;
-        }
-    }
+    public object? Value => _value;
 
     /// <summary>
     /// Appends a string representation of the expression node to a string builder.
@@ -88,7 +66,8 @@ internal abstract class ExpressionNode
     public void Reset()
     {
         SetSource(null, null);
-        _source = _value = null;
+        _source = null;
+        _value = AvaloniaProperty.UnsetValue;
     }
 
     /// <summary>
@@ -140,7 +119,7 @@ internal abstract class ExpressionNode
             // If the source is null then the value is null. We explicitly do not want to call
             // OnSourceChanged as we don't want to raise errors for subsequent nodes in the
             // binding change.
-            _value = BindingExpression._nullReference;
+            _value = AvaloniaProperty.UnsetValue;
         }
         else
         {
@@ -172,7 +151,7 @@ internal abstract class ExpressionNode
     /// <param name="message">The error message.</param>
     protected void SetError(string message)
     {
-        _value = new(AvaloniaProperty.UnsetValue);
+        _value = AvaloniaProperty.UnsetValue;
         Owner?.OnNodeError(Index, message);
     }
 
@@ -245,15 +224,13 @@ internal abstract class ExpressionNode
         // - This is the initial value (_value is null)
         // - There is a data validation error
         // - There is no data validation error, but the owner has one
-        // - The old value has been GC'd - in this case we don't know if the new value is different
         // - The new value is different to the old value
         if (_value is null ||
             dataValidationError is not null ||
             (dataValidationError is null && Owner.ErrorType == BindingErrorType.DataValidationError) ||
-            _value.TryGetTarget(out var oldValue) == false ||
-            !Equals(oldValue, value))
+            !Equals(value, _value))
         {
-            _value = value is null ? BindingExpression._nullReference : new(value);
+            _value = value;
             Owner.OnNodeValueChanged(Index, value, dataValidationError);
         }
     }
