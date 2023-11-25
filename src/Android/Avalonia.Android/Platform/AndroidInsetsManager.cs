@@ -8,6 +8,7 @@ using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
+using AndroidWindow = Android.Views.Window;
 
 namespace Avalonia.Android.Platform
 {
@@ -24,6 +25,8 @@ namespace Avalonia.Android.Platform
         private Rect _previousRect;
         private readonly bool _usesLegacyLayouts;
 
+        private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
+        
         public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
         public event EventHandler<InputPaneStateEventArgs> StateChanged;
 
@@ -50,17 +53,17 @@ namespace Avalonia.Android.Platform
             {
                 _displayEdgeToEdge = value;
 
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
+                if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
                 {
-                    _activity.Window.Attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
+                    attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
                 }
 
-                WindowCompat.SetDecorFitsSystemWindows(_activity.Window, !value);
+                WindowCompat.SetDecorFitsSystemWindows(Window, !value);
 
                 if (value)
                 {
-                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentStatus);
-                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+                    Window.AddFlags(WindowManagerFlags.TranslucentStatus);
+                    Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
                 }
                 else
                 {
@@ -74,24 +77,24 @@ namespace Avalonia.Android.Platform
             _activity = activity;
             _topLevel = topLevel;
 
-            ViewCompat.SetOnApplyWindowInsetsListener(_activity.Window.DecorView, this);
+            ViewCompat.SetOnApplyWindowInsetsListener(Window.DecorView, this);
 
             if (Build.VERSION.SdkInt < BuildVersionCodes.R)
             {
                 _usesLegacyLayouts = true;
-                _activity.Window.DecorView.ViewTreeObserver.AddOnGlobalLayoutListener(this);
+                _activity.Window?.DecorView.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
             }
 
             DisplayEdgeToEdge = false;
 
-            ViewCompat.SetWindowInsetsAnimationCallback(_activity.Window.DecorView, this);
+            ViewCompat.SetWindowInsetsAnimationCallback(Window.DecorView, this);
         }
 
         public Thickness SafeAreaPadding
         {
             get
             {
-                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
 
                 if (insets != null)
                 {
@@ -116,7 +119,7 @@ namespace Avalonia.Android.Platform
         {
             get
             {
-                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
 
                 if (insets != null)
                 {
@@ -157,8 +160,8 @@ namespace Avalonia.Android.Platform
 
             if (_usesLegacyLayouts)
             {
-                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
-                State = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? InputPaneState.Open : InputPaneState.Closed;
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
+                State = insets?.IsVisible(WindowInsetsCompat.Type.Ime()) == true ? InputPaneState.Open : InputPaneState.Closed;
             }
         }
 
@@ -168,11 +171,11 @@ namespace Avalonia.Android.Platform
             {
                 try
                 {
-                    var compat = new WindowInsetsControllerCompat(_activity.Window, _topLevel.View);
+                    var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                     return compat.AppearanceLightStatusBars ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
-                catch (Exception _)
+                catch (Exception)
                 {
                     return Controls.Platform.SystemBarTheme.Light;
                 }
@@ -186,16 +189,16 @@ namespace Avalonia.Android.Platform
                     return;
                 }
 
-                var compat = new WindowInsetsControllerCompat(_activity.Window, _topLevel.View);
+                var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                 if (_isDefaultSystemBarLightTheme == null)
                 {
                     _isDefaultSystemBarLightTheme = compat.AppearanceLightStatusBars;
                 }
 
-                if (value == null && _isDefaultSystemBarLightTheme != null)
+                if (value == null)
                 {
-                    value = (bool)_isDefaultSystemBarLightTheme ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
+                    value = _isDefaultSystemBarLightTheme.Value ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
 
                 compat.AppearanceLightStatusBars = value == Controls.Platform.SystemBarTheme.Light;
@@ -224,7 +227,7 @@ namespace Avalonia.Android.Platform
                     return;
                 }
 
-                var compat = WindowCompat.GetInsetsController(_activity.Window, _topLevel.View);
+                var compat = WindowCompat.GetInsetsController(Window, _topLevel.View);
 
                 if (value == null || value.Value)
                 {
@@ -278,7 +281,7 @@ namespace Avalonia.Android.Platform
         {
             if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
             {
-                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
 
                 if (insets != null)
                 {
@@ -291,7 +294,7 @@ namespace Avalonia.Android.Platform
                     var duration = TimeSpan.FromMilliseconds(animation.DurationMillis);
 
                     bool isOpening = State == InputPaneState.Open;
-                    StateChanged.Invoke(this, new InputPaneStateEventArgs(State, isOpening ? upperRect : lowerRect, isOpening ? lowerRect : upperRect, duration, new AnimationEasing(animation.Interpolator)));
+                    StateChanged?.Invoke(this, new InputPaneStateEventArgs(State, isOpening ? upperRect : lowerRect, isOpening ? lowerRect : upperRect, duration, new AnimationEasing(animation.Interpolator)));
                 }
             }
 

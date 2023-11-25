@@ -72,14 +72,14 @@ namespace Avalonia.Controls
                 {
                     if (Header != headered.Header)
                     {
-                        Header = headered.Header;
+                        SetCurrentValue(HeaderProperty, headered.Header);
                     }
                 }
                 else
                 {
                     if (!(obj.NewValue is Control))
                     {
-                        Header = obj.NewValue;
+                        SetCurrentValue(HeaderProperty, obj.NewValue);
                     }
                 }
             }
@@ -87,7 +87,7 @@ namespace Avalonia.Controls
             {
                 if (Header == obj.OldValue)
                 {
-                    Header = obj.NewValue;
+                    SetCurrentValue(HeaderProperty, obj.NewValue);
                 }
             }
         }

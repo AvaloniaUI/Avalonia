@@ -83,7 +83,7 @@ namespace Avalonia.Direct2D1.RenderTests
             get;
         }
 
-        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "", double dpi = 96)
+        protected Task RenderToFile(Control target, [CallerMemberName] string testName = "", double dpi = 96)
         {
             if (!Directory.Exists(OutputPath))
             {
@@ -124,6 +124,8 @@ namespace Avalonia.Direct2D1.RenderTests
                 }
                 writableBitmap.Save(compositedPath);
             }
+
+            return Task.CompletedTask;
         }
 
         class BitmapFramebufferSurface : IFramebufferPlatformSurface
