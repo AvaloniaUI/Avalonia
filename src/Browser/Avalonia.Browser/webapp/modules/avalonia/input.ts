@@ -245,6 +245,17 @@ export class InputHelper {
         return pointerEvent.getCoalescedEvents();
     }
 
+    public static subscribeKeyboardGeometryChange(
+        element: HTMLInputElement,
+        handler: (args: any) => boolean) {
+        if ("virtualKeyboard" in navigator) {
+            // TODO: handle relative coordinates (it's broken for browser input atm anyway).
+            (navigator as any).virtualKeyboard.addEventListener("geometrychange", (event: any) => {
+                handler(event.target.boundingRect);
+            });
+        }
+    }
+
     public static clearInput(inputElement: HTMLInputElement) {
         inputElement.value = "";
     }
