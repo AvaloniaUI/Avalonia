@@ -55,7 +55,7 @@ namespace Avalonia.Controls.Platform
         /// <summary>
         /// The initial bounds of the input pane.
         /// </summary>
-        public Rect StartRect { get; }
+        public Rect? StartRect { get; }
 
         /// <summary>
         /// The final bounds of the input pane.
@@ -72,13 +72,18 @@ namespace Avalonia.Controls.Platform
         /// </summary>
         public IEasing? Easing { get; }
 
-        public InputPaneStateEventArgs(InputPaneState newState, Rect startRect, Rect endRect, TimeSpan animationDuration, IEasing? easing)
+        public InputPaneStateEventArgs(InputPaneState newState, Rect? startRect, Rect endRect, TimeSpan animationDuration, IEasing? easing)
         {
             NewState = newState;
             StartRect = startRect;
             EndRect = endRect;
             AnimationDuration = animationDuration;
             Easing = easing;
+        }
+
+        public InputPaneStateEventArgs(InputPaneState newState, Rect? startRect, Rect endRect)
+            : this(newState, startRect, endRect, default, null)
+        {
         }
     }
 }
