@@ -89,7 +89,7 @@ namespace Avalonia.Data
             }
         }
 
-        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
         {
             // TODO: Implement MultiBindingExpression instead of wrapping an observable.
             var o = InstanceCore(target, property);

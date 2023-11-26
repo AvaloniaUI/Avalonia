@@ -79,7 +79,7 @@ namespace Avalonia.Data
             return new(target, InstanceCore(), Mode, BindingPriority.Template);
         }
 
-        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
         {
             return InstanceCore();
         }

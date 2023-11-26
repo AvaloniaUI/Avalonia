@@ -59,11 +59,11 @@ namespace Avalonia.Animation
 
             if (value is IBinding binding)
             {
-                return this.Bind(ValueProperty, binding);
+                return Bind(ValueProperty, binding, targetControl);
             }
             else
             {
-                return this.Bind(ValueProperty, Observable.SingleValue(value).ToBinding());
+                return Bind(ValueProperty, Observable.SingleValue(value).ToBinding(), targetControl);
             }
         }
 

@@ -67,14 +67,17 @@ namespace Avalonia.Data
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            var expression = InstanceCore(targetProperty, target, enableDataValidation);
+            var expression = InstanceCore(targetProperty, target, anchor, enableDataValidation);
             return new InstancedBinding(target, expression, Mode, Priority);
         }
 
-        private protected override BindingExpressionBase Instance(AvaloniaProperty targetProperty, AvaloniaObject target)
+        private protected override BindingExpressionBase Instance(
+            AvaloniaProperty targetProperty,
+            AvaloniaObject target,
+            object? anchor)
         {
             var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
-            return InstanceCore(targetProperty, target, enableDataValidation);
+            return InstanceCore(targetProperty, target, anchor, enableDataValidation);
         }
 
         /// <summary>
@@ -125,6 +128,7 @@ namespace Avalonia.Data
         private UntypedBindingExpressionBase InstanceCore(
             AvaloniaProperty? targetProperty, 
             AvaloniaObject target,
+            object? anchor,
             bool enableDataValidation)
         {
             var nodes = new List<ExpressionNode>();
@@ -153,7 +157,7 @@ namespace Avalonia.Data
             // If the first node is an ISourceNode then allow it to select the source; otherwise
             // use the binding source if specified, falling back to the target.
             var source = nodes.Count > 0 && nodes[0] is SourceNode sn ?
-                sn.SelectSource(Source, target, DefaultAnchor?.Target) :
+                sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target) :
                 Source != AvaloniaProperty.UnsetValue ? Source : target;
 
             var (mode, trigger) = ResolveDefaultsFromMetadata(target, targetProperty);

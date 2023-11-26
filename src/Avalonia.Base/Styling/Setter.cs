@@ -109,7 +109,7 @@ namespace Avalonia.Styling
         {
             if (!Property!.IsDirect)
             {
-                var expression = binding.Instance(target, Property);
+                var expression = binding.Instance(target, Property, null);
                 expression.Attach(target.GetValueStore(), target, Property, instance.Priority);
                 return expression;
             }

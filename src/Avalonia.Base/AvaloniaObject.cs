@@ -418,12 +418,7 @@ namespace Avalonia
         /// </returns>
         public BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding)
         {
-            if (binding is not IBinding2 b)
-                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
-            if (b.Instance(this, property) is not UntypedBindingExpressionBase expression)
-                throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
-
-            return GetValueStore().AddBinding(property, expression);
+            return Bind(property, binding, null);
         }
 
         /// <summary>
@@ -592,6 +587,30 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
+
+        /// <summary>
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="binding">The binding.</param>
+        /// <param name="anchor">
+        /// An optional anchor from which to locate required context. When binding to objects that
+        /// are not in the logical tree, certain types of binding need an anchor into the tree in 
+        /// order to locate named controls or resources. The <paramref name="anchor"/> parameter 
+        /// can be used to provide this context.
+        /// </param>
+        /// <returns>
+        /// The binding expression which represents the binding instance on this object.
+        /// </returns>
+        internal BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding, object? anchor)
+        {
+            if (binding is not IBinding2 b)
+                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
+            if (b.Instance(this, property, anchor) is not UntypedBindingExpressionBase expression)
+                throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+
+            return GetValueStore().AddBinding(property, expression);
+        }
 
         internal void AddInheritanceChild(AvaloniaObject child)
         {

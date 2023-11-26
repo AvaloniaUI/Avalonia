@@ -2,5 +2,8 @@
 
 internal interface IBinding2 : IBinding
 {
-    BindingExpressionBase Instance(AvaloniaObject target, AvaloniaProperty targetProperty);
+    BindingExpressionBase Instance(
+        AvaloniaObject target,
+        AvaloniaProperty targetProperty,
+        object? anchor);
 }

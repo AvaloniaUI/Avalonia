@@ -53,14 +53,17 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            var expression = InstanceCore(target, targetProperty, enableDataValidation);
+            var expression = InstanceCore(target, targetProperty, anchor, enableDataValidation);
             return new InstancedBinding(target, expression, Mode, Priority);
         }
 
-        private protected override BindingExpressionBase Instance(AvaloniaProperty targetProperty, AvaloniaObject target)
+        private protected override BindingExpressionBase Instance(
+            AvaloniaProperty targetProperty,
+            AvaloniaObject target,
+            object? anchor)
         {
             var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
-            return InstanceCore(target, targetProperty, enableDataValidation);
+            return InstanceCore(target, targetProperty, anchor, enableDataValidation);
         }
 
         /// <summary>
@@ -96,6 +99,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         private BindingExpression InstanceCore(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
+            object? anchor,
             bool enableDataValidation)
         {
             var nodes = new List<ExpressionNode>();
@@ -111,7 +115,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // If the first node is an ISourceNode then allow it to select the source; otherwise
             // use the binding source if specified, falling back to the target.
             var source = nodes.Count > 0 && nodes[0] is SourceNode sn
-                ? sn.SelectSource(Source, target, DefaultAnchor?.Target)
+                ? sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target)
                 : Source != AvaloniaProperty.UnsetValue ? Source : target;
 
             var (mode, trigger) = ResolveDefaultsFromMetadata(target, targetProperty);
