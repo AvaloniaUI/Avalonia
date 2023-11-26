@@ -43,32 +43,43 @@ namespace Avalonia.PropertyStore
             ReevaluateEffectiveValues();
         }
 
-        public BindingExpressionBase AddBinding<T>(
-            StyledProperty<T> property,
+        public BindingExpressionBase AddBinding(
+            AvaloniaProperty property,
             UntypedBindingExpressionBase source)
         {
-            var priority = source.Priority;
-
-            if (priority == BindingPriority.LocalValue)
+            if (property.IsDirect)
             {
                 DisposeExistingLocalValueBinding(property);
                 _localValueBindings ??= new();
                 _localValueBindings[property.Id] = source;
-                source.AttachAndStart(this, Owner, property, priority);
+                source.AttachAndStart(this, Owner, property, BindingPriority.LocalValue);
                 return source;
             }
             else
             {
-                var effective = GetEffectiveValue(property);
-                var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
+                var priority = source.Priority;
 
-                source.Attach(this, Owner, property, priority);
-                frame.AddBinding<T>(source);
+                if (priority == BindingPriority.LocalValue)
+                {
+                    DisposeExistingLocalValueBinding(property);
+                    _localValueBindings ??= new();
+                    _localValueBindings[property.Id] = source;
+                    source.AttachAndStart(this, Owner, property, priority);
+                    return source;
+                }
+                else
+                {
+                    var effective = GetEffectiveValue(property);
+                    var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
 
-                if (effective is null || priority <= effective.Priority)
-                    source.Start();
+                    source.Attach(this, Owner, property, priority);
+                    frame.AddBinding(source);
 
-                return source;
+                    if (effective is null || priority <= effective.Priority)
+                        source.Start();
+
+                    return source;
+                }
             }
         }
 
@@ -154,15 +165,6 @@ namespace Avalonia.PropertyStore
 
                 return result;
             }
-        }
-
-        public BindingExpressionBase AddBinding<T>(DirectPropertyBase<T> property, UntypedBindingExpressionBase source)
-        {
-            DisposeExistingLocalValueBinding(property);
-            _localValueBindings ??= new();
-            _localValueBindings[property.Id] = source;
-            source.AttachAndStart(this, Owner, property, BindingPriority.LocalValue);
-            return source;
         }
 
         public IDisposable AddBinding<T>(DirectPropertyBase<T> property, IObservable<BindingValue<T>> source)

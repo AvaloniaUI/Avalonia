@@ -175,11 +175,6 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override BindingExpressionBase RouteBind(AvaloniaObject o, UntypedBindingExpressionBase source)
-            {
-                throw new NotImplementedException();
-            }
-
             internal override void RouteClearValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();

@@ -228,11 +228,6 @@ namespace Avalonia
             return target.Bind<TValue>(this, source, priority);
         }
 
-        internal override BindingExpressionBase RouteBind(AvaloniaObject o, UntypedBindingExpressionBase source)
-        {
-            return o.GetValueStore().AddBinding(this, source);
-        }
-
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
         private bool ShouldSetValue(AvaloniaObject target, object? value, [NotNullWhen(true)] out TValue? converted)
         {

@@ -414,7 +414,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="binding">The binding.</param>
         /// <returns>
-        /// A disposable which can be used to terminate the binding.
+        /// The binding expression which represents the binding instance on this object.
         /// </returns>
         public BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding)
         {
@@ -423,7 +423,7 @@ namespace Avalonia
             if (b.Instance(this, property) is not UntypedBindingExpressionBase expression)
                 throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
 
-            return property.RouteBind(this, expression);
+            return GetValueStore().AddBinding(property, expression);
         }
 
         /// <summary>
@@ -627,13 +627,6 @@ namespace Avalonia
 
         internal ValueStore GetValueStore() => _values;
         internal IReadOnlyList<AvaloniaObject>? GetInheritanceChildren() => _inheritanceChildren;
-
-        internal IDisposable Bind(
-            AvaloniaProperty property,
-            UntypedBindingExpressionBase expression)
-        {
-            return property.RouteBind(this, expression);
-        }
 
         /// <summary>
         /// Called to update the validation state for properties for which data validation is

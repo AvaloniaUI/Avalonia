@@ -15,7 +15,7 @@ namespace Avalonia.PropertyStore
         {
         }
 
-        public IValueEntry AddBinding<T>(UntypedBindingExpressionBase source)
+        public IValueEntry AddBinding(UntypedBindingExpressionBase source)
         {
             Add(source);
             return source;

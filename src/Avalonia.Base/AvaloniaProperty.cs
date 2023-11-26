@@ -562,15 +562,6 @@ namespace Avalonia
             BindingPriority priority);
 
         /// <summary>
-        /// Routes an untyped Bind call to a typed call.
-        /// </summary>
-        /// <param name="o">The object instance.</param>
-        /// <param name="source">The binding source.</param>
-        internal abstract BindingExpressionBase RouteBind(
-            AvaloniaObject o,
-            UntypedBindingExpressionBase source);
-
-        /// <summary>
         /// Overrides the metadata for the property on the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
