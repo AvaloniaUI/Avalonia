@@ -35,7 +35,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Priority = Priority,
                 StringFormat = StringFormat,
                 Source = Source,
-                DefaultAnchor = new WeakReference(provider.GetDefaultAnchor())
+                DefaultAnchor = new WeakReference(provider.GetDefaultAnchor()),
+                UpdateSourceTrigger = UpdateSourceTrigger,
             };
         }
 
