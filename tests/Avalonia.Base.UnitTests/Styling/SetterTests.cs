@@ -520,12 +520,12 @@ namespace Avalonia.Base.UnitTests.Styling
 
         private class TestConverter : IValueConverter
         {
-            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
-                return value.ToString() + "bar";
+                return value + "bar";
             }
 
-            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 throw new NotImplementedException();
             }

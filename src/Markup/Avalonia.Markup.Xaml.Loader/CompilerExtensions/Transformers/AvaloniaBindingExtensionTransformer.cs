@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using XamlX;
 using XamlX.Ast;
@@ -8,6 +9,14 @@ using XamlParseException = XamlX.XamlParseException;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
+    class XamlBindingsTransformException : XamlTransformException
+    {
+        public XamlBindingsTransformException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
+            : base(message, lineInfo, innerException)
+        {
+        }
+    }
+    
     class AvaloniaBindingExtensionTransformer : IXamlAstTransformer
     {
         public bool CompileBindingsByDefault { get; set; }
@@ -32,7 +41,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             if (!(directive.Values[0] is XamlAstTextNode text
                                 && bool.TryParse(text.Text, out var compileBindings)))
                             {
-                                throw new XamlParseException("The value of x:CompileBindings must be a literal boolean value.", directive.Values[0]);
+                                throw new XamlBindingsTransformException("The value of x:CompileBindings must be a literal boolean value.", directive.Values[0]);
                             }
 
                             obj.Children.Remove(directive);

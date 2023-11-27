@@ -88,8 +88,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return transformed;
             }
 
-            var lastElement =
-                transformed.Elements[transformed.Elements.Count - 1];
+            var lastElement = transformed.Elements.LastOrDefault();
             
             if (parentNode.Property?.Getter?.ReturnType == context.GetAvaloniaTypes().ICommand && lastElement is XamlIlClrMethodPathElementNode methodPathElement)
             {
@@ -159,7 +158,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             {
                                 break;
                             }
-                            throw new XamlX.XamlParseException($"Compiled bindings do not support stream bindings for objects of type {targetType.FullName}.", lineInfo);
+                            throw new XamlX.XamlTransformException($"Compiled bindings do not support stream bindings for objects of type {targetType.FullName}.", lineInfo);
                         }
                     case BindingExpressionGrammar.PropertyNameNode propName:
                         {
@@ -183,7 +182,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
                             else
                             {
-                                throw new XamlX.XamlParseException($"Unable to resolve property or method of name '{propName.PropertyName}' on type '{targetType}'.", lineInfo);
+                                throw new XamlX.XamlTransformException($"Unable to resolve property or method of name '{propName.PropertyName}' on type '{targetType}'.", lineInfo);
                             }
                             break;
                         }
@@ -208,7 +207,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
                             if (property is null)
                             {
-                                throw new XamlX.XamlParseException($"The type '${targetType}' does not have an indexer.", lineInfo);
+                                throw new XamlX.XamlTransformException($"The type '${targetType}' does not have an indexer.", lineInfo);
                             }
 
                             IEnumerable<IXamlType> parameters = property.IndexerParameters;
@@ -220,7 +219,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                                 var textNode = new XamlAstTextNode(lineInfo, indexer.Arguments[currentParamIndex], type: context.Configuration.WellKnownTypes.String);
                                 if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context, textNode,
                                         param, out var converted))
-                                    throw new XamlX.XamlParseException(
+                                    throw new XamlX.XamlTransformException(
                                         $"Unable to convert indexer parameter value of '{indexer.Arguments[currentParamIndex]}' to {param.GetFqn()}",
                                         textNode);
 
@@ -274,7 +273,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                             if (ancestorType is null)
                             {
-                                throw new XamlX.XamlParseException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
+                                throw new XamlX.XamlTransformException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
                             }
 
                             nodes.Add(new FindAncestorPathElementNode(ancestorType, ancestor.Level));
@@ -301,7 +300,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                         if (elementType is null)
                         {
-                            throw new XamlX.XamlParseException($"Unable to find element '{elementName.Name}' in the current namescope. Unable to use a compiled binding with a name binding if the name cannot be found at compile time.", lineInfo);
+                            throw new XamlX.XamlTransformException($"Unable to find element '{elementName.Name}' in the current namescope. Unable to use a compiled binding with a name binding if the name cannot be found at compile time.", lineInfo);
                         }
                         nodes.Add(new ElementNamePathElementNode(elementName.Name, elementType));
                         break;
@@ -313,7 +312,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                         if (castType is null)
                         {
-                            throw new XamlX.XamlParseException($"Unable to resolve cast to type {typeCastNode.Namespace}:{typeCastNode.TypeName} based on XAML tree.", lineInfo);
+                            throw new XamlX.XamlTransformException($"Unable to resolve cast to type {typeCastNode.Namespace}:{typeCastNode.TypeName} based on XAML tree.", lineInfo);
                         }
 
                         nodes.Add(new TypeCastPathElementNode(castType));
@@ -808,7 +807,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     if (!int.TryParse(item, out var index))
                     {
-                        throw new XamlX.XamlParseException($"Unable to convert '{item}' to an integer.", lineInfo.Line, lineInfo.Position);
+                        throw new XamlX.XamlTransformException($"Unable to convert '{item}' to an integer.", lineInfo);
                     }
                     _values.Add(index);
                 }
@@ -889,10 +888,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 Elements = elements;
             }
 
-            public IXamlType BindingResultType
-                => _transformElements.Count > 0
-                    ? _transformElements[0].Type
-                    : Elements[Elements.Count - 1].Type;
+            public IXamlType BindingResultType =>
+                _transformElements.FirstOrDefault()?.Type
+                    ?? Elements.LastOrDefault()?.Type
+                    ?? XamlPseudoType.Unknown;
 
             public IXamlAstTypeReference Type { get; }
 

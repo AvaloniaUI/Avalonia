@@ -29,7 +29,7 @@ namespace Avalonia.Input
         }
         
         /// <summary>
-        /// Defines the <see cref="TextInputMethodClientRequeryRequested"/> event.
+        /// Defines the TextInputMethodClientRequeryRequested event.
         /// </summary>
         public static readonly RoutedEvent<TextInputMethodClientRequeryRequestedEventArgs> TextInputMethodClientRequeryRequestedEvent =
             RoutedEvent.Register<InputElement, TextInputMethodClientRequeryRequestedEventArgs>(

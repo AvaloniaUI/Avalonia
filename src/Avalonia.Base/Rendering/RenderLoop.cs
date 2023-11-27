@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Threading;
@@ -20,7 +19,6 @@ namespace Avalonia.Rendering
         private readonly List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
         private IRenderTimer? _timer;
         private int _inTick;
-        private readonly int _inUpdate;
         
         public static IRenderLoop LocatorAutoInstance
         {

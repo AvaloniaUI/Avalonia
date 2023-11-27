@@ -146,6 +146,7 @@
                        Minimum="{TemplateBinding Minimum}"
                        Maximum="{TemplateBinding Maximum}"
                        Value="{TemplateBinding Value, Mode=TwoWay}"
+                       DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                        ViewportSize="{TemplateBinding ViewportSize}"
                        Orientation="{TemplateBinding Orientation}"
                        IsDirectionReversed="True">
@@ -223,6 +224,7 @@
                        Minimum="{TemplateBinding Minimum}"
                        Maximum="{TemplateBinding Maximum}"
                        Value="{TemplateBinding Value, Mode=TwoWay}"
+                       DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                        ViewportSize="{TemplateBinding ViewportSize}"
                        Orientation="{TemplateBinding Orientation}">
                   <Track.DecreaseButton>

@@ -15,17 +15,17 @@ namespace Avalonia.Dialogs
     [TemplatePart("PART_Files",      typeof(ListBox))]
     public class ManagedFileChooser : TemplatedControl
     {
-        private Control _quickLinksRoot;
-        private ListBox _filesView;
+        private Control? _quickLinksRoot;
+        private ListBox? _filesView;
 
         public ManagedFileChooser()
         {
             AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
         }
 
-        ManagedFileChooserViewModel Model => DataContext as ManagedFileChooserViewModel;
+        ManagedFileChooserViewModel? Model => DataContext as ManagedFileChooserViewModel;
 
-        private void OnPointerPressed(object sender, PointerPressedEventArgs e)
+        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var model = (e.Source as StyledElement)?.DataContext as ManagedFileChooserItemViewModel;
 
