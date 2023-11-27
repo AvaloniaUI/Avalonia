@@ -2424,7 +2424,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set => base.SelectionMode = value;
             }
 
-            public new bool MoveSelection(NavigationDirection direction, bool wrap)
+            public bool MoveSelection(NavigationDirection direction, bool wrap)
             {
                 return base.MoveSelection(direction, wrap);
             }

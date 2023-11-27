@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Reactive;
@@ -7,6 +8,8 @@ using OpenGLES;
 
 namespace Avalonia.iOS
 {
+    [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [SupportedOSPlatform("ios")]
     class EaglPlatformGraphics : IPlatformGraphics
     {
         public IPlatformGraphicsContext GetSharedContext() => Context;
@@ -28,6 +31,8 @@ namespace Avalonia.iOS
         }
     }
 
+    [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [SupportedOSPlatform("ios")]
     class GlContext : IGlContext
     {
         public EAGLContext Context { get; private set; }

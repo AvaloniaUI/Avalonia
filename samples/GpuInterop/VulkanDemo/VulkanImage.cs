@@ -24,23 +24,23 @@ public unsafe class VulkanImage : IDisposable
         private ImageLayout _currentLayout;
         private AccessFlags _currentAccessFlags;
         private ImageUsageFlags _imageUsageFlags { get; }
-        private ImageView? _imageView { get; set; }
+        private ImageView _imageView { get; set; }
         private DeviceMemory _imageMemory { get; set; }
-        private SharpDX.Direct3D11.Texture2D? _d3dTexture2D;
+        private readonly SharpDX.Direct3D11.Texture2D? _d3dTexture2D;
         
-        internal Image? InternalHandle { get; private set; }
+        internal Image InternalHandle { get; private set; }
         internal Format Format { get; }
-        internal ImageAspectFlags AspectFlags { get; private set; }
+        internal ImageAspectFlags AspectFlags { get; }
         
-        public ulong Handle => InternalHandle?.Handle ?? 0;
-        public ulong ViewHandle => _imageView?.Handle ?? 0;
+        public ulong Handle => InternalHandle.Handle;
+        public ulong ViewHandle => _imageView.Handle;
         public uint UsageFlags => (uint) _imageUsageFlags;
         public ulong MemoryHandle => _imageMemory.Handle;
         public DeviceMemory DeviceMemory => _imageMemory;
-        public uint MipLevels { get; private set; }
+        public uint MipLevels { get; }
         public Vk Api { get; }
         public PixelSize Size { get; }
-        public ulong MemorySize { get; private set; }
+        public ulong MemorySize { get; }
         public uint CurrentLayout => (uint) _currentLayout;
 
         public VulkanImage(VulkanContext vk, uint format, PixelSize size,
@@ -93,7 +93,7 @@ public unsafe class VulkanImage : IDisposable
                 .CreateImage(_device, imageCreateInfo, null, out var image).ThrowOnError();
             InternalHandle = image;
             
-            Api.GetImageMemoryRequirements(_device, InternalHandle.Value,
+            Api.GetImageMemoryRequirements(_device, InternalHandle,
                 out var memoryRequirements);
 
 
@@ -109,7 +109,7 @@ public unsafe class VulkanImage : IDisposable
             ImportMemoryWin32HandleInfoKHR handleImport = default;
             if (exportable && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                 _d3dTexture2D = D3DMemoryHelper.CreateMemoryHandle(vk.D3DDevice, size, Format);
+                 _d3dTexture2D = D3DMemoryHelper.CreateMemoryHandle(vk.D3DDevice!, size, Format);
                  using var dxgi = _d3dTexture2D.QueryInterface<SharpDX.DXGI.Resource1>();
                  
                  handleImport = new ImportMemoryWin32HandleInfoKHR
@@ -141,7 +141,7 @@ public unsafe class VulkanImage : IDisposable
             
             MemorySize = memoryRequirements.Size;
 
-            Api.BindImageMemory(_device, InternalHandle.Value, _imageMemory, 0).ThrowOnError();
+            Api.BindImageMemory(_device, InternalHandle, _imageMemory, 0).ThrowOnError();
             var componentMapping = new ComponentMapping(
                 ComponentSwizzle.Identity,
                 ComponentSwizzle.Identity,
@@ -155,7 +155,7 @@ public unsafe class VulkanImage : IDisposable
             var imageViewCreateInfo = new ImageViewCreateInfo
             {
                 SType = StructureType.ImageViewCreateInfo,
-                Image = InternalHandle.Value,
+                Image = InternalHandle,
                 ViewType = ImageViewType.Type2D,
                 Format = Format,
                 Components = componentMapping,
@@ -209,7 +209,7 @@ public unsafe class VulkanImage : IDisposable
             ImageLayout fromLayout, AccessFlags fromAccessFlags,
             ImageLayout destinationLayout, AccessFlags destinationAccessFlags)
         {
-            VulkanMemoryHelper.TransitionLayout(Api, commandBuffer, InternalHandle.Value,
+            VulkanMemoryHelper.TransitionLayout(Api, commandBuffer, InternalHandle,
                 fromLayout,
                 fromAccessFlags,
                 destinationLayout, destinationAccessFlags,
@@ -241,8 +241,8 @@ public unsafe class VulkanImage : IDisposable
 
         public unsafe void Dispose()
         {
-            Api.DestroyImageView(_device, _imageView.Value, null);
-            Api.DestroyImage(_device, InternalHandle.Value, null);
+            Api.DestroyImageView(_device, _imageView, null);
+            Api.DestroyImage(_device, InternalHandle, null);
             Api.FreeMemory(_device, _imageMemory, null);
 
             _imageView = default;

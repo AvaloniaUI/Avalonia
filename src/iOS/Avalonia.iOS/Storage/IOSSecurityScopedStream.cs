@@ -17,7 +17,7 @@ internal sealed class IOSSecurityScopedStream : Stream
     internal IOSSecurityScopedStream(NSUrl url, FileAccess access)
     {
         _document = new UIDocument(url);
-        var path = _document.FileUrl.Path;
+        var path = _document.FileUrl.Path!;
         _url = url;
         _url.StartAccessingSecurityScopedResource();
         _stream = File.Open(path, FileMode.Open, access);
