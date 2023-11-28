@@ -843,6 +843,64 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, panel.VisualChildren.Count);
         }
 
+        [Fact]
+        public void Alternating_Backgrounds_Should_Be_Correct_After_Scrolling()
+        {
+            // Issue #12381.
+            static void AssertColors(VirtualizingStackPanel target)
+            {
+                var containers = target.GetRealizedContainers()!
+                    .Cast<ListBoxItem>()
+                    .ToList();
+
+                for (var i = target.FirstRealizedIndex; i <= target.LastRealizedIndex; i++)
+                {
+                    var container = Assert.IsType<ListBoxItem>(target.ContainerFromIndex(i));
+                    var expectedBackground = i % 2 == 0 ? Colors.Green : Colors.Red;
+                    var brush = Assert.IsAssignableFrom<ISolidColorBrush>(container.Background);
+
+                    Assert.Equal(expectedBackground, brush.Color);
+                }
+            }
+
+            using var app = App();
+            var styles = new[]
+            {
+                new Style(x => x.OfType<ListBoxItem>())
+                {
+                    Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.White) },
+                },
+                new Style(x => x.OfType<ListBoxItem>().NthChild(2, 1))
+                {
+                    Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Green) },
+                },
+                new Style(x => x.OfType<ListBoxItem>().NthChild(2, 0))
+                {
+                    Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
+                },
+            };
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ListBox>();
+
+            // We need to display an odd number of items to reproduce the issue.
+            var root = CreateRoot(itemsControl, clientSize: new(100, 90), styles: styles);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var containers = target.GetRealizedContainers()!
+                .Cast<ListBoxItem>()
+                .ToList();
+
+            Assert.Equal(0, target.FirstRealizedIndex);
+            Assert.Equal(8, target.LastRealizedIndex);
+            AssertColors(target);
+
+            scroll.Offset = new Vector(0, 10);
+            target.UpdateLayout();
+
+            Assert.Equal(1, target.FirstRealizedIndex);
+            Assert.Equal(9, target.LastRealizedIndex);
+            AssertColors(target);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -903,7 +961,7 @@ namespace Avalonia.Controls.UnitTests
                 where T : ItemsControl, new()
         {
             var (target, scroll, itemsControl) = CreateUnrootedTarget<T>(items, itemTemplate);
-            var root = CreateRoot(itemsControl, styles);
+            var root = CreateRoot(itemsControl, styles: styles);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
 
@@ -942,10 +1000,13 @@ namespace Avalonia.Controls.UnitTests
             return (target, scroll, itemsControl);
         }
 
-        private static TestRoot CreateRoot(Control? child, IEnumerable<Style>? styles = null)
+        private static TestRoot CreateRoot(
+            Control? child, 
+            Size? clientSize = null,
+            IEnumerable<Style>? styles = null)
         {
             var root = new TestRoot(true, child);
-            root.ClientSize = new(100, 100);
+            root.ClientSize = clientSize ?? new(100, 100);
 
             if (styles is not null)
                 root.Styles.AddRange(styles);
