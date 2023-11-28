@@ -815,6 +815,56 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(3, target.Children.Count);
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/10968
+        [Fact]
+        public void Does_Not_Realize_Items_If_Self_Outside_Viewport()
+        {
+            using var app = App();
+            var (panel, _, itemsControl) = CreateUnrootedTarget<ItemsControl>();
+            itemsControl.Margin = new Thickness(0.0, 200.0, 0.0, 0.0);
+
+            var scrollContentPresenter = new ScrollContentPresenter
+            {
+                Width = 100,
+                Height = 100,
+                Content = itemsControl
+            };
+
+            var root = CreateRoot(scrollContentPresenter);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            Assert.Equal(1, panel.VisualChildren.Count);
+
+            scrollContentPresenter.Content = null;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            scrollContentPresenter.Content = itemsControl;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, panel.VisualChildren.Count);
+        }
+
+        [Fact]
+        public void Inserting_Item_Before_Viewport_Preserves_FirstRealizedIndex()
+        {
+            // Issue #12744
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
+
+            // Scroll down 20 items.
+            scroll.Offset = new Vector(0, 200);
+            target.UpdateLayout();
+            Assert.Equal(20, target.FirstRealizedIndex);
+
+            // Insert an item at the beginning.
+            items.Insert(0, "New Item");
+            target.UpdateLayout();
+
+            // The first realized index should still be 20 as the scroll should be unchanged.
+            Assert.Equal(20, target.FirstRealizedIndex);
+            Assert.Equal(new(0, 200), scroll.Offset);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
