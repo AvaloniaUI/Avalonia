@@ -38,7 +38,7 @@ namespace Avalonia.iOS
             var keyboard = new KeyboardDevice();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformGraphics>().ToConstant(GlFeature)
+                .Bind<IPlatformGraphics>().ToConstant((IPlatformGraphics) GlFeature)
                 .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()

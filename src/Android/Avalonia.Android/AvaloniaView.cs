@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Content.Res;
 using Android.Runtime;
@@ -46,6 +47,7 @@ namespace Avalonia.Android
             return _view.View.DispatchKeyEvent(e);
         }
 
+        [SupportedOSPlatform("android24.0")]
         public override void OnVisibilityAggregated(bool isVisible)
         {
             base.OnVisibilityAggregated(isVisible);

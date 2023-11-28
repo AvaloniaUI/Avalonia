@@ -47,7 +47,12 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
             Logger.TryGet(LogEventLevel.Error, LogArea.IOSPlatform)?.
                 Log(this, "GetBasicPropertiesAsync returned an error: {ErrorCode} {ErrorMessage}", error.Code, error.LocalizedFailureReason);
         }
-        return Task.FromResult(new StorageItemProperties(attributes?.Size, (DateTime)attributes?.CreationDate, (DateTime)attributes?.ModificationDate));
+
+        var properties = attributes is null ?
+            new StorageItemProperties() :
+            new StorageItemProperties(attributes.Size, (DateTime)attributes.CreationDate, (DateTime)attributes.ModificationDate);
+
+        return Task.FromResult(properties);
     }
 
     public Task<IStorageFolder?> GetParentAsync()
@@ -62,7 +67,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
             : Task.FromException(new NSErrorException(error));
     }
 
-    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    public Task<IStorageItem?> MoveAsync(IStorageFolder destination)
     {
         if (destination is not IOSStorageFolder folder)
         {
@@ -75,8 +80,8 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         if (NSFileManager.DefaultManager.Move(folder.Url, newPath, out var error))
         {
             return isDir
-                ? new IOSStorageFolder(newPath)
-                : new IOSStorageFile(newPath);
+                ? Task.FromResult<IStorageItem?>(new IOSStorageFolder(newPath))
+                : Task.FromResult<IStorageItem?>(new IOSStorageFile(newPath));
         }
 
         if (error is not null)
@@ -84,7 +89,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
             throw new NSErrorException(error);
         }
 
-        return null;
+        return Task.FromResult<IStorageItem?>(null);
     }
 
     public Task ReleaseBookmarkAsync()

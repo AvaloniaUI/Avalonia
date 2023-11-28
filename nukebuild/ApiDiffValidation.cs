@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Nuke.Common.Tooling;
+using static Serilog.Log;
 
 public static class ApiDiffValidation
 {
@@ -142,7 +143,7 @@ public static class ApiDiffValidation
          Avalonia.11.0.0
          */
         var packageId = GetPackageId(packagePath);
-        Build.Information("Downloading {0} {1} baseline package", packageId, baselineVersion);
+        Information("Downloading {0} {1} baseline package", packageId, baselineVersion);
 
         try
         {
