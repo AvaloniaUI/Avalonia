@@ -294,6 +294,7 @@ namespace Avalonia.Controls.Utils
                 {
                     // The insertion point was before the first element, update the first index.
                     _firstIndex += count;
+                    _startUUnstable = true;
                 }
                 else
                 {
