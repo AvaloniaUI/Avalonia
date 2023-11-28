@@ -8,7 +8,8 @@ namespace Avalonia.Win32.Input;
 
 internal unsafe class WindowsInputPane : IInputPane, IDisposable
 {
-    private static Guid CLSID_FrameworkInputPane = Guid.Parse("D5120AA3-46BA-44C5-822D-CA8092C1FC72");
+        // GUID: D5120AA3-46BA-44C5-822D-CA8092C1FC72
+    private static readonly Guid CLSID_FrameworkInputPane = new(0xD5120AA3, 0x46BA, 0x44C5, 0x82, 0x2D, 0xCA, 0x80, 0x92, 0xC1, 0xFC, 0x72);
     private static Guid SID_IFrameworkInputPane  = Guid.Parse("5752238B-24F0-495A-82F1-2FD593056796");
 
     private readonly WindowImpl _windowImpl;
