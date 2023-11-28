@@ -1,21 +1,33 @@
 ﻿using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Tizen.Platform.Input;
 using Avalonia.Tizen.Platform;
-using Avalonia.Threading;
 
 namespace Avalonia.Tizen;
 
 internal class TizenPlatform
 {
     public static readonly TizenPlatform Instance = new();
-    internal static NuiGlPlatform GlPlatform { get; set; }
-    internal static Compositor Compositor { get; private set; }
-    internal static TizenThreadingInterface ThreadingInterface { get; private set; } = new();
+
+    private static NuiGlPlatform? s_glPlatform;
+    private static Compositor? s_compositor;
+
+    internal static NuiGlPlatform GlPlatform
+    {
+        get => s_glPlatform ?? throw new InvalidOperationException($"{nameof(TizenPlatform)} hasn't been initialized");
+        private set => s_glPlatform = value;
+    }
+
+    internal static Compositor Compositor
+    {
+        get => s_compositor ?? throw new InvalidOperationException($"{nameof(TizenPlatform)} hasn't been initialized");
+        private set => s_compositor = value;
+    }
+
+    internal static TizenThreadingInterface ThreadingInterface { get; } = new();
 
     public static void Initialize()
     {   

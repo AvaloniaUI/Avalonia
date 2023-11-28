@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿#nullable enable
 
 namespace Avalonia.Android
 {
@@ -11,9 +7,9 @@ namespace Avalonia.Android
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
 
         private static AppBuilder? s_appBuilder;
-        internal static object ViewContent;
+        internal static object? ViewContent;
 
-        public object Content
+        public object? Content
         {
             get
             {
@@ -51,7 +47,7 @@ namespace Avalonia.Android
                 View.Content = ViewContent;
             }
 
-            if (Avalonia.Application.Current.ApplicationLifetime is SingleViewLifetime lifetime)
+            if (Avalonia.Application.Current?.ApplicationLifetime is SingleViewLifetime lifetime)
             {
                 lifetime.View = View;
             }

@@ -172,29 +172,29 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public async Task<IStorageFile?> CreateFileAsync(string name)
+    public Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var newFile = Document.CreateFile(mimeType, name);
+        var newFile = Document?.CreateFile(mimeType, name);
 
         if(newFile == null)
         {
-            return null;
+            return Task.FromResult<IStorageFile?>(null);
         }
 
-        return new AndroidStorageFile(Activity, newFile.Uri, this);
+        return Task.FromResult<IStorageFile?>(new AndroidStorageFile(Activity, newFile.Uri, this));
     }
 
-    public async Task<IStorageFolder?> CreateFolderAsync(string name)
+    public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         var newFolder = Document?.CreateDirectory(name);
 
         if (newFolder == null)
         {
-            return null;
+            return Task.FromResult<IStorageFolder?>(null);
         }
 
-        return new AndroidStorageFolder(Activity, newFolder.Uri, false, this, PermissionRoot);
+        return Task.FromResult<IStorageFolder?>(new AndroidStorageFolder(Activity, newFolder.Uri, false, this, PermissionRoot));
     }
 
     public override async Task DeleteAsync()
@@ -286,14 +286,14 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
         return null;
 
-        async Task<AndroidStorageFolder?> MoveRecursively(AndroidStorageFolder storageFolder, AndroidStorageFolder destination)
+        static async Task<AndroidStorageFolder?> MoveRecursively(AndroidStorageFolder storageFolder, AndroidStorageFolder destination)
         {
-            destination = await destination.CreateFolderAsync(storageFolder.Name) as AndroidStorageFolder;
-
-            if (destination == null)
+            if (await destination.CreateFolderAsync(storageFolder.Name) is not AndroidStorageFolder newDestination)
             {
                 return null;
             }
+
+            destination = newDestination;
 
             await foreach (var file in storageFolder.GetItemsAsync())
             {
@@ -477,25 +477,32 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
         if (Activity != null && destination is AndroidStorageFolder storageFolder)
         {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
+            AndroidUri? movedUri = null;
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(24))
             {
                 try
                 {
-                    var uri = DocumentsContract.MoveDocument(Activity.ContentResolver!, Uri, ((await GetParentAsync()) as AndroidStorageFolder)!.Uri, storageFolder.Document!.Uri);
-
-                    return new AndroidStorageFile(Activity, uri, storageFolder);
+                    if (Activity.ContentResolver is { } contentResolver &&
+                        storageFolder.Document?.Uri is { } targetParentUri &&
+                        await GetParentAsync() is AndroidStorageFolder parentFolder)
+                    {
+                        movedUri = DocumentsContract.MoveDocument(contentResolver, Uri, parentFolder.Uri, targetParentUri);
+                    }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // There are many reason why DocumentContract will fail to move a file. We fallback to copying.
                     return await MoveFileByCopy();
-                    
                 }
             }
-            else
+
+            if (movedUri is not null)
             {
-                return await MoveFileByCopy();
+                return new AndroidStorageFile(Activity, movedUri, storageFolder);
             }
+
+            return await MoveFileByCopy();
         }
 
         async Task<AndroidStorageFile?> MoveFileByCopy()

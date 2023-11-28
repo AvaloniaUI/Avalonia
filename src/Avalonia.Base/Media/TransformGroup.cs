@@ -14,15 +14,19 @@ namespace Avalonia.Media
 
         private IDisposable? _childrenNotificationSubscription;
         private readonly EventHandler _childTransformChangedHandler;
+        private Matrix? _lastMatrix;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
-            _childTransformChangedHandler = (_, _) => RaiseChanged();
+            _childTransformChangedHandler = (_, _) =>
+            {
+                _lastMatrix = null;
+                RaiseChanged();
+            };
             Children = new Transforms();
         }
-
 
         /// <summary>
         /// Gets or sets the children.
@@ -44,14 +48,16 @@ namespace Avalonia.Media
         {
             get
             {
-                Matrix result = Matrix.Identity;
-
-                foreach (var t in Children)
+                if (_lastMatrix is null)
                 {
-                    result *= t.Value;
+                    var matrix = Matrix.Identity;
+                    foreach (var t in Children)
+                    {
+                        matrix *= t.Value;
+                    }
+                    _lastMatrix = matrix;
                 }
-
-                return result;
+                return _lastMatrix.Value;
             }
         }
 

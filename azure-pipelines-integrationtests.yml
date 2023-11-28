@@ -5,14 +5,16 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.415'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.415
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.402'
+    displayName: 'Use .NET 7.0 SDK'
     inputs:
-      version: 7.0.402
+      packageType: sdk
+      useGlobalJson: true
 
   - script: system_profiler SPDisplaysDataType |grep Resolution
     displayName: 'Get Resolution'
@@ -57,14 +59,16 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.404'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.404
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.101'
+    displayName: 'Use .NET 7.0 SDK'
     inputs:
-      version: 7.0.101
+      packageType: sdk
+      useGlobalJson: true
 
   - task: Windows Application Driver@0
     inputs:

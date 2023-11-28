@@ -80,13 +80,13 @@ public class GpuDemo : UserControl
         set => SetAndRaise(DiscoVisibleProperty, ref _discoVisible, value);
     }
     
-    private IGpuDemo _demo;
+    private IGpuDemo? _demo;
 
-    public static readonly DirectProperty<GpuDemo, IGpuDemo> DemoProperty =
-        AvaloniaProperty.RegisterDirect<GpuDemo, IGpuDemo>("Demo", o => o.Demo,
+    public static readonly DirectProperty<GpuDemo, IGpuDemo?> DemoProperty =
+        AvaloniaProperty.RegisterDirect<GpuDemo, IGpuDemo?>("Demo", o => o.Demo,
             (o, v) => o._demo = v);
 
-    public IGpuDemo Demo
+    public IGpuDemo? Demo
     {
         get => _demo;
         set => SetAndRaise(DemoProperty, ref _demo, value);
@@ -102,7 +102,7 @@ public class GpuDemo : UserControl
            )
         {
             if (change.Property == DemoProperty)
-                ((IGpuDemo)change.OldValue)?.Update(null, 0, 0, 0, 0);
+                ((IGpuDemo?)change.OldValue)?.Update(null, 0, 0, 0, 0);
             _demo?.Update(this, Yaw, Pitch, Roll, Disco);
         }
 
@@ -112,5 +112,5 @@ public class GpuDemo : UserControl
 
 public interface IGpuDemo
 {
-    void Update(GpuDemo parent, float yaw, float pitch, float roll, float disco);
+    void Update(GpuDemo? parent, float yaw, float pitch, float roll, float disco);
 }
