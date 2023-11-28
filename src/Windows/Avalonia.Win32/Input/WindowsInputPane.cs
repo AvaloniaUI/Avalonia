@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
@@ -28,7 +27,6 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
             _cookie = cookie;
         }
     }
-    
     public InputPaneState State { get; private set; }
 
     public Rect OccludedRect { get; private set; }
@@ -38,7 +36,6 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
     private void OnStateChanged(bool showing, UnmanagedMethods.RECT? prcInputPaneScreenLocation)
     {
         var oldState = (OccludedRect, State);
-        
         OccludedRect = prcInputPaneScreenLocation.HasValue
             ? ScreenRectToClient(prcInputPaneScreenLocation.Value)
             : default;
