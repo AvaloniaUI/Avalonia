@@ -772,8 +772,8 @@ namespace Avalonia.Skia
         private static void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
         {
             var tileMode = gradientBrush.SpreadMethod.ToSKShaderTileMode();
-            var stopColors = gradientBrush.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
-            var stopOffsets = gradientBrush.GradientStops.Select(s => (float)s.Offset).ToArray();
+            var stopColors = gradientBrush.GradientStops.OrderBy(x => x.Offset).Select(s => s.Color.ToSKColor()).ToArray();
+            var stopOffsets = gradientBrush.GradientStops.OrderBy(x => x.Offset).Select(s => (float)s.Offset).ToArray();
 
             switch (gradientBrush)
             {
