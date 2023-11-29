@@ -234,6 +234,8 @@ namespace Avalonia.Animation
                 }
             }
 
+            animatorKeyFrames.Sort(static (x, y) => x.Cue.CueValue.CompareTo(y.Cue.CueValue));
+
             var newAnimatorInstances = new List<IAnimator>();
 
             foreach (var handler in handlerList)
