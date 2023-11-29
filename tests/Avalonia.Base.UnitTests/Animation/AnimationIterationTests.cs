@@ -568,6 +568,42 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(300.0, border.Width);
         }
 
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(0.5)]
+        [InlineData(1.0)]
+        public void Single_KeyFrame_Works(double cue)
+        {
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(1.0),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters = { new Setter(Layoutable.WidthProperty, 100.0) },
+                        Cue = new Cue(cue)
+                    }
+                }
+            };
+
+            var border = new Border
+            {
+                Height = 100.0,
+                Width = 50.0
+            };
+
+            var clock = new TestClock();
+            animation.RunAsync(border, clock);
+
+            clock.Step(TimeSpan.Zero);
+            clock.Step(TimeSpan.FromSeconds(cue));
+            Assert.Equal(100.0, border.Width);
+        }
+
         private sealed class FakeAnimator : InterpolatingAnimator<double>
         {
             public double LastProgress { get; set; } = double.NaN;

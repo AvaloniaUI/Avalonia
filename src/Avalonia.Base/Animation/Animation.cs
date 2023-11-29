@@ -247,7 +247,20 @@ namespace Avalonia.Animation
             {
                 var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.AnimatorType &&
                                                              a.Property == keyframe.Property);
+
+                if (animator.Count == 0 && FillMode is FillMode.Backward or FillMode.Both)
+                    keyframe.FillBefore = true;
+
                 animator.Add(keyframe);
+            }
+
+            if (FillMode is FillMode.Forward or FillMode.Both)
+            {
+                foreach (var newAnimatorInstance in newAnimatorInstances)
+                {
+                    if (newAnimatorInstance.Count > 0)
+                        newAnimatorInstance[newAnimatorInstance.Count - 1].FillAfter = true;
+                }
             }
 
             return (newAnimatorInstances, subscriptions);
