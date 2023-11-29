@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -35,7 +36,7 @@ namespace Avalonia.Controls.Presenters
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
 
         public static readonly StyledProperty<TimeSpan> CaretBlinkIntervalProperty =
-            AvaloniaProperty.Register<TextPresenter, TimeSpan>(nameof(CaretBlinkInterval), defaultValue: TimeSpan.FromMilliseconds(500));
+            TextBox.CaretBlinkIntervalProperty.AddOwner<TextPresenter>();
 
         public static readonly StyledProperty<int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
