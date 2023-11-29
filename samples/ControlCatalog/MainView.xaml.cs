@@ -45,7 +45,7 @@ namespace ControlCatalog
                 }
             };
             var themeVariants = this.Get<ComboBox>("ThemeVariants");
-            themeVariants.SelectedItem = Application.Current!.RequestedThemeVariant;
+            themeVariants.SelectedItem = Application.Current!.RequestedThemeVariant ?? ThemeVariant.Default;
             themeVariants.SelectionChanged += (sender, e) =>
             {
                 if (themeVariants.SelectedItem is ThemeVariant themeVariant)

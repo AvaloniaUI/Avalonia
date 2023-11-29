@@ -25,9 +25,12 @@ internal class Win32Icon : IDisposable
         Handle = CreateIcon(bmp, hotSpot);
     }
 
-    public Win32Icon(byte[] iconData)
+    public Win32Icon(byte[] iconData, PixelSize size = default)
     {
-        Handle = LoadIconFromData(iconData);
+        _bytes = iconData;
+        Size = size = ReplaceZeroesWithSystemMetrics(size);
+
+        Handle = LoadIconFromData(iconData, size);
         if (Handle == IntPtr.Zero)
         {
             using var bmp = new Bitmap(new MemoryStream(iconData));
@@ -35,7 +38,23 @@ internal class Win32Icon : IDisposable
         }
     }
 
+    public Win32Icon(Win32Icon original, PixelSize size = default)
+    {
+        _bytes = original._bytes ?? throw new ArgumentException("Original icon was created from a bitmap and cannot be copied.", nameof(original));
+        Size = size = ReplaceZeroesWithSystemMetrics(size);
+
+        Handle = LoadIconFromData(_bytes, size);
+        if (Handle == IntPtr.Zero)
+        {
+            using var bmp = new Bitmap(new MemoryStream(_bytes));
+            Handle = CreateIcon(bmp);
+        }
+    }
+
     public IntPtr Handle { get; private set; }
+    public PixelSize Size { get; }
+    
+    private readonly byte[]? _bytes;
     
     IntPtr CreateIcon(Bitmap bitmap, PixelPoint hotSpot = default)
     {
@@ -160,19 +179,15 @@ internal class Win32Icon : IDisposable
 
     private static int s_bitDepth;
 
-    static unsafe IntPtr LoadIconFromData(byte[] iconData, int width = 0, int height = 0)
+    private static PixelSize ReplaceZeroesWithSystemMetrics(PixelSize pixelSize) => new(
+        pixelSize.Width == 0 ? UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXICON) : pixelSize.Width,
+        pixelSize.Height == 0 ? UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYICON) : pixelSize.Height
+        );
+
+    static unsafe IntPtr LoadIconFromData(byte[] iconData, PixelSize size)
     {
         if (iconData.Length < sizeof(ICONDIR))
             return IntPtr.Zero;
-
-        // Get the correct width and height.
-        if (width == 0)
-            width = UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXICON);
-
-        if (height == 0)
-            height = UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYICON);
-
-
 
         if (s_bitDepth == 0)
         {
@@ -247,8 +262,8 @@ internal class Win32Icon : IDisposable
                 }
                 else
                 {
-                    int bestDelta = Math.Abs(bestWidth - width) + Math.Abs(bestHeight - height);
-                    int thisDelta = Math.Abs(entry.bWidth - width) + Math.Abs(entry.bHeight - height);
+                    int bestDelta = Math.Abs(bestWidth - size.Width) + Math.Abs(bestHeight - size.Height);
+                    int thisDelta = Math.Abs(entry.bWidth - size.Width) + Math.Abs(entry.bHeight - size.Height);
 
                     if ((thisDelta < bestDelta) ||
                         (thisDelta == bestDelta && (iconBitDepth <= s_bitDepth && iconBitDepth > _bestBitDepth ||
@@ -327,6 +342,11 @@ internal class Win32Icon : IDisposable
                 }
             }
         }
+    }
+
+    public void CopyTo(Stream stream)
+    {
+        stream.Write(_bytes ?? throw new InvalidOperationException("Icon was created from a bitmap, not Win32 icon data"), 0, _bytes.Length);
     }
 
     public void Dispose()

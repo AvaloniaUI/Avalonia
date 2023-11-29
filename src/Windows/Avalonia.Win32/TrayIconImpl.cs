@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -8,7 +9,6 @@ using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Styling;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -21,8 +21,13 @@ namespace Avalonia.Win32
             PixelFormats.Bgra8888, AlphaFormat.Unpremul));
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
+        private static nint s_taskBarMonitor;
+        private static bool _subscribedToPlatformSettings;
+
         private bool _iconAdded;
-        private IconImpl? _icon;
+        private IWindowIconImpl? _iconImpl;
+        private bool _iconStale;
+        private Win32Icon? _icon;
         private string? _tooltipText;
         private readonly Win32NativeToManagedMenuExporter _exporter;
         private static readonly Dictionary<int, TrayIconImpl> s_trayIcons = new();
@@ -31,6 +36,14 @@ namespace Avalonia.Win32
 
         public TrayIconImpl()
         {
+            if (!_subscribedToPlatformSettings) // static constructor is too early to subscribe
+            {
+                Win32Platform.PlatformSettings.ThemeVariantChanged += OnThemeVariantChanged;
+                _subscribedToPlatformSettings = true;
+            }
+
+            FindTaskBarMonitor();
+
             _exporter = new Win32NativeToManagedMenuExporter();
 
             _uniqueId = ++s_nextUniqueId;
@@ -44,20 +57,50 @@ namespace Avalonia.Win32
 
         internal static void ProcWnd(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.TryGetValue(wParam.ToInt32(), out var value))
+            switch (msg)
             {
-                value.WndProc(hWnd, msg, wParam, lParam);
-            }
-
-            if (msg == WM_TASKBARCREATED)
-            {
-                foreach (var tray in s_trayIcons.Values)
-                {
-                    if (tray._iconAdded)
+                case (uint)CustomWindowsMessage.WM_TRAYMOUSE:
+                    if (s_trayIcons.TryGetValue(wParam.ToInt32(), out var value))
                     {
-                        tray.UpdateIcon(true);
-                        tray.UpdateIcon();
+                        value.WndProc(hWnd, msg, wParam, lParam);
                     }
+                    break;
+                case (uint)WindowsMessage.WM_DISPLAYCHANGE:
+                    FindTaskBarMonitor();
+                    foreach (var tray in s_trayIcons.Values)
+                    {
+                        if (tray._iconAdded)
+                        {
+                            tray._iconStale = true;
+                            tray.UpdateIcon();
+                        }
+                    }
+                    break;
+                default:
+                    if (msg == WM_TASKBARCREATED)
+                    {
+                        FindTaskBarMonitor();
+                        foreach (var tray in s_trayIcons.Values)
+                        {
+                            if (tray._iconAdded)
+                            {
+                                tray.UpdateIcon(true);
+                                tray.UpdateIcon();
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+
+        private static void OnThemeVariantChanged(object? sender, EventArgs e)
+        {
+            foreach (var tray in s_trayIcons.Values)
+            {
+                if (tray._iconImpl is IThemeVariantWindowIconImpl)
+                {
+                    tray._iconStale = true;
+                    tray.UpdateIcon();
                 }
             }
         }
@@ -65,7 +108,8 @@ namespace Avalonia.Win32
         /// <inheritdoc />
         public void SetIcon(IWindowIconImpl? icon)
         {
-            _icon = icon as IconImpl;
+            _iconImpl = icon;
+            _iconStale = true;
             UpdateIcon();
         }
 
@@ -82,8 +126,40 @@ namespace Avalonia.Win32
             UpdateIcon(!_iconAdded);
         }
 
+        private static void FindTaskBarMonitor()
+        {
+            var taskBarData = new APPBARDATA();
+            if (SHAppBarMessage(AppBarMessage.ABM_GETTASKBARPOS, ref taskBarData) != 0)
+            {
+                s_taskBarMonitor = MonitorFromPoint(new() { X = taskBarData.rc.left, Y = taskBarData.rc.top }, MONITOR.MONITOR_DEFAULTTOPRIMARY);
+            }
+        }
+
         private void UpdateIcon(bool remove = false)
         {
+            Win32Icon? newIcon = null;
+            if (_iconStale && _iconImpl is not null)
+            {
+                var scaling = 1.0;
+                if ((HRESULT)GetDpiForMonitor(s_taskBarMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out var dpiY) == HRESULT.S_OK)
+                {
+                    Debug.Assert(dpiX == dpiY);
+                    scaling = dpiX / 96.0;
+                }
+
+                newIcon = (_iconImpl switch
+                {
+                    IThemeVariantWindowIconImpl variantIcons => (Win32Platform.PlatformSettings.ThemeVariant switch
+                    {
+                        PlatformThemeVariant.Light => variantIcons.Light,
+                        PlatformThemeVariant.Dark => variantIcons.Dark,
+                        _ => throw new NotImplementedException(),
+                    }) as IconImpl,
+                    IconImpl standard => standard,
+                    _ => null,
+                })?.LoadSmallIcon(scaling);
+            }
+
             var iconData = new NOTIFYICONDATA
             {
                 hWnd = Win32Platform.Instance.Handle,
@@ -94,7 +170,7 @@ namespace Avalonia.Win32
             {
                 iconData.uFlags = NIF.TIP | NIF.MESSAGE | NIF.ICON;
                 iconData.uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE;
-                iconData.hIcon = _icon?.HIcon ?? s_emptyIcon.Handle;
+                iconData.hIcon = (_iconStale ? newIcon : _icon)?.Handle ?? s_emptyIcon.Handle;
                 iconData.szTip = _tooltipText ?? "";
 
                 if (!_iconAdded)
@@ -112,6 +188,13 @@ namespace Avalonia.Win32
                 iconData.uFlags = 0;
                 Shell_NotifyIcon(NIM.DELETE, iconData);
                 _iconAdded = false;
+            }
+
+            if (_iconStale)
+            {
+                _icon?.Dispose();
+                _icon = newIcon;
+                _iconStale = false;
             }
         }
 

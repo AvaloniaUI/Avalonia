@@ -52,5 +52,14 @@ namespace Avalonia.Platform
         {
             ColorValuesChanged?.Invoke(this, colorValues);
         }
+
+        public virtual PlatformThemeVariant ThemeVariant => default;
+
+        public event EventHandler<EventArgs>? ThemeVariantChanged;
+
+        protected virtual void OnThemeVariantChanged()
+        {
+            ThemeVariantChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

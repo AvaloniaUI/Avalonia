@@ -5,26 +5,24 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Collections.Pooled;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.Input;
-using Avalonia.Metadata;
 using Avalonia.OpenGL.Egl;
-using Avalonia.Platform.Storage;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
-using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.OpenGl;
-using Avalonia.Win32.WinRT.Composition;
+using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.WinRT;
+using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using Avalonia.Input.Platform;
 using System.Diagnostics;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 using static Avalonia.Controls.Platform.Win32SpecificOptions;
@@ -81,10 +79,13 @@ namespace Avalonia.Win32
         private string? _className;
         private IntPtr _hwnd;
         private IInputRoot? _owner;
-        private WindowProperties _windowProperties;
+        protected WindowProperties _windowProperties;
+        private IWindowIconImpl? _iconImpl;
+        private readonly Dictionary<(Icons type, uint dpi, PlatformThemeVariant theme), Win32Icon> _iconCache = new();
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
+        private uint _dpi = 96;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
         private OleDropTarget? _dropTarget;
@@ -138,10 +139,11 @@ namespace Avalonia.Win32
                                    !surfaceFactory.RequiresNoRedirectionBitmap;
 
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
+            Win32Platform.PlatformSettings.ThemeVariantChanged += OnThemeVariantChanged;
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-            
+
             if (this is not PopupImpl)
             {
                 UpdateInputMethod(GetKeyboardLayout(0));
@@ -244,7 +246,9 @@ namespace Avalonia.Win32
             }
         }
 
-        public Size? FrameSize
+        Size? ITopLevelImpl.FrameSize => FrameSize;
+
+        public Size FrameSize
         {
             get
             {
@@ -332,7 +336,7 @@ namespace Avalonia.Win32
             {
                 return _nativeControlHost;
             }
-            
+
             if (featureType == typeof(IStorageProvider))
             {
                 return _storageProvider;
@@ -589,6 +593,9 @@ namespace Avalonia.Win32
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
+
+            Win32Platform.PlatformSettings.ThemeVariantChanged -= OnThemeVariantChanged;
+            ClearIconCache();
         }
 
         public void Invalidate(Rect rect)
@@ -699,11 +706,76 @@ namespace Avalonia.Win32
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            var impl = icon as IconImpl;
+            _iconImpl = icon;
+            ClearIconCache();
+            RefreshIcon();
+        }
 
-            var hIcon = impl?.HIcon ?? IntPtr.Zero;
-            PostMessage(_hwnd, (int)WindowsMessage.WM_SETICON,
-                new IntPtr((int)Icons.ICON_BIG), hIcon);
+        private void ClearIconCache()
+        {
+            foreach (var icon in _iconCache.Values)
+            {
+                icon.Dispose();
+            }
+            _iconCache.Clear();
+        }
+
+        private Win32Icon? LoadIcon(Icons type, uint dpi)
+        {
+            if (_iconImpl == null)
+            {
+                return null;
+            }
+
+            var iconTheme = type switch
+            {
+                Icons.ICON_BIG or Icons.ICON_SMALL2 => Win32Platform.PlatformSettings.ThemeVariant,
+                _ => FrameThemeVariant,
+            };
+
+            if (type == Icons.ICON_SMALL2)
+            {
+                type = Icons.ICON_SMALL;
+            }
+
+            var iconImpl = _iconImpl switch
+            {
+                IThemeVariantWindowIconImpl variantIcons => (iconTheme switch
+                {
+                    PlatformThemeVariant.Light => variantIcons.Light,
+                    PlatformThemeVariant.Dark => variantIcons.Dark,
+                    _ => throw new NotImplementedException(),
+                }) as IconImpl,
+                IconImpl standard => standard,
+                _ => null
+            };
+
+            if (iconImpl == null)
+            {
+                return null;
+            }
+
+            var iconKey = (type, dpi, iconTheme);
+            if (!_iconCache.TryGetValue(iconKey, out var icon))
+            {
+                var scale = dpi / 96.0;
+                _iconCache[iconKey] = icon = type switch
+                {
+                    Icons.ICON_SMALL => iconImpl.LoadSmallIcon(scale),
+                    Icons.ICON_BIG => iconImpl.LoadBigIcon(scale),
+                    _ => throw new NotImplementedException(),
+                };
+            }
+
+            return icon;
+        }
+
+        private void RefreshIcon()
+        {
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_SMALL, LoadIcon(Icons.ICON_SMALL, _dpi)?.Handle ?? default);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_BIG, LoadIcon(Icons.ICON_BIG, _dpi)?.Handle ?? default);
+
+            TaskBarList.SetOverlayIcon(_hwnd, default, null); // This will prompt the taskbar to redraw the icon
         }
 
         public void ShowTaskbarIcon(bool value)
@@ -749,24 +821,60 @@ namespace Avalonia.Win32
             _topmost = value;
         }
 
+        public unsafe PlatformThemeVariant FrameThemeVariant
+        {
+            get
+            {
+                if (Win32PlatformSettings.DarkModeAttribute is { } attribute)
+                {
+                    int pvUseBackdropBrush;
+
+                    if (DwmGetWindowAttribute(_hwnd, (int)attribute, &pvUseBackdropBrush, sizeof(int)) == 0)
+                    {
+                        return pvUseBackdropBrush == 1 ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
+                    }
+                }
+
+                return PlatformThemeVariant.Light;
+            }
+        }
+
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             _currentThemeVariant = themeVariant;
-            if (Win32Platform.WindowsVersion.Build >= 22000)
+            if (Win32PlatformSettings.DarkModeAttribute is { } attribute)
             {
                 var pvUseBackdropBrush = themeVariant == PlatformThemeVariant.Dark ? 1 : 0;
                 DwmSetWindowAttribute(
                     _hwnd,
-                    (int)DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
-                    &pvUseBackdropBrush,
-                    sizeof(int));
+                        (int)attribute,
+                        &pvUseBackdropBrush,
+                        sizeof(int));
                 if (TransparencyLevel == WindowTransparencyLevel.Mica)
                 {
                     SetTransparencyMica();
                 }
+
+                RefreshIcon();
+
+                if (Win32Platform.WindowsVersion.Build < 22000 && _shown && HasFullDecorations)
+                {
+                    // The recommended way to force a redraw of the title bar is to call SetWindowPos. Unfortunately this doesn't work well when a popup is
+                    // open: the popup closes and our own window deactivates. Toggling system decorations off and then back on avoids these issues.
+                    SetSystemDecorations(SystemDecorations.BorderOnly);
+                    SetSystemDecorations(SystemDecorations.Full);
+                }
             }
         }
-        
+
+        private void OnThemeVariantChanged(object? sender, EventArgs e)
+        {
+            if (_iconImpl is IThemeVariantWindowIconImpl)
+            {
+                RefreshIcon();
+            }
+        }
+
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
@@ -835,10 +943,10 @@ namespace Avalonia.Win32
                 if (GetDpiForMonitor(
                     monitor,
                     MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
-                    out var dpix,
+                    out _dpi,
                     out _) == 0)
                 {
-                    _scaling = dpix / 96.0;
+                    _scaling = _dpi / 96.0;
                 }
             }
         }
@@ -1483,7 +1591,7 @@ namespace Avalonia.Win32
             public RECT WindowRect { get; set; }
         };
 
-        private struct WindowProperties
+        protected struct WindowProperties
         {
             public bool ShowInTaskbar;
             public bool IsResizable;

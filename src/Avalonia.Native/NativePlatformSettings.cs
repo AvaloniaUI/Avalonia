@@ -8,6 +8,7 @@ namespace Avalonia.Native;
 internal class NativePlatformSettings : DefaultPlatformSettings
 {
     private readonly IAvnPlatformSettings _platformSettings;
+    private PlatformThemeVariant? _lastThemeVariant;
     private PlatformColorValues _lastColorValues;
 
     public NativePlatformSettings(IAvnPlatformSettings platformSettings)
@@ -15,6 +16,13 @@ internal class NativePlatformSettings : DefaultPlatformSettings
         _platformSettings = platformSettings;
         platformSettings.RegisterColorsChange(new ColorsChangeCallback(this));
     }
+
+    public override PlatformThemeVariant ThemeVariant => _lastThemeVariant ?? _platformSettings.PlatformTheme switch
+    {
+        AvnPlatformThemeVariant.Light or AvnPlatformThemeVariant.HighContrastLight => PlatformThemeVariant.Light,
+        AvnPlatformThemeVariant.Dark or AvnPlatformThemeVariant.HighContrastDark => PlatformThemeVariant.Dark,
+        _ => throw new ArgumentOutOfRangeException(),
+    };
 
     public override PlatformColorValues GetColorValues()
     {
@@ -51,6 +59,14 @@ internal class NativePlatformSettings : DefaultPlatformSettings
 
     public void OnColorValuesChanged()
     {
+        var lastThemeVariant = _lastThemeVariant;
+        _lastThemeVariant = null; // clear the cached value
+
+        if (ThemeVariant != lastThemeVariant)
+        {
+            OnThemeVariantChanged();
+        }
+
         var oldColorValues = _lastColorValues;
         var colorValues = GetColorValues();
 

@@ -224,16 +224,16 @@ namespace Avalonia.Win32.Interop
         [Flags]
         public enum ModifierKeys
         {
-            MK_NONE    = 0x0000,
+            MK_NONE = 0x0000,
 
             MK_LBUTTON = 0x0001,
             MK_RBUTTON = 0x0002,
 
-            MK_SHIFT   = 0x0004,
+            MK_SHIFT = 0x0004,
             MK_CONTROL = 0x0008,
 
-            MK_MBUTTON  = 0x0010,
-            MK_ALT      = 0x0020,
+            MK_MBUTTON = 0x0010,
+            MK_ALT = 0x0020,
             MK_XBUTTON1 = 0x0020,
             MK_XBUTTON2 = 0x0040
         }
@@ -811,6 +811,7 @@ namespace Avalonia.Win32.Interop
             DWMWA_FREEZE_REPRESENTATION,
             DWMWA_PASSIVE_UPDATE_MODE,
             DWMWA_USE_HOSTBACKDROPBRUSH,
+            DWMWA_USE_IMMERSIVE_DARK_MODE_PRE_20H1 = 19,
             DWMWA_USE_IMMERSIVE_DARK_MODE = 20,
             DWMWA_WINDOW_CORNER_PREFERENCE = 33,
             DWMWA_BORDER_COLOR,
@@ -1449,6 +1450,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
 
+        [DllImport("shell32", CharSet = CharSet.Auto)]
+        public static extern nint SHAppBarMessage(AppBarMessage dwMessage, ref APPBARDATA lpData);
+
         [DllImport("user32.dll", EntryPoint = "SetClassLongPtrW", ExactSpelling = true)]
         private static extern IntPtr SetClassLong64(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
 
@@ -1603,6 +1607,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
+        public static extern bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
         [DllImport("gdi32.dll")]
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
@@ -1702,6 +1710,9 @@ namespace Avalonia.Win32.Interop
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
 
         [DllImport("dwmapi.dll")]
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
+
+        [DllImport("dwmapi.dll")]
         public static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
 
         [DllImport("dwmapi.dll")]
@@ -1715,14 +1726,31 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("dwmapi.dll", SetLastError = false)]
         public static extern int DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
-        
+
+        public static readonly UIntPtr HKEY_LOCAL_MACHINE = new(0x80000002u);
+        public static readonly UIntPtr HKEY_CURRENT_USER = new(0x80000001u);
+
+        public enum SecurityAccessModel : int
+        {
+            KEY_READ = 0x20019,
+        }
+
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegOpenKeyExW", ExactSpelling = true)]
+        public static extern int RegOpenKeyEx(UIntPtr hKey, string subKey, int ulOptions, SecurityAccessModel samDesired, out UIntPtr hkResult);
+
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegQueryValueExW", ExactSpelling = true)]
+        public static extern int RegQueryValueEx(UIntPtr hKey, string lpValueName, int lpReserved, ref uint lpType, IntPtr lpData, ref int lpcbData);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern int RegCloseKey(UIntPtr hKey);
+
         [Flags]
         public enum LayeredWindowFlags
         {
             LWA_ALPHA = 0x00000002,
             LWA_COLORKEY = 0x00000001,
         }
-        
+
         [DllImport("user32.dll")]
         public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, LayeredWindowFlags dwFlags);
 
@@ -1815,15 +1843,15 @@ namespace Avalonia.Win32.Interop
             MWMO_INPUTAVAILABLE = 0x0004
         }
 
-        [DllImport("user32", EntryPoint="MsgWaitForMultipleObjectsEx", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Auto)]
+        [DllImport("user32", EntryPoint = "MsgWaitForMultipleObjectsEx", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Auto)]
         private static extern int IntMsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds,
             QueueStatusFlags dwWakeMask, MsgWaitForMultipleObjectsFlags dwFlags);
 
-        internal static int MsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds, 
+        internal static int MsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds,
             QueueStatusFlags dwWakeMask, MsgWaitForMultipleObjectsFlags dwFlags)
         {
             int result = IntMsgWaitForMultipleObjectsEx(nCount, pHandles, dwMilliseconds, dwWakeMask, dwFlags);
-            if(result == -1)
+            if (result == -1)
             {
                 throw new Win32Exception();
             }
@@ -2387,7 +2415,9 @@ namespace Avalonia.Win32.Interop
         public enum Icons
         {
             ICON_SMALL = 0,
-            ICON_BIG = 1
+            ICON_BIG = 1,
+            /// <summary>The small icon, but with the system theme variant rather than the window's own theme. Requested by other processes, e.g. the taskbar and Task Manager.</summary>
+            ICON_SMALL2 = 2,
         }
 
         public static class ShellIds
@@ -2410,9 +2440,10 @@ namespace Avalonia.Win32.Interop
         }
 
         public delegate void MarkFullscreenWindow(IntPtr This, IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fullscreen);
+        public delegate void SetOverlayIcon(IntPtr This, IntPtr hWnd, IntPtr hIcon, [MarshalAs(UnmanagedType.LPWStr)] string? pszDescription);
         public delegate HRESULT HrInit(IntPtr This);
 
-        public struct ITaskBarList2VTable
+        public struct ITaskBarList3VTable
         {
             public IntPtr IUnknown1;
             public IntPtr IUnknown2;
@@ -2423,6 +2454,36 @@ namespace Avalonia.Win32.Interop
             public IntPtr ActivateTab;
             public IntPtr SetActiveAlt;
             public IntPtr MarkFullscreenWindow;
+            public IntPtr SetProgressValue;
+            public IntPtr SetProgressState;
+            public IntPtr RegisterTab;
+            public IntPtr UnregisterTab;
+            public IntPtr SetTabOrder;
+            public IntPtr SetTabActive;
+            public IntPtr ThumbBarAddButtons;
+            public IntPtr ThumbBarUpdateButtons;
+            public IntPtr ThumbBarSetImageList;
+            public IntPtr SetOverlayIcon;
+            public IntPtr SetThumbnailTooltip;
+            public IntPtr SetThumbnailClip;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct APPBARDATA
+        {
+            private static readonly int s_size = Marshal.SizeOf(typeof(APPBARDATA));
+
+            public int cbSize;
+            public nint hWnd;
+            public uint uCallbackMessage;
+            public uint uEdge;
+            public RECT rc;
+            public int lParam;
+
+            public APPBARDATA()
+            {
+                cbSize = s_size;
+            }
         }
     }
 
@@ -2514,6 +2575,12 @@ namespace Avalonia.Win32.Interop
         DELETE = 0x00000002,
         SETFOCUS = 0x00000003,
         SETVERSION = 0x00000004
+    }
+
+    internal enum AppBarMessage : uint
+    {
+        ABM_GETSTATE = 0x00000004,
+        ABM_GETTASKBARPOS = 0x00000005,
     }
 
     [Flags]
