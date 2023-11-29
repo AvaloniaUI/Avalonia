@@ -110,7 +110,7 @@ namespace Avalonia.Controls
         
         ThemeVariant? IThemeVariantProvider.Key { get; set; }
 
-        public override bool HasResources
+        public sealed override bool HasResources
         {
             get
             {
@@ -172,7 +172,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
+        public sealed override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             if (TryGetValue(key, out value))
                 return true;
@@ -301,7 +301,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected override void OnAddOwner(IResourceHost owner)
+        protected sealed override void OnAddOwner(IResourceHost owner)
         {
             var hasResources = _inner?.Count > 0;
             
@@ -328,7 +328,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnRemoveOwner(IResourceHost owner)
+        protected sealed override void OnRemoveOwner(IResourceHost owner)
         {
             var hasResources = _inner?.Count > 0;
 
