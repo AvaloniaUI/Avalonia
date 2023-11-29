@@ -249,9 +249,10 @@ export class InputHelper {
         element: HTMLInputElement,
         handler: (args: any) => boolean) {
         if ("virtualKeyboard" in navigator) {
+            // (navigator as any).virtualKeyboard.overlaysContent = true;
             (navigator as any).virtualKeyboard.addEventListener("geometrychange", (event: any) => {
                 const elementRect = element.getBoundingClientRect();
-                const keyboardRect = <DOMRect>event.target.boundingRect;
+                const keyboardRect = event.target.boundingRect as DOMRect;
                 handler({
                     x: keyboardRect.x - elementRect.x,
                     y: keyboardRect.y - elementRect.y,
