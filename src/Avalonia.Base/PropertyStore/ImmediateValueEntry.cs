@@ -19,13 +19,13 @@ namespace Avalonia.PropertyStore
         }
 
         public StyledProperty<T> Property { get; }
-        public bool HasValue => true;
         AvaloniaProperty IValueEntry.Property => Property;
 
         public void Unsubscribe() { }
 
         public void Dispose() => _owner.OnEntryDisposed(this);
 
+        bool IValueEntry.HasValue() => true;
         object? IValueEntry.GetValue() => _value;
         T IValueEntry<T>.GetValue() => _value;
 
