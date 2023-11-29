@@ -249,9 +249,15 @@ export class InputHelper {
         element: HTMLInputElement,
         handler: (args: any) => boolean) {
         if ("virtualKeyboard" in navigator) {
-            // TODO: handle relative coordinates (it's broken for browser input atm anyway).
             (navigator as any).virtualKeyboard.addEventListener("geometrychange", (event: any) => {
-                handler(event.target.boundingRect);
+                const elementRect = element.getBoundingClientRect();
+                const keyboardRect = <DOMRect>event.target.boundingRect;
+                handler({
+                    x: keyboardRect.x - elementRect.x,
+                    y: keyboardRect.y - elementRect.y,
+                    width: keyboardRect.width,
+                    height: keyboardRect.height
+                });
             });
         }
     }
