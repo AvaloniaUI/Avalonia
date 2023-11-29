@@ -103,6 +103,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_HourTextBlock"
+                      Text="{DynamicResource LocaleTimePickerHourText}"
                       HorizontalAlignment="Center"
                       Padding="{DynamicResource TimePickerHostPadding}"
                       FontFamily="{TemplateBinding FontFamily}"
@@ -121,6 +122,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_MinuteTextBlock"
+                             Text="{DynamicResource LocaleTimePickerMinuteText}"
                              HorizontalAlignment="Center"
                              Padding="{DynamicResource TimePickerHostPadding}"
                              FontFamily="{TemplateBinding FontFamily}"
