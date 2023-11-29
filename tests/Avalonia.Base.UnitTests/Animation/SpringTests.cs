@@ -80,9 +80,9 @@ public class SpringTests
         animation.RunAsync(rect, clock);
 
         clock.Step(TimeSpan.Zero);
-        Assert.Equal(rotateTransform.Angle, -2.5);
+        Assert.Equal(-2.5, rotateTransform.Angle);
         clock.Step(TimeSpan.FromSeconds(5));
-        Assert.Equal(rotateTransform.Angle, 5.522828945000075);
+        Assert.Equal(5.522828945000075, rotateTransform.Angle);
 
         var tolerance = 0.01;
         clock.Step(TimeSpan.Parse("00:00:10.0153932"));
