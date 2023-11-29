@@ -8,9 +8,10 @@ namespace Avalonia.Win32.Input;
 
 internal unsafe class WindowsInputPane : IInputPane, IDisposable
 {
-        // GUID: D5120AA3-46BA-44C5-822D-CA8092C1FC72
+    // GUID: D5120AA3-46BA-44C5-822D-CA8092C1FC72
     private static readonly Guid CLSID_FrameworkInputPane = new(0xD5120AA3, 0x46BA, 0x44C5, 0x82, 0x2D, 0xCA, 0x80, 0x92, 0xC1, 0xFC, 0x72);
-    private static Guid SID_IFrameworkInputPane  = Guid.Parse("5752238B-24F0-495A-82F1-2FD593056796");
+    // GUID: 5752238B-24F0-495A-82F1-2FD593056796
+    private static readonly Guid SID_IFrameworkInputPane  = new(0x5752238B, 0x24F0, 0x495A, 0x82, 0xF1, 0x2F, 0xD5, 0x93, 0x05, 0x67, 0x96);
 
     private readonly WindowImpl _windowImpl;
     private readonly IFrameworkInputPane _inputPane;
@@ -19,7 +20,7 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
     public WindowsInputPane(WindowImpl windowImpl)
     {
         _windowImpl = windowImpl;
-        _inputPane = UnmanagedMethods.CreateInstance<IFrameworkInputPane>(ref CLSID_FrameworkInputPane, ref SID_IFrameworkInputPane);
+        _inputPane = UnmanagedMethods.CreateInstance<IFrameworkInputPane>(in CLSID_FrameworkInputPane, in SID_IFrameworkInputPane);
 
         using (var handler = new Handler(this))
         {
