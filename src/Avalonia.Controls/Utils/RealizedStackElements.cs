@@ -281,13 +281,13 @@ namespace Avalonia.Controls.Utils
                 // elements after the insertion point.
                 var elementCount = _elements.Count;
                 var start = Math.Max(realizedIndex, 0);
-                var newIndex = realizedIndex + count;
 
                 for (var i = start; i < elementCount; ++i)
                 {
-                    if (_elements[i] is Control element)
-                        updateElementIndex(element, newIndex - count, newIndex);
-                    ++newIndex;
+                    if (_elements[i] is not Control element)
+                        continue;
+                    var oldIndex = i + first;
+                    updateElementIndex(element, oldIndex, oldIndex + count);
                 }
 
                 if (realizedIndex < 0)
@@ -341,7 +341,7 @@ namespace Avalonia.Controls.Utils
                 for (var i = 0; i < _elements.Count; ++i)
                 {
                     if (_elements[i] is Control element)
-                        updateElementIndex(element, newIndex - count, newIndex);
+                        updateElementIndex(element, newIndex + count, newIndex);
                     ++newIndex;
                 }
             }
