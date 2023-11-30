@@ -93,6 +93,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
         /// <summary>
+        /// Defines the <see cref="CaretBlinkInterval"/> property
+        /// </summary>
+        public static readonly StyledProperty<TimeSpan> CaretBlinkIntervalProperty =
+            AvaloniaProperty.Register<TextBox, TimeSpan>(nameof(CaretBlinkInterval), defaultValue: TimeSpan.FromMilliseconds(500));
+
+        /// <summary>
         /// Defines the <see cref="SelectionStart"/> property
         /// </summary>
         public static readonly StyledProperty<int> SelectionStartProperty =
@@ -443,6 +449,13 @@ namespace Avalonia.Controls
             set => SetValue(CaretBrushProperty, value);
         }
 
+        /// <inheritdoc cref="TextPresenter.CaretBlinkInterval"/>
+        public TimeSpan CaretBlinkInterval
+        {
+            get => GetValue(CaretBlinkIntervalProperty);
+            set => SetValue(CaretBlinkIntervalProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets the starting position of the text selected in the TextBox
         /// </summary>
@@ -488,7 +501,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of visible lines.
+        /// Gets or sets the maximum number of characters that the <see cref="TextBox"/> can accept.
+        /// This constraint only applies for manually entered (user-inputted) text.
         /// </summary>
         public int MaxLength
         {
@@ -497,7 +511,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of lines the TextBox can contain
+        /// Gets or sets the maximum number of visible lines to size to.
         /// </summary>
         public int MaxLines
         {

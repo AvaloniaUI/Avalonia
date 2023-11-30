@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Avalonia.Reactive;
 using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme.Fcitx
@@ -37,21 +38,21 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             return await (_modern?.ProcessKeyEventAsync(keyVal, keyCode, state, type > 0, time) ?? Task.FromResult(false));
         }
 
-        public ValueTask<IDisposable?> WatchCommitStringAsync(Action<Exception?, string> handler) =>
+        public ValueTask<IDisposable> WatchCommitStringAsync(Action<Exception?, string> handler) =>
             _old?.WatchCommitStringAsync(handler)
             ?? _modern?.WatchCommitStringAsync(handler)
-            ?? new ValueTask<IDisposable?>(default(IDisposable?));
+            ?? new ValueTask<IDisposable>(Disposable.Empty);
 
-        public ValueTask<IDisposable?> WatchForwardKeyAsync(Action<Exception?, (uint keyval, uint state, int type)> handler) =>
+        public ValueTask<IDisposable> WatchForwardKeyAsync(Action<Exception?, (uint keyval, uint state, int type)> handler) =>
             _old?.WatchForwardKeyAsync(handler)
             ?? _modern?.WatchForwardKeyAsync((e, ev) => handler.Invoke(e, (ev.keyval, ev.state, ev.type ? 1 : 0)))
-            ?? new ValueTask<IDisposable?>(default(IDisposable?));
+            ?? new ValueTask<IDisposable>(Disposable.Empty);
 
-        public ValueTask<IDisposable?> WatchUpdateFormattedPreeditAsync(
-            Action<Exception?, ((string, int)[] @str, int @cursorpos)> handler) =>
-            _old?.WatchUpdateFormattedPreeditAsync(handler)
-            ?? _modern?.WatchUpdateFormattedPreeditAsync(handler)
-            ?? new(default);
+        public ValueTask<IDisposable> WatchUpdateFormattedPreeditAsync(
+            Action<Exception?, ((string?, int)[]? str, int cursorpos)> handler) =>
+            _old?.WatchUpdateFormattedPreeditAsync(handler!)
+            ?? _modern?.WatchUpdateFormattedPreeditAsync(handler!)
+            ?? new ValueTask<IDisposable>(Disposable.Empty);
         
         public Task SetCapacityAsync(uint flags) =>
             _old?.SetCapacityAsync(flags) ?? _modern?.SetCapabilityAsync(flags) ?? Task.CompletedTask;

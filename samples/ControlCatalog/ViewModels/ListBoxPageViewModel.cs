@@ -48,7 +48,7 @@ namespace ControlCatalog.ViewModels
 
                 foreach (var item in items)
                 {
-                    Items.Remove(item);
+                    Items.Remove(item!);
                 }
             });
 

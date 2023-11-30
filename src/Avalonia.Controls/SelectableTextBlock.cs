@@ -153,7 +153,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Clears the current selection/>
+        /// Clears the current selection
         /// </summary>
         public void ClearSelection()
         {

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 
@@ -6,7 +8,7 @@ namespace Avalonia.Android.Platform
 {
     internal class AndroidSystemNavigationManagerImpl : ISystemNavigationManagerImpl
     {
-        public event EventHandler<RoutedEventArgs> BackRequested;
+        public event EventHandler<RoutedEventArgs>? BackRequested;
 
         public AndroidSystemNavigationManagerImpl(IActivityNavigationService? navigationService)
         {
@@ -16,7 +18,7 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        private void OnBackRequested(object sender, AndroidBackRequestedEventArgs e)
+        private void OnBackRequested(object? sender, AndroidBackRequestedEventArgs e)
         {
             var routedEventArgs = new RoutedEventArgs();
 

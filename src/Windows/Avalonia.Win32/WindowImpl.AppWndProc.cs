@@ -110,6 +110,7 @@ namespace Avalonia.Win32
                         }
 
                         _framebuffer.Dispose();
+                        _inputPane?.Dispose();
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
@@ -614,6 +615,12 @@ namespace Avalonia.Win32
                         if (windowState != _lastWindowState)
                         {
                             _lastWindowState = windowState;
+
+                            var newWindowProperties = _windowProperties;
+
+                            newWindowProperties.WindowState = windowState;
+
+                            UpdateWindowProperties(newWindowProperties);
 
                             WindowStateChanged?.Invoke(windowState);
 

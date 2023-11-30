@@ -143,6 +143,7 @@
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}" />
                     <TextPresenter Name="PART_TextPresenter"
+                                   CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
                                    CaretBrush="{TemplateBinding CaretBrush}"
                                    CaretIndex="{TemplateBinding CaretIndex}"
                                    LineHeight="{TemplateBinding LineHeight}"
@@ -157,6 +158,11 @@
                                    TextAlignment="{TemplateBinding TextAlignment}"
                                    TextWrapping="{TemplateBinding TextWrapping}" />
                   </Panel>
+                  <ScrollViewer.Styles>
+                    <Style Selector="ScrollContentPresenter#PART_ContentPresenter">
+                      <Setter Property="Cursor" Value="IBeam" />
+                    </Style>
+                  </ScrollViewer.Styles>
                 </ScrollViewer>
                 <ContentPresenter Grid.Column="2"
                                   Grid.ColumnSpan="1"
@@ -182,6 +188,9 @@
     </Style>
     <Style Selector="^:disabled /template/ Border#border">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+    <Style Selector="^ /template/ TextBlock#floatingWatermark">
+      <Setter Property="Cursor" Value="IBeam"/>
     </Style>
 
     <Style Selector="^.clearButton[AcceptsReturn=False][IsReadOnly=False]:focus:not(TextBox:empty)">

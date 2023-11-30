@@ -31,7 +31,7 @@
                      Orientation="Vertical"/>
           <Panel Grid.Row="1"
                  Grid.Column="1"
-                 Background="{DynamicResource ThemeControlMidBrush}" />
+                 Background="{DynamicResource ThemeControlMidBrush}"/>
         </Grid>
       </ControlTemplate>
     </Setter>

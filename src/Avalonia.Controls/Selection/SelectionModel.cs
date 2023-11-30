@@ -674,7 +674,39 @@ namespace Avalonia.Controls.Selection
                         indexesChanged |= CommitDeselect(range.Begin, range.End) > 0;
                     }
                 }
+                
+                
 
+                if (raisePropertyChanged)
+                {
+                    if (oldSelectedIndex != _selectedIndex)
+                    {
+                        indexesChanged = true;
+                        RaisePropertyChanged(nameof(SelectedIndex));
+                    }
+
+                    if (oldSelectedIndex != _selectedIndex || operation.IsSourceUpdate)
+                    {
+                        RaisePropertyChanged(nameof(SelectedItem));
+                    }
+
+                    if (oldAnchorIndex != _anchorIndex)
+                    {
+                        indexesChanged = true;
+                        RaisePropertyChanged(nameof(AnchorIndex));
+                    }
+
+                    if (indexesChanged)
+                    {
+                        RaisePropertyChanged(nameof(SelectedIndexes));
+                    }
+
+                    if (indexesChanged || operation.IsSourceUpdate)
+                    {
+                        RaisePropertyChanged(nameof(SelectedItems));
+                    }
+                } 
+                
                 if (SelectionChanged is not null || _untypedSelectionChanged is not null)
                 {
                     IReadOnlyList<IndexRange>? deselected = operation.DeselectedRanges;
@@ -713,36 +745,6 @@ namespace Avalonia.Controls.Selection
                             SelectedItems<T>.Create(selected, Source is not null ? ItemsView : null));
                         SelectionChanged?.Invoke(this, e);
                         _untypedSelectionChanged?.Invoke(this, e);
-                    }
-                }
-
-                if (raisePropertyChanged)
-                {
-                    if (oldSelectedIndex != _selectedIndex)
-                    {
-                        indexesChanged = true;
-                        RaisePropertyChanged(nameof(SelectedIndex));
-                    }
-
-                    if (oldSelectedIndex != _selectedIndex || operation.IsSourceUpdate)
-                    {
-                        RaisePropertyChanged(nameof(SelectedItem));
-                    }
-
-                    if (oldAnchorIndex != _anchorIndex)
-                    {
-                        indexesChanged = true;
-                        RaisePropertyChanged(nameof(AnchorIndex));
-                    }
-
-                    if (indexesChanged)
-                    {
-                        RaisePropertyChanged(nameof(SelectedIndexes));
-                    }
-
-                    if (indexesChanged || operation.IsSourceUpdate)
-                    {
-                        RaisePropertyChanged(nameof(SelectedItems));
                     }
                 }
             }

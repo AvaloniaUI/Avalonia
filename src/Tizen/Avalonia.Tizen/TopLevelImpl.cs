@@ -110,7 +110,7 @@ internal class TopLevelImpl : ITopLevelImpl
     internal void TextInput(string text)
     {
         if (Input == null) return;
-        var args = new RawTextInputEventArgs(TizenKeyboardDevice.Instance, (ulong)DateTime.Now.Ticks, _view.InputRoot, text);
+        var args = new RawTextInputEventArgs(TizenKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _view.InputRoot, text);
 
         Input(args);
     }
