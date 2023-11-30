@@ -385,6 +385,37 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
+        /// Updates the elements in response to items being replaced in the source collection.
+        /// </summary>
+        /// <param name="index">The index in the source collection of the remove.</param>
+        /// <param name="count">The number of items removed.</param>
+        /// <param name="recycleElement">A method used to recycle elements.</param>
+        public void ItemsReplaced(int index, int count, Action<Control> recycleElement)
+        {
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            if (_elements is null || _elements.Count == 0)
+                return;
+
+            // Get the index within the realized _elements collection.
+            var startIndex = index - FirstIndex;
+            var endIndex = Math.Min(startIndex + count, Count);
+
+            if (startIndex >= 0 && endIndex > startIndex)
+            {
+                for (var i = startIndex; i < endIndex; ++i)
+                {
+                    if (_elements[i] is { } element)
+                    {
+                        recycleElement(element);
+                        _elements[i] = null;
+                        _sizes![i] = double.NaN;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Recycles all elements in response to the source collection being reset.
         /// </summary>
         /// <param name="recycleElement">A method used to recycle elements.</param>
