@@ -192,10 +192,6 @@ namespace Avalonia.OpenGL
         public partial void CopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y,
             int width, int height);
 
-        [GetProcAddress("glTexParameteri")]
-        public partial void TexParameteri(int target, int name, int value);
-
-
         [GetProcAddress("glFramebufferTexture2D")]
         public partial void FramebufferTexture2D(int target, int attachment,
             int texTarget, int texture, int level);
