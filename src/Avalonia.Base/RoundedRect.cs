@@ -183,7 +183,7 @@ namespace Avalonia
                     scaleFactor = Math.Min(scaleFactor, Rect.Height / radiiHeight);
             }
 
-            // Before corner hit-testing, make the point relative to the Rect' upper-left
+            // Before corner hit-testing, make the point relative to the bounds' upper-left
             p = new Point(p.X - Rect.X, p.Y - Rect.Y);
 
             // Top-left corner
