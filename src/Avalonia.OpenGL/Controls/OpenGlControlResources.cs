@@ -161,8 +161,9 @@ internal class OpenGlControlBaseResources : IAsyncDisposable
             }
 
             Surface.Dispose();
-            Context.Dispose();
+           
             await _swapchain.DisposeAsync();
+            Context.Dispose();
 
             Context = null!;
         }

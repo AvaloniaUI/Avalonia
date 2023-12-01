@@ -27,7 +27,7 @@ namespace Avalonia.OpenGL.Controls
             _update = Update;
         }
 
-        private void DoCleanup()
+        private async void DoCleanup()
         {
             if (_initialization is { Status: TaskStatus.RanToCompletion } && _resources != null)
             {
@@ -49,7 +49,10 @@ namespace Avalonia.OpenGL.Controls
 
             _updateQueued = false;
             _visual = null;
-            _resources?.DisposeAsync();
+            if (_resources != null)
+            {
+                await _resources.DisposeAsync();
+            }
             _resources = null;
             _initialization = null;
         }
