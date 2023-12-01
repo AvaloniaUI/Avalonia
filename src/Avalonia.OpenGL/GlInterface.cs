@@ -55,7 +55,7 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glTexParameterf")]
         public partial void TexParameterf(int target, int pname, float param);
         [GetProcAddress("glTexParameteri")]
-        public partial void TexParameterf(int target, int pname, int param);
+        public partial void TexParameteri(int target, int pname, int param);
         [GetProcAddress("glTexParameterfv")]
         public partial void TexParameterfv(int target, int pname, IntPtr param);
         [GetProcAddress("glTexParameteriv")]
