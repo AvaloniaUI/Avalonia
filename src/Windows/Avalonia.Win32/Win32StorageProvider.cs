@@ -87,7 +87,7 @@ namespace Avalonia.Win32
                 {
                     var clsid = isOpenFile ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                     var iid = UnmanagedMethods.ShellIds.IFileDialog;
-                    var frm = UnmanagedMethods.CreateInstance<IFileDialog>(ref clsid, ref iid);
+                    var frm = UnmanagedMethods.CreateInstance<IFileDialog>(in clsid, in iid);
 
                     var options = frm.Options;
                     options |= DefaultDialogOptions;

@@ -169,9 +169,13 @@ namespace Avalonia.Controls
                 return;
             }
             OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
+            if (e.Handled)
+            {
+                return;
+            }
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                if (!e.Handled && OwningGrid.IsTabStop)
+                if (OwningGrid.IsTabStop)
                 {
                     OwningGrid.Focus();
                 }
@@ -191,7 +195,7 @@ namespace Avalonia.Controls
             }
             else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
-                if (!e.Handled && OwningGrid.IsTabStop)
+                if (OwningGrid.IsTabStop)
                 {
                     OwningGrid.Focus();
                 }

@@ -7,6 +7,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -155,8 +156,8 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        private Size _constraint;
-        private IReadOnlyList<TextRun>? _textRuns;
+        protected Size _constraint;
+        protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
         /// <summary>
@@ -846,7 +847,7 @@ namespace Avalonia.Controls
             InvalidateTextLayout();
         }
 
-        private readonly record struct SimpleTextSource : ITextSource
+        protected readonly record struct SimpleTextSource : ITextSource
         {
             private readonly string _text;
             private readonly TextRunProperties _defaultProperties;
@@ -875,13 +876,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private readonly struct InlinesTextSource : ITextSource
+#pragma warning disable CA1815 // Equals und Gleichheitsoperator für Werttypen außer Kraft setzen
+        protected readonly struct InlinesTextSource : ITextSource
+#pragma warning restore CA1815 // Equals und Gleichheitsoperator für Werttypen außer Kraft setzen
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
+            private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 
-            public InlinesTextSource(IReadOnlyList<TextRun> textRuns)
+            public InlinesTextSource(IReadOnlyList<TextRun> textRuns, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier = null)
             {
                 _textRuns = textRuns;
+                _textModifier = textModifier;
             }
 
             public IReadOnlyList<TextRun> TextRuns => _textRuns;
@@ -904,11 +909,13 @@ namespace Avalonia.Controls
                         continue;
                     }
 
-                    if (textRun is TextCharacters)
+                    if (textRun is TextCharacters textCharacters)
                     {
                         var skip = Math.Max(0, textSourceIndex - currentPosition);
 
-                        return new TextCharacters(textRun.Text.Slice(skip), textRun.Properties!);
+                        var textStyleRun = FormattedTextSource.CreateTextStyleRun(textRun.Text.Slice(skip).Span, textSourceIndex, textCharacters.Properties, _textModifier);
+
+                        return new TextCharacters(textRun.Text.Slice(skip, textStyleRun.Length), textStyleRun.Value);
                     }
 
                     return textRun;
@@ -916,6 +923,6 @@ namespace Avalonia.Controls
 
                 return new TextEndOfParagraph();
             }
-        }
+         }
     }
 }
