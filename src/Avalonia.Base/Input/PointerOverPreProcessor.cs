@@ -42,12 +42,15 @@ namespace Avalonia.Input
                 }
 
                 if (args.Type is RawPointerEventType.LeaveWindow or RawPointerEventType.NonClientLeftButtonDown
-                    && _currentPointer is var (lastPointer, lastPosition))
+                    or RawPointerEventType.TouchCancel or RawPointerEventType.TouchEnd)
                 {
-                    _currentPointer = null;
-                    ClearPointerOver(lastPointer, args.Root, 0, PointToClient(args.Root, lastPosition),
-                        new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
-                        args.InputModifiers.ToKeyModifiers());
+                    if (_currentPointer is var (lastPointer, lastPosition))
+                    {
+                        _currentPointer = null;
+                        ClearPointerOver(lastPointer, args.Root, 0, PointToClient(args.Root, lastPosition),
+                            new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
+                            args.InputModifiers.ToKeyModifiers());
+                    }
                 }
                 else if (pointerDevice.TryGetPointer(args) is { } pointer
                     && pointer.Type != PointerType.Touch)
