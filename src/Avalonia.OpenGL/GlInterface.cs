@@ -52,6 +52,29 @@ namespace Avalonia.OpenGL
 
         public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
 
+        [GetProcAddress("glTexParameterf")]
+        public partial void TexParameterf(int target, int pname, float param);
+        [GetProcAddress("glTexParameteri")]
+        public partial void TexParameterf(int target, int pname, int param);
+        [GetProcAddress("glTexParameterfv")]
+        public partial void TexParameterfv(int target, int pname, IntPtr param);
+        [GetProcAddress("glTexParameteriv")]
+        public partial void TexParameteriv(int target, int pname, IntPtr param);
+
+        [GetProcAddress("glBlendFunc")]
+        public partial void BlendFunc(int sfactor, int dfactor);
+        [GetProcAddress("glBlendFuncSeparate")]
+        public partial void BlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha);
+
+        [GetProcAddress("glGetBooleanv")]
+        public partial void GetBooleanv(int pname, bool* data);
+        [GetProcAddress("glGetDoublev")]
+        public partial void GetDoublev(int pname, double* data);
+        [GetProcAddress("glGetFloatv")]
+        public partial void GetFloatv(int pname, float* data);
+        [GetProcAddress("glGetIntegerv")]
+        public partial void GetIntegerv(int pname, int* data);
+
         [GetProcAddress("glGetError")]
         public partial int GetError();
 
@@ -63,6 +86,8 @@ namespace Avalonia.OpenGL
 
         [GetProcAddress("glClear")]
         public partial void Clear(int bits);
+        [GetProcAddress("glClearDepthf")]
+        public partial void ClearDepthf(float depth);
 
         [GetProcAddress("glViewport")]
         public partial void Viewport(int x, int y, int width, int height);
@@ -226,6 +251,9 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glAttachShader")]
         public partial void AttachShader(int program, int shader);
 
+        [GetProcAddress("glDetachShader")]
+        public partial void DetachShader(int program, int shader);
+
         [GetProcAddress("glLinkProgram")]
         public partial void LinkProgram(int program);
 
@@ -285,12 +313,21 @@ namespace Avalonia.OpenGL
                 return GetAttribLocation(program, b.DangerousGetHandle());
         }
 
+        [GetProcAddress("glGetVertexAttribiv")]
+        public partial void GetVertexAttribiv(int index, int pname, out int value);
+
+        [GetProcAddress("glGetVertexAttribfv")]
+        public partial void GetVertexAttribfv(int index, int pname, out float value);
+
         [GetProcAddress("glVertexAttribPointer")]
         public partial void VertexAttribPointer(int index, int size, int type,
             int normalized, int stride, IntPtr pointer);
 
         [GetProcAddress("glEnableVertexAttribArray")]
         public partial void EnableVertexAttribArray(int index);
+
+        [GetProcAddress("glDisableVertexAttribArray")]
+        public partial void DisableVertexAttribArray(int index);
 
         [GetProcAddress("glUseProgram")]
         public partial void UseProgram(int program);
@@ -312,13 +349,33 @@ namespace Avalonia.OpenGL
 
         [GetProcAddress("glUniform1f")]
         public partial void Uniform1f(int location, float falue);
+        [GetProcAddress("glUniform2f")]
+        public partial void Uniform2f(int location, float falue1, float falue2);
+        [GetProcAddress("glUniform3f")]
+        public partial void Uniform3f(int location, float falue1, float falue2, float falue3);
+        [GetProcAddress("glUniform4f")]
+        public partial void Uniform4f(int location, float falue1, float falue2, float falue3, float falue4);
 
+        [GetProcAddress("glUniform1i")]
+        public partial void Uniform1i(int location, int ialue);
+        [GetProcAddress("glUniform2i")]
+        public partial void Uniform2i(int location, int ialue1, int ialue2);
+        [GetProcAddress("glUniform3i")]
+        public partial void Uniform3i(int location, int ialue1, int ialue2, int ialue3);
+        [GetProcAddress("glUniform4i")]
+        public partial void Uniform4i(int location, int ialue1, int ialue2, int ialue3, int ialue4);
 
         [GetProcAddress("glUniformMatrix4fv")]
         public partial void UniformMatrix4fv(int location, int count, bool transpose, void* value);
 
+        [GetProcAddress("glIsEnabled")]
+        public partial bool IsEnabled(int what);
+
         [GetProcAddress("glEnable")]
         public partial void Enable(int what);
+
+        [GetProcAddress("glDisable")]
+        public partial void Disable(int what);
 
         [GetProcAddress("glDeleteBuffers")]
         public partial void DeleteBuffers(int count, int* buffers);
@@ -352,6 +409,9 @@ namespace Avalonia.OpenGL
         [GlMinVersionEntryPoint("glGenVertexArrays", 3, 0)]
         [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
         public partial void GenVertexArrays(int n, int* rv);
+
+        [GetProcAddress("glValidateProgram")]
+        public partial void ValidateProgram(int program);
 
         public int GenVertexArray()
         {
