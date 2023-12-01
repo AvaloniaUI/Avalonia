@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +7,6 @@ using System.Linq;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -187,14 +185,21 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public int SelectedIndex
         {
-            get =>
+            get
+            {
                 // When a Begin/EndInit/DataContext update is in place we return the value to be
                 // updated here, even though it's not yet active and the property changed notification
                 // has not yet been raised. If we don't do this then the old value will be written back
                 // to the source when two-way bound, and the update value will be lost.
-                _updateState?.SelectedIndex.HasValue == true ?
-                    _updateState.SelectedIndex.Value :
-                    Selection.SelectedIndex;
+                if (_updateState is not null)
+                {
+                    return _updateState.SelectedIndex.HasValue ?
+                        _updateState.SelectedIndex.Value :
+                        _selection?.SelectedIndex ?? -1;
+                }
+
+                return Selection.SelectedIndex;
+            }
             set
             {
                 if (_updateState is object)
@@ -213,11 +218,18 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public object? SelectedItem
         {
-            get =>
-                // See SelectedIndex setter for more information.
-                _updateState?.SelectedItem.HasValue == true ?
-                    _updateState.SelectedItem.Value :
-                    Selection.SelectedItem;
+            get
+            {
+                // See SelectedIndex getter for more information.
+                if (_updateState is not null)
+                {
+                    return _updateState.SelectedItem.HasValue ?
+                        _updateState.SelectedItem.Value :
+                        _selection?.SelectedItem;
+                }
+
+                return Selection.SelectedItem;
+            }
             set
             {
                 if (_updateState is object)
@@ -270,6 +282,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     return _updateState.SelectedItems.Value;
                 }
+
                 else if (Selection is InternalSelectionModel ism)
                 {
                     var result = ism.WritableSelectedItems;
@@ -456,9 +469,11 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            if (Selection?.AnchorIndex is int index)
+
+            var anchorIndex = GetAnchorIndex();
+            if (anchorIndex >= 0)
             {
-                AutoScrollToSelectedItemIfNecessary(index);
+                AutoScrollToSelectedItemIfNecessary(anchorIndex);
             }
         }
 
@@ -470,9 +485,11 @@ namespace Avalonia.Controls.Primitives
             void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
             {
                 LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-                if (Selection?.AnchorIndex is int index)
+
+                var anchorIndex = GetAnchorIndex();
+                if (anchorIndex >= 0)
                 {
-                    AutoScrollToSelectedItemIfNecessary(index);
+                    AutoScrollToSelectedItemIfNecessary(anchorIndex);
                 }
             }
 
@@ -481,6 +498,9 @@ namespace Avalonia.Controls.Primitives
                 LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
             }
         }
+
+        private int GetAnchorIndex()
+            => _selection?.AnchorIndex ?? -1;
 
         protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
         {
@@ -634,9 +654,10 @@ namespace Avalonia.Controls.Primitives
 
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
-                if (Selection?.AnchorIndex is int index)
+                var anchorIndex = GetAnchorIndex();
+                if (anchorIndex >= 0)
                 {
-                    AutoScrollToSelectedItemIfNecessary(index);
+                    AutoScrollToSelectedItemIfNecessary(anchorIndex);
                 }
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
@@ -671,7 +692,7 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                var value = change.GetNewValue<IBinding>();
+                var value = change.GetNewValue<IBinding?>();
                 if (value is null)
                 {
                     // Clearing SelectedValueBinding makes the SelectedValue the item itself
@@ -921,10 +942,12 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
                 _hasScrolledToSelectedItem = false;
-                if (Selection?.AnchorIndex is int index)
+
+                var anchorIndex = GetAnchorIndex();
+                if (anchorIndex >= 0)
                 {
-                    KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(index));
-                    AutoScrollToSelectedItemIfNecessary(index);
+                    KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(anchorIndex));
+                    AutoScrollToSelectedItemIfNecessary(anchorIndex);
                 }
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
@@ -1279,9 +1302,17 @@ namespace Avalonia.Controls.Primitives
                         state.SelectedItem = item;
                 }
 
+                // SelectedIndex vs SelectedItem:
+                // - If only one has a value, use it
+                // - If both have a value, prefer the one having a "non-empty" value, e.g. not -1 nor null
+                // - If both have a "non-empty" value, prefer the index
                 if (state.SelectedIndex.HasValue)
                 {
-                    SelectedIndex = state.SelectedIndex.Value;
+                    var selectedIndex = state.SelectedIndex.Value;
+                    if (selectedIndex >= 0 || !state.SelectedItem.HasValue)
+                        SelectedIndex = selectedIndex;
+                    else
+                        SelectedItem = state.SelectedItem.Value;
                 }
                 else if (state.SelectedItem.HasValue)
                 {
@@ -1338,39 +1369,12 @@ namespace Avalonia.Controls.Primitives
         // - Both the old and new SelectionModels have the incorrect Source
         private class UpdateState
         {
-            private Optional<int> _selectedIndex;
-            private Optional<object?> _selectedItem;
-            private Optional<object?> _selectedValue;
-
             public int UpdateCount { get; set; }
             public Optional<ISelectionModel> Selection { get; set; }
             public Optional<IList?> SelectedItems { get; set; }
-
-            public Optional<int> SelectedIndex
-            {
-                get => _selectedIndex;
-                set
-                {
-                    _selectedIndex = value;
-                    _selectedItem = default;
-                }
-            }
-
-            public Optional<object?> SelectedItem
-            {
-                get => _selectedItem;
-                set
-                {
-                    _selectedItem = value;
-                    _selectedIndex = default;
-                }
-            }
-
-            public Optional<object?> SelectedValue
-            {
-                get => _selectedValue;
-                set => _selectedValue = value;
-            }
+            public Optional<int> SelectedIndex { get; set; }
+            public Optional<object?> SelectedItem { get; set; }
+            public Optional<object?> SelectedValue { get; set; }
         }
 
         /// <summary>
