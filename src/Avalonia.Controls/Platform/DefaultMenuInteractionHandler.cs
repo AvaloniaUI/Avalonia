@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Platform
 
         internal IMenu? Menu { get; private set; }
 
-        protected static TimeSpan MenuShowDelay { get; } = TimeSpan.FromMilliseconds(400);
+        public static TimeSpan MenuShowDelay { get; set;} = TimeSpan.FromMilliseconds(400);
 
         protected internal virtual void GotFocus(object? sender, GotFocusEventArgs e)
         {
