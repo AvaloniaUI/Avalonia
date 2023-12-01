@@ -513,6 +513,9 @@ namespace Avalonia.Controls.Primitives
                 var containerIsSelected = GetIsSelected(container);
                 UpdateSelection(index, containerIsSelected, toggleModifier: true);
             }
+
+            if (Selection.AnchorIndex == index)
+                KeyboardNavigation.SetTabOnceActiveElement(this, container);
         }
 
         /// <inheritdoc />
