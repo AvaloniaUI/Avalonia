@@ -16,7 +16,7 @@ internal class StyleValueFrameDiagnostic : IValueFrameDiagnostic
 
     public string? Description => _styleInstance.Source switch
     {
-        Style s => s.Selector?.ToString(),
+        Style s => GetFullSelector(s),
         ControlTheme t => t.TargetType?.Name,
         _ => null
     };
@@ -42,5 +42,22 @@ internal class StyleValueFrameDiagnostic : IValueFrameDiagnostic
                 }
             }
         }
+    }
+
+    private string GetFullSelector(Style? style)
+    {
+        var selectors = new Stack<string>();
+
+        while (style is not null)
+        {
+            if (style.Selector is not null)
+            {
+                selectors.Push(style.Selector.ToString());
+            }
+            
+            style = style.Parent as Style;
+        }
+
+        return string.Concat(selectors);
     }
 }
