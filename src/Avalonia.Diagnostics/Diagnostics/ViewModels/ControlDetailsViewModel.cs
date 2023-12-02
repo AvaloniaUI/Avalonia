@@ -11,6 +11,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -254,7 +255,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (!SnapshotFrames)
             {
-                UpdateStyles();
+                Dispatcher.UIThread.Post(UpdateStyles);
             }
         }
 
@@ -262,7 +263,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (!SnapshotFrames)
             {
-                UpdateStyles();
+                Dispatcher.UIThread.Post(UpdateStyles);
             }
         }
 
