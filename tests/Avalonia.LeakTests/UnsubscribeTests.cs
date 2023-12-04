@@ -72,7 +72,7 @@ public class UnsubscribeTests
         {
             var control = new UserControl();
             control.Bind(TemplatedControl.FontFamilyProperty, new FontObservable().ToBinding());
-            control.CloseAllObserver();
+            control.CloseAllObserverCore();
         }
 
         Run();
