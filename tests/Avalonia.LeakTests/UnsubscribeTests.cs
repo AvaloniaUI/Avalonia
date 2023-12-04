@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -55,6 +56,23 @@ public class UnsubscribeTests
             };
             window.Show();
             window.Close();
+        }
+
+        Run();
+        // Process all Loaded events to free control reference(s)
+        Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+        Assert.Empty(FontSel.s_fontList);
+    }
+
+    [Fact]
+    public void Content_Unsubscribe()
+    {
+        static void Run()
+        {
+            var control = new UserControl();
+            control.Bind(TemplatedControl.FontFamilyProperty, new FontObservable().ToBinding());
+            control.CloseAllObserver();
         }
 
         Run();
