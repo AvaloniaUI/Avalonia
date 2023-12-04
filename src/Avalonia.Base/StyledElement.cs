@@ -443,6 +443,11 @@ namespace Avalonia
             OnDetachedFromLogicalTreeCore(e);
         }
 
+        void ILogical.CloseAllObserver()
+        {
+            CloseAllObserverCore();
+        }
+
         /// <inheritdoc/>
         void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
@@ -915,13 +920,28 @@ namespace Avalonia
             }
         }
 
+        private void CloseAllObserverCore()
+        {
+            CloseAllObserver();
+
+            var logicalChildren = LogicalChildren;
+            var logicalChildrenCount = logicalChildren.Count;
+
+            for (var i = 0; i < logicalChildrenCount; i++)
+            {
+                if (logicalChildren[i] is StyledElement child)
+                {
+                    child.CloseAllObserverCore();
+                }
+            }
+        }
+
         private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
             if (_logicalRoot != null)
             {
                 _logicalRoot = null;
                 InvalidateStyles(recurse: false);
-                CloseAllObserver();
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
