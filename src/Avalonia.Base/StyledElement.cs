@@ -921,6 +921,7 @@ namespace Avalonia
             {
                 _logicalRoot = null;
                 InvalidateStyles(recurse: false);
+                CloseAllObserver();
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 

@@ -689,6 +689,17 @@ namespace Avalonia.PropertyStore
                 overridden);
         }
 
+        public void CloseAllObserver()
+        {
+            if (_localValueBindings is { } bindings)
+            {
+                foreach (var item in bindings.ToArray())
+                {
+                    item.Value.Dispose();
+                }
+            }
+        }
+
         private int InsertFrame(ValueFrame frame)
         {
             Debug.Assert(!_frames.Contains(frame));
