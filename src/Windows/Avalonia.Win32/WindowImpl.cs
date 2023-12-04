@@ -1348,37 +1348,39 @@ namespace Avalonia.Win32
             else
                 SetFullScreen(newProperties.IsFullScreen);
 
-            if (!_isFullScreenActive)
+            if ((oldProperties.Decorations != newProperties.Decorations) || forceChanges)
             {
-                var style = GetStyle();
-
-                var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
-
-                var margins = new MARGINS
+                if (!_isFullScreenActive)
                 {
-                    cyBottomHeight = margin,
-                    cxRightWidth = margin,
-                    cxLeftWidth = margin,
-                    cyTopHeight = margin
-                };
+                    var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
 
-                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+                    var margins = new MARGINS
+                    {
+                        cyBottomHeight = margin,
+                        cxRightWidth = margin,
+                        cxLeftWidth = margin,
+                        cyTopHeight = margin
+                    };
 
-                GetClientRect(_hwnd, out var oldClientRect);
-                var oldClientRectOrigin = new POINT();
-                ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                oldClientRect.Offset(oldClientRectOrigin);
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-                var newRect = oldClientRect;
+                    GetClientRect(_hwnd, out var oldClientRect);
+                    var oldClientRectOrigin = new POINT();
+                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
+                    oldClientRect.Offset(oldClientRectOrigin);
 
-                if (newProperties.Decorations == SystemDecorations.Full)
-                {
-                    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                    var newRect = oldClientRect;
+
+                    if (newProperties.Decorations == SystemDecorations.Full)
+                    {
+                        var style = GetStyle();
+                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                    }
+
+                    SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                        SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
-
-                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
-                    SetWindowPosFlags.SWP_FRAMECHANGED);
             }
 
             // Ensure window state if decorations change
