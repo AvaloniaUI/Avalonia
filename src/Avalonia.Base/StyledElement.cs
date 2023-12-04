@@ -443,11 +443,6 @@ namespace Avalonia
             OnDetachedFromLogicalTreeCore(e);
         }
 
-        void ILogical.CloseAllObserver()
-        {
-            CloseAllObserverCore();
-        }
-
         /// <inheritdoc/>
         void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
@@ -920,7 +915,7 @@ namespace Avalonia
             }
         }
 
-        private void CloseAllObserverCore()
+        internal void CloseAllObserverCore()
         {
             CloseAllObserver();
 

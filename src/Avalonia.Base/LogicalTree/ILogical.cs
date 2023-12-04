@@ -65,7 +65,5 @@ namespace Avalonia.LogicalTree
         /// this method yourself.
         /// </remarks>
         void NotifyResourcesChanged(ResourcesChangedEventArgs e);
-
-        void CloseAllObserver();
     }
 }

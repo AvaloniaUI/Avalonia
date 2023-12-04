@@ -713,10 +713,7 @@ namespace Avalonia.Controls
 
             LayoutManager.Dispose();
 
-            Dispatcher.UIThread.Post(() =>
-            {
-                ((ILogical)this).CloseAllObserver();
-            });
+            Dispatcher.UIThread.Post(CloseAllObserverCore);
         }
 
         /// <summary>
