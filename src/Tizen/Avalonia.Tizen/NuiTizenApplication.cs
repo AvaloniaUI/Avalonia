@@ -3,7 +3,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Tizen.NUI;
 using Window = Tizen.NUI.Window;
 using Avalonia.Logging;
-using Avalonia.Threading;
 
 namespace Avalonia.Tizen;
 
@@ -23,7 +22,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
             View = view;
         }
 
-        public Control MainView
+        public Control? MainView
         {
             get => View.Content;
             set => View.Content = value;
@@ -37,9 +36,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Creating application");
 
         base.OnCreate();
-#pragma warning disable CS8601 // Possible null reference assignment.
-        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
-#pragma warning restore CS8601 // Possible null reference assignment.
+        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current!;
 
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup view");
         _lifetime = new SingleViewLifetime(new NuiAvaloniaView());
@@ -50,7 +47,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
         Window.Instance.RenderingBehavior = RenderingBehaviorType.Continuously;
         Window.Instance.GetDefaultLayer().Add(_lifetime.View);
-        Window.Instance.KeyEvent += (s, e) => _lifetime?.View?.KeyboardHandler.Handle(e);
+        Window.Instance.KeyEvent += (_, e) => _lifetime?.View.KeyboardHandler.Handle(e);
     }
 
     private void ContinueSetupApplication()
@@ -64,10 +61,10 @@ public class NuiTizenApplication<TApp> : NUIApplication
         {
             CustomizeAppBuilder(builder);
 
-            builder.AfterSetup(_ => _lifetime.View.Initialise());
+            builder.AfterSetup(_ => _lifetime!.View.Initialise());
 
             Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup lifetime");
-            builder.SetupWithLifetime(_lifetime);
+            builder.SetupWithLifetime(_lifetime!);
         }, null);
     }
 }

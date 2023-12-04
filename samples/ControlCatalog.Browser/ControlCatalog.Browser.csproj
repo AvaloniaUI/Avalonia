@@ -1,24 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.props" />
+  <Import Project="../../src/Browser/Avalonia.Browser/Avalonia.Browser.props" />
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmMainJSPath>AppBundle\main.js</WasmMainJSPath>
+    <WasmMainJSPath>AppBundle/main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
-    <ProjectReference Include="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.csproj" />
-    <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
+    <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
+    <ProjectReference Include="../../src/Browser/Avalonia.Browser/Avalonia.Browser.csproj" />
+    <ProjectReference Include="../ControlCatalog/ControlCatalog.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <WasmExtraFilesToDeploy Include="AppBundle\**" />
+    <WasmExtraFilesToDeploy Include="AppBundle/**" />
   </ItemGroup>
 
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.targets" />
+  <Import Project="../../src/Browser/Avalonia.Browser/Avalonia.Browser.targets" />
 </Project>

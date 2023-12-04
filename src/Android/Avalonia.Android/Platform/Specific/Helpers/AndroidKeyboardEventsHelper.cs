@@ -55,7 +55,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             var keySymbol = GetKeySymbol(e.UnicodeChar, physicalKey);
 
             var rawKeyEvent = new RawKeyEventArgs(
-                          AndroidKeyboardDevice.Instance,
+                          AndroidKeyboardDevice.Instance!,
                           Convert.ToUInt64(e.EventTime),
                           _view.InputRoot,
                           e.Action == KeyEventActions.Down ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
@@ -64,18 +64,18 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                           physicalKey,
                           keySymbol);
 
-            _view.Input(rawKeyEvent);
+            _view.Input?.Invoke(rawKeyEvent);
 
             if ((e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
                 || unicodeTextInput != null)
             {
                 var rawTextEvent = new RawTextInputEventArgs(
-                  AndroidKeyboardDevice.Instance,
+                  AndroidKeyboardDevice.Instance!,
                   Convert.ToUInt64(e.EventTime),
                   _view.InputRoot,
                   unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
                   );
-                _view.Input(rawTextEvent);
+                _view.Input?.Invoke(rawTextEvent);
             }
 
             if (e.Action == KeyEventActions.Up)
