@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -917,7 +916,7 @@ namespace Avalonia
 
         internal void CloseAllObserverCore()
         {
-            CloseAllObserver();
+            GetValueStore().CloseAllObserver();
 
             var logicalChildren = LogicalChildren;
             var logicalChildrenCount = logicalChildren.Count;

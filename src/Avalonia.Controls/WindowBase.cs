@@ -3,7 +3,6 @@ using System.ComponentModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
-using Avalonia.LogicalTree;
 using Avalonia.Platform;
 
 namespace Avalonia.Controls

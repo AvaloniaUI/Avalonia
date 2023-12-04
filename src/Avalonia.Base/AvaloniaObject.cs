@@ -606,7 +606,6 @@ namespace Avalonia
         }
 
         internal ValueStore GetValueStore() => _values;
-        internal void CloseAllObserver() => _values.CloseAllObserver();
         internal IReadOnlyList<AvaloniaObject>? GetInheritanceChildren() => _inheritanceChildren;
 
         /// <summary>
