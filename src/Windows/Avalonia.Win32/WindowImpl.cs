@@ -1372,11 +1372,11 @@ namespace Avalonia.Win32
                     var newRect = oldClientRect;
 
                     //it will make window become bigger! I'm not sure if this should be kept
-                    //if (newProperties.Decorations == SystemDecorations.Full)
-                    //{
-                    //    var style = GetStyle();
-                    //    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
-                    //}
+                    if (newProperties.Decorations == SystemDecorations.Full)
+                    {
+                        var style = GetStyle();
+                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                    }
 
                     SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
                         SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
