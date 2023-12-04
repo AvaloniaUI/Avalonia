@@ -1,0 +1,301 @@
+﻿using System;
+using System.Numerics;
+using Avalonia.Utilities;
+
+namespace Avalonia.Input.Navigation;
+
+internal class XYFocusAlgorithms
+{
+    private const double INSHADOWTHRESHOLD = 0.25;
+    private const double INSHADOWTHRESHOLD_FORSECONDARYAXIS = 0.02;
+    private const double CONE_ANGLE = Math.PI / 4;
+
+    public double PrimaryAxisDistanceWeight { get; set; }= 15;
+    public double SecondaryAxisDistanceWeight { get; set; } = 1;
+    public double PercentInManifoldShadowWeight { get; set; } = 10000;
+    public double PercentInShadowWeight { get; set; } = 50;
+
+    public static double GetScoreGlobal(
+        NavigationDirection direction,
+        Rect bounds,
+        Rect candidateBounds,
+        double maxDistance,
+        bool considerSecondaryAxis)
+    {
+        double score = 0;
+
+        var primaryAxisDistance = XYFocus.CalculatePrimaryAxisDistance(direction, bounds, candidateBounds);
+        var secondaryAxisDistance = XYFocus.CalculateSecondaryAxisDistance(direction, bounds, candidateBounds);
+
+        if (primaryAxisDistance >= 0)
+        {
+            // We do not want to use the secondary axis if the candidate is within the shadow of the element
+            (double, double) potential;
+            (double, double) reference;
+
+            if (direction == NavigationDirection.Left || direction == NavigationDirection.Right)
+            {
+                reference = (bounds.Top, bounds.Bottom);
+                potential = (candidateBounds.Top, candidateBounds.Bottom);
+            }
+            else
+            {
+                reference = (bounds.Left, bounds.Right);
+                potential = (candidateBounds.Left, candidateBounds.Right);
+            }
+
+            if (!considerSecondaryAxis || XYFocus.CalculatePercentInShadow(reference, potential) != 0)
+            {
+                secondaryAxisDistance = 0;
+            }
+
+            score = maxDistance - (primaryAxisDistance + secondaryAxisDistance);
+        }
+
+        return score;
+    }
+    
+    public double GetScore(
+        NavigationDirection direction,
+        Rect bounds,
+        Rect candidateBounds,
+        XYFocusManifolds manifolds,
+        double maxDistance)
+    {
+        double score = 0;
+        double primaryAxisDistance;
+        double secondaryAxisDistance;
+        double percentInManifoldShadow = 0;
+        double percentInShadow;
+
+        (double, double) potential;
+        (double, double) reference;
+        (double, double) currentManifold;
+
+        if (direction == NavigationDirection.Left || direction == NavigationDirection.Right)
+        {
+            reference = (bounds.Top, bounds.Bottom);
+            currentManifold = manifolds.HManifold;
+            potential = (candidateBounds.Top, candidateBounds.Bottom);
+        }
+        else
+        {
+            reference = (bounds.Left, bounds.Right);
+            currentManifold = manifolds.VManifold;
+            potential = (candidateBounds.Left, candidateBounds.Right);
+        }
+
+        primaryAxisDistance = XYFocus.CalculatePrimaryAxisDistance(direction, bounds, candidateBounds);
+        secondaryAxisDistance = XYFocus.CalculateSecondaryAxisDistance(direction, bounds, candidateBounds);
+
+        if (primaryAxisDistance >= 0)
+        {
+            percentInShadow = XYFocus.CalculatePercentInShadow(reference, potential);
+
+            if (percentInShadow >= INSHADOWTHRESHOLD_FORSECONDARYAXIS)
+            {
+                percentInManifoldShadow = XYFocus.CalculatePercentInShadow(currentManifold, potential);
+                secondaryAxisDistance = maxDistance;
+            }
+
+            // The score needs to be a positive number so we make these distances positive numbers
+            primaryAxisDistance = maxDistance - primaryAxisDistance;
+            secondaryAxisDistance = maxDistance - secondaryAxisDistance;
+
+            if (percentInShadow >= INSHADOWTHRESHOLD)
+            {
+                percentInShadow = 1;
+                primaryAxisDistance = primaryAxisDistance * 2;
+            }
+
+            // Potential elements in the shadow get a multiplier to their final score
+            score = CalculateScore(percentInShadow, primaryAxisDistance, secondaryAxisDistance,
+                percentInManifoldShadow);
+        }
+
+        return score;
+    }
+
+    public void UpdateManifolds(
+        NavigationDirection direction,
+        Rect bounds,
+        Rect newFocusBounds,
+        XYFocusManifolds manifolds)
+    {
+        var (vManifold, hManifold) = (manifolds.VManifold, manifolds.HManifold);
+
+        if (vManifold.Item2 < 0)
+        {
+            vManifold = (bounds.Left, bounds.Right);
+        }
+
+        if (hManifold.Item2 < 0)
+        {
+            hManifold = (bounds.Top, bounds.Bottom);
+        }
+
+        if (direction == NavigationDirection.Left || direction == NavigationDirection.Right)
+        {
+            hManifold = (
+                Math.Max(Math.Max(newFocusBounds.Top, bounds.Top), hManifold.Item1),
+                Math.Min(Math.Min(newFocusBounds.Bottom, bounds.Bottom), hManifold.Item2));
+
+            // It's possible to get into a situation where the newFocusedElement to the right / left has no overlap with the current edge.
+            if (hManifold.Item2 <= hManifold.Item1)
+            {
+                hManifold = (newFocusBounds.Top, newFocusBounds.Bottom);
+            }
+
+            vManifold = (newFocusBounds.Left, newFocusBounds.Right);
+        }
+        else if (direction == NavigationDirection.Up || direction == NavigationDirection.Down)
+        {
+            vManifold = (
+                Math.Max(Math.Max(newFocusBounds.Left, bounds.Left), vManifold.Item1),
+                Math.Min(Math.Min(newFocusBounds.Right, bounds.Right), vManifold.Item2));
+
+            // It's possible to get into a situation where the newFocusedElement to the right / left has no overlap with the current edge.
+            if (vManifold.Item2 <= vManifold.Item1)
+            {
+                vManifold = (newFocusBounds.Left, newFocusBounds.Right);
+            }
+
+            hManifold = (newFocusBounds.Top, newFocusBounds.Bottom);
+        }
+
+        (manifolds.VManifold, manifolds.HManifold) = (vManifold, hManifold);
+    }
+
+    public double CalculateScore(
+        double percentInShadow,
+        double primaryAxisDistance,
+        double secondaryAxisDistance,
+        double percentInManifoldShadow)
+    {
+        var score = (percentInShadow * PercentInShadowWeight) +
+                    (primaryAxisDistance * PrimaryAxisDistanceWeight) +
+                    (secondaryAxisDistance * SecondaryAxisDistanceWeight) +
+                    (percentInManifoldShadow * PercentInManifoldShadowWeight);
+
+        return score;
+    }
+
+    public bool ShouldCandidateBeConsideredForRanking(
+        Rect bounds,
+        Rect candidateBounds,
+        double maxDistance,
+        NavigationDirection direction,
+        Rect exclusionRect,
+        bool ignoreCone)
+    {
+        // Consider a candidate only if:
+        // 1. It doesn't have an empty rect as its bounds
+        // 2. It doesn't contain the currently focused element
+        // 3. Its bounds don't intersect with the rect we were asked to avoid looking into (Exclusion Rect)
+        // 4. Its bounds aren't contained in the rect we were asked to avoid looking into (Exclusion Rect)
+        if (candidateBounds.IsEmpty() ||
+            candidateBounds.Contains(bounds) ||
+            exclusionRect.Intersects(candidateBounds) ||
+            exclusionRect.Contains(candidateBounds))
+        {
+            return false;
+        }
+
+        // We've decided to disable the use of the cone for vertical navigation.
+        if (ignoreCone || direction == NavigationDirection.Down || direction == NavigationDirection.Up) { return true; }
+
+        Vector originTop = new(0, (float)bounds.Top);
+        Vector originBottom = new(0, (float)bounds.Bottom);
+
+        var candidateAsPoints = new Vector[]
+        {
+            candidateBounds.TopLeft,
+            candidateBounds.BottomLeft,
+            candidateBounds.BottomRight,
+            candidateBounds.TopRight
+        };
+        
+        // We make the maxDistance twice the normal distance to ensure that all the elements are encapsulated inside the cone. This
+        // also aids in scenarios where the original max distance is still less than one of the points (due to the angles)
+        maxDistance = maxDistance * 2;
+
+        Span<Vector> cone = stackalloc Vector[4];
+        // Note: our y-axis is inverted
+        if (direction == NavigationDirection.Left)
+        {
+            // We want to start the origin one pixel to the left to cover overlapping scenarios where the end of a candidate element 
+            // could be overlapping with the origin (before the shift)
+            originTop = new Vector(bounds.Left - 1, originTop.Y);
+            originBottom = new Vector(bounds.Left - 1, originBottom.Y);
+
+            // We have two angles. Find a point (for each angle) on the line and rotate based on the direction
+            var rotation = Math.PI; // 180 degrees
+            var sides = new Vector[]
+            {
+                new(
+                    (originTop.X + maxDistance * Math.Cos(rotation + CONE_ANGLE)),
+                    (originTop.Y + maxDistance * Math.Sin(rotation + CONE_ANGLE))),
+                new(
+                    (originBottom.X + maxDistance * Math.Cos(rotation - CONE_ANGLE)),
+                    (originBottom.Y + maxDistance * Math.Sin(rotation - CONE_ANGLE)))
+            };
+
+            // Order points in counterclockwise direction
+            cone[0] = originTop;
+            cone[1] = sides[0];
+            cone[2] = sides[1];
+            cone[3] = originBottom;
+        }
+        else if (direction == NavigationDirection.Right)
+        {
+            // We want to start the origin one pixel to the right to cover overlapping scenarios where the end of a candidate element 
+            // could be overlapping with the origin (before the shift)
+            originTop = new Vector(bounds.Right + 1, originTop.Y);
+            originBottom = new Vector(bounds.Right + 1, originBottom.Y);
+
+            // We have two angles. Find a point (for each angle) on the line and rotate based on the direction
+            double rotation = 0;
+            var sides = new Vector[]
+            {
+                new(
+                    (originTop.X + maxDistance * Math.Cos(rotation + CONE_ANGLE)),
+                    (originTop.Y + maxDistance * Math.Sin(rotation + CONE_ANGLE))),
+                new(
+                    (originBottom.X + maxDistance * Math.Cos(rotation - CONE_ANGLE)),
+                    (originBottom.Y + maxDistance * Math.Sin(rotation - CONE_ANGLE)))
+            };
+
+            // Order points in counterclockwise direction
+            cone[0] = originBottom;
+            cone[1] = sides[0];
+            cone[2] = sides[1];
+            cone[3] = originTop;
+        }
+
+        // There are three scenarios we should check that will allow us to know whether we should consider the candidate element.
+        // 1) The candidate element and the vision cone intersect
+        // 2) The candidate element is completely inside the vision cone
+        // 3) The vision cone is completely inside the bounds of the candidate element (unlikely)
+
+        return MathUtilities.DoPolygonsIntersect(4, cone, 4, candidateAsPoints)
+               || MathUtilities.IsEntirelyContained(4, candidateAsPoints, 4, cone)
+               || MathUtilities.IsEntirelyContained(4, cone, 4, candidateAsPoints);
+    }
+
+    internal class XYFocusManifolds
+    {
+        public (double, double) VManifold { get; set; }
+        public (double, double) HManifold { get; set; }
+
+        public XYFocusManifolds()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            VManifold = (-1.0, -1.0);
+            HManifold = (-1.0, -1.0);
+        }
+    }
+}

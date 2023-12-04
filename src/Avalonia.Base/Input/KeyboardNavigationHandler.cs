@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Input.Navigation;
+using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -16,6 +17,8 @@ namespace Avalonia.Input
         /// The window to which the handler belongs.
         /// </summary>
         private IInputRoot? _owner;
+
+        private static XYFocus s_xyFocus = new();
 
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
@@ -60,6 +63,10 @@ namespace Avalonia.Input
             {
                 NavigationDirection.Next => TabNavigation.GetNextTab(element, false),
                 NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
+                NavigationDirection.Up or NavigationDirection.Down
+                    or NavigationDirection.Left or NavigationDirection.Right
+                    => s_xyFocus.GetNextFocusableElement(direction, (InputElement)element, null, false,
+                        new XYFocusOptions()),
                 _ => throw new NotSupportedException(),
             };
 
@@ -110,6 +117,20 @@ namespace Avalonia.Input
                 var current = FocusManager.GetFocusManager(e.Source as IInputElement)?.GetFocusedElement();
                 var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
                     NavigationDirection.Next : NavigationDirection.Previous;
+                Move(current, direction, e.KeyModifiers);
+                e.Handled = true;
+            }
+            else if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
+            {
+                var current = FocusManager.GetFocusManager(e.Source as IInputElement)?.GetFocusedElement();
+                var direction = e.Key switch
+                {
+                    Key.Left => NavigationDirection.Left,
+                    Key.Right => NavigationDirection.Right,
+                    Key.Up => NavigationDirection.Up,
+                    Key.Down => NavigationDirection.Down,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
                 Move(current, direction, e.KeyModifiers);
                 e.Handled = true;
             }
