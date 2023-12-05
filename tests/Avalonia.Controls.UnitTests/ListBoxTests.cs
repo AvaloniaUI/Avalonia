@@ -220,6 +220,9 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(10, target.Presenter.Panel.Children.Count);
                 Assert.True(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
 
+                // The selected item must not be the anchor, otherwise it won't get recycled.
+                target.Selection.AnchorIndex = -1;
+
                 // Scroll down a page.
                 target.Scroll.Offset = new Vector(0, 10);
                 Layout(target);

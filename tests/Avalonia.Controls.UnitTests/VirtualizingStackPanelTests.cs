@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -314,14 +315,18 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
 
             var focused = target.GetRealizedElements().First()!;
             focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
+            Assert.Equal(focused, KeyboardNavigation.GetTabOnceActiveElement(itemsControl));
 
             scroll.Offset = new Vector(0, 200);
             Layout(target);
+
+            items.RemoveAt(0);
 
             Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
             Assert.All(target.GetRealizedElements(), x => Assert.NotSame(focused, x));

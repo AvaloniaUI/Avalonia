@@ -266,6 +266,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnItemsControlChanged(ItemsControl? oldValue)
+        {
+            base.OnItemsControlChanged(oldValue);
+
+            if (oldValue is not null)
+                oldValue.PropertyChanged -= OnItemsControlPropertyChanged;
+            if (ItemsControl is not null)
+                ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
+        }
+
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
         {
             var count = Items.Count;
@@ -379,7 +389,7 @@ namespace Avalonia.Controls
                 var scrollToElement = GetOrCreateElement(items, index);
                 scrollToElement.Measure(Size.Infinity);
 
-                // Get the expected position of the elment and put it in place.
+                // Get the expected position of the element and put it in place.
                 var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
                 var rect = Orientation == Orientation.Horizontal ?
                     new Rect(anchorU, 0, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height) :
@@ -689,6 +699,7 @@ namespace Avalonia.Controls
 
         private void RecycleElement(Control element, int index)
         {
+            Debug.Assert(ItemsControl is not null);
             Debug.Assert(ItemContainerGenerator is not null);
             
             _scrollViewer?.UnregisterAnchorCandidate(element);
@@ -703,11 +714,10 @@ namespace Avalonia.Controls
             {
                 element.IsVisible = false;
             }
-            else if (element.IsKeyboardFocusWithin)
+            else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
                 _focusedElement = element;
                 _focusedIndex = index;
-                _focusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
             }
             else
             {
@@ -774,15 +784,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
+        private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (_focusedElement is null || sender != _focusedElement)
-                return;
-
-            _focusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-            RecycleElement(_focusedElement, _focusedIndex);
-            _focusedElement = null;
-            _focusedIndex = -1;
+            if (_focusedElement is not null &&
+                e.Property == KeyboardNavigation.TabOnceActiveElementProperty && 
+                e.GetOldValue<IInputElement?>() == _focusedElement)
+            {
+                // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
+                RecycleElement(_focusedElement, _focusedIndex);
+                _focusedElement = null;
+                _focusedIndex = -1;
+            }
         }
 
         /// <inheritdoc/>
