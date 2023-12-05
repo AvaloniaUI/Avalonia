@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -314,14 +315,18 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
 
             var focused = target.GetRealizedElements().First()!;
             focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
+            Assert.Equal(focused, KeyboardNavigation.GetTabOnceActiveElement(itemsControl));
 
             scroll.Offset = new Vector(0, 200);
             Layout(target);
+
+            items.RemoveAt(0);
 
             Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
             Assert.All(target.GetRealizedElements(), x => Assert.NotSame(focused, x));
@@ -609,6 +614,125 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             Assert.Equal(10, raised);
+        }
+
+        [Fact]
+        public void ContainerIndexChanged_Is_Raised_On_Insert()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
+            var raised = 0;
+            var index = 1;
+
+            itemsControl.ContainerIndexChanged += (s, e) =>
+            {
+                ++raised;
+                Assert.Equal(index, e.OldIndex);
+                Assert.Equal(++index, e.NewIndex);
+            };
+
+            items.Insert(index, "new");
+
+            Assert.Equal(9, raised);
+        }
+
+        [Fact]
+        public void ContainerIndexChanged_Is_Raised_When_Item_Inserted_Before_Realized_Elements()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
+            var raised = 0;
+            var index = 20;
+
+            itemsControl.ContainerIndexChanged += (s, e) =>
+            {
+                ++raised;
+                Assert.Equal(index, e.OldIndex);
+                Assert.Equal(++index, e.NewIndex);
+            };
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            items.Insert(10, "new");
+
+            Assert.Equal(10, raised);
+        }
+
+        [Fact]
+        public void ContainerIndexChanged_Is_Raised_On_Remove()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
+            var raised = 0;
+            var index = 1;
+
+            itemsControl.ContainerIndexChanged += (s, e) =>
+            {
+                ++raised;
+                Assert.Equal(index + 1, e.OldIndex);
+                Assert.Equal(index++, e.NewIndex);
+            };
+
+            items.RemoveAt(index);
+
+            Assert.Equal(8, raised);
+        }
+
+        [Fact]
+        public void ContainerIndexChanged_Is_Raised_When_Item_Removed_Before_Realized_Elements()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
+            var raised = 0;
+            var index = 20;
+
+            itemsControl.ContainerIndexChanged += (s, e) =>
+            {
+                Assert.Equal(index, e.OldIndex);
+                Assert.Equal(index - 1, e.NewIndex);
+                ++index;
+                ++raised;
+            };
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            items.RemoveAt(10);
+
+            Assert.Equal(10, raised);
+        }
+
+        [Fact]
+        public void Fires_Correct_Container_Lifecycle_Events_On_Replace()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
+            var events = new List<string>();
+
+            itemsControl.ContainerPrepared += (s, e) => events.Add($"Prepared #{e.Container.GetHashCode()} = {e.Index}");
+            itemsControl.ContainerClearing += (s, e) => events.Add($"Clearing #{e.Container.GetHashCode()}");
+            itemsControl.ContainerIndexChanged += (s, e) => events.Add($"IndexChanged #{e.Container.GetHashCode()} {e.OldIndex} -> {e.NewIndex}");
+
+            var toReplace = target.GetRealizedElements().ElementAt(2)!;
+            items[2] = "New Item";
+
+            Assert.Equal(
+                new[] { $"Clearing #{toReplace.GetHashCode()}" },
+                events);
+            events.Clear();
+
+            itemsControl.UpdateLayout();
+
+            Assert.Equal(
+                new[] { $"Prepared #{toReplace.GetHashCode()} = 2" },
+                events);
+            events.Clear();
         }
 
         [Fact]
