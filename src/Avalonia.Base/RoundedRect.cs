@@ -151,7 +151,7 @@ namespace Avalonia
         /// </summary>
         internal bool IsEmpty() => this == default;
 
-        static bool IsOutsideCorner(double dx, double dy, double radius)
+        private static bool IsOutsideCorner(double dx, double dy, double radius)
         {
             return (dx < 0) && (dy < 0) && (dx * dx + dy * dy > radius * radius);
         }
