@@ -528,6 +528,17 @@ namespace Avalonia.Controls
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         }
 
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            // If the focus is coming from a child control, set the tab once active element to
+            // the focused control. This ensures that tabbing back into the control will focus
+            // the last focused control when TabNavigationMode == Once.
+            if (e.Source != this && e.Source is IInputElement ie)
+                KeyboardNavigation.SetTabOnceActiveElement(this, ie);
+        }
+
         /// <summary>
         /// Handles directional navigation within the <see cref="ItemsControl"/>.
         /// </summary>
