@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -1141,6 +1142,18 @@ namespace Avalonia.Controls.UnitTests
                 Template = new FuncControlTemplate<T>((_, ns) => scroll.RegisterInNameScope(ns)),
                 ItemsPanel = new FuncTemplate<Panel?>(() => target),
                 ItemTemplate = itemTemplate.GetValueOrDefault(DefaultItemTemplate()),
+                // master branch doesn't have this code, because ContentControl delivered controls always have a template there. 
+                ItemContainerTheme = new ControlTheme(typeof(ListBoxItem))
+                {
+                    Setters =
+                    {
+                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate((_, ns) => new ContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ListBoxItem.ContentProperty] = new TemplateBinding(ListBoxItem.ContentProperty),
+                        }.RegisterInNameScope(ns)))
+                    }
+                }
             };
 
             return (target, scroll, itemsControl);
