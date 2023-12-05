@@ -1,7 +1,5 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <_AvaloniaUseExternalMSBuild>$(AvaloniaUseExternalMSBuild)</_AvaloniaUseExternalMSBuild>
-    <_AvaloniaUseExternalMSBuild Condition="'$(_AvaloniaForceInternalMSBuild)' == 'true'">false</_AvaloniaUseExternalMSBuild>
     <AvaloniaXamlReportImportance Condition="'$(AvaloniaXamlReportImportance)' == ''">low</AvaloniaXamlReportImportance>
     <_AvaloniaSkipXamlCompilation Condition="'$(_AvaloniaSkipXamlCompilation)' == ''">false</_AvaloniaSkipXamlCompilation>
     <AvaloniaUseCompiledBindingsByDefault Condition="'$(AvaloniaUseCompiledBindingsByDefault)' == ''">false</AvaloniaUseCompiledBindingsByDefault>
@@ -57,8 +55,8 @@
   </Target>
   
   <PropertyGroup>
-    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences;_GenerateAvaloniaResourcesDependencyCache;_GenerateNoWarnForExec</BuildAvaloniaResourcesDependsOn>
-    <CompileAvaloniaXamlDependsOn>$(CompileAvaloniaXamlDependsOn);PrepareToCompileAvaloniaXaml;_GenerateNoWarnForExec</CompileAvaloniaXamlDependsOn>
+    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences;_GenerateAvaloniaResourcesDependencyCache</BuildAvaloniaResourcesDependsOn>
+    <CompileAvaloniaXamlDependsOn>$(CompileAvaloniaXamlDependsOn);FindReferenceAssembliesForReferences;PrepareToCompileAvaloniaXaml</CompileAvaloniaXamlDependsOn>
   </PropertyGroup>
 
   <Target Name="_GenerateAvaloniaResourcesDependencyCache" BeforeTargets="GenerateAvaloniaResources">
@@ -81,14 +79,6 @@
       <FileWrites Include="$(_AvaloniaResourcesInputsCacheFilePath)" />
     </ItemGroup>
   </Target>
-
-  <Target Name="_GenerateNoWarnForExec">
-    <PropertyGroup>
-      <!-- https://github.com/dotnet/sdk/issues/8792 -->
-      <_NoWarnForExec>'"$(NoWarn)"'</_NoWarnForExec>
-      <_NoWarnForExec Condition="$([MSBuild]::IsOSPlatform('Windows'))">\"$(NoWarn)\"</_NoWarnForExec>
-    </PropertyGroup>
-  </Target>
   
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
@@ -101,22 +91,17 @@
       <AvaloniaResource Include="@(AvaloniaXaml)" />
     </ItemGroup>
     <GenerateAvaloniaResourcesTask
-      Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
       Output="$(AvaloniaResourcesTemporaryFilePath)"
       Root="$(MSBuildProjectDirectory)"
       Resources="@(AvaloniaResource)"
       ReportImportance="$(AvaloniaXamlReportImportance)"/>
-    <ItemGroup Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'">
+    <ItemGroup>
       <FileWrites Include="$(AvaloniaResourcesTemporaryFilePath)" />
     </ItemGroup>
-    <Exec 
-      Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:NoWarn=$(_NoWarnForExec) /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
   </Target>
 
   <Target Name="PrepareToCompileAvaloniaXaml">
     <PropertyGroup>
-      <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
       <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
       <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch>
       <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">false</AvaloniaXamlVerboseExceptions>
@@ -132,7 +117,6 @@
       <CompileAvaloniaXamlInputs Include="@(AvaloniaResource);@(AvaloniaXaml)"/>
 
       <FileWrites Include="@(CompileAvaloniaXamlOutputs)"/>
-      <FileWrites Include="$(AvaloniaXamlReferencesTemporaryFilePath)" />
     </ItemGroup>
   </Target>
 
@@ -144,12 +128,7 @@
     Outputs="@(CompileAvaloniaXamlOutputs)"
     Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(DesignTimeBuild) != true AND $(EnableAvaloniaXamlCompilation) != false">
 
-    <ReadLinesFromFile File="$(AvaloniaXamlReferencesTemporaryFilePath)" Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true' AND '@(ReferencePathWithRefAssemblies)' == ''">
-      <Output TaskParameter="Lines" ItemName="ReferencePathWithRefAssemblies"/>
-    </ReadLinesFromFile>
-    
     <CompileAvaloniaXamlTask
-      Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
       AssemblyFile="@(IntermediateAssembly)"
       References="@(ReferencePathWithRefAssemblies)"
       RefAssemblyFile="@(IntermediateRefAssembly)"
@@ -164,13 +143,6 @@
       DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
       VerboseExceptions="$(AvaloniaXamlVerboseExceptions)"
       AnalyzerConfigFiles="@(EditorConfigFiles)"/>
-    
-    <WriteLinesToFile File="$(AvaloniaXamlReferencesTemporaryFilePath)" Lines="@(ReferencePathWithRefAssemblies)" Overwrite="true"
-                      Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'" />
-    
-    <Exec
-      Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:NoWarn=$(_NoWarnForExec) /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
   </Target>
   
   <Target Name="InjectAvaloniaXamlOutput" DependsOnTargets="PrepareToCompileAvaloniaXaml" AfterTargets="CompileAvaloniaXaml" BeforeTargets="CopyFilesToOutputDirectory;BuiltProjectOutputGroup"
