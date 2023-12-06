@@ -6,8 +6,10 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform
 {
-    internal class AndroidSystemNavigationManagerImpl : ISystemNavigationManagerImpl
+    internal class AndroidSystemNavigationManagerImpl : ISystemNavigationManagerImpl, IDisposable
     {
+        private readonly IActivityNavigationService? _navigationService;
+
         public event EventHandler<RoutedEventArgs>? BackRequested;
 
         public AndroidSystemNavigationManagerImpl(IActivityNavigationService? navigationService)
@@ -16,6 +18,7 @@ namespace Avalonia.Android.Platform
             {
                 navigationService.BackRequested += OnBackRequested;
             }
+            _navigationService = navigationService;
         }
 
         private void OnBackRequested(object? sender, AndroidBackRequestedEventArgs e)
@@ -25,6 +28,14 @@ namespace Avalonia.Android.Platform
             BackRequested?.Invoke(this, routedEventArgs);
 
             e.Handled = routedEventArgs.Handled;
+        }
+
+        public void Dispose()
+        {
+            if (_navigationService != null)
+            {
+                _navigationService.BackRequested -= OnBackRequested;
+            }
         }
     }
 }
