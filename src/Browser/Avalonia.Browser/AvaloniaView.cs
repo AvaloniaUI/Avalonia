@@ -70,7 +70,7 @@ namespace Avalonia.Browser
 
             _splash = DomHelper.GetElementById("avalonia-splash");
 
-            _topLevelImpl = new BrowserTopLevelImpl(this);
+            _topLevelImpl = new BrowserTopLevelImpl(this, _containerElement);
 
             _topLevel = new WebEmbeddableControlRoot(_topLevelImpl, () =>
             {

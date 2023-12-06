@@ -143,6 +143,7 @@
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}" />
                     <TextPresenter Name="PART_TextPresenter"
+                                   CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
                                    CaretBrush="{TemplateBinding CaretBrush}"
                                    CaretIndex="{TemplateBinding CaretIndex}"
                                    LineHeight="{TemplateBinding LineHeight}"

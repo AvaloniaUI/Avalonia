@@ -150,5 +150,64 @@ namespace Avalonia
         /// For now it's internal to keep some loud community members happy about the API being pretty 
         /// </summary>
         internal bool IsEmpty() => this == default;
+
+        private static bool IsOutsideCorner(double dx, double dy, double radius)
+        {
+            return (dx < 0) && (dy < 0) && (dx * dx + dy * dy > radius * radius);
+        }
+
+        /// <summary>
+        /// Determines whether a point is in the bounds of the rounded rectangle, exclusive of the
+        /// rounded rectangle's bottom/right edge.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        /// <returns>true if the point is in the bounds of the rounded rectangle; otherwise false.</returns>    
+        public bool ContainsExclusive(Point p)
+        {
+            // Do a simple rectangular bounds check first
+            if (!Rect.ContainsExclusive(p))
+                return false;
+
+            // If any radii totals exceed available bounds, determine a scale factor that needs to be applied
+            var scaleFactor = 1.0;
+            if (Rect.Width > 0)
+            {
+                var radiiWidth = Math.Max(RadiiTopLeft.X + RadiiTopRight.X, RadiiBottomLeft.X + RadiiBottomRight.X);
+                if (radiiWidth > Rect.Width)
+                    scaleFactor = Math.Min(scaleFactor, Rect.Width / radiiWidth);
+            }
+            if (Rect.Height > 0)
+            {
+                var radiiHeight = Math.Max(RadiiTopLeft.Y + RadiiBottomLeft.Y, RadiiTopRight.Y + RadiiBottomRight.Y);
+                if (radiiHeight > Rect.Height)
+                    scaleFactor = Math.Min(scaleFactor, Rect.Height / radiiHeight);
+            }
+
+            // Before corner hit-testing, make the point relative to the bounds' upper-left
+            p = new Point(p.X - Rect.X, p.Y - Rect.Y);
+
+            // Top-left corner
+            var radius = Math.Min(RadiiTopLeft.X, RadiiTopLeft.Y) * scaleFactor;
+            if (IsOutsideCorner(p.X - radius, p.Y - radius, radius))
+                return false;
+
+            // Top-right corner
+            radius = Math.Min(RadiiTopRight.X, RadiiTopRight.Y) * scaleFactor;
+            if (IsOutsideCorner(Rect.Width - radius - p.X, p.Y - radius, radius))
+                return false;
+
+            // Bottom-right corner
+            radius = Math.Min(RadiiBottomRight.X, RadiiBottomRight.Y) * scaleFactor;
+            if (IsOutsideCorner(Rect.Width - radius - p.X, Rect.Height - radius - p.Y, radius))
+                return false;
+
+            // Bottom-left corner
+            radius = Math.Min(RadiiBottomLeft.X, RadiiBottomLeft.Y) * scaleFactor;
+            if (IsOutsideCorner(p.X - radius, Rect.Height - radius - p.Y, radius))
+                return false;
+
+            return true;
+        }
+
     }
 }
