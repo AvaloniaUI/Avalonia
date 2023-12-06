@@ -1377,7 +1377,27 @@ namespace Avalonia.X11
 
         public void MoveResize(PixelPoint position, Size size, WindowResizeReason reason = WindowResizeReason.Application)
         {
-            throw new NotImplementedException();
+            var pixelSize = ToPixelSize(size);
+            var changes = new XWindowChanges
+            {
+                x = position.X,
+                y = position.Y,
+                width = pixelSize.Width,
+                height = pixelSize.Height
+            };
+            UpdateSizeHints(pixelSize);
+
+            XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWX | ChangeWindowFlags.CWY | ChangeWindowFlags.CWWidth | ChangeWindowFlags.CWHeight,
+                ref changes);
+            XFlush(_x11.Display);
+            if (!_wasMappedAtLeastOnce)
+            {
+                _position = position;
+                _realSize = pixelSize;
+                PositionChanged?.Invoke(position);
+                UpdateScaling();
+                Resized?.Invoke(ClientSize, reason);
+            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
