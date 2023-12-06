@@ -15,6 +15,15 @@ namespace Avalonia.Controls
 {
     public partial class AutoCompleteBox
     {
+        /// <summary>
+        /// Defines see <see cref="TextBox.CaretIndex"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> CaretIndexProperty =
+            TextBox.CaretIndexProperty.AddOwner<AutoCompleteBox>(new(
+                defaultValue: 0,
+                defaultBindingMode:BindingMode.TwoWay,
+                coerce: TextBox.CoerceCaretIndex));
+
         public static readonly StyledProperty<string?> WatermarkProperty =
             TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
 
@@ -157,6 +166,15 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Func<string?, CancellationToken, Task<IEnumerable<object>>>?> AsyncPopulatorProperty =
             AvaloniaProperty.Register<AutoCompleteBox, Func<string?, CancellationToken, Task<IEnumerable<object>>>?>(
                 nameof(AsyncPopulator));
+
+        /// <summary>
+        /// Gets or sets the caret index
+        /// </summary>
+        public int CaretIndex
+        {
+            get => GetValue(CaretIndexProperty);
+            set => SetValue(CaretIndexProperty, value);
+        }
 
         /// <summary>
         /// Gets or sets the minimum number of characters required to be entered
