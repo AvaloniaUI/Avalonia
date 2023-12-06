@@ -1375,6 +1375,11 @@ namespace Avalonia.X11
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
+        public void MoveResize(PixelPoint position, Size size, WindowResizeReason reason = WindowResizeReason.Application)
+        {
+            throw new NotImplementedException();
+        }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;

@@ -413,5 +413,11 @@ namespace Avalonia.Headless
         {
             
         }
+
+        public void MoveResize(PixelPoint position, Size size, WindowResizeReason reason = WindowResizeReason.Application)
+        {
+            Position = position;
+            Resize(size, reason);
+        }
     }
 }

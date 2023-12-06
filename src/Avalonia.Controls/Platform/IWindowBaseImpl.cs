@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -63,6 +64,7 @@ namespace Avalonia.Platform
         /// Sets whether this window appears on top of all other windows
         /// </summary>
         void SetTopmost(bool value);
+        void MoveResize(PixelPoint position, Size size, WindowResizeReason reason = WindowResizeReason.Application);
 
         /// <summary>
         /// Gets platform specific display information

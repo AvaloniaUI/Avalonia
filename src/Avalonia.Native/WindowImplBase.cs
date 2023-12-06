@@ -588,6 +588,12 @@ namespace Avalonia.Native
             return null;
         }
 
+        public void MoveResize(PixelPoint position, Size size, WindowResizeReason reason = WindowResizeReason.Application)
+        {
+            Position = position;
+            Resize(size, reason);
+        }
+
         public IPlatformHandle Handle { get; private set; }
     }
 }

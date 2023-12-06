@@ -355,6 +355,8 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        public void MoveResize(PixelPoint pixelPoint,  Size size) => (PlatformImpl as IWindowImpl)?.MoveResize(pixelPoint, size);
         
         private readonly struct IgnoreVisibilityChangesDisposable : IDisposable
         {

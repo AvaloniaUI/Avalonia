@@ -198,6 +198,12 @@ namespace Avalonia.DesignerSupport.Remote
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
         public object TryGetFeature(Type featureType) => null;
+
+        public void MoveResize(PixelPoint position, Size size, WindowResizeReason reason = WindowResizeReason.Application)
+        {
+            Position = position;
+            Resize(size, reason);
+        }
     }
 
     class ClipboardStub : IClipboard

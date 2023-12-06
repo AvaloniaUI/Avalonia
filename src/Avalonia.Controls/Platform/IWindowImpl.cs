@@ -143,6 +143,6 @@ namespace Avalonia.Platform
         /// Sets how big the non-client titlebar area should be.
         /// </summary>
         /// <param name="titleBarHeight">-1 for platform default, otherwise the height in DIPs.</param>
-        void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);       
+        void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);
     }
 }

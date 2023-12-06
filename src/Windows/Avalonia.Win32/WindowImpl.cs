@@ -1482,6 +1482,32 @@ namespace Avalonia.Win32
             return new ResizeReasonScope(this, old);
         }
 
+        public void MoveResize(PixelPoint position, Size size, WindowResizeReason reason = WindowResizeReason.Application)
+        {
+            if (WindowState != WindowState.Normal)
+                return;
+
+            var border = HiddenBorderSize;
+            position = new PixelPoint(position.X - border.Width, position.Y - border.Height);
+
+            int requestedClientWidth = (int)(size.Width * RenderScaling);
+            int requestedClientHeight = (int)(size.Height * RenderScaling);
+
+            GetClientRect(_hwnd, out var clientRect);
+            GetWindowRect(_hwnd, out var windowRect);
+
+            using var scope = SetResizeReason(reason);
+
+            SetWindowPos(
+                _hwnd,
+                IntPtr.Zero,
+                position.X,
+                position.Y,
+                requestedClientWidth + (_isClientAreaExtended ? 0 : windowRect.Width - clientRect.Width),
+                requestedClientHeight + (_isClientAreaExtended ? 0 : windowRect.Height - clientRect.Height),
+                SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
+        }
+
         private struct SavedWindowInfo
         {
             public WindowStyles Style { get; set; }
