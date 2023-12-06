@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Logging;
@@ -9,6 +8,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
 using Avalonia.Platform;
 using System.ComponentModel;
+using Avalonia.Reactive;
 
 namespace Avalonia.OpenGL.Controls
 {
@@ -252,6 +252,11 @@ namespace Avalonia.OpenGL.Controls
         protected virtual void OnOpenGlLost()
         {
             
+        }
+
+        protected IDisposable EnsureOpenGlContextCurrent()
+        {
+            return _resources?.Context.EnsureCurrent() ?? Disposable.Empty;
         }
         
         protected abstract void OnOpenGlRender(GlInterface gl, int fb);
