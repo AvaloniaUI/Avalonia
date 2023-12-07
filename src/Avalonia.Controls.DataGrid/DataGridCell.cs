@@ -189,8 +189,6 @@ namespace Avalonia.Controls
                     {
                         e.Handled = handled;
                     }
-
-                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                 }
             }
             else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
