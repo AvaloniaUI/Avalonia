@@ -206,6 +206,17 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [Fact]
+        public void Extended_Client_Window_Shows_With_Requested_Size()
+        {
+            var clientSize = new Size(400, 400);
+            using var window = OpenWindow(clientSize, ShowWindowMode.NonOwned, WindowStartupLocation.CenterScreen, extendClientArea: true);
+            var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
+            var current = GetWindowInfo();
+
+            Assert.Equal(current.ClientSize, clientSize);
+        }
+
+        [Fact]
         public void TransparentWindow()
         {
             var showTransparentWindow = _session.FindElementByAccessibilityId("ShowTransparentWindow");
