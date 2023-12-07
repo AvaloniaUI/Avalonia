@@ -49,15 +49,6 @@ namespace Avalonia.PropertyStore
                 _uncommon = new() { _hasDataValidation = true };
         }
 
-        public bool HasValue
-        {
-            get
-            {
-                Start(produceValue: false);
-                return _hasValue;
-            }
-        }
-
         public bool IsSubscribed => _subscription is not null;
         public AvaloniaProperty Property { get; }
         AvaloniaProperty IValueEntry.Property => Property;
@@ -68,6 +59,12 @@ namespace Avalonia.PropertyStore
         {
             Unsubscribe();
             BindingCompleted();
+        }
+
+        public bool HasValue()
+        {
+            Start(produceValue: false);
+            return _hasValue;
         }
 
         public TValue GetValue()

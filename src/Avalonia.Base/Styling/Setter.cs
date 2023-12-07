@@ -59,7 +59,6 @@ namespace Avalonia.Styling
             }
         }
 
-        bool IValueEntry.HasValue => true;
         AvaloniaProperty IValueEntry.Property => EnsureProperty();
 
         public override string ToString() => $"Setter: {Property} = {Value}";
@@ -91,6 +90,7 @@ namespace Avalonia.Styling
                 return this;
         }
 
+        bool IValueEntry.HasValue() => true;
         object? IValueEntry.GetValue() => Value;
 
         bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)

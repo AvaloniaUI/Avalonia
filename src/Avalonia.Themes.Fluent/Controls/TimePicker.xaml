@@ -94,7 +94,7 @@
                     MinWidth="{DynamicResource TimePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top">
+                    VerticalAlignment="Stretch">
 
               <Grid Name="PART_FlyoutButtonContentGrid">
                 <!--Ignore col defs here, set in code-->

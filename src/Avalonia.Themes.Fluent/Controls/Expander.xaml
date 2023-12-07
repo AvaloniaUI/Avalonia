@@ -115,7 +115,7 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:checked /template/ Path#ExpandCollapseChevron">
+    <Style Selector="^[Tag=expanded] /template/ Path#ExpandCollapseChevron">
       <Style.Animations>
         <Animation FillMode="Both" Duration="0:0:0.0625">
           <KeyFrame Cue="100%">
@@ -125,7 +125,7 @@
       </Style.Animations>
     </Style>
 
-    <Style Selector="^:not(:checked) /template/ Path#ExpandCollapseChevron">
+    <Style Selector="^[Tag=collapsed] /template/ Path#ExpandCollapseChevron">
       <Style.Animations>
         <Animation FillMode="Both" Duration="0:0:0.0625">
           <KeyFrame Cue="0%">
@@ -262,8 +262,13 @@
       <Setter Property="VerticalAlignment" Value="Stretch" />
     </Style>
 
+    <Style Selector="^:expanded /template/ ToggleButton#ExpanderHeader">
+      <Setter Property="Tag" Value="expanded" />
+    </Style>
+
     <Style Selector="^:not(:expanded) /template/ ToggleButton#ExpanderHeader">
       <Setter Property="CornerRadius" Value="{Binding $parent[Expander].CornerRadius}" />
+      <Setter Property="Tag" Value="collapsed" />
     </Style>
     <Style Selector="^:expanded:up /template/ ToggleButton#ExpanderHeader">
       <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />

@@ -42,6 +42,7 @@
                      BorderBrush="{TemplateBinding BorderBrush}"
                      BorderThickness="{TemplateBinding BorderThickness}"
                      CornerRadius="{TemplateBinding CornerRadius}"
+                     CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
                      FontSize="{TemplateBinding FontSize}"
                      FontFamily="{TemplateBinding FontFamily}"
                      FontWeight="{TemplateBinding FontWeight}"

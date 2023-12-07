@@ -16,19 +16,6 @@ namespace Avalonia.Animation
         public static readonly DirectProperty<AnimatorKeyFrame, object?> ValueProperty =
             AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object?>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
 
-        public AnimatorKeyFrame()
-        {
-
-        }
-
-        public AnimatorKeyFrame(Type? animatorType, Func<IAnimator>? animatorFactory, Cue cue)
-        {
-            AnimatorType = animatorType;
-            AnimatorFactory = animatorFactory;
-            Cue = cue;
-            KeySpline = null;
-        }
-
         public AnimatorKeyFrame(Type? animatorType, Func<IAnimator>? animatorFactory, Cue cue, KeySpline? keySpline)
         {
             AnimatorType = animatorType;
@@ -37,11 +24,12 @@ namespace Avalonia.Animation
             KeySpline = keySpline;
         }
 
-        internal bool isNeutral;
         public Type? AnimatorType { get; }
         public Func<IAnimator>? AnimatorFactory { get; }
         public Cue Cue { get; }
         public KeySpline? KeySpline { get; }
+        public bool FillBefore { get; set; }
+        public bool FillAfter { get; set; }
         public AvaloniaProperty? Property { get; private set; }
 
         private object? _value;
