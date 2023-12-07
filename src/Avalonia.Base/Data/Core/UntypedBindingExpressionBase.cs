@@ -86,15 +86,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// </summary>
     public Type TargetType { get; private set; } = typeof(object);
 
-    bool IValueEntry.HasValue
-    {
-        get
-        {
-            Start(produceValue: false);
-            return true;
-        }
-    }
-
     AvaloniaProperty IValueEntry.Property => TargetProperty ?? throw new Exception();
 
     /// <summary>
@@ -168,6 +159,12 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         }
 
         return IsDataValidationEnabled;
+    }
+
+    bool IValueEntry.HasValue()
+    {
+        Start(produceValue: false);
+        return true;
     }
 
     object? IValueEntry.GetValue()
