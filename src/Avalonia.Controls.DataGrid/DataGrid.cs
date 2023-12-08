@@ -1828,12 +1828,6 @@ namespace Avalonia.Controls
             private set;
         }
 
-        internal bool UpdatedStateOnMouseLeftButtonDown
-        {
-            get;
-            set;
-        }
-
         /// <summary>
         /// Indicates whether or not to use star-sizing logic.  If the DataGrid has infinite available space,
         /// then star sizing doesn't make sense.  In this case, all star columns grow to a predefined size of
