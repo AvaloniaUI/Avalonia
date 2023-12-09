@@ -20,7 +20,6 @@ namespace Avalonia.Win32.Interop.Automation
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IDockProvider
     {
-        void SetDockPosition(DockPosition dockPosition);
-        DockPosition DockPosition { get; }
+        DockPosition DockPosition { get; set; }
     }
 }

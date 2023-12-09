@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.Win32.Automation;
 
 namespace Avalonia.Win32.Interop.Automation
 {
@@ -274,10 +275,181 @@ namespace Avalonia.Win32.Interop.Automation
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IRawElementProviderSimple
     {
+#if NET6_0_OR_GREATER
+        public static readonly Guid IID = new("d6dd68d1-86fd-4332-8666-9abedea2d24c");
+        public const int VtblSize = 3 + 4;
+#endif
         ProviderOptions ProviderOptions { get; }
         [return: MarshalAs(UnmanagedType.IUnknown)]
         object? GetPatternProvider(int patternId);
         object? GetPropertyValue(int propertyId);
         IRawElementProviderSimple? HostRawElementProvider { get; }
     }
+
+#if NET6_0_OR_GREATER
+    internal static unsafe class IRawElementProviderSimpleManagedWrapper
+    {
+        [UnmanagedCallersOnly]
+        public static int GetProviderOptions(void* @this, ProviderOptions* ret)
+        {
+            try
+            {
+                *ret = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).ProviderOptions;
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static int GetPatternProvider_AutomationNode(void* @this, int patternId, void** ret)
+        {
+            try
+            {
+                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).GetPatternProvider(patternId);
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static int GetPatternProvider_RootAutomationNode(void* @this, int patternId, void** ret)
+        {
+            try
+            {
+                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).GetPatternProvider(patternId);
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static int GetPropertyValue_AutomationNode(void* @this, int propertyId, void** ret)
+        {
+            try
+            {
+                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).GetPropertyValue(propertyId);
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static int GetPropertyValue_RootAutomationNode(void* @this, int propertyId, void** ret)
+        {
+            try
+            {
+                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).GetPropertyValue(propertyId);
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static int GetHostRawElementProvider_AutomationNode(void* @this, void** ret)
+        {
+            try
+            {
+                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).HostRawElementProvider;
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static int GetHostRawElementProvider_RootAutomationNode(void* @this, void** ret)
+        {
+            try
+            {
+                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).HostRawElementProvider;
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+    }
+
+    [DynamicInterfaceCastableImplementation]
+    internal unsafe interface IRawElementProviderSimpleNativeWrapper : IRawElementProviderSimple
+    {
+        public static ProviderOptions GetProviderOptions(void* @this) => AutomationNodeWrapper.InvokeAndGet<ProviderOptions>(@this, 3);
+        public static object? GetPatternProvider(AutomationNodeWrapper container, void* @this, int patternId)
+        {
+            void* ret;
+            int hr = ((delegate* unmanaged<void*, int, void**, int>)(*(*(void***)@this + 4)))(@this, patternId, &ret);
+
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return container.IsRootAutomationNode
+                ? AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance)
+                : AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance);
+        }
+
+        public static object? GetPropertyValue(AutomationNodeWrapper container, void* @this, int propertyId)
+        {
+            void* ret;
+            int hr = ((delegate* unmanaged<void*, int, void**, int>)(*(*(void***)@this + 5)))(@this, propertyId, &ret);
+
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return container.IsRootAutomationNode
+                ? AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance)
+                : AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance);
+        }
+
+        public static IRawElementProviderSimple? GetHostRawElementProvider(AutomationNodeWrapper container, void* @this)
+        {
+            void* ret;
+            int hr = ((delegate* unmanaged<void*, void**, int>)(*(*(void***)@this + 6)))(@this, &ret);
+
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return container.IsRootAutomationNode
+                ? (IRawElementProviderSimple?)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance)
+                : (IRawElementProviderSimple?)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance);
+        }
+
+        ProviderOptions IRawElementProviderSimple.ProviderOptions => GetProviderOptions(((AutomationNodeWrapper)this).IRawElementProviderSimpleInst);
+
+        object? IRawElementProviderSimple.GetPatternProvider(int patternId) => GetPatternProvider((AutomationNodeWrapper)this, ((AutomationNodeWrapper)this).IRawElementProviderSimpleInst, patternId);
+
+        object? IRawElementProviderSimple.GetPropertyValue(int propertyId) => GetPropertyValue(((AutomationNodeWrapper)this), ((AutomationNodeWrapper)this).IRawElementProviderSimpleInst, propertyId);
+
+        IRawElementProviderSimple? IRawElementProviderSimple.HostRawElementProvider => GetHostRawElementProvider(((AutomationNodeWrapper)this), ((AutomationNodeWrapper)this).IRawElementProviderSimpleInst);
+    }
+#endif
 }
