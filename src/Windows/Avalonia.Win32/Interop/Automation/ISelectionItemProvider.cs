@@ -80,27 +80,12 @@ namespace Avalonia.Win32.Interop.Automation
         }
 
         [UnmanagedCallersOnly]
-        public static int GetSelectionContainer_AutomationNode(void* @this, void** ret)
+        public static int GetSelectionContainer(void* @this, void** ret)
         {
             try
             {
                 var obj = ComWrappers.ComInterfaceDispatch.GetInstance<ISelectionItemProvider>((ComWrappers.ComInterfaceDispatch*)@this).SelectionContainer;
-                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                return ex.HResult;
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        public static int GetSelectionContainer_RootAutomationNode(void* @this, void** ret)
-        {
-            try
-            {
-                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<ISelectionItemProvider>((ComWrappers.ComInterfaceDispatch*)@this).SelectionContainer;
-                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
                 return 0;
             }
             catch (Exception ex)
@@ -131,9 +116,7 @@ namespace Avalonia.Win32.Interop.Automation
                 Marshal.ThrowExceptionForHR(hr);
             }
 
-            return container.IsRootAutomationNode
-                ? (IRawElementProviderSimple?)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance)
-                : (IRawElementProviderSimple?)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance);
+            return (IRawElementProviderSimple?)AutomationNodeComWrappers.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.None);
         }
 
         void ISelectionItemProvider.Select() => Select(((AutomationNodeWrapper)this).ISelectionItemProviderInst);

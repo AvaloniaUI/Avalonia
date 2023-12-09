@@ -6,13 +6,13 @@ using Avalonia.Win32.Interop.Automation;
 
 namespace Avalonia.Win32.Automation
 {
-    internal unsafe partial class AutomationNodeComWrappers<T>
+    internal unsafe partial class AutomationNodeComWrappers
     {
         private static void** InitIToggleProviderVtbl(ComInterfaceEntry* entries, ref int entryIndex)
         {
             GetIUnknownImpl(out var fpQueryInterface, out var fpAddRef, out var fpRelease);
             var vtbl = (void**)RuntimeHelpers.AllocateTypeAssociatedMemory(
-                typeof(AutomationNodeComWrappers<T>),
+                typeof(AutomationNodeComWrappers),
                 sizeof(void*) * IToggleProvider.VtblSize);
             var idx = 0;
             vtbl[idx++] = (void*)fpQueryInterface;

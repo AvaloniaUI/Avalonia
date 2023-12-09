@@ -39,27 +39,12 @@ namespace Avalonia.Win32.Interop.Automation
     internal static unsafe class IRawElementProviderFragmentManagedWrapper
     {
         [UnmanagedCallersOnly]
-        public static int Navigate_AutomationNode(void* @this, NavigateDirection direction, void** ret)
+        public static int Navigate(void* @this, NavigateDirection direction, void** ret)
         {
             try
             {
                 var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderFragment>((ComWrappers.ComInterfaceDispatch*)@this).Navigate(direction);
-                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                return ex.HResult;
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        public static int Navigate_RootAutomationNode(void* @this, NavigateDirection direction, void** ret)
-        {
-            try
-            {
-                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderFragment>((ComWrappers.ComInterfaceDispatch*)@this).Navigate(direction);
-                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
                 return 0;
             }
             catch (Exception ex)
@@ -117,7 +102,7 @@ namespace Avalonia.Win32.Interop.Automation
         }
 
         [UnmanagedCallersOnly]
-        public static int GetEmbeddedFragmentRoots_AutomationNode(void* @this, SAFEARRAY** ret)
+        public static int GetEmbeddedFragmentRoots(void* @this, SAFEARRAY** ret)
         {
             try
             {
@@ -136,41 +121,7 @@ namespace Avalonia.Win32.Interop.Automation
                     AutomationNodeWrapper.SafeArrayAccessData(safeArray, &pData);
                     for (var i = 0; i < arr.Length; i++)
                     {
-                        ((void**)pData)[i] = (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(arr[i], CreateComInterfaceFlags.None);
-                    }
-                    AutomationNodeWrapper.SafeArrayUnaccessData(safeArray);
-
-                    *ret = safeArray;
-                }
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                return ex.HResult;
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        public static int GetEmbeddedFragmentRoots_RootAutomationNode(void* @this, SAFEARRAY** ret)
-        {
-            try
-            {
-                var arr = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderFragment>((ComWrappers.ComInterfaceDispatch*)@this).GetEmbeddedFragmentRoots();
-                if (arr is not null)
-                {
-                    var bounds = new SAFEARRAYBOUND
-                    {
-                        cElements = (ulong)arr.Length,
-                        lLbound = 0
-                    };
-
-                    var safeArray = AutomationNodeWrapper.SafeArrayCreate(AutomationNodeWrapper.VT_UNKNOWN, 1, &bounds);
-
-                    void* pData;
-                    AutomationNodeWrapper.SafeArrayAccessData(safeArray, &pData);
-                    for (var i = 0; i < arr.Length; i++)
-                    {
-                        ((void**)pData)[i] = (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(arr[i], CreateComInterfaceFlags.None);
+                        ((void**)pData)[i] = (void*)AutomationNodeComWrappers.Instance.GetOrCreateComInterfaceForObject(arr[i], CreateComInterfaceFlags.None);
                     }
                     AutomationNodeWrapper.SafeArrayUnaccessData(safeArray);
 
@@ -199,12 +150,12 @@ namespace Avalonia.Win32.Interop.Automation
         }
 
         [UnmanagedCallersOnly]
-        public static int GetFragmentRoot_AutomationNode(void* @this, void** ret)
+        public static int GetFragmentRoot(void* @this, void** ret)
         {
             try
             {
                 var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderFragment>((ComWrappers.ComInterfaceDispatch*)@this).FragmentRoot;
-                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                *ret = obj is null ? null : (void*)AutomationNodeComWrappers.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
                 return 0;
             }
             catch (Exception ex)
@@ -212,22 +163,7 @@ namespace Avalonia.Win32.Interop.Automation
                 return ex.HResult;
             }
         }
-
-        [UnmanagedCallersOnly]
-        public static int GetFragmentRoot_RootAutomationNode(void* @this, void** ret)
-        {
-            try
-            {
-                var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderFragment>((ComWrappers.ComInterfaceDispatch*)@this).FragmentRoot;
-                *ret = obj is null ? null : (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                return ex.HResult;
-            }
-        }
-    }
+}
 
     [DynamicInterfaceCastableImplementation]
     internal unsafe interface IRawElementProviderFragmentNativeWrapper : IRawElementProviderFragment
@@ -242,9 +178,7 @@ namespace Avalonia.Win32.Interop.Automation
                 Marshal.ThrowExceptionForHR(hr);
             }
 
-            return container.IsRootAutomationNode
-                ? (IRawElementProviderFragment)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance)
-                : (IRawElementProviderFragment)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance);
+            return (IRawElementProviderFragment)AutomationNodeComWrappers.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.None);
         }
 
         public static int[]? GetRuntimeId(void* @this)
@@ -282,9 +216,7 @@ namespace Avalonia.Win32.Interop.Automation
             var arr = new IRawElementProviderSimple[ret.rgsabound->cElements];
             for (var i = 0; i < arr.Length; i++)
             {
-                arr[i] = container.IsRootAutomationNode
-                    ? (IRawElementProviderSimple)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)((void**)ret.pvData)[i], CreateObjectFlags.UniqueInstance)
-                    : (IRawElementProviderSimple)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)((void**)ret.pvData)[i], CreateObjectFlags.UniqueInstance);
+                arr[i] = (IRawElementProviderSimple)AutomationNodeComWrappers.Instance.GetOrCreateObjectForComInstance((IntPtr)((void**)ret.pvData)[i], CreateObjectFlags.None);
             }
 
             AutomationNodeWrapper.SafeArrayDestroy(&ret);
@@ -303,9 +235,7 @@ namespace Avalonia.Win32.Interop.Automation
                 Marshal.ThrowExceptionForHR(hr);
             }
 
-            return container.IsRootAutomationNode
-                ? (IRawElementProviderFragmentRoot?)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance)
-                : (IRawElementProviderFragmentRoot?)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.UniqueInstance);
+            return (IRawElementProviderFragmentRoot?)AutomationNodeComWrappers.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.None);
         }
 
         IRawElementProviderFragment? IRawElementProviderFragment.Navigate(NavigateDirection direction) => Navigate((AutomationNodeWrapper)this, ((AutomationNodeWrapper)this).IRawElementProviderFragmentInst, direction);

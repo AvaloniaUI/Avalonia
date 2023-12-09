@@ -22,7 +22,7 @@ namespace Avalonia.Win32.Interop.Automation
     internal static unsafe class ISelectionProviderManagedWrapper
     {
         [UnmanagedCallersOnly]
-        public static int GetSelection_AutomationNode(void* @this, SAFEARRAY** ret)
+        public static int GetSelection(void* @this, SAFEARRAY** ret)
         {
             try
             {
@@ -42,43 +42,7 @@ namespace Avalonia.Win32.Interop.Automation
                     AutomationNodeWrapper.SafeArrayAccessData(safeArray, &pData);
                     for (var i = 0; i < arr.Length; i++)
                     {
-                        ((void**)pData)[i] = (void*)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateComInterfaceForObject(arr[i], CreateComInterfaceFlags.None);
-                    }
-                    AutomationNodeWrapper.SafeArrayUnaccessData(safeArray);
-
-                    *ret = safeArray;
-                }
-
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                return ex.HResult;
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        public static int GetSelection_RootAutomationNode(void* @this, SAFEARRAY** ret)
-        {
-            try
-            {
-                var arr = ComWrappers.ComInterfaceDispatch.GetInstance<ISelectionProvider>((ComWrappers.ComInterfaceDispatch*)@this).GetSelection();
-
-                if (arr is not null)
-                {
-                    var bounds = new SAFEARRAYBOUND
-                    {
-                        cElements = (ulong)arr.Length,
-                        lLbound = 0
-                    };
-
-                    var safeArray = AutomationNodeWrapper.SafeArrayCreate(AutomationNodeWrapper.VT_UNKNOWN, 1, &bounds);
-
-                    void* pData;
-                    AutomationNodeWrapper.SafeArrayAccessData(safeArray, &pData);
-                    for (var i = 0; i < arr.Length; i++)
-                    {
-                        ((void**)pData)[i] = (void*)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateComInterfaceForObject(arr[i], CreateComInterfaceFlags.None);
+                        ((void**)pData)[i] = (void*)AutomationNodeComWrappers.Instance.GetOrCreateComInterfaceForObject(arr[i], CreateComInterfaceFlags.None);
                     }
                     AutomationNodeWrapper.SafeArrayUnaccessData(safeArray);
 
@@ -138,9 +102,7 @@ namespace Avalonia.Win32.Interop.Automation
             var arr = new IRawElementProviderSimple[ret.rgsabound->cElements];
             for (var i = 0; i < arr.Length; i++)
             {
-                arr[i] = container.IsRootAutomationNode
-                    ? (IRawElementProviderSimple)AutomationNodeComWrappers<RootAutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)((void**)ret.pvData)[i], CreateObjectFlags.UniqueInstance)
-                    : (IRawElementProviderSimple)AutomationNodeComWrappers<AutomationNode>.Instance.GetOrCreateObjectForComInstance((IntPtr)((void**)ret.pvData)[i], CreateObjectFlags.UniqueInstance);
+                arr[i] = (IRawElementProviderSimple)AutomationNodeComWrappers.Instance.GetOrCreateObjectForComInstance((IntPtr)((void**)ret.pvData)[i], CreateObjectFlags.None);
             }
 
             AutomationNodeWrapper.SafeArrayDestroy(&ret);

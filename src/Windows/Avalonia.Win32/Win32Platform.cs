@@ -82,7 +82,7 @@ namespace Avalonia.Win32
             s_options = options;
 
 #if NET6_0_OR_GREATER
-            ComWrappers.RegisterForMarshalling(Automation.AutomationNodeComWrappers<Automation.RootAutomationNode>.Instance);
+            ComWrappers.RegisterForMarshalling(Automation.AutomationNodeComWrappers.Instance);
 #endif
 
             SetDpiAwareness();

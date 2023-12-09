@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.Win32.Interop.Automation;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.Automation
 {
@@ -10,123 +9,51 @@ namespace Avalonia.Win32.Automation
     {
         private bool _disposed;
 
-        public bool IsRootAutomationNode { get; init; }
-
-        public static AutomationNodeWrapper? CreateIfSupported(IntPtr ptr, bool rootAutomationNode)
+        public static AutomationNodeWrapper? Create(IntPtr ptr)
         {
             Guid iid;
-            int hr;
 
             iid = IRawElementProviderSimple.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IRawElementProviderSimpleInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IRawElementProviderSimpleInst);
 
             iid = IRawElementProviderSimple2.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IRawElementProviderSimple2Inst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IRawElementProviderSimpleInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IRawElementProviderSimple2Inst);
 
             iid = IRawElementProviderFragment.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IRawElementProviderFragmentInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IRawElementProviderSimple2Inst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IRawElementProviderFragmentInst);
 
             iid = IInvokeProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IInvokeProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IRawElementProviderFragmentInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IInvokeProviderInst);
 
             iid = IExpandCollapseProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IExpandCollapseProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IInvokeProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IExpandCollapseProviderInst);
 
             iid = IRangeValueProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IRangeValueProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IExpandCollapseProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IRangeValueProviderInst);
 
             iid = IScrollProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IScrollProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IRangeValueProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IScrollProviderInst);
 
             iid = IScrollItemProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IScrollItemProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IScrollProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IScrollItemProviderInst);
 
             iid = ISelectionProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var ISelectionProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IScrollItemProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var ISelectionProviderInst);
 
             iid = ISelectionItemProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var ISelectionItemProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(ISelectionProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var ISelectionItemProviderInst);
 
             iid = IToggleProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IToggleProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(ISelectionItemProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IToggleProviderInst);
 
             iid = IValueProvider.IID;
-            hr = Marshal.QueryInterface(ptr, ref iid, out var IValueProviderInst);
-            if (hr != (int)HRESULT.S_OK)
-            {
-                Marshal.Release(IToggleProviderInst);
-                return default;
-            }
+            Marshal.QueryInterface(ptr, ref iid, out var IValueProviderInst);
 
-            IntPtr IRawElementProviderFragmentRootInst = IntPtr.Zero;
-            if (rootAutomationNode)
-            {
-                iid = IRawElementProviderFragmentRoot.IID;
-                hr = Marshal.QueryInterface(ptr, ref iid, out IRawElementProviderFragmentRootInst);
-                if (hr != (int)HRESULT.S_OK)
-                {
-                    Marshal.Release(IValueProviderInst);
-                    return default;
-                }
-            }
+            iid = IRawElementProviderFragmentRoot.IID;
+            Marshal.QueryInterface(ptr, ref iid, out var IRawElementProviderFragmentRootInst);
 
             return new AutomationNodeWrapper
             {
-                IsRootAutomationNode = rootAutomationNode,
                 IRawElementProviderSimpleInst = (void*)IRawElementProviderSimpleInst,
                 IRawElementProviderSimple2Inst = (void*)IRawElementProviderSimple2Inst,
                 IRawElementProviderFragmentInst = (void*)IRawElementProviderFragmentInst,
@@ -145,31 +72,31 @@ namespace Avalonia.Win32.Automation
 
         public RuntimeTypeHandle GetInterfaceImplementation(RuntimeTypeHandle interfaceType)
         {
-            if (interfaceType.Equals(typeof(IRawElementProviderSimple).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderSimple).TypeHandle) && IRawElementProviderSimpleInst != null)
                 return typeof(IRawElementProviderSimpleNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IRawElementProviderSimple2).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderSimple2).TypeHandle) && IRawElementProviderSimple2Inst != null)
                 return typeof(IRawElementProviderSimple2NativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IRawElementProviderFragment).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderFragment).TypeHandle) && IRawElementProviderFragmentInst != null)
                 return typeof(IRawElementProviderFragmentNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IInvokeProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IInvokeProvider).TypeHandle) && IInvokeProviderInst != null)
                 return typeof(IInvokeProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IExpandCollapseProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IExpandCollapseProvider).TypeHandle) && IExpandCollapseProviderInst != null)
                 return typeof(IExpandCollapseProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IRangeValueProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IRangeValueProvider).TypeHandle) && IRangeValueProviderInst != null)
                 return typeof(IRangeValueProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IScrollProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IScrollProvider).TypeHandle) && IScrollProviderInst != null)
                 return typeof(IScrollProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IScrollItemProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IScrollItemProvider).TypeHandle) && IScrollItemProviderInst != null)
                 return typeof(IScrollItemProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(ISelectionProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(ISelectionProvider).TypeHandle) && ISelectionProviderInst != null)
                 return typeof(ISelectionProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(ISelectionItemProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(ISelectionItemProvider).TypeHandle) && ISelectionItemProviderInst != null)
                 return typeof(ISelectionItemProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IToggleProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IToggleProvider).TypeHandle) && IToggleProviderInst != null)
                 return typeof(IToggleProviderNativeWrapper).TypeHandle;
-            if (interfaceType.Equals(typeof(IValueProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IValueProvider).TypeHandle) && IValueProviderInst != null)
                 return typeof(IValueProviderNativeWrapper).TypeHandle;
-            if (IsRootAutomationNode && interfaceType.Equals(typeof(IRawElementProviderFragmentRoot).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderFragmentRoot).TypeHandle) && IRawElementProviderFragmentRootInst != null)
                 return typeof(IRawElementProviderFragmentRootNativeWrapper).TypeHandle;
 
             return default;
@@ -177,31 +104,31 @@ namespace Avalonia.Win32.Automation
 
         public bool IsInterfaceImplemented(RuntimeTypeHandle interfaceType, bool throwIfNotImplemented)
         {
-            if (interfaceType.Equals(typeof(IRawElementProviderSimple).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderSimple).TypeHandle) && IRawElementProviderSimpleInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IRawElementProviderSimple2).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderSimple2).TypeHandle) && IRawElementProviderSimple2Inst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IRawElementProviderFragment).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderFragment).TypeHandle) && IRawElementProviderFragmentInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IInvokeProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IInvokeProvider).TypeHandle) && IInvokeProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IExpandCollapseProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IExpandCollapseProvider).TypeHandle) && IExpandCollapseProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IRangeValueProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IRangeValueProvider).TypeHandle) && IRangeValueProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IScrollProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IScrollProvider).TypeHandle) && IScrollProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IScrollItemProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IScrollItemProvider).TypeHandle) && IScrollItemProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(ISelectionProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(ISelectionProvider).TypeHandle) && ISelectionProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(ISelectionItemProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(ISelectionItemProvider).TypeHandle) && ISelectionItemProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IToggleProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IToggleProvider).TypeHandle) && IToggleProviderInst != null)
                 return true;
-            if (interfaceType.Equals(typeof(IValueProvider).TypeHandle))
+            if (interfaceType.Equals(typeof(IValueProvider).TypeHandle) && IValueProviderInst != null)
                 return true;
-            if (IsRootAutomationNode && interfaceType.Equals(typeof(IRawElementProviderFragmentRoot).TypeHandle))
+            if (interfaceType.Equals(typeof(IRawElementProviderFragmentRoot).TypeHandle) && IRawElementProviderFragmentRootInst != null)
                 return true;
 
             return throwIfNotImplemented
@@ -227,23 +154,32 @@ namespace Avalonia.Win32.Automation
 
             _disposed = true;
 
-            Marshal.Release((IntPtr)IRawElementProviderSimpleInst);
-            Marshal.Release((IntPtr)IRawElementProviderSimple2Inst);
-            Marshal.Release((IntPtr)IRawElementProviderFragmentInst);
-            Marshal.Release((IntPtr)IInvokeProviderInst);
-            Marshal.Release((IntPtr)IExpandCollapseProviderInst);
-            Marshal.Release((IntPtr)IRangeValueProviderInst);
-            Marshal.Release((IntPtr)IScrollProviderInst);
-            Marshal.Release((IntPtr)IScrollItemProviderInst);
-            Marshal.Release((IntPtr)ISelectionProviderInst);
-            Marshal.Release((IntPtr)ISelectionItemProviderInst);
-            Marshal.Release((IntPtr)IToggleProviderInst);
-            Marshal.Release((IntPtr)IValueProviderInst);
-
-            if (IsRootAutomationNode)
-            {
+            if (IRawElementProviderSimpleInst != null)
+                Marshal.Release((IntPtr)IRawElementProviderSimpleInst);
+            if (IRawElementProviderSimple2Inst != null)
+                Marshal.Release((IntPtr)IRawElementProviderSimple2Inst);
+            if (IRawElementProviderFragmentInst != null)
+                Marshal.Release((IntPtr)IRawElementProviderFragmentInst);
+            if (IInvokeProviderInst != null)
+                Marshal.Release((IntPtr)IInvokeProviderInst);
+            if (IExpandCollapseProviderInst != null)
+                Marshal.Release((IntPtr)IExpandCollapseProviderInst);
+            if (IRangeValueProviderInst != null)
+                Marshal.Release((IntPtr)IRangeValueProviderInst);
+            if (IScrollProviderInst != null)
+                Marshal.Release((IntPtr)IScrollProviderInst);
+            if (IScrollItemProviderInst != null)
+                Marshal.Release((IntPtr)IScrollItemProviderInst);
+            if (ISelectionProviderInst != null)
+                Marshal.Release((IntPtr)ISelectionProviderInst);
+            if (ISelectionItemProviderInst != null)
+                Marshal.Release((IntPtr)ISelectionItemProviderInst);
+            if (IToggleProviderInst != null)
+                Marshal.Release((IntPtr)IToggleProviderInst);
+            if (IValueProviderInst != null)
+                Marshal.Release((IntPtr)IValueProviderInst);
+            if (IRawElementProviderFragmentRootInst != null)
                 Marshal.Release((IntPtr)IRawElementProviderFragmentRootInst);
-            }
         }
 
         public static T InvokeAndGet<T>(void* @this, int vtblSlot) where T : unmanaged
