@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
+using Avalonia.Metadata;
 
 namespace Avalonia.Browser;
 
@@ -17,6 +18,7 @@ public class BrowserPlatformOptions
     /// If registered, service worker can work as a save file picker fallback on the browsers that don't support native implementation.
     /// For more details, see https://github.com/jimmywarting/native-file-system-adapter#a-note-when-downloading-with-the-polyfilled-version.
     /// </summary>
+    [Unstable("This property might not work reliably.")]
     public bool RegisterAvaloniaServiceWorker { get; set; }
 
     /// <summary>
