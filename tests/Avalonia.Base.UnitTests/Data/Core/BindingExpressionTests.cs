@@ -1,324 +1,455 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reactive.Linq;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Data.Core.ExpressionNodes;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
-using Moq;
-using Xunit;
 
-namespace Avalonia.Base.UnitTests.Data.Core
+#nullable enable
+
+namespace Avalonia.Base.UnitTests.Data.Core;
+
+[InvariantCulture]
+public abstract partial class BindingExpressionTests
 {
-    [InvariantCulture]
-    public class BindingExpressionTests
+    public class Reflection : BindingExpressionTests
     {
-        [Fact]
-        public async Task Should_Get_Source_Value()
+        private protected override (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
+            Expression<Func<TIn, TOut>> expression,
+            AvaloniaProperty targetProperty,
+            IValueConverter? converter,
+            object? converterParameter,
+            object? dataContext,
+            bool enableDataValidation,
+            Optional<object?> fallbackValue,
+            BindingMode mode,
+            Optional<TIn> source,
+            object? targetNullValue,
+            UpdateSourceTrigger updateSourceTrigger)
         {
-            var data = "foo";
-            var target = BindingExpression.Create(data, o => o).ToObservable();
-            var result = await target.Take(1);
+            var target = new TargetClass { DataContext = dataContext };
+            var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression, enableDataValidation).ToList();
+            var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
 
-            Assert.Equal("foo", result);
+            if (!source.HasValue)
+                nodes.Insert(0, new DataContextNode());
 
-            GC.KeepAlive(data);
+            var bindingExpression = new BindingExpression(
+                source.HasValue ? source.Value : target,
+                nodes,
+                fallback,
+                converter: converter,
+                converterParameter: converterParameter,
+                enableDataValidation: enableDataValidation,
+                mode: mode,
+                targetNullValue: targetNullValue,
+                targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
+                updateSourceTrigger: updateSourceTrigger);
+
+            target.GetValueStore().AddBinding(targetProperty, bindingExpression);
+            return (target, bindingExpression);
         }
 
-        [Fact]
-        public async Task Should_Convert_String_To_Double()
+        private protected override BindingExpression CreateTargetLegacy<TIn, TOut>(
+            TIn data,
+            Expression<Func<TIn, TOut>> expression,
+            IValueConverter? converter = null,
+            object? converterParameter = null,
+            bool enableDataValidation = false,
+            Optional<object?> fallbackValue = default,
+            object? targetNullValue = null)
         {
-            var data = new Class1 { StringValue = $"{5.6}" };
-            var target = BindingExpression.Create(data, o => o.StringValue).ToObservable(typeof(double));
-            var result = await target.Take(1);
-
-            Assert.Equal(5.6, result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public async Task Getting_Invalid_Double_String_Should_Return_BindingError()
-        {
-            var data = new Class1 { StringValue = "foo" };
-            var target = BindingExpression.Create(data, o => o.StringValue).ToObservable(typeof(double));
-            var result = await target.Take(1);
-
-            Assert.IsType<BindingNotification>(result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public void Should_Convert_Set_String_To_Double()
-        {
-            var data = new Class1 { StringValue = $"{5.6}" };
-            var target = BindingExpression.Create(data, o => o.StringValue);
-
-            using (target.ToObservable().Subscribe(x => { }))
-            {
-                target.WriteValueToSource($"{6.7}");
-            }
-
-            Assert.Equal($"{6.7}", data.StringValue);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public async Task Should_Convert_Double_To_String()
-        {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(data, o => o.DoubleValue).ToObservable(typeof(string));
-            var result = await target.Take(1);
-
-            Assert.Equal($"{5.6}", result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public void Should_Convert_Set_Double_To_String()
-        {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(data, o => o.DoubleValue);
-
-            using (target.ToObservable().Subscribe(x => { }))
-            {
-                target.WriteValueToSource($"{6.7}");
-            }
-
-            Assert.Equal(6.7, data.DoubleValue);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertible_Target_Value()
-        {
-            var data = new Class1 { StringValue = "foo" };
-            var target = BindingExpression.Create(
+            return BindingExpression.Create(
                 data,
-                o => o.StringValue,
-                fallbackValue: 42).ToObservable(typeof(int));
-            var result = await target.Take(1);
+                expression,
+                converter: converter,
+                converterParameter: converterParameter,
+                enableDataValidation: enableDataValidation,
+                fallbackValue: fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue,
+                targetNullValue: targetNullValue);
+        }
+    }
 
-            Assert.Equal(
-                new BindingNotification(
-                    new InvalidCastException("Could not convert 'foo' (System.String) to 'System.Int32'."),
-                    BindingErrorType.Error,
-                    42),
-                result);
+    public class Compiled : BindingExpressionTests
+    {
+        private protected override (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
+            Expression<Func<TIn, TOut>> expression,
+            AvaloniaProperty targetProperty,
+            IValueConverter? converter,
+            object? converterParameter,
+            object? dataContext,
+            bool enableDataValidation,
+            Optional<object?> fallbackValue,
+            BindingMode mode,
+            Optional<TIn> source,
+            object? targetNullValue,
+            UpdateSourceTrigger updateSourceTrigger)
+        {
+            var target = new TargetClass { DataContext = dataContext };
+            var nodes = new List<ExpressionNode>();
+            var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
+            var path = CompiledBindingPathFromExpressionBuilder.Build(expression, enableDataValidation);
 
-            GC.KeepAlive(data);
+            path.BuildExpression(nodes, out var _);
+
+            if (!source.HasValue)
+                nodes.Insert(0, new DataContextNode());
+
+            var bindingExpression = new BindingExpression(
+                source.HasValue ? source.Value : target,
+                nodes,
+                fallback,
+                converter: converter,
+                converterParameter: converterParameter,
+                enableDataValidation: enableDataValidation,
+                mode: mode,
+                targetNullValue: targetNullValue,
+                targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
+                updateSourceTrigger: updateSourceTrigger);
+            target.GetValueStore().AddBinding(targetProperty, bindingExpression);
+            return (target, bindingExpression);
         }
 
-        [Fact]
-        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertible_Target_Value_With_Data_Validation()
+        private protected override BindingExpression CreateTargetLegacy<TIn, TOut>(
+            TIn data,
+            Expression<Func<TIn, TOut>> expression,
+            IValueConverter? converter = null,
+            object? converterParameter = null,
+            bool enableDataValidation = false,
+            Optional<object?> fallbackValue = default,
+            object? targetNullValue = null)
         {
-            var data = new Class1 { StringValue = "foo" };
-            var target = BindingExpression.Create(
+            var nodes = new List<ExpressionNode>();
+            var path = CompiledBindingPathFromExpressionBuilder.Build(expression, enableDataValidation);
+            path.BuildExpression(nodes, out var _);
+            return new BindingExpression(
                 data,
-                o => o.StringValue,
-                enableDataValidation: true,
-                fallbackValue: 42).ToObservable(typeof(int));
-            var result = await target.Take(1);
+                nodes,
+                converter: converter,
+                converterParameter: converterParameter,
+                enableDataValidation: enableDataValidation,
+                fallbackValue: fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue,
+                targetNullValue: targetNullValue,
+                targetTypeConverter: TargetTypeConverter.GetDefaultConverter());
+        }
+    }
 
-            Assert.Equal(
-                new BindingNotification(
-                    new InvalidCastException("Could not convert 'foo' (System.String) to 'System.Int32'."),
-                    BindingErrorType.Error,
-                    42),
-                result);
+    protected TargetClass CreateTarget<TIn, TOut>(
+        Expression<Func<TIn, TOut>> expression,
+        AvaloniaProperty? targetProperty = null,
+        IValueConverter? converter = null,
+        object? converterParameter = null,
+        object? dataContext = null,
+        bool enableDataValidation = false,
+        Optional<object?> fallbackValue = default,
+        BindingMode mode = BindingMode.OneWay,
+        Optional<TIn> source = default,
+        object? targetNullValue = null)
+            where TIn : class?
+    {
+        var (target, _) = CreateTargetAndExpression(
+            expression,
+            targetProperty,
+            converter,
+            converterParameter,
+            dataContext,
+            enableDataValidation,
+            fallbackValue,
+            mode,
+            source,
+            targetNullValue);
+        return target;
+    }
 
-            GC.KeepAlive(data);
+    protected TargetClass CreateTargetWithSource<TIn, TOut>(
+        TIn source,
+        Expression<Func<TIn, TOut>> expression,
+        AvaloniaProperty? targetProperty = null,
+        IValueConverter? converter = null,
+        object? converterParameter = null,
+        bool enableDataValidation = false,
+        Optional<object?> fallbackValue = default,
+        BindingMode mode = BindingMode.OneWay,
+        object? targetNullValue = null,
+        UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
+            where TIn : class?
+    {
+        var (target, _) = CreateTargetAndExpression(
+            expression,
+            targetProperty,
+            converter,
+            converterParameter,
+            null,
+            enableDataValidation,
+            fallbackValue,
+            mode,
+            source,
+            targetNullValue,
+            updateSourceTrigger);
+        return target;
+    }
+
+    private protected (TargetClass, BindingExpression) CreateTargetAndExpression<TIn, TOut>(
+        Expression<Func<TIn, TOut>> expression,
+        AvaloniaProperty? targetProperty = null,
+        IValueConverter? converter = null,
+        object? converterParameter = null,
+        object? dataContext = null,
+        bool enableDataValidation = false,
+        Optional<object?> fallbackValue = default,
+        BindingMode mode = BindingMode.OneWay,
+        Optional<TIn> source = default,
+        object? targetNullValue = null,
+        UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
+            where TIn : class?
+    {
+        targetProperty ??= typeof(TOut) switch
+        {
+            var t when t == typeof(bool) => TargetClass.BoolProperty,
+            var t when t == typeof(double) => TargetClass.DoubleProperty,
+            var t when t == typeof(int) => TargetClass.IntProperty,
+            var t when t == typeof(string) => TargetClass.StringProperty,
+            _ => TargetClass.ObjectProperty,
+        };
+
+        return CreateTargetCore(
+            expression,
+            targetProperty,
+            converter,
+            converterParameter,
+            dataContext,
+            enableDataValidation,
+            fallbackValue,
+            mode,
+            source,
+            targetNullValue,
+            updateSourceTrigger);
+    }
+
+    private protected abstract (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
+        Expression<Func<TIn, TOut>> expression,
+        AvaloniaProperty targetProperty,
+        IValueConverter? converter,
+        object? converterParameter,
+        object? dataContext,
+        bool enableDataValidation,
+        Optional<object?> fallbackValue,
+        BindingMode mode,
+        Optional<TIn> source,
+        object? targetNullValue,
+        UpdateSourceTrigger updateSourceTrigger)
+            where TIn : class?;
+
+    private protected abstract BindingExpression CreateTargetLegacy<TIn, TOut>(
+        TIn data,
+        Expression<Func<TIn, TOut>> expression,
+        IValueConverter? converter = null,
+        object? converterParameter = null,
+        bool enableDataValidation = false,
+        Optional<object?> fallbackValue = default,
+        object? targetNullValue = null)
+            where TIn : class?;
+
+    private static IDisposable StartWithFocusSupport()
+    {
+        return UnitTestApplication.Start(TestServices.RealFocus);
+    }
+
+    protected class ViewModel : NotifyingBase
+    {
+        private bool _boolValue;
+        private double _doubleValue;
+        private int _intValue;
+        private object? _objectValue;
+        private string? _stringValue;
+        private ViewModel? _next;
+        private IObservable<ViewModel>? _nextObservable;
+        private Task<ViewModel>? _nextTask;
+
+        public bool BoolValue
+        {
+            get => _boolValue;
+            set { _boolValue = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Setting_Invalid_Double_String_Should_Not_Change_Target()
+        public int IntValue
         {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(data, o => o.DoubleValue);
-
-            using (target.ToObservable().Subscribe(_ => { }))
-                target.WriteValueToSource("foo");
-
-            Assert.Equal(5.6, data.DoubleValue);
-
-            GC.KeepAlive(data);
+            get => _intValue;
+            set { _intValue = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Setting_Invalid_Double_String_Should_Use_FallbackValue()
+        public double DoubleValue
         {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(
-                data, 
-                o => o.DoubleValue,
-                fallbackValue: "9.8");
-
-            using (target.ToObservable().Subscribe(_ => { }))
-                target.WriteValueToSource("foo");
-
-            Assert.Equal(9.8, data.DoubleValue);
-
-            GC.KeepAlive(data);
+            get => _doubleValue;
+            set { _doubleValue = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Should_Coerce_Setting_UnsetValue_Double_To_Default_Value()
+        public object? ObjectValue
         {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var target = BindingExpression.Create(data, o => o.DoubleValue);
-
-            using (target.ToObservable().Subscribe(_ => { }))
-                target.WriteValueToSource(AvaloniaProperty.UnsetValue);
-
-            Assert.Equal(0, data.DoubleValue);
-
-            GC.KeepAlive(data);
+            get => _objectValue;
+            set { _objectValue = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Should_Pass_ConverterParameter_To_Convert()
+        public string? StringValue
         {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var converter = new Mock<IValueConverter>();
-
-            var target = BindingExpression.Create(
-                data, 
-                o => o.DoubleValue,                
-                converter: converter.Object,
-                converterParameter: "foo").ToObservable(typeof(string));
-
-            target.Subscribe(_ => { });
-
-            converter.Verify(x => x.Convert(5.6, typeof(string), "foo", CultureInfo.CurrentCulture));
-
-            GC.KeepAlive(data);
+            get => _stringValue;
+            set { _stringValue = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Should_Pass_ConverterParameter_To_ConvertBack()
+        public ViewModel? Next
         {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var converter = new Mock<IValueConverter>();
-            var target = BindingExpression.Create(
-                data,
-                o => o.DoubleValue,
-                converter: converter.Object,
-                converterParameter: "foo");
-
-            using (target.ToObservable().Subscribe(_ => { }))
-                target.WriteValueToSource("bar");
-
-            converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.CurrentCulture));
-
-            GC.KeepAlive(data);
+            get => _next;
+            set { _next = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Should_Handle_DataValidation()
+        public IObservable<ViewModel>? NextObservable
         {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var converter = new Mock<IValueConverter>();
-            var target = BindingExpression.Create(
-                data,
-                o => o.DoubleValue,
-                enableDataValidation: true);
-            var result = new List<object>();
-
-            target.ToObservable(typeof(string)).Subscribe(x => result.Add(x));
-            target.WriteValueToSource(1.2);
-            target.WriteValueToSource($"{3.4}");
-            target.WriteValueToSource("bar");
-
-            Assert.Equal(
-                new[]
-                {
-                    new BindingNotification($"{5.6}"),
-                    new BindingNotification($"{1.2}"),
-                    new BindingNotification($"{3.4}"),
-                    new BindingNotification(
-                        new InvalidCastException("Could not convert 'bar' (System.String) to System.Double."),
-                        BindingErrorType.DataValidationError, $"{3.4}")
-                },
-                result);
-
-            GC.KeepAlive(data);
+            get => _nextObservable;
+            set { _nextObservable = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Null_Value_Should_Use_TargetNullValue()
+        public Task<ViewModel> NextTask
         {
-            var data = new Class1 { StringValue = "foo" };
-
-            var target = BindingExpression.Create(
-                data, 
-                o => o.StringValue,
-                targetNullValue: "bar");
-
-            object result = null;
-            target.ToObservable().Subscribe(x => result = x);
-
-            Assert.Equal("foo", result);
-
-            data.StringValue = null;
-            Assert.Equal("bar", result);
-
-            GC.KeepAlive(data);
+            get => _nextTask!;
+            set { _nextTask = value; RaisePropertyChanged(); }
         }
 
-        [Fact]
-        public void Can_Use_UpdateTarget_To_Update_From_Non_INPC_Data()
+        public void SetStringValueWithoutRaising(string value) => _stringValue = value;
+    }
+
+    protected class PodViewModel
+    {
+        public string? StringValue { get; set; }
+    }
+
+    protected class AttachedProperties
+    {
+        public static readonly AttachedProperty<string?> AttachedStringProperty =
+            AvaloniaProperty.RegisterAttached<AttachedProperties, AvaloniaObject, string?>("AttachedString");
+    }
+
+    protected class SourceControl : Control
+    {
+        public static readonly StyledProperty<SourceControl?> NextProperty =
+            AvaloniaProperty.Register<SourceControl, SourceControl?>("Next");
+        public static readonly StyledProperty<string?> StringValueProperty =
+            AvaloniaProperty.Register<SourceControl, string?>("StringValue");
+
+        public SourceControl? Next
         {
-            var data = new NonInpcClass { StringValue = "foo" };
-            var target = new Control { DataContext = data };
-            var expression = target.Bind(Control.TagProperty, new Binding(nameof(data.StringValue)));
-
-            Assert.Equal("foo", target.Tag);
-
-            data.StringValue = "bar";
-            Assert.Equal("foo", target.Tag);
-
-            expression.UpdateTarget();
-            Assert.Equal("bar", target.Tag);
+            get => GetValue(NextProperty);
+            set => SetValue(NextProperty, value);
         }
 
-        private class Class1 : NotifyingBase
+        public string? StringValue
         {
-            private string _stringValue;
-            private double _doubleValue;
+            get => GetValue(StringValueProperty);
+            set => SetValue(StringValueProperty, value);
+        }
 
-            public string StringValue
+        public string? ClrProperty { get; set; }
+    }
+
+    protected class TargetClass : Control
+    {
+        public static readonly StyledProperty<bool> BoolProperty =
+            AvaloniaProperty.Register<TargetClass, bool>("Bool");
+        public static readonly StyledProperty<double> DoubleProperty =
+            AvaloniaProperty.Register<TargetClass, double>("Double");
+        public static readonly StyledProperty<int> IntProperty =
+            AvaloniaProperty.Register<TargetClass, int>("Int");
+        public static readonly StyledProperty<object?> ObjectProperty =
+            AvaloniaProperty.Register<TargetClass, object?>("Object");
+        public static readonly StyledProperty<string?> StringProperty =
+            AvaloniaProperty.Register<TargetClass, string?>("String");
+
+        static TargetClass()
+        {
+            FocusableProperty.OverrideDefaultValue<TargetClass>(true);
+        }
+
+        public bool Bool
+        {
+            get => GetValue(BoolProperty);
+            set => SetValue(BoolProperty, value);
+        }
+
+        public double Double
+        {
+            get => GetValue(DoubleProperty);
+            set => SetValue(DoubleProperty, value);
+        }
+
+        public int Int
+        {
+            get => GetValue(IntProperty);
+            set => SetValue(IntProperty, value);
+        }
+
+        public object? Object
+        {
+            get => GetValue(ObjectProperty);
+            set => SetValue(ObjectProperty, value);
+        }
+
+        public string? String
+        {
+            get => GetValue(StringProperty);
+            set => SetValue(StringProperty, value);
+        }
+
+        public Dictionary<AvaloniaProperty, BindingNotification> BindingNotifications { get; } = new();
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
+
+            var type = state switch
             {
-                get { return _stringValue; }
-                set { _stringValue = value; RaisePropertyChanged(); }
-            }
+                BindingValueType b when b.HasFlag(BindingValueType.BindingError) => BindingErrorType.Error,
+                BindingValueType b when b.HasFlag(BindingValueType.DataValidationError) => BindingErrorType.DataValidationError,
+                _ => BindingErrorType.None,
+            };
 
-            public double DoubleValue
-            {
-                get { return _doubleValue; }
-                set { _doubleValue = value; RaisePropertyChanged(); }
-            }
+            if (type == BindingErrorType.None || error is null)
+                BindingNotifications.Remove(property);
+            else
+                BindingNotifications[property] = new BindingNotification(error, type);
+        }
+    }
+
+    protected class PrefixConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (targetType != typeof(string))
+                return value;
+
+            var result = value?.ToString() ?? string.Empty;
+            if (parameter is not null)
+                result = parameter.ToString() + result;
+            return result;
         }
 
-        private class NonInpcClass
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            public string StringValue { get; set; }
-        }
+            if (targetType != typeof(string) || parameter?.ToString() is not string prefix)
+                return value;
 
-        private class TargetProperties : AvaloniaObject
-        {
-            public static readonly StyledProperty<double> DoubleProperty =
-                AvaloniaProperty.Register<TargetProperties, double>("Double");
-            public static readonly StyledProperty<int> IntProperty =
-                AvaloniaProperty.Register<TargetProperties, int>("Int");
-            public static readonly StyledProperty<string> StringProperty =
-                AvaloniaProperty.Register<TargetProperties, string>("String");
+            var s = value?.ToString() ?? string.Empty;
+            
+            if (s.StartsWith(prefix))
+                return s.Substring(prefix.Length);
+            else
+                return value;
         }
     }
 }
