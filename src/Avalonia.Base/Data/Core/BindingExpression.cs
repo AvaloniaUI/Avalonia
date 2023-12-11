@@ -172,6 +172,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// <param name="enableDataValidation">Whether data validation should be enabled for the binding.</param>
     /// <param name="fallbackValue">The fallback value.</param>
     /// <param name="mode">The binding mode.</param>
+    /// <param name="priority">The binding priority.</param>
     /// <param name="targetNullValue">The null target value.</param>
     /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
@@ -207,7 +208,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
                 TargetTypeConverter.GetReflectionConverter() :
                 TargetTypeConverter.GetDefaultConverter());
     }
-    
+
     /// <summary>
     /// Called by an <see cref="ExpressionNode"/> belonging to this binding when its
     /// <see cref="ExpressionNode.Value"/> changes.

@@ -37,7 +37,7 @@ internal class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISe
 
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)
     {
-        if (_accessor?.PropertyType is { } targetType)
+        if (_accessor?.PropertyType is not null)
         {
             return _accessor.SetValue(value, BindingPriority.LocalValue);
         }

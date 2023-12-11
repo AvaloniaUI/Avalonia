@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
@@ -7,7 +8,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 /// A node in an <see cref="BindingExpression"/> which accesses an array with integer
 /// indexers.
 /// </summary>
-internal class ArrayIndexerNode : ExpressionNode
+internal class ArrayIndexerNode : ExpressionNode, ISettableNode
 {
     private readonly int[] _indexes;
 
@@ -15,6 +16,8 @@ internal class ArrayIndexerNode : ExpressionNode
     {
         _indexes = indexes;
     }
+
+    public Type? ValueType => Source?.GetType().GetElementType();
 
     public override void BuildString(StringBuilder builder)
     {
@@ -28,6 +31,17 @@ internal class ArrayIndexerNode : ExpressionNode
         }
 
         builder.Append(']');
+    }
+
+    public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)
+    {
+        if (Source is Array array)
+        {
+            array.SetValue(value, _indexes);
+            return true;
+        }
+
+        return false;
     }
 
     protected override void OnSourceChanged(object source, Exception? dataValidationError)

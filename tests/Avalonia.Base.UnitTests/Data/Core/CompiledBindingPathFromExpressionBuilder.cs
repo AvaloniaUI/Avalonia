@@ -59,11 +59,43 @@ internal class CompiledBindingPathFromExpressionBuilder : ExpressionVisitor
             var property = GetValue<AvaloniaProperty>(node.Arguments[0]);
             return Add(node.Object, node, x => x.Property(property, PropertyInfoAccessorFactory.CreateAvaloniaPropertyAccessor));
         }
-        else
+        else if (node.Object?.Type.IsArray == true)
         {
             var indexes = node.Arguments.Select(GetValue<int>).ToArray();
             return Add(node.Object, node, x => x.ArrayElement(indexes, node.Type));
         }
+        else if (node.Indexer?.GetMethod is not null && 
+            node.Arguments.Count == 1 &&
+            node.Arguments[0].Type == typeof(int))
+        {
+            var getMethod = node.Indexer.GetMethod;
+            var setMethod = node.Indexer.SetMethod;
+            var index = GetValue<int>(node.Arguments[0]);
+            var info = new ClrPropertyInfo(
+                CommonPropertyNames.IndexerName,
+                x => getMethod.Invoke(x, new object[] { index }),
+                setMethod is not null ? (o, v) => setMethod.Invoke(o, new[] { v }) : null,
+                getMethod.ReturnType);
+            return Add(node.Object, node, x => x.Property(
+                info, 
+                (x, i) => PropertyInfoAccessorFactory.CreateIndexerPropertyAccessor(x, i, index)));
+        }
+        else if (node.Indexer?.GetMethod is not null)
+        {
+            var getMethod = node.Indexer.GetMethod;
+            var setMethod = node.Indexer?.SetMethod;
+            var indexes = node.Arguments.Select(GetValue<object>).ToArray();
+            var info = new ClrPropertyInfo(
+                CommonPropertyNames.IndexerName,
+                x => getMethod.Invoke(x, indexes),
+                setMethod is not null ? (o, v) => setMethod.Invoke(o, indexes.Append(v).ToArray()) : null,
+                getMethod.ReturnType);
+            return Add(node.Object, node, x => x.Property(
+                info,
+                PropertyInfoAccessorFactory.CreateInpcPropertyAccessor));
+        }
+
+        throw new ExpressionParseException(0, $"Invalid indexer in binding expression: {node.NodeType}.");
     }
 
     protected override Expression VisitMember(MemberExpression node)
