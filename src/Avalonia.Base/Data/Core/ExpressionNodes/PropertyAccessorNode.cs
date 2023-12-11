@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Avalonia.Data.Core.Plugins;
 
@@ -14,6 +15,7 @@ internal class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISe
     private readonly Action<object?> _onValueChanged;
     private readonly IPropertyAccessorPlugin _plugin;
     private IPropertyAccessor? _accessor;
+    private bool _enableDataValidation;
 
     public PropertyAccessorNode(string propertyName, IPropertyAccessorPlugin plugin)
     {
@@ -33,7 +35,7 @@ internal class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISe
         builder.Append(PropertyName);
     }
 
-    public void EnableDataValidation() { }
+    public void EnableDataValidation() => _enableDataValidation = true;
 
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)
     {
@@ -45,10 +47,22 @@ internal class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISe
         return false;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
-        if (_plugin.Start(new(source), PropertyName) is { } accessor)
+        var reference = new WeakReference<object?>(source);
+
+        if (_plugin.Start(reference, PropertyName) is { } accessor)
         {
+            if (_enableDataValidation)
+            {
+                foreach (var validator in BindingPlugins.DataValidators)
+                {
+                    if (validator.Match(reference, PropertyName))
+                        accessor = validator.Start(reference, PropertyName, accessor);
+                }
+            }
+
             _accessor = accessor;
             _accessor.Subscribe(_onValueChanged);
         }
