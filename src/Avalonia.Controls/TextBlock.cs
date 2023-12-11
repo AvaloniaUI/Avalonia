@@ -689,7 +689,8 @@ namespace Avalonia.Controls
 
             var inlines = Inlines;
 
-            if (HasComplexContent)
+            if (HasComplexContent
+                || (_textRuns is { } && _textRuns.Count != 0))
             {
                 VisualChildren.Clear();
 

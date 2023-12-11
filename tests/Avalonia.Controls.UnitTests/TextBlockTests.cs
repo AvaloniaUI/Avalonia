@@ -14,6 +14,22 @@ namespace Avalonia.Controls.UnitTests
     public class TextBlockTests
     {
         [Fact]
+        public void TextBlock_TextLines_Should_Be_Empty()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var textblock = new TextBlock();
+                textblock.Inlines?.Add(new Run("123"));
+                textblock.Measure(new Size(200, 200));
+                int count = textblock.TextLayout.TextLines[0].TextRuns.Count;
+                textblock.Inlines?.Clear();
+                textblock.Measure(new Size(200, 200));
+                int count1 = textblock.TextLayout.TextLines[0].TextRuns.Count;
+                Assert.NotEqual(count, count1);
+            }
+        }
+
+        [Fact]
         public void DefaultBindingMode_Should_Be_OneWay()
         {
             Assert.Equal(
