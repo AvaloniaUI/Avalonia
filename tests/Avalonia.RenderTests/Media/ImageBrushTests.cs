@@ -73,6 +73,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
+            RenderOptions.SetBitmapInterpolationMode(target, BitmapInterpolationMode.HighQuality);
+            
             await RenderToFile(target);
             CompareImages();
         }
@@ -218,6 +220,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
+            RenderOptions.SetBitmapInterpolationMode(target, BitmapInterpolationMode.HighQuality);
+            
             await RenderToFile(target);
             CompareImages();
         }
@@ -241,6 +245,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
+            RenderOptions.SetBitmapInterpolationMode(target, BitmapInterpolationMode.HighQuality);
+            
             await RenderToFile(target);
             CompareImages();
         }
@@ -264,6 +270,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
+            RenderOptions.SetBitmapInterpolationMode(target, BitmapInterpolationMode.HighQuality);
+            
             await RenderToFile(target);
             CompareImages();
         }
