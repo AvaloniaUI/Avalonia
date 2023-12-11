@@ -163,10 +163,11 @@ namespace Avalonia.Skia
         public bool CanBlit => true;
 
         /// <inheritdoc />
-        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
+        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect,
+            SKSamplingOptions samplingOptions, SKPaint paint)
         {
             using var image = SnapshotImage();
-            context.Canvas.DrawImage(image, sourceRect, destRect, paint);
+            context.Canvas.DrawImage(image, sourceRect, destRect, samplingOptions, paint);
         }
         
         /// <summary>

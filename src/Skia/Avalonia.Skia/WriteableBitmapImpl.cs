@@ -71,7 +71,7 @@ namespace Avalonia.Skia
 
                 if (bmp.Width != desired.Width || bmp.Height != desired.Height)
                 {
-                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKFilterQuality());
+                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKSamplingOptions());
                     bmp.Dispose();
                     bmp = scaledBmp;
                 }
@@ -116,7 +116,8 @@ namespace Avalonia.Skia
         public int Version { get; private set; } = 1;
 
         /// <inheritdoc />
-        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
+        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect,
+            SKSamplingOptions samplingOptions, SKPaint paint)
         {
             lock (_lock)
                 context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);

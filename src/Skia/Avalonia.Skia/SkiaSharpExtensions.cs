@@ -26,7 +26,24 @@ namespace Avalonia.Skia
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
             }
         }
-
+        
+        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode)
+        {
+            switch (interpolationMode)
+            {
+                case BitmapInterpolationMode.None:
+                case BitmapInterpolationMode.Unspecified:
+                case BitmapInterpolationMode.LowQuality:
+                    return new SKSamplingOptions();
+                case BitmapInterpolationMode.MediumQuality:
+                    return new SKSamplingOptions(SKFilterMode.Linear);
+                case BitmapInterpolationMode.HighQuality:
+                    return new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
+            }
+        }
+        
         public static SKBlendMode ToSKBlendMode(this BitmapBlendingMode blendingMode)
         {
             switch (blendingMode)
