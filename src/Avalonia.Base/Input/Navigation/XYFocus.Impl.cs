@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Avalonia.Collections.Pooled;
 using Avalonia.Input.Navigation;
 using Avalonia.Media;
 using Avalonia.Utilities;
@@ -18,6 +19,7 @@ public partial class XYFocus
 {
     private XYFocusAlgorithms.XYFocusManifolds mManifolds = new();
     private XYFocusAlgorithms mHeuristic = new();
+    private PooledList<XYFocusParams> _pooledCandidates = new();
 
     internal XYFocusAlgorithms.XYFocusManifolds ResetManifolds()
     {
@@ -81,45 +83,48 @@ public partial class XYFocus
             rootBounds = GetBoundsForRanking(root, xyFocusOptions.IgnoreClipping) ?? root.Bounds;
         }
 
-        var candidateList = GetAllValidFocusableChildren(root, direction, element, engagedControl,
-            xyFocusOptions.SearchRoot, activeScroller, xyFocusOptions.IgnoreClipping,
-            xyFocusOptions.ShouldConsiderXYFocusKeyboardNavigation);
-
-        if (candidateList.Count > 0)
+        var candidateList = _pooledCandidates;
+        try
         {
-            var maxRootBoundsDistance =
-                Math.Max(rootBounds.Right - rootBounds.Left, rootBounds.Bottom - rootBounds.Top);
-            maxRootBoundsDistance = Math.Max(maxRootBoundsDistance,
-                GetMaxRootBoundsDistance(candidateList, focusedElementBounds.Value, direction,
-                    xyFocusOptions.IgnoreClipping));
+            GetAllValidFocusableChildren(candidateList, root, direction, element, engagedControl,
+                xyFocusOptions.SearchRoot, activeScroller, xyFocusOptions.IgnoreClipping,
+                xyFocusOptions.ShouldConsiderXYFocusKeyboardNavigation);
 
-            RankElements(ref candidateList, direction, focusedElementBounds.Value, maxRootBoundsDistance, mode,
-                xyFocusOptions.ExclusionRect, xyFocusOptions.IgnoreClipping, xyFocusOptions.IgnoreCone);
-
-#if XYFOCUS_DBG
-                foreach (var it in candidateList)
-                {
-                    RAWTRACE(TraceAlways, $"Candidate: {it.Element} {it.Bounds.Left},{it.Bounds.Top} {it.Bounds.Right},{it.Bounds.Bottom} rank {it.Score}");
-                }
-#endif
-
-            var ignoreOcclusivity = xyFocusOptions.IgnoreOcclusivity || isProcessingInputForScroll;
-
-            // Choose the best candidate, after testing for occlusivity, if we're currently scrolling, the test has been done already, skip it.
-            nextFocusableElement = ChooseBestFocusableElementFromList(candidateList, direction, focusedElementBounds.Value,
-                xyFocusOptions.IgnoreClipping, ignoreOcclusivity, isRightToLeft,
-                xyFocusOptions.UpdateManifold && updateManifolds);
-            if (element is not null)
+            if (candidateList.Count > 0)
             {
-                nextFocusableElement = TryXYFocusBubble(element, nextFocusableElement, xyFocusOptions.SearchRoot, direction);
+                var maxRootBoundsDistance =
+                    Math.Max(rootBounds.Right - rootBounds.Left, rootBounds.Bottom - rootBounds.Top);
+                maxRootBoundsDistance = Math.Max(maxRootBoundsDistance,
+                    GetMaxRootBoundsDistance(candidateList, focusedElementBounds.Value, direction,
+                        xyFocusOptions.IgnoreClipping));
+
+                RankElements(candidateList, direction, focusedElementBounds.Value, maxRootBoundsDistance, mode,
+                    xyFocusOptions.ExclusionRect, xyFocusOptions.IgnoreClipping, xyFocusOptions.IgnoreCone);
+
+                var ignoreOcclusivity = xyFocusOptions.IgnoreOcclusivity || isProcessingInputForScroll;
+
+                // Choose the best candidate, after testing for occlusivity, if we're currently scrolling, the test has been done already, skip it.
+                nextFocusableElement = ChooseBestFocusableElementFromList(candidateList, direction,
+                    focusedElementBounds.Value,
+                    xyFocusOptions.IgnoreClipping, ignoreOcclusivity, isRightToLeft,
+                    xyFocusOptions.UpdateManifold && updateManifolds);
+                if (element is not null)
+                {
+                    nextFocusableElement = TryXYFocusBubble(element, nextFocusableElement, xyFocusOptions.SearchRoot,
+                        direction);
+                }
             }
+        }
+        finally
+        {
+            _pooledCandidates.Clear();
         }
 
         return nextFocusableElement;
     }
 
     private InputElement? ChooseBestFocusableElementFromList(
-        List<XYFocusParams> scoreList,
+        PooledList<XYFocusParams> scoreList,
         NavigationDirection direction,
         Rect bounds,
         bool ignoreClipping,
@@ -131,7 +136,7 @@ public partial class XYFocus
 
         scoreList.Sort((elementA, elementB) =>
         {
-            if (elementA.Element == elementB.Element)
+            if (elementA!.Element == elementB!.Element)
             {
                 return 0;
             }
@@ -204,7 +209,8 @@ public partial class XYFocus
         mHeuristic.UpdateManifolds(direction, elementBounds, candidateBounds, mManifolds);
     }
 
-    private List<XYFocusParams> GetAllValidFocusableChildren(
+    private void GetAllValidFocusableChildren(
+        PooledList<XYFocusParams> candidateList,
         InputElement startRoot,
         NavigationDirection direction,
         InputElement? currentElement,
@@ -215,7 +221,6 @@ public partial class XYFocus
         bool shouldConsiderXYFocusKeyboardNavigation)
     {
         var rootForTreeWalk = startRoot;
-        var candidateList = new List<XYFocusParams>();
 
         // If asked to scope the search within the given container, honor it without any exceptions
         if (searchScope != null)
@@ -225,14 +230,14 @@ public partial class XYFocus
 
         if (engagedControl == null)
         {
-            candidateList = FindElements(rootForTreeWalk, currentElement, activeScroller, ignoreClipping,
+            FindElements(candidateList, rootForTreeWalk, currentElement, activeScroller, ignoreClipping,
                 shouldConsiderXYFocusKeyboardNavigation);
         }
         else
         {
             // Only run through this when you are an engaged element. Being an engaged element means that you should only
             // look at the children of the engaged element and any children of popups that were opened during engagement
-            candidateList = FindElements(engagedControl, currentElement, activeScroller, ignoreClipping,
+            FindElements(candidateList, engagedControl, currentElement, activeScroller, ignoreClipping,
                 shouldConsiderXYFocusKeyboardNavigation);
             
             // Iterate through the popups and add their children to the list
@@ -251,13 +256,10 @@ public partial class XYFocus
                 candidateList.Add(new XYFocusParams(engagedControl, bounds));
             }
         }
-
-        // TraceXYFocusWalkEnd();
-        return candidateList;
     }
 
     private void RankElements(
-        ref List<XYFocusParams> candidateList,
+        IList<XYFocusParams> candidateList,
         NavigationDirection direction,
         Rect bounds,
         double maxRootBoundsDistance,
@@ -295,7 +297,7 @@ public partial class XYFocus
     }
 
     private double GetMaxRootBoundsDistance(
-        List<XYFocusParams> list,
+        IList<XYFocusParams> list,
         Rect bounds,
         NavigationDirection direction,
         bool ignoreClipping)

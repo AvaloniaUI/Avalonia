@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input;
@@ -80,7 +81,8 @@ public partial class XYFocus
         return percentInShadow;
     }
 
-    internal static List<XYFocusParams> FindElements(
+    internal static void FindElements(
+        PooledList<XYFocusParams> focusList,
         InputElement startRoot,
         InputElement? currentElement,
         InputElement? activeScroller,
@@ -88,7 +90,6 @@ public partial class XYFocus
         bool shouldConsiderXYFocusKeyboardNavigation)
     {
         var isScrolling = (activeScroller != null);
-        var focusList = new List<XYFocusParams>();
         var collection = startRoot.VisualChildren;
 
         var kidCount = collection.Count;
@@ -122,12 +123,9 @@ public partial class XYFocus
 
             if (IsValidFocusSubtree(child, shouldConsiderXYFocusKeyboardNavigation) && !isEngagementEnabledButNotEngaged)
             {
-                var subFocusList = FindElements(child, currentElement, activeScroller, ignoreClipping, shouldConsiderXYFocusKeyboardNavigation);
-                focusList.AddRange(subFocusList);
+                FindElements(focusList, child, currentElement, activeScroller, ignoreClipping, shouldConsiderXYFocusKeyboardNavigation);
             }
         }
-
-        return focusList;
     }
 
     internal static bool IsValidFocusSubtree(InputElement element, bool shouldConsiderXYFocusKeyboardNavigation)
