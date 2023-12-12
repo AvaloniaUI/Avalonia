@@ -18,7 +18,6 @@ public partial class XYFocus
 {
     private XYFocusAlgorithms.XYFocusManifolds mManifolds = new();
     private XYFocusAlgorithms mHeuristic = new();
-    private List<long> mExploredList = new();
 
     internal XYFocusAlgorithms.XYFocusManifolds ResetManifolds()
     {
@@ -32,11 +31,6 @@ public partial class XYFocus
         mManifolds.HManifold = manifolds.HManifold;
     }
 
-    internal void ClearCache()
-    {
-        mExploredList.Clear();
-    }
-
     internal InputElement? GetNextFocusableElement(
         NavigationDirection direction,
         InputElement? element,
@@ -45,17 +39,6 @@ public partial class XYFocus
         XYFocusOptions xyFocusOptions)
     {
         if (element == null) return null;
-
-        long hash = 0;
-        if (mExploredList.Count > 0)
-        {
-            hash = ExploredListHash(direction, element, engagedControl, xyFocusOptions);
-            if (mExploredList.Contains(hash))
-            {
-                CacheHitTrace(direction);
-                return null;
-            }
-        }
 
         var root = (InputElement)element.GetVisualRoot()!;
         var isRightToLeft = element.FlowDirection == FlowDirection.RightToLeft;
@@ -130,17 +113,6 @@ public partial class XYFocus
             {
                 nextFocusableElement = TryXYFocusBubble(element, nextFocusableElement, xyFocusOptions.SearchRoot, direction);
             }
-        }
-
-        // Store the result in the explored list if the candidate is null.
-        if (nextFocusableElement == null)
-        {
-            if (hash == 0)
-            {
-                hash = ExploredListHash(direction, element, engagedControl, xyFocusOptions);
-            }
-
-            mExploredList.Add(hash);
         }
 
         return nextFocusableElement;
@@ -244,7 +216,6 @@ public partial class XYFocus
     {
         var rootForTreeWalk = startRoot;
         var candidateList = new List<XYFocusParams>();
-        FocusWalkTraceBegin(direction);
 
         // If asked to scope the search within the given container, honor it without any exceptions
         if (searchScope != null)
@@ -403,92 +374,5 @@ public partial class XYFocus
         // }
 
         return null;
-    }
-
-    bool IsHorizontalNavigationDirection(NavigationDirection direction)
-    {
-        return direction == NavigationDirection.Left || direction == NavigationDirection.Right;
-    }
-
-    bool IsVerticalNavigationDirection(NavigationDirection direction)
-    {
-        return direction == NavigationDirection.Up || direction == NavigationDirection.Down;
-    }
-
-    void SetPrimaryAxisDistanceWeight(int primaryAxisDistanceWeight) =>
-        mHeuristic.PrimaryAxisDistanceWeight = primaryAxisDistanceWeight;
-
-    void SetSecondaryAxisDistanceWeight(int secondaryAxisDistanceWeight) =>
-        mHeuristic.SecondaryAxisDistanceWeight = secondaryAxisDistanceWeight;
-
-    void SetPercentInManifoldShadowWeight(int percentInManifoldShadowWeight) =>
-        mHeuristic.PercentInManifoldShadowWeight = percentInManifoldShadowWeight;
-
-    void SetPercentInShadowWeight(int percentInShadowWeight) =>
-        mHeuristic.PercentInShadowWeight = percentInShadowWeight;
-
-    private static int ExploredListHash(
-        NavigationDirection direction,
-        InputElement? element,
-        InputElement? engagedControl,
-        XYFocusOptions xyFocusOptions)
-    {
-        return (direction, element, engagedControl, xyFocusOptions).GetHashCode();
-    }
-
-    void FocusWalkTraceBegin(NavigationDirection direction)
-    {
-        // switch (direction)
-        // {
-        //     case NavigationDirection.Next:
-        //         TraceXYFocusWalkBegin("Next");
-        //         break;
-        //     case NavigationDirection.Previous:
-        //         TraceXYFocusWalkBegin("Previous");
-        //         break;
-        //     case NavigationDirection.Up:
-        //         TraceXYFocusWalkBegin("Up");
-        //         break;
-        //     case NavigationDirection.Down:
-        //         TraceXYFocusWalkBegin("Down");
-        //         break;
-        //     case NavigationDirection.Left:
-        //         TraceXYFocusWalkBegin("Left");
-        //         break;
-        //     case NavigationDirection.Right:
-        //         TraceXYFocusWalkBegin("Right");
-        //         break;
-        //     default:
-        //         TraceXYFocusWalkBegin("Invalid");
-        //         break;
-        // }
-    }
-
-    void CacheHitTrace(NavigationDirection direction)
-    {
-        // switch (direction)
-        // {
-        //     case NavigationDirection.Next:
-        //         TraceXYFocusCandidateCacheHit("Next");
-        //         break;
-        //     case NavigationDirection.Previous:
-        //         TraceXYFocusCandidateCacheHit("Previous");
-        //         break;
-        //     case NavigationDirection.Up:
-        //         TraceXYFocusCandidateCacheHit("Up");
-        //         break;
-        //     case NavigationDirection.Down:
-        //         TraceXYFocusCandidateCacheHit("Down");
-        //         break;
-        //     case NavigationDirection.Left:
-        //         TraceXYFocusCandidateCacheHit("Left");
-        //         break;
-        //     case NavigationDirection.Right:
-        //         TraceXYFocusCandidateCacheHit("Right");
-        //         break;
-        //     default:
-        //         TraceXYFocusCandidateCacheHit("Invalid");
-        //         break;
-        // }
     }
 }
