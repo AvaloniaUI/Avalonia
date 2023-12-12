@@ -41,12 +41,12 @@ namespace ControlCatalog.Pages
             SetPullHandlers(this.Find<Border>("RightPullZone"), true);
             SetPullHandlers(this.Find<Border>("LeftPullZone"), false);
 
-            var image = this.Find<Image>("PinchImage");
+            var image = this.Get<Image>("PinchImage");
             SetPinchHandlers(image);
 
-            var reset = this.Find<Button>("ResetButton");
+            var reset = this.Get<Button>("ResetButton");
 
-            reset!.Click += (s, e) =>
+            reset.Click += (_, _) =>
             {
                 var compositionVisual = ElementComposition.GetElementVisual(image);
 
@@ -58,7 +58,18 @@ namespace ControlCatalog.Pages
                     image.InvalidateMeasure();
                 }
             };
-                
+
+
+
+            if (this.Find<Slider>("AngleSlider") is { } slider &&
+                this.Find<Panel>("RotationGesture") is { } rotationGesture
+               )
+            {
+                rotationGesture.AddHandler(Gestures.PinchEvent, (s, e) =>
+                {
+                    slider.Value = e.Angle;
+                });
+            }
         }
 
         private void SetPinchHandlers(Control? control)

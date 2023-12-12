@@ -110,8 +110,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public double ViewportSize
         {
-            get { return GetValue(ViewportSizeProperty); }
-            set { SetValue(ViewportSizeProperty, value); }
+            get => GetValue(ViewportSizeProperty);
+            set => SetValue(ViewportSizeProperty, value);
         }
 
         /// <summary>
@@ -120,8 +120,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public ScrollBarVisibility Visibility
         {
-            get { return GetValue(VisibilityProperty); }
-            set { SetValue(VisibilityProperty, value); }
+            get => GetValue(VisibilityProperty);
+            set => SetValue(VisibilityProperty, value);
         }
 
         /// <summary>
@@ -129,8 +129,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         /// <summary>
@@ -226,6 +226,7 @@ namespace Avalonia.Controls.Primitives
             {
                 IfUnset(MaximumProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ScrollBarMaximumProperty, ExtractOrdinate), BindingPriority.Template)),
                 IfUnset(ValueProperty, p => Bind(p, owner.GetObservable(ScrollViewer.OffsetProperty, ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(ScrollViewer.IsDeferredScrollingEnabledProperty, p => Bind(p, owner.GetObservable(ScrollViewer.IsDeferredScrollingEnabledProperty), BindingPriority.Template)),
                 IfUnset(ViewportSizeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ViewportProperty, ExtractOrdinate), BindingPriority.Template)),
                 IfUnset(VisibilityProperty, p => Bind(p, owner.GetObservable(visibilitySource), BindingPriority.Template)),
                 IfUnset(AllowAutoHideProperty, p => Bind(p, owner.GetObservable(ScrollViewer.AllowAutoHideProperty), BindingPriority.Template)),

@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Nuke.Common.Tooling;
+using static Serilog.Log;
 
 public static class ApiDiffValidation
 {
     private static readonly HttpClient s_httpClient = new();
+
+    private static readonly (string oldTfm, string newTfm)[] s_tfmRedirects = new[]
+    {
+        // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1)
+        ("net6.0-android", "net7.0-android"),
+        ("net6.0-ios", "net7.0-ios")
+    };
 
     public static async Task ValidatePackage(
         Tool apiCompatTool, string packagePath, string baselineVersion,
@@ -27,7 +36,10 @@ public static class ApiDiffValidation
             Directory.CreateDirectory(suppressionFilesFolder!);
         }
 
-        await using (var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion))
+        await using var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion);
+        if (baselineStream == null) 
+            return;
+
         using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
         using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
         using (Helpers.UseTempDir(out var tempFolder))
@@ -54,8 +66,14 @@ public static class ApiDiffValidation
                     await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
                 }
 
+                var targetTfm = baselineDll.target;
+                if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
+                {
+                    targetTfm = newTfm;
+                }
+
                 var targetDll = targetDlls.FirstOrDefault(e =>
-                    e.target == baselineDll.target && e.entry.Name == baselineDll.entry.Name);
+                    e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
                 if (targetDll.entry is null)
                 {
                     throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
@@ -125,7 +143,7 @@ public static class ApiDiffValidation
          Avalonia.11.0.0
          */
         var packageId = GetPackageId(packagePath);
-        Build.Information("Downloading {0} {1} baseline package", packageId, baselineVersion);
+        Information("Downloading {0} {1} baseline package", packageId, baselineVersion);
 
         try
         {
@@ -138,6 +156,10 @@ public static class ApiDiffValidation
             await stream.CopyToAsync(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
+        }
+        catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
         }
         catch (Exception ex)
         {

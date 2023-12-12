@@ -54,7 +54,7 @@ namespace Avalonia.Collections
     /// <summary>
     /// DataGrid-readable view over an IEnumerable.
     /// </summary>
-    public sealed class DataGridCollectionView : IDataGridCollectionView, IDataGridEditableCollectionView, INotifyPropertyChanged 
+    public sealed class DataGridCollectionView : IDataGridCollectionView, IDataGridEditableCollectionView, IList, INotifyPropertyChanged 
     {
         /// <summary>
         /// Since there's nothing in the un-cancelable event args that is mutable,
@@ -1151,6 +1151,25 @@ namespace Avalonia.Collections
         public object this[int index]
         {
             get { return GetItemAt(index); }
+        }
+
+        bool IList.IsFixedSize => SourceList?.IsFixedSize ?? true;
+        bool IList.IsReadOnly => SourceList?.IsReadOnly ?? true;
+        bool ICollection.IsSynchronized => false;
+        object ICollection.SyncRoot => this;
+
+        object IList.this[int index]
+        {
+            get => this[index];
+            set
+            {
+                SourceList[index] = value;
+                if (SourceList is not INotifyCollectionChanged)
+                {
+                    // TODO: implement Replace
+                    ProcessCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, value));
+                }
+            }
         }
 
         /// <summary>
@@ -3980,6 +3999,38 @@ namespace Avalonia.Collections
                 throw new InvalidOperationException("Cannot change or check the contents or current position of the CollectionView while Refresh is being deferred.");
             }
         }
+
+        int IList.Add(object value)
+        {
+            var index = SourceList.Add(value);
+            if (SourceList is not INotifyCollectionChanged)
+            {
+                ProcessCollectionChanged(
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, value));
+            }
+            return index;
+        }
+
+        void IList.Clear()
+        {
+            SourceList.Clear();
+            if (SourceList is not INotifyCollectionChanged)
+            {
+                ProcessCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+        }
+
+        void IList.Insert(int index, object value) 
+        {
+            SourceList.Insert(index, value);
+            if (SourceList is not INotifyCollectionChanged)
+            {
+                // TODO: implement Insert
+                ProcessCollectionChanged(
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, value));
+            }
+        }
+        void ICollection.CopyTo(Array array, int index) => InternalList.CopyTo(array, index);
 
         /// <summary>
         /// Creates a comparer class that takes in a CultureInfo as a parameter,

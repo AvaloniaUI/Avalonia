@@ -10,7 +10,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var schema =
-                context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith("composition-schema.xml"));
+                context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith("composition-schema.xml", System.StringComparison.OrdinalIgnoreCase));
             var configs = schema.Select((t, _) => t.GetText())
                 .Where(source => source is not null)
                 .Select((source, _) => (GConfig)new XmlSerializer(typeof(GConfig)).Deserialize(new StringReader(source!.ToString())));

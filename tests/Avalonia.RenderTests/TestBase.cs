@@ -83,7 +83,7 @@ namespace Avalonia.Direct2D1.RenderTests
             get;
         }
 
-        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "", double dpi = 96)
+        protected Task RenderToFile(Control target, [CallerMemberName] string testName = "", double dpi = 96)
         {
             if (!Directory.Exists(OutputPath))
             {
@@ -108,7 +108,7 @@ namespace Avalonia.Direct2D1.RenderTests
             var timer = new ManualRenderTimer();
 
             var compositor = new Compositor(new RenderLoop(timer), null, true,
-                new DispatcherCompositorScheduler(), true);
+                new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat, factory.DefaultAlphaFormat))
             {
                 var root = new TestRenderRoot(dpiVector.X / 96, null!);
@@ -124,6 +124,8 @@ namespace Avalonia.Direct2D1.RenderTests
                 }
                 writableBitmap.Save(compositedPath);
             }
+
+            return Task.CompletedTask;
         }
 
         class BitmapFramebufferSurface : IFramebufferPlatformSurface

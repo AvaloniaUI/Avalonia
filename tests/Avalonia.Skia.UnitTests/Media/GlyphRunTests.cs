@@ -175,6 +175,22 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void GlyphRun_With_Leading_Space_Has_Correct_InkBounds()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14);
+                var shapedBuffer = TextShaper.Current.ShapeText(" I", options);
+
+                var glyphRun1 = CreateGlyphRun(shapedBuffer);
+                var bounds = glyphRun1.InkBounds;
+
+                Assert.True(bounds.Left > 0);
+            }
+        }
+
         private static List<Rect> BuildRects(GlyphRun glyphRun)
         {
             var height = glyphRun.Bounds.Height;

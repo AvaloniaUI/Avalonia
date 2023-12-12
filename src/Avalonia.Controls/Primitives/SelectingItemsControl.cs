@@ -187,16 +187,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public int SelectedIndex
         {
-            get
-            {
+            get =>
                 // When a Begin/EndInit/DataContext update is in place we return the value to be
                 // updated here, even though it's not yet active and the property changed notification
                 // has not yet been raised. If we don't do this then the old value will be written back
                 // to the source when two-way bound, and the update value will be lost.
-                return _updateState?.SelectedIndex.HasValue == true ?
+                _updateState?.SelectedIndex.HasValue == true ?
                     _updateState.SelectedIndex.Value :
                     Selection.SelectedIndex;
-            }
             set
             {
                 if (_updateState is object)
@@ -215,13 +213,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public object? SelectedItem
         {
-            get
-            {
+            get =>
                 // See SelectedIndex setter for more information.
-                return _updateState?.SelectedItem.HasValue == true ?
+                _updateState?.SelectedItem.HasValue == true ?
                     _updateState.SelectedItem.Value :
                     Selection.SelectedItem;
-            }
             set
             {
                 if (_updateState is object)
@@ -306,12 +302,9 @@ namespace Avalonia.Controls.Primitives
         [AllowNull]
         protected ISelectionModel Selection
         {
-            get
-            {
-                return _updateState?.Selection.HasValue == true ?
+            get => _updateState?.Selection.HasValue == true ?
                     _updateState.Selection.Value :
                     GetOrCreateSelectionModel();
-            }
             set
             {
                 value ??= CreateDefaultSelectionModel();
@@ -520,6 +513,9 @@ namespace Avalonia.Controls.Primitives
                 var containerIsSelected = GetIsSelected(container);
                 UpdateSelection(index, containerIsSelected, toggleModifier: true);
             }
+
+            if (Selection.AnchorIndex == index)
+                KeyboardNavigation.SetTabOnceActiveElement(this, container);
         }
 
         /// <inheritdoc />
@@ -1373,10 +1369,7 @@ namespace Avalonia.Controls.Primitives
             public Optional<object?> SelectedValue
             {
                 get => _selectedValue;
-                set
-                {
-                    _selectedValue = value;
-                }
+                set => _selectedValue = value;
             }
         }
 

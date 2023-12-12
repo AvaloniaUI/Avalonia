@@ -22,7 +22,15 @@
 
     <TextBlock Margin="0,20,0,0" Text="Pickers:" />
 
-    <CheckBox Name="UseFilters">Use filters</CheckBox>
+    <Label Target="FilterSelector" Content="Filter" />
+    <ComboBox Name="FilterSelector" SelectedIndex="0">
+      <ComboBoxItem>None</ComboBoxItem>
+      <ComboBoxItem>All + TXT + BinLog</ComboBoxItem>
+      <ComboBoxItem>Binlog</ComboBoxItem>
+      <ComboBoxItem>TXT extension only</ComboBoxItem>
+      <ComboBoxItem>TXT mime only</ComboBoxItem>
+      <ComboBoxItem>TXT apple type id only</ComboBoxItem>
+    </ComboBox>
     <Expander Header="FilePicker API">
       <StackPanel Spacing="4">
         <CheckBox Name="ForceManaged">Force managed dialog</CheckBox>

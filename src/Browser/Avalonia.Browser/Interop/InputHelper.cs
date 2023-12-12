@@ -20,8 +20,6 @@ internal static partial class InputHelper
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Number, JSType.Number, JSType.Boolean>>]
         Func<JSObject, int, int, bool> onBeforeInput,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Boolean>>]
-        Func<string, string?, bool> onInput,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> onCompositionStart,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
@@ -53,6 +51,10 @@ internal static partial class InputHelper
     public static partial void SubscribeDropEvents(JSObject containerElement,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>] Func<JSObject, bool> dragEvent);
     
+    [JSImport("InputHelper.subscribeKeyboardGeometryChange", AvaloniaModule.MainModuleName)]
+    public static partial void SubscribeKeyboardGeometryChange(JSObject containerElement,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>] Func<JSObject, bool> handler);
+
     [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
     [return: JSMarshalAs<JSType.Array<JSType.Object>>]
     public static partial JSObject[] GetCoalescedEvents(JSObject pointerEvent);

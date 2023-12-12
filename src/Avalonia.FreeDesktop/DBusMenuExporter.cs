@@ -38,8 +38,9 @@ namespace Avalonia.FreeDesktop
             private bool _resetQueued;
             private int _nextId = 1;
 
-            public DBusMenuExporterImpl(Connection connection, IntPtr xid) : this()
+            public DBusMenuExporterImpl(Connection connection, IntPtr xid)
             {
+                InitBackingProperties();
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
                 Path = GenerateDBusMenuObjPath;
@@ -47,8 +48,9 @@ namespace Avalonia.FreeDesktop
                 _ = InitializeAsync();
             }
 
-            public DBusMenuExporterImpl(Connection connection, string path) : this()
+            public DBusMenuExporterImpl(Connection connection, string path)
             {
+                InitBackingProperties();
                 Connection = connection;
                 _appMenu = false;
                 Path = path;
@@ -56,7 +58,7 @@ namespace Avalonia.FreeDesktop
                 _ = InitializeAsync();
             }
 
-            private DBusMenuExporterImpl()
+            private void InitBackingProperties()
             {
                 BackingProperties.Version = 4;
                 BackingProperties.Status = string.Empty;

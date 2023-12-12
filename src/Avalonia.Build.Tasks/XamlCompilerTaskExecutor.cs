@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,11 +24,15 @@ namespace Avalonia.Build.Tasks
     public static partial class XamlCompilerTaskExecutor
     {
         private const string CompiledAvaloniaXamlNamespace = "CompiledAvaloniaXaml";
-        
-        static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".paml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".axaml");
-        
+
+        static bool CheckXamlName(IResource r)
+        {
+            var name = r.Name;
+            return name.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".xaml",StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".paml", StringComparison.OrdinalIgnoreCase);
+        }
+
         public class CompileResult
         {
             public bool Success { get; set; }
@@ -40,33 +45,28 @@ namespace Avalonia.Build.Tasks
             }
         }
 
-        public static CompileResult Compile(IBuildEngine engine,
-            string input, string output,
-            string refInput, string refOutput,
-            string[] references, string projectDirectory,
-            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey,
-            bool skipXamlCompilation)
-        {
-            return Compile(engine, input, output, refInput, refOutput, references, projectDirectory, verifyIl, defaultCompileBindings, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
-        }
-
         internal static CompileResult Compile(IBuildEngine engine,
             string input, string output,
             string refInput, string refOutput,
             string[] references, string projectDirectory,
-            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
+            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance,
+            XamlCompilerDiagnosticsFilter diagnosticsFilter, string strongNameKey,
+            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions)
         {
             try
             {
                 references = references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")).ToArray();
-                var typeSystem = new CecilTypeSystem(references, input);
-                var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
+                using var typeSystem = new CecilTypeSystem(references, input);
+                using var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
 
                 var asm = typeSystem.TargetAssemblyDefinition;
                 var refAsm = refTypeSystem?.TargetAssemblyDefinition;
                 if (!skipXamlCompilation)
                 {
-	                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, debuggerLaunch);
+	                var compileRes = CompileCore(
+                        engine, typeSystem, projectDirectory, verifyIl,
+                        defaultCompileBindings, logImportance, diagnosticsFilter,
+                        debuggerLaunch, verboseExceptions);
 	                if (compileRes == null)
 	                    return new CompileResult(true);
 	                if (compileRes == false)
@@ -95,7 +95,7 @@ namespace Avalonia.Build.Tasks
             }
             catch (Exception ex)
             {
-                engine.LogError(BuildEngineErrorCode.Unknown, "", ex);
+                engine.LogError(AvaloniaXamlDiagnosticCodes.Unknown, "", ex);
                 return new CompileResult(false);
             }
         }
@@ -103,8 +103,10 @@ namespace Avalonia.Build.Tasks
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
             string projectDirectory, bool verifyIl,
             bool defaultCompileBindings,
-            MessageImportance logImportance
-            , bool debuggerLaunch = false)
+            MessageImportance logImportance,
+            XamlCompilerDiagnosticsFilter diagnosticsFilter,
+            bool debuggerLaunch,
+            bool verboseExceptions)
         {
             if (debuggerLaunch)
             {
@@ -166,6 +168,20 @@ namespace Avalonia.Build.Tasks
             asm.MainModule.Types.Add(trampolineBuilder);
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
+            var diagnostics = new List<XamlDiagnostic>();
+            var diagnosticsHandler = new XamlDiagnosticsHandler()
+            {
+                HandleDiagnostic = diagnostic =>
+                {
+                    var newSeverity = diagnosticsFilter.Handle(diagnostic);
+                    diagnostic = diagnostic with { Severity = newSeverity };
+                    diagnostics.Add(diagnostic);
+                    return newSeverity;
+                },
+                CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia,
+                ExceptionFormatter = ex => ex.FormatException(verboseExceptions)
+            };
+
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
                 typeSystem.TargetAssembly,
                 xamlLanguage,
@@ -174,7 +190,8 @@ namespace Avalonia.Build.Tasks
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
                 new XamlIlTrampolineBuilder(typeSystem.CreateTypeBuilder(trampolineBuilder)),
-                new DeterministicIdGenerator());
+                new DeterministicIdGenerator(),
+                diagnosticsHandler);
 
 
             var contextDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlContext", 
@@ -255,6 +272,7 @@ namespace Avalonia.Build.Tasks
             {
                 var typeDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!"+ group.Name,
                     TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
+                var transformFailed = false;
 
                 typeDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
                 {
@@ -273,6 +291,7 @@ namespace Avalonia.Build.Tasks
                         // StreamReader is needed here to handle BOM
                         var xaml = new StreamReader(new MemoryStream(res.FileContents)).ReadToEnd();
                         var parsed = XDocumentXamlParser.Parse(xaml);
+                        parsed.Document = res.FilePath;
 
                         var initialRoot = (XamlAstObjectNode)parsed.Root;
                         
@@ -334,8 +353,7 @@ namespace Avalonia.Build.Tasks
                                 new XamlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
                         }
-                        
-                        
+
                         compiler.Transform(parsed);
 
                         var populateName = classType == null ? "Populate:" + res.Name : "!XamlIlPopulate";
@@ -359,36 +377,41 @@ namespace Avalonia.Build.Tasks
                                     populateBuilder,
                                     parsed,
                                     populateName,
-                                    classTypeDefinition == null && classModifierPublic.Value),
+                                    classTypeDefinition == null && classModifierPublic.Value
+                                        ? XamlVisibility.Public
+                                        : XamlVisibility.Private),
                                 buildName == null ?
                                     null :
-                                    compiler.DefineBuildMethod(builder, parsed, buildName, classModifierPublic.Value))));
+                                    compiler.DefineBuildMethod(
+                                        builder,
+                                        parsed,
+                                        buildName,
+                                        classModifierPublic.Value ? XamlVisibility.Public : XamlVisibility.Assembly))));
                     }
                     catch (Exception e)
                     {
-                        int lineNumber = 0, linePosition = 0;
-                        if (e is XamlParseException xe)
-                        {
-                            lineNumber = xe.LineNumber;
-                            linePosition = xe.LinePosition;
-                        }
-
-                        engine.LogError(BuildEngineErrorCode.TransformError, res.FilePath, e, lineNumber, linePosition);
-                        return false;
+                        transformFailed = true;
+                        engine.LogError(AvaloniaXamlDiagnosticCodes.TransformError, res.FilePath, e);
                     }
                 }
 
                 try
                 {
-                    compiler.TransformGroup(parsedXamlDocuments);
+                    if (!transformFailed)
+                    {
+                        compiler.TransformGroup(parsedXamlDocuments);
+                    }
                 }
-                catch (XamlDocumentParseException e)
+                catch (Exception e)
                 {
-                    engine.LogError(BuildEngineErrorCode.TransformError, e.FilePath, e, e.LineNumber, e.LinePosition);
+                    transformFailed = true;
+                    engine.LogError(AvaloniaXamlDiagnosticCodes.TransformError, "", e);
                 }
-                catch (XamlParseException e)
+                
+                var hasAnyError = ReportDiagnostics(engine, diagnostics) || transformFailed;
+                if (hasAnyError)
                 {
-                    engine.LogError(BuildEngineErrorCode.TransformError, "", e, e.LineNumber, e.LinePosition);
+                    return false;
                 }
 
                 foreach (var document in parsedXamlDocuments)
@@ -414,11 +437,11 @@ namespace Avalonia.Build.Tasks
                             contextClass,
                             document.TypeBuilderProvider.PopulateMethod,
                             document.TypeBuilderProvider.BuildMethod,
-                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, true),
+                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, XamlVisibility.Public),
                             (closureName, closureBaseType) =>
-                                populateBuilder.DefineSubType(closureBaseType, closureName, false),
+                                populateBuilder.DefineSubType(closureBaseType, closureName, XamlVisibility.Private),
                             (closureName, returnType, parameterTypes) =>
-                                populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
+                                populateBuilder.DefineDelegateSubType(closureName, XamlVisibility.Private, returnType, parameterTypes),
                             res.Uri, res
                         );
 
@@ -595,21 +618,23 @@ namespace Avalonia.Build.Tasks
                             }
                             else
                             {
-                                engine.LogWarning(BuildEngineErrorCode.Loader, "",
-                                    $"XAML resource \"{res.Uri}\" won't be reachable via runtime loader, as no public constructor was found");
+                                var diagnostic = new XamlDiagnostic(
+                                    AvaloniaXamlDiagnosticCodes.XamlLoaderUnreachable,
+                                    diagnosticsFilter.Handle(
+                                        XamlDiagnosticSeverity.Warning,
+                                        AvaloniaXamlDiagnosticCodes.XamlLoaderUnreachable),
+                                    $"XAML resource \"{res.Uri}\" won't be reachable via runtime loader, as no public constructor was found")
+                                {
+                                    Document = document.FileSource?.FilePath
+                                };
+                                engine.LogDiagnostic(diagnostic);
                             }
                         }
 
                     }
                     catch (Exception e)
                     {
-                        int lineNumber = 0, linePosition = 0;
-                        if (e is XamlParseException xe)
-                        {
-                            lineNumber = xe.LineNumber;
-                            linePosition = xe.LinePosition;
-                        }
-                        engine.LogError(BuildEngineErrorCode.EmitError, res.FilePath, e, lineNumber, linePosition);
+                        engine.LogError(AvaloniaXamlDiagnosticCodes.EmitError, res.FilePath, e);
                         return false;
                     }
                     res.Remove();
@@ -626,7 +651,6 @@ namespace Avalonia.Build.Tasks
                     }
                 }
                 
-                
                 return true;
             }
             
@@ -640,6 +664,21 @@ namespace Avalonia.Build.Tasks
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             return true;
+        }
+
+        static bool ReportDiagnostics(IBuildEngine engine, IReadOnlyCollection<XamlDiagnostic> diagnostics)
+        {
+            var hasAnyError = diagnostics.Any(d => d.Severity >= XamlDiagnosticSeverity.Error);
+
+            const int maxErrorsPerDocument = 100;
+            foreach (var diagnostic in diagnostics
+                         .GroupBy(d => d.Document)
+                         .SelectMany(d => d.Take(maxErrorsPerDocument)))
+            {
+                engine.LogDiagnostic(diagnostic);
+            }
+
+            return hasAnyError;
         }
 
         static bool? CompileCoreForRefAssembly(
@@ -673,7 +712,7 @@ namespace Avalonia.Build.Tasks
                     foreach (var ogMethod in wrappedOgType.Methods.Where(m => m.IsPublic && m.IsStatic))
                     {
                         var method = typeBuilder.DefineMethod(ogMethod.ReturnType, ogMethod.Parameters, ogMethod.Name,
-                            ogMethod.IsPublic, ogMethod.IsStatic, false);
+                            XamlVisibility.Public, ogMethod.IsStatic, false);
                         method.Generator.Ldnull();
                         method.Generator.Throw();
                     }
@@ -683,9 +722,7 @@ namespace Avalonia.Build.Tasks
             }
             catch (Exception e)
             {
-                engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", "",
-                    0, 0, 0, 0,
-                    e.Message, "", "Avalonia"));
+                engine.LogError(AvaloniaXamlDiagnosticCodes.Unknown, e.Message, e);
                 return false;
             }
 

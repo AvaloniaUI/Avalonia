@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -28,12 +28,15 @@ namespace Avalonia.Controls
             {
                 control.PointerEntered -= ControlPointerEntered;
                 control.PointerExited -= ControlPointerExited;
+                control.RemoveHandler(InputElement.PointerPressedEvent, ControlPointerPressed);
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEntered += ControlPointerEntered;
                 control.PointerExited += ControlPointerExited;
+                control.AddHandler(InputElement.PointerPressedEvent, ControlPointerPressed,
+                    RoutingStrategies.Bubble | RoutingStrategies.Tunnel | RoutingStrategies.Direct, true);
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -105,7 +108,18 @@ namespace Avalonia.Controls
         private void ControlPointerExited(object? sender, PointerEventArgs e)
         {
             var control = (Control)sender!;
+
+            // If the control is showing a tooltip and the pointer is over the tooltip, don't close it.
+            if (control.GetValue(ToolTip.ToolTipProperty) is { } tooltip && tooltip.IsPointerOver)
+                return;
+
             Close(control);
+        }
+
+        private void ControlPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            StopTimer();
+            (sender as AvaloniaObject)?.ClearValue(ToolTip.IsOpenProperty);
         }
 
         private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
@@ -113,6 +127,27 @@ namespace Avalonia.Controls
             var control = (Control)sender!;
             var toolTip = control.GetValue(ToolTip.ToolTipProperty);
             toolTip?.RecalculatePosition(control);
+        }
+
+        private void ToolTipClosed(object? sender, EventArgs e)
+        {
+            if (sender is ToolTip toolTip)
+            {
+                toolTip.Closed -= ToolTipClosed;
+                toolTip.PointerExited -= ToolTipPointerExited;
+            }
+        }
+
+        private void ToolTipPointerExited(object? sender, PointerEventArgs e)
+        {
+            // The pointer has exited the tooltip. Close the tooltip unless the pointer is over the
+            // adorned control.
+            if (sender is ToolTip toolTip &&
+                toolTip.AdornedControl is { } control &&
+                !control.IsPointerOver)
+            {
+                Close(control);
+            }
         }
 
         private void StartShowTimer(int showDelay, Control control)
@@ -129,6 +164,12 @@ namespace Avalonia.Controls
             if (control.IsAttachedToVisualTree)
             {
                 ToolTip.SetIsOpen(control, true);
+
+                if (control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
+                {
+                    tooltip.Closed += ToolTipClosed;
+                    tooltip.PointerExited += ToolTipPointerExited;
+                }
             }
         }
 

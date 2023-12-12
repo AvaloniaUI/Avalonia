@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Animation.Utils;
+using System.Diagnostics;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Reactive;
@@ -14,93 +12,71 @@ namespace Avalonia.Animation.Animators
     internal abstract class Animator<T> : AvaloniaList<AnimatorKeyFrame>, IAnimator
     {
         /// <summary>
-        /// List of type-converted keyframes.
-        /// </summary>
-        private readonly List<AnimatorKeyFrame> _convertedKeyframes = new List<AnimatorKeyFrame>();
-
-        private bool _isVerifiedAndConverted;
-
-        /// <summary>
         /// Gets or sets the target property for the keyframe.
         /// </summary>
         public AvaloniaProperty? Property { get; set; }
 
-        public Animator()
-        {
-            // Invalidate keyframes when changed.
-            this.CollectionChanged += delegate { _isVerifiedAndConverted = false; };
-        }
-
         /// <inheritdoc/>
         public virtual IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
-            if (!_isVerifiedAndConverted)
-                VerifyConvertKeyFrames();
-
             var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
             return new CompositeDisposable(match.Subscribe(subject), subject);
         }
 
         protected T InterpolationHandler(double animationTime, T neutralValue)
         {
-            AnimatorKeyFrame firstKeyframe, lastKeyframe;
+            if (Count == 0)
+                return neutralValue;
 
-            int kvCount = _convertedKeyframes.Count;
-            if (kvCount > 2)
+            var (beforeKeyFrame, afterKeyFrame) = FindKeyFrames(animationTime);
+
+            double beforeTime, afterTime;
+            T beforeValue, afterValue;
+
+            if (beforeKeyFrame is null)
             {
-                if (animationTime <= 0.0)
-                {
-                    firstKeyframe = _convertedKeyframes[0];
-                    lastKeyframe = _convertedKeyframes[1];
-                }
-                else if (animationTime >= 1.0)
-                {
-                    firstKeyframe = _convertedKeyframes[_convertedKeyframes.Count - 2];
-                    lastKeyframe = _convertedKeyframes[_convertedKeyframes.Count - 1];
-                }
-                else
-                {
-                    int index = FindClosestBeforeKeyFrame(animationTime);
-                    firstKeyframe = _convertedKeyframes[index];
-                    lastKeyframe = _convertedKeyframes[index + 1];
-                }
+                beforeTime = 0.0;
+                beforeValue = afterKeyFrame is { FillBefore: true, Value: T fillValue } ? fillValue : neutralValue;
             }
             else
             {
-                firstKeyframe = _convertedKeyframes[0];
-                lastKeyframe = _convertedKeyframes[1];
+                beforeTime = beforeKeyFrame.Cue.CueValue;
+                beforeValue = beforeKeyFrame.Value is T value ? value : neutralValue;
             }
 
-            double t0 = firstKeyframe.Cue.CueValue;
-            double t1 = lastKeyframe.Cue.CueValue;
-
-            double progress = (animationTime - t0) / (t1 - t0);
-
-            T oldValue, newValue;
-
-            if (!firstKeyframe.isNeutral && firstKeyframe.Value is T firstKeyframeValue)
-                oldValue = firstKeyframeValue;
+            if (afterKeyFrame is null)
+            {
+                afterTime = 1.0;
+                afterValue = beforeKeyFrame is { FillAfter: true, Value: T fillValue } ? fillValue : neutralValue;
+            }
             else
-                oldValue = neutralValue;
+            {
+                afterTime = afterKeyFrame.Cue.CueValue;
+                afterValue = afterKeyFrame.Value is T value ? value : neutralValue;
+            }
 
-            if (!lastKeyframe.isNeutral && lastKeyframe.Value is T lastKeyframeValue)
-                newValue = lastKeyframeValue;
-            else
-                newValue = neutralValue;
+            var progress = (animationTime - beforeTime) / (afterTime - beforeTime);
 
-            if (lastKeyframe.KeySpline != null)
-                progress = lastKeyframe.KeySpline.GetSplineProgress(progress);
+            if (afterKeyFrame?.KeySpline is { } keySpline)
+                progress = keySpline.GetSplineProgress(progress);
 
-            return Interpolate(progress, oldValue, newValue);
+            return Interpolate(progress, beforeValue, afterValue);
         }
 
-        private int FindClosestBeforeKeyFrame(double time)
+        private (AnimatorKeyFrame? Before, AnimatorKeyFrame? After) FindKeyFrames(double time)
         {
-            for (int i = 0; i < _convertedKeyframes.Count; i++)
-                if (_convertedKeyframes[i].Cue.CueValue > time)
-                    return i - 1;
+            Debug.Assert(Count >= 1);
 
-            throw new Exception("Index time is out of keyframe time range.");
+            for (var i = 0; i < Count; i++)
+            {
+                var keyFrame = this[i];
+                var keyFrameTime = keyFrame.Cue.CueValue;
+
+                if (time < keyFrameTime || keyFrameTime == 1.0)
+                    return (i > 0 ? this[i - 1] : null, keyFrame);
+            }
+
+            return (this[Count - 1], null);
         }
 
         public virtual IDisposable BindAnimation(Animatable control, IObservable<T> instance)
@@ -123,7 +99,7 @@ namespace Avalonia.Animation.Animators
                 clock ?? control.Clock ?? Clock.GlobalClock,
                 onComplete,
                 InterpolationHandler);
-            
+
             return BindAnimation(control, instance);
         }
 
@@ -131,52 +107,5 @@ namespace Avalonia.Animation.Animators
         /// Interpolates in-between two key values given the desired progress time.
         /// </summary>
         public abstract T Interpolate(double progress, T oldValue, T newValue);
-
-        private void VerifyConvertKeyFrames()
-        {
-            foreach (AnimatorKeyFrame keyframe in this)
-            {
-                _convertedKeyframes.Add(keyframe);
-            }
-
-            AddNeutralKeyFramesIfNeeded();
-
-            _isVerifiedAndConverted = true;
-        }
-
-        private void AddNeutralKeyFramesIfNeeded()
-        {
-            bool hasStartKey, hasEndKey;
-            hasStartKey = hasEndKey = false;
-
-            // Check if there's start and end keyframes.
-            foreach (var frame in _convertedKeyframes)
-            {
-                if (frame.Cue.CueValue == 0.0d)
-                {
-                    hasStartKey = true;
-                }
-                else if (frame.Cue.CueValue == 1.0d)
-                {
-                    hasEndKey = true;
-                }
-            }
-
-            if (!hasStartKey || !hasEndKey)
-                AddNeutralKeyFrames(hasStartKey, hasEndKey);
-        }
-
-        private void AddNeutralKeyFrames(bool hasStartKey, bool hasEndKey)
-        {
-            if (!hasStartKey)
-            {
-                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(null, null, new Cue(0.0d)) { Value = default(T), isNeutral = true });
-            }
-
-            if (!hasEndKey)
-            {
-                _convertedKeyframes.Add(new AnimatorKeyFrame(null, null, new Cue(1.0d)) { Value = default(T), isNeutral = true });
-            }
-        }
     }
 }

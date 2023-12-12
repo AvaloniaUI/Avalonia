@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Avalonia.Input.GestureRecognizers;
+﻿using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
 {
@@ -11,16 +10,7 @@ namespace Avalonia.Input
         private IPointer? _secondContact;
         private Point _secondPoint;
         private Point _origin;
-
-        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            PointerPressed(e);
-        }
-
-        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
-        {
-            PointerReleased(e);
-        }
+        private double _previousAngle;
 
         protected override void PointerCaptureLost(IPointer pointer)
         {
@@ -29,9 +19,9 @@ namespace Avalonia.Input
 
         protected override void PointerMoved(PointerEventArgs e)
         {
-            if (Target != null && Target is Visual visual)
+            if (Target is Visual visual)
             {
-                if(_firstContact == e.Pointer)
+                if (_firstContact == e.Pointer)
                 {
                     _firstPoint = e.GetPosition(visual);
                 }
@@ -50,17 +40,20 @@ namespace Avalonia.Input
 
                     var scale = distance / _initialDistance;
 
-                    var pinchEventArgs = new PinchEventArgs(scale, _origin);
-                    Target?.RaiseEvent(pinchEventArgs);
+                    var degree = GetAngleDegreeFromPoints(_firstPoint, _secondPoint);
 
+                    var pinchEventArgs = new PinchEventArgs(scale, _origin, degree, _previousAngle - degree);
+                    _previousAngle = degree;
+                    Target?.RaiseEvent(pinchEventArgs);
                     e.Handled = pinchEventArgs.Handled;
+                    e.PreventGestureRecognition();
                 }
             }
         }
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 if (_firstContact == null)
                 {
@@ -85,18 +78,24 @@ namespace Avalonia.Input
 
                     _origin = new Point((_firstPoint.X + _secondPoint.X) / 2.0f, (_firstPoint.Y + _secondPoint.Y) / 2.0f);
 
+                    _previousAngle = GetAngleDegreeFromPoints(_firstPoint, _secondPoint);
+
                     Capture(_firstContact);
                     Capture(_secondContact);
+                    e.PreventGestureRecognition();
                 }
             }
         }
 
         protected override void PointerReleased(PointerReleasedEventArgs e)
         {
-            RemoveContact(e.Pointer);
+            if(RemoveContact(e.Pointer))
+            {
+                e.PreventGestureRecognition();
+            }
         }
 
-        private void RemoveContact(IPointer pointer)
+        private bool RemoveContact(IPointer pointer)
         {
             if (_firstContact == pointer || _secondContact == pointer)
             {
@@ -113,13 +112,28 @@ namespace Avalonia.Input
                 }
 
                 Target?.RaiseEvent(new PinchEndedEventArgs());
+                return true;
             }
+            return false;
         }
 
-        private float GetDistance(Point a, Point b)
+        private static float GetDistance(Point a, Point b)
         {
-            var length = _secondPoint - _firstPoint;
+            var length = b - a;
             return (float)new Vector(length.X, length.Y).Length;
+        }
+
+        private static double GetAngleDegreeFromPoints(Point a, Point b)
+        {
+            // https://stackoverflow.com/a/15994225/20894223
+
+            var deltaX = a.X - b.X;
+            var deltaY = -(a.Y - b.Y);                           // I reverse the sign, because on the screen the Y axes
+                                                                 // are reversed with respect to the Cartesian plane.
+            var rad = System.Math.Atan2(deltaX, deltaY);         // radians from -π to +π
+            var degree = ((rad * (180 / System.Math.PI))) + 180; // Atan2 returns a radian value between -π to +π, in degrees -180 to +180.
+                                                                 // To get the angle between 0 and 360 degrees you need to add 180 degrees.
+            return degree;
         }
     }
 }

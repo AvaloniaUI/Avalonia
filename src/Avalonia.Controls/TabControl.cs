@@ -83,8 +83,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -92,8 +92,8 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Dock TabStripPlacement
         {
-            get { return GetValue(TabStripPlacementProperty); }
-            set { SetValue(TabStripPlacementProperty, value); }
+            get => GetValue(TabStripPlacementProperty);
+            set => SetValue(TabStripPlacementProperty, value);
         }
 
         /// <summary>
@@ -110,8 +110,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? ContentTemplate
         {
-            get { return GetValue(ContentTemplateProperty); }
-            set { SetValue(ContentTemplateProperty, value); }
+            get => GetValue(ContentTemplateProperty);
+            set => SetValue(ContentTemplateProperty, value);
         }
 
         /// <summary>
@@ -165,6 +165,11 @@ namespace Avalonia.Controls
         {
             base.PrepareContainerForItemOverride(element, item, index);
 
+            if (element is TabItem tabItem)
+            {
+                tabItem.TabStripPlacement = TabStripPlacement;
+            }
+            
             if (index == SelectedIndex)
             {
                 UpdateSelectedContent(element);
@@ -228,6 +233,8 @@ namespace Avalonia.Controls
         {
             ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
             ItemsPresenterPart?.ApplyTemplate();
+
+            UpdateTabStripPlacement();
 
             // Set TabNavigation to Once on the panel if not already set and
             // forward the TabOnceActiveElement to the panel.
@@ -304,6 +311,23 @@ namespace Avalonia.Controls
                 KeyboardNavigation.SetTabOnceActiveElement(
                     panel,
                     change.GetNewValue<IInputElement?>());
+            }
+        }
+
+        private void UpdateTabStripPlacement()
+        {
+            var controls = ItemsPresenterPart?.Panel?.Children;
+            if (controls is null)
+            {
+                return;
+            }
+
+            foreach (var control in controls)
+            {
+                if (control is TabItem tabItem)
+                {
+                    tabItem.TabStripPlacement = TabStripPlacement;
+                }
             }
         }
     }

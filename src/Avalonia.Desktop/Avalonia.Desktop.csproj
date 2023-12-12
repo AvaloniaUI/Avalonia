@@ -1,17 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-      <PackageId>Avalonia.Desktop</PackageId>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-      <ProjectReference Include="../../src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />      
-      <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
-      <ProjectReference Include="../../src/Avalonia.Native/Avalonia.Native.csproj" />
-      <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
-      <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
+    <ProjectReference Include="../../src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />      
+    <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
+    <ProjectReference Include="../../src/Avalonia.Native/Avalonia.Native.csproj" />
+    <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
+    <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
   </ItemGroup>
-  
+
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\NullableEnable.props" />
 </Project>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -26,13 +26,15 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
+using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
+using static Avalonia.Controls.Platform.Win32SpecificOptions;
 
 namespace Avalonia.Win32
 {
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo, IWin32OptionsTopLevelImpl
     {
         private static readonly List<WindowImpl> s_instances = new();
 
@@ -58,8 +60,6 @@ namespace Avalonia.Win32
         private Thickness _extendedMargins;
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
-        private readonly bool _isUsingComposition;
-        private readonly IBlurHost? _blurHost;
         private WindowResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
 
@@ -72,11 +72,12 @@ namespace Avalonia.Win32
         private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
         private readonly FramebufferManager _framebuffer;
-        private readonly object? _gl;
+        private readonly object? _glSurface;
         private readonly bool _wmPointerEnabled;
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
+        private readonly WindowsInputPane? _inputPane;
         private WndProc _wndProcDelegate;
         private string? _className;
         private IntPtr _hwnd;
@@ -99,6 +100,7 @@ namespace Avalonia.Win32
         private uint _langid;
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
+        private readonly WindowTransparencyLevel _defaultTransparencyLevel;
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
@@ -131,20 +133,10 @@ namespace Avalonia.Win32
                 Decorations = SystemDecorations.Full
             };
 
+            var surfaceFactory = AvaloniaLocator.Current.GetService<IWindowsSurfaceFactory>();
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
-
-            var compositionConnector = AvaloniaLocator.Current.GetService<WinUiCompositorConnection>();
-
-            var isUsingAngleDX11 = glPlatform is D3D11AngleWin32PlatformGraphics;
-            _isUsingComposition = compositionConnector is { } && isUsingAngleDX11;
-
-            DxgiConnection? dxgiConnection = null;
-            var isUsingDxgiSwapchain = false;
-            if (!_isUsingComposition)
-            {
-                dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
-                isUsingDxgiSwapchain = dxgiConnection is { } && isUsingAngleDX11;
-            }
+            UseRedirectionBitmap = surfaceFactory is null || glPlatform is null ||
+                                   !surfaceFactory.RequiresNoRedirectionBitmap;
 
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
@@ -155,34 +147,28 @@ namespace Avalonia.Win32
             {
                 UpdateInputMethod(GetKeyboardLayout(0));
             }
-            
+
             if (glPlatform != null)
             {
-                if (_isUsingComposition)
+                if (surfaceFactory is not null)
                 {
-                    var cgl = compositionConnector!.CreateSurface(this);
-                    _blurHost = cgl;
-                    _gl = cgl;
-                }
-                else if (isUsingDxgiSwapchain)
-                {
-                    var dxgigl = new DxgiSwapchainWindow(dxgiConnection!, this);
-                    _gl = dxgigl;
+                    _glSurface = surfaceFactory.CreateSurface(this);
                 }
                 else
                 {
                     if (glPlatform is D3D11AngleWin32PlatformGraphics or D3D9AngleWin32PlatformGraphics)
-                        _gl = new EglGlPlatformSurface(this);
+                        _glSurface = new EglGlPlatformSurface(this);
                     else if (glPlatform is WglPlatformOpenGlInterface)
-                        _gl = new WglGlPlatformSurface(this);
+                        _glSurface = new WglGlPlatformSurface(this);
                 }
             }
 
             Screen = new ScreenImpl();
             _storageProvider = new Win32StorageProvider(this);
-
-            _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
-            _transparencyLevel = _isUsingComposition ? WindowTransparencyLevel.Transparent : WindowTransparencyLevel.None;
+            _inputPane = Win32Platform.WindowsVersion >= PlatformConstants.Windows10 ? new WindowsInputPane(this) : null;
+            _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
+            _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
+            _transparencyLevel = _defaultTransparencyLevel;
             s_instances.Add(this);
         }
 
@@ -241,6 +227,9 @@ namespace Avalonia.Win32
         }
 
         private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.IsPrimary)?.Scaling ?? 1;
+
+        private ICompositionEffectsSurface? CompositionEffectsSurface => _glSurface as ICompositionEffectsSurface;
+        private bool UseRedirectionBitmap { get; }
 
         public double RenderScaling => _scaling;
 
@@ -354,170 +343,154 @@ namespace Avalonia.Win32
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
+            
+            if (featureType == typeof(IInputPane))
+            {
+                return _inputPane;
+            }
 
             return null;
         }
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            var windowsVersion = Win32Platform.WindowsVersion;
-
             foreach (var level in transparencyLevels)
             {
-                if (!IsSupported(level, windowsVersion))
+                if (!IsSupported(level))
                     continue;
+
                 if (level == TransparencyLevel)
+                {
                     return;
+                }
                 if (level == WindowTransparencyLevel.Transparent)
-                    SetTransparencyTransparent(windowsVersion);
-                else if (level == WindowTransparencyLevel.Blur)
-                    SetTransparencyBlur(windowsVersion);
+                {
+                    if (!SetTransparencyTransparent())
+                        continue;
+                }
                 else if (level == WindowTransparencyLevel.AcrylicBlur)
-                    SetTransparencyAcrylicBlur(windowsVersion);
+                {
+                    if (!SetTransparencyAcrylicBlur())
+                        continue;
+                }
                 else if (level == WindowTransparencyLevel.Mica)
-                    SetTransparencyMica(windowsVersion);
+                {
+                    if (!SetTransparencyMica())
+                        continue;
+                }
 
                 TransparencyLevel = level;
                 return;
             }
 
-            // If we get here, we didn't find a supported level. Use the defualt of Transparent or
-            // None, depending on whether composition is enabled.
-            if (_isUsingComposition)
-            {
-                SetTransparencyTransparent(windowsVersion);
-                TransparencyLevel = WindowTransparencyLevel.Transparent;
-            }
-            else
-            {
-                TransparencyLevel = WindowTransparencyLevel.None;
-            }
+            // If we get here, we didn't find a supported level. Report the default.
+            TransparencyLevel = _defaultTransparencyLevel;
         }
 
-        private bool IsSupported(WindowTransparencyLevel level, Version windowsVersion)
+        private bool IsSupported(WindowTransparencyLevel level)
         {
-            // Only None is suppported when composition is disabled.
-            if (!_isUsingComposition)
-                return level == WindowTransparencyLevel.None;
-
-            // When composition is enabled, None is not supported because the backing visual always
-            // has an alpha channel
+            // None is only supported with redirection bitmap.
+            // Note, it's still possible to have non-transparent window with a fallback background brush.
             if (level == WindowTransparencyLevel.None)
-                return false;
+                return UseRedirectionBitmap;
 
-            // Transparent only supported on Windows 8+.
+            // Transparent is supported either with DwmEnableBlurBehindWindow (win8+) or with NoRedirectionBitmap.
             if (level == WindowTransparencyLevel.Transparent)
-                return windowsVersion >= PlatformConstants.Windows8;
+                return !UseRedirectionBitmap || Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
-            // Blur only supported on Windows 8 and lower.
             if (level == WindowTransparencyLevel.Blur)
-                return windowsVersion < PlatformConstants.Windows10;
+                return CompositionEffectsSurface?.IsBlurSupported(BlurEffect.GaussianBlur) ?? false;
 
-            // Acrylic is supported on Windows >= 10.0.15063.
             if (level == WindowTransparencyLevel.AcrylicBlur)
-                return windowsVersion >= WinUiCompositionShared.MinAcrylicVersion;
+                return CompositionEffectsSurface?.IsBlurSupported(BlurEffect.Acrylic) ?? false;
 
-            // Mica is supported on Windows >= 10.0.22000.
             if (level == WindowTransparencyLevel.Mica)
-                return windowsVersion >= WinUiCompositionShared.MinHostBackdropVersion;
+                return CompositionEffectsSurface?.IsBlurSupported(BlurEffect.MicaDark) ?? false;
 
             return false;
         }
 
-        private void SetTransparencyTransparent(Version windowsVersion)
+        private bool SetTransparencyTransparent()
         {
-            // Transparent only supported with composition on Windows 8+.
-            if (!_isUsingComposition || windowsVersion < PlatformConstants.Windows8)
-                return;
-
-            if (windowsVersion < PlatformConstants.Windows10)
+            if (CompositionEffectsSurface is {} surface)
             {
-                // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
-                // Windows 10, hence using ACCENT_ENABLE_BLURBEHIND to disable blurbehind  ¯\_(ツ)_/¯.
-                // Hey, I'm just porting what was here before.
-                SetAccentState(AccentState.ACCENT_ENABLE_BLURBEHIND);
-                var blurInfo = new DWM_BLURBEHIND(false);
-                DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+                surface.SetBlur(BlurEffect.None);
+                return true;
             }
-
-            SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(BlurEffect.None);
+            else
+            {
+                return SetLegacyTransparency(true);
+            }
         }
 
-        private void SetTransparencyBlur(Version windowsVersion)
+        private bool SetTransparencyAcrylicBlur()
         {
-            // Blur only supported with composition on Windows 8 and lower.
-            if (!_isUsingComposition || windowsVersion >= PlatformConstants.Windows10)
-                return;
-
-            // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
-            // Windows 10.
-            SetAccentState(AccentState.ACCENT_DISABLED);
-            var blurInfo = new DWM_BLURBEHIND(true);
-            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
-        }
-
-        private void SetTransparencyAcrylicBlur(Version windowsVersion)
-        {
-            // Acrylic blur only supported with composition on Windows >= 10.0.15063.
-            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinAcrylicVersion)
-                return;
-
             SetUseHostBackdropBrush(true);
-            _blurHost?.SetBlur(BlurEffect.Acrylic);
+            SetLegacyTransparency(false);
+
+            CompositionEffectsSurface!.SetBlur(BlurEffect.Acrylic);
+            return true;
         }
 
-        private void SetTransparencyMica(Version windowsVersion)
+        /// <summary>
+        /// Sets the transparency mica
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        private bool SetTransparencyMica()
         {
-            // Mica only supported with composition on Windows >= 10.0.22000.
-            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
-                return;
-
             SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(_currentThemeVariant switch
+            SetLegacyTransparency(false);
+            
+            CompositionEffectsSurface!.SetBlur(_currentThemeVariant switch
             {
                 PlatformThemeVariant.Light => BlurEffect.MicaLight,
                 PlatformThemeVariant.Dark => BlurEffect.MicaDark,
                 _ => throw new ArgumentOutOfRangeException()
             });
+            return true;
         }
 
-        private void SetAccentState(AccentState state)
+        private bool SetLegacyTransparency(bool enabled)
         {
-            var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf(accent);
+            if (Win32Platform.WindowsVersion < PlatformConstants.Windows8 || !UseRedirectionBitmap)
+                return false;
+            
+            // On pre-Win8 this method was blurring a window, which is a different from desired behavior.
+            // On win8+ we use this method as a fallback, when WinUI/DComp composition with true transparency isn't available.
+            // Note: there is no guarantee that this behavior won't be changed back to true blur in Win12.
+            // See https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmenableblurbehindwindow#remarks
+            // Also https://github.com/qt/qtbase/blob/fd300f143fd30947bba60a03d614acd2711b635f/src/plugins/platforms/windows/qwindowswindow.cpp#L519
+            var blurInfo = new DWM_BLURBEHIND();
+            blurInfo.fEnable = enabled;
+            blurInfo.dwFlags = DWM_BB.Enable | DWM_BB.BlurRegion;
+            blurInfo.hRgnBlur = CreateRectRgn(0, 0, -1, -1);
 
-            //Some of the AccentState Enum's values have different meanings on Windows 8.x than on Windows 10
-            accent.AccentState = state;
+            var result = DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
 
-            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-            Marshal.StructureToPtr(accent, accentPtr, false);
+            if (blurInfo.hRgnBlur != default)
+            {
+                DeleteObject(blurInfo.hRgnBlur);
+            }
 
-            var data = new WindowCompositionAttributeData();
-            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
-            data.SizeOfData = accentStructSize;
-            data.Data = accentPtr;
-
-            SetWindowCompositionAttribute(_hwnd, ref data);
-            Marshal.FreeHGlobal(accentPtr);
+            return result == 0;
         }
 
-        private void SetUseHostBackdropBrush(bool useHostBackdropBrush)
+        private unsafe bool SetUseHostBackdropBrush(bool useHostBackdropBrush)
         {
             if (Win32Platform.WindowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
-                return;
+                return false;
 
-            unsafe
-            {
-                var pvUseBackdropBrush = useHostBackdropBrush ? 1 : 0;
-                DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
-            }
+            // AcrylicBlur requires window to set DWMWA_USE_HOSTBACKDROPBRUSH flag on Win11+.
+            // It's not necessary on older versions and it's not necessary with Mica brush.
+            
+            var pvUseBackdropBrush = useHostBackdropBrush ? 1 : 0;
+            var result = DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
+            return result == 0;
         }
-
         public IEnumerable<object> Surfaces
-            => _gl is null ?
+            => _glSurface is null ?
                 new object[] { Handle, _framebuffer } :
-                new object[] { Handle, _gl, _framebuffer };
+                new object[] { Handle, _glSurface, _framebuffer };
 
         public PixelPoint Position
         {
@@ -795,7 +768,7 @@ namespace Avalonia.Win32
                     sizeof(int));
                 if (TransparencyLevel == WindowTransparencyLevel.Mica)
                 {
-                    SetTransparencyMica(Win32Platform.WindowsVersion);
+                    SetTransparencyMica();
                 }
             }
         }
@@ -803,7 +776,7 @@ namespace Avalonia.Win32
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
-                _isUsingComposition ? (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0,
+                UseRedirectionBitmap ? 0 : (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP,
                 atom,
                 null,
                 (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int)WindowStyles.WS_CLIPCHILDREN,
@@ -823,7 +796,7 @@ namespace Avalonia.Win32
         private void CreateWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = WndProc;
+            _wndProcDelegate = WndProcMessageHandler;
 
             _className = $"Avalonia-{Guid.NewGuid().ToString()}";
 
@@ -876,6 +849,20 @@ namespace Avalonia.Win32
             }
         }
 
+        private IntPtr WndProcMessageHandler(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            bool handled = false;
+            IntPtr ret = IntPtr.Zero;
+
+            if (WndProcHookCallback is { } callback)
+                ret = callback(hWnd, msg, wParam, lParam, ref handled);
+
+            if (handled)
+                return ret;
+
+            return WndProc(hWnd, msg, wParam, lParam);
+        }
+
         private void CreateDropTarget(IInputRoot inputRoot)
         {
             if (AvaloniaLocator.Current.GetService<IDragDropDevice>() is { } dragDropDevice)
@@ -905,7 +892,7 @@ namespace Avalonia.Win32
                 clientRect.right += windowRect.left;
                 clientRect.top += windowRect.top;
                 clientRect.bottom += windowRect.top;
-                
+
                 _savedWindowInfo.WindowRect = clientRect;
 
                 var current = GetStyle();
@@ -976,7 +963,7 @@ namespace Avalonia.Win32
             }
 
             //using a default margin of 0 when using WinUiComp removes artefacts when resizing. See issue #8316
-            var defaultMargin = _isUsingComposition ? 0 : 1;
+            var defaultMargin = UseRedirectionBitmap ? 1 : 0;
 
             MARGINS margins = new MARGINS();
             margins.cxLeftWidth = defaultMargin;
@@ -1105,6 +1092,8 @@ namespace Avalonia.Win32
                 default:
                     throw new ArgumentException("Invalid WindowState.");
             }
+
+            newWindowProperties.WindowState = state;
 
             UpdateWindowProperties(newWindowProperties);
 
@@ -1256,53 +1245,62 @@ namespace Avalonia.Win32
             // according to the new values already.
             _windowProperties = newProperties;
 
-            if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
+            if (oldProperties.IsFullScreen == newProperties.IsFullScreen)
             {
-                var exStyle = GetExtendedStyle();
+                var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (UseRedirectionBitmap ? 0 : WindowStyles.WS_EX_NOREDIRECTIONBITMAP);
+
+                if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
+                {
+                    if (newProperties.ShowInTaskbar)
+                    {
+                        exStyle |= WindowStyles.WS_EX_APPWINDOW;
+
+                        if (_hiddenWindowIsParent)
+                        {
+                            // Can't enable the taskbar icon by clearing the parent window unless the window
+                            // is hidden. Hide the window and show it again with the same activation state
+                            // when we've finished. Interestingly it seems to work fine the other way.
+                            var shown = IsWindowVisible(_hwnd);
+                            var activated = GetActiveWindow() == _hwnd;
+
+                            if (shown)
+                                Hide();
+
+                            _hiddenWindowIsParent = false;
+                            SetParent(null);
+
+                            if (shown)
+                                Show(activated, false);
+                        }
+                    }
+                    else
+                    {
+                        // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
+                        if (_parent is null)
+                        {
+                            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                            _hiddenWindowIsParent = true;
+                        }
+
+                        exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    }
+                }
 
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
-
-                    if (_hiddenWindowIsParent)
-                    {
-                        // Can't enable the taskbar icon by clearing the parent window unless the window
-                        // is hidden. Hide the window and show it again with the same activation state
-                        // when we've finished. Interestingly it seems to work fine the other way.
-                        var shown = IsWindowVisible(_hwnd);
-                        var activated = GetActiveWindow() == _hwnd;
-
-                        if (shown)
-                            Hide();
-
-                        _hiddenWindowIsParent = false;
-                        SetParent(null);
-
-                        if (shown)
-                            Show(activated, false);
-                    }
                 }
                 else
                 {
-                    // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
-                    if (_parent is null)
-                    {
-                        SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
-                        _hiddenWindowIsParent = true;
-                    }
-
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
 
-                SetExtendedStyle(exStyle);
-            }
+                WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
 
-            WindowStyles style;
-            if ((oldProperties.IsResizable != newProperties.IsResizable) || forceChanges)
-            {
-                style = GetStyle();
+                if (IsWindowVisible(_hwnd))
+                    style |= WindowStyles.WS_VISIBLE;
 
-                if (newProperties.IsResizable)
+                if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
                 {
                     style |= WindowStyles.WS_SIZEFRAME;
                     style |= WindowStyles.WS_MAXIMIZEBOX;
@@ -1313,19 +1311,7 @@ namespace Avalonia.Win32
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
-                SetStyle(style);
-            }
-
-            if (oldProperties.IsFullScreen != newProperties.IsFullScreen)
-            {
-                SetFullScreen(newProperties.IsFullScreen);
-            }
-
-            if ((oldProperties.Decorations != newProperties.Decorations) || forceChanges)
-            {
-                style = GetStyle();
-
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1334,39 +1320,70 @@ namespace Avalonia.Win32
                 else
                 {
                     style &= ~fullDecorationFlags;
+
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
+                    {
+                        style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                    }
+                }
+
+                var windowStates = GetWindowStateStyles();
+                style &= ~WindowStateMask;
+                style |= windowStates;
+
+                _savedWindowInfo.Style = style;
+                _savedWindowInfo.ExStyle = exStyle;
+
+                if (WindowStylesCallback is { } callback)
+                {
+                    var (s, e) = callback((uint)style, (uint)exStyle);
+
+                    style = (WindowStyles)s;
+                    exStyle = (WindowStyles)e;
                 }
 
                 SetStyle(style);
-
-                if (!_isFullScreenActive)
-                {
-                    var margins = new MARGINS
-                    {
-                        cyBottomHeight = 0,
-                        cxRightWidth = 0,
-                        cxLeftWidth = 0,
-                        cyTopHeight = 0
-                    };
-
-                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-
-                    GetClientRect(_hwnd, out var oldClientRect);
-                    var oldClientRectOrigin = new POINT();
-                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                    oldClientRect.Offset(oldClientRectOrigin);
-
-                    var newRect = oldClientRect;
-
-                    if (newProperties.Decorations == SystemDecorations.Full)
-                    {
-                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
-                    }
-
-                    SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
-                        SetWindowPosFlags.SWP_FRAMECHANGED);
-                }
+                SetExtendedStyle(exStyle);
             }
+            else
+                SetFullScreen(newProperties.IsFullScreen);
+
+            if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
+            {
+                var style = GetStyle();
+
+                var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
+
+                var margins = new MARGINS
+                {
+                    cyBottomHeight = margin,
+                    cxRightWidth = margin,
+                    cxLeftWidth = margin,
+                    cyTopHeight = margin
+                };
+
+                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                GetClientRect(_hwnd, out var oldClientRect);
+                var oldClientRectOrigin = new POINT();
+                ClientToScreen(_hwnd, ref oldClientRectOrigin);
+                oldClientRect.Offset(oldClientRectOrigin);
+
+                var newRect = oldClientRect;
+
+                if (newProperties.Decorations == SystemDecorations.Full)
+                {
+                    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                }
+
+                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                    SetWindowPosFlags.SWP_FRAMECHANGED);
+            }
+
+            // Ensure window state if decorations change
+            if (_shown && oldProperties.Decorations != newProperties.Decorations)
+                ShowWindow(WindowState, false);
         }
 
         private const int MF_BYCOMMAND = 0x0;
@@ -1452,6 +1469,12 @@ namespace Avalonia.Win32
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
 
+        /// <inheritdoc/>
+        public CustomWindowStylesCallback? WindowStylesCallback { get; set; }
+
+        /// <inheritdoc/>
+        public CustomWndProcHookCallback? WndProcHookCallback { get; set; }
+
         private ResizeReasonScope SetResizeReason(WindowResizeReason reason)
         {
             var old = _resizeReason;
@@ -1472,6 +1495,7 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
+            public WindowState WindowState;
         }
 
         private struct ResizeReasonScope : IDisposable

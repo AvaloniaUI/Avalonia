@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using static Avalonia.X11.XLib;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
@@ -30,10 +28,13 @@ namespace Avalonia.X11
         public Version XInputVersion { get; }
 
         public IntPtr LastActivityTimestamp { get; set; }
-        public XVisualInfo? TransparentVisualInfo { get; set; }
-        public bool HasXim { get; set; }
-        public bool HasXSync { get; set; }
-        public IntPtr DefaultFontSet { get; set; }
+        public XVisualInfo? TransparentVisualInfo { get; }
+        public bool HasXim { get; }
+        public bool HasXSync { get; }
+
+        public IntPtr DefaultFontSet { get; }
+
+        public bool HasXkb { get; }
 
         [DllImport("libc")]
         private static extern void setlocale(int type, string s);
@@ -123,6 +124,18 @@ namespace Avalonia.X11
             catch
             {
                 //Ignore, XSync is not supported
+            }
+
+            try
+            {
+                var xkbMajor = 1;
+                var xkbMinor = 0;
+                HasXkb = XkbLibraryVersion(ref xkbMajor, ref xkbMinor)
+                    && XkbQueryExtension(display, out _, out _, out _, ref xkbMajor, ref xkbMinor);
+            }
+            catch
+            {
+                // Ignore, XKB is not supported
             }
         }
     }

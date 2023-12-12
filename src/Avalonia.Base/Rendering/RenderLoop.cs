@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Threading;
@@ -16,11 +15,10 @@ namespace Avalonia.Rendering
     /// </remarks>
     internal class RenderLoop : IRenderLoop
     {
-        private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
-        private List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
+        private readonly List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
+        private readonly List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
         private IRenderTimer? _timer;
         private int _inTick;
-        private int _inUpdate;
         
         public static IRenderLoop LocatorAutoInstance
         {

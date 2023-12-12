@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using Avalonia.Browser.Skia;
 using Avalonia.Browser.Storage;
@@ -13,7 +14,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
 [assembly: SupportedOSPlatform("browser")]
@@ -34,8 +34,9 @@ namespace Avalonia.Browser
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
         private readonly ClipboardImpl _clipboard;
         private readonly IInsetsManager? _insetsManager;
+        private readonly IInputPane _inputPane;
 
-        public BrowserTopLevelImpl(AvaloniaView avaloniaView)
+        public BrowserTopLevelImpl(AvaloniaView avaloniaView, JSObject container)
         {
             Surfaces = Enumerable.Empty<object>();
             _avaloniaView = avaloniaView;
@@ -48,6 +49,7 @@ namespace Avalonia.Browser
             _storageProvider = new BrowserStorageProvider();
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
             _clipboard = new ClipboardImpl();
+            _inputPane = new BrowserInputPane(container);
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -131,32 +133,29 @@ namespace Avalonia.Browser
             return false;
         }
 
-        public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
+        public bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
         {
-            if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
-            {
-                if (_inputRoot is { })
-                {
-                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+            if (_inputRoot is null)
+                return false;
 
-                    Input?.Invoke(args);
+            var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
+            var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
+            var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
 
-                    return args.Handled;
-                }
-            }
-            else if (Keycodes.KeyCodes.TryGetValue(key, out avkey))
-            {
-                if (_inputRoot is { })
-                {
-                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+            var args = new RawKeyEventArgs(
+                KeyboardDevice,
+                Timestamp,
+                _inputRoot,
+                type,
+                key,
+                modifiers,
+                physicalKey,
+                keySymbol
+            );
 
-                    Input?.Invoke(args);
+            Input?.Invoke(args);
 
-                    return args.Handled;
-                }
-            }
-
-            return false;
+            return args.Handled;
         }
 
         public bool RawTextEvent(string text)
@@ -276,6 +275,11 @@ namespace Avalonia.Browser
             if (featureType == typeof(IClipboard))
             {
                 return _clipboard;
+            }
+            
+            if (featureType == typeof(IInputPane))
+            {
+                return _inputPane;
             }
 
             return null;

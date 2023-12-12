@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
@@ -15,6 +16,8 @@ namespace Avalonia.Win32.OpenGl.Angle
 {
     internal class AngleWin32EglDisplay : EglDisplay
     {
+        private readonly bool _flexibleSurfaceSupported;
+
         protected override bool DisplayLockIsSharedWithContexts => true;
 
         public static AngleWin32EglDisplay CreateD3D9Display(EglInterface egl)
@@ -22,7 +25,7 @@ namespace Avalonia.Win32.OpenGl.Angle
             var display = egl.GetPlatformDisplayExt(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
                 new[] { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_NONE });
             
-            return new AngleWin32EglDisplay(display, new EglDisplayOptions()
+            return new AngleWin32EglDisplay(display, egl, new EglDisplayOptions()
             {
                 Egl = egl,
                 ContextLossIsDisplayLoss = true,
@@ -35,7 +38,7 @@ namespace Avalonia.Win32.OpenGl.Angle
             var display = egl.GetPlatformDisplayExt(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
                 new[] { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE });
             
-            return new AngleWin32EglDisplay(display, new EglDisplayOptions()
+            return new AngleWin32EglDisplay(display, egl, new EglDisplayOptions()
             {
                 Egl = egl,
                 ContextLossIsDisplayLoss = true,
@@ -43,8 +46,7 @@ namespace Avalonia.Win32.OpenGl.Angle
             }, AngleOptions.PlatformApi.DirectX11);
         }
 
-        public static unsafe AngleWin32EglDisplay CreateD3D11Display(Win32AngleEglInterface egl,
-            bool preferDiscreteAdapter = false)
+        public static unsafe AngleWin32EglDisplay CreateD3D11Display(Win32AngleEglInterface egl)
         {
             var featureLevels = new[]
             {
@@ -62,7 +64,9 @@ namespace Avalonia.Win32.OpenGl.Angle
                 using var factory = MicroComRuntime.CreateProxyFor<IDXGIFactory1>(pDxgiFactory, true);
 
                 void* pAdapter = null;
-                if (preferDiscreteAdapter)
+                // As for now, we only need to redefine default adapter only on ARM64 just in case of Adreno GPU.
+                var redefineDefaultAdapter = RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+                if (redefineDefaultAdapter)
                 {
                     ushort adapterIndex = 0;
                     var adapters = new List<(IDXGIAdapter1 adapter, string name)>();
@@ -77,9 +81,14 @@ namespace Avalonia.Win32.OpenGl.Angle
 
                     if (adapters.Count == 0)
                         throw new OpenGlException("No adapters found");
+
                     chosenAdapter = adapters
-                        .OrderByDescending(x => x.name.Contains("nvidia") ? 2 : x.name.Contains("amd") ? 1 : 0)
-                        .First().adapter.CloneReference();
+                        .OrderByDescending(x =>
+                            // Put adreno in lower priority - it's broken in Avalonia.
+                            x.name.Contains("adreno") ? -1 : 0)
+                        .First().adapter
+                        .CloneReference();
+
                     foreach (var a in adapters)
                         a.adapter.Dispose();
                 }
@@ -125,7 +134,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                     throw OpenGlException.GetFormattedException("eglGetPlatformDisplayEXT", egl);
 
 
-                var rv = new AngleWin32EglDisplay(display,
+                var rv = new AngleWin32EglDisplay(display, egl,
                     new EglDisplayOptions
                     {
                         DisposeCallback = Cleanup,
@@ -148,9 +157,11 @@ namespace Avalonia.Win32.OpenGl.Angle
             }
         }
 
-        private AngleWin32EglDisplay(IntPtr display, EglDisplayOptions options, AngleOptions.PlatformApi platformApi) : base(display, options)
+        private AngleWin32EglDisplay(IntPtr display, EglInterface egl, EglDisplayOptions options, AngleOptions.PlatformApi platformApi) : base(display, options)
         {
             PlatformApi = platformApi;
+            var extensions = egl.QueryString(display, EGL_EXTENSIONS);
+            _flexibleSurfaceSupported = extensions?.Contains("EGL_ANGLE_flexible_surface_compatibility") ?? false;
         }
 
         public AngleOptions.PlatformApi PlatformApi { get; }
@@ -164,18 +175,32 @@ namespace Avalonia.Win32.OpenGl.Angle
             return d3dDeviceHandle;
         }
 
-        public EglSurface WrapDirect3D11Texture( IntPtr handle)
+        public unsafe EglSurface WrapDirect3D11Texture( IntPtr handle)
         {
             if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
-                throw new InvalidOperationException("Current platform API is " + PlatformApi);
-            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_NONE, EGL_NONE });            
+                ThrowInvalidPlatformApi();
+            var attrs = stackalloc[] { EGL_NONE, EGL_NONE };
+            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, attrs);
         }
 
-        public EglSurface WrapDirect3D11Texture(IntPtr handle, int offsetX, int offsetY, int width, int height)
+        public unsafe EglSurface WrapDirect3D11Texture(IntPtr handle, int offsetX, int offsetY, int width, int height)
         {
             if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
-                throw new InvalidOperationException("Current platform API is " + PlatformApi);
-            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_WIDTH, width, EGL_HEIGHT, height, EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE, EGL_TRUE, EGL_TEXTURE_OFFSET_X_ANGLE, offsetX, EGL_TEXTURE_OFFSET_Y_ANGLE, offsetY, EGL_NONE });
+                ThrowInvalidPlatformApi();
+            var attrs = stackalloc[]
+            {
+                EGL_WIDTH, width, EGL_HEIGHT, height, EGL_TEXTURE_OFFSET_X_ANGLE, offsetX,
+                EGL_TEXTURE_OFFSET_Y_ANGLE, offsetY,
+                _flexibleSurfaceSupported ? EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE : EGL_NONE, EGL_TRUE,
+                EGL_NONE
+            };
+            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, attrs);
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ThrowInvalidPlatformApi()
+        {
+            throw new InvalidOperationException("Current platform API is " + PlatformApi);
+        } 
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,6 +10,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -47,7 +50,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -73,7 +76,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -99,7 +102,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding Path=StringProperty}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -131,7 +134,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </ItemsControl>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<ItemsControl>("itemsControl");
+                var textBlock = window.GetControl<ItemsControl>("itemsControl");
 
                 var dataContext = new TestDataContext
                 {
@@ -161,7 +164,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding StaticProperty}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
                 textBlock.DataContext = new TestDataContext();
 
                 Assert.Equal(TestDataContext.StaticProperty, textBlock.Text);
@@ -180,7 +183,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding StringProperty, DataType=local:TestDataContext}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -205,7 +208,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding StringProperty, DataType={x:Type local:TestDataContext}}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -231,7 +234,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding TaskProperty^}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -257,7 +260,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding ObservableProperty^}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 DelayedBinding.ApplyBindings(textBlock);
 
@@ -288,7 +291,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding ListProperty[3]}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -314,7 +317,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding ArrayProperty[3]}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -340,7 +343,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding ObservableCollectionProperty[3]}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -370,10 +373,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock DataContext='{CompiledBinding StringProperty}' Text='{CompiledBinding}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 var dataContext = new TestDataContext
                 {
@@ -399,7 +402,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding NonIntegerIndexerProperty[Test]}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext();
 
@@ -428,7 +431,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding NonIntegerIndexerInterfaceProperty[Test]}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext();
 
@@ -462,7 +465,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Name='target' Content='{CompiledBinding StringProperty}' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 var dataContext = new TestDataContext();
 
@@ -472,9 +475,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
-                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
+                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child!).Text);
             }
         }
 
@@ -496,7 +499,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Window.DataTemplates>
     <ContentControl Name='target' Content='{CompiledBinding}' />
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -514,7 +517,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
     </ContentControl>
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+            }
+        }
+
+        [Fact]
+        public void ReportsMultipleErrorsOnDataContextAndBindingPathErrors()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <ContentControl Content='{CompiledBinding NoDataContext}'
+                    Tag='{CompiledBinding NonExistentProp, DataType=local:TestDataContext}'
+                    Height='{CompiledBinding invalid.}' />
+</Window>";
+                var ex = Assert.Throws<AggregateException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Collection(
+                    ex.InnerExceptions,
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner),
+                    inner => Assert.IsAssignableFrom<XmlException>(inner));
             }
         }
 
@@ -537,7 +562,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </ItemsControl>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ItemsControl>("target");
+                var target = window.GetControl<ItemsControl>("target");
 
                 var dataContext = new TestDataContext();
 
@@ -547,9 +572,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
 
-                Assert.Equal(dataContext.ListProperty[0], (string)((ContentPresenter)target.Presenter.Panel.Children[0]).Content);
+                Assert.Equal(dataContext.ListProperty[0], (string?)((ContentPresenter)target.Presenter.Panel!.Children[0]).Content);
             }
         }
         
@@ -575,8 +600,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         </local:DataGridLikeControl.Columns>
     </local:DataGridLikeControl>
 </Window>");
-                var target = window.FindControl<DataGridLikeControl>("target");
-                var column = target!.Columns.Single();
+                var target = window.GetControl<DataGridLikeControl>("target");
+                var column = target.Columns.Single();
 
                 var dataContext = new TestDataContext();
 
@@ -588,13 +613,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.ApplyTemplate();
 
                 // Assert DataGridLikeColumn.Binding data type.
-                var compiledPath = ((CompiledBindingExtension)column.Binding).Path;
+                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
                 var firstItem = dataContext.ListProperty[0];
-                var textBlockFromTemplate = (TextBlock)column.Template.Build(firstItem);
+                var textBlockFromTemplate = (TextBlock)column.Template!.Build(firstItem)!;
                 textBlockFromTemplate.DataContext = firstItem;
                 Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
             }
@@ -622,8 +647,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         </local:DataGridLikeControl.Columns>
     </local:DataGridLikeControl>
 </Window>");
-                var target = window.FindControl<DataGridLikeControl>("target");
-                var column = target!.Columns.Single();
+                var target = window.GetControl<DataGridLikeControl>("target");
+                var column = target.Columns.Single();
 
                 var dataContext = new TestDataContext();
                 dataContext.ListProperty.Add("Test");
@@ -633,13 +658,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.ApplyTemplate();
 
                 // Assert DataGridLikeColumn.Binding data type.
-                var compiledPath = ((CompiledBindingExtension)column.Binding).Path;
+                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
                 var firstItem = dataContext.ListProperty[0];
-                var textBlockFromTemplate = (TextBlock)column.Template.Build(firstItem);
+                var textBlockFromTemplate = (TextBlock)column.Template!.Build(firstItem)!;
                 textBlockFromTemplate.DataContext = firstItem;
                 Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
             }
@@ -663,7 +688,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         </ItemsControl.DataTemplates>
     </ItemsControl>
 </Window>";
-                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
         
@@ -684,7 +709,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl x:DataType='local:TestDataContext' Name='target' Content='{CompiledBinding}' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 var dataContext = new TestDataContext();
 
@@ -694,9 +719,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
-                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
+                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child!).Text);
             }
         }
         
@@ -717,7 +742,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl x:DataType='local:TestDataContext' Name='target' Content='{CompiledBinding}' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 var dataContext = new TestDataContext();
 
@@ -727,9 +752,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
-                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
+                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child!).Text);
             }
         }
 
@@ -750,7 +775,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl x:DataType='local:TestDataContext' Name='target' Content='{CompiledBinding}' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 var dataContext = new TestDataContext();
 
@@ -760,9 +785,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
-                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
+                Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child!).Text);
             }
         }
         
@@ -782,7 +807,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("text2");
+                var textBlock = window.GetControl<TextBlock>("text2");
 
                 var dataContext = new TestDataContext
                 {
@@ -811,7 +836,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("text2");
+                var textBlock = window.GetControl<TextBlock>("text2");
 
                 var dataContext = new TestDataContext
                 {
@@ -838,10 +863,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding Title, RelativeSource={RelativeSource AncestorType=Window}}' x:Name='text'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<TextBlock>("text");
+                var target = window.GetControl<TextBlock>("text");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 target.ApplyTemplate();
 
                 Assert.Equal("test", target.Text);
@@ -862,10 +887,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding Title, RelativeSource={RelativeSource AncestorType={x:Type Window}}}' x:Name='text'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<TextBlock>("text");
+                var target = window.GetControl<TextBlock>("text");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 target.ApplyTemplate();
 
                 Assert.Equal("test", target.Text);
@@ -980,10 +1005,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding Length, Source=Test}' x:Name='text'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<TextBlock>("text");
+                var target = window.GetControl<TextBlock>("text");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 target.ApplyTemplate();
 
                 Assert.Equal("Test".Length.ToString(), target.Text);
@@ -1007,7 +1032,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 Assert.Equal("foobar", textBlock.Text);
             }
@@ -1031,7 +1056,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 Assert.Equal("foobar", textBlock.Text);
             }
@@ -1056,7 +1081,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 Assert.Equal("foobar", textBlock.Text);
             }
@@ -1082,7 +1107,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 Assert.Equal("foobar", textBlock.Text);
             }
@@ -1102,7 +1127,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 Assert.Equal(Brushes.Red.Color, contentControl.Content);
             }
@@ -1122,7 +1147,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{Binding StringProperty}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -1148,7 +1173,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:CompileBindings='true'>
     <TextBlock Text='{Binding InvalidPath}' Name='textBlock' />
 </Window>";
-                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -1165,7 +1190,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{CompiledBinding $parent.Title}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 Assert.Equal("foo", contentControl.Content);
             }
@@ -1185,11 +1210,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.DataContext = new TestDataContext() { StringProperty = "Foo" };
 
-                Assert.Equal("Foo+Bar", textBlock.Text);
+                Assert.Equal($"Foo+Bar+{CultureInfo.CurrentCulture}", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void SupportConverterWithCulture()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext' x:CompileBindings='True'>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Converter={x:Static local:AppendConverter.Instance}, ConverterCulture=ar-SA}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.DataContext = new TestDataContext() { StringProperty = "Foo" };
+
+                Assert.Equal($"Foo++ar-SA", textBlock.Text);
             }
         }
 
@@ -1205,7 +1252,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:DataType='local:TestDataContext'
         x:CompileBindings='notabool'>
 </Window>";
-                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -1222,7 +1269,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{CompiledBinding $parent.((local:TestDataContext)DataContext)}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var dataContext = new TestDataContext();
 
@@ -1245,7 +1292,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{CompiledBinding $parent.((local:TestDataContext)DataContext)}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var dataContext = "foo";
 
@@ -1268,7 +1315,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{CompiledBinding $parent.((local:TestDataContext)DataContext).StringProperty}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var dataContext = new TestDataContext
                 {
@@ -1294,7 +1341,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{CompiledBinding $parent.DataContext(local:TestDataContext).StringProperty}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var dataContext = new TestDataContext
                 {
@@ -1320,7 +1367,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{CompiledBinding ((local:TestData)ObjectsArrayProperty[0]).StringProperty}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var data = new TestData()
                 {
@@ -1350,7 +1397,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{CompiledBinding $parent.((local:TestDataContext)DataContext).StringProperty}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var dataContext = new TestDataContext
                 {
@@ -1380,7 +1427,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -1406,7 +1453,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding StringFormat=bar-\{0\}}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -1432,7 +1479,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding .}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -1458,7 +1505,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{CompiledBinding Path=., StringFormat=bar-\{0\}}' Name='textBlock' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -1505,10 +1552,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' Text='{CompiledBinding $self.Name}' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.Equal(textBlock.Name, textBlock.Text);
             }
@@ -1532,10 +1579,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.True(button.IsVisible);
 
@@ -1567,12 +1614,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 window.DataContext = new MethodDataContext();
 
-                Assert.IsAssignableFrom(typeof(Action), window.FindControl<ContentControl>("action").Content);
-                Assert.IsAssignableFrom(typeof(Func<int>), window.FindControl<ContentControl>("func").Content);
-                Assert.IsAssignableFrom(typeof(Action<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.FindControl<ContentControl>("action16").Content);
-                Assert.IsAssignableFrom(typeof(Func<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.FindControl<ContentControl>("func16").Content);
-                Assert.True(typeof(Delegate).IsAssignableFrom(window.FindControl<ContentControl>("customvoid").Content.GetType()));
-                Assert.True(typeof(Delegate).IsAssignableFrom(window.FindControl<ContentControl>("customint").Content.GetType()));
+                Assert.IsAssignableFrom(typeof(Action), window.GetControl<ContentControl>("action").Content);
+                Assert.IsAssignableFrom(typeof(Func<int>), window.GetControl<ContentControl>("func").Content);
+                Assert.IsAssignableFrom(typeof(Action<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.GetControl<ContentControl>("action16").Content);
+                Assert.IsAssignableFrom(typeof(Func<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.GetControl<ContentControl>("func16").Content);
+                Assert.True(typeof(Delegate).IsAssignableFrom(window.GetControl<ContentControl>("customvoid").Content!.GetType()));
+                Assert.True(typeof(Delegate).IsAssignableFrom(window.GetControl<ContentControl>("customint").Content!.GetType()));
             }
         }
 
@@ -1589,7 +1636,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button' Command='{CompiledBinding Method}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new MethodAsCommandDataContext();
 
                 button.DataContext = vm;
@@ -1614,7 +1661,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button' Command='{CompiledBinding Method1}' CommandParameter='5'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new MethodAsCommandDataContext();
 
                 button.DataContext = vm;
@@ -1639,7 +1686,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' Text='{CompiledBinding Method}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
                 var vm = new MethodAsCommandDataContext();
 
                 textBlock.DataContext = vm;
@@ -1665,7 +1712,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button' Command='{CompiledBinding Do}' CommandParameter='{CompiledBinding Parameter, Mode=OneTime}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new MethodAsCommandDataContext()
                 {
                     Parameter = commandParameter
@@ -1693,7 +1740,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button' Command='{CompiledBinding Do}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new MethodAsCommandDataContext()
                 {
                     Parameter = null,
@@ -1725,7 +1772,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:DataType='local:TestDataContext'
         X='{CompiledBinding StringProperty}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var compiledPath = ((CompiledBindingExtension)control.X).Path;
+                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
 
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
@@ -1743,7 +1790,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var compiledPath = ((CompiledBindingExtension)control.X).Path;
+                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
 
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
@@ -1762,7 +1809,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml),
                     new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
-                var compiledPath = ((CompiledBindingExtension)control.X).Path;
+                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
 
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
@@ -1785,7 +1832,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ComboBox x:Name='comboBox' ItemsSource='{Binding GenericProperty}' SelectedItem='{Binding GenericProperty.CurrentItem}' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var comboBox = window.FindControl<ComboBox>("comboBox");
+                var comboBox = window.GetControl<ComboBox>("comboBox");
 
                 var dataContext = new TestDataContext();
                 dataContext.GenericProperty.Add(123);
@@ -1812,7 +1859,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' Text='{{Binding DecimalValue, StringFormat=c2}}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext();
                 window.DataContext = dataContext;
@@ -1821,25 +1868,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     , textBlock.GetValue(TextBlock.TextProperty));
             }
         }
-
-        static void Throws(string type, Action cb)
-        {
-            try
-            {
-                cb();
-            }
-            catch (Exception e) when (e.GetType().Name == type)
-            {
-                return;
-            }
-
-            throw new Exception("Expected " + type);
-        }
-
-        static void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
-        static void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
-
-
+        
         static void PerformClick(Button button)
         {
             button.RaiseEvent(new KeyEventArgs
@@ -1860,7 +1889,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public interface IHasProperty
     {
-        string StringProperty { get; set; }
+        string? StringProperty { get; set; }
     }
 
     public interface IHasPropertyDerived : IHasProperty
@@ -1875,34 +1904,34 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     {
         public static IValueConverter Instance { get; } = new AppendConverter();
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => string.Format("{0}+{1}", value, parameter);
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            => string.Format("{0}+{1}+{2}", value, parameter, culture);
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             => throw new NotImplementedException();
 
     }
 
     public class TestData
     {
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
     }
 
     public class TestDataContextBaseClass {}
     
     public class TestDataContext : TestDataContextBaseClass, IHasPropertyDerived, IHasExplicitProperty
     {
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-        public Task<string> TaskProperty { get; set; }
+        public Task<string>? TaskProperty { get; set; }
 
-        public IObservable<string> ObservableProperty { get; set; }
+        public IObservable<string>? ObservableProperty { get; set; }
 
         public ObservableCollection<string> ObservableCollectionProperty { get; set; } = new ObservableCollection<string>();
 
-        public string[] ArrayProperty { get; set; }
+        public string[]? ArrayProperty { get; set; }
 
-        public object[] ObjectsArrayProperty { get; set; }
+        public object[]? ObjectsArrayProperty { get; set; }
 
         public List<string> ListProperty { get; set; } = new List<string>();
 
@@ -1927,10 +1956,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             public string this[string key]
             {
-                get
-                {
-                    return _storage[key];
-                }
+                get => _storage[key];
                 set
                 {
                     _storage[key] = value;
@@ -1942,7 +1968,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public class ListItemCollectionView<T> : List<T>
     {
-        public T CurrentItem { get; set; }
+        public T? CurrentItem { get; set; }
     }
     
     public class MethodDataContext
@@ -1959,20 +1985,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public class MethodAsCommandDataContext : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public string Method() => Value = "Called";
         public string Method1(int i) => Value = $"Called {i}";
         public string Method2(int i, int j) => Value = $"Called {i},{j}";
         public string Value { get; private set; } = "Not called";
 
-        object _parameter;
-        public object Parameter
+        private object? _parameter;
+
+        public object? Parameter
         {
-            get
-            {
-                return _parameter;
-            }
+            get => _parameter;
             set
             {
                 if (_parameter == value)
@@ -1989,7 +2013,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Value = $"Do {parameter}";
         }
 
-        [Metadata.DependsOn(nameof(Parameter))]
+        [DependsOn(nameof(Parameter))]
         public bool CanDo(object parameter)
         {
             return ReferenceEquals(null, Parameter) == false;
@@ -1999,22 +2023,22 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class CustomDataTemplate : IDataTemplate
     {
         [DataType]
-        public Type FancyDataType { get; set; }
+        public Type? FancyDataType { get; set; }
 
         [Content]
         [TemplateContent]
-        public object Content { get; set; }
+        public object? Content { get; set; }
 
-        public bool Match(object data) => FancyDataType?.IsInstanceOfType(data) ?? true;
+        public bool Match(object? data) => FancyDataType?.IsInstanceOfType(data) ?? true;
 
-        public Control Build(object data) => TemplateContent.Load(Content)?.Result;
+        public Control? Build(object? data) => TemplateContent.Load(Content)?.Result;
     }
     
     public class CustomDataTemplateInherit : CustomDataTemplate { }
 
     public class AssignBindingControl : Control
     {
-        [AssignBinding] public IBinding X { get; set; }
+        [AssignBinding] public IBinding? X { get; set; }
     }
 
     public class DataGridLikeControl : Control
@@ -2025,11 +2049,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 x => x.Items,
                 (x, v) => x.Items = v);
 
-        private IEnumerable _items;
-        public IEnumerable Items
+        private IEnumerable? _items;
+
+        public IEnumerable? Items
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => _items;
+            set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         public AvaloniaList<DataGridLikeColumn> Columns { get; } = new();
@@ -2039,9 +2064,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     {
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
-        public IBinding Binding { get; set; }
+        public IBinding? Binding { get; set; }
         
         [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
-        public IDataTemplate Template { get; set; }
+        public IDataTemplate? Template { get; set; }
     }
 }

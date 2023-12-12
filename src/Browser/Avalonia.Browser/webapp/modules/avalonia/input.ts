@@ -105,20 +105,9 @@ export class InputHelper {
     public static subscribeTextEvents(
         element: HTMLInputElement,
         beforeInputCallback: (args: InputEvent, start: number, end: number) => boolean,
-        inputCallback: (type: string, data: string | null) => boolean,
         compositionStartCallback: (args: CompositionEvent) => boolean,
         compositionUpdateCallback: (args: CompositionEvent) => boolean,
         compositionEndCallback: (args: CompositionEvent) => boolean) {
-        const inputHandler = (args: Event) => {
-            const inputEvent = args as InputEvent;
-
-            // todo check cast
-            if (inputCallback(inputEvent.type, inputEvent.data)) {
-                args.preventDefault();
-            }
-        };
-        element.addEventListener("input", inputHandler);
-
         const compositionStartHandler = (args: CompositionEvent) => {
             if (compositionStartCallback(args)) {
                 args.preventDefault();
@@ -160,7 +149,6 @@ export class InputHelper {
         element.addEventListener("compositionend", compositionEndHandler);
 
         return () => {
-            element.removeEventListener("input", inputHandler);
             element.removeEventListener("compositionstart", compositionStartHandler);
             element.removeEventListener("compositionupdate", compositionUpdateHandler);
             element.removeEventListener("compositionend", compositionEndHandler);
@@ -255,6 +243,24 @@ export class InputHelper {
 
     public static getCoalescedEvents(pointerEvent: PointerEvent): PointerEvent[] {
         return pointerEvent.getCoalescedEvents();
+    }
+
+    public static subscribeKeyboardGeometryChange(
+        element: HTMLInputElement,
+        handler: (args: any) => boolean) {
+        if ("virtualKeyboard" in navigator) {
+            // (navigator as any).virtualKeyboard.overlaysContent = true;
+            (navigator as any).virtualKeyboard.addEventListener("geometrychange", (event: any) => {
+                const elementRect = element.getBoundingClientRect();
+                const keyboardRect = event.target.boundingRect as DOMRect;
+                handler({
+                    x: keyboardRect.x - elementRect.x,
+                    y: keyboardRect.y - elementRect.y,
+                    width: keyboardRect.width,
+                    height: keyboardRect.height
+                });
+            });
+        }
     }
 
     public static clearInput(inputElement: HTMLInputElement) {

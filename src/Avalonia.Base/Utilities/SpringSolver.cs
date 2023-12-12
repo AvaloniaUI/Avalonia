@@ -31,11 +31,11 @@ namespace Avalonia.Utilities;
 
 internal struct SpringSolver 
 {
-    private double m_w0;
-    private double m_zeta;
-    private double m_wd;
-    private double m_A;
-    private double m_B;
+    private readonly double m_w0;
+    private readonly double m_zeta;
+    private readonly double m_wd;
+    private readonly double m_A;
+    private readonly double m_B;
 
     /// <summary>
     /// 

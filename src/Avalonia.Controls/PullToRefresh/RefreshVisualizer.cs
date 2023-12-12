@@ -74,10 +74,7 @@ namespace Avalonia.Controls
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "False positive")]
         protected RefreshVisualizerState RefreshVisualizerState
         {
-            get
-            {
-                return _refreshVisualizerState;
-            }
+            get => _refreshVisualizerState;
             private set
             {
                 SetAndRaise(RefreshVisualizerStateProperty, ref _refreshVisualizerState, value);
@@ -90,14 +87,8 @@ namespace Avalonia.Controls
         /// </summary>
         public RefreshVisualizerOrientation Orientation
         {
-            get
-            {
-                return _orientation;
-            }
-            set
-            {
-                SetAndRaise(OrientationProperty, ref _orientation, value);
-            }
+            get => _orientation;
+            set => SetAndRaise(OrientationProperty, ref _orientation, value);
         }
 
         internal PullDirection PullDirection

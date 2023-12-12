@@ -1110,7 +1110,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(19, panel.LastRealizedIndex);
 
             // The selection should be preserved.
-            Assert.Empty(SelectedContainers(target));
+            Assert.Equal(new[] { 1 }, SelectedContainers(target));
             Assert.Equal(1, target.SelectedIndex);
             Assert.Same(items[1], target.SelectedItem);
             Assert.Equal(new[] { 1 }, target.Selection.SelectedIndexes);
@@ -1328,7 +1328,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
                         }.RegisterInNameScope(scope),
                         new ScrollBar
                         {

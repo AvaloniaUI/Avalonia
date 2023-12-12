@@ -93,6 +93,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
         /// <summary>
+        /// Defines the <see cref="CaretBlinkInterval"/> property
+        /// </summary>
+        public static readonly StyledProperty<TimeSpan> CaretBlinkIntervalProperty =
+            AvaloniaProperty.Register<TextBox, TimeSpan>(nameof(CaretBlinkInterval), defaultValue: TimeSpan.FromMilliseconds(500));
+
+        /// <summary>
         /// Defines the <see cref="SelectionStart"/> property
         /// </summary>
         public static readonly StyledProperty<int> SelectionStartProperty =
@@ -318,6 +324,9 @@ namespace Avalonia.Controls
         private int _wordSelectionStart = -1;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
+        private static bool _isHolding;
+        private int _currentClickCount;
+        private bool _isDoubleTapped;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -440,6 +449,13 @@ namespace Avalonia.Controls
             set => SetValue(CaretBrushProperty, value);
         }
 
+        /// <inheritdoc cref="TextPresenter.CaretBlinkInterval"/>
+        public TimeSpan CaretBlinkInterval
+        {
+            get => GetValue(CaretBlinkIntervalProperty);
+            set => SetValue(CaretBlinkIntervalProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets the starting position of the text selected in the TextBox
         /// </summary>
@@ -485,7 +501,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of visible lines.
+        /// Gets or sets the maximum number of characters that the <see cref="TextBox"/> can accept.
+        /// This constraint only applies for manually entered (user-inputted) text.
         /// </summary>
         public int MaxLength
         {
@@ -494,7 +511,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of lines the TextBox can contain
+        /// Gets or sets the maximum number of visible lines to size to.
         /// </summary>
         public int MaxLines
         {
@@ -798,7 +815,17 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
+            }
+
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+
+            if(_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            }
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -806,6 +833,11 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
+        }
+
+        private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            _presenter?.TextSelectionHandleCanvas?.MoveHandlesToSelection();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -1453,9 +1485,10 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
+            if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
+                _currentClickCount = e.ClickCount;
                 var point = e.GetPosition(_presenter);
 
                 _presenter.MoveCaretToPoint(point);
@@ -1491,7 +1524,6 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
-
                         if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
                             selectionStart = StringUtils.PreviousWord(text, caretIndex);
@@ -1519,13 +1551,14 @@ namespace Avalonia.Controls
                 }
             }
 
+            _isDoubleTapped = e.ClickCount == 2;
             e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter == null)
+            if (_presenter == null || _isHolding)
             {
                 return;
             }
@@ -1539,22 +1572,35 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
+                var previousIndex = _presenter.CaretIndex;
+
                 _presenter.MoveCaretToPoint(point);
 
                 var caretIndex = _presenter.CaretIndex;
 
-                var selectionStart = SelectionStart;
-                var selectionEnd = SelectionEnd;
+                if (Math.Abs(caretIndex - previousIndex) == 1)
+                    e.PreventGestureRecognition();
 
-                if (_wordSelectionStart >= 0)
+                if (e.Pointer.Type == PointerType.Mouse)
                 {
-                    UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
 
-                    SetCurrentValue(SelectionStartProperty, selectionStart);
-                    SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    if (_wordSelectionStart >= 0)
+                    {
+                        UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                        SetCurrentValue(SelectionStartProperty, selectionStart);
+                        SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                    }
                 }
                 else
                 {
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
             }
@@ -1598,7 +1644,52 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (e.InitialPressMouseButton == MouseButton.Right)
+            if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
+            {
+                var text = Text;
+                var clickInfo = e.GetCurrentPoint(this);
+                if (text != null && !(clickInfo.Pointer?.Captured is Border))
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
+
+                    if (clickToSelect)
+                    {
+                        if (_wordSelectionStart >= 0)
+                        {
+                            UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                            SetCurrentValue(SelectionStartProperty, selectionStart);
+                            SetCurrentValue(SelectionEndProperty, selectionEnd);
+                        }
+                        else
+                        {
+                            SetCurrentValue(SelectionEndProperty, caretIndex);
+                        }
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionStartProperty, caretIndex);
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                        _wordSelectionStart = -1;
+                    }
+
+                    _presenter.TextSelectionHandleCanvas?.MoveHandlesToSelection();
+                }
+            }
+
+            // Don't update selection if the pointer was held
+            if (_isHolding)
+            {
+                _isHolding = false;
+            }
+            else if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1617,6 +1708,24 @@ namespace Avalonia.Controls
                     SetCurrentValue(CaretIndexProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                     SetCurrentValue(SelectionStartProperty, caretIndex);
+                }
+            }
+            else if (e.Pointer.Type == PointerType.Touch)
+            {
+                if (_currentClickCount == 1)
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                }
+
+                if(SelectionStart != SelectionEnd)
+                {
+                    _presenter.TextSelectionHandleCanvas?.ShowContextMenu();
                 }
             }
 
@@ -1807,6 +1916,28 @@ namespace Avalonia.Controls
         private void MovePageDown()
         {
             _scrollViewer?.PageDown();
+        }
+
+        /// <summary>
+        /// Scroll the <see cref="TextBox"/> to the specified line index.
+        /// </summary>
+        /// <param name="lineIndex">The line index to scroll to.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="lineIndex"/> is less than zero. -or - <paramref name="lineIndex"/> is larger than or equal to the line count.</exception>
+        public void ScrollToLine(int lineIndex)
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (lineIndex < 0 || lineIndex >= _presenter.TextLayout.TextLines.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(lineIndex));
+            }
+
+            var textLine = _presenter.TextLayout.TextLines[lineIndex];
+            _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
+
         }
 
         /// <summary>
