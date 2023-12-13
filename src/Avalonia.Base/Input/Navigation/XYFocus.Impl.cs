@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Avalonia.Collections.Pooled;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input.Navigation;
 using Avalonia.Media;
 using Avalonia.Utilities;
@@ -339,41 +340,42 @@ public partial class XYFocus
         NavigationDirection direction,
         InputElement focusedElement)
     {
-        // InputElement parent = null;
+        InputElement? parent = null;
         // var textElement = focusedElement as TextElement;
         // if (textElement != null)
         // {
         //     parent = textElement.GetContainingFrameworkElement();
         // }
         // else
-        // {
-        //     parent = focusedElement;
-        // }
-        //
-        // while (parent != null)
-        // {
-        //     var element = parent;
-        //     if (element != null && element.IsScroller())
-        //     {
-        //         bool isHorizontallyScrollable = false;
-        //         bool isVerticallyScrollable = false;
-        //         FocusProperties.IsScrollable(element, out isHorizontallyScrollable, out isVerticallyScrollable);
-        //
-        //         bool isHorizontallyScrollableForDirection =
-        //             IsHorizontalNavigationDirection(direction) && isHorizontallyScrollable;
-        //         bool isVerticallyScrollableForDirection =
-        //             IsVerticalNavigationDirection(direction) && isVerticallyScrollable;
-        //
-        //         Debug.Assert(!(isHorizontallyScrollableForDirection && isVerticallyScrollableForDirection));
-        //
-        //         if (isHorizontallyScrollableForDirection || isVerticallyScrollableForDirection)
-        //         {
-        //             return element;
-        //         }
-        //     }
-        //
-        //     parent = (parent as Visual)?.VisualParent as InputElement;
-        // }
+        {
+            parent = focusedElement;
+        }
+        
+        while (parent != null)
+        {
+            var element = parent;
+            if (element is IInternalScroller scrollable)
+            {
+                var isHorizontallyScrollable = scrollable.CanHorizontallyScroll;
+                var isVerticallyScrollable = scrollable.CanVerticallyScroll;
+        
+                var isHorizontallyScrollableForDirection =
+                    direction is NavigationDirection.Left or NavigationDirection.Right
+                    && isHorizontallyScrollable;
+                var isVerticallyScrollableForDirection =
+                    direction is NavigationDirection.Up or NavigationDirection.Down
+                    && isVerticallyScrollable;
+        
+                Debug.Assert(!(isHorizontallyScrollableForDirection && isVerticallyScrollableForDirection));
+        
+                if (isHorizontallyScrollableForDirection || isVerticallyScrollableForDirection)
+                {
+                    return element;
+                }
+            }
+        
+            parent = parent.VisualParent as InputElement;
+        }
 
         return null;
     }

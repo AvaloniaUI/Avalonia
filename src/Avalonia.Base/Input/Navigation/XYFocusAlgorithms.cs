@@ -24,8 +24,8 @@ internal class XYFocusAlgorithms
     {
         double score = 0;
 
-        var primaryAxisDistance = XYFocus.CalculatePrimaryAxisDistance(direction, bounds, candidateBounds);
-        var secondaryAxisDistance = XYFocus.CalculateSecondaryAxisDistance(direction, bounds, candidateBounds);
+        var primaryAxisDistance = CalculatePrimaryAxisDistance(direction, bounds, candidateBounds);
+        var secondaryAxisDistance = CalculateSecondaryAxisDistance(direction, bounds, candidateBounds);
 
         if (primaryAxisDistance >= 0)
         {
@@ -44,7 +44,7 @@ internal class XYFocusAlgorithms
                 potential = (candidateBounds.Left, candidateBounds.Right);
             }
 
-            if (!considerSecondaryAxis || XYFocus.CalculatePercentInShadow(reference, potential) != 0)
+            if (!considerSecondaryAxis || CalculatePercentInShadow(reference, potential) != 0)
             {
                 secondaryAxisDistance = 0;
             }
@@ -85,16 +85,16 @@ internal class XYFocusAlgorithms
             potential = (candidateBounds.Left, candidateBounds.Right);
         }
 
-        primaryAxisDistance = XYFocus.CalculatePrimaryAxisDistance(direction, bounds, candidateBounds);
-        secondaryAxisDistance = XYFocus.CalculateSecondaryAxisDistance(direction, bounds, candidateBounds);
+        primaryAxisDistance = CalculatePrimaryAxisDistance(direction, bounds, candidateBounds);
+        secondaryAxisDistance = CalculateSecondaryAxisDistance(direction, bounds, candidateBounds);
 
         if (primaryAxisDistance >= 0)
         {
-            percentInShadow = XYFocus.CalculatePercentInShadow(reference, potential);
+            percentInShadow = CalculatePercentInShadow(reference, potential);
 
             if (percentInShadow >= INSHADOWTHRESHOLD_FORSECONDARYAXIS)
             {
-                percentInManifoldShadow = XYFocus.CalculatePercentInShadow(currentManifold, potential);
+                percentInManifoldShadow = CalculatePercentInShadow(currentManifold, potential);
                 secondaryAxisDistance = maxDistance;
             }
 
@@ -124,12 +124,12 @@ internal class XYFocusAlgorithms
     {
         var (vManifold, hManifold) = (manifolds.VManifold, manifolds.HManifold);
 
-        if (vManifold.Item2 < 0)
+        if (vManifold.Right < 0)
         {
             vManifold = (bounds.Left, bounds.Right);
         }
 
-        if (hManifold.Item2 < 0)
+        if (hManifold.Bottom < 0)
         {
             hManifold = (bounds.Top, bounds.Bottom);
         }
@@ -137,11 +137,11 @@ internal class XYFocusAlgorithms
         if (direction == NavigationDirection.Left || direction == NavigationDirection.Right)
         {
             hManifold = (
-                Math.Max(Math.Max(newFocusBounds.Top, bounds.Top), hManifold.Item1),
-                Math.Min(Math.Min(newFocusBounds.Bottom, bounds.Bottom), hManifold.Item2));
+                Math.Max(Math.Max(newFocusBounds.Top, bounds.Top), hManifold.Top),
+                Math.Min(Math.Min(newFocusBounds.Bottom, bounds.Bottom), hManifold.Bottom));
 
             // It's possible to get into a situation where the newFocusedElement to the right / left has no overlap with the current edge.
-            if (hManifold.Item2 <= hManifold.Item1)
+            if (hManifold.Bottom <= hManifold.Top)
             {
                 hManifold = (newFocusBounds.Top, newFocusBounds.Bottom);
             }
@@ -151,11 +151,11 @@ internal class XYFocusAlgorithms
         else if (direction == NavigationDirection.Up || direction == NavigationDirection.Down)
         {
             vManifold = (
-                Math.Max(Math.Max(newFocusBounds.Left, bounds.Left), vManifold.Item1),
-                Math.Min(Math.Min(newFocusBounds.Right, bounds.Right), vManifold.Item2));
+                Math.Max(Math.Max(newFocusBounds.Left, bounds.Left), vManifold.Left),
+                Math.Min(Math.Min(newFocusBounds.Right, bounds.Right), vManifold.Right));
 
             // It's possible to get into a situation where the newFocusedElement to the right / left has no overlap with the current edge.
-            if (vManifold.Item2 <= vManifold.Item1)
+            if (vManifold.Right <= vManifold.Left)
             {
                 vManifold = (newFocusBounds.Left, newFocusBounds.Right);
             }
@@ -281,11 +281,86 @@ internal class XYFocusAlgorithms
                || MathUtilities.IsEntirelyContained(4, candidateAsPoints, 4, cone)
                || MathUtilities.IsEntirelyContained(4, cone, 4, candidateAsPoints);
     }
+    
+        private static double CalculatePrimaryAxisDistance(
+        NavigationDirection direction,
+        Rect bounds,
+        Rect candidateBounds)
+    {
+        double primaryAxisDistance = -1;
+        var isOverlapping = bounds.Intersects(candidateBounds);
+
+        if (bounds == candidateBounds) return -1; // We shouldn't be calculating the distance from ourselves
+
+        if (direction == NavigationDirection.Left
+            && (candidateBounds.Right <= bounds.Left || (isOverlapping && candidateBounds.Left <= bounds.Left)))
+            primaryAxisDistance = Math.Abs(bounds.Left - candidateBounds.Right);
+        else if (direction == NavigationDirection.Right
+                 && (candidateBounds.Left >= bounds.Right || (isOverlapping && candidateBounds.Right >= bounds.Right)))
+            primaryAxisDistance = Math.Abs(candidateBounds.Left - bounds.Right);
+        else if (direction == NavigationDirection.Up
+                 && (candidateBounds.Bottom <= bounds.Top || (isOverlapping && candidateBounds.Top <= bounds.Top)))
+            primaryAxisDistance = Math.Abs(bounds.Top - candidateBounds.Bottom);
+        else if (direction == NavigationDirection.Down
+                 && (candidateBounds.Top >= bounds.Bottom || (isOverlapping && candidateBounds.Bottom >= bounds.Bottom)))
+            primaryAxisDistance = Math.Abs(candidateBounds.Top - bounds.Bottom);
+
+        return primaryAxisDistance;
+    }
+
+    private static double CalculateSecondaryAxisDistance(
+        NavigationDirection direction,
+        Rect bounds,
+        Rect candidateBounds)
+    {
+        double secondaryAxisDistance;
+
+        if (direction == NavigationDirection.Left || direction == NavigationDirection.Right)
+            // calculate secondary axis distance for the case where the element is not in the shadow
+            secondaryAxisDistance = candidateBounds.Top < bounds.Top ?
+                Math.Abs(bounds.Top - candidateBounds.Bottom) :
+                Math.Abs(candidateBounds.Top - bounds.Bottom);
+        else
+            // calculate secondary axis distance for the case where the element is not in the shadow
+            secondaryAxisDistance = candidateBounds.Left < bounds.Left ?
+                Math.Abs(bounds.Left - candidateBounds.Right) :
+                Math.Abs(candidateBounds.Left - bounds.Right);
+
+        return secondaryAxisDistance;
+    }
+
+    /// Calculates the percentage of the potential element that is in the shadow of the reference element.
+    /// In other words, this method calculates percentage overlap of two elements ranges (top+bottom or left+right).
+    private static double CalculatePercentInShadow(
+        (double first, double second) referenceManifold,
+        (double first, double second) potentialManifold)
+    {
+        if (referenceManifold.first > potentialManifold.second || referenceManifold.second <= potentialManifold.first)
+            // Potential is not in the reference's shadow.
+            return 0;
+
+        var shadow = Math.Min(referenceManifold.second, potentialManifold.second) -
+                     Math.Max(referenceManifold.first, potentialManifold.first);
+        shadow = Math.Abs(shadow);
+
+        var potentialEdgeLength = Math.Abs(potentialManifold.second - potentialManifold.first);
+        var referenceEdgeLength = Math.Abs(referenceManifold.second - referenceManifold.first);
+
+        var comparisonEdgeLength = referenceEdgeLength;
+
+        if (comparisonEdgeLength >= potentialEdgeLength) comparisonEdgeLength = potentialEdgeLength;
+
+        double percentInShadow = 1;
+
+        if (comparisonEdgeLength != 0) percentInShadow = Math.Min(shadow / comparisonEdgeLength, 1.0);
+
+        return percentInShadow;
+    }
 
     internal class XYFocusManifolds
     {
-        public (double, double) VManifold { get; set; }
-        public (double, double) HManifold { get; set; }
+        public (double Left, double Right) VManifold { get; set; }
+        public (double Top, double Bottom) HManifold { get; set; }
 
         public XYFocusManifolds()
         {

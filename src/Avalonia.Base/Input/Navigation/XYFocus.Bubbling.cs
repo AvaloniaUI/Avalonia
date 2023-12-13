@@ -8,7 +8,7 @@ namespace Avalonia.Input;
 
 public partial class XYFocus
 {
-    internal static InputElement? GetDirectionOverride(
+    private static InputElement? GetDirectionOverride(
         InputElement element,
         InputElement? searchRoot,
         NavigationDirection direction,
@@ -35,7 +35,7 @@ public partial class XYFocus
         return null;
     }
 
-    internal static InputElement? TryXYFocusBubble(
+    private static InputElement? TryXYFocusBubble(
         InputElement element,
         InputElement? candidate,
         InputElement? searchRoot,
@@ -61,7 +61,7 @@ public partial class XYFocus
         return nextFocusableElement;
     }
 
-    internal static InputElement? GetDirectionOverrideRoot(
+    private static InputElement? GetDirectionOverrideRoot(
         InputElement element,
         InputElement? searchRoot,
         NavigationDirection direction)
@@ -76,18 +76,17 @@ public partial class XYFocus
         return root;
     }
 
-    internal static XYFocusNavigationStrategy GetStrategy(
+    private static XYFocusNavigationStrategy GetStrategy(
         InputElement element,
         NavigationDirection direction,
-        XYFocusOptions.XYFocusNavigationStrategyOverride navigationStrategyOverride)
+        XYFocusNavigationStrategy? navigationStrategyOverride)
     {
-        var isAutoOverride = (navigationStrategyOverride == XYFocusOptions.XYFocusNavigationStrategyOverride.Auto);
-        var isNavigationStrategySpecified = (navigationStrategyOverride != XYFocusOptions.XYFocusNavigationStrategyOverride.None) && !isAutoOverride;
+        var isAutoOverride = navigationStrategyOverride == XYFocusNavigationStrategy.Auto;
 
-        if (isNavigationStrategySpecified)
+        if (navigationStrategyOverride.HasValue && !isAutoOverride)
         {
             // We can cast just by offsetting values because we have ensured that the XYFocusStrategy enums offset as expected
-            return (XYFocusNavigationStrategy)(int)(navigationStrategyOverride - 1);
+            return (XYFocusNavigationStrategy)(int)(navigationStrategyOverride.Value - 1);
         }
         else if (isAutoOverride && element.Parent is InputElement parent)
         {
