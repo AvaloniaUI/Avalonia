@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -13,7 +12,7 @@ namespace Avalonia.Build.Tasks
         public bool Execute()
         {
             Enum.TryParse(ReportImportance, true, out MessageImportance outputImportance);
-            
+
             var outputPath = AssemblyFile.GetMetadata(AvaloniaCompileOutputMetadataName);
             var refOutputPath = RefAssemblyFile?.GetMetadata(AvaloniaCompileOutputMetadataName);
 
@@ -38,21 +37,27 @@ namespace Avalonia.Build.Tasks
             if (res.Success && !res.WrittenFile)
             {
                 // To simplify incremental build checks, copy the input files to the expected output locations even if the Xaml compiler didn't do anything.
-                File.Copy(AssemblyFile.ItemSpec, outputPath, overwrite: true);
-                File.Copy(Path.ChangeExtension(AssemblyFile.ItemSpec, ".pdb"), Path.ChangeExtension(outputPath, ".pdb"), overwrite: true);
+                CopyAndTouch(AssemblyFile.ItemSpec, outputPath);
+                CopyAndTouch(Path.ChangeExtension(AssemblyFile.ItemSpec, ".pdb"), Path.ChangeExtension(outputPath, ".pdb"));
 
                 if (!string.IsNullOrEmpty(refOutputPath))
                 {
-                    File.Copy(RefAssemblyFile.ItemSpec, refOutputPath, overwrite: true);
+                    CopyAndTouch(RefAssemblyFile.ItemSpec, refOutputPath);
                 }
             }
 
             return res.Success;
         }
-        
+
+        private static void CopyAndTouch(string source, string destination)
+        {
+            File.Copy(source, destination, overwrite: true);
+            File.SetLastWriteTimeUtc(destination, DateTime.UtcNow);
+        }
+
         [Required]
         public string ProjectDirectory { get; set; }
-        
+
         [Required]
         public ITaskItem AssemblyFile { get; set; }
 
@@ -63,9 +68,9 @@ namespace Avalonia.Build.Tasks
         public bool VerifyIl { get; set; }
 
         public bool DefaultCompileBindings { get; set; }
-        
+
         public bool SkipXamlCompilation { get; set; }
-        
+
         public string AssemblyOriginatorKeyFile { get; set; }
         public bool SignAssembly { get; set; }
         public bool DelaySign { get; set; }
@@ -78,7 +83,7 @@ namespace Avalonia.Build.Tasks
         public bool DebuggerLaunch { get; set; }
 
         public bool VerboseExceptions { get; set; }
-        
+
         public ITaskItem[] AnalyzerConfigFiles { get; set; }
     }
 }
