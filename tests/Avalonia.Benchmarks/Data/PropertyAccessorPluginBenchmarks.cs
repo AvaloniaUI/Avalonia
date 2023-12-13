@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Data.Core.Plugins;
-using Avalonia.Data.Core.Plugins.Reflection;
 using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Data

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
-using Avalonia.Data.Core.Plugins.Reflection;
 using Avalonia.UnitTests;
 using Xunit;
 

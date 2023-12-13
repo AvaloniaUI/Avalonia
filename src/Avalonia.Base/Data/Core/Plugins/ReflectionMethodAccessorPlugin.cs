@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Avalonia.Data.Core.Plugins.Reflection
+namespace Avalonia.Data.Core.Plugins
 {
     [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
     internal class ReflectionMethodAccessorPlugin : IPropertyAccessorPlugin

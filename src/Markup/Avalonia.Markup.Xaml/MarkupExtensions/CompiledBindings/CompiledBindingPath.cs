@@ -5,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Plugins;
-using Avalonia.Data.Core.Plugins.Reflection;
 using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings

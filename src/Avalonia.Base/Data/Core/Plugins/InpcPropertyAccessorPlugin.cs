@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia.Utilities;
 
-namespace Avalonia.Data.Core.Plugins.Reflection
+namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
     /// Reads a property from a standard C# object that optionally supports the

@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
-namespace Avalonia.Data.Core.Plugins.Reflection
+namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
     /// Validates properties on that have <see cref="ValidationAttribute"/>s.

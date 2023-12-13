@@ -1,5 +1,5 @@
 ﻿using System;
-using Avalonia.Data.Core.Plugins.Reflection;
+using Avalonia.Data.Core.Plugins;
 using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Data

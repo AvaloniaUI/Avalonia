@@ -6,7 +6,7 @@ using Avalonia.Controls.Converters;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.Data.Core.Plugins.Reflection;
+using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
