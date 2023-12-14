@@ -41,9 +41,6 @@
         </Canvas>
       </StackPanel>
     </TabItem>
-    <TabItem Header="Tab Focus">
-      
-    </TabItem>
   </TabControl>
 </UserControl>
 
