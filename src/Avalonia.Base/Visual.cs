@@ -138,6 +138,7 @@ namespace Avalonia
                 HasMirrorTransformProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
+            IsVisibleProperty.Changed.Subscribe(IsVisibleChanged);
         }
 
         /// <summary>
@@ -486,7 +487,9 @@ namespace Avalonia
                 mutableTransform.Changed += RenderTransformChanged;
             }
 
+            EnableAnimations();
             EnableTransitions();
+            
             if (_visualRoot.Renderer is IRendererWithCompositor compositingRenderer)
             {
                 AttachToCompositor(compositingRenderer.Compositor);
@@ -528,6 +531,7 @@ namespace Avalonia
                 mutableTransform.Changed -= RenderTransformChanged;
             }
 
+            DisableAnimations();
             DisableTransitions();
             OnDetachedFromVisualTree(e);
             DetachFromCompositor();
@@ -649,6 +653,60 @@ namespace Avalonia
             
             sender?.InvalidateVisual();
             parent?.VisualRoot?.Renderer.RecalculateChildren(parent);
+        }
+        
+        /// <summary>
+        /// Called when the <see cref="IsVisible"/> property changes on any control.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is not Visual visual) return;
+            
+            if (visual.IsEffectivelyVisible)
+            {
+                visual.EnableAnimations();
+            }
+            else
+            {
+                visual.DisableAnimations();
+            }
+        }
+        
+        internal void EnableAnimations()
+        {
+            if (!_animationsEnabled)
+            {
+                _animationsEnabled = true;
+                
+                if (animationsStateSubject is { } ds)
+                {
+                    ds.OnNext(true);
+                }
+                
+                foreach (var child in this.GetVisualDescendants())
+                {
+                    child.EnableAnimations();
+                }
+            }
+        }
+
+        internal void DisableAnimations()
+        {
+            if (_animationsEnabled)
+            {
+                _animationsEnabled = false;
+
+                if (animationsStateSubject is { } ds)
+                {
+                    ds.OnNext(false);
+                }
+
+                foreach (var child in this.GetVisualDescendants())
+                {
+                    child.DisableAnimations();
+                }
+            }
         }
 
         /// <summary>

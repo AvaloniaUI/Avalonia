@@ -275,16 +275,20 @@ namespace Avalonia.Animation
         internal IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
+            
+            var overrideSubject =  new LightweightSubject<bool>();
+            control.animationsStateSubject = overrideSubject;
+
             if (animators.Count == 1)
             {
-                var subscription = animators[0].Apply(this, control, clock, match, onComplete);
+                var subscription = animators[0].Apply(this, control, clock, match, overrideSubject, onComplete);
 
                 if (subscription is not null)
                 {
                     subscriptions.Add(subscription);
                 }
             }
-            else
+            else 
             {
                 var completionTasks = onComplete != null ? new List<Task>() : null;
                 foreach (IAnimator animator in animators)
@@ -297,7 +301,7 @@ namespace Avalonia.Animation
                         completionTasks!.Add(tcs.Task);
                     }
 
-                    var subscription = animator.Apply(this, control, clock, match, animatorOnComplete);
+                    var subscription = animator.Apply(this, control, clock, match, overrideSubject,animatorOnComplete);
 
                     if (subscription is not null)
                     {
@@ -314,7 +318,9 @@ namespace Avalonia.Animation
                             );
                 }
             }
-            return new CompositeDisposable(subscriptions);
+            
+            var disposables = new CompositeDisposable(subscriptions);
+            return disposables;
         }
 
         public Task RunAsync(Animatable control, CancellationToken cancellationToken = default) =>

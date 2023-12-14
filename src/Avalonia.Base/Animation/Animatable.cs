@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Data;
+using Avalonia.Reactive;
 
 #nullable enable
 
@@ -30,6 +31,10 @@ namespace Avalonia.Animation
         private bool _isSubscribedToTransitionsCollection = false;
         private Dictionary<ITransition, TransitionState>? _transitionState;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
+        
+        protected bool _animationsEnabled = true;
+        internal LightweightSubject<bool>? animationsStateSubject;
+        
         private NotifyCollectionChangedEventHandler TransitionsCollectionChangedHandler => 
             _collectionChanged ??= TransitionsCollectionChanged;
 

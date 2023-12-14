@@ -14,9 +14,10 @@ namespace Avalonia.Animation.Animators
         DoubleAnimator? _doubleAnimator;
 
         /// <inheritdoc/>
-        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> obsMatch, Action? onComplete)
+        public override IDisposable? Apply(Animation animation, Animatable target, IClock? clock,
+            IObservable<bool> match, IObservable<bool> state, Action? onComplete)
         {
-            var ctrl = (Visual)control;
+            var ctrl = (Visual)target;
 
             if (Property is null)
             {
@@ -65,7 +66,7 @@ namespace Avalonia.Animation.Animators
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
+                    return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? target.Clock, match, state, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -74,19 +75,19 @@ namespace Avalonia.Animation.Animators
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return _doubleAnimator.Apply(animation, transform, clock ?? control.Clock, obsMatch, onComplete);
+                            return _doubleAnimator.Apply(animation, transform, clock ?? target.Clock, match, state, onComplete);
                         }
                     }
                 }
 
                 Logger.TryGet(LogEventLevel.Warning, LogArea.Animations)?.Log(
-                    control,
-                    $"Cannot find the appropriate transform: \"{Property.OwnerType}\" in {control}.");
+                    target,
+                    $"Cannot find the appropriate transform: \"{Property.OwnerType}\" in {target}.");
             }
             else
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.Animations)?.Log(
-                    control,
+                    target,
                     $"Cannot apply animation: Target property owner {Property.OwnerType} is not a Transform object.");
             }
             return null;

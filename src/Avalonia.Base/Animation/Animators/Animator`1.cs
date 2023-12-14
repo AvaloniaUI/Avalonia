@@ -17,9 +17,10 @@ namespace Avalonia.Animation.Animators
         public AvaloniaProperty? Property { get; set; }
 
         /// <inheritdoc/>
-        public virtual IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
+        public virtual IDisposable? Apply(Animation animation, Animatable target, IClock? clock,
+            IObservable<bool> match, IObservable<bool> state, Action? onComplete)
         {
-            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
+            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, target, clock, state, onComplete);
             return new CompositeDisposable(match.Subscribe(subject), subject);
         }
 

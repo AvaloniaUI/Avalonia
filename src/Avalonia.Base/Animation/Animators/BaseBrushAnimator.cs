@@ -37,21 +37,22 @@ namespace Avalonia.Animation.Animators
         }
 
         /// <inheritdoc/>
-        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock,
-            IObservable<bool> match, Action? onComplete)
+        public override IDisposable? Apply(Animation animation, Animatable target, IClock? clock,
+            IObservable<bool> match,
+            IObservable<bool> state, Action? onComplete)
         {
             if (TryCreateCustomRegisteredAnimator(out var animator)
                 || TryCreateGradientAnimator(out animator)
                 || TryCreateSolidColorBrushAnimator(out animator))
             {
-                return animator.Apply(animation, control, clock, match, onComplete);
+                return animator.Apply(animation, target, clock, match, state, onComplete);
             }
 
             Logger.TryGet(LogEventLevel.Error, LogArea.Animations)?.Log(
                 this,
                 "The animation's keyframe value types set is not supported.");
 
-            return base.Apply(animation, control, clock, match, onComplete);
+            return base.Apply(animation, target, clock, match, state, onComplete);
         }
 
         /// <summary>

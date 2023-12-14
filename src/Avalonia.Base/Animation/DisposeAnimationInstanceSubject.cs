@@ -16,14 +16,19 @@ namespace Avalonia.Animation
         private readonly Action? _onComplete;
         private readonly IClock? _clock;
 
-        public DisposeAnimationInstanceSubject(Animator<T> animator, Animation animation, Animatable control, IClock? clock, Action? onComplete)
+        public DisposeAnimationInstanceSubject(Animator<T> animator,
+            Animation animation, Animatable control, IClock? clock, IObservable<bool> state, Action? onComplete)
         {
             this._animator = animator;
             this._animation = animation;
             this._control = control;
             this._onComplete = onComplete;
             this._clock = clock;
+
+            // TODO: this causes weird bugs.
+            state.Subscribe(this);
         }
+        
         public void Dispose()
         {
             _lastInstance?.Dispose();
@@ -39,7 +44,7 @@ namespace Avalonia.Animation
             _lastInstance = null;
         }
 
-        void IObserver<bool>.OnNext(bool matchVal)
+        public void OnNext(bool matchVal)
         {
             if (matchVal != _lastMatch)
             {
