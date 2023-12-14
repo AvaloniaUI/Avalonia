@@ -1,17 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Data.Core.Parsers;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -36,8 +35,16 @@ public abstract partial class BindingExpressionTests
             UpdateSourceTrigger updateSourceTrigger)
         {
             var target = new TargetClass { DataContext = dataContext };
-            var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression, enableDataValidation).ToList();
+            var (path, resolver) = BindingPathFromExpressionBuilder.Build(expression);
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
+            var nodes = new List<ExpressionNode>();
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                var reader = new CharacterReader(path.AsSpan());
+                var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
+                ExpressionNodeFactory.CreateFromAst(astNodes, resolver, null, nodes, out _);
+            }
 
             if (!source.HasValue)
                 nodes.Insert(0, new DataContextNode());
