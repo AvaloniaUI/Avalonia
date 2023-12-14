@@ -23,6 +23,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     private readonly Action _checkSignaledAction;
     private readonly Action _wakeUpLoopAction;
     private readonly IntPtr _timer;
+    private readonly IntPtr _mainLoop;
     private Thread? _loopThread;
     private bool _backgroundProcessingRequested, _signaled;
 
@@ -33,17 +34,18 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
         {
             // This is needed to wakeup the loop if we are called from inside of BeforeWait hook
         };
+        _mainLoop = Interop.CFRunLoopGetMain();
 
         var observer = Interop.CFRunLoopObserverCreate(IntPtr.Zero,
             Interop.CFOptionFlags.kCFRunLoopAfterWaiting | Interop.CFOptionFlags.kCFRunLoopBeforeSources |
             Interop.CFOptionFlags.kCFRunLoopBeforeWaiting,
             true, 0, ObserverCallback, IntPtr.Zero);
-        Interop.CFRunLoopAddObserver(Interop.CFRunLoopGetMain(), observer, Interop.kCFRunLoopCommonModes);
+        Interop.CFRunLoopAddObserver(_mainLoop, observer, Interop.kCFRunLoopDefaultMode);
 
         _timer = Interop.CFRunLoopTimerCreate(IntPtr.Zero,
             Interop.CFAbsoluteTimeGetCurrent() + DistantFutureInterval,
             DistantFutureInterval, 0, 0, TimerCallback, IntPtr.Zero);
-        Interop.CFRunLoopAddTimer(Interop.CFRunLoopGetMain(), _timer, Interop.kCFRunLoopCommonModes);
+        Interop.CFRunLoopAddTimer(_mainLoop, _timer, Interop.kCFRunLoopDefaultMode);
     }
 
     public event Action? Signaled;

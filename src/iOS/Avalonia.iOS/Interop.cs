@@ -11,7 +11,7 @@ namespace Avalonia.iOS;
 internal class Interop
 {
     internal const string CoreFoundationLibrary = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";
-    internal static NativeHandle kCFRunLoopCommonModes = CFString.CreateNative("kCFRunLoopCommonModes");
+    internal static NativeHandle kCFRunLoopDefaultMode = CFString.CreateNative("kCFRunLoopDefaultMode");
 
     [Flags]
     internal enum CFOptionFlags : ulong
