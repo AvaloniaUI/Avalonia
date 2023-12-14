@@ -91,7 +91,8 @@ public partial class XYFocus
         {
             FocusedElementBounds = bounds,
             ShouldConsiderXYFocusKeyboardNavigation = GetKeyboardNavigationEnabled(inputElement),
-            UpdateManifold = true
+            UpdateManifold = true,
+            SearchRoot = inputElement.GetVisualRoot() as InputElement
         });
     }
 

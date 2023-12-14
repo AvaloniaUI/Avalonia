@@ -29,6 +29,8 @@ public partial class XYFocus
                 if (searchRoot != null &&
                     !searchRoot.IsVisualAncestorOf(overrideElement))
                     return null;
+
+                return overrideElement;
             }
         }
 
@@ -50,11 +52,10 @@ public partial class XYFocus
         if (directionOverrideRoot != null)
         {
             var isAncestor = directionOverrideRoot.IsVisualAncestorOf(candidate);
-            var rootOverride = GetDirectionOverride(directionOverrideRoot, searchRoot, direction);
-
-            if (rootOverride != null && !isAncestor)
+            if (!isAncestor)
             {
-                nextFocusableElement = rootOverride;
+                nextFocusableElement = GetDirectionOverride(directionOverrideRoot, searchRoot, direction)
+                                       ?? nextFocusableElement;
             }
         }
 
