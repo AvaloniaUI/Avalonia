@@ -57,25 +57,6 @@ public abstract partial class BindingExpressionTests
             target.GetValueStore().AddBinding(targetProperty, bindingExpression);
             return (target, bindingExpression);
         }
-
-        private protected override BindingExpression CreateTargetLegacy<TIn, TOut>(
-            TIn data,
-            Expression<Func<TIn, TOut>> expression,
-            IValueConverter? converter = null,
-            object? converterParameter = null,
-            bool enableDataValidation = false,
-            Optional<object?> fallbackValue = default,
-            object? targetNullValue = null)
-        {
-            return BindingExpression.Create(
-                data,
-                expression,
-                converter: converter,
-                converterParameter: converterParameter,
-                enableDataValidation: enableDataValidation,
-                fallbackValue: fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue,
-                targetNullValue: targetNullValue);
-        }
     }
 
     public class Compiled : BindingExpressionTests
@@ -116,29 +97,6 @@ public abstract partial class BindingExpressionTests
                 updateSourceTrigger: updateSourceTrigger);
             target.GetValueStore().AddBinding(targetProperty, bindingExpression);
             return (target, bindingExpression);
-        }
-
-        private protected override BindingExpression CreateTargetLegacy<TIn, TOut>(
-            TIn data,
-            Expression<Func<TIn, TOut>> expression,
-            IValueConverter? converter = null,
-            object? converterParameter = null,
-            bool enableDataValidation = false,
-            Optional<object?> fallbackValue = default,
-            object? targetNullValue = null)
-        {
-            var nodes = new List<ExpressionNode>();
-            var path = CompiledBindingPathFromExpressionBuilder.Build(expression, enableDataValidation);
-            path.BuildExpression(nodes, out var _);
-            return new BindingExpression(
-                data,
-                nodes,
-                converter: converter,
-                converterParameter: converterParameter,
-                enableDataValidation: enableDataValidation,
-                fallbackValue: fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue,
-                targetNullValue: targetNullValue,
-                targetTypeConverter: TargetTypeConverter.GetDefaultConverter());
         }
     }
 
@@ -246,16 +204,6 @@ public abstract partial class BindingExpressionTests
         Optional<TIn> source,
         object? targetNullValue,
         UpdateSourceTrigger updateSourceTrigger)
-            where TIn : class?;
-
-    private protected abstract BindingExpression CreateTargetLegacy<TIn, TOut>(
-        TIn data,
-        Expression<Func<TIn, TOut>> expression,
-        IValueConverter? converter = null,
-        object? converterParameter = null,
-        bool enableDataValidation = false,
-        Optional<object?> fallbackValue = default,
-        object? targetNullValue = null)
             where TIn : class?;
 
     private static IDisposable StartWithFocusSupport()

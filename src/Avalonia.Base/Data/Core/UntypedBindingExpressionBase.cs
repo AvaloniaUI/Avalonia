@@ -239,26 +239,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     }
 
     /// <summary>
-    /// Produces an observable which can be used to observe the value of the binding expression
-    /// for unit testing.
-    /// </summary>
-    /// <param name="targetType">The <see cref="TargetType"/>.</param>
-    /// <returns>An observable subject.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// The binding expression is already instantiated on an AvaloniaObject.
-    /// </exception>
-    /// <remarks>
-    /// This method should be considered obsolete and new unit tests should not be written to use
-    /// it. For more information see <see cref="ToObservable(AvaloniaObject?)"/>.
-    /// </remarks>
-    internal IAvaloniaSubject<object?> ToObservable(Type targetType)
-    {
-        var o = ToObservable(target: null);
-        TargetType = targetType;
-        return o;
-    }
-
-    /// <summary>
     /// When overridden in a derived class, writes the specified value to the binding source if
     /// possible.
     /// </summary>
