@@ -4,18 +4,18 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Input.Navigation;
 
-internal class XYFocusAlgorithms
+internal static class XYFocusAlgorithms
 {
-    private const double INSHADOWTHRESHOLD = 0.25;
-    private const double INSHADOWTHRESHOLD_FORSECONDARYAXIS = 0.02;
-    private const double CONE_ANGLE = Math.PI / 4;
+    private const double InShadowThreshold = 0.25;
+    private const double InShadowThresholdForSecondaryAxis = 0.02;
+    private const double ConeAngle = Math.PI / 4;
 
-    public double PrimaryAxisDistanceWeight { get; set; }= 15;
-    public double SecondaryAxisDistanceWeight { get; set; } = 1;
-    public double PercentInManifoldShadowWeight { get; set; } = 10000;
-    public double PercentInShadowWeight { get; set; } = 50;
+    private const double PrimaryAxisDistanceWeight = 15;
+    private const double SecondaryAxisDistanceWeight = 1;
+    private const double PercentInManifoldShadowWeight = 10000;
+    private const double PercentInShadowWeight = 50;
 
-    public static double GetScoreGlobal(
+    public static double GetScoreProximity(
         NavigationDirection direction,
         Rect bounds,
         Rect candidateBounds,
@@ -55,7 +55,7 @@ internal class XYFocusAlgorithms
         return score;
     }
     
-    public double GetScore(
+    public static double GetScoreProjection(
         NavigationDirection direction,
         Rect bounds,
         Rect candidateBounds,
@@ -92,7 +92,7 @@ internal class XYFocusAlgorithms
         {
             percentInShadow = CalculatePercentInShadow(reference, potential);
 
-            if (percentInShadow >= INSHADOWTHRESHOLD_FORSECONDARYAXIS)
+            if (percentInShadow >= InShadowThresholdForSecondaryAxis)
             {
                 percentInManifoldShadow = CalculatePercentInShadow(currentManifold, potential);
                 secondaryAxisDistance = maxDistance;
@@ -102,7 +102,7 @@ internal class XYFocusAlgorithms
             primaryAxisDistance = maxDistance - primaryAxisDistance;
             secondaryAxisDistance = maxDistance - secondaryAxisDistance;
 
-            if (percentInShadow >= INSHADOWTHRESHOLD)
+            if (percentInShadow >= InShadowThreshold)
             {
                 percentInShadow = 1;
                 primaryAxisDistance = primaryAxisDistance * 2;
@@ -116,7 +116,7 @@ internal class XYFocusAlgorithms
         return score;
     }
 
-    public void UpdateManifolds(
+    public static void UpdateManifolds(
         NavigationDirection direction,
         Rect bounds,
         Rect newFocusBounds,
@@ -166,7 +166,7 @@ internal class XYFocusAlgorithms
         (manifolds.VManifold, manifolds.HManifold) = (vManifold, hManifold);
     }
 
-    public double CalculateScore(
+    private static double CalculateScore(
         double percentInShadow,
         double primaryAxisDistance,
         double secondaryAxisDistance,
@@ -180,7 +180,7 @@ internal class XYFocusAlgorithms
         return score;
     }
 
-    public bool ShouldCandidateBeConsideredForRanking(
+    public static bool ShouldCandidateBeConsideredForRanking(
         Rect bounds,
         Rect candidateBounds,
         double maxDistance,
@@ -233,11 +233,11 @@ internal class XYFocusAlgorithms
             var sides = new Vector[]
             {
                 new(
-                    (originTop.X + maxDistance * Math.Cos(rotation + CONE_ANGLE)),
-                    (originTop.Y + maxDistance * Math.Sin(rotation + CONE_ANGLE))),
+                    (originTop.X + maxDistance * Math.Cos(rotation + ConeAngle)),
+                    (originTop.Y + maxDistance * Math.Sin(rotation + ConeAngle))),
                 new(
-                    (originBottom.X + maxDistance * Math.Cos(rotation - CONE_ANGLE)),
-                    (originBottom.Y + maxDistance * Math.Sin(rotation - CONE_ANGLE)))
+                    (originBottom.X + maxDistance * Math.Cos(rotation - ConeAngle)),
+                    (originBottom.Y + maxDistance * Math.Sin(rotation - ConeAngle)))
             };
 
             // Order points in counterclockwise direction
@@ -258,11 +258,11 @@ internal class XYFocusAlgorithms
             var sides = new Vector[]
             {
                 new(
-                    (originTop.X + maxDistance * Math.Cos(rotation + CONE_ANGLE)),
-                    (originTop.Y + maxDistance * Math.Sin(rotation + CONE_ANGLE))),
+                    (originTop.X + maxDistance * Math.Cos(rotation + ConeAngle)),
+                    (originTop.Y + maxDistance * Math.Sin(rotation + ConeAngle))),
                 new(
-                    (originBottom.X + maxDistance * Math.Cos(rotation - CONE_ANGLE)),
-                    (originBottom.Y + maxDistance * Math.Sin(rotation - CONE_ANGLE)))
+                    (originBottom.X + maxDistance * Math.Cos(rotation - ConeAngle)),
+                    (originBottom.Y + maxDistance * Math.Sin(rotation - ConeAngle)))
             };
 
             // Order points in counterclockwise direction
@@ -282,7 +282,7 @@ internal class XYFocusAlgorithms
                || MathUtilities.IsEntirelyContained(4, cone, 4, candidateAsPoints);
     }
     
-        private static double CalculatePrimaryAxisDistance(
+    private static double CalculatePrimaryAxisDistance(
         NavigationDirection direction,
         Rect bounds,
         Rect candidateBounds)

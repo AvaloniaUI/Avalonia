@@ -18,20 +18,81 @@ internal record XYFocusParams(InputElement Element, Rect Bounds)
 
 public partial class XYFocus
 {
+    internal XYFocus()
+    {
+        
+    }
+    
     private XYFocusAlgorithms.XYFocusManifolds mManifolds = new();
-    private XYFocusAlgorithms mHeuristic = new();
     private PooledList<XYFocusParams> _pooledCandidates = new();
 
+    private static readonly XYFocus _instance = new();
+    
     internal XYFocusAlgorithms.XYFocusManifolds ResetManifolds()
     {
         mManifolds.Reset();
         return mManifolds;
     }
 
-    internal void SetManifolds(XYFocusAlgorithms.XYFocusManifolds manifolds)
+    internal void SetManifoldsFromBounds(Rect bounds)
     {
-        mManifolds.VManifold = manifolds.VManifold;
-        mManifolds.HManifold = manifolds.HManifold;
+        mManifolds.VManifold = (bounds.Left, bounds.Right);
+        mManifolds.HManifold = (bounds.Top, bounds.Bottom);
+    }
+
+    internal void UpdateManifolds(
+        NavigationDirection direction,
+        Rect elementBounds,
+        InputElement candidate,
+        bool ignoreClipping)
+    {
+        var candidateBounds = GetBoundsForRanking(candidate, ignoreClipping)!.Value;
+        XYFocusAlgorithms.UpdateManifolds(direction, elementBounds, candidateBounds, mManifolds);
+    }
+
+    internal static InputElement? GetNextFocusableElement(
+        NavigationDirection direction,
+        IInputElement? element,
+        InputElement? engagedControl)
+    {
+        /*
+         * UWP/WinUI Behavior is a bit different with handling of manifolds.
+         * In WinUI SetManifolds is called with Hint boundaries of the currently focused element.
+         * And once again UpdateManifolds is called after successfully completed focus operation.
+         * Guaranteeing that Projection navigation algorithm (the only one that actually respects manifolds)
+         * will respect manifolds these manifolds with higher coefficient.
+         * Note, it's not quite clear from WinUI source code in which scenario
+         * these manifolds would differ from currently focused elements boundaries.
+         * The only possible situation is when XYFocusOptions.FocusedElementBounds has custom value,
+         * and current element boundaries are ignored. Possibly, it is used by their internal testing (not open-sourced)?
+         * So, for Avalonia I have added this GetNextFocusableElement method that simplifies algorithm a little,
+         * by forcing current elements boundaries to the manifolds always.
+         *
+         * Also, with using static GetNextFocusableElement and self-managed manifolds, we don't need XYFocus instance object anymore.
+         *
+         * This method also hides initialization of some XYFocusOptions properties.
+         * Keep in mind, UWP gives much more flexibility with focus than Avalonia currently does, so some properties are ignored.
+         */
+
+        if (!(element is InputElement inputElement))
+        {
+            // TODO: handle non-Visual IInputElement implementations, like TextElement, when we support that.
+            return null;
+        }
+        
+        if (!(GetBoundsForRanking(inputElement, true) is { } bounds))
+        {
+            return null;
+        }
+
+        _instance.SetManifoldsFromBounds(bounds);
+
+        return _instance.GetNextFocusableElement(direction, inputElement, engagedControl, true, new XYFocusOptions
+        {
+            FocusedElementBounds = bounds,
+            ShouldConsiderXYFocusKeyboardNavigation = GetKeyboardNavigationEnabled(inputElement),
+            UpdateManifold = true
+        });
     }
 
     internal InputElement? GetNextFocusableElement(
@@ -49,11 +110,8 @@ public partial class XYFocus
 
         Rect rootBounds;
 
-        var focusedElementBounds = xyFocusOptions.FocusedElementBoundsOverride ?? GetBoundsForRanking(element, true);
-        if (focusedElementBounds is null)
-        {
-            return null;
-        }
+        var focusedElementBounds = xyFocusOptions.FocusedElementBounds ??
+                                   throw new InvalidOperationException("FocusedElementBounds needs to be set");
 
         var nextFocusableElement = GetDirectionOverride(element, xyFocusOptions.SearchRoot, direction, true);
 
@@ -96,17 +154,17 @@ public partial class XYFocus
                 var maxRootBoundsDistance =
                     Math.Max(rootBounds.Right - rootBounds.Left, rootBounds.Bottom - rootBounds.Top);
                 maxRootBoundsDistance = Math.Max(maxRootBoundsDistance,
-                    GetMaxRootBoundsDistance(candidateList, focusedElementBounds.Value, direction,
+                    GetMaxRootBoundsDistance(candidateList, focusedElementBounds, direction,
                         xyFocusOptions.IgnoreClipping));
 
-                RankElements(candidateList, direction, focusedElementBounds.Value, maxRootBoundsDistance, mode,
+                RankElements(candidateList, direction, focusedElementBounds, maxRootBoundsDistance, mode,
                     xyFocusOptions.ExclusionRect, xyFocusOptions.IgnoreClipping, xyFocusOptions.IgnoreCone);
 
                 var ignoreOcclusivity = xyFocusOptions.IgnoreOcclusivity || isProcessingInputForScroll;
 
                 // Choose the best candidate, after testing for occlusivity, if we're currently scrolling, the test has been done already, skip it.
                 nextFocusableElement = ChooseBestFocusableElementFromList(candidateList, direction,
-                    focusedElementBounds.Value,
+                    focusedElementBounds,
                     xyFocusOptions.IgnoreClipping, ignoreOcclusivity, isRightToLeft,
                     xyFocusOptions.UpdateManifold && updateManifolds);
                 if (element is not null)
@@ -190,7 +248,7 @@ public partial class XYFocus
                 if (updateManifolds)
                 {
                     // Update the manifolds with the newly selected focus
-                    mHeuristic.UpdateManifolds(direction, bounds, param.Bounds, mManifolds);
+                    XYFocusAlgorithms.UpdateManifolds(direction, bounds, param.Bounds, mManifolds);
                 }
 
                 break;
@@ -198,16 +256,6 @@ public partial class XYFocus
         }
 
         return bestElement;
-    }
-
-    private void UpdateManifolds(
-        NavigationDirection direction,
-        Rect elementBounds,
-        InputElement candidate,
-        bool ignoreClipping)
-    {
-        var candidateBounds = GetBoundsForRanking(candidate, ignoreClipping)!.Value;
-        mHeuristic.UpdateManifolds(direction, elementBounds, candidateBounds, mManifolds);
     }
 
     private void GetAllValidFocusableChildren(
@@ -242,7 +290,7 @@ public partial class XYFocus
                 shouldConsiderXYFocusKeyboardNavigation);
             
             // Iterate through the popups and add their children to the list
-            // TODO: AVALONIA
+            // TODO: Avalonia, missing Popup API
             // var popupChildrenDuringEngagement = CPopupRoot.GetPopupChildrenOpenedDuringEngagement(engagedControl);
             // foreach (var popup in popupChildrenDuringEngagement)
             // {
@@ -282,15 +330,15 @@ public partial class XYFocus
             if (!(exclusionBounds.Intersects(candidateBounds) || exclusionBounds.Contains(candidateBounds)))
             {
                 if (mode == XYFocusNavigationStrategy.Projection &&
-                    mHeuristic.ShouldCandidateBeConsideredForRanking(bounds, candidateBounds, maxRootBoundsDistance,
+                    XYFocusAlgorithms.ShouldCandidateBeConsideredForRanking(bounds, candidateBounds, maxRootBoundsDistance,
                         direction, exclusionBounds, ignoreCone))
                 {
-                    candidate.Score = mHeuristic.GetScore(direction, bounds, candidateBounds, mManifolds, maxRootBoundsDistance);
+                    candidate.Score = XYFocusAlgorithms.GetScoreProjection(direction, bounds, candidateBounds, mManifolds, maxRootBoundsDistance);
                 }
                 else if (mode == XYFocusNavigationStrategy.NavigationDirectionDistance ||
                          mode == XYFocusNavigationStrategy.RectilinearDistance)
                 {
-                    candidate.Score = XYFocusAlgorithms.GetScoreGlobal(direction, bounds, candidateBounds,
+                    candidate.Score = XYFocusAlgorithms.GetScoreProximity(direction, bounds, candidateBounds,
                         maxRootBoundsDistance, mode == XYFocusNavigationStrategy.RectilinearDistance);
                 }
             }

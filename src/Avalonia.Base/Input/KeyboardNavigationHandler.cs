@@ -17,9 +17,7 @@ namespace Avalonia.Input
         /// The window to which the handler belongs.
         /// </summary>
         private IInputRoot? _owner;
-
-        private static XYFocus s_xyFocus = new();
-
+        
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
         /// </summary>
@@ -65,8 +63,7 @@ namespace Avalonia.Input
                 NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
                 NavigationDirection.Up or NavigationDirection.Down
                     or NavigationDirection.Left or NavigationDirection.Right
-                    => s_xyFocus.GetNextFocusableElement(direction, (InputElement)element, null, false,
-                        new XYFocusOptions()),
+                    => XYFocus.GetNextFocusableElement(direction, element, null),
                 _ => throw new NotSupportedException(),
             };
 
