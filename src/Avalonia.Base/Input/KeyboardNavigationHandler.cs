@@ -30,7 +30,7 @@ namespace Avalonia.Input
         {
             if (_owner != null)
             {
-                throw new InvalidOperationException("AccessKeyHandler owner has already been set.");
+                throw new InvalidOperationException($"{nameof(KeyboardNavigationHandler)} owner has already been set.");
             }
 
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -86,9 +86,14 @@ namespace Avalonia.Input
             NavigationDirection direction,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
+            MovePrivate(element, direction, keyModifiers);
+        }
+
+        private bool MovePrivate(IInputElement? element, NavigationDirection direction, KeyModifiers keyModifiers)
+        {
             if (element is null && _owner is null)
             {
-                return;
+                return false;
             }
 
             var next = GetNext(element ?? _owner!, direction);
@@ -97,9 +102,11 @@ namespace Avalonia.Input
             {
                 var method = direction == NavigationDirection.Next ||
                              direction == NavigationDirection.Previous ?
-                             NavigationMethod.Tab : NavigationMethod.Directional;
-                next.Focus(method, keyModifiers);
+                    NavigationMethod.Tab : NavigationMethod.Directional;
+                return next.Focus(method, keyModifiers);
             }
+
+            return false;
         }
 
         /// <summary>
@@ -114,8 +121,7 @@ namespace Avalonia.Input
                 var current = FocusManager.GetFocusManager(e.Source as IInputElement)?.GetFocusedElement();
                 var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
                     NavigationDirection.Next : NavigationDirection.Previous;
-                Move(current, direction, e.KeyModifiers);
-                e.Handled = true;
+                e.Handled = MovePrivate(current, direction, e.KeyModifiers);
             }
             else if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
             {
@@ -128,8 +134,7 @@ namespace Avalonia.Input
                     Key.Down => NavigationDirection.Down,
                     _ => throw new ArgumentOutOfRangeException()
                 };
-                Move(current, direction, e.KeyModifiers);
-                e.Handled = true;
+                e.Handled = MovePrivate(current, direction, e.KeyModifiers);
             }
         }
 
