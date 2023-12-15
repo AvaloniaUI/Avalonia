@@ -2,7 +2,6 @@ using System;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -109,6 +108,11 @@ namespace Avalonia.Controls
         private void ControlPointerExited(object? sender, PointerEventArgs e)
         {
             var control = (Control)sender!;
+
+            // If the control is showing a tooltip and the pointer is over the tooltip, don't close it.
+            if (control.GetValue(ToolTip.ToolTipProperty) is { } tooltip && tooltip.IsPointerOver)
+                return;
+
             Close(control);
         }
 
@@ -125,6 +129,27 @@ namespace Avalonia.Controls
             toolTip?.RecalculatePosition(control);
         }
 
+        private void ToolTipClosed(object? sender, EventArgs e)
+        {
+            if (sender is ToolTip toolTip)
+            {
+                toolTip.Closed -= ToolTipClosed;
+                toolTip.PointerExited -= ToolTipPointerExited;
+            }
+        }
+
+        private void ToolTipPointerExited(object? sender, PointerEventArgs e)
+        {
+            // The pointer has exited the tooltip. Close the tooltip unless the pointer is over the
+            // adorned control.
+            if (sender is ToolTip toolTip &&
+                toolTip.AdornedControl is { } control &&
+                !control.IsPointerOver)
+            {
+                Close(control);
+            }
+        }
+
         private void StartShowTimer(int showDelay, Control control)
         {
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(showDelay) };
@@ -139,6 +164,12 @@ namespace Avalonia.Controls
             if (control.IsAttachedToVisualTree)
             {
                 ToolTip.SetIsOpen(control, true);
+
+                if (control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
+                {
+                    tooltip.Closed += ToolTipClosed;
+                    tooltip.PointerExited += ToolTipPointerExited;
+                }
             }
         }
 

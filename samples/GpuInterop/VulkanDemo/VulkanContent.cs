@@ -39,7 +39,7 @@ unsafe class VulkanContent : IDisposable
     {
         _context = context;
         var name = typeof(VulkanContent).Assembly.GetManifestResourceNames().First(x => x.Contains("teapot.bin"));
-        using (var sr = new BinaryReader(typeof(VulkanContent).Assembly.GetManifestResourceStream(name)))
+        using (var sr = new BinaryReader(typeof(VulkanContent).Assembly.GetManifestResourceStream(name)!))
         {
             var buf = new byte[sr.ReadInt32()];
             sr.Read(buf, 0, buf.Length);
@@ -115,7 +115,7 @@ unsafe class VulkanContent : IDisposable
     {
         var name = typeof(VulkanContent).Assembly.GetManifestResourceNames()
             .First(x => x.Contains((fragment ? "frag" : "vert") + ".spirv"));
-        using (var sr = typeof(VulkanContent).Assembly.GetManifestResourceStream(name))
+        using (var sr = typeof(VulkanContent).Assembly.GetManifestResourceStream(name)!)
         {
             using (var mem = new MemoryStream())
             {
@@ -158,7 +158,7 @@ unsafe class VulkanContent : IDisposable
         var commandBuffer = _context.Pool.CreateCommandBuffer();
         commandBuffer.BeginRecording();
 
-        _colorAttachment.TransitionLayout(commandBuffer.InternalHandle,
+        _colorAttachment!.TransitionLayout(commandBuffer.InternalHandle,
             ImageLayout.Undefined, AccessFlags.None,
             ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentWriteBit);
 
@@ -182,10 +182,11 @@ unsafe class VulkanContent : IDisposable
 
         api.CmdSetScissor(commandBufferHandle, 0, 1, &scissor);
 
-        var clearColor = new ClearValue(new ClearColorValue(1, 0, 0, 0.1f), new ClearDepthStencilValue(1, 0));
-        
-        var clearValues = new[] { clearColor, clearColor };
-
+        var clearValues = new ClearValue[]
+        {
+	        new() { Color = new ClearColorValue { Float32_0 = 1, Float32_1 = 0, Float32_2 = 0, Float32_3 = 0.1f } },
+	        new() { DepthStencil = new ClearDepthStencilValue { Depth = 1, Stencil = 0 } }
+        };
 
         fixed (ClearValue* clearValue = clearValues)
         {
@@ -195,7 +196,7 @@ unsafe class VulkanContent : IDisposable
                 RenderPass = _renderPass,
                 Framebuffer = _framebuffer,
                 RenderArea = new Rect2D(new Offset2D(0, 0), new Extent2D((uint?)image.Size.Width, (uint?)image.Size.Height)),
-                ClearValueCount = 2,
+                ClearValueCount = (uint)clearValues.Length,
                 PClearValues = clearValue
             };
 
@@ -251,9 +252,9 @@ unsafe class VulkanContent : IDisposable
             }
         };
 
-        api.CmdBlitImage(commandBuffer.InternalHandle, _colorAttachment.InternalHandle.Value,
+        api.CmdBlitImage(commandBuffer.InternalHandle, _colorAttachment.InternalHandle,
             ImageLayout.TransferSrcOptimal,
-            image.InternalHandle.Value, ImageLayout.TransferDstOptimal, 1, srcBlitRegion, Filter.Linear);
+            image.InternalHandle, ImageLayout.TransferDstOptimal, 1, srcBlitRegion, Filter.Linear);
         
         commandBuffer.Submit();
     }
@@ -393,7 +394,7 @@ unsafe class VulkanContent : IDisposable
         
         var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
         var projection =
-            Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)((float)size.Width / size.Height),
+            Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)size.Width / size.Height,
                 0.01f, 1000);
         
         _colorAttachment = new VulkanImage(_context, (uint)Format.R8G8B8A8Unorm, size, false);
@@ -808,7 +809,7 @@ unsafe class VulkanContent : IDisposable
 
     static Stopwatch St = Stopwatch.StartNew();
     private bool _isInit;
-    private VulkanImage _colorAttachment;
+    private VulkanImage? _colorAttachment;
     private DescriptorSet _descriptorSet;
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]

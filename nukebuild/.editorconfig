@@ -6,3 +6,12 @@ root = false
 # C# files
 [*.cs]
 dotnet_style_require_accessibility_modifiers = never
+
+[{il-repack,Numerge}/**/*.cs]
+dotnet_diagnostic.CA1304.severity = none
+dotnet_diagnostic.CA1815.severity = none
+dotnet_diagnostic.CA1820.severity = none
+dotnet_diagnostic.CA1825.severity = none
+dotnet_diagnostic.CA1829.severity = none
+dotnet_diagnostic.CA1847.severity = none
+dotnet_diagnostic.SYSLIB0017.severity = none

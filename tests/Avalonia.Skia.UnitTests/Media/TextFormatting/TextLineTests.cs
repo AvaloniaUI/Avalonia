@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -33,6 +35,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         formatter.FormatLine(textSource, currentIndex, double.PositiveInfinity,
                             new GenericTextParagraphProperties(defaultProperties));
 
+                    Assert.NotNull(textLine);
+
                     var firstCharacterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(int.MinValue));
 
                     Assert.Equal(textLine.FirstTextSourceIndex, firstCharacterHit.FirstCharacterIndex);
@@ -61,6 +65,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         formatter.FormatLine(textSource, currentIndex, double.PositiveInfinity,
                             new GenericTextParagraphProperties(defaultProperties));
 
+                    Assert.NotNull(textLine);
+
                     var lastCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(int.MaxValue));
 
                     Assert.Equal(textLine.FirstTextSourceIndex + textLine.Length,
@@ -87,6 +93,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 var clusters = new List<int>();
 
@@ -134,6 +142,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 var clusters = new List<int>();
 
@@ -186,6 +196,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 var clusters = BuildGlyphClusters(textLine);
 
@@ -246,6 +258,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var clusters = textLine.TextRuns
                     .Cast<ShapedTextRun>()
                     .SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphCluster)
@@ -296,6 +310,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var currentDistance = 0.0;
 
                 foreach (var run in textLine.TextRuns)
@@ -340,6 +356,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 var isRightToLeft = IsRightToLeft(textLine);
                 var rects = BuildRects(textLine);
@@ -394,6 +412,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 Assert.False(textLine.HasCollapsed);
 
                 TextCollapsingProperties collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, defaultProperties, FlowDirection.LeftToRight));
@@ -426,6 +446,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 Assert.Equal(4, textLine.TextRuns.Count);
 
@@ -465,6 +487,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 Assert.Equal(4, textLine.TextRuns.Count);
 
                 var currentHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(3, 1));
@@ -503,6 +527,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var characterHit = textLine.GetCharacterHitFromDistance(50);
 
                 Assert.Equal(5, characterHit.FirstCharacterIndex);
@@ -529,6 +555,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(1));
 
                 Assert.Equal(14, distance);
@@ -552,6 +580,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(10));
 
@@ -584,6 +614,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 var textBounds = textLine.GetTextBounds(0, 10);
 
@@ -625,6 +657,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var textBounds = textLine.GetTextBounds(0, Environment.NewLine.Length);
 
                 Assert.Equal(1, textBounds.Count);
@@ -652,13 +686,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var textRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
                 var lineWidth = textLine.WidthIncludingTrailingWhitespace;
 
                 var textBounds = textLine.GetTextBounds(0, text.Length);
 
-                TextBounds lastBounds = null;
+                TextBounds? lastBounds = null;
 
                 var runBounds = textBounds.SelectMany(x => x.TextRunBounds).ToList();
 
@@ -711,6 +747,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, 1000,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var characterHit = textLine.GetCharacterHitFromDistance(1000);
 
                 Assert.Equal(10, characterHit.FirstCharacterIndex);
@@ -731,6 +769,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
 
                 var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(9, 1));
 
@@ -784,6 +824,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(20, 1));
 
                 Assert.Equal(20, characterHit.FirstCharacterIndex);
@@ -836,6 +878,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 20, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var characterHit = textLine.GetCharacterHitFromDistance(double.PositiveInfinity);
 
                 Assert.Equal(40, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
@@ -866,7 +910,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             private const string Text = "_A_A";
 
-            public TextRun GetTextRun(int textSourceIndex)
+            public TextRun? GetTextRun(int textSourceIndex)
             {
                 switch (textSourceIndex)
                 {
@@ -1004,6 +1048,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
+                Assert.NotNull(textLine);
+
                 var textBounds = textLine.GetTextBounds(0, textLine.Length);
 
                 Assert.Equal(1, textBounds.Count);
@@ -1047,16 +1093,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
+                Assert.NotNull(textLine);
+
                 var textBounds = textLine.GetTextBounds(0, 3);
 
-                var firstRun = textLine.TextRuns[0] as ShapedTextRun;
+                var firstRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[0]);
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(firstRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(3, 4);
 
-                var secondRun = textLine.TextRuns[1] as ShapedTextRun;
+                var secondRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[1]);
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
@@ -1094,16 +1142,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Left,
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
+                Assert.NotNull(textLine);
+
                 var textBounds = textLine.GetTextBounds(0, 4);
 
-                var secondRun = textLine.TextRuns[1] as ShapedTextRun;
+                var secondRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[1]);
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(4, 3);
 
-                var firstRun = textLine.TextRuns[0] as ShapedTextRun;
+                var firstRun = Assert.IsType<ShapedTextRun>(textLine.TextRuns[0]);
 
                 Assert.Equal(1, textBounds.Count);
 
@@ -1146,6 +1196,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
+                Assert.NotNull(textLine);
+
                 var textBounds = textLine.GetTextBounds(0, 1);
 
                 Assert.Equal(1, textBounds.Count);
@@ -1173,6 +1225,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
+                Assert.NotNull(textLine);
+
                 var textBounds = textLine.GetTextBounds(3, 1);
 
                 Assert.Equal(1, textBounds.Count);
@@ -1199,6 +1253,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
 
                 var bounds = textLine.GetTextBounds(6, 1);
 
@@ -1249,6 +1305,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
+                Assert.NotNull(textLine);
+
                 var bounds = textLine.GetTextBounds(0, text.Length);
 
                 Assert.Equal(4, bounds.Count);
@@ -1258,8 +1316,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, right);
             }
         }
-
-       
 
         [Fact]
         public void Should_GetPreviousCharacterHit_Non_Trailing()
@@ -1278,6 +1334,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
+                Assert.NotNull(textLine);
+
                 var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(10, 1));
             }
         }
@@ -1291,7 +1349,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 _textRuns = textRuns;
             }
 
-            public TextRun GetTextRun(int textSourceIndex)
+            public TextRun? GetTextRun(int textSourceIndex)
             {
                 var currentPosition = 0;
 

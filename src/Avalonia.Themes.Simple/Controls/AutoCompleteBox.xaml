@@ -16,6 +16,7 @@
                    BorderBrush="{TemplateBinding BorderBrush}"
                    BorderThickness="{TemplateBinding BorderThickness}"
                    CornerRadius="{TemplateBinding CornerRadius}"
+                   CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                    Watermark="{TemplateBinding Watermark}" />
 

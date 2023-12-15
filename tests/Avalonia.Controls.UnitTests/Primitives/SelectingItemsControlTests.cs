@@ -1227,6 +1227,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void TabOnceActiveElement_Should_Be_Initialized_With_SelectedItem()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = Template(),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
+                    SelectedIndex = 1,
+                };
+
+                Prepare(target);
+
+                var container = target.ContainerFromIndex(1)!;
+                Assert.Same(container, KeyboardNavigation.GetTabOnceActiveElement(target));
+            }
+        }
+
+        [Fact]
         public void Setting_SelectedItem_With_Pointer_Should_Set_TabOnceActiveElement()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -2424,7 +2443,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set => base.SelectionMode = value;
             }
 
-            public new bool MoveSelection(NavigationDirection direction, bool wrap)
+            public bool MoveSelection(NavigationDirection direction, bool wrap)
             {
                 return base.MoveSelection(direction, wrap);
             }

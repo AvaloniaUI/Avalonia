@@ -25,9 +25,8 @@ public class EffectTests
      InlineData("drop-shadow ( 10 20 30 #ffff00ff ) ", 10, 20, 30, 0xffff00ff),
      InlineData("drop-shadow(10 20 30 red)", 10, 20, 30, 0xffff0000),
      InlineData("drop-shadow ( 10   20   30 red  ) ", 10, 20, 30, 0xffff0000),
-     InlineData("drop-shadow(10 20 30 rgba(100, 30, 45, 90%))", 10, 20, 30, 0x90641e2d),
-     InlineData("drop-shadow(10 20 30  rgba(100, 30, 45, 90%) ) ", 10, 20, 30, 0x90641e2d),
-
+     InlineData("drop-shadow(10 20 30 rgba(100, 30, 45, 90%))", 10, 20, 30, 0xe6641e2d),
+     InlineData("drop-shadow(10 20 30  rgba(100, 30, 45, 90%) ) ", 10, 20, 30, 0xe6641e2d)
     ]
     public void Parse_Parses_DropShadow(string s, double x, double y, double r, uint color)
     {
@@ -36,6 +35,7 @@ public class EffectTests
         Assert.Equal(y, effect.OffsetY);
         Assert.Equal(r, effect.BlurRadius);
         Assert.Equal(1, effect.Opacity);
+        Assert.Equal(color, effect.Color.ToUInt32());
     }
 
     [Theory,
@@ -44,7 +44,7 @@ public class EffectTests
      InlineData("blur()"),
      InlineData("blur(123"),
      InlineData("blur(aaab)"),
-     InlineData("drop-shadow(-10  -20 -30)"),
+     InlineData("drop-shadow(-10  -20 -30)")
     ]
     public void Invalid_Effect_Parse_Fails(string b)
     {
@@ -58,10 +58,7 @@ public class EffectTests
      InlineData("drop-shadow(10 15 5)", 0, 0, 16, 21),
      InlineData("drop-shadow(0 0 5)", 6, 6, 6, 6),
      InlineData("drop-shadow(3 3 5)", 3, 3, 9, 9)
-
-
     ]
-
     public static void PaddingIsCorrectlyCalculated(string effect, double left, double top, double right, double bottom)
     {
         var padding = Effect.Parse(effect).GetEffectOutputPadding();

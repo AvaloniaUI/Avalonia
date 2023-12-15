@@ -16,7 +16,7 @@ internal class OpenGlControlBaseResources : IAsyncDisposable
     public CompositionDrawingSurface Surface { get; }
     private readonly CompositionOpenGlSwapchain _swapchain;
     public IGlContext Context { get; private set; }
-    
+
     public static OpenGlControlBaseResources? TryCreate(CompositionDrawingSurface surface,
         ICompositionGpuInterop interop,
         IOpenGlTextureSharingRenderInterfaceContextFeature feature)
@@ -54,7 +54,7 @@ internal class OpenGlControlBaseResources : IAsyncDisposable
         return new OpenGlControlBaseResources(context, surface, interop, null, externalObjects);
     }
     
-    public OpenGlControlBaseResources(IGlContext context,
+    private OpenGlControlBaseResources(IGlContext context,
         CompositionDrawingSurface surface,
         ICompositionGpuInterop interop,
         IOpenGlTextureSharingRenderInterfaceContextFeature? feature,
@@ -161,7 +161,9 @@ internal class OpenGlControlBaseResources : IAsyncDisposable
             }
 
             Surface.Dispose();
+           
             await _swapchain.DisposeAsync();
+            Context.Dispose();
 
             Context = null!;
         }
