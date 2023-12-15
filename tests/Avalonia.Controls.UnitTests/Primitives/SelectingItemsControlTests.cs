@@ -2294,6 +2294,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         }
 
+        [Fact]
+        public void Changing_DataContext_Respects_AlwaysSelected()
+        {
+            // Issue #12733
+            var target = new ListBox 
+            { 
+                DataContext = Enumerable.Range(0, 10).ToList(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+                Template = Template(),
+                [!ListBox.ItemsSourceProperty] = new Binding(),
+            };
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.DataContext = Enumerable.Range(10, 10).ToList();
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
