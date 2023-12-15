@@ -510,9 +510,13 @@ namespace Avalonia
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
+            
             _visualRoot.Renderer.RecalculateChildren(_visualParent!);
-
-            SyncIsEffectivelyEnabledFromParent();
+            
+            if (ZIndex != 0 && _visualParent is { })
+                _visualParent.HasNonUniformZIndexChildren = true;
+            
+            SyncIsEffectivelyEnabledFromParent(_visualParent);
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
@@ -526,13 +530,11 @@ namespace Avalonia
             }
         }
 
-        private void SyncIsEffectivelyEnabledFromParent()
+        private void SyncIsEffectivelyEnabledFromParent(Visual? parent)
         {
-            if (VisualParent is not { } parent) return;
-            if (ZIndex != 0)
-                parent.HasNonUniformZIndexChildren = true;
+            var vis = (parent?.IsVisible ?? false) && IsVisible;
             
-            UpdateIsEffectivelyEnabled(parent.IsVisible);
+            UpdateIsEffectivelyEnabled(vis);
         }
 
         /// <summary>
@@ -558,7 +560,7 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root.Renderer.AddDirty(this);
 
-            SyncIsEffectivelyEnabledFromParent();
+            SyncIsEffectivelyEnabledFromParent(_visualParent);
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
