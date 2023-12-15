@@ -349,5 +349,20 @@ namespace Avalonia.Base.UnitTests
 
             renderer.Verify(x => x.RecalculateChildren(stackPanel));
         }
+
+        [Fact]
+        public void IsEffectivelyVisible_Propagates_To_Visual_Children()
+        {
+            var child2 = new Decorator();
+            var child1 = new Decorator { Child = child2 };
+            var root = new TestRoot { Child = child1 };
+
+            Assert.True(child2.IsEffectivelyVisible);
+            
+            root.IsVisible = false;
+            
+            Assert.False(child2.IsEffectivelyVisible);
+        }
+        
     }
 }
