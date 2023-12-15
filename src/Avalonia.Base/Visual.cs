@@ -104,6 +104,14 @@ namespace Avalonia
         /// </summary>
         public static readonly DirectProperty<Visual, Visual?> VisualParentProperty =
             AvaloniaProperty.RegisterDirect<Visual, Visual?>(nameof(VisualParent), o => o._visualParent);
+        
+        /// <summary>
+        /// Defines the <see cref="IsEffectivelyVisible"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Visual, bool> IsEffectivelyVisibleProperty =
+            AvaloniaProperty.RegisterDirect<Visual, bool>(
+                nameof(IsEffectivelyVisible),
+                o => o._isEffectivelyVisible);
 
         /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
@@ -121,7 +129,9 @@ namespace Avalonia
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
-
+        private bool _isEffectivelyVisible = true;
+        
+        
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
         /// </summary>
@@ -143,6 +153,7 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
+            SetAnimationGateState(false);
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
 
@@ -193,25 +204,7 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
-        public bool IsEffectivelyVisible
-        {
-            get
-            {
-                Visual? node = this;
-
-                while (node != null)
-                {
-                    if (!node.IsVisible)
-                    {
-                        return false;
-                    }
-
-                    node = node.VisualParent;
-                }
-
-                return true;
-            }
-        }
+        public bool IsEffectivelyVisible { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this control is visible.
@@ -496,7 +489,7 @@ namespace Avalonia
                 mutableTransform.Changed += RenderTransformChanged;
             }
 
-            EnableAnimations();
+            SetAnimationGateState(true);
             EnableTransitions();
             
             if (_visualRoot.Renderer is IRendererWithCompositor compositingRenderer)
@@ -540,7 +533,7 @@ namespace Avalonia
                 mutableTransform.Changed -= RenderTransformChanged;
             }
 
-            DisableAnimations();
+            SetAnimationGateState(false);
             DisableTransitions();
             OnDetachedFromVisualTree(e);
             DetachFromCompositor();
@@ -668,53 +661,33 @@ namespace Avalonia
         /// Called when the <see cref="IsVisible"/> property changes on any control.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private static void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        private void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Sender is not Visual visual) return;
-            
-            if (visual.IsEffectivelyVisible)
+            if (e.NewValue is bool newVisibility)
             {
-                visual.EnableAnimations();
-            }
-            else
+                CalculateEffectiveVisibility(newVisibility);
+            } 
+        }
+
+        private void SetAnimationGateState(bool gateState)
+        {
+            if (animationsGateSubject is { } animationsGate)
             {
-                visual.DisableAnimations();
-            }
+                animationsGate.OnNext(gateState);
+            } 
         }
         
-        internal void EnableAnimations()
+        internal void CalculateEffectiveVisibility(bool newVisibility)
         {
-            if (!_animationsEnabled)
-            {
-                _animationsEnabled = true;
+            if(_isEffectivelyVisible == newVisibility) return;
                 
-                if (animationsStateSubject is { } ds)
-                {
-                    ds.OnNext(true);
-                }
-                
-                foreach (var child in this.GetVisualDescendants())
-                {
-                    child.EnableAnimations();
-                }
-            }
-        }
-
-        internal void DisableAnimations()
-        {
-            if (_animationsEnabled)
+            SetAndRaise(IsEffectivelyVisibleProperty, ref _isEffectivelyVisible, newVisibility);
+ 
+            SetAnimationGateState(newVisibility);
+            
+            foreach (var child in this.GetVisualDescendants())
             {
-                _animationsEnabled = false;
-
-                if (animationsStateSubject is { } ds)
-                {
-                    ds.OnNext(false);
-                }
-
-                foreach (var child in this.GetVisualDescendants())
-                {
-                    child.DisableAnimations();
-                }
+                child.CalculateEffectiveVisibility(newVisibility);
             }
         }
 

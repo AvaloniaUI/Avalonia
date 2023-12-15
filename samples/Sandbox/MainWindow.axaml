@@ -1,4 +1,32 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h2">A progress bar control</TextBlock>
+    <StackPanel Spacing="5">
+      <StackPanel Orientation="Horizontal" Spacing="5">
+        <TextBlock VerticalAlignment="Center">Maximum</TextBlock>
+        <NumericUpDown x:Name="maximum" Value="100" VerticalAlignment="Center"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="5">
+        <TextBlock VerticalAlignment="Center">Minimum</TextBlock>
+        <NumericUpDown x:Name="minimum" Value="0" VerticalAlignment="Center"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="5">
+        <TextBlock VerticalAlignment="Center">Progress Text Format</TextBlock>
+        <TextBox x:Name="stringFormat" Text="{}{0:0}%" VerticalAlignment="Center"/>
+      </StackPanel>
+      <CheckBox x:Name="showProgress" Margin="10,16,0,0" Content="Show Progress Text" />
+      <CheckBox x:Name="isIndeterminate" Margin="10,16,0,0" Content="Toggle Indeterminate" />
+      <CheckBox x:Name="isVisible" Margin="10,16,0,0" Content="Toggle Visibility" />
+      <StackPanel IsVisible="{Binding #isVisible.IsChecked}" Orientation="Horizontal" Margin="0,16,0,0" HorizontalAlignment="Center" Spacing="16">
+        <StackPanel Spacing="16">
+          <ProgressBar Height="200" IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="1.0" 
+                       Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}" ProgressTextFormat="{Binding #stringFormat.Text}"/>
+        </StackPanel>
+        </StackPanel> 
+ 
+    </StackPanel>
+  </StackPanel>
+
 </Window>

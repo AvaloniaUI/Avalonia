@@ -277,7 +277,7 @@ namespace Avalonia.Animation
             var (animators, subscriptions) = InterpretKeyframes(control);
             
             var overrideSubject =  new LightweightSubject<bool>();
-            control.animationsStateSubject = overrideSubject;
+            control.animationsGateSubject = overrideSubject;
 
             if (animators.Count == 1)
             {

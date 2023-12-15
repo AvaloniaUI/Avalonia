@@ -20,8 +20,11 @@ namespace Avalonia.Animation.Animators
         public virtual IDisposable? Apply(Animation animation, Animatable target, IClock? clock,
             IObservable<bool> match, IObservable<bool> state, Action? onComplete)
         {
-            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, target, clock, state, onComplete);
-            return new CompositeDisposable(match.Subscribe(subject), subject);
+            var disposable = new CompositeDisposable();
+            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, target, clock, onComplete, state, disposable);
+            disposable.Add(match.Subscribe(subject));
+            disposable.Add(subject);
+            return disposable;
         }
 
         protected T InterpolationHandler(double animationTime, T neutralValue)

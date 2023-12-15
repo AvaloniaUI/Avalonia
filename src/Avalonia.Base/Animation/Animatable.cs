@@ -32,8 +32,7 @@ namespace Avalonia.Animation
         private Dictionary<ITransition, TransitionState>? _transitionState;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
         
-        protected bool _animationsEnabled = true;
-        internal LightweightSubject<bool>? animationsStateSubject;
+        internal LightweightSubject<bool>? animationsGateSubject;
         
         private NotifyCollectionChangedEventHandler TransitionsCollectionChangedHandler => 
             _collectionChanged ??= TransitionsCollectionChanged;
