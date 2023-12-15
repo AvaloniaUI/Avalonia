@@ -9,7 +9,7 @@ public enum XYFocusKeyboardNavigationMode
     /// Arrow keys can be used for 2D directional navigation.
     /// </summary>
     Enabled = 1,
-        
+
     /// <summary>
     /// Arrow keys cannot be used for 2D directional navigation.
     /// </summary>

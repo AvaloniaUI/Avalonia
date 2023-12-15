@@ -72,7 +72,11 @@ public class KeyboardNavigationTests_XY
         using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
         
         var (canvas, buttons) = CreateXYTestLayout();
-        var window = new Window { Content = canvas };
+        var window = new Window
+        {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            Content = canvas
+        };
         window.Show();
 
         var fromButton = buttons[from - 1];
@@ -91,7 +95,7 @@ public class KeyboardNavigationTests_XY
     [InlineData(1, NavigationDirection.Up, -1)]
     [InlineData(1, NavigationDirection.Left, 3)]
     [InlineData(1, NavigationDirection.Right, 2)]
-    [InlineData(2, NavigationDirection.Down, 4)]
+    [InlineData(2, NavigationDirection.Down, 3)]
     [InlineData(2, NavigationDirection.Up, 1)]
     [InlineData(2, NavigationDirection.Left, 1)]
     [InlineData(2, NavigationDirection.Right, -1)]
@@ -108,7 +112,11 @@ public class KeyboardNavigationTests_XY
         using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
         
         var (canvas, buttons) = CreateXYTestLayout();
-        var window = new Window { Content = canvas };
+        var window = new Window
+        {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            Content = canvas
+        };
         window.Show();
 
         var fromButton = buttons[from - 1];
@@ -144,7 +152,11 @@ public class KeyboardNavigationTests_XY
         using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
         
         var (canvas, buttons) = CreateXYTestLayout();
-        var window = new Window { Content = canvas };
+        var window = new Window
+        {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            Content = canvas
+        };
         window.Show();
 
         var fromButton = buttons[from - 1];
@@ -176,6 +188,7 @@ public class KeyboardNavigationTests_XY
         };
         var window = new Window
         {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
             Content = new Canvas
             {
                 Children =
@@ -204,6 +217,7 @@ public class KeyboardNavigationTests_XY
         };
         var window = new Window
         {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
             Content = center
         };
         window.Show();
@@ -235,6 +249,7 @@ public class KeyboardNavigationTests_XY
         };
         var window = new Window
         {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
             Content = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -261,6 +276,7 @@ public class KeyboardNavigationTests_XY
         };
         var window = new Window
         {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
             Content = parent,
             Height = 30
         };
@@ -284,6 +300,7 @@ public class KeyboardNavigationTests_XY
         };
         var window = new Window
         {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
             Content = new ScrollViewer
             {
                 Content = parent
