@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Input.Navigation;
 
-internal record XYFocusOptions
+internal class XYFocusOptions
 {
     public InputElement? SearchRoot { get; set; }
     public Rect ExclusionRect { get; set; }
