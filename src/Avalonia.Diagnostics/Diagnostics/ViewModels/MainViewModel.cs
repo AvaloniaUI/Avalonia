@@ -67,7 +67,6 @@ namespace Avalonia.Diagnostics.ViewModels
                             }
                         });
             }
-            Console = new ConsoleViewModel(UpdateConsoleContext);
         }
 
         public bool FreezePopups
@@ -152,8 +151,6 @@ namespace Avalonia.Diagnostics.ViewModels
         public void ToggleRenderTimeGraphOverlay()
             => ShowRenderTimeGraphOverlay = !ShowRenderTimeGraphOverlay;
 
-        public ConsoleViewModel Console { get; }
-
         public ViewModelBase? Content
         {
             get { return _content; }
@@ -234,16 +231,6 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get => _pointerOverElementName;
             private set => RaiseAndSetIfChanged(ref _pointerOverElementName, value);
-        }
-
-        private void UpdateConsoleContext(ConsoleContext context)
-        {
-            context.root = _root;
-
-            if (Content is TreePageViewModel tree)
-            {
-                context.e = tree.SelectedNode?.Visual;
-            }
         }
 
         public void SelectControl(Control control)
