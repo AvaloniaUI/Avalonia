@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input;
 
-public class KeyboardNavigationTests_XY
+public class KeyboardNavigationTests_XY : ScopedTestBase
 {
     private static (Canvas canvas, Button[] buttons) CreateXYTestLayout()
     {
@@ -69,7 +69,7 @@ public class KeyboardNavigationTests_XY
     [InlineData(4, NavigationDirection.Right, 2)]
     public void Projection_Focus_Depending_On_Direction(int from, NavigationDirection direction, int to)
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
         
         var (canvas, buttons) = CreateXYTestLayout();
         var window = new Window
@@ -109,7 +109,7 @@ public class KeyboardNavigationTests_XY
     [InlineData(4, NavigationDirection.Right, 2)]
     public void RectilinearDistance_Focus_Depending_On_Direction(int from, NavigationDirection direction, int to)
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
         
         var (canvas, buttons) = CreateXYTestLayout();
         var window = new Window
@@ -149,7 +149,7 @@ public class KeyboardNavigationTests_XY
     [InlineData(4, NavigationDirection.Right, 2)]
     public void NavigationDirectionDistance_Focus_Depending_On_Direction(int from, NavigationDirection direction, int to)
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
         
         var (canvas, buttons) = CreateXYTestLayout();
         var window = new Window
@@ -173,7 +173,7 @@ public class KeyboardNavigationTests_XY
     [Fact]
     public void Uses_XY_Directional_Overrides()
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
 
         var left = new Button();
         var right = new Button();
@@ -208,7 +208,7 @@ public class KeyboardNavigationTests_XY
     [Fact]
     public void XY_Directional_Override_Discarded_If_Not_Part_Of_The_Same_Root()
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
 
         var left = new Button();
         var center = new Button
@@ -228,7 +228,7 @@ public class KeyboardNavigationTests_XY
     [Fact]
     public void Parent_Can_Override_Navigation_When_Directional_Is_Set()
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
 
         // With double stack panel layout we have something like this:
         // [ [ EXPECTED, CURRENT ] CANDIDATE ]
@@ -264,7 +264,7 @@ public class KeyboardNavigationTests_XY
     [Fact]
     public void Clipped_Element_Should_Not_Be_Focused()
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
 
         var current = new Button() { Height = 20 };
         var candidate = new Button() { Height = 20 };
@@ -288,7 +288,7 @@ public class KeyboardNavigationTests_XY
     [Fact]
     public void Clipped_Element_Should_Not_Focused_If_Inside_Of_ScrollViewer()
     {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
         
         var current = new Button() { Height = 20 };
         var candidate = new Button() { Height = 20 };
@@ -310,5 +310,70 @@ public class KeyboardNavigationTests_XY
         window.Show();
 
         Assert.Equal(candidate, KeyboardNavigationHandler.GetNext(current, NavigationDirection.Down));
+    }
+
+    [Theory]
+    [InlineData(Key.Left, NavigationDirection.Left)]
+    [InlineData(Key.Right, NavigationDirection.Right)]
+    [InlineData(Key.Up, NavigationDirection.Up)]
+    [InlineData(Key.Down, NavigationDirection.Down)]
+    public void Arrow_Key_Should_Focus_Element(Key key, NavigationDirection direction)
+    {
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
+        
+        var candidate = new Button();
+        var current = new Button();
+        current[direction switch
+        {
+            NavigationDirection.Left => XYFocus.LeftProperty,
+            NavigationDirection.Right => XYFocus.RightProperty,
+            NavigationDirection.Up => XYFocus.UpProperty,
+            NavigationDirection.Down => XYFocus.DownProperty,
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+        }] = candidate;
+        var window = new Window
+        {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            Content = new Canvas
+            {
+                Children = { current, candidate }
+            }
+        };
+        window.Show();
+        Assert.True(current.Focus());
+
+        var args = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = current };
+        window.RaiseEvent(args);
+        
+        Assert.Equal(candidate, FocusManager.GetFocusManager(current)!.GetFocusedElement());
+        Assert.True(args.Handled);
+    }
+    
+    [Theory]
+    [InlineData(Key.Left, NavigationDirection.Left)]
+    [InlineData(Key.Right, NavigationDirection.Right)]
+    [InlineData(Key.Up, NavigationDirection.Up)]
+    [InlineData(Key.Down, NavigationDirection.Down)]
+    public void Arrow_Key_Should_Not_Be_Handled_If_No_Focus(Key key, NavigationDirection direction)
+    {
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
+        
+        var current = new Button();
+        var window = new Window
+        {
+            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            Content = new Canvas
+            {
+                Children = { current }
+            }
+        };
+        window.Show();
+        Assert.True(current.Focus());
+
+        var args = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = current };
+        window.RaiseEvent(args);
+        
+        Assert.Equal(current, FocusManager.GetFocusManager(current)!.GetFocusedElement());
+        Assert.False(args.Handled);
     }
 }

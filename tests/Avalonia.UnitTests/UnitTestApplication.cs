@@ -69,7 +69,7 @@ namespace Avalonia.UnitTests
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<IMouseDevice>().ToConstant(Services.MouseDevice?.Invoke())
-                .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation)
+                .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation ?? (() => null))
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
