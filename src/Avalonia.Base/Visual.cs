@@ -148,7 +148,7 @@ namespace Avalonia
         {
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
-
+            
             var visualChildren = new AvaloniaList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = visual => ValidateVisualChild(visual);
@@ -196,16 +196,16 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
-        public bool IsEffectivelyVisible { get; private set;  }
+        public bool IsEffectivelyVisible { get; private set; } = true;
         
         /// <summary>
         /// Updates the <see cref="IsEffectivelyVisible"/> property based on the parent's
         /// <see cref="IsEffectivelyVisible"/>.
         /// </summary>
         /// <param name="parent">The parent control.</param>
-        private void UpdateIsEffectivelyEnabled(Visual? parent)
+        private void UpdateIsEffectivelyEnabled(bool state)
         {
-            IsEffectivelyVisible = parent?.IsVisible ?? IsVisible;
+            IsEffectivelyVisible = state;
 
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.
@@ -217,22 +217,13 @@ namespace Avalonia
             {
                 var child = children[i];
 
-                child?.UpdateIsEffectivelyEnabled(this);
+                child?.UpdateIsEffectivelyEnabled(state);
             }
-        }
-        
-        /// <summary>
-        /// Updates the <see cref="IsEffectivelyVisible"/> property value according to the parent
-        /// control's visibility state. 
-        /// </summary>
-        protected void UpdateIsEffectivelyEnabled()
-        {
-            UpdateIsEffectivelyEnabled(this.GetVisualParent<Visual>());
         }
 
         private static void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            ((Visual)e.Sender).UpdateIsEffectivelyEnabled();
+            ((Visual)e.Sender).UpdateIsEffectivelyEnabled(e.GetNewValue<bool>());
         }
 
         /// <summary>
@@ -521,13 +512,10 @@ namespace Avalonia
             InvalidateVisual();
             _visualRoot.Renderer.RecalculateChildren(_visualParent!);
 
-            if (ZIndex != 0 && VisualParent is Visual parent)
-                parent.HasNonUniformZIndexChildren = true;
+            SyncIsEffectivelyEnabledFromParent();
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
-
-            UpdateIsEffectivelyEnabled();
 
             for (var i = 0; i < visualChildrenCount; i++)
             {
@@ -536,6 +524,15 @@ namespace Avalonia
                     child.OnAttachedToVisualTreeCore(e);
                 }
             }
+        }
+
+        private void SyncIsEffectivelyEnabledFromParent()
+        {
+            if (VisualParent is not { } parent) return;
+            if (ZIndex != 0)
+                parent.HasNonUniformZIndexChildren = true;
+            
+            UpdateIsEffectivelyEnabled(parent.IsVisible);
         }
 
         /// <summary>
@@ -560,6 +557,8 @@ namespace Avalonia
 
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root.Renderer.AddDirty(this);
+
+            SyncIsEffectivelyEnabledFromParent();
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
