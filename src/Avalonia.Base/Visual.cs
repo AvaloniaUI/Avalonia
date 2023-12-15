@@ -451,7 +451,19 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == FlowDirectionProperty)
+            if (change.Property == RenderTransformProperty)
+            {
+                RenderTransformChanged(this, change);
+            }
+            else if (change.Property == IsVisibleProperty)
+            {
+                IsVisibleChanged(change);
+            }
+            else if (change.Property == ZIndexProperty)
+            {
+                ZIndexChanged(change);
+            } 
+            else if (change.Property == FlowDirectionProperty)
             {
                 InvalidateMirrorTransform();
 
@@ -459,18 +471,6 @@ namespace Avalonia
                 {
                     child.InvalidateMirrorTransform();
                 }
-            }
-            else if (change.Property == RenderTransformProperty)
-            {
-                RenderTransformChanged(this, change);
-            }
-            else if (change.Property == ZIndexProperty)
-            {
-                ZIndexChanged(change);
-            }
-            else if (change.Property == IsVisibleProperty)
-            {
-                IsVisibleChanged(change);
             }
         }
 
