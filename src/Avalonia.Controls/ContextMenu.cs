@@ -270,7 +270,7 @@ namespace Avalonia.Controls
             }
 
             control ??= _attachedControls![0];
-            Open(control, PlacementTarget ?? control, false);
+            Open(control, PlacementTarget ?? control, Placement);
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace Avalonia.Controls
             remove => _popupHostChangedHandler -= value;
         }
 
-        private void Open(Control control, Control placementTarget, bool requestedByPointer)
+        private void Open(Control control, Control placementTarget, PlacementMode placement)
         {
             if (IsOpen)
             {
@@ -335,9 +335,7 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
 
-            _popup.Placement = !requestedByPointer && Placement == PlacementMode.Pointer
-                ? PlacementMode.Bottom
-                : Placement;
+            _popup.Placement = placement;
 
             //Position of the line below is really important. 
             //All styles are being applied only when control has logical parent.
@@ -425,7 +423,10 @@ namespace Avalonia.Controls
                 && !contextMenu.CancelOpening())
             {
                 var requestedByPointer = e.TryGetPosition(null, out _);
-                contextMenu.Open(control, e.Source as Control ?? control, requestedByPointer);
+                contextMenu.Open(
+                    control, 
+                    e.Source as Control ?? control, 
+                    requestedByPointer ? contextMenu.Placement : PlacementMode.Bottom);
                 e.Handled = true;
             }
         }
