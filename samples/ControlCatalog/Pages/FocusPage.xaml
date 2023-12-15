@@ -6,19 +6,29 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.FocusPage">
   <TabControl>
-    <TabItem x:Name="XYTab" Header="XY Focus">
-      <StackPanel>
-        <ToggleSwitch Content="Keyboard XY navigation" IsChecked="{Binding #XYTab.(XYFocus.KeyboardNavigationEnabled)}" />
-        <ComboBox x:Name="NavigationStrategy" SelectedIndex="0">
-          <ComboBox.ItemsSource>
-            <generic:List x:TypeArguments="XYFocusNavigationStrategy">
-              <XYFocusNavigationStrategy>Projection</XYFocusNavigationStrategy>
-              <XYFocusNavigationStrategy>NavigationDirectionDistance</XYFocusNavigationStrategy>
-              <XYFocusNavigationStrategy>RectilinearDistance</XYFocusNavigationStrategy>
-            </generic:List>
-          </ComboBox.ItemsSource>
-        </ComboBox>
-        
+    <TabItem Header="XY Focus">
+      <StackPanel x:Name="TabRoot" XYFocus.KeyboardNavigationEnabled="{Binding #KeyboardNavigation.SelectedItem}">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Navigation: " />
+          <ComboBox x:Name="KeyboardNavigation" SelectedIndex="0">
+            <ComboBox.ItemsSource>
+              <generic:List x:TypeArguments="XYFocusKeyboardNavigationMode">
+                <XYFocusKeyboardNavigationMode>Enabled</XYFocusKeyboardNavigationMode>
+                <XYFocusKeyboardNavigationMode>Disabled</XYFocusKeyboardNavigationMode>
+              </generic:List>
+            </ComboBox.ItemsSource>
+          </ComboBox>
+          <ComboBox x:Name="NavigationStrategy" SelectedIndex="0">
+            <ComboBox.ItemsSource>
+              <generic:List x:TypeArguments="XYFocusNavigationStrategy">
+                <XYFocusNavigationStrategy>Projection</XYFocusNavigationStrategy>
+                <XYFocusNavigationStrategy>NavigationDirectionDistance</XYFocusNavigationStrategy>
+                <XYFocusNavigationStrategy>RectilinearDistance</XYFocusNavigationStrategy>
+              </generic:List>
+            </ComboBox.ItemsSource>
+          </ComboBox>
+        </StackPanel>
+
         <Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="500">
           <Canvas.Styles>
             <Style Selector="Button">
@@ -28,13 +38,8 @@
               <Setter Property="XYFocus.RightNavigationStrategy" Value="{Binding #NavigationStrategy.SelectedItem}" />
             </Style>
           </Canvas.Styles>
-          
-          <Button Canvas.Top="0" Canvas.Left="50" Width="150" Height="150">A</Button>
-          <ListBox Canvas.Top="400" Width="400" XYFocus.IsFocusEngagementEnabled="True">
-            <ListBoxItem>asd</ListBoxItem>
-            <ListBoxItem>sdf</ListBoxItem>
-          </ListBox>
 
+          <Button Canvas.Top="0" Canvas.Left="50" Width="150" Height="150">A</Button>
           <Button Canvas.Top="150" Canvas.Left="400" Width="50" Height="50">C</Button>
           <Button Canvas.Top="200" Canvas.Left="0" Width="50" Height="50">B</Button>
           <Button Canvas.Top="300" Canvas.Left="100" Width="50" Height="50">D</Button>
@@ -43,4 +48,3 @@
     </TabItem>
   </TabControl>
 </UserControl>
-

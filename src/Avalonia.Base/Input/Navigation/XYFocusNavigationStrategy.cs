@@ -1,7 +1,15 @@
 ﻿namespace Avalonia.Input;
 
+/// <summary>
+/// Specifies the disambiguation strategy used for navigating between multiple candidate targets using
+/// <see cref="XYFocus.DownNavigationStrategyProperty"/>, <see cref="XYFocus.LeftNavigationStrategyProperty"/>,
+/// <see cref="XYFocus.RightNavigationStrategyProperty"/>, and <see cref="XYFocus.UpNavigationStrategyProperty"/>.
+/// </summary>
 public enum XYFocusNavigationStrategy
 {
+    /// <summary>
+    /// Indicates that navigation strategy is inherited from the element's ancestors. If all ancestors have a value of Auto, the fallback strategy is Projection.
+    /// </summary>
     Auto,
     
     /// <summary>

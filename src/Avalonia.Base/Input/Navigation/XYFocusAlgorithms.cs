@@ -49,9 +49,7 @@ internal static class XYFocusAlgorithms
                 secondaryAxisDistance = 0;
             }
 
-            // Note: original UWP code calculates length by combining these two.
-            var length = new Vector(primaryAxisDistance, secondaryAxisDistance).Length;
-            score = maxDistance - length;
+            score = maxDistance - (primaryAxisDistance + secondaryAxisDistance);
         }
 
         return score;

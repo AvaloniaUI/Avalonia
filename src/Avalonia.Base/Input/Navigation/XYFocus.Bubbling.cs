@@ -89,18 +89,25 @@ public partial class XYFocus
             // We can cast just by offsetting values because we have ensured that the XYFocusStrategy enums offset as expected
             return (XYFocusNavigationStrategy)(int)(navigationStrategyOverride.Value - 1);
         }
-        else if (isAutoOverride && element.Parent is InputElement parent)
+        else if (isAutoOverride && element.GetVisualParent() is InputElement parent)
         {
             // Skip the element if we have an auto override and look at its parent's strategy
             element = parent;
         }
         
         var index = GetXYFocusNavigationStrategyPropertyIndex(element, direction);
-        if (index != null)
+        if (index is not null)
         {
-            var mode = (XYFocusNavigationStrategy)element.GetValue(index)!;
-            if (mode != default)
-                return mode;
+            var current = element;
+            while (current != null && current.GetValue(index) is XYFocusNavigationStrategy mode)
+            {
+                if (mode != XYFocusNavigationStrategy.Auto)
+                {
+                    return mode;
+                }
+
+                current = current.GetVisualParent() as InputElement;
+            }
         }
 
         return XYFocusNavigationStrategy.Projection;

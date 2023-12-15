@@ -71,23 +71,23 @@ public partial class XYFocus
     public static XYFocusNavigationStrategy GetRightNavigationStrategy(InputElement obj) =>
         obj.GetValue(RightNavigationStrategyProperty);
 
-    public static readonly AttachedProperty<bool> KeyboardNavigationEnabledProperty =
-        AvaloniaProperty.RegisterAttached<XYFocus, InputElement, bool>(
+    public static readonly AttachedProperty<XYFocusKeyboardNavigationMode> KeyboardNavigationEnabledProperty =
+        AvaloniaProperty.RegisterAttached<XYFocus, InputElement, XYFocusKeyboardNavigationMode>(
             "KeyboardNavigation", inherits: true);
 
-    public static void SetKeyboardNavigationEnabled(InputElement obj, bool value) =>
+    public static void SetKeyboardNavigationEnabled(InputElement obj, XYFocusKeyboardNavigationMode value) =>
         obj.SetValue(KeyboardNavigationEnabledProperty, value);
 
-    public static bool GetKeyboardNavigationEnabled(InputElement obj) =>
+    public static XYFocusKeyboardNavigationMode GetKeyboardNavigationEnabled(InputElement obj) =>
         obj.GetValue(KeyboardNavigationEnabledProperty);
-
-    public static readonly AttachedProperty<bool> IsFocusEngagementEnabledProperty =
+    
+    internal static readonly AttachedProperty<bool> IsFocusEngagementEnabledProperty =
         AvaloniaProperty.RegisterAttached<XYFocus, InputElement, bool>("IsFocusEngagementEnabled");
 
-    public static void SetIsFocusEngagementEnabled(InputElement obj, bool value) => obj.SetValue(IsFocusEngagementEnabledProperty, value);
-    public static bool GetIsFocusEngagementEnabled(InputElement obj) => obj.GetValue(IsFocusEngagementEnabledProperty);
+    internal static void SetIsFocusEngagementEnabled(InputElement obj, bool value) => obj.SetValue(IsFocusEngagementEnabledProperty, value);
+    internal static bool GetIsFocusEngagementEnabled(InputElement obj) => obj.GetValue(IsFocusEngagementEnabledProperty);
 
-    public static readonly AttachedProperty<bool> IsFocusEngagedProperty =
+    internal static readonly AttachedProperty<bool> IsFocusEngagedProperty =
         AvaloniaProperty.RegisterAttached<XYFocus, Visual, bool>("IsFocusEngaged", coerce: IsFocusEngagedCoerce);
 
     private static bool IsFocusEngagedCoerce(AvaloniaObject sender, bool value)
@@ -95,8 +95,8 @@ public partial class XYFocus
         return value && sender is InputElement inputElement && GetIsFocusEngagementEnabled(inputElement);
     }
 
-    public static void SetIsFocusEngaged(Visual obj, bool value) => obj.SetValue(IsFocusEngagedProperty, value);
-    public static bool GetIsFocusEngaged(Visual obj) => obj.GetValue(IsFocusEngagedProperty);
+    internal static void SetIsFocusEngaged(Visual obj, bool value) => obj.SetValue(IsFocusEngagedProperty, value);
+    internal static bool GetIsFocusEngaged(Visual obj) => obj.GetValue(IsFocusEngagedProperty);
 
     static XYFocus()
     {

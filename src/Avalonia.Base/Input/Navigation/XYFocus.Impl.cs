@@ -50,7 +50,7 @@ public partial class XYFocus
         XYFocusAlgorithms.UpdateManifolds(direction, elementBounds, candidateBounds, mManifolds);
     }
 
-    internal static InputElement? GetNextFocusableElement(
+    internal static InputElement? TryDirectionalFocus(
         NavigationDirection direction,
         IInputElement? element,
         InputElement? engagedControl)
@@ -79,7 +79,15 @@ public partial class XYFocus
             // TODO: handle non-Visual IInputElement implementations, like TextElement, when we support that.
             return null;
         }
-        
+
+        // UWP still allows XY navigation via programmatic way or with Gamepad/Controller, when KeyboardNavigationEnabled is false,
+        // as KeyboardNavigationEnabled should only affect keyboard input.
+        // TODO: remove this condition after FocusManager refactoring or addition of basic Gamepad input.
+        if (GetKeyboardNavigationEnabled(inputElement) != XYFocusKeyboardNavigationMode.Enabled)
+        {
+            return null;
+        }
+
         if (!(GetBoundsForRanking(inputElement, true) is { } bounds))
         {
             return null;
@@ -90,7 +98,7 @@ public partial class XYFocus
         return _instance.GetNextFocusableElement(direction, inputElement, engagedControl, true, new XYFocusOptions
         {
             FocusedElementBounds = bounds,
-            ShouldConsiderXYFocusKeyboardNavigation = GetKeyboardNavigationEnabled(inputElement),
+            ShouldConsiderXYFocusKeyboardNavigation = true,
             UpdateManifold = true,
             SearchRoot = inputElement.GetVisualRoot() as InputElement
         });

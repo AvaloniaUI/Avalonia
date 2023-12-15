@@ -63,7 +63,7 @@ namespace Avalonia.Input
                 NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
                 NavigationDirection.Up or NavigationDirection.Down
                     or NavigationDirection.Left or NavigationDirection.Right
-                    => XYFocus.GetNextFocusableElement(direction, element, null),
+                    => XYFocus.TryDirectionalFocus(direction, element, null),
                 _ => throw new NotSupportedException(),
             };
 

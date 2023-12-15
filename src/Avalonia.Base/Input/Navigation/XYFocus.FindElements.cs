@@ -61,8 +61,9 @@ public partial class XYFocus
             shouldConsiderXYFocusKeyboardNavigation &&
             IsDirectionalRegion(element);
 
-        return element.IsEffectivelyVisible &&
-               element.IsEffectivelyEnabled &&
+        // We don't need to check for effective values, as we've already checked parents of this subtree on previous steps. 
+        return element.IsVisible &&
+               element.IsEnabled &&
                (!shouldConsiderXYFocusKeyboardNavigation || isDirectionalRegion);
     }
 
@@ -104,7 +105,8 @@ public partial class XYFocus
         if (element is null)
             return false;
 
-        return GetKeyboardNavigationEnabled(element);
+        var mode = GetKeyboardNavigationEnabled(element);
+        return mode != XYFocusKeyboardNavigationMode.Disabled;
     }
     
     private static bool IsOccluded(InputElement element, Rect elementBounds)
