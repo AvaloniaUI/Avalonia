@@ -104,7 +104,7 @@ namespace Avalonia
         /// </summary>
         public static readonly DirectProperty<Visual, Visual?> VisualParentProperty =
             AvaloniaProperty.RegisterDirect<Visual, Visual?>(nameof(VisualParent), o => o._visualParent);
-
+        
         /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
         /// </summary>
@@ -120,6 +120,7 @@ namespace Avalonia
         private IRenderRoot? _visualRoot;
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
+        
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
 
         /// <summary>
@@ -195,24 +196,43 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
-        public bool IsEffectivelyVisible
+        public bool IsEffectivelyVisible { get; private set;  }
+        
+        /// <summary>
+        /// Updates the <see cref="IsEffectivelyVisible"/> property based on the parent's
+        /// <see cref="IsEffectivelyVisible"/>.
+        /// </summary>
+        /// <param name="parent">The parent control.</param>
+        private void UpdateIsEffectivelyEnabled(Visual? parent)
         {
-            get
+            IsEffectivelyVisible = parent?.IsVisible ?? IsVisible;
+
+            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // will cause extra allocations and overhead.
+            
+            var children = VisualChildren;
+
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < children.Count; ++i)
             {
-                Visual? node = this;
+                var child = children[i];
 
-                while (node != null)
-                {
-                    if (!node.IsVisible)
-                    {
-                        return false;
-                    }
-
-                    node = node.VisualParent;
-                }
-
-                return true;
+                child?.UpdateIsEffectivelyEnabled(this);
             }
+        }
+        
+        /// <summary>
+        /// Updates the <see cref="IsEffectivelyVisible"/> property value according to the parent
+        /// control's visibility state. 
+        /// </summary>
+        protected void UpdateIsEffectivelyEnabled()
+        {
+            UpdateIsEffectivelyEnabled(this.GetVisualParent<Visual>());
+        }
+
+        private static void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            ((Visual)e.Sender).UpdateIsEffectivelyEnabled();
         }
 
         /// <summary>
@@ -453,7 +473,11 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == FlowDirectionProperty)
+            if (change.Property == IsVisibleProperty)
+            {
+                IsVisibleChanged(change);
+            } 
+            else if (change.Property == FlowDirectionProperty)
             {
                 InvalidateMirrorTransform();
 
@@ -463,7 +487,7 @@ namespace Avalonia
                 }
             }
         }
-
+ 
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
@@ -502,6 +526,8 @@ namespace Avalonia
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
+
+            UpdateIsEffectivelyEnabled();
 
             for (var i = 0; i < visualChildrenCount; i++)
             {
