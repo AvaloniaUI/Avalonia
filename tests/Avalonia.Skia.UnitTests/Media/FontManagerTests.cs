@@ -23,6 +23,10 @@ namespace Avalonia.Skia.UnitTests.Media
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("微软雅黑"), out var glyphTypeface));
 
                     Assert.Equal("Microsoft YaHei", glyphTypeface.FamilyName);
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("微软雅黑111"), out glyphTypeface));
+
+                    Assert.Equal("Segoe UI", glyphTypeface.FamilyName);
                 }
             }
         }
