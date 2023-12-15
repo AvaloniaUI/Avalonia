@@ -136,9 +136,6 @@ namespace Avalonia
                 OpacityMaskProperty,
                 EffectProperty,
                 HasMirrorTransformProperty);
-            RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
-            ZIndexProperty.Changed.Subscribe(ZIndexChanged);
-            IsVisibleProperty.Changed.Subscribe(IsVisibleChanged);
         }
 
         /// <summary>
@@ -462,6 +459,18 @@ namespace Avalonia
                 {
                     child.InvalidateMirrorTransform();
                 }
+            }
+            else if (change.Property == RenderTransformProperty)
+            {
+                RenderTransformChanged(this, change);
+            }
+            else if (change.Property == ZIndexProperty)
+            {
+                ZIndexChanged(change);
+            }
+            else if (change.Property == IsVisibleProperty)
+            {
+                IsVisibleChanged(change);
             }
         }
 
