@@ -150,6 +150,7 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
 {
     public IOSStorageFolder(NSUrl url) : base(url)
     {
+        Url.StartAccessingSecurityScopedResource();
     }
 
     public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
@@ -215,5 +216,11 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
         }
         
         return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    public new void Dispose()
+    {
+        base.Dispose();
+        Url.StopAccessingSecurityScopedResource();
     }
 }
