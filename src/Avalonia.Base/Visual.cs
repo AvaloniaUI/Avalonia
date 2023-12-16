@@ -205,7 +205,8 @@ namespace Avalonia
         /// <param name="parent">The parent control.</param>
         private void UpdateIsEffectivelyVisible(bool state)
         {
-            IsEffectivelyVisible = state && (_visualParent?.IsVisible ?? true);
+            // Default to true if there's no Visual parent.
+            IsEffectivelyVisible = state && (_visualParent?.IsVisible ?? true); 
 
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.
@@ -217,7 +218,9 @@ namespace Avalonia
             {
                 var child = children[i];
 
-                if (child.IsVisible)
+                // Don't override IsEffectivelyVisible
+                // if it's already set on the child visual 
+                if (child.IsVisible) 
                 {
                     child.UpdateIsEffectivelyVisible(state);
                 }
@@ -535,6 +538,7 @@ namespace Avalonia
 
         private void SyncIsEffectivelyVisible(Visual? parent)
         {
+            // Default to true if there's no Visual parent.
             var vis = (parent?.IsVisible ?? true) && IsVisible;
             UpdateIsEffectivelyVisible(vis);
         }
