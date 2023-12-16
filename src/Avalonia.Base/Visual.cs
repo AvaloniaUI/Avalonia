@@ -203,9 +203,9 @@ namespace Avalonia
         /// <see cref="IsEffectivelyVisible"/>.
         /// </summary>
         /// <param name="parent">The parent control.</param>
-        private void UpdateIsEffectivelyEnabled(bool state)
+        private void UpdateIsEffectivelyVisible(bool state)
         {
-            IsEffectivelyVisible = state;
+            IsEffectivelyVisible = state && (_visualParent?.IsVisible ?? true);
 
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.
@@ -217,13 +217,16 @@ namespace Avalonia
             {
                 var child = children[i];
 
-                child?.UpdateIsEffectivelyEnabled(state);
+                if (child.IsVisible)
+                {
+                    child.UpdateIsEffectivelyVisible(state);
+                }
             }
         }
 
         private static void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            ((Visual)e.Sender).UpdateIsEffectivelyEnabled(e.GetNewValue<bool>());
+            ((Visual)e.Sender).UpdateIsEffectivelyVisible(e.GetNewValue<bool>());
         }
 
         /// <summary>
@@ -516,7 +519,7 @@ namespace Avalonia
             if (ZIndex != 0 && _visualParent is { })
                 _visualParent.HasNonUniformZIndexChildren = true;
             
-            SyncIsEffectivelyEnabledFromParent(_visualParent);
+            SyncIsEffectivelyVisible(_visualParent);
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
@@ -530,11 +533,10 @@ namespace Avalonia
             }
         }
 
-        private void SyncIsEffectivelyEnabledFromParent(Visual? parent)
+        private void SyncIsEffectivelyVisible(Visual? parent)
         {
-            var vis = (parent?.IsVisible ?? false) && IsVisible;
-            
-            UpdateIsEffectivelyEnabled(vis);
+            var vis = (parent?.IsVisible ?? true) && IsVisible;
+            UpdateIsEffectivelyVisible(vis);
         }
 
         /// <summary>
@@ -560,7 +562,7 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root.Renderer.AddDirty(this);
 
-            SyncIsEffectivelyEnabledFromParent(_visualParent);
+            SyncIsEffectivelyVisible(_visualParent);
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
