@@ -311,7 +311,6 @@ namespace Avalonia.Controls
                 }
             });
         }
-
         /// <summary>
         /// Fired when the window is opened.
         /// </summary>
@@ -712,6 +711,7 @@ namespace Avalonia.Controls
             OnClosed(EventArgs.Empty);
 
             LayoutManager.Dispose();
+            _platformImplBindings.Clear();
         }
 
         /// <summary>
