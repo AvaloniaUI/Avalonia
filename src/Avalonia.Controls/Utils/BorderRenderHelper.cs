@@ -133,7 +133,7 @@ namespace Avalonia.Controls.Utils
 
                 if (borderBrush != null && borderThickness > 0)
                 {
-                    pen = new ImmutablePenWithDynamicBrush(
+                    pen = new Pen(
                         borderBrush,
                         borderThickness,
                         dashStyle,

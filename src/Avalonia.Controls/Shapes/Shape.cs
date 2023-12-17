@@ -201,7 +201,7 @@ namespace Avalonia.Controls.Shapes
             {
                 var stroke = Stroke;
 
-                ImmutablePenWithDynamicBrush? pen = null;
+                Pen? pen = null;
 
                 if (stroke != null)
                 {
@@ -214,7 +214,7 @@ namespace Avalonia.Controls.Shapes
                         dashStyle = new ImmutableDashStyle(strokeDashArray, StrokeDashOffset);
                     }
 
-                    pen = new ImmutablePenWithDynamicBrush(
+                    pen = new Pen(
                         stroke,
                         StrokeThickness,
                         dashStyle,
