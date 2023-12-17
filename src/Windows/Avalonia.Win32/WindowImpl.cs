@@ -1348,7 +1348,7 @@ namespace Avalonia.Win32
             else
                 SetFullScreen(newProperties.IsFullScreen);
 
-            if (!_isFullScreenActive)
+            if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
             {
                 var style = GetStyle();
 
