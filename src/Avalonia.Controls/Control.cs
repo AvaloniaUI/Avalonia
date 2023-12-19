@@ -380,10 +380,13 @@ namespace Avalonia.Controls
 
         private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
         {
-            if (!e.Handled && e.HoldingState == HoldingState.Started)
+            if (e.Source == this && !e.Handled && e.HoldingState == HoldingState.Started)
             {
                 // Trigger ContentRequest when hold has started
-                RaiseEvent(e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs());
+                var contextEvent = e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs();
+                RaiseEvent(contextEvent);
+
+                e.Handled = contextEvent.Handled;
             }
         }
 
