@@ -11,8 +11,8 @@ namespace Avalonia.Controls;
 internal interface IGroupRadioButton : ILogical
 {
     string? GroupName { get; }
+    MenuItemToggleType ToggleType { get; }
     bool IsChecked { get; set; }
-    void SubscribeOnChecked(Action<IGroupRadioButton> action);
 }
 
 internal class RadioButtonGroupManager
@@ -43,8 +43,6 @@ internal class RadioButtonGroupManager
 
             group.Add(new WeakReference<IGroupRadioButton>(radioButton));
         }
-
-        radioButton.SubscribeOnChecked(OnCheckedChanged);
     }
 
     public void Remove(IGroupRadioButton radioButton, string? oldGroupName)
@@ -80,7 +78,8 @@ internal class RadioButtonGroupManager
         _ignoreCheckedChanges = true;
         try
         {
-            if (radioButton.GroupName is { Length: > 0 } groupName)
+            var groupName = radioButton.GroupName;
+            if (!string.IsNullOrEmpty(groupName))
             {
                 if (_registeredGroups.TryGetValue(groupName, out var group))
                 {
@@ -117,7 +116,10 @@ internal class RadioButtonGroupManager
                 {
                     foreach (var sibling in parent.LogicalChildren)
                     {
-                        if (sibling != radioButton && sibling is IGroupRadioButton { IsChecked: true } button)
+                        if (sibling != radioButton
+                            && sibling is IGroupRadioButton { ToggleType: MenuItemToggleType.Radio } button
+                            && string.IsNullOrEmpty(button.GroupName)
+                            && button.IsChecked)
                         {
                             button.IsChecked = false;
                         }

@@ -97,7 +97,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the interaction handler for the menu.
         /// </summary>
-        protected IMenuInteractionHandler InteractionHandler { get; }
+        protected internal IMenuInteractionHandler InteractionHandler { get; }
 
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is opened.

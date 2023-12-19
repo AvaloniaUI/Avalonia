@@ -44,6 +44,8 @@ namespace Avalonia.Controls.Platform
         public void Attach(MenuBase menu) => AttachCore(menu);
         public void Detach(MenuBase menu) => DetachCore(menu);
 
+        internal RadioButtonGroupManager? RadioGroupManager => _groupManager;
+        
         protected Action<Action, TimeSpan> DelayRun { get; }
 
         protected IInputManager? InputManager { get; }

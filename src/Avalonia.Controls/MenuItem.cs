@@ -6,6 +6,7 @@ using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -126,7 +127,6 @@ namespace Avalonia.Controls
         private Popup? _popup;
         private KeyGesture? _hotkey;
         private bool _isEmbeddedInMenu;
-        private Action<IGroupRadioButton>? _radioGroupOnChangedHandler;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -319,9 +319,7 @@ namespace Avalonia.Controls
             get => GetValue(GroupNameProperty);
             set => SetValue(GroupNameProperty, value);
         }
-
-        void IGroupRadioButton.SubscribeOnChecked(Action<IGroupRadioButton> action) => _radioGroupOnChangedHandler = action;
-
+        
         /// <summary>
         /// Gets or sets a value that indicates whether the <see cref="MenuItem"/> has a submenu.
         /// </summary>
@@ -708,7 +706,9 @@ namespace Avalonia.Controls
 
             if (newValue)
             {
-                _radioGroupOnChangedHandler?.Invoke(this);
+                var parentMenu = this.FindLogicalAncestorOfType<MenuBase>();
+                var interactionHandler = parentMenu?.InteractionHandler as DefaultMenuInteractionHandler;
+                interactionHandler?.RadioGroupManager?.OnCheckedChanged(this);
             }
         }
         
