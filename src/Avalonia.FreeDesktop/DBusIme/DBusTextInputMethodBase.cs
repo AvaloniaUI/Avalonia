@@ -184,8 +184,11 @@ namespace Avalonia.FreeDesktop.DBusIme
             foreach(var d in _disposables)
                 d.Dispose();
             _disposables.Clear();
-            _ = DisconnectAsync();
-            _currentName = null;
+            if (IsConnected)
+            {
+                _ = DisconnectAsync();
+                _currentName = null;
+            }
         }
 
         protected abstract Task SetCursorRectCore(PixelRect rect);
