@@ -36,7 +36,9 @@ namespace Avalonia.Win32
                         [!MenuItem.CommandProperty] = item.GetObservable(NativeMenuItem.CommandProperty).ToBinding(),
                         [!MenuItem.CommandParameterProperty] = item.GetObservable(NativeMenuItem.CommandParameterProperty).ToBinding(),
                         [!MenuItem.InputGestureProperty] = item.GetObservable(NativeMenuItem.GestureProperty).ToBinding(),
-                        [!MenuItem.ToggleTypeProperty] = item.GetObservable(NativeMenuItem.ToggleTypeProperty).ToBinding()
+                        [!MenuItem.ToggleTypeProperty] = item.GetObservable(NativeMenuItem.ToggleTypeProperty)
+                            // TODO12 remove NativeMenuItemToggleType
+                            .Select(v => (MenuItemToggleType)v).ToBinding()
                     };
 
                     BindingOperations.Apply(newItem, MenuItem.IsCheckedProperty, InstancedBinding.TwoWay(
