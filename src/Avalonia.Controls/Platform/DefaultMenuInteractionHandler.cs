@@ -43,8 +43,6 @@ namespace Avalonia.Controls.Platform
 
         public void Attach(MenuBase menu) => AttachCore(menu);
         public void Detach(MenuBase menu) => DetachCore(menu);
-
-        internal RadioButtonGroupManager? RadioGroupManager => _groupManager;
         
         protected Action<Action, TimeSpan> DelayRun { get; }
 
@@ -578,6 +576,26 @@ namespace Avalonia.Controls.Platform
             {
                 current.Parent.SelectedItem = current;
                 current = current.Parent as IMenuItem;
+            }
+        }
+
+        internal void OnCheckedChanged(IMenuItem item)
+        {
+            if (item is IGroupRadioButton radioButton)
+            {
+                _groupManager?.OnCheckedChanged(radioButton);
+            }
+        }
+        
+        internal void OnGroupOrTypeChanged(IGroupRadioButton button, string? oldGroupName)
+        {
+            if (!string.IsNullOrEmpty(oldGroupName))
+            {
+                _groupManager?.Remove(button, oldGroupName);
+            }
+            if (!string.IsNullOrEmpty(button.GroupName))
+            {
+                _groupManager?.Add(button);
             }
         }
 

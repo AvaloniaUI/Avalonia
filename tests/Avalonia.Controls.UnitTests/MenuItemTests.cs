@@ -484,9 +484,18 @@ namespace Avalonia.Controls.UnitTests
             {
                 Items =
                 {
-                    (menuItem1 = new MenuItem { GroupName = "A", IsChecked = false }),
-                    (menuItem2 = new MenuItem { GroupName = "A", IsChecked = true }),
-                    (menuItem3 = new MenuItem { GroupName = "A", IsChecked = false })
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    })
                 }
             };
 
@@ -505,6 +514,54 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
+        public void Radio_Menu_Group_Can_Be_Changed_In_Runtime()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+            
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+
+            menuItem3.GroupName = "A";
+            menuItem3.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+
+            menuItem3.GroupName = null;
+            menuItem1.IsChecked = true;
+            
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+        }
+        
+        [Fact]
         public void Radio_MenuItem_In_Same_Group_But_Submenu_Is_Unchecked()
         {
             using var app = Application();
@@ -515,14 +572,27 @@ namespace Avalonia.Controls.UnitTests
             {
                 Items =
                 {
-                    (menuItem1 = new MenuItem { GroupName = "A", IsChecked = false }),
-                    (menuItem2 = new MenuItem { GroupName = "A", IsChecked = false }),
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
                     (menuItem3 = new MenuItem
                     {
-                        GroupName = "A", IsChecked = true,
+                        GroupName = "A",
+                        IsChecked = true,
+                        ToggleType = MenuItemToggleType.Radio,
                         Items =
                         {
-                            (menuItem4 = new MenuItem { GroupName = "A", IsChecked = true })
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = "A",
+                                IsChecked = true,
+                                ToggleType = MenuItemToggleType.Radio
+                            })
                         }
                     }),
                 }
@@ -555,14 +625,27 @@ namespace Avalonia.Controls.UnitTests
             {
                 Items =
                 {
-                    (menuItem1 = new MenuItem { GroupName = "A", IsChecked = false }),
-                    (menuItem2 = new MenuItem { GroupName = "A", IsChecked = true }),
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
                     (menuItem3 = new MenuItem
                     {
-                        GroupName = "A", IsChecked = false,
+                        GroupName = "A",
+                        IsChecked = false,
+                        ToggleType = MenuItemToggleType.Radio,
                         Items =
                         {
-                            (menuItem4 = new MenuItem { GroupName = "A", IsChecked = false })
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = "A",
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            })
                         }
                     }),
                 }
@@ -595,10 +678,22 @@ namespace Avalonia.Controls.UnitTests
             {
                 Items =
                 {
-                    (menuItem1 = new MenuItem { GroupName = "A", IsChecked = true }),
-                    (menuItem2 = new MenuItem { GroupName = "A", IsChecked = false }),
-                    (menuItem3 = new MenuItem { GroupName = null, IsChecked = false }),
-                    (menuItem4 = new MenuItem { GroupName = null, IsChecked = true })
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem4 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    })
                 }
             };
 
@@ -629,16 +724,31 @@ namespace Avalonia.Controls.UnitTests
             {
                 Items =
                 {
-                    (menuItem1 = new MenuItem { GroupName = null, IsChecked = true }),
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
                     (menuItem2 = new MenuItem
                     {
-                        GroupName = null, IsChecked = false,
+                        GroupName = null,
+                        IsChecked = false,
+                        ToggleType = MenuItemToggleType.Radio,
                         Items =
                         {
-                            (menuItem3 = new MenuItem { GroupName = null, IsChecked = false }),
-                            (menuItem4 = new MenuItem { GroupName = null, IsChecked = false }),
+                            (menuItem3 = new MenuItem
+                            {
+                                GroupName = null,
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            }),
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = null,
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            }),
                         }
-                    }),
+                    })
                 }
             };
 

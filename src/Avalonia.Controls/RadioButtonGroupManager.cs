@@ -33,7 +33,7 @@ internal class RadioButtonGroupManager
     public void Add(IGroupRadioButton radioButton)
     {
         var groupName = radioButton.GroupName;
-        if (groupName is not null)
+        if (groupName is not null && radioButton.ToggleType == MenuItemToggleType.Radio)
         {
             if (!_registeredGroups.TryGetValue(groupName, out var group))
             {
@@ -70,7 +70,7 @@ internal class RadioButtonGroupManager
 
     public void OnCheckedChanged(IGroupRadioButton radioButton)
     {
-        if (_ignoreCheckedChanges)
+        if (_ignoreCheckedChanges || radioButton.ToggleType != MenuItemToggleType.Radio)
         {
             return;
         }

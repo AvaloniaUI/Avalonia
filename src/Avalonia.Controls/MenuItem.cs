@@ -293,7 +293,7 @@ namespace Avalonia.Controls
             set => SetValue(StaysOpenOnClickProperty, value);
         }
         
-        /// <inheritdoc />
+        /// <inheritdoc cref="IMenuItem.ToggleType" />
         public MenuItemToggleType ToggleType
         {
             get => GetValue(ToggleTypeProperty);
@@ -356,6 +356,8 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IEnumerable<IMenuItem> IMenuElement.SubItems => LogicalChildren.OfType<IMenuItem>();
+
+        private IMenuInteractionHandler? MenuInteractionHandler => this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler;
 
         /// <summary>
         /// Opens the submenu.
@@ -682,6 +684,18 @@ namespace Avalonia.Controls
             {
                 ToggleTypeChanged(change);
             }
+            else if (change.Property == GroupNameProperty)
+            {
+                GroupNameChanged(change);
+            }
+        }
+        /// <summary>
+        /// Called when the <see cref="GroupName"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void GroupNameChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            (MenuInteractionHandler as DefaultMenuInteractionHandler)?.OnGroupOrTypeChanged(this, e.GetOldValue<string>());
         }
 
         /// <summary>
@@ -693,10 +707,12 @@ namespace Avalonia.Controls
             var newValue = e.GetNewValue<MenuItemToggleType>();
             PseudoClasses.Set(":radio", newValue == MenuItemToggleType.Radio);
             PseudoClasses.Set(":toggle", newValue == MenuItemToggleType.CheckBox);
+
+            (MenuInteractionHandler as DefaultMenuInteractionHandler)?.OnGroupOrTypeChanged(this, GroupName);
         }
 
         /// <summary>
-        /// Called when the <see cref="ToggleType"/> property changes.
+        /// Called when the <see cref="IsChecked"/> property changes.
         /// </summary>
         /// <param name="e">The property change event.</param>
         private void IsCheckedChanged(AvaloniaPropertyChangedEventArgs e)
@@ -706,9 +722,7 @@ namespace Avalonia.Controls
 
             if (newValue)
             {
-                var parentMenu = this.FindLogicalAncestorOfType<MenuBase>();
-                var interactionHandler = parentMenu?.InteractionHandler as DefaultMenuInteractionHandler;
-                interactionHandler?.RadioGroupManager?.OnCheckedChanged(this);
+                (MenuInteractionHandler as DefaultMenuInteractionHandler)?.OnCheckedChanged(this);
             }
         }
         
