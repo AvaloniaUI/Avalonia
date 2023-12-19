@@ -62,7 +62,7 @@ namespace Avalonia.Styling
 
                 if (match.IsMatch)
                 {
-                    Attach(target, match.Activator, type);
+                    Attach(target, match.Activator, type, true);
                 }
 
                 result = match.Result;
