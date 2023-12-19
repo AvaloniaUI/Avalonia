@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Threading;
 using CoreFoundation;
+using Foundation;
 
 namespace Avalonia.iOS;
 
@@ -52,7 +53,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
         {
             if (_loopThread != null)
                 return Thread.CurrentThread == _loopThread;
-            if (Interop.CFRunLoopGetMain() != Interop.CFRunLoopGetCurrent())
+            if (!NSThread.IsMain)
                 return false;
             _loopThread = Thread.CurrentThread;
             return true;
