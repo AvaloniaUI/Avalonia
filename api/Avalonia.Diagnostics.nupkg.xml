@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Diagnostics/Views/ConsoleView.xaml</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Diagnostics.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Diagnostics.dll</Right>
+  </Suppression>
+</Suppressions>

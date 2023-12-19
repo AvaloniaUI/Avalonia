@@ -1,10 +1,13 @@
 using System;
+using System.Runtime.Versioning;
 using Avalonia.OpenGL;
 using CoreAnimation;
 using OpenGLES;
 
 namespace Avalonia.iOS
 {
+    [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [SupportedOSPlatform("ios")]
     internal class LayerFbo
     {
         private readonly EAGLContext _context;
@@ -90,6 +93,8 @@ namespace Avalonia.iOS
         }
     }
 
+    [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [SupportedOSPlatform("ios")]
     class SizeSynchronizedLayerFbo : IDisposable
     {
         private readonly EAGLContext _context;

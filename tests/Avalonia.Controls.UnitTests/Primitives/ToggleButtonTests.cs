@@ -1,7 +1,8 @@
 ﻿using Avalonia.Data;
 using Avalonia.UnitTests;
-
 using Xunit;
+
+#pragma warning disable CS0618 // Type or member is obsolete -- we're testing these members
 
 namespace Avalonia.Controls.Primitives.UnitTests
 {

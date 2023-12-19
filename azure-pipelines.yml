@@ -30,14 +30,16 @@ jobs:
     vmImage: 'ubuntu-20.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.415'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.415
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.402'
+    displayName: 'Use .NET 7.0 SDK'
     inputs:
-      version: 7.0.402
+      packageType: sdk
+      useGlobalJson: true
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
@@ -74,14 +76,16 @@ jobs:
     vmImage: 'macos-12'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.404'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.404
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.101'
+    displayName: 'Use .NET 7.0 SDK'
     inputs:
-      version: 7.0.101
+      packageType: sdk
+      useGlobalJson: true
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
@@ -152,14 +156,16 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.404'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.404
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.101'
+    displayName: 'Use .NET 7.0 SDK'
     inputs:
-      version: 7.0.101
+      packageType: sdk
+      useGlobalJson: true
 
   - task: CmdLine@2
     displayName: 'Install Workloads'

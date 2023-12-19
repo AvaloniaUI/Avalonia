@@ -871,3 +871,4 @@ interface IAccessibilitySettings : IInspectable
     [propget] HRESULT HighContrast([out] [retval] boolean* value);
     [propget] HRESULT HighContrastScheme([out] [retval] HSTRING* value);
 }
+

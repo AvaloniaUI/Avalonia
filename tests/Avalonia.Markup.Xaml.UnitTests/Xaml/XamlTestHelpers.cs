@@ -15,6 +15,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 if(e is XmlException)
                     return;
+                throw new Exception("Expected to throw xaml exception", e);
             }
             throw new Exception("Expected to throw xaml exception");
         }

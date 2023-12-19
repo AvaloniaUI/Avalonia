@@ -1,9 +1,8 @@
 using System;
-using System.Diagnostics;
+using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -45,6 +44,7 @@ namespace Avalonia.Android
             ActivityResult?.Invoke(requestCode, resultCode, data);
         }
 
+        [SupportedOSPlatform("android23.0")]
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -55,7 +55,8 @@ namespace Avalonia.Android
 
     public abstract partial class AvaloniaMainActivity<TApp> : AvaloniaMainActivity  where TApp : Application, new()
     {
-        internal AvaloniaView View;
+        internal AvaloniaView View { get; set; }
+
         private GlobalLayoutListener _listener;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -76,9 +77,9 @@ namespace Avalonia.Android
             base.OnResume();
 
             // Android only respects LayoutInDisplayCutoutMode value if it has been set once before window becomes visible.
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
+            if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window is { Attributes: { } attributes })
             {
-                Window.Attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
+                attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
             }
         }
 
@@ -91,9 +92,9 @@ namespace Avalonia.Android
             base.OnDestroy();
         }
 
-        class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
+        private class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
         {
-            private AvaloniaView _view;
+            private readonly AvaloniaView _view;
 
             public GlobalLayoutListener(AvaloniaView view)
             {

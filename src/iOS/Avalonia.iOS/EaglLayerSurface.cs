@@ -1,5 +1,6 @@
 
 using System;
+using System.Runtime.Versioning;
 using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
@@ -7,6 +8,8 @@ using CoreAnimation;
 
 namespace Avalonia.iOS
 {
+    [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [SupportedOSPlatform("ios")]
     class EaglLayerSurface : IGlPlatformSurface
     {
         private readonly CAEAGLLayer _layer;

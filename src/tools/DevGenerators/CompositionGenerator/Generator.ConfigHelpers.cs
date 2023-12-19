@@ -1,23 +1,22 @@
-
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using static Avalonia.SourceGenerator.CompositionGenerator.Extensions;
+
 namespace Avalonia.SourceGenerator.CompositionGenerator;
 
 public partial class Generator
 {
-    class GeneratorTypeInfo
+    private sealed class GeneratorTypeInfo
     {
-        public TypeSyntax RoslynType { get; set; }
-        public string FilteredTypeName { get; set; }
+        public TypeSyntax RoslynType { get; set; } = null!;
+        public string FilteredTypeName { get; set; } = null!;
         public bool IsObject { get; set; }
         public bool IsPassthrough { get; set; }
-        public string ServerType { get; set; }
+        public string ServerType { get; set; } = null!;
         public bool IsNullable { get; set; }
     }
 
-    private Dictionary<string, GeneratorTypeInfo> _typeInfoCache = new();
+    private readonly Dictionary<string, GeneratorTypeInfo> _typeInfoCache = new();
 
     private GeneratorTypeInfo GetTypeInfo(string type)
     {

@@ -104,7 +104,11 @@ namespace Avalonia.Controls
                         // As we only update selection from touch/pen on pointer release, we need to raise
                         // the pointer event on the owner to trigger a commit.
                         if (e.Pointer.Type != PointerType.Mouse)
+                        {
+                            var sourceBackup = e.Source;
                             owner.RaiseEvent(e);
+                            e.Source = sourceBackup;
+                        }
 
                         e.Handled = true;
                     }

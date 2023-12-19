@@ -7,12 +7,15 @@
              d:DesignWidth="800"
              d:DesignHeight="450"
              x:Class="SafeAreaDemo.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:MainViewModel"
+             Background="#ccc"
+             TopLevel.AutoSafeAreaPadding="{Binding AutoSafeAreaPadding, Mode=TwoWay}">
     <Grid HorizontalAlignment="Stretch"
-          VerticalAlignment="Stretch">
-        <Border BorderBrush="Red"
-                Margin="{Binding ViewPadding}"
-                BorderThickness="1">
+          VerticalAlignment="Stretch"
+          Bounds="{Binding CanvasSize, Mode=OneWayToSource}">
+      <Border BorderBrush="Red"
+              Margin="{Binding ViewPadding}"
+              BorderThickness="1">
             <Grid>
             <Label Margin="5"
                    Foreground="Red"
@@ -40,13 +43,25 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
                         <Label HorizontalAlignment="Left">Options:</Label>
-                        <CheckBox IsChecked="{Binding Fullscreen}">Fullscreen</CheckBox>
-                        <CheckBox IsChecked="{Binding UseSafeArea}">Use Safe Area</CheckBox>
+                        <CheckBox IsChecked="{Binding DisplayEdgeToEdge}">Display Edge To Edge</CheckBox>
+                        <CheckBox IsChecked="{Binding UseSafeArea}" IsEnabled="{Binding !AutoSafeAreaPadding}">Use Safe Area</CheckBox>
+                        <CheckBox IsChecked="{Binding AutoSafeAreaPadding}">Automatic Paddings</CheckBox>
                         <CheckBox IsChecked="{Binding HideSystemBars}">Hide System Bars</CheckBox>
                         <TextBox Width="200" Watermark="Tap to Show Keyboard"/>
                     </StackPanel>
                 </Grid>
             </DockPanel>
         </Border>
+        <Button Margin="{Binding InputPaneMarkerMargin}"
+                VerticalAlignment="Bottom"
+                Content="X">
+          <Button.Transitions>
+            <Transitions>
+              <ThicknessTransition Property="Margin"
+                                   Duration="{Binding InputPaneDuration}"
+                                   Easing="{Binding InputPaneEasing}"/>
+            </Transitions>
+          </Button.Transitions>
+        </Button>
     </Grid>
 </UserControl>

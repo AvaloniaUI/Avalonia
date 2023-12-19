@@ -130,6 +130,7 @@
       <AvaloniaXamlOriginalCopyFilePath Condition="'$(AvaloniaXamlOriginalCopyFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/original.dll</AvaloniaXamlOriginalCopyFilePath>
       <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
       <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch>
+      <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">false</AvaloniaXamlVerboseExceptions>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
@@ -153,7 +154,9 @@
       DelaySign="$(DelaySign)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
-      DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)">
+      DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
+      VerboseExceptions="$(AvaloniaXamlVerboseExceptions)"
+      AnalyzerConfigFiles="@(EditorConfigFiles)">
       <Output TaskParameter="WrittenFilePaths" ItemName="FileWrites" />
     </CompileAvaloniaXamlTask>
     <Exec

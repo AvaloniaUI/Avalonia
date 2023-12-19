@@ -19,10 +19,7 @@ namespace Avalonia.Win32.Interop
         {
             if (s_taskBarList == IntPtr.Zero)
             {
-                Guid clsid = ShellIds.TaskBarList;
-                Guid iid = ShellIds.ITaskBarList2;
-
-                int result = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out s_taskBarList);
+                int result = CoCreateInstance(in ShellIds.TaskBarList, IntPtr.Zero, 1, in ShellIds.ITaskBarList2, out s_taskBarList);
 
                 if (s_taskBarList != IntPtr.Zero)
                 {

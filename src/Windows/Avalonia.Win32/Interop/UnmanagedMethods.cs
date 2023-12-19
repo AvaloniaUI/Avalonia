@@ -1481,18 +1481,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "SetCursor")]
         internal static extern IntPtr SetCursor(IntPtr hCursor);
-
+        
         [DllImport("ole32.dll", PreserveSig = true)]
-        internal static extern int CoCreateInstance(ref Guid clsid,
-            IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);
+        internal static extern int CoCreateInstance(in Guid clsid,
+            IntPtr ignore1, int ignore2, in Guid iid, [Out] out IntPtr pUnkOuter);
 
-        [DllImport("ole32.dll", PreserveSig = true)]
-        internal static extern int CoCreateInstance(ref Guid clsid,
-            IntPtr ignore1, int ignore2, ref Guid iid, [Out] out IntPtr pUnkOuter);
-
-        internal static T CreateInstance<T>(ref Guid clsid, ref Guid iid) where T : IUnknown
+        internal static T CreateInstance<T>(in Guid clsid, in Guid iid) where T : IUnknown
         {
-            var hresult = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out IntPtr pUnk);
+            var hresult = CoCreateInstance(in clsid, IntPtr.Zero, 1, in iid, out IntPtr pUnk);
             if (hresult != 0)
             {
                 throw new COMException("CreateInstance", hresult);

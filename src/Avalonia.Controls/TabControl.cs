@@ -73,7 +73,6 @@ namespace Avalonia.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
-            TabStripPlacementProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateTabStripPlacement());
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
@@ -154,7 +153,7 @@ namespace Avalonia.Controls
 
         protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
-            return new TabItem { TabStripPlacement = TabStripPlacement };
+            return new TabItem();
         }
 
         protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -166,6 +165,11 @@ namespace Avalonia.Controls
         {
             base.PrepareContainerForItemOverride(element, item, index);
 
+            if (element is TabItem tabItem)
+            {
+                tabItem.TabStripPlacement = TabStripPlacement;
+            }
+            
             if (index == SelectedIndex)
             {
                 UpdateSelectedContent(element);

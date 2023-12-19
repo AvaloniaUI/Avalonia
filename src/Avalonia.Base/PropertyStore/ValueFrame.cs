@@ -27,7 +27,7 @@ namespace Avalonia.PropertyStore
         }
 
         public int EntryCount => _index.Count;
-        public bool IsActive => GetIsActive(out _);
+        public bool IsActive() => GetIsActive(out _);
         public ValueStore? Owner => !_isShared ? _owner : 
             throw new AvaloniaInternalException("Cannot get owner for shared ValueFrame");
         public BindingPriority Priority { get; }
