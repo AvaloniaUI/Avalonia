@@ -13,7 +13,6 @@ namespace ControlCatalog.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
-        private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
         private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
@@ -43,7 +42,7 @@ namespace ControlCatalog.ViewModels
 
             ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
             {
-                IsMenuItemChecked = !IsMenuItemChecked;
+                // handle
             });
 
             WindowState = WindowState.Normal;
@@ -118,12 +117,6 @@ namespace ControlCatalog.ViewModels
         {
             get { return _windowStates; }
             set { this.RaiseAndSetIfChanged(ref _windowStates, value); }
-        }
-
-        public bool IsMenuItemChecked
-        {
-            get { return _isMenuItemChecked; }
-            set { this.RaiseAndSetIfChanged(ref _isMenuItemChecked, value); }
         }
 
         public bool IsSystemBarVisible

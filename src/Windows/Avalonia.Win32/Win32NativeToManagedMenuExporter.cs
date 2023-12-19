@@ -2,6 +2,7 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Data;
 
 namespace Avalonia.Win32
 {
@@ -14,15 +15,15 @@ namespace Avalonia.Win32
             _nativeMenu = nativeMenu;
         }
 
-        private static AvaloniaList<MenuItem> Populate(NativeMenu nativeMenu)
+        private static AvaloniaList<object> Populate(NativeMenu nativeMenu)
         {
-            var result = new AvaloniaList<MenuItem>();
+            var result = new AvaloniaList<object>();
             
             foreach (var menuItem in nativeMenu.Items)
             {
                 if (menuItem is NativeMenuItemSeparator)
                 {
-                    result.Add(new MenuItem { Header = "-" });
+                    result.Add(new Separator());
                 }
                 else if (menuItem is NativeMenuItem item)
                 {
@@ -34,8 +35,13 @@ namespace Avalonia.Win32
                         [!MenuItem.IsEnabledProperty] = item.GetObservable(NativeMenuItem.IsEnabledProperty).ToBinding(),
                         [!MenuItem.CommandProperty] = item.GetObservable(NativeMenuItem.CommandProperty).ToBinding(),
                         [!MenuItem.CommandParameterProperty] = item.GetObservable(NativeMenuItem.CommandParameterProperty).ToBinding(),
-                        [!MenuItem.InputGestureProperty] = item.GetObservable(NativeMenuItem.GestureProperty).ToBinding()
+                        [!MenuItem.InputGestureProperty] = item.GetObservable(NativeMenuItem.GestureProperty).ToBinding(),
+                        [!MenuItem.ToggleTypeProperty] = item.GetObservable(NativeMenuItem.ToggleTypeProperty).ToBinding()
                     };
+
+                    BindingOperations.Apply(newItem, MenuItem.IsCheckedProperty, InstancedBinding.TwoWay(
+                        item.GetObservable(NativeMenuItem.IsCheckedProperty).Select(v => (object)v),
+                        new AnonymousObserver<object?>(v => item.SetValue(NativeMenuItem.IsCheckedProperty, v))), null);
 
                     if (item.Menu != null)
                     {
@@ -53,7 +59,7 @@ namespace Avalonia.Win32
             return result;
         }
 
-        public AvaloniaList<MenuItem>? GetMenu()
+        public AvaloniaList<object>? GetMenu()
         {
             if (_nativeMenu != null)
             {

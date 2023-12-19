@@ -18,6 +18,8 @@
               <Setter Property="ItemsSource" Value="{Binding Menu.Items}"/>
               <Setter Property="Command" Value="{Binding Command}"/>
               <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+              <Setter Property="IsChecked" Value="{Binding IsChecked}"/>
+              <Setter Property="ToggleType" Value="{Binding ToggleType}"/>
               <Setter Property="(NativeMenuBar.EnableMenuItemClickForwarding)" Value="True"/>
               <!--NativeMenuItem is IBitmap and MenuItem is Image-->
               <Setter Property="Icon" Value="{Binding Icon , Converter={StaticResource AvaloniaThemesFluentNativeMenuBarIBitmapToImageConverter}}"/>

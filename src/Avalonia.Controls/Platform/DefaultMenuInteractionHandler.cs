@@ -22,6 +22,7 @@ namespace Avalonia.Controls.Platform
         private readonly bool _isContextMenu;
         private IDisposable? _inputManagerSubscription;
         private IRenderRoot? _root;
+        private RadioButtonGroupManager? _groupManager;
 
         public DefaultMenuInteractionHandler(bool isContextMenu)
             : this(isContextMenu, Input.InputManager.Instance, DefaultDelayRun)
@@ -297,6 +298,12 @@ namespace Avalonia.Controls.Platform
 
             _root = Menu.VisualRoot;
 
+            if (_root is not null)
+            {
+                _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(_root);
+                AddMenuItemToRadioGroup(_groupManager, menu);
+            }
+
             if (_root is InputElement inputRoot)
             {
                 inputRoot.AddHandler(InputElement.PointerPressedEvent, RootPointerPressed, RoutingStrategies.Tunnel);
@@ -331,6 +338,12 @@ namespace Avalonia.Controls.Platform
             Menu.RemoveHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
 
+            if (_root is not null && _groupManager is { } oldManager)
+            {
+                _groupManager = null;
+                RemoveMenuItemFromRadioGroup(oldManager, menu);
+            }
+
             if (_root is InputElement inputRoot)
             {
                 inputRoot.RemoveHandler(InputElement.PointerPressedEvent, RootPointerPressed);
@@ -352,6 +365,19 @@ namespace Avalonia.Controls.Platform
 
         internal void Click(IMenuItem item)
         {
+            if (!item.HasSubMenu)
+            {
+                if (item.ToggleType == MenuItemToggleType.CheckBox)
+                {
+                    var newValue = !item.IsChecked;
+                    item.IsChecked = newValue;   
+                }
+                else if (item.ToggleType == MenuItemToggleType.Radio && !item.IsChecked)
+                {
+                    item.IsChecked = true;
+                }
+            }
+
             item.RaiseClick();
 
             if (!item.StaysOpenOnClick)
@@ -573,6 +599,33 @@ namespace Avalonia.Controls.Platform
         private static void DefaultDelayRun(Action action, TimeSpan timeSpan)
         {
             DispatcherTimer.RunOnce(action, timeSpan);
+        }
+
+        private static void AddMenuItemToRadioGroup(RadioButtonGroupManager manager, IMenuElement element)
+        {
+            // Instead add menu item to the group on attached/detached + ensure checked stated on attached.
+            if (element is IGroupRadioButton button)
+            {
+                manager.Add(button);
+            }
+
+            foreach (var subItem in element.SubItems)
+            {
+                AddMenuItemToRadioGroup(manager, subItem);
+            }
+        }
+
+        private static void RemoveMenuItemFromRadioGroup(RadioButtonGroupManager manager, IMenuElement element)
+        {
+            if (element is IGroupRadioButton button)
+            {
+                manager.Remove(button, button.GroupName);
+            }
+
+            foreach (var subItem in element.SubItems)
+            {
+                RemoveMenuItemFromRadioGroup(manager, subItem);
+            }
         }
     }
 }
