@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Utils
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
         private bool _initialized;
-        private Pen? _cachedMutablePen;
+        private IPen? _cachedPen;
 
 
         void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
@@ -118,22 +118,7 @@ namespace Avalonia.Controls.Utils
             {
                 var borderThickness = _borderThickness.Top;
 
-                IPen? pen;
-                if (borderBrush is IImmutableBrush immutableBrush)
-                {
-                    pen = new ImmutablePen(immutableBrush, borderThickness);
-                }
-                else if (borderBrush is not null)
-                {
-                    _cachedMutablePen ??= new Pen();
-                    _cachedMutablePen.Brush = borderBrush;
-                    _cachedMutablePen.Thickness = borderThickness;
-                    pen = _cachedMutablePen;
-                }
-                else
-                {
-                    pen = _cachedMutablePen = null;
-                }
+                Pen.TryModifyOrCreate(ref _cachedPen, borderBrush, borderThickness);
 
                 var rect = new Rect(_size);
                 if (!MathUtilities.IsZero(borderThickness))
@@ -141,7 +126,7 @@ namespace Avalonia.Controls.Utils
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-                context.DrawRectangle(background, pen, rrect, boxShadows);
+                context.DrawRectangle(background, _cachedPen, rrect, boxShadows);
             }
         }
 

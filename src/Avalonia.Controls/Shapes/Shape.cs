@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -252,33 +253,8 @@ namespace Avalonia.Controls.Shapes
                 {
                     InvalidateMeasure();
                 }
-
-                var previousPen = _strokePen;
-                if (Stroke is null)
-                {
-                    _strokePen = null;
-                }
-                else if (Stroke is not IImmutableBrush || StrokeDashArray is not null)
-                {
-                    var mutablePen = _strokePen as Pen ?? (Pen)(_strokePen = new Pen());
-                    mutablePen.Brush = Stroke;
-                    mutablePen.DashStyle =
-                        StrokeDashArray is null ? null : new DashStyle(StrokeDashArray, StrokeDashOffset);
-                    mutablePen.Thickness = StrokeThickness;
-                    mutablePen.LineCap = StrokeLineCap;
-                    mutablePen.LineJoin = StrokeJoin;
-                }
-                else
-                {
-                    _strokePen = new ImmutablePen(
-                        (IImmutableBrush)Stroke,
-                        StrokeThickness,
-                        null,
-                        StrokeLineCap,
-                        StrokeJoin);
-                }
                 
-                if (!Equals(previousPen, _strokePen))
+                if (!Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin))
                 {
                     InvalidateVisual();
                 }
