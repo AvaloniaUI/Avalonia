@@ -52,5 +52,10 @@ namespace Avalonia.Diagnostics
         /// Get or set Focus Highlighter <see cref="Brush"/>
         /// </summary>
         public IBrush? FocusHighlighterBrush { get; set; }
+
+        /// <summary>
+        /// Set <see cref="DevToolsViews"/> that show when DevTools launch
+        /// </summary>
+        public DevToolsViews LaunchView { get; init; }
     }
 }
