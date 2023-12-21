@@ -24,7 +24,8 @@ namespace Avalonia.Win32
             {
                 if (--i == 0)
                     throw new TimeoutException("Timeout opening clipboard.");
-                await Task.Delay(100);
+                await Task.Delay(OleRetryDelay)
+                    .ConfigureAwait(false);
             }
 
             return Disposable.Create(() => UnmanagedMethods.CloseClipboard());
@@ -91,7 +92,8 @@ namespace Avalonia.Win32
                 if (--i == 0)
                     Marshal.ThrowExceptionForHR(hr);
                 
-                await Task.Delay(OleRetryDelay);
+                await Task.Delay(OleRetryDelay)
+                    .ConfigureAwait(false);
             }
         }
 
@@ -115,7 +117,8 @@ namespace Avalonia.Win32
                 if (--i == 0)
                     Marshal.ThrowExceptionForHR(hr);
 
-                await Task.Delay(OleRetryDelay);
+                await Task.Delay(OleRetryDelay)
+                    .ConfigureAwait(false);
             }
         }
 
@@ -139,7 +142,8 @@ namespace Avalonia.Win32
                 if (--i == 0)
                     Marshal.ThrowExceptionForHR(hr);
 
-                await Task.Delay(OleRetryDelay);
+                await Task.Delay(OleRetryDelay)
+                    .ConfigureAwait(false);
             }
         }
     }
