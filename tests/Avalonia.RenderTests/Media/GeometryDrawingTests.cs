@@ -47,6 +47,30 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(200, geometryDrawing.GetBounds().Width);
         }
 
+        [Fact]
+        public async void DrawingGeometry_RelativeLine()
+        {
+            var target = new Avalonia.Controls.Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Avalonia.Controls.Image()
+                {
+                    Width = 200,
+                    Height = 200,
+                    Source = new DrawingImage()
+                    {
+                        Drawing = new GeometryDrawing()
+                        {
+                            Geometry = StreamGeometry.Parse("F1 M50,50z l -5,-5"),
+                            Pen = new Pen(Brushes.Black, 2, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round)
+                        }
+                    },
 
+                }
+            };
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }
