@@ -259,7 +259,7 @@ namespace Avalonia.Media
         {
             ThrowIfDisposed();
 
-            _currentPoint = relative
+            var next = relative
                                 ? ReadRelativePoint(ref span, _currentPoint)
                                 : ReadPoint(ref span);
 
@@ -268,7 +268,8 @@ namespace Avalonia.Media
                 CreateFigure();
             }
 
-            _geometryContext.LineTo(_currentPoint);
+            _geometryContext.LineTo(next);
+            _currentPoint = next;
         }
 
         private void AddHorizontalLine(ref ReadOnlySpan<char> span, bool relative)
