@@ -195,7 +195,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     return _updateState.SelectedIndex.HasValue ?
                         _updateState.SelectedIndex.Value :
-                        _selection?.SelectedIndex ?? -1;
+                        TryGetExistingSelection()?.SelectedIndex ?? -1;
                 }
 
                 return Selection.SelectedIndex;
@@ -225,7 +225,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     return _updateState.SelectedItem.HasValue ?
                         _updateState.SelectedItem.Value :
-                        _selection?.SelectedItem;
+                        TryGetExistingSelection()?.SelectedItem;
                 }
 
                 return Selection.SelectedItem;
@@ -499,8 +499,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private int GetAnchorIndex()
-            => _selection?.AnchorIndex ?? -1;
+        internal int GetAnchorIndex()
+            => TryGetExistingSelection()?.AnchorIndex ?? -1;
+
+        private ISelectionModel? TryGetExistingSelection()
+            => _updateState?.Selection.HasValue == true ? _updateState.Selection.Value : _selection;
 
         protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
         {

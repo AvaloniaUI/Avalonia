@@ -2373,6 +2373,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(12, vm.SelectedValue);
         }
 
+        [Fact]
+        public void SelectedItem_Can_Access_Selection_DuringInit()
+        {
+            using var _ = Start();
+
+            var target = new ListBox();
+            target.BeginInit();
+
+            var item = new ItemModel();
+
+            target.Selection = new SelectionModel<ItemModel> {
+                SelectedItem = item
+            };
+
+            Assert.Equal(item, target.SelectedItem);
+        }
+
+        [Fact]
+        public void SelectedIndex_Can_Access_Selection_DuringInit()
+        {
+            using var _ = Start();
+
+            var target = new ListBox();
+            target.BeginInit();
+
+            target.Selection = new SelectionModel<ItemModel> {
+                SelectedIndex = 42
+            };
+
+            Assert.Equal(42, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void AnchorIndex_Can_Access_Selection_DuringInit()
+        {
+            using var _ = Start();
+
+            var target = new ListBox();
+            target.BeginInit();
+
+            target.Selection = new SelectionModel<ItemModel> {
+                AnchorIndex = 42
+            };
+
+            Assert.Equal(42, target.GetAnchorIndex());
+        }
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -2555,7 +2602,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private sealed class FullSelectionViewModel : NotifyingBase
         {
             private ItemModel? _selectedItem;
-            private int? _selectedIndex;
+            private int _selectedIndex = -1;
             private int? _selectedValue;
 
             public ObservableCollection<ItemModel> Items { get; } = new();
@@ -2566,7 +2613,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set => SetField(ref _selectedItem, value);
             }
 
-            public int? SelectedIndex
+            public int SelectedIndex
             {
                 get => _selectedIndex;
                 set => SetField(ref _selectedIndex, value);
