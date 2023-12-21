@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
@@ -192,7 +194,7 @@ namespace Avalonia.Media
         internal static bool TryModifyOrCreate(ref IPen? pen,
                                              IBrush? brush,
                                              double thickness,
-                                             AvaloniaList<double>? strokeDashArray = null,
+                                             IList<double>? strokeDashArray = null,
                                              double strokeDaskOffset = default,
                                              PenLineCap lineCap = PenLineCap.Flat,
                                              PenLineJoin lineJoin = PenLineJoin.Miter,
@@ -205,14 +207,18 @@ namespace Avalonia.Media
                 return previousPen is not null;
             }
             
-            ImmutableDashStyle? dashStyle = null;
+            IDashStyle? dashStyle = null;
             if (strokeDashArray is { Count: > 0 })
             {
-                dashStyle = new ImmutableDashStyle(strokeDashArray, strokeDaskOffset);
+                // strokeDashArray can be IList (instead of AvaloniaList) in future
+                // So, if it supports notification - create a mutable DashStyle
+                dashStyle = strokeDashArray is INotifyCollectionChanged 
+                    ? new DashStyle(strokeDashArray, strokeDaskOffset) 
+                    : new ImmutableDashStyle(strokeDashArray, strokeDaskOffset);
             }
 
             // If brush is not immutable - create (or try to reuse) dynamic pen
-            if (brush is not IImmutableBrush)
+            if (brush is not IImmutableBrush && dashStyle is not ImmutableDashStyle)
             {
                 var mutablePen = previousPen as Pen ?? new Pen();
                 mutablePen.Brush = brush;
@@ -229,7 +235,7 @@ namespace Avalonia.Media
             pen = new ImmutablePen(
                 (IImmutableBrush)brush,
                 thickness,
-                dashStyle,
+                (ImmutableDashStyle?)dashStyle,
                 lineCap, 
                 lineJoin, 
                 miterLimit);
