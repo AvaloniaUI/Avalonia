@@ -470,11 +470,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToVisualTree(e);
 
-            var anchorIndex = GetAnchorIndex();
-            if (anchorIndex >= 0)
-            {
-                AutoScrollToSelectedItemIfNecessary(anchorIndex);
-            }
+            AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
         }
 
         /// <inheritdoc />
@@ -486,11 +482,7 @@ namespace Avalonia.Controls.Primitives
             {
                 LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
 
-                var anchorIndex = GetAnchorIndex();
-                if (anchorIndex >= 0)
-                {
-                    AutoScrollToSelectedItemIfNecessary(anchorIndex);
-                }
+                AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
             }
 
             if (AutoScrollToSelectedItem)
@@ -500,7 +492,10 @@ namespace Avalonia.Controls.Primitives
         }
 
         internal int GetAnchorIndex()
-            => TryGetExistingSelection()?.AnchorIndex ?? -1;
+        {
+            var selection = _updateState is not null ? TryGetExistingSelection() : Selection;
+            return selection?.AnchorIndex ?? -1;
+        }
 
         private ISelectionModel? TryGetExistingSelection()
             => _updateState?.Selection.HasValue == true ? _updateState.Selection.Value : _selection;
@@ -657,11 +652,7 @@ namespace Avalonia.Controls.Primitives
 
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
-                var anchorIndex = GetAnchorIndex();
-                if (anchorIndex >= 0)
-                {
-                    AutoScrollToSelectedItemIfNecessary(anchorIndex);
-                }
+                AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
@@ -947,11 +938,8 @@ namespace Avalonia.Controls.Primitives
                 _hasScrolledToSelectedItem = false;
 
                 var anchorIndex = GetAnchorIndex();
-                if (anchorIndex >= 0)
-                {
-                    KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(anchorIndex));
-                    AutoScrollToSelectedItemIfNecessary(anchorIndex);
-                }
+                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(anchorIndex));
+                AutoScrollToSelectedItemIfNecessary(anchorIndex);
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
             {
