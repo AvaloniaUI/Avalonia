@@ -4,6 +4,7 @@
     <TargetFramework>net7.0-ios16.0</TargetFramework>
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
