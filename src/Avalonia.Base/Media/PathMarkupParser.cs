@@ -276,7 +276,7 @@ namespace Avalonia.Media
         {
             ThrowIfDisposed();
 
-            _currentPoint = relative
+            var next = relative
                                 ? new Point(_currentPoint.X + ReadDouble(ref span), _currentPoint.Y)
                                 : _currentPoint.WithX(ReadDouble(ref span));
 
@@ -285,7 +285,8 @@ namespace Avalonia.Media
                 CreateFigure();
             }
 
-            _geometryContext.LineTo(_currentPoint);
+            _geometryContext.LineTo(next);
+            _currentPoint = next;
         }
 
         private void AddVerticalLine(ref ReadOnlySpan<char> span, bool relative)
