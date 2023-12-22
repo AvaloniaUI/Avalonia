@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -45,6 +47,11 @@ namespace Avalonia.Media.TextFormatting
         public abstract CultureInfo? CultureInfo { get; }
 
         /// <summary>
+        /// Optional features of used font.
+        /// </summary>
+        public virtual ISet<FontFeature>? FontFeatures => null;
+
+        /// <summary>
         /// Run vertical box alignment
         /// </summary>
         public virtual BaselineAlignment BaselineAlignment => BaselineAlignment.Baseline;
@@ -64,7 +71,9 @@ namespace Avalonia.Media.TextFormatting
                    && Equals(TextDecorations, other.TextDecorations) &&
                    Equals(ForegroundBrush, other.ForegroundBrush) &&
                    Equals(BackgroundBrush, other.BackgroundBrush) &&
-                   Equals(CultureInfo, other.CultureInfo);
+                   Equals(CultureInfo, other.CultureInfo) &&
+                   (ReferenceEquals(FontFeatures, other.FontFeatures) ||
+                   (FontFeatures != null && other.FontFeatures != null && FontFeatures.SetEquals(other.FontFeatures)));
         }
 
         public override bool Equals(object? obj)
@@ -101,7 +110,7 @@ namespace Avalonia.Media.TextFormatting
             if (this is GenericTextRunProperties other && other.Typeface == typeface)
                 return this;
 
-            return new GenericTextRunProperties(typeface, FontRenderingEmSize,
+            return new GenericTextRunProperties(typeface, FontFeatures, FontRenderingEmSize, 
                 TextDecorations, ForegroundBrush, BackgroundBrush, BaselineAlignment);
         }
     }

@@ -102,7 +102,7 @@ namespace Avalonia.Controls.Documents
                 fontWeight = FontWeight.Bold;
             }
 
-            return new GenericTextRunProperties(new Typeface(FontFamily, fontStyle, fontWeight), FontSize,
+            return new GenericTextRunProperties(new Typeface(FontFamily, fontStyle, fontWeight), FontFeatures, FontSize,
                 textDecorations, Foreground, background, BaselineAlignment);
         }
 

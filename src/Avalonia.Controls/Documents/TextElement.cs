@@ -24,6 +24,14 @@ namespace Avalonia.Controls.Documents
                 inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="FontFeatures"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FontFeatureCollection?> FontFeaturesProperty =
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, FontFeatureCollection?>(
+                nameof(FontFeatures),
+                inherits: true);
+        
+        /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly AttachedProperty<double> FontSizeProperty =
@@ -85,6 +93,15 @@ namespace Avalonia.Controls.Documents
         {
             get => GetValue(FontFamilyProperty);
             set => SetValue(FontFamilyProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font features.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => GetValue(FontFeaturesProperty);
+            set => SetValue(FontFeaturesProperty, value);
         }
 
         /// <summary>
@@ -152,6 +169,26 @@ namespace Avalonia.Controls.Documents
             control.SetValue(FontFamilyProperty, value);
         }
 
+        /// <summary>
+        /// Gets the value of the attached <see cref="FontFeaturesProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font family.</returns>
+        public static FontFeatureCollection? GetFontFeatures(Control control)
+        {
+            return control.GetValue(FontFeaturesProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FontFeaturesProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFontFeatures(Control control, FontFeatureCollection? value)
+        {
+            control.SetValue(FontFeaturesProperty, value);
+        }
+        
         /// <summary>
         /// Gets the value of the attached <see cref="FontSizeProperty"/> on a control.
         /// </summary>
