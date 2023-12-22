@@ -1,9 +1,9 @@
 ﻿namespace Avalonia.Diagnostics;
 
 /// <summary>
-/// Diagnostic views available in DevTools
+/// Kinds of diagnostic views available in DevTools
 /// </summary>
-public enum DevToolsViews
+public enum DevToolsViewKind
 {
     /// <summary>
     /// The Logical Tree diagnostic view
