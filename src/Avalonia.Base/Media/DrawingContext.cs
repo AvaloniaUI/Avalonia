@@ -123,7 +123,7 @@ namespace Avalonia.Media
         /// <param name="boxShadows">Box shadow effect parameters</param>
         /// <remarks>
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
-        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// If the pen is null, then no stroke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
         public void DrawRectangle(IBrush? brush, IPen? pen, Rect rect,
             double radiusX = 0, double radiusY = 0,

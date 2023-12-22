@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using Avalonia.Browser.Skia;
 using Avalonia.Browser.Storage;
@@ -33,8 +34,9 @@ namespace Avalonia.Browser
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
         private readonly ClipboardImpl _clipboard;
         private readonly IInsetsManager? _insetsManager;
+        private readonly IInputPane _inputPane;
 
-        public BrowserTopLevelImpl(AvaloniaView avaloniaView)
+        public BrowserTopLevelImpl(AvaloniaView avaloniaView, JSObject container)
         {
             Surfaces = Enumerable.Empty<object>();
             _avaloniaView = avaloniaView;
@@ -47,6 +49,7 @@ namespace Avalonia.Browser
             _storageProvider = new BrowserStorageProvider();
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
             _clipboard = new ClipboardImpl();
+            _inputPane = new BrowserInputPane(container);
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -272,6 +275,11 @@ namespace Avalonia.Browser
             if (featureType == typeof(IClipboard))
             {
                 return _clipboard;
+            }
+            
+            if (featureType == typeof(IInputPane))
+            {
+                return _inputPane;
             }
 
             return null;

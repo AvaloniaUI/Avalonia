@@ -44,7 +44,6 @@ public class DrawingBrushTests: TestBase
 
 #if AVALONIA_SKIA
     [Fact]
-#endif
     public async Task DrawingBrushIsProperlyUpscaled()
     {
         Decorator target = new Decorator
@@ -66,6 +65,7 @@ public class DrawingBrushTests: TestBase
         await RenderToFile(target);
         CompareImages();
     }
+#endif
 
     GeometryDrawing CreateDrawing()
     {

@@ -45,7 +45,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
         private readonly AndroidInsetsManager _insetsManager;
         private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
@@ -155,6 +155,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         
         public virtual void Dispose()
         {
+            _systemNavigationManager.Dispose();
             _view.Dispose();
             _view = null;
         }
@@ -347,7 +348,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                     {
                         activity.SetTranslucent(true);
                         SetBlurBehind(activity, 0);
-                        activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                        activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
                     }
                 }
                 else if (level == WindowTransparencyLevel.Blur)
@@ -395,7 +396,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _nativeControlHost;
             }
 
-            if (featureType == typeof(IInsetsManager))
+            if (featureType == typeof(IInsetsManager) || featureType == typeof(IInputPane))
             {
                 return _insetsManager;
             }
@@ -447,8 +448,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     internal class EditableWrapper : SpannableStringBuilder
     {
         private readonly AvaloniaInputConnection _inputConnection;
-
-        public event EventHandler<int> SelectionChanged;
 
         public EditableWrapper(AvaloniaInputConnection inputConnection)
         {

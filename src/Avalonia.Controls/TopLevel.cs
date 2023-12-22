@@ -547,6 +547,7 @@ namespace Avalonia.Controls
             ?? new NoopStorageProvider();
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
+        public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();
 
         /// <summary>
         /// Gets the platform's clipboard implementation
