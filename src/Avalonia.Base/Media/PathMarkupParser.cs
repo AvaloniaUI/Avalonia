@@ -293,7 +293,7 @@ namespace Avalonia.Media
         {
             ThrowIfDisposed();
 
-            _currentPoint = relative
+            var next = relative
                                 ? new Point(_currentPoint.X, _currentPoint.Y + ReadDouble(ref span))
                                 : _currentPoint.WithY(ReadDouble(ref span));
 
@@ -302,7 +302,8 @@ namespace Avalonia.Media
                 CreateFigure();
             }
 
-            _geometryContext.LineTo(_currentPoint);
+            _geometryContext.LineTo(next);
+            _currentPoint = next;
         }
 
         private void AddCubicBezierCurve(ref ReadOnlySpan<char> span, bool relative)
