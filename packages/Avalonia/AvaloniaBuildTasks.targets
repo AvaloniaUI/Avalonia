@@ -107,7 +107,8 @@
       <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
       <AvaloniaXamlOriginalCopyFilePath Condition="'$(AvaloniaXamlOriginalCopyFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/original.dll</AvaloniaXamlOriginalCopyFilePath>
       <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
-      <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch> 
+      <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch>
+      <_AvaloniaHasCompiledXaml>true</_AvaloniaHasCompiledXaml>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
@@ -170,4 +171,25 @@
     <Exec Command="dotnet exec --runtimeconfig &quot;$(APreviewerRuntimeConfigPath)&quot; --depsfile &quot;$(APreviewerDepsJsonPath)&quot; &quot;$(AvaloniaPreviewerNetCoreToolPath)&quot; --method html --html-url $(APreviewerUrl) --transport $(APreviewTransportUrl)  &quot;$(APreviewExecutable)&quot;"/>
      
   </Target>
+
+  <!--
+    Deletes the target ref assembly before the CopyRefAssembly task (in target CopyFilesToOutputDirectory) tries to access it.
+
+    CopyRefAssembly reads the ref assembly's MVID from the .mvid PE section to avoid copying if necessary.
+    However, Cecil doesn't preserve that PE section: this results in a warning.
+    By deleting the file beforehand, we're preventing the warning.
+    There are no changes in behavior since CopyRefAssembly always copy the file if it couldn't read the MVID.
+  -->
+  <Target
+    Name="AvaloniaDeleteRefAssemblyBeforeOutputCopy"
+    BeforeTargets="CopyFilesToOutputDirectory"
+    Condition="
+      '$(_AvaloniaHasCompiledXaml)' == 'true' and
+      '$(TargetRefPath)' != '' and
+      '$(ProduceReferenceAssembly)' == 'true' and
+      ('$(CopyBuildOutputToOutputDirectory)' == '' or '$(CopyBuildOutputToOutputDirectory)' == 'true') and
+      '$(SkipCopyBuildProduct)' != 'true'">
+    <Delete Files="$(TargetRefPath)" Condition="Exists('$(TargetRefPath)')" />
+  </Target>
+
 </Project>
