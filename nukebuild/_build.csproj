@@ -7,6 +7,8 @@
     <NoWarn>$(NoWarn);CS0649;CS0169;SYSLIB0011</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TargetFramework>net7.0</TargetFramework>
+    <!-- Necessary for Microsoft.DotNet.GenAPI.Tool -->
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8-transport/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
@@ -24,6 +26,7 @@
     </PackageReference>
 
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[7.0.305]" />
+    <PackageDownload Include="Microsoft.DotNet.GenAPI.Tool" Version="[8.0.101-servicing.23580.12]" />
   </ItemGroup>
 
   <ItemGroup>
