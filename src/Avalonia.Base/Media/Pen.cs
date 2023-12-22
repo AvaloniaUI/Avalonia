@@ -216,31 +216,30 @@ namespace Avalonia.Media
                     ? new DashStyle(strokeDashArray, strokeDaskOffset) 
                     : new ImmutableDashStyle(strokeDashArray, strokeDaskOffset);
             }
-
-            // If brush is not immutable - create (or try to reuse) dynamic pen
-            if (brush is not IImmutableBrush && dashStyle is not ImmutableDashStyle)
+            
+            if (brush is IImmutableBrush immutableBrush && dashStyle is null or ImmutableDashStyle)
             {
-                var mutablePen = previousPen as Pen ?? new Pen();
-                mutablePen.Brush = brush;
-                mutablePen.Thickness = thickness;
-                mutablePen.LineCap = lineCap;
-                mutablePen.LineJoin = lineJoin;
-                mutablePen.DashStyle = dashStyle;
-                mutablePen.MiterLimit = miterLimit;
+                pen = new ImmutablePen(
+                    immutableBrush,
+                    thickness,
+                    (ImmutableDashStyle?)dashStyle,
+                    lineCap,
+                    lineJoin,
+                    miterLimit);
 
-                pen = mutablePen;
-                return !Equals(previousPen, pen);
+                return true;
             }
 
-            pen = new ImmutablePen(
-                (IImmutableBrush)brush,
-                thickness,
-                (ImmutableDashStyle?)dashStyle,
-                lineCap, 
-                lineJoin, 
-                miterLimit);
+            var mutablePen = previousPen as Pen ?? new Pen();
+            mutablePen.Brush = brush;
+            mutablePen.Thickness = thickness;
+            mutablePen.LineCap = lineCap;
+            mutablePen.LineJoin = lineJoin;
+            mutablePen.DashStyle = dashStyle;
+            mutablePen.MiterLimit = miterLimit;
 
-            return true;
+            pen = mutablePen;
+            return !Equals(previousPen, pen);
         }
 
         void RegisterForSerialization()
