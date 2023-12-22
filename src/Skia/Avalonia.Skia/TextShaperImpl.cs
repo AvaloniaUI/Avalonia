@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -41,7 +42,8 @@ namespace Avalonia.Skia
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
-                font.Shape(buffer);
+                font.Shape(buffer, options.FontFeatures?.Select(x => 
+                    new Feature(Tag.Parse(x.Tag), (uint)x.Value, (uint)x.Start, unchecked((uint)x.End))).ToArray());
 
                 if (buffer.Direction == Direction.RightToLeft)
                 {

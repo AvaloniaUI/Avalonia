@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -42,7 +43,8 @@ namespace Avalonia.Direct2D1.Media
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
-                font.Shape(buffer);
+                font.Shape(buffer, options.FontFeatures?.Select(x => 
+                    new Feature(Tag.Parse(x.Tag), (uint)x.Value, (uint)x.Start, (uint)x.End)).ToArray() ?? Array.Empty<Feature>());
 
                 if (buffer.Direction == Direction.RightToLeft)
                 {
