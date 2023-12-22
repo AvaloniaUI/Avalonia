@@ -17,9 +17,10 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 {
     private readonly string _filePath;
 
-    protected IOSStorageItem(NSUrl url)
+    protected IOSStorageItem(NSUrl url, NSUrl? securityScopedAncestorUrl = null)
     {
         Url = url ?? throw new ArgumentNullException(nameof(url));
+        SecurityScopedAncestorUrl = securityScopedAncestorUrl ?? url;
 
         using (var doc = new UIDocument(url))
         {
@@ -32,6 +33,11 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
     }
 
     internal NSUrl Url { get; }
+    // Calling StartAccessingSecurityScopedResource on items retrieved from, or created in a folder
+    // fails, because only folders directly opened via StorageProvider.OpenFolderPickerAsync have
+    // security-scoped NSUrls. This property stores and exposes that ancestor's Url, so we can have
+    // recursive access to an opened folder.
+    internal NSUrl SecurityScopedAncestorUrl { get; }
     internal string FilePath => _filePath;
 
     public bool CanBookmark => true;
@@ -52,14 +58,23 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
     public Task<IStorageFolder?> GetParentAsync()
     {
-        return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(Url.RemoveLastPathComponent()));
+        return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(Url.RemoveLastPathComponent(), SecurityScopedAncestorUrl));
     }
 
     public Task DeleteAsync()
     {
-        return NSFileManager.DefaultManager.Remove(Url, out var error)
-            ? Task.CompletedTask
-            : Task.FromException(new NSErrorException(error));
+        try
+        {
+            SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
+
+            return NSFileManager.DefaultManager.Remove(Url, out var error)
+                ? Task.CompletedTask
+                : Task.FromException(new NSErrorException(error));
+        }
+        finally
+        {
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+        }
     }
 
     public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
@@ -69,22 +84,33 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
             throw new InvalidOperationException("Destination folder must be initialized the StorageProvider API.");
         }
 
-        var isDir = this is IStorageFolder;
-        var newPath = new NSUrl(System.IO.Path.Combine(folder.FilePath, Name), isDir);
-
-        if (NSFileManager.DefaultManager.Move(folder.Url, newPath, out var error))
+        try
         {
-            return isDir
-                ? new IOSStorageFolder(newPath)
-                : new IOSStorageFile(newPath);
-        }
+            SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
+            folder.SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
 
-        if (error is not null)
+            var isDir = this is IStorageFolder;
+            var newPath = new NSUrl(System.IO.Path.Combine(folder.FilePath, Name), isDir);
+
+            if (NSFileManager.DefaultManager.Move(Url, newPath, out var error))
+            {
+                return isDir
+                    ? new IOSStorageFolder(newPath)
+                    : new IOSStorageFile(newPath);
+            }
+
+            if (error is not null)
+            {
+                throw new NSErrorException(error);
+            }
+
+            return null;
+        }
+        finally
         {
-            throw new NSErrorException(error);
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+            folder.SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
         }
-
-        return null;
     }
 
     public Task ReleaseBookmarkAsync()
@@ -97,7 +123,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
     {
         try
         {
-            if (!Url.StartAccessingSecurityScopedResource())
+            if (!SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource())
             {
                 return Task.FromResult<string?>(null);
             }
@@ -115,7 +141,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         }
         finally
         {
-            Url.StopAccessingSecurityScopedResource();
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
         }
     }
 
@@ -126,89 +152,121 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
 internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 {
-    public IOSStorageFile(NSUrl url) : base(url)
+    public IOSStorageFile(NSUrl url, NSUrl? securityScopedAncestorUrl = null) : base(url, securityScopedAncestorUrl)
     {
     }
     
     public Task<Stream> OpenReadAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Read));
+        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Read));
     }
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Write));
+        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Write));
     }
 }
 
 internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
 {
-    public IOSStorageFolder(NSUrl url) : base(url)
+    public IOSStorageFolder(NSUrl url, NSUrl? securityScopedAncestorUrl = null) : base(url, securityScopedAncestorUrl)
     {
     }
 
     public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
-        // TODO: find out if it can be lazily enumerated.
-        var tcs = new TaskCompletionSource<IReadOnlyList<IStorageItem>>();
+        try
+        {
+            SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
 
-        new NSFileCoordinator().CoordinateRead(Url,
-            NSFileCoordinatorReadingOptions.WithoutChanges,
-            out var error,
-            uri =>
-            {
-                var content = NSFileManager.DefaultManager.GetDirectoryContent(uri, null, NSDirectoryEnumerationOptions.None, out var error);
-                if (error is not null)
+            // TODO: find out if it can be lazily enumerated.
+            var tcs = new TaskCompletionSource<IReadOnlyList<IStorageItem>>();
+
+            new NSFileCoordinator().CoordinateRead(Url,
+                NSFileCoordinatorReadingOptions.WithoutChanges,
+                out var error,
+                uri =>
                 {
-                    tcs.TrySetException(new NSErrorException(error));
-                }
-                else
-                {
-                    var items = content
-                        .Select(u => u.HasDirectoryPath ? (IStorageItem)new IOSStorageFolder(u) : new IOSStorageFile(u))
-                        .ToArray();
-                    tcs.TrySetResult(items);
-                }
-            });
+                    var content = NSFileManager.DefaultManager.GetDirectoryContent(uri, null, NSDirectoryEnumerationOptions.None, out var error);
+                    if (error is not null)
+                    {
+                        tcs.TrySetException(new NSErrorException(error));
+                    }
+                    else
+                    {
+                        var items = content
+                            .Select(u => u.HasDirectoryPath ?
+                                (IStorageItem)new IOSStorageFolder(u, SecurityScopedAncestorUrl) :
+                                new IOSStorageFile(u, SecurityScopedAncestorUrl))
+                            .ToArray();
+                        tcs.TrySetResult(items);
+                    }
+                });
         
-        if (error is not null)
-        {
-            throw new NSErrorException(error);
-        }
+            if (error is not null)
+            {
+                throw new NSErrorException(error);
+            }
 
-        var items = await tcs.Task;
-        foreach (var item in items)
+            var items = await tcs.Task;
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+        }
+        finally
         {
-            yield return item;
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
         }
     }
 
     public Task<IStorageFile?> CreateFileAsync(string name)
     {
-        var path = System.IO.Path.Combine(FilePath, name);
-        NSFileAttributes? attributes = null;
-        if (NSFileManager.DefaultManager.CreateFile(path, null, attributes))
+        try
         {
-            return Task.FromResult<IStorageFile?>(new IOSStorageFile(new NSUrl(path, false)));
-        }
+            if (!SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource())
+            {
+                return Task.FromResult<IStorageFile?>(null);
+            }
 
-        return Task.FromResult<IStorageFile?>(null);
+            var path = System.IO.Path.Combine(FilePath, name);
+            NSFileAttributes? attributes = null;
+            if (NSFileManager.DefaultManager.CreateFile(path, new NSData(), attributes))
+            {
+                return Task.FromResult<IStorageFile?>(new IOSStorageFile(new NSUrl(path, false), SecurityScopedAncestorUrl));
+            }
+
+            return Task.FromResult<IStorageFile?>(null);
+        }
+        finally
+        {
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+        }
     }
 
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
-        var path = System.IO.Path.Combine(FilePath, name);
-        NSFileAttributes? attributes = null;
-        if (NSFileManager.DefaultManager.CreateDirectory(path, false, attributes, out var error))
+        try
         {
-            return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(new NSUrl(path, true)));
-        }
+            SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
 
-        if (error is not null)
-        {
-            throw new NSErrorException(error);
+            var path = System.IO.Path.Combine(FilePath, name);
+            NSFileAttributes? attributes = null;
+            if (NSFileManager.DefaultManager.CreateDirectory(path, false, attributes, out var error))
+            {
+                return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(new NSUrl(path, true), SecurityScopedAncestorUrl));
+            }
+
+            if (error is not null)
+            {
+                throw new NSErrorException(error);
+            }
+
+            return Task.FromResult<IStorageFolder?>(null);
         }
-        
-        return Task.FromResult<IStorageFolder?>(null);
+        finally
+        {
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+        }
     }
 }

@@ -13,13 +13,15 @@ internal sealed class IOSSecurityScopedStream : Stream
     private readonly UIDocument _document;
     private readonly FileStream _stream;
     private readonly NSUrl _url;
+    private readonly NSUrl _securityScopedAncestorUrl;
 
-    internal IOSSecurityScopedStream(NSUrl url, FileAccess access)
+    internal IOSSecurityScopedStream(NSUrl url, NSUrl securityScopedAncestorUrl, FileAccess access)
     {
         _document = new UIDocument(url);
         var path = _document.FileUrl.Path;
         _url = url;
-        _url.StartAccessingSecurityScopedResource();
+        _securityScopedAncestorUrl = securityScopedAncestorUrl;
+        _securityScopedAncestorUrl.StartAccessingSecurityScopedResource();
         _stream = File.Open(path, FileMode.Open, access);
     }
 
@@ -60,7 +62,7 @@ internal sealed class IOSSecurityScopedStream : Stream
         {
             _stream.Dispose();
             _document.Dispose();
-            _url.StopAccessingSecurityScopedResource();
+            _securityScopedAncestorUrl.StopAccessingSecurityScopedResource();
         }
     }
 }
