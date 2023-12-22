@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
@@ -18,7 +17,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Data;
-using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -2266,6 +2264,134 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         }
 
+        [Theory]
+        [MemberData(nameof(GetSelectionFieldPermutationParameters))]
+        public void SelectedItem_And_Selection_Properties_Work_In_Any_Order_When_Initializing(SelectionField[] fields)
+            => TestSelectionFields(vm => vm.SelectedItem = vm.Items[2], fields);
+
+        [Theory]
+        [MemberData(nameof(GetSelectionFieldPermutationParameters))]
+        public void SelectedIndex_And_Selection_Properties_Work_In_Any_Order_When_Initializing(SelectionField[] fields)
+            => TestSelectionFields(vm => vm.SelectedIndex = 2, fields);
+
+        [Theory]
+        [MemberData(nameof(GetSelectionFieldPermutationParameters))]
+        public void SelectedValue_And_Selection_Properties_Work_In_Any_Order_When_Initializing(SelectionField[] fields)
+            => TestSelectionFields(vm => vm.SelectedValue = 12, fields);
+
+        private void TestSelectionFields(Action<FullSelectionViewModel> setItem2, SelectionField[] fields)
+        {
+            using var _ = Start();
+
+            var vm = new FullSelectionViewModel
+            {
+                Items =
+                {
+                    new ItemModel { Id = 10, Name = "Item0" },
+                    new ItemModel { Id = 11, Name = "Item1" },
+                    new ItemModel { Id = 12, Name = "Item2" },
+                    new ItemModel { Id = 13, Name = "Item3" }
+                }
+            };
+
+            setItem2(vm);
+
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100
+            };
+
+            // Match the Begin/EndInit sequence emitted by the XAML compiler
+            root.BeginInit();
+            var target = new ListBox();
+            target.BeginInit();
+            root.Child = target;
+            target.DataContext = vm;
+
+            foreach (var field in fields)
+            {
+                switch (field)
+                {
+                    case SelectionField.ItemsSource:
+                        target.Bind(ItemsControl.ItemsSourceProperty, new Binding(nameof(FullSelectionViewModel.Items)));
+                        break;
+                    case SelectionField.SelectedItem:
+                        target.Bind(SelectingItemsControl.SelectedItemProperty, new Binding(nameof(FullSelectionViewModel.SelectedItem)));
+                        break;
+                    case SelectionField.SelectedIndex:
+                        target.Bind(SelectingItemsControl.SelectedIndexProperty, new Binding(nameof(FullSelectionViewModel.SelectedIndex)));
+                        break;
+                    case SelectionField.SelectedValue:
+                        target.Bind(SelectingItemsControl.SelectedValueProperty, new Binding(nameof(FullSelectionViewModel.SelectedValue)));
+                        break;
+                    case SelectionField.SelectedValueBinding:
+                        target.SelectedValueBinding = new Binding(nameof(ItemModel.Id));
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unkown field {field}");
+                }
+            }
+
+            target.EndInit();
+            root.EndInit();
+
+            Assert.Equal(vm.Items[2], target.SelectedItem);
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal(12, target.SelectedValue);
+
+            Assert.Equal(vm.Items[2], vm.SelectedItem);
+            Assert.Equal(2, vm.SelectedIndex);
+            Assert.Equal(12, vm.SelectedValue);
+        }
+
+        [Fact]
+        public void SelectedItem_Can_Access_Selection_DuringInit()
+        {
+            using var _ = Start();
+
+            var target = new ListBox();
+            target.BeginInit();
+
+            var item = new ItemModel();
+
+            target.Selection = new SelectionModel<ItemModel> {
+                SelectedItem = item
+            };
+
+            Assert.Equal(item, target.SelectedItem);
+        }
+
+        [Fact]
+        public void SelectedIndex_Can_Access_Selection_DuringInit()
+        {
+            using var _ = Start();
+
+            var target = new ListBox();
+            target.BeginInit();
+
+            target.Selection = new SelectionModel<ItemModel> {
+                SelectedIndex = 42
+            };
+
+            Assert.Equal(42, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void AnchorIndex_Can_Access_Selection_DuringInit()
+        {
+            using var _ = Start();
+
+            var target = new ListBox();
+            target.BeginInit();
+
+            target.Selection = new SelectionModel<ItemModel> {
+                AnchorIndex = 42
+            };
+
+            Assert.Equal(42, target.GetAnchorIndex());
+        }
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -2307,6 +2433,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 }.RegisterInNameScope(scope));
         }
+
+        public static IEnumerable<object[]> GetSelectionFieldPermutationParameters()
+            => Enum.GetValues<SelectionField>().Permutations().Select(fields => new object[] { fields });
 
         private class Item : Control, ISelectable
         {
@@ -2438,6 +2567,62 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
+        }
+
+#nullable enable
+
+        private sealed class FullSelectionViewModel : NotifyingBase
+        {
+            private ItemModel? _selectedItem;
+            private int _selectedIndex = -1;
+            private int? _selectedValue;
+
+            public ObservableCollection<ItemModel> Items { get; } = new();
+
+            public ItemModel? SelectedItem
+            {
+                get => _selectedItem;
+                set => SetField(ref _selectedItem, value);
+            }
+
+            public int SelectedIndex
+            {
+                get => _selectedIndex;
+                set => SetField(ref _selectedIndex, value);
+            }
+
+            public int? SelectedValue
+            {
+                get => _selectedValue;
+                set => SetField(ref _selectedValue, value);
+            }
+        }
+
+        private sealed class ItemModel : NotifyingBase
+        {
+            private int _id;
+            private string? _name;
+
+            public int Id
+            {
+                get => _id;
+                set => SetField(ref _id, value);
+            }
+
+            public string? Name
+            {
+                get => _name;
+                set => SetField(ref _name, value);
+            }
+        }
+
+        public enum SelectionField
+        {
+            ItemsSource,
+            SelectedItem,
+            SelectedIndex,
+            SelectedValue,
+            SelectedValueBinding
         }
     }
 }
