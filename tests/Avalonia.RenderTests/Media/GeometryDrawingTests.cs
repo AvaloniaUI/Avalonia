@@ -4,9 +4,6 @@ using Xunit;
 #if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
-
-using Avalonia.Direct2D1.RenderTests;
-
 namespace Avalonia.Direct2D1.RenderTests.Media
 #endif
 {
@@ -47,8 +44,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(200, geometryDrawing.GetBounds().Width);
         }
 
-        [Fact]
-        public async void DrawingGeometry_RelativeLine()
+        [Theory]
+        [InlineData("l", "F1 M50,50z l -5,-5")]
+        [InlineData("h", "F1 M50,50z h 10")]
+        [InlineData("v", "F1 M50,50z v 10")]
+        public async void DrawingGeometry_RelativeLine_Commands(string name, string command)
         {
             var target = new Avalonia.Controls.Decorator
             {
@@ -62,15 +62,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     {
                         Drawing = new GeometryDrawing()
                         {
-                            Geometry = StreamGeometry.Parse("F1 M50,50z l -5,-5"),
+                            Geometry = StreamGeometry.Parse(command),
                             Pen = new Pen(Brushes.Black, 2, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round)
                         }
                     },
 
                 }
             };
-            await RenderToFile(target);
-            CompareImages();
+            var testName = $"Relative_Line_{name}";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
         }
     }
 }
