@@ -62,31 +62,15 @@ namespace Avalonia
         }
         private void Unregister( Dictionary<Type, List<AvaloniaProperty>> dictionary,Type type)
         {
-            
-
-            foreach (var keyValuePair in dictionary)
-            {
-                for (var i = keyValuePair.Value.Count - 1; i >= 0; i--)
-                {
-                    if (keyValuePair.Value[i].OwnerType == type)
-                    {
-                        keyValuePair.Value.RemoveAt(i);
-                    }
-                }
-            }
+            dictionary.Remove(type);
         }
         private void Unregister( Dictionary<Type, Dictionary<int, AvaloniaProperty>> dictionary,Type type)
         {
-            
-
             foreach (var keyValuePair in dictionary)
             {
-                for (var i = keyValuePair.Value.Count - 1; i >= 0; i--)
+                foreach (var key in keyValuePair.Value)
                 {
-                    if (keyValuePair.Value.Values.ElementAt(i).OwnerType == type)
-                    {
-                        keyValuePair.Value.Remove(keyValuePair.Value.Keys.ElementAt(i));
-                    }
+                    key.Value.UnRegister(type);
                 }
             }
         }
@@ -263,7 +247,7 @@ namespace Avalonia
             DirectPropertyBase<T> property)
         {
             return FindRegisteredDirect(o, property) ??
-                throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
+                   throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
         }
 
         /// <summary>

@@ -223,6 +223,11 @@ namespace Avalonia
             return !(a == b);
         }
 
+        public void UnRegister(Type type)
+        {
+            _metadata.Remove(type);
+            _metadataCache.Remove(type);
+        }
         /// <summary>
         /// Registers a <see cref="AvaloniaProperty"/>.
         /// </summary>
