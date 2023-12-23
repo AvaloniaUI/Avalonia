@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
@@ -33,7 +33,7 @@ namespace Avalonia.Win32
 
         public async Task<string?> GetTextAsync()
         {
-            using(await OpenClipboard())
+            using (await OpenClipboard())
             {
                 IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
                 if (hText == IntPtr.Zero)
@@ -55,7 +55,7 @@ namespace Avalonia.Win32
 
         public async Task SetTextAsync(string? text)
         {
-            using(await OpenClipboard())
+            using (await OpenClipboard())
             {
                 UnmanagedMethods.EmptyClipboard();
 
@@ -69,7 +69,7 @@ namespace Avalonia.Win32
 
         public async Task ClearAsync()
         {
-            using(await OpenClipboard())
+            using (await OpenClipboard())
             {
                 UnmanagedMethods.EmptyClipboard();
             }
@@ -81,44 +81,75 @@ namespace Avalonia.Win32
             using var wrapper = new DataObject(data);
             var i = OleRetryCount;
 
+            var uiSchedulerContext = TaskScheduler.FromCurrentSynchronizationContext();
+
+            var ptr = wrapper.GetNativeIntPtr<Win32Com.IDataObject>();
+
             while (true)
             {
-                var ptr = wrapper.GetNativeIntPtr<Win32Com.IDataObject>();
-                var hr = UnmanagedMethods.OleSetClipboard(ptr);
+                var hr = await Task.Factory.StartNew(SetDataObject,
+                    state: ptr,
+                    cancellationToken: default,
+                    creationOptions: TaskCreationOptions.None
+                    , uiSchedulerContext);
 
                 if (hr == 0)
                     break;
 
                 if (--i == 0)
                     Marshal.ThrowExceptionForHR(hr);
-                
+
                 await Task.Delay(OleRetryDelay)
                     .ConfigureAwait(false);
             }
+
+            static int SetDataObject(object? state) =>
+                UnmanagedMethods.OleSetClipboard((IntPtr)state!);
         }
 
         public async Task<string[]> GetFormatsAsync()
         {
             Dispatcher.UIThread.VerifyAccess();
+            var uiSchedulerContext = TaskScheduler.FromCurrentSynchronizationContext();
             var i = OleRetryCount;
 
             while (true)
             {
-                var hr = UnmanagedMethods.OleGetClipboard(out var dataObject);
 
-                if (hr == 0)
+                var state = await Task.Factory.StartNew(OleGetClipboard,
+                    cancellationToken: default,
+                    creationOptions: TaskCreationOptions.None,
+                    uiSchedulerContext);
+
+                if (state.hr == 0)
                 {
-                    using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
-                    using var wrapper = new OleDataObject(proxy);
-                    var formats = wrapper.GetDataFormats().ToArray();
-                    return formats;
+                    return await Task.Factory.StartNew(GetDataFormats,
+                        state: state.dataObjectPtr,
+                        cancellationToken: default,
+                        creationOptions: TaskCreationOptions.None,
+                        uiSchedulerContext);
                 }
 
                 if (--i == 0)
-                    Marshal.ThrowExceptionForHR(hr);
+                    Marshal.ThrowExceptionForHR(state.hr);
 
                 await Task.Delay(OleRetryDelay)
                     .ConfigureAwait(false);
+            }
+
+            static (int hr, IntPtr dataObjectPtr) OleGetClipboard()
+            {
+                var hr = UnmanagedMethods.OleGetClipboard(out var dataObject);
+                return (hr, dataObject);
+            }
+
+            static string[] GetDataFormats(object? state)
+            {
+                var dataObject = (IntPtr)state!;
+                using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
+                using var wrapper = new OleDataObject(proxy);
+                var formats = wrapper.GetDataFormats().ToArray();
+                return formats;
             }
         }
 
@@ -126,24 +157,44 @@ namespace Avalonia.Win32
         {
             Dispatcher.UIThread.VerifyAccess();
             var i = OleRetryCount;
+            var uiSchedulerContext = TaskScheduler.FromCurrentSynchronizationContext();
 
             while (true)
             {
-                var hr = UnmanagedMethods.OleGetClipboard(out var dataObject);
+                var state = await Task.Factory.StartNew(OleGetClipboard,
+                    cancellationToken: default,
+                    creationOptions: TaskCreationOptions.None,
+                    uiSchedulerContext);
 
-                if (hr == 0)
+                if (state.hr == 0)
                 {
-                    using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
-                    using var wrapper = new OleDataObject(proxy);
-                    var rv = wrapper.Get(format);
-                    return rv;
+                    return await Task.Factory.StartNew(GetData,
+                        state: (state.dataObjectPtr, format),
+                        cancellationToken: default,
+                        creationOptions: TaskCreationOptions.None,
+                        uiSchedulerContext);
                 }
 
                 if (--i == 0)
-                    Marshal.ThrowExceptionForHR(hr);
+                    Marshal.ThrowExceptionForHR(state.hr);
 
                 await Task.Delay(OleRetryDelay)
                     .ConfigureAwait(false);
+            }
+
+            static (int hr, IntPtr dataObjectPtr) OleGetClipboard()
+            {
+                var hr = UnmanagedMethods.OleGetClipboard(out var dataObject);
+                return (hr, dataObject);
+            }
+
+            static object? GetData(object? state)
+            {
+                var info = (ValueTuple<IntPtr, string>)state!;
+                using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(info.Item1, true);
+                using var wrapper = new OleDataObject(proxy);
+                var rv = wrapper.Get(info.Item2);
+                return rv;
             }
         }
     }
