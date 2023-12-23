@@ -44,6 +44,7 @@ internal class NuiKeyboardHandler
     {
         var type = GetKeyEventType(e);
         var modifiers = GetModifierKey(e);
+        var deviceType = GetDeviceType(e);
 
         _view.TopLevelImpl.Input?.Invoke(
             new RawKeyEventArgs(
@@ -52,14 +53,18 @@ internal class NuiKeyboardHandler
                 _view.InputRoot,
                 type,
                 mapped,
-                modifiers));
+                modifiers,
+                PhysicalKey.None,
+                deviceType,
+                e.Key.KeyString
+                ));
     }
 
     private bool ShouldSendKeyEvent(Window.KeyEventArgs e, out global::Tizen.Uix.InputMethod.KeyCode keyCode)
     {
-        if (string.IsNullOrEmpty(e.Key.KeyString) || 
+        if (string.IsNullOrEmpty(e.Key.KeyString) ||
             e.Key.KeyPressedName is "Delete" or "BackSpace" ||
-            e.Key.IsCtrlModifier() || 
+            e.Key.IsCtrlModifier() ||
             e.Key.IsAltModifier())
         {
             if (Enum.TryParse(e.Key.KeyPressedName, true, out keyCode) ||
@@ -98,5 +103,16 @@ internal class NuiKeyboardHandler
             modifiers |= RawInputModifiers.Control;
 
         return modifiers;
+    }
+
+    private KeyDeviceType GetDeviceType(Window.KeyEventArgs ev)
+    {
+        if (ev.Key.DeviceClass == DeviceClassType.Gamepad)
+            return KeyDeviceType.Gamepad;
+
+        if (ev.Key.DeviceSubClass == DeviceSubClassType.Remocon)
+            return KeyDeviceType.Remote;
+
+        return KeyDeviceType.Keyboard;
     }
 }
