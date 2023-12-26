@@ -92,6 +92,10 @@ namespace Avalonia.Win32.Automation
             vtbl[idx++] = (void*)fpQueryInterface;
             vtbl[idx++] = (void*)fpAddRef;
             vtbl[idx++] = (void*)fpRelease;
+            vtbl[idx++] = (delegate* unmanaged<void*, ProviderOptions*, int>)&IRawElementProviderSimple2ManagedWrapper.GetProviderOptions;
+            vtbl[idx++] = (delegate* unmanaged<void*, int, void**, int>)&IRawElementProviderSimple2ManagedWrapper.GetPatternProvider;
+            vtbl[idx++] = (delegate* unmanaged<void*, int, void**, int>)&IRawElementProviderSimple2ManagedWrapper.GetPropertyValue;
+            vtbl[idx++] = (delegate* unmanaged<void*, void**, int>)&IRawElementProviderSimple2ManagedWrapper.GetHostRawElementProvider;
             vtbl[idx++] = (delegate* unmanaged<void*, int>)&IRawElementProviderSimple2ManagedWrapper.ShowContextMenu;
             Debug.Assert(idx == IRawElementProviderSimple2.VtblSize);
             entries[entryIndex].IID = IRawElementProviderSimple2.IID;
@@ -148,6 +152,12 @@ namespace Avalonia.Win32.Automation
             vtbl[idx++] = (void*)fpQueryInterface;
             vtbl[idx++] = (void*)fpAddRef;
             vtbl[idx++] = (void*)fpRelease;
+            vtbl[idx++] = (delegate* unmanaged<void*, NavigateDirection, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.Navigate;
+            vtbl[idx++] = (delegate* unmanaged<void*, SAFEARRAY**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetRuntimeId;
+            vtbl[idx++] = (delegate* unmanaged<void*, Rect*, int>)&IRawElementProviderFragmentRootManagedWrapper.GetBoundingRectangle;
+            vtbl[idx++] = (delegate* unmanaged<void*, SAFEARRAY**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetEmbeddedFragmentRoots;
+            vtbl[idx++] = (delegate* unmanaged<void*, int>)&IRawElementProviderFragmentRootManagedWrapper.SetFocus;
+            vtbl[idx++] = (delegate* unmanaged<void*, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetFragmentRoot;
             vtbl[idx++] = (delegate* unmanaged<void*, double, double, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.ElementProviderFromPoint;
             vtbl[idx++] = (delegate* unmanaged<void*, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetFocus;
             Debug.Assert(idx == IRawElementProviderFragmentRoot.VtblSize);

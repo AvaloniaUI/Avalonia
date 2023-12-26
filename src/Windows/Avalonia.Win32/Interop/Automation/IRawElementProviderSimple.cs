@@ -324,7 +324,7 @@ namespace Avalonia.Win32.Interop.Automation
             try
             {
                 var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple>((ComWrappers.ComInterfaceDispatch*)@this).GetPropertyValue(propertyId);
-                *ret = obj is null ? null : (void*)AutomationNodeComWrappers.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+                Marshal.GetNativeVariantForObject(obj, (IntPtr)ret);
                 return 0;
             }
             catch (Exception ex)
@@ -363,7 +363,7 @@ namespace Avalonia.Win32.Interop.Automation
                 Marshal.ThrowExceptionForHR(hr);
             }
 
-            return AutomationNodeComWrappers.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.None);
+            return Marshal.GetObjectForNativeVariant((IntPtr)ret);
         }
 
         public static object? GetPropertyValue(AutomationNodeWrapper container, void* @this, int propertyId)
@@ -376,7 +376,7 @@ namespace Avalonia.Win32.Interop.Automation
                 Marshal.ThrowExceptionForHR(hr);
             }
 
-            return AutomationNodeComWrappers.Instance.GetOrCreateObjectForComInstance((IntPtr)ret, CreateObjectFlags.None);
+            return Marshal.GetObjectForNativeVariant((IntPtr)ret);
         }
 
         public static IRawElementProviderSimple? GetHostRawElementProvider(AutomationNodeWrapper container, void* @this)

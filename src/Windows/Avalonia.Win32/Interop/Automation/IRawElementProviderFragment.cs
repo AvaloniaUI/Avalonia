@@ -163,7 +163,7 @@ namespace Avalonia.Win32.Interop.Automation
                 return ex.HResult;
             }
         }
-}
+    }
 
     [DynamicInterfaceCastableImplementation]
     internal unsafe interface IRawElementProviderFragmentNativeWrapper : IRawElementProviderFragment
