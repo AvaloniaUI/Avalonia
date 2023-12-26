@@ -10,37 +10,61 @@ namespace Avalonia.Win32.Automation
 {
     internal unsafe partial class AutomationNodeComWrappers : ComWrappers
     {
-        private const int AutomationNodeVtblLen = 13;
+        private const int AutomationNodeVtblLen = 12;
+        private const int RootAutomationNodeVtblLen = 13;
         private static readonly ComInterfaceEntry* s_vtbl;
+        private static readonly ComInterfaceEntry* s_rootVtbl;
 
         public static readonly AutomationNodeComWrappers Instance = new AutomationNodeComWrappers();
 
         static AutomationNodeComWrappers()
         {
             var idx = 0;
-            var entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(
+            s_vtbl = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(
                 typeof(AutomationNodeComWrappers),
                 sizeof(ComInterfaceEntry) * AutomationNodeVtblLen);
 
-            InitIRawElementProviderSimpleVtbl(entries, ref idx);
-            InitIRawElementProviderSimple2Vtbl(entries, ref idx);
-            InitIRawElementProviderFragmentVtbl(entries, ref idx);
-            InitIInvokeProviderVtbl(entries, ref idx);
-            InitIExpandCollapseProviderVtbl(entries, ref idx);
-            InitIRangeValueProviderVtbl(entries, ref idx);
-            InitIScrollProviderVtbl(entries, ref idx);
-            InitIScrollItemProviderVtbl(entries, ref idx);
-            InitISelectionProviderVtbl(entries, ref idx);
-            InitISelectionItemProviderVtbl(entries, ref idx);
-            InitIToggleProviderVtbl(entries, ref idx);
-            InitIValueProviderVtbl(entries, ref idx);
-            InitIRawElementProviderFragmentRootVtbl(entries, ref idx);
+            InitIRawElementProviderSimpleVtbl(s_vtbl, ref idx);
+            InitIRawElementProviderSimple2Vtbl(s_vtbl, ref idx);
+            InitIRawElementProviderFragmentVtbl(s_vtbl, ref idx);
+            InitIInvokeProviderVtbl(s_vtbl, ref idx);
+            InitIExpandCollapseProviderVtbl(s_vtbl, ref idx);
+            InitIRangeValueProviderVtbl(s_vtbl, ref idx);
+            InitIScrollProviderVtbl(s_vtbl, ref idx);
+            InitIScrollItemProviderVtbl(s_vtbl, ref idx);
+            InitISelectionProviderVtbl(s_vtbl, ref idx);
+            InitISelectionItemProviderVtbl(s_vtbl, ref idx);
+            InitIToggleProviderVtbl(s_vtbl, ref idx);
+            InitIValueProviderVtbl(s_vtbl, ref idx);
 
-            s_vtbl = entries;
+            idx = 0;
+            s_rootVtbl = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(
+                typeof(AutomationNodeComWrappers),
+                sizeof(ComInterfaceEntry) * RootAutomationNodeVtblLen);
+
+            InitIRawElementProviderSimpleVtbl(s_rootVtbl, ref idx);
+            InitIRawElementProviderSimple2Vtbl(s_rootVtbl, ref idx);
+            InitIRawElementProviderFragmentVtbl(s_rootVtbl, ref idx);
+            InitIInvokeProviderVtbl(s_rootVtbl, ref idx);
+            InitIExpandCollapseProviderVtbl(s_rootVtbl, ref idx);
+            InitIRangeValueProviderVtbl(s_rootVtbl, ref idx);
+            InitIScrollProviderVtbl(s_rootVtbl, ref idx);
+            InitIScrollItemProviderVtbl(s_rootVtbl, ref idx);
+            InitISelectionProviderVtbl(s_rootVtbl, ref idx);
+            InitISelectionItemProviderVtbl(s_rootVtbl, ref idx);
+            InitIToggleProviderVtbl(s_rootVtbl, ref idx);
+            InitIValueProviderVtbl(s_rootVtbl, ref idx);
+            InitIRawElementProviderFragmentRootVtbl(s_rootVtbl, ref idx);
         }
 
         protected override unsafe ComInterfaceEntry* ComputeVtables(object obj, CreateComInterfaceFlags flags, out int count)
         {
+            if (obj is RootAutomationNode)
+            {
+                count = RootAutomationNodeVtblLen;
+                return s_rootVtbl;
+            }
+
             if (obj is AutomationNode)
             {
                 count = AutomationNodeVtblLen;
@@ -152,12 +176,6 @@ namespace Avalonia.Win32.Automation
             vtbl[idx++] = (void*)fpQueryInterface;
             vtbl[idx++] = (void*)fpAddRef;
             vtbl[idx++] = (void*)fpRelease;
-            vtbl[idx++] = (delegate* unmanaged<void*, NavigateDirection, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.Navigate;
-            vtbl[idx++] = (delegate* unmanaged<void*, SAFEARRAY**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetRuntimeId;
-            vtbl[idx++] = (delegate* unmanaged<void*, Rect*, int>)&IRawElementProviderFragmentRootManagedWrapper.GetBoundingRectangle;
-            vtbl[idx++] = (delegate* unmanaged<void*, SAFEARRAY**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetEmbeddedFragmentRoots;
-            vtbl[idx++] = (delegate* unmanaged<void*, int>)&IRawElementProviderFragmentRootManagedWrapper.SetFocus;
-            vtbl[idx++] = (delegate* unmanaged<void*, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetFragmentRoot;
             vtbl[idx++] = (delegate* unmanaged<void*, double, double, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.ElementProviderFromPoint;
             vtbl[idx++] = (delegate* unmanaged<void*, void**, int>)&IRawElementProviderFragmentRootManagedWrapper.GetFocus;
             Debug.Assert(idx == IRawElementProviderFragmentRoot.VtblSize);
