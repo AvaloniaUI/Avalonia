@@ -88,10 +88,7 @@ namespace Avalonia.Win32
                         // The first and foremost thing to do - notify the TopLevel
                         Closed?.Invoke();
 
-                        if (UiaCoreTypesApi.IsNetComInteropAvailable)
-                        {
-                            UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
-                        }
+                        UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
 
                         // We need to release IMM context and state to avoid leaks.
                         if (Imm32InputMethod.Current.Hwnd == _hwnd)
@@ -735,7 +732,7 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
-                    if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control)
+                    if ((long)lParam == uiaRootObjectId && _owner is Control control)
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
