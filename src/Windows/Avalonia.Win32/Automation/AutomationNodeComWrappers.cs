@@ -98,7 +98,7 @@ namespace Avalonia.Win32.Automation
             vtbl[idx++] = (void*)fpRelease;
             vtbl[idx++] = (delegate* unmanaged<void*, ProviderOptions*, int>)&IRawElementProviderSimpleManagedWrapper.GetProviderOptions;
             vtbl[idx++] = (delegate* unmanaged<void*, int, void**, int>)&IRawElementProviderSimpleManagedWrapper.GetPatternProvider;
-            vtbl[idx++] = (delegate* unmanaged<void*, int, void**, int>)&IRawElementProviderSimpleManagedWrapper.GetPropertyValue;
+            vtbl[idx++] = (delegate* unmanaged<void*, int, VARIANT*, int>)&IRawElementProviderSimpleManagedWrapper.GetPropertyValue;
             vtbl[idx++] = (delegate* unmanaged<void*, void**, int>)&IRawElementProviderSimpleManagedWrapper.GetHostRawElementProvider;
             Debug.Assert(idx == IRawElementProviderSimple.VtblSize);
             entries[entryIndex].IID = IRawElementProviderSimple.IID;
@@ -118,7 +118,7 @@ namespace Avalonia.Win32.Automation
             vtbl[idx++] = (void*)fpRelease;
             vtbl[idx++] = (delegate* unmanaged<void*, ProviderOptions*, int>)&IRawElementProviderSimple2ManagedWrapper.GetProviderOptions;
             vtbl[idx++] = (delegate* unmanaged<void*, int, void**, int>)&IRawElementProviderSimple2ManagedWrapper.GetPatternProvider;
-            vtbl[idx++] = (delegate* unmanaged<void*, int, void**, int>)&IRawElementProviderSimple2ManagedWrapper.GetPropertyValue;
+            vtbl[idx++] = (delegate* unmanaged<void*, int, VARIANT*, int>)&IRawElementProviderSimple2ManagedWrapper.GetPropertyValue;
             vtbl[idx++] = (delegate* unmanaged<void*, void**, int>)&IRawElementProviderSimple2ManagedWrapper.GetHostRawElementProvider;
             vtbl[idx++] = (delegate* unmanaged<void*, int>)&IRawElementProviderSimple2ManagedWrapper.ShowContextMenu;
             Debug.Assert(idx == IRawElementProviderSimple2.VtblSize);

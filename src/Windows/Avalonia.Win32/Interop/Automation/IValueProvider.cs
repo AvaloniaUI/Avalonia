@@ -92,7 +92,7 @@ namespace Avalonia.Win32.Interop.Automation
             return str;
         }
 
-        public static bool GetIsReadOnly(void* @this) => AutomationNodeWrapper.InvokeAndGet<bool>(@this, 5);
+        public static bool GetIsReadOnly(void* @this) => AutomationNodeWrapper.InvokeAndGetBool(@this, 5);
 
         string? IValueProvider.Value
         {

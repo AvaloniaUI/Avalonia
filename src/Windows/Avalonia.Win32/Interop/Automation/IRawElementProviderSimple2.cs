@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Win32.Automation;
 
@@ -48,12 +49,31 @@ namespace Avalonia.Win32.Interop.Automation
         }
 
         [UnmanagedCallersOnly]
-        public static int GetPropertyValue(void* @this, int propertyId, void** ret)
+        public static int GetPropertyValue(void* @this, int propertyId, VARIANT* ret)
         {
             try
             {
                 var obj = ComWrappers.ComInterfaceDispatch.GetInstance<IRawElementProviderSimple2>((ComWrappers.ComInterfaceDispatch*)@this).GetPropertyValue(propertyId);
-                Marshal.GetNativeVariantForObject(obj, (IntPtr)ret);
+                var variant = obj switch
+                {
+                    bool b => new VARIANT { vt = (ushort)VarEnum.VT_BOOL, ptr0 = (IntPtr)(b ? 1 : 0) },
+                    sbyte i1 => new VARIANT { vt = (ushort)VarEnum.VT_I1, ptr0 = Unsafe.As<sbyte, IntPtr>(ref i1) },
+                    short i2 => new VARIANT { vt = (ushort)VarEnum.VT_I2, ptr0 = Unsafe.As<short, IntPtr>(ref i2) },
+                    int i4 => new VARIANT { vt = (ushort)VarEnum.VT_I4, ptr0 = Unsafe.As<int, IntPtr>(ref i4) },
+                    long i8 => new VARIANT { vt = (ushort)VarEnum.VT_I8, ptr0 = Unsafe.As<long, IntPtr>(ref i8) },
+                    byte u1 => new VARIANT { vt = (ushort)VarEnum.VT_UI1, ptr0 = Unsafe.As<byte, IntPtr>(ref u1) },
+                    ushort u2 => new VARIANT { vt = (ushort)VarEnum.VT_UI2, ptr0 = Unsafe.As<ushort, IntPtr>(ref u2) },
+                    uint u4 => new VARIANT { vt = (ushort)VarEnum.VT_UI4, ptr0 = Unsafe.As<uint, IntPtr>(ref u4) },
+                    ulong u8 => new VARIANT { vt = (ushort)VarEnum.VT_UI8, ptr0 = Unsafe.As<ulong, IntPtr>(ref u8) },
+                    float r4 => new VARIANT { vt = (ushort)VarEnum.VT_R4, ptr0 = Unsafe.As<float, IntPtr>(ref r4) },
+                    double r8 => new VARIANT { vt = (ushort)VarEnum.VT_R8, ptr0 = Unsafe.As<double, IntPtr>(ref r8) },
+                    decimal m => new VARIANT { vt = (ushort)VarEnum.VT_DECIMAL, data = m },
+                    string s => new VARIANT { vt = (ushort)VarEnum.VT_BSTR, ptr0 = Marshal.StringToBSTR(s) },
+                    null => new VARIANT { vt = (ushort)VarEnum.VT_NULL },
+                    _ => new VARIANT { vt = (ushort)VarEnum.VT_UNKNOWN, ptr0 = AutomationNodeComWrappers.Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None) },
+                };
+
+                *ret = variant;
                 return 0;
             }
             catch (Exception ex)

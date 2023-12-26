@@ -182,10 +182,10 @@ namespace Avalonia.Win32.Automation
                 Marshal.Release((IntPtr)IRawElementProviderFragmentRootInst);
         }
 
-        public static T InvokeAndGet<T>(void* @this, int vtblSlot) where T : unmanaged
+        public static bool InvokeAndGetBool(void* @this, int vtblSlot)
         {
-            T ret;
-            int hr = ((delegate* unmanaged<void*, T*, int>)(*(*(void***)@this + vtblSlot)))(@this, &ret);
+            bool ret;
+            int hr = ((delegate* unmanaged<void*, bool*, int>)(*(*(void***)@this + vtblSlot)))(@this, &ret);
 
             if (hr != 0)
             {
@@ -195,23 +195,10 @@ namespace Avalonia.Win32.Automation
             return ret;
         }
 
-        public static TR InvokeAndGet<T1, TR>(void* @this, int vtblSlot, T1 value) where TR : unmanaged
+        public static double InvokeAndGetDouble(void* @this, int vtblSlot)
         {
-            TR ret;
-            int hr = ((delegate* unmanaged<void*, T1, TR*, int>)(*(*(void***)@this + vtblSlot)))(@this, value, &ret);
-
-            if (hr != 0)
-            {
-                Marshal.ThrowExceptionForHR(hr);
-            }
-
-            return ret;
-        }
-
-        public static TR InvokeAndGet<T1, T2, TR>(void* @this, int vtblSlot, T1 value1, T2 value2) where TR : unmanaged
-        {
-            TR ret;
-            int hr = ((delegate* unmanaged<void*, T1, T2, TR*, int>)(*(*(void***)@this + vtblSlot)))(@this, value1, value2, &ret);
+            double ret;
+            int hr = ((delegate* unmanaged<void*, double*, int>)(*(*(void***)@this + vtblSlot)))(@this, &ret);
 
             if (hr != 0)
             {
@@ -230,27 +217,6 @@ namespace Avalonia.Win32.Automation
                 Marshal.ThrowExceptionForHR(hr);
             }
         }
-
-        public static void Invoke<T1>(void* @this, int vtblSlot, T1 value) where T1 : unmanaged
-        {
-            int hr = ((delegate* unmanaged<void*, T1, int>)(*(*(void***)@this + vtblSlot)))(@this, value);
-
-            if (hr != 0)
-            {
-                Marshal.ThrowExceptionForHR(hr);
-            }
-        }
-
-        public static void Invoke<T1, T2>(void* @this, int vtblSlot, T1 value1, T2 value2) where T1 : unmanaged where T2 : unmanaged
-        {
-            int hr = ((delegate* unmanaged<void*, T1, T2, int>)(*(*(void***)@this + vtblSlot)))(@this, value1, value2);
-
-            if (hr != 0)
-            {
-                Marshal.ThrowExceptionForHR(hr);
-            }
-        }
-
 
         [DllImport("OleAut32.dll")]
         internal static extern SAFEARRAY* SafeArrayCreate(int vt, uint cDims, SAFEARRAYBOUND* rgsabound);
@@ -286,5 +252,17 @@ namespace Avalonia.Win32.Automation
         public long lLbound;
     }
 
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct VARIANT
+    {
+        [FieldOffset(0)] public ushort vt;
+        [FieldOffset(2)] public ushort r0;
+        [FieldOffset(4)] public ushort r1;
+        [FieldOffset(6)] public ushort r2;
+        [FieldOffset(8)] public IntPtr ptr0;
+        [FieldOffset(16)] public IntPtr ptr1;
+        [FieldOffset(8)] public decimal data;
+    }
 }
 #endif

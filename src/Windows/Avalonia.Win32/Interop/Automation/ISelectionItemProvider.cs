@@ -104,7 +104,7 @@ namespace Avalonia.Win32.Interop.Automation
 
         public static void RemoveFromSelection(void* @this) => AutomationNodeWrapper.Invoke(@this, 5);
 
-        public static bool GetIsSelected(void* @this) => AutomationNodeWrapper.InvokeAndGet<bool>(@this, 6);
+        public static bool GetIsSelected(void* @this) => AutomationNodeWrapper.InvokeAndGetBool(@this, 6);
 
         public static IRawElementProviderSimple? GetSelectionContainer(AutomationNodeWrapper container, void* @this)
         {

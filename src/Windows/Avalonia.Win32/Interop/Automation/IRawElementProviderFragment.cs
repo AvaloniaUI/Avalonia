@@ -201,7 +201,18 @@ namespace Avalonia.Win32.Interop.Automation
             return arr;
         }
 
-        public static Rect GetBoundingRectangle(void* @this) => AutomationNodeWrapper.InvokeAndGet<Rect>(@this, 5);
+        public static Rect GetBoundingRectangle(void* @this)
+        {
+            Rect ret;
+            int hr = ((delegate* unmanaged<void*, Rect*, int>)(*(*(void***)@this + 5)))(@this, &ret);
+
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return ret;
+        }
 
         public static IRawElementProviderSimple[]? GetEmbeddedFragmentRoots(AutomationNodeWrapper container, void* @this)
         {

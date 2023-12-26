@@ -55,7 +55,18 @@ namespace Avalonia.Win32.Interop.Automation
     {
         public static void Toggle(void* @this) => AutomationNodeWrapper.Invoke(@this, 3);
 
-        public static ToggleState GetToggleState(void* @this) => AutomationNodeWrapper.InvokeAndGet<ToggleState>(@this, 4);
+        public static ToggleState GetToggleState(void* @this)
+        {
+            ToggleState ret;
+            int hr = ((delegate* unmanaged<void*, ToggleState*, int>)(*(*(void***)@this + 4)))(@this, &ret);
+
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return ret;
+        }
 
         void IToggleProvider.Toggle()=> Toggle(((AutomationNodeWrapper)this).IToggleProviderInst);
 

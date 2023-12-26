@@ -143,21 +143,37 @@ namespace Avalonia.Win32.Interop.Automation
     [DynamicInterfaceCastableImplementation]
     internal unsafe interface IScrollProviderNativeWrapper : IScrollProvider
     {
-        public static void Scroll(void* @this, ScrollAmount horizontalAmount, ScrollAmount verticalAmount) => AutomationNodeWrapper.Invoke(@this, 3, horizontalAmount, verticalAmount);
+        public static void Scroll(void* @this, ScrollAmount horizontalAmount, ScrollAmount verticalAmount)
+        {
+            int hr = ((delegate* unmanaged<void*, ScrollAmount, ScrollAmount, int>)(*(*(void***)@this + 3)))(@this, horizontalAmount, verticalAmount);
 
-        public static void SetScrollPercent(void* @this, double horizontalPercent, double verticalPercent) => AutomationNodeWrapper.Invoke(@this, 4, horizontalPercent, verticalPercent);
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+        }
 
-        public static double GetHorizontalScrollPercent(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 5);
+        public static void SetScrollPercent(void* @this, double horizontalPercent, double verticalPercent)
+        {
+            int hr = ((delegate* unmanaged<void*, double, double, int>)(*(*(void***)@this + 4)))(@this, horizontalPercent, verticalPercent);
 
-        public static double GetVerticalScrollPercent(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 6);
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+        }
 
-        public static double GetHorizontalViewSize(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 7);
+        public static double GetHorizontalScrollPercent(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 5);
 
-        public static double GetVerticalViewSize(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 8);
+        public static double GetVerticalScrollPercent(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 6);
 
-        public static bool GetHorizontallyScrollable(void* @this) => AutomationNodeWrapper.InvokeAndGet<bool>(@this, 9);
+        public static double GetHorizontalViewSize(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 7);
 
-        public static bool GetVerticallyScrollable(void* @this) => AutomationNodeWrapper.InvokeAndGet<bool>(@this, 10);
+        public static double GetVerticalViewSize(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 8);
+
+        public static bool GetHorizontallyScrollable(void* @this) => AutomationNodeWrapper.InvokeAndGetBool(@this, 9);
+
+        public static bool GetVerticallyScrollable(void* @this) => AutomationNodeWrapper.InvokeAndGetBool(@this, 10);
 
         void IScrollProvider.Scroll(ScrollAmount horizontalAmount, ScrollAmount verticalAmount) => Scroll(((AutomationNodeWrapper)this).IScrollProviderInst, horizontalAmount, verticalAmount);
 

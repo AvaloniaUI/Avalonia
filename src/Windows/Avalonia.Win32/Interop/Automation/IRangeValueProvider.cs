@@ -126,19 +126,27 @@ namespace Avalonia.Win32.Interop.Automation
     [DynamicInterfaceCastableImplementation]
     internal unsafe interface IRangeValueProviderNativeWrapper : IRangeValueProvider
     {
-        public static void SetValue(void* @this, double value) => AutomationNodeWrapper.Invoke(@this, 3, value);
+        public static void SetValue(void* @this, double value)
+        {
+            int hr = ((delegate* unmanaged<void*, double, int>)(*(*(void***)@this + 3)))(@this, value);
 
-        public static double GetValue(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 4);
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+        }
 
-        public static bool GetIsReadOnly(void* @this) => AutomationNodeWrapper.InvokeAndGet<bool>(@this, 5);
+        public static double GetValue(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 4);
 
-        public static double GetMaximum(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 6);
+        public static bool GetIsReadOnly(void* @this) => AutomationNodeWrapper.InvokeAndGetBool(@this, 5);
 
-        public static double GetMinimum(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 7);
+        public static double GetMaximum(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 6);
 
-        public static double GetLargeChange(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 8);
+        public static double GetMinimum(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 7);
 
-        public static double GetSmallChange(void* @this) => AutomationNodeWrapper.InvokeAndGet<double>(@this, 9);
+        public static double GetLargeChange(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 8);
+
+        public static double GetSmallChange(void* @this) => AutomationNodeWrapper.InvokeAndGetDouble(@this, 9);
 
         double IRangeValueProvider.Value
         {

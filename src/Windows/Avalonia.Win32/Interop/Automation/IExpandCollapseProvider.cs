@@ -72,7 +72,18 @@ namespace Avalonia.Win32.Interop.Automation
 
         public static void Collapse(void* @this) => AutomationNodeWrapper.Invoke(@this, 4);
 
-        public static ExpandCollapseState GetExpandCollapseState(void* @this) => AutomationNodeWrapper.InvokeAndGet<ExpandCollapseState>(@this, 5);
+        public static ExpandCollapseState GetExpandCollapseState(void* @this)
+        {
+            ExpandCollapseState ret;
+            int hr = ((delegate* unmanaged<void*, ExpandCollapseState*, int>)(*(*(void***)@this + 5)))(@this, &ret);
+
+            if (hr != 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return ret;
+        }
 
         void IExpandCollapseProvider.Expand() => Expand(((AutomationNodeWrapper)this).IExpandCollapseProviderInst);
 

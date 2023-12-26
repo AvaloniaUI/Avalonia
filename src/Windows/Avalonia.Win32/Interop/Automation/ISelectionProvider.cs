@@ -109,9 +109,9 @@ namespace Avalonia.Win32.Interop.Automation
             return arr;
         }
 
-        public static bool GetCanSelectMultiple(void* @this) => AutomationNodeWrapper.InvokeAndGet<bool>(@this, 4);
+        public static bool GetCanSelectMultiple(void* @this) => AutomationNodeWrapper.InvokeAndGetBool(@this, 4);
 
-        public static bool GetIsSelectionRequired(void* @this) => AutomationNodeWrapper.InvokeAndGet<bool>(@this, 5);
+        public static bool GetIsSelectionRequired(void* @this) => AutomationNodeWrapper.InvokeAndGetBool(@this, 5);
 
         IRawElementProviderSimple[] ISelectionProvider.GetSelection() => GetSelection((AutomationNodeWrapper)this, ((AutomationNodeWrapper)this).ISelectionProviderInst);
 
