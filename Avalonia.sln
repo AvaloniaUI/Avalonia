@@ -127,6 +127,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6F
 		build\BuildTargets.targets = build\BuildTargets.targets
 		build\LegacyProject.targets = build\LegacyProject.targets
 		build\UnitTests.NetCore.targets = build\UnitTests.NetCore.targets
+		build\DevSingleProject.targets = build\DevSingleProject.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}"

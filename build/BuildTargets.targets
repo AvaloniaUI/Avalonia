@@ -6,6 +6,7 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">true</AvaloniaXamlVerboseExceptions>
   </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)\DevSingleProject.targets"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.targets"/>
 </Project>
