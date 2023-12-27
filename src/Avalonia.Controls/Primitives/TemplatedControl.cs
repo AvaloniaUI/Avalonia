@@ -23,6 +23,12 @@ namespace Avalonia.Controls.Primitives
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="BackgroundSizing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BackgroundSizing> BackgroundSizingProperty =
+            Border.BackgroundSizingProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> BorderBrushProperty =
@@ -129,6 +135,15 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(BackgroundProperty);
             set => SetValue(BackgroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how the control's background is drawn relative to the control's border.
+        /// </summary>
+        public BackgroundSizing BackgroundSizing
+        {
+            get => GetValue(BackgroundSizingProperty);
+            set => SetValue(BackgroundSizingProperty, value);
         }
 
         /// <summary>

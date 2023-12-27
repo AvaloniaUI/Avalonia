@@ -24,6 +24,14 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Border, IBrush?>(nameof(Background));
 
         /// <summary>
+        /// Defines the <see cref="BackgroundSizing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BackgroundSizing> BackgroundSizingProperty =
+            AvaloniaProperty.Register<Border, BackgroundSizing>(
+                nameof(BackgroundSizing),
+                BackgroundSizing.CenterBorder);
+
+        /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> BorderBrushProperty =
@@ -59,6 +67,7 @@ namespace Avalonia.Controls
         {
             AffectsRender<Border>(
                 BackgroundProperty,
+                BackgroundSizingProperty,
                 BorderBrushProperty,
                 BorderThicknessProperty,
                 CornerRadiusProperty,
@@ -91,6 +100,14 @@ namespace Avalonia.Controls
             set => SetValue(BackgroundProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets how the background is drawn relative to the border.
+        /// </summary>
+        public BackgroundSizing BackgroundSizing
+        {
+            get => GetValue(BackgroundSizingProperty);
+            set => SetValue(BackgroundSizingProperty, value);
+        }
         /// <summary>
         /// Gets or sets a brush with which to paint the border.
         /// </summary>
