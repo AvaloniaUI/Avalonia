@@ -10,6 +10,7 @@
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
     <!-- Exclude iOS, Android and Browser samples from build -->
+    <ProjectReference Remove="samples/*.iOS/*.csproj" />
     <ProjectReference Remove="samples/*.Android/*.csproj" />
     <ProjectReference Remove="samples/*.Browser/*.csproj" />
     <ProjectReference Remove="samples/*.Blazor/*.csproj" />
