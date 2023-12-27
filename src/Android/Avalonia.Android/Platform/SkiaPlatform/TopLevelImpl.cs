@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Versioning;
 using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.OS;
 using Android.Runtime;
 using Android.Text;
 using Android.Views;
@@ -27,10 +25,8 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
-using static System.Net.Mime.MediaTypeNames;
 using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -50,6 +46,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
         private WindowTransparencyLevel _transparencyLevel;
+        private readonly object[] _surfaces;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -76,6 +73,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _transparencyLevel = WindowTransparencyLevel.None;
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
+
+            _surfaces = new object[] { _gl, _framebuffer, Handle };
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -107,7 +106,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
+        public IEnumerable<object> Surfaces => _surfaces;
 
         public Compositor Compositor => AndroidPlatform.Compositor;
         
