@@ -46,7 +46,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
         private WindowTransparencyLevel _transparencyLevel;
-        private readonly object[] _surfaces;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -74,7 +73,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
 
-            _surfaces = new object[] { _gl, _framebuffer, Handle };
+            Surfaces = new object[] { _gl, _framebuffer, Handle };
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -106,7 +105,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces => _surfaces;
+        public IEnumerable<object> Surfaces { get; }
 
         public Compositor Compositor => AndroidPlatform.Compositor;
         
