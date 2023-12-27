@@ -45,7 +45,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install wasm-tools wasm-experimental
+       dotnet workload install android macos wasm-tools
 
   - task: CmdLine@2
     displayName: 'Install Tizen Workload'
@@ -91,7 +91,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install wasm-tools wasm-experimental
+       dotnet workload install android ios macos wasm-tools
 
   - task: CmdLine@2
     displayName: 'Install Tizen Workload'
@@ -171,7 +171,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios wasm-tools wasm-experimental
+       dotnet workload install android ios macos wasm-tools
 
   - task: PowerShell@2
     displayName: 'Install Tizen Workload'
