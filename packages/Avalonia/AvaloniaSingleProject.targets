@@ -217,11 +217,11 @@
 
   <!-- Browser -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaBrowserTarget)' == 'true' and '$(BrowserProjectFolder)' != '' ">
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**.js" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**.css" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**.html" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**.svg" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**.ico" />
+    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.js" />
+    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.css" />
+    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.html" />
+    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.svg" />
+    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.ico" />
   </ItemGroup>
 
   <!-- Tizen -->

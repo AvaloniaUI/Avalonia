@@ -18,4 +18,7 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" Condition="'$(_AvaloniaTizenTarget)' == 'true'" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" Condition="'$(_AvaloniaDesktopTarget)' == 'true'" />
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\..\src\Browser\Avalonia.Browser\Avalonia.Browser.props" Condition="'$(_AvaloniaBrowserTarget)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\src\Browser\Avalonia.Browser\Avalonia.Browser.targets" Condition="'$(_AvaloniaBrowserTarget)' == 'true'" />
 </Project>

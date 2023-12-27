@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <AvaloniaSingleProjectVersion>11.0.6</AvaloniaSingleProjectVersion>
+    <AvaloniaSingleProjectVersion>$(AvaloniaMainPackageVersion)</AvaloniaSingleProjectVersion>
     <AvaloniaSingleProjectIncludeDefaultPlatformReferences Condition="'$(AvaloniaSingleProjectIncludeDefaultPlatformReferences)' == ''" >true</AvaloniaSingleProjectIncludeDefaultPlatformReferences>
     <!-- "net8.0" target without specific platform should be treated as a desktop target by default for executable projects.  -->
     <AvaloniaSingleProjectSharedDesktop Condition="'$(AvaloniaSingleProjectSharedDesktop)' == '' AND ('$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe')">true</AvaloniaSingleProjectSharedDesktop>
@@ -24,11 +24,17 @@
     <_AvaloniaWindowsTarget>true</_AvaloniaWindowsTarget>
     <_AvaloniaMacOSTarget>true</_AvaloniaMacOSTarget>
     <_AvaloniaLinuxTarget>true</_AvaloniaLinuxTarget>
+
+    <RuntimeIdentifiers>win;osx;linux</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_AvaloniaWindowsTarget)' == 'true' ">
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaBrowserTarget)' == 'true' ">
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
   </PropertyGroup>
 </Project>
