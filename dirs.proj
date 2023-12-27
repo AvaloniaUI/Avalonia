@@ -7,7 +7,6 @@
     <ProjectReference Include="tests/**/*.*proj" />
     <ProjectReference Include="packages/**/*.*proj" />
     <ProjectReference Remove="**/*.shproj" />
-    <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
     <!-- Exclude iOS, Android and Browser samples from build -->
     <ProjectReference Remove="samples/*.iOS/*.csproj" />
@@ -17,11 +16,9 @@
     <ProjectReference Remove="samples/*.Tizen/*.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
     <!-- For shared projects, specify a common TFM -->
-    <ProjectReference Update="samples/MobileSandbox/MobileSandbox.csproj" SetTargetFramework="TargetFramework=net8.0" />
-  </ItemGroup>
-  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
-    <ProjectReference Remove="src/Windows/Avalonia.Win32.Interoperability/Avalonia.Win32.Interoperability.csproj" />
-    <ProjectReference Remove="samples/interop/**/*.*proj" />
+    <ProjectReference Update="samples/MobileSandbox/MobileSandbox.csproj"
+                      SetTargetFramework="TargetFramework=net8.0"
+                      PrivateAssets="All" />
   </ItemGroup>
 
   <!-- Build android and iOS projects only on Windows, where we have installed android workload -->
