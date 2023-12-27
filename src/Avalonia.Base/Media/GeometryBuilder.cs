@@ -11,6 +11,7 @@
 // Ignore Spelling: keypoints
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media
 {
@@ -23,6 +24,7 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Draws a new rounded rectangle within the given geometry context.
+        /// Warning: The caller must manage and dispose the <see cref="StreamGeometryContext"/> externally.
         /// </summary>
         /// <remarks>
         /// WinUI: https://github.com/microsoft/microsoft-ui-xaml/blob/93742a178db8f625ba9299f62c21f656e0b195ad/dxaml/xcp/core/core/elements/geometry.cpp#L1072-L1079
@@ -30,6 +32,7 @@ namespace Avalonia.Media
         /// </remarks>
         /// <param name="context">The geometry context to draw into.</param>
         /// <param name="keypoints">The rounded rectangle keypoints defining the rectangle to draw.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DrawRoundedCornersRectangle(
             StreamGeometryContext context,
             RoundedRectKeypoints keypoints)
@@ -96,6 +99,80 @@ namespace Avalonia.Media
                     isLargeArc: false,
                     SweepDirection.Clockwise);
             }
+
+            context.EndFigure(true);
+        }
+
+        /// <summary>
+        /// Draws a new rounded rectangle within the given geometry context.
+        /// Warning: The caller must manage and dispose the <see cref="StreamGeometryContext"/> externally.
+        /// </summary>
+        /// <param name="context">The geometry context to draw into.</param>
+        /// <param name="rect">The existing rectangle dimensions without corner radii.</param>
+        /// <param name="radiusX">The radius on the X-axis used to round the corners of the rectangle.</param>
+        /// <param name="radiusY">The radius on the Y-axis used to round the corners of the rectangle.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DrawRoundedCornersRectangle(
+            StreamGeometryContext context,
+            Rect rect,
+            double radiusX,
+            double radiusY)
+        {
+            var arcSize = new Size(radiusX, radiusY);
+
+            // The rectangle is constructed as follows:
+            //
+            //   (origin)
+            //   Corner 4            Corner 1
+            //   Top/Left  Line 1    Top/Right
+            //      \_   __________   _/
+            //          |          |
+            //   Line 4 |          | Line 2
+            //       _  |__________|  _
+            //      /      Line 3      \
+            //   Corner 3            Corner 2
+            //   Bottom/Left         Bottom/Right
+            //
+            // - Lines 1,3 follow the deflated rectangle bounds minus RadiusX
+            // - Lines 2,4 follow the deflated rectangle bounds minus RadiusY
+            // - All corners are constructed using elliptical arcs 
+
+            // Line 1 + Corner 1
+            context.BeginFigure(new Point(rect.Left + radiusX, rect.Top), true);
+            context.LineTo(new Point(rect.Right - radiusX, rect.Top));
+            context.ArcTo(
+                new Point(rect.Right, rect.Top + radiusY),
+                arcSize,
+                rotationAngle: PiOver2,
+                isLargeArc: false,
+                SweepDirection.Clockwise);
+
+            // Line 2 + Corner 2
+            context.LineTo(new Point(rect.Right, rect.Bottom - radiusY));
+            context.ArcTo(
+                new Point(rect.Right - radiusX, rect.Bottom),
+                arcSize,
+                rotationAngle: PiOver2,
+                isLargeArc: false,
+                SweepDirection.Clockwise);
+
+            // Line 3 + Corner 3
+            context.LineTo(new Point(rect.Left + radiusX, rect.Bottom));
+            context.ArcTo(
+                new Point(rect.Left, rect.Bottom - radiusY),
+                arcSize,
+                rotationAngle: PiOver2,
+                isLargeArc: false,
+                SweepDirection.Clockwise);
+
+            // Line 4 + Corner 4
+            context.LineTo(new Point(rect.Left, rect.Top + radiusY));
+            context.ArcTo(
+                new Point(rect.Left + radiusX, rect.Top),
+                arcSize,
+                rotationAngle: PiOver2,
+                isLargeArc: false,
+                SweepDirection.Clockwise);
 
             context.EndFigure(true);
         }
