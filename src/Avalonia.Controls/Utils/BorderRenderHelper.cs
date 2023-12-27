@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -7,6 +6,9 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
 {
+    /// <summary>
+    /// Contains helper methods for rendering a <see cref="Border"/>'s background and border to a given context.
+    /// </summary>
     internal class BorderRenderHelper
     {
         private bool _useComplexRendering;
@@ -16,19 +18,22 @@ namespace Avalonia.Controls.Utils
         private Size _size;
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
+        private BackgroundSizing _backgroundSizing;
         private bool _initialized;
 
-
-        void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
+        private void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius, BackgroundSizing backgroundSizing)
         {
             _backendSupportsIndividualCorners ??= AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>()
                 .SupportsIndividualRoundRects;
             _size = finalSize;
             _borderThickness = borderThickness;
             _cornerRadius = cornerRadius;
+            _backgroundSizing = backgroundSizing;
             _initialized = true;
 
-            if (borderThickness.IsUniform && (cornerRadius.IsUniform || _backendSupportsIndividualCorners == true))
+            if (borderThickness.IsUniform &&
+                (cornerRadius.IsUniform || _backendSupportsIndividualCorners == true) &&
+                backgroundSizing == BackgroundSizing.CenterBorder)
             {
                 _backgroundGeometryCache = null;
                 _borderGeometryCache = null;
@@ -40,18 +45,30 @@ namespace Avalonia.Controls.Utils
 
                 var boundRect = new Rect(finalSize);
                 var innerRect = boundRect.Deflate(borderThickness);
-                BorderGeometryKeypoints? backgroundKeypoints = null;
                 StreamGeometry? backgroundGeometry = null;
 
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
                     backgroundGeometry = new StreamGeometry();
-                    backgroundKeypoints = new BorderGeometryKeypoints(innerRect, borderThickness, cornerRadius, true);
+                    var backgroundKeypoints = new BackgroundKeypoints(
+                        boundRect,
+                        borderThickness,
+                        cornerRadius,
+                        backgroundSizing);
+
+                    using (var ctx = backgroundGeometry.Open())
+                    {
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, backgroundKeypoints.Outer);
+                    }
+
+                    /*
+                    backgroundKeypoints = new BorderGeometryKeypoints(innerRect, borderThickness, cornerRadius, inner: true);
 
                     using (var ctx = backgroundGeometry.Open())
                     {
                         CreateGeometry(ctx, innerRect, backgroundKeypoints);
                     }
+                    */
 
                     _backgroundGeometryCache = backgroundGeometry;
                 }
@@ -62,9 +79,22 @@ namespace Avalonia.Controls.Utils
 
                 if (boundRect.Width != 0 && boundRect.Height != 0)
                 {
-                    var borderGeometryKeypoints =
-                        new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
                     var borderGeometry = new StreamGeometry();
+                    var borderGeometryKeypoints = new BorderKeypoints(boundRect, borderThickness, cornerRadius);
+
+                    using (var ctx = borderGeometry.Open())
+                    {
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderGeometryKeypoints.Outer);
+
+                        if (backgroundGeometry != null)
+                        {
+                            GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderGeometryKeypoints.Inner);
+                        }
+                    }
+
+                    /*
+                    var borderGeometryKeypoints =
+                        new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, inner: false);
 
                     using (var ctx = borderGeometry.Open())
                     {
@@ -75,6 +105,7 @@ namespace Avalonia.Controls.Utils
                             CreateGeometry(ctx, innerRect, backgroundKeypoints!);
                         }
                     }
+                    */
 
                     _borderGeometryCache = borderGeometry;
                 }
@@ -85,24 +116,40 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        public void Render(DrawingContext context,
-            Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-            IBrush? background, IBrush? borderBrush, BoxShadows boxShadows, double borderDashOffset = 0,
-            PenLineCap borderLineCap = PenLineCap.Flat, PenLineJoin borderLineJoin = PenLineJoin.Miter,
-            AvaloniaList<double>? borderDashArray = null)
+        public void Render(
+            DrawingContext context,
+            Size finalSize,
+            Thickness borderThickness,
+            CornerRadius cornerRadius,
+            BackgroundSizing backgroundSizing,
+            IBrush? background,
+            IBrush? borderBrush,
+            BoxShadows boxShadows,
+            double borderDashOffset = 0,
+            PenLineCap borderLineCap = PenLineCap.Flat,
+            PenLineJoin borderLineJoin = PenLineJoin.Miter)
         {
             if (_size != finalSize
                 || _borderThickness != borderThickness
                 || _cornerRadius != cornerRadius
+                || _backgroundSizing != backgroundSizing
                 || !_initialized)
-                Update(finalSize, borderThickness, cornerRadius);
-            RenderCore(context, background, borderBrush, boxShadows, borderDashOffset, borderLineCap, borderLineJoin,
-                borderDashArray);
+            {
+                Update(finalSize, borderThickness, cornerRadius, backgroundSizing);
+            }
+
+            RenderCore(context, background, borderBrush, backgroundSizing, boxShadows, borderDashOffset, borderLineCap, borderLineJoin);
         }
 
-        void RenderCore(DrawingContext context, IBrush? background, IBrush? borderBrush, BoxShadows boxShadows,
-            double borderDashOffset, PenLineCap borderLineCap, PenLineJoin borderLineJoin,
-            AvaloniaList<double>? borderDashArray)
+        private void RenderCore(
+            DrawingContext context,
+            IBrush? background,
+            IBrush? borderBrush,
+            BackgroundSizing backgroundSizing,
+            BoxShadows boxShadows,
+            double borderDashOffset,
+            PenLineCap borderLineCap,
+            PenLineJoin borderLineJoin)
         {
             if (_useComplexRendering)
             {
@@ -123,24 +170,15 @@ namespace Avalonia.Controls.Utils
                 var borderThickness = _borderThickness.Top;
                 IPen? pen = null;
 
-
-                ImmutableDashStyle? dashStyle = null;
-
-                if (borderDashArray != null && borderDashArray.Count > 0)
-                {
-                    dashStyle = new ImmutableDashStyle(borderDashArray, borderDashOffset);
-                }
-
                 if (borderBrush != null && borderThickness > 0)
                 {
                     pen = new ImmutablePen(
                         borderBrush.ToImmutable(),
                         borderThickness,
-                        dashStyle,
+                        dashStyle: null,
                         borderLineCap,
                         borderLineJoin);
                 }
-
 
                 var rect = new Rect(_size);
                 if (!MathUtilities.IsZero(borderThickness))
@@ -152,7 +190,9 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect,
+        private static void CreateGeometry(
+            StreamGeometryContext context,
+            Rect boundRect,
             BorderGeometryKeypoints keypoints)
         {
             context.BeginFigure(keypoints.TopLeft, true);
@@ -207,7 +247,10 @@ namespace Avalonia.Controls.Utils
 
         private class BorderGeometryKeypoints
         {
-            internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius,
+            internal BorderGeometryKeypoints(
+                Rect boundRect,
+                Thickness borderThickness,
+                CornerRadius cornerRadius,
                 bool inner)
             {
                 var left = 0.5 * borderThickness.Left;
@@ -313,6 +356,35 @@ namespace Avalonia.Controls.Utils
             internal Point BottomLeft { get; }
 
             internal Point LeftBottom { get; }
+        }
+
+        internal class BackgroundKeypoints
+        {
+            public BackgroundKeypoints(
+                Rect boundRect,
+                Thickness borderThickness,
+                CornerRadius cornerRadius,
+                BackgroundSizing backgroundSizing)
+            {
+                Outer = GeometryBuilder.CalculateRoundedCornersRectangleV2(boundRect, borderThickness, cornerRadius, backgroundSizing);
+            }
+
+            public GeometryBuilder.RoundedRectKeypoints Outer { get; }
+        }
+
+        internal class BorderKeypoints
+        {
+            public BorderKeypoints(
+                Rect boundRect,
+                Thickness borderThickness,
+                CornerRadius cornerRadius)
+            {
+                Inner = GeometryBuilder.CalculateRoundedCornersRectangleV2(boundRect, borderThickness, cornerRadius, BackgroundSizing.InnerBorderEdge);
+                Outer = GeometryBuilder.CalculateRoundedCornersRectangleV2(boundRect, borderThickness, cornerRadius, BackgroundSizing.OuterBorderEdge);
+            }
+
+            public GeometryBuilder.RoundedRectKeypoints Inner { get; }
+            public GeometryBuilder.RoundedRectKeypoints Outer { get; }
         }
     }
 }

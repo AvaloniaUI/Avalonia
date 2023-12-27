@@ -108,6 +108,7 @@ namespace Avalonia.Controls
             get => GetValue(BackgroundSizingProperty);
             set => SetValue(BackgroundSizingProperty, value);
         }
+
         /// <summary>
         /// Gets or sets a brush with which to paint the border.
         /// </summary>
@@ -185,6 +186,7 @@ namespace Avalonia.Controls
                 Bounds.Size,
                 LayoutThickness,
                 CornerRadius,
+                BackgroundSizing,
                 Background,
                 BorderBrush,
                 BoxShadow);
