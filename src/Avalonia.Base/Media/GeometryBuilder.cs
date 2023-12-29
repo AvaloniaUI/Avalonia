@@ -193,7 +193,19 @@ namespace Avalonia.Media
             context.EndFigure(true);
         }
 
-        public static RoundedRectKeypoints CalculateRoundedCornersRectangleV2(
+        /// <summary>
+        /// Calculates the keypoints of a rounded rectangle using a custom algorithm that produces straight-edges (no hooks).
+        /// These keypoints may then be drawn or transformed into other types.
+        /// </summary>
+        /// <param name="boundRect">The outer bounds of the rounded rectangle.
+        /// This should be the overall bounds and size of the shape/control without any
+        /// corner radii or border thickness adjustments.</param>
+        /// <param name="borderThickness">The unadjusted border thickness of the rounded rectangle.</param>
+        /// <param name="cornerRadius">The unadjusted corner radii of the rounded rectangle.
+        /// The corner radius is defined to be the middle of the border stroke (center of the border).</param>
+        /// <param name="sizing">The sizing mode used to calculate the final rounded rectangle size.</param>
+        /// <returns>New rounded rectangle keypoints.</returns>
+        public static RoundedRectKeypoints CalculateRoundedCornersRectangleAlternate(
             Rect boundRect,
             Thickness borderThickness,
             CornerRadius cornerRadius,
