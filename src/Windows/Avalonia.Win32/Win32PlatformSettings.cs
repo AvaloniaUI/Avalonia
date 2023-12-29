@@ -32,7 +32,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     
     public override PlatformColorValues GetColorValues()
     {
-        if (Win32Platform.WindowsVersion.Major < 10)
+        if (Win32Platform.WindowsVersion.Major < 10 || IsWindowsPE())
         {
             return base.GetColorValues();
         }
@@ -74,6 +74,14 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         }
     }
     
+        private static bool IsWindowsPE()
+        {
+            // because Windows PE is running off of X: most of the time and a "full" Windows SHOULD be running off of C:
+            // we can be relatively sure it's a PE if the system drive is anything other than C: 
+            var systemDrive = Environment.GetEnvironmentVariable("SystemDrive");
+            return systemDrive != "C:";
+        }
+            
     internal void OnColorValuesChanged()
     {
         var oldColorValues = _lastColorValues;
