@@ -12,6 +12,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -21,6 +22,7 @@ namespace Avalonia.Media
     internal class GeometryBuilder
     {
         private const double PiOver2 = 1.57079633; // 90 deg to rad
+        private const double Epsilon = 0.00000153; // Same as LayoutHelper.LayoutEpsilon
 
         /// <summary>
         /// Draws a new rounded rectangle within the given geometry context.
@@ -391,6 +393,240 @@ namespace Avalonia.Media
             keypoints.LeftBottom = new Point(
                 boundRect.TopLeft.X + borderThickness.Left,
                 boundRect.TopLeft.Y + boundRect.Height - (bottomLeftRadiusY + borderThickness.Bottom));
+
+            return keypoints;
+        }
+
+        /// <summary>
+        /// Calculates the keypoints of a rounded rectangle based on the algorithm in WinUI.
+        /// These keypoints may then be drawn or transformed into other types.
+        /// </summary>
+        /// <param name="outerBounds">The outer bounds of the rounded rectangle.
+        /// This should be the overall bounds and size of the shape/control without any
+        /// corner radii or border thickness adjustments.</param>
+        /// <param name="borderThickness">The unadjusted border thickness of the rounded rectangle.</param>
+        /// <param name="cornerRadius">The unadjusted corner radii of the rounded rectangle.
+        /// The corner radius is defined to be the middle of the border stroke (center of the border).</param>
+        /// <param name="sizing">The sizing mode used to calculate the final rounded rectangle size.</param>
+        /// <returns>New rounded rectangle keypoints.</returns>
+        public static RoundedRectKeypoints CalculateRoundedCornersRectangle(
+            Rect outerBounds,
+            Thickness borderThickness,
+            CornerRadius cornerRadius,
+            BackgroundSizing sizing)
+        {
+            // This was initially derived from WinUI:
+            //  - CGeometryBuilder::CalculateRoundedCornersRectangle
+            //    https://github.com/microsoft/microsoft-ui-xaml/blob/93742a178db8f625ba9299f62c21f656e0b195ad/dxaml/xcp/core/core/elements/geometry.cpp#L862-L869
+            //
+            // It has been modified to accept a BackgroundSizing parameter directly as well
+            // as to support BackgroundSizing.CenterBorder.
+            //
+            // Keep in mind:
+            //   > In Xaml, the corner radius is defined to be the middle of the stroke
+            //   > (i.e. half the border thickness extends to either side).
+
+            bool fOuter;
+            Rect boundRect = outerBounds;
+            var keypoints = new RoundedRectKeypoints();
+
+            if (sizing == BackgroundSizing.InnerBorderEdge)
+            {
+                boundRect = outerBounds.Deflate(borderThickness);
+                fOuter = false;
+            }
+            else if (sizing == BackgroundSizing.OuterBorderEdge)
+            {
+                fOuter = true;
+            }
+            else // CenterBorder
+            {
+                // This is a trick to support a 3rd state (CenterBorder) using the same WinUI-based algorithm.
+                // The WinUI algorithm only supported the fOuter = True|False parameter.
+                boundRect = outerBounds.Deflate(borderThickness * 0.5);
+                fOuter = false;
+            }
+
+            // Start of WinUI converted code
+            double fLeftTop;
+            double fLeftBottom;
+            double fTopLeft;
+            double fTopRight;
+            double fRightTop;
+            double fRightBottom;
+            double fBottomLeft;
+            double fBottomRight;
+
+            double left;
+            double right;
+            double top;
+            double bottom;
+
+            // If the caller wants to take the border into account
+            // initialize the borders variables
+            if (borderThickness != default)
+            {
+                left = 0.5 * borderThickness.Left;
+                right = 0.5 * borderThickness.Right;
+                top = 0.5 * borderThickness.Top;
+                bottom = 0.5 * borderThickness.Bottom;
+            }
+            else
+            {
+                left = 0.0;
+                right = 0.0;
+                top = 0.0;
+                bottom = 0.0;
+            }
+
+            // The following if/else block initializes the variables
+            // of which the points of the path will be created
+            // In case of outer, add the border - if any.
+            // Otherwise (inner rectangle) subtract the border - if any
+            if (fOuter)
+            {
+                if (MathUtilities.AreClose(cornerRadius.TopLeft, 0.0, Epsilon))
+                {
+                    fLeftTop = 0.0;
+                    fTopLeft = 0.0;
+                }
+                else
+                {
+                    fLeftTop = cornerRadius.TopLeft + left;
+                    fTopLeft = cornerRadius.TopLeft + top;
+                }
+                if (MathUtilities.AreClose(cornerRadius.TopRight, 0.0, Epsilon))
+                {
+                    fTopRight = 0.0;
+                    fRightTop = 0.0;
+                }
+                else
+                {
+                    fTopRight = cornerRadius.TopRight + top;
+                    fRightTop = cornerRadius.TopRight + right;
+                }
+                if (MathUtilities.AreClose(cornerRadius.BottomRight, 0.0, Epsilon))
+                {
+                    fRightBottom = 0.0;
+                    fBottomRight = 0.0;
+                }
+                else
+                {
+                    fRightBottom = cornerRadius.BottomRight + right;
+                    fBottomRight = cornerRadius.BottomRight + bottom;
+                }
+                if (MathUtilities.AreClose(cornerRadius.BottomLeft, 0.0, Epsilon))
+                {
+                    fBottomLeft = 0.0;
+                    fLeftBottom = 0.0;
+                }
+                else
+                {
+                    fBottomLeft = cornerRadius.BottomLeft + bottom;
+                    fLeftBottom = cornerRadius.BottomLeft + left;
+                }
+            }
+            else
+            {
+                fLeftTop = Math.Max(0.0, cornerRadius.TopLeft - left);
+                fTopLeft = Math.Max(0.0, cornerRadius.TopLeft - top);
+                fTopRight = Math.Max(0.0, cornerRadius.TopRight - top);
+                fRightTop = Math.Max(0.0, cornerRadius.TopRight - right);
+                fRightBottom = Math.Max(0.0, cornerRadius.BottomRight - right);
+                fBottomRight = Math.Max(0.0, cornerRadius.BottomRight - bottom);
+                fBottomLeft = Math.Max(0.0, cornerRadius.BottomLeft - bottom);
+                fLeftBottom = Math.Max(0.0, cornerRadius.BottomLeft - left);
+            }
+
+            keypoints.TopLeft = new Point(
+                fLeftTop,
+                0);
+            keypoints.TopRight = new Point(
+                boundRect.Width - fRightTop,
+                0);
+
+            keypoints.RightTop = new Point(
+                boundRect.Width,
+                fTopRight);
+            keypoints.RightBottom = new Point(
+                boundRect.Width,
+                boundRect.Height - fBottomRight);
+
+            keypoints.BottomRight = new Point(
+                boundRect.Width - fRightBottom,
+                boundRect.Height);
+            keypoints.BottomLeft = new Point(
+                fLeftBottom,
+                boundRect.Height);
+
+            keypoints.LeftBottom = new Point(
+                0,
+                boundRect.Height - fBottomLeft);
+            keypoints.LeftTop = new Point(
+                0,
+                fTopLeft);
+
+            // check keypoints for overlap and resolve by partitioning radii according to
+            // the percentage of each one.
+
+            // top edge
+            if (keypoints.TopLeft.X > keypoints.TopRight.X)
+            {
+                double v = (fLeftTop) / (fLeftTop + fRightTop) * boundRect.Width;
+                keypoints.TopLeft = new Point(v, keypoints.TopLeft.Y);
+                keypoints.TopRight = new Point(v, keypoints.TopRight.Y);
+            }
+            // right edge
+            if (keypoints.RightTop.Y > keypoints.RightBottom.Y)
+            {
+                double v = (fTopRight) / (fTopRight + fBottomRight) * boundRect.Height;
+                keypoints.RightTop = new Point(keypoints.RightTop.X, v);
+                keypoints.RightBottom = new Point(keypoints.RightBottom.X, v);
+            }
+            // bottom edge
+            if (keypoints.BottomRight.X < keypoints.BottomLeft.X)
+            {
+                double v = (fLeftBottom) / (fLeftBottom + fRightBottom) * boundRect.Width;
+                keypoints.BottomRight = new Point(v, keypoints.BottomRight.Y);
+                keypoints.BottomLeft = new Point(v, keypoints.BottomLeft.Y);
+            }
+            // left edge
+            if (keypoints.LeftBottom.Y < keypoints.LeftTop.Y)
+            {
+                double v = (fTopLeft) / (fTopLeft + fBottomLeft) * boundRect.Height;
+                keypoints.LeftBottom = new Point(keypoints.LeftBottom.X, v);
+                keypoints.LeftTop = new Point(keypoints.LeftTop.X, v);
+            }
+
+            // The above code does all calculations without taking into consideration X/Y absolute position.
+            // In WinUI, this is compensated for in DrawRoundedCornersRectangle(); however, we do this here directly.
+            keypoints.TopLeft = new Point(
+                boundRect.X + keypoints.TopLeft.X,
+                boundRect.Y + keypoints.TopLeft.Y);
+            keypoints.TopRight = new Point(
+                boundRect.X + keypoints.TopRight.X,
+                boundRect.Y + keypoints.TopRight.Y);
+
+            keypoints.RightTop = new Point(
+                boundRect.X + keypoints.RightTop.X,
+                boundRect.Y + keypoints.RightTop.Y);
+            keypoints.RightBottom = new Point(
+                boundRect.X + keypoints.RightBottom.X,
+                boundRect.Y + keypoints.RightBottom.Y);
+
+            keypoints.BottomRight = new Point(
+                boundRect.X + keypoints.BottomRight.X,
+                boundRect.Y + keypoints.BottomRight.Y);
+            keypoints.BottomLeft = new Point(
+                boundRect.X + keypoints.BottomLeft.X,
+                boundRect.Y + keypoints.BottomLeft.Y);
+
+            keypoints.LeftBottom = new Point(
+                boundRect.X + keypoints.LeftBottom.X,
+                boundRect.Y + keypoints.LeftBottom.Y);
+            keypoints.LeftTop = new Point(
+                boundRect.X + keypoints.LeftTop.X,
+                boundRect.Y + keypoints.LeftTop.Y);
 
             return keypoints;
         }
