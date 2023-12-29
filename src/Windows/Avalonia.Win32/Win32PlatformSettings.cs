@@ -32,55 +32,58 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     
     public override PlatformColorValues GetColorValues()
     {
-        if (Win32Platform.WindowsVersion.Major < 10 || IsWindowsPE())
+        if (Win32Platform.WindowsVersion.Major < 10)
         {
             return base.GetColorValues();
         }
 
-        var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
-        var accent = uiSettings.GetColorValue(UIColorType.Accent).ToAvalonia();
+        // if getting the color values fails return the fallback
+        try
+        {
+            var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
+            var accent = uiSettings.GetColorValue(UIColorType.Accent).ToAvalonia();
 
-        var accessibilitySettings = NativeWinRTMethods.CreateInstance<IAccessibilitySettings>("Windows.UI.ViewManagement.AccessibilitySettings");
-        if (accessibilitySettings.HighContrast == 1)
-        {
-            // Windows 11 has 4 different high contrast schemes:
-            // - Aquatic - High Contrast Black
-            // - Desert - High Contrast White
-            // - Dusk - High Contrast #1
-            // - Night sky - High Contrast #2
-            // Only "Desert" one can be considered a "light" preference. 
-            using var highContrastScheme = new HStringInterop(accessibilitySettings.HighContrastScheme);
-            return _lastColorValues = new PlatformColorValues
+            var accessibilitySettings =
+                NativeWinRTMethods.CreateInstance<IAccessibilitySettings>(
+                    "Windows.UI.ViewManagement.AccessibilitySettings");
+            if (accessibilitySettings.HighContrast == 1)
             {
-                ThemeVariant = highContrastScheme.Value?.Contains("White") == true ?
-                    PlatformThemeVariant.Light :
-                    PlatformThemeVariant.Dark,
-                ContrastPreference = ColorContrastPreference.High,
-                // Windows provides more than one accent color for the HighContrast themes, but with no API for that (at least not in the WinRT)
-                AccentColor1 = accent
-            };
+                // Windows 11 has 4 different high contrast schemes:
+                // - Aquatic - High Contrast Black
+                // - Desert - High Contrast White
+                // - Dusk - High Contrast #1
+                // - Night sky - High Contrast #2
+                // Only "Desert" one can be considered a "light" preference. 
+                using var highContrastScheme = new HStringInterop(accessibilitySettings.HighContrastScheme);
+                return _lastColorValues = new PlatformColorValues
+                {
+                    ThemeVariant = highContrastScheme.Value?.Contains("White") == true ?
+                        PlatformThemeVariant.Light :
+                        PlatformThemeVariant.Dark,
+                    ContrastPreference = ColorContrastPreference.High,
+                    // Windows provides more than one accent color for the HighContrast themes, but with no API for that (at least not in the WinRT)
+                    AccentColor1 = accent
+                };
+            }
+            else
+            {
+                var background = uiSettings.GetColorValue(UIColorType.Background).ToAvalonia();
+                return _lastColorValues = new PlatformColorValues
+                {
+                    ThemeVariant = background.R + background.G + background.B <
+                                   (255 * 3 - background.R - background.G - background.B) ?
+                        PlatformThemeVariant.Dark :
+                        PlatformThemeVariant.Light,
+                    ContrastPreference = ColorContrastPreference.NoPreference,
+                    AccentColor1 = accent
+                };
+            }
         }
-        else
+        catch
         {
-            var background = uiSettings.GetColorValue(UIColorType.Background).ToAvalonia();
-            return _lastColorValues = new PlatformColorValues
-            {
-                ThemeVariant = background.R + background.G + background.B < (255 * 3 - background.R - background.G - background.B) ?
-                    PlatformThemeVariant.Dark :
-                    PlatformThemeVariant.Light,
-                ContrastPreference = ColorContrastPreference.NoPreference,
-                AccentColor1 = accent
-            };   
+            return base.GetColorValues();
         }
     }
-    
-        private static bool IsWindowsPE()
-        {
-            // because Windows PE is running off of X: most of the time and a "full" Windows SHOULD be running off of C:
-            // we can be relatively sure it's a PE if the system drive is anything other than C: 
-            var systemDrive = Environment.GetEnvironmentVariable("SystemDrive");
-            return systemDrive != "C:";
-        }
             
     internal void OnColorValuesChanged()
     {
