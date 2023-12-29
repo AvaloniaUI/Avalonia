@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Utils
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
                     backgroundGeometry = new StreamGeometry();
-                    var backgroundKeypoints = new BackgroundKeypoints(
+                    var backgroundOuterKeypoints = GeometryBuilder.CalculateRoundedCornersRectangle(
                         boundRect,
                         borderThickness,
                         cornerRadius,
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Utils
 
                     using (var ctx = backgroundGeometry.Open())
                     {
-                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, backgroundKeypoints.Outer);
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, backgroundOuterKeypoints);
                     }
 
                     _backgroundGeometryCache = backgroundGeometry;
@@ -70,15 +70,24 @@ namespace Avalonia.Controls.Utils
                 if (boundRect.Width != 0 && boundRect.Height != 0)
                 {
                     var borderGeometry = new StreamGeometry();
-                    var borderGeometryKeypoints = new BorderKeypoints(boundRect, borderThickness, cornerRadius);
+                    var borderInnerKeypoints = GeometryBuilder.CalculateRoundedCornersRectangle(
+                        boundRect,
+                        borderThickness,
+                        cornerRadius,
+                        BackgroundSizing.InnerBorderEdge);
+                    var borderOuterKeypoints = GeometryBuilder.CalculateRoundedCornersRectangle(
+                        boundRect,
+                        borderThickness,
+                        cornerRadius,
+                        BackgroundSizing.OuterBorderEdge);
 
                     using (var ctx = borderGeometry.Open())
                     {
-                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderGeometryKeypoints.Outer);
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderOuterKeypoints);
 
                         if (backgroundGeometry != null)
                         {
-                            GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderGeometryKeypoints.Inner);
+                            GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderInnerKeypoints);
                         }
                     }
 
@@ -163,35 +172,6 @@ namespace Avalonia.Controls.Utils
 
                 context.DrawRectangle(background, pen, rrect, boxShadows);
             }
-        }
-
-        internal class BackgroundKeypoints
-        {
-            public BackgroundKeypoints(
-                Rect boundRect,
-                Thickness borderThickness,
-                CornerRadius cornerRadius,
-                BackgroundSizing backgroundSizing)
-            {
-                Outer = GeometryBuilder.CalculateRoundedCornersRectangleV2(boundRect, borderThickness, cornerRadius, backgroundSizing);
-            }
-
-            public GeometryBuilder.RoundedRectKeypoints Outer { get; }
-        }
-
-        internal class BorderKeypoints
-        {
-            public BorderKeypoints(
-                Rect boundRect,
-                Thickness borderThickness,
-                CornerRadius cornerRadius)
-            {
-                Inner = GeometryBuilder.CalculateRoundedCornersRectangleV2(boundRect, borderThickness, cornerRadius, BackgroundSizing.InnerBorderEdge);
-                Outer = GeometryBuilder.CalculateRoundedCornersRectangleV2(boundRect, borderThickness, cornerRadius, BackgroundSizing.OuterBorderEdge);
-            }
-
-            public GeometryBuilder.RoundedRectKeypoints Inner { get; }
-            public GeometryBuilder.RoundedRectKeypoints Outer { get; }
         }
     }
 }
