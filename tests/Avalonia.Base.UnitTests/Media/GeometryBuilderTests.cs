@@ -5,19 +5,17 @@ namespace Avalonia.Base.UnitTests.Media
 {
     public class GeometryBuilderTests
     {
-        [Fact]
-        public void RoundedRectKeypoints_InnerBorderEdge_Borders_Larger_Than_Corners_Test()
+        [Theory]
+        [InlineData(20.0, 10.0)]
+        public void CalculateRoundedCornersRectangle_InnerBorderEdge_Borders_Larger_Than_Corners_Test(
+            double uniformBorders,
+            double uniformCorners)
         {
             var bounds = new Rect(new Size(100, 100));
-            var uniformBorders = 20.0;
-            var uniformCorners = 10.0;
             var borderThickness = new Thickness(uniformBorders);
             var cornerRadius = new CornerRadius(uniformCorners);
 
-            var points = GeometryBuilder.CalculateRoundedCornersRectangleV2(bounds, borderThickness, cornerRadius, BackgroundSizing.InnerBorderEdge);
-
-            // Note the corner radius is smaller than the border thickness
-            // This means they will be crushed to zero so only a simple rectangle is left
+            var points = GeometryBuilder.CalculateRoundedCornersRectangle(bounds, borderThickness, cornerRadius, BackgroundSizing.InnerBorderEdge);
 
             Assert.Equal(new Point(uniformBorders, uniformBorders), points.LeftTop);
             Assert.Equal(new Point(uniformBorders, uniformBorders), points.TopLeft);
@@ -31,16 +29,17 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.False(points.IsRounded);
         }
 
-        [Fact]
-        public void RoundedRectKeypoints_OuterBorderEdge_Test()
+        [Theory]
+        [InlineData(20.0, 10.0)]
+        public void CalculateRoundedCornersRectangleAlternate_OuterBorderEdge_Test(
+            double uniformBorders,
+            double uniformCorners)
         {
             var bounds = new Rect(new Size(100, 100));
-            var uniformBorders = 20.0;
-            var uniformCorners = 10.0;
             var borderThickness = new Thickness(uniformBorders);
             var cornerRadius = new CornerRadius(uniformCorners);
 
-            var points = GeometryBuilder.CalculateRoundedCornersRectangleV2(bounds, borderThickness, cornerRadius, BackgroundSizing.OuterBorderEdge);
+            var points = GeometryBuilder.CalculateRoundedCornersRectangleAlternate(bounds, borderThickness, cornerRadius, BackgroundSizing.OuterBorderEdge);
 
             Assert.Equal(new Point(0, uniformCorners), points.LeftTop);
             Assert.Equal(new Point(uniformCorners, 0), points.TopLeft);
