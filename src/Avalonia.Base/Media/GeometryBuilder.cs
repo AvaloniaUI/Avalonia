@@ -30,7 +30,6 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>
         /// WinUI: https://github.com/microsoft/microsoft-ui-xaml/blob/93742a178db8f625ba9299f62c21f656e0b195ad/dxaml/xcp/core/core/elements/geometry.cpp#L1072-L1079
-        /// Wpf:
         /// </remarks>
         /// <param name="context">The geometry context to draw into.</param>
         /// <param name="keypoints">The rounded rectangle keypoints defining the rectangle to draw.</param>
@@ -39,18 +38,24 @@ namespace Avalonia.Media
             StreamGeometryContext context,
             RoundedRectKeypoints keypoints)
         {
+            double radiusX;
+            double radiusY;
+
             context.BeginFigure(keypoints.TopLeft, true);
 
             // Top
             context.LineTo(keypoints.TopRight);
 
             // TopRight corner
-            var radiusX = keypoints.RightTop.X - keypoints.TopRight.X;
-            var radiusY = keypoints.TopRight.Y - keypoints.RightTop.Y;
+            radiusX = keypoints.RightTop.X - keypoints.TopRight.X;
+            radiusY = keypoints.TopRight.Y - keypoints.RightTop.Y;
+            radiusX = radiusX > 0 ? radiusX : -radiusX;
+            radiusY = radiusY > 0 ? radiusY : -radiusY;
+
             context.ArcTo(
                 keypoints.RightTop,
                 new Size(radiusX, radiusY),
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
@@ -60,12 +65,15 @@ namespace Avalonia.Media
             // BottomRight corner
             radiusX = keypoints.RightBottom.X - keypoints.BottomRight.X;
             radiusY = keypoints.BottomRight.Y - keypoints.RightBottom.Y;
+            radiusX = radiusX > 0 ? radiusX : -radiusX;
+            radiusY = radiusY > 0 ? radiusY : -radiusY;
+
             if (radiusX != 0 || radiusY != 0)
             {
                 context.ArcTo(
                     keypoints.BottomRight,
                     new Size(radiusX, radiusY),
-                    rotationAngle: PiOver2,
+                    rotationAngle: 0.0,
                     isLargeArc: false,
                     SweepDirection.Clockwise);
             }
@@ -76,12 +84,15 @@ namespace Avalonia.Media
             // BottomLeft corner
             radiusX = keypoints.BottomLeft.X - keypoints.LeftBottom.X;
             radiusY = keypoints.BottomLeft.Y - keypoints.LeftBottom.Y;
+            radiusX = radiusX > 0 ? radiusX : -radiusX;
+            radiusY = radiusY > 0 ? radiusY : -radiusY;
+
             if (radiusX != 0 || radiusY != 0)
             {
                 context.ArcTo(
                     keypoints.LeftBottom,
                     new Size(radiusX, radiusY),
-                    rotationAngle: PiOver2,
+                    rotationAngle: 0.0,
                     isLargeArc: false,
                     SweepDirection.Clockwise);
             }
@@ -92,12 +103,15 @@ namespace Avalonia.Media
             // TopLeft corner
             radiusX = keypoints.TopLeft.X - keypoints.LeftTop.X;
             radiusY = keypoints.TopLeft.Y - keypoints.LeftTop.Y;
+            radiusX = radiusX > 0 ? radiusX : -radiusX;
+            radiusY = radiusY > 0 ? radiusY : -radiusY;
+
             if (radiusX != 0 || radiusY != 0)
             {
                 context.ArcTo(
                     keypoints.TopLeft,
                     new Size(radiusX, radiusY),
-                    rotationAngle: PiOver2,
+                    rotationAngle: 0.0,
                     isLargeArc: false,
                     SweepDirection.Clockwise);
             }
