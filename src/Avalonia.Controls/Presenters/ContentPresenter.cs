@@ -180,7 +180,7 @@ namespace Avalonia.Controls.Presenters
                 BackgroundSizingProperty,
                 BorderBrushProperty,
                 BorderThicknessProperty,
-                BoxShadowProperty
+                BoxShadowProperty,
                 CornerRadiusProperty);
 
             AffectsArrange<ContentPresenter>(HorizontalContentAlignmentProperty, VerticalContentAlignmentProperty);
