@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
@@ -46,6 +47,15 @@ namespace Avalonia.iOS
 
             _topLevel.StartRendering();
 
+            InitEagl();
+            MultipleTouchEnabled = true;
+        }
+
+        [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+        [SupportedOSPlatform("ios")]
+        [UnsupportedOSPlatform("maccatalyst")]
+        private void InitEagl()
+        {
             var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
             l.Opaque = true;
@@ -54,7 +64,6 @@ namespace Avalonia.iOS
                 EAGLDrawableProperty.ColorFormat, EAGLColorFormat.RGBA8
             );
             _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(l) };
-            MultipleTouchEnabled = true;
         }
 
         /// <inheritdoc />
@@ -216,6 +225,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(IClipboard))
                 {
                     return _clipboard;
+                }
+
+                if (featureType == typeof(IInputPane))
+                {
+                    return UIKitInputPane.Instance;
                 }
 
                 return null;

@@ -19,6 +19,7 @@ namespace Avalonia.Controls.Utils
         private CornerRadius _cornerRadius;
         private BackgroundSizing _backgroundSizing;
         private bool _initialized;
+        private IPen? _cachedPen;
 
         private void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius, BackgroundSizing backgroundSizing)
         {
@@ -152,17 +153,8 @@ namespace Avalonia.Controls.Utils
             else
             {
                 var borderThickness = _borderThickness.Top;
-                IPen? pen = null;
 
-                if (borderBrush != null && borderThickness > 0)
-                {
-                    pen = new ImmutablePen(
-                        borderBrush.ToImmutable(),
-                        borderThickness,
-                        dashStyle: null,
-                        borderLineCap,
-                        borderLineJoin);
-                }
+                Pen.TryModifyOrCreate(ref _cachedPen, borderBrush, borderThickness);
 
                 var rect = new Rect(_size);
                 if (!MathUtilities.IsZero(borderThickness))
@@ -170,7 +162,7 @@ namespace Avalonia.Controls.Utils
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-                context.DrawRectangle(background, pen, rrect, boxShadows);
+                context.DrawRectangle(background, _cachedPen, rrect, boxShadows);
             }
         }
     }
