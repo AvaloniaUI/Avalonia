@@ -109,10 +109,7 @@ namespace Avalonia.Controls.Utils
             BackgroundSizing backgroundSizing,
             IBrush? background,
             IBrush? borderBrush,
-            BoxShadows boxShadows,
-            double borderDashOffset = 0,
-            PenLineCap borderLineCap = PenLineCap.Flat,
-            PenLineJoin borderLineJoin = PenLineJoin.Miter)
+            BoxShadows boxShadows)
         {
             if (_size != finalSize
                 || _borderThickness != borderThickness
@@ -123,7 +120,7 @@ namespace Avalonia.Controls.Utils
                 Update(finalSize, borderThickness, cornerRadius, backgroundSizing);
             }
 
-            RenderCore(context, background, borderBrush, backgroundSizing, boxShadows, borderDashOffset, borderLineCap, borderLineJoin);
+            RenderCore(context, background, borderBrush, backgroundSizing, boxShadows);
         }
 
         private void RenderCore(
@@ -131,10 +128,7 @@ namespace Avalonia.Controls.Utils
             IBrush? background,
             IBrush? borderBrush,
             BackgroundSizing backgroundSizing,
-            BoxShadows boxShadows,
-            double borderDashOffset,
-            PenLineCap borderLineCap,
-            PenLineJoin borderLineJoin)
+            BoxShadows boxShadows)
         {
             if (_useComplexRendering)
             {
