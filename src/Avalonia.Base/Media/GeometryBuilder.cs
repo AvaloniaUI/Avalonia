@@ -234,17 +234,6 @@ namespace Avalonia.Media
                     0.5 * borderThickness.Bottom);
             }
 
-            /*
-            topLeftRadiusX = (borderThickness.Left > cornerRadius.TopLeft ? 0 : cornerRadius.TopLeft);
-            topLeftRadiusY = (borderThickness.Top > cornerRadius.TopLeft ? 0 : cornerRadius.TopLeft);
-            topRightRadiusX = (borderThickness.Right > cornerRadius.TopRight ? 0 : cornerRadius.TopRight);
-            topRightRadiusY = (borderThickness.Top > cornerRadius.TopRight ? 0 : cornerRadius.TopRight);
-            bottomRightRadiusX = (borderThickness.Right > cornerRadius.BottomRight ? 0 : cornerRadius.BottomRight);
-            bottomRightRadiusY = (borderThickness.Bottom > cornerRadius.BottomRight ? 0 : cornerRadius.BottomRight);
-            bottomLeftRadiusX = (borderThickness.Left > cornerRadius.BottomLeft ? 0 : cornerRadius.BottomLeft);
-            bottomLeftRadiusY = (borderThickness.Bottom > cornerRadius.BottomLeft ? 0 : cornerRadius.BottomLeft);
-            */
-
             double topLeftRadiusX = cornerRadius.TopLeft;
             double topLeftRadiusY = cornerRadius.TopLeft;
             double topRightRadiusX = cornerRadius.TopRight;
@@ -349,7 +338,6 @@ namespace Avalonia.Media
 
             bool fOuter;
             Rect boundRect = outerBounds;
-            var keypoints = new RoundedRectKeypoints();
 
             if (sizing == BackgroundSizing.InnerBorderEdge)
             {
@@ -363,12 +351,32 @@ namespace Avalonia.Media
             else // CenterBorder
             {
                 // This is a trick to support a 3rd state (CenterBorder) using the same WinUI-based algorithm.
-                // The WinUI algorithm only supported the fOuter = True|False parameter.
+                // The WinUI algorithm only supports the fOuter = True|False parameter.
                 boundRect = outerBounds.Deflate(borderThickness * 0.5);
                 fOuter = false;
             }
 
             // Start of WinUI converted code
+            // WinUI's Point struct fields can be modified directly, Avalonia's Point is read-only.
+            // Therefore, we will use doubles for calculation here so multiple Point structs aren't
+            // required during calculations -- everything can be done with these double variables.
+            double topLeftX;
+            double topLeftY;
+            double topRightX;
+            double topRightY;
+            double rightTopX;
+            double rightTopY;
+            double rightBottomX;
+            double rightBottomY;
+            double bottomRightX;
+            double bottomRightY;
+            double bottomLeftX;
+            double bottomLeftY;
+            double leftBottomX;
+            double leftBottomY;
+            double leftTopX;
+            double leftTopY;
+
             double fLeftTop;
             double fLeftBottom;
             double fTopLeft;
@@ -459,95 +467,93 @@ namespace Avalonia.Media
                 fLeftBottom = Math.Max(0.0, cornerRadius.BottomLeft - left);
             }
 
-            keypoints.TopLeft = new Point(
-                fLeftTop,
-                0);
-            keypoints.TopRight = new Point(
-                boundRect.Width - fRightTop,
-                0);
+            topLeftX = fLeftTop;
+            topLeftY = 0;
 
-            keypoints.RightTop = new Point(
-                boundRect.Width,
-                fTopRight);
-            keypoints.RightBottom = new Point(
-                boundRect.Width,
-                boundRect.Height - fBottomRight);
+            topRightX = boundRect.Width - fRightTop;
+            topRightY = 0;
 
-            keypoints.BottomRight = new Point(
-                boundRect.Width - fRightBottom,
-                boundRect.Height);
-            keypoints.BottomLeft = new Point(
-                fLeftBottom,
-                boundRect.Height);
+            rightTopX = boundRect.Width;
+            rightTopY = fTopRight;
 
-            keypoints.LeftBottom = new Point(
-                0,
-                boundRect.Height - fBottomLeft);
-            keypoints.LeftTop = new Point(
-                0,
-                fTopLeft);
+            rightBottomX = boundRect.Width;
+            rightBottomY = boundRect.Height - fBottomRight;
+
+            bottomRightX = boundRect.Width - fRightBottom;
+            bottomRightY = boundRect.Height;
+
+            bottomLeftX = fLeftBottom;
+            bottomLeftY = boundRect.Height;
+
+            leftBottomX = 0;
+            leftBottomY = boundRect.Height - fBottomLeft;
+
+            leftTopX = 0;
+            leftTopY = fTopLeft;
 
             // check keypoints for overlap and resolve by partitioning radii according to
             // the percentage of each one.
 
             // top edge
-            if (keypoints.TopLeft.X > keypoints.TopRight.X)
+            if (topLeftX > topRightX)
             {
                 double v = (fLeftTop) / (fLeftTop + fRightTop) * boundRect.Width;
-                keypoints.TopLeft = new Point(v, keypoints.TopLeft.Y);
-                keypoints.TopRight = new Point(v, keypoints.TopRight.Y);
+                topLeftX = v;
+                topRightX = v;
             }
             // right edge
-            if (keypoints.RightTop.Y > keypoints.RightBottom.Y)
+            if (rightTopY > rightBottomY)
             {
                 double v = (fTopRight) / (fTopRight + fBottomRight) * boundRect.Height;
-                keypoints.RightTop = new Point(keypoints.RightTop.X, v);
-                keypoints.RightBottom = new Point(keypoints.RightBottom.X, v);
+                rightTopY = v;
+                rightBottomY = v;
             }
             // bottom edge
-            if (keypoints.BottomRight.X < keypoints.BottomLeft.X)
+            if (bottomRightX < bottomLeftX)
             {
                 double v = (fLeftBottom) / (fLeftBottom + fRightBottom) * boundRect.Width;
-                keypoints.BottomRight = new Point(v, keypoints.BottomRight.Y);
-                keypoints.BottomLeft = new Point(v, keypoints.BottomLeft.Y);
+                bottomRightX = v;
+                bottomLeftX = v;
             }
             // left edge
-            if (keypoints.LeftBottom.Y < keypoints.LeftTop.Y)
+            if (leftBottomY < leftTopY)
             {
                 double v = (fTopLeft) / (fTopLeft + fBottomLeft) * boundRect.Height;
-                keypoints.LeftBottom = new Point(keypoints.LeftBottom.X, v);
-                keypoints.LeftTop = new Point(keypoints.LeftTop.X, v);
+                leftBottomY = v;
+                leftTopY = v;
             }
 
             // The above code does all calculations without taking into consideration X/Y absolute position.
-            // In WinUI, this is compensated for in DrawRoundedCornersRectangle(); however, we do this here directly.
+            // In WinUI, this is compensated for in DrawRoundedCornersRectangle(); however, we do this here directly
+            // when the final keypoints are being created.
+            var keypoints = new RoundedRectKeypoints();
             keypoints.TopLeft = new Point(
-                boundRect.X + keypoints.TopLeft.X,
-                boundRect.Y + keypoints.TopLeft.Y);
+                boundRect.X + topLeftX,
+                boundRect.Y + topLeftY);
             keypoints.TopRight = new Point(
-                boundRect.X + keypoints.TopRight.X,
-                boundRect.Y + keypoints.TopRight.Y);
+                boundRect.X + topRightX,
+                boundRect.Y + topRightY);
 
             keypoints.RightTop = new Point(
-                boundRect.X + keypoints.RightTop.X,
-                boundRect.Y + keypoints.RightTop.Y);
+                boundRect.X + rightTopX,
+                boundRect.Y + rightTopY);
             keypoints.RightBottom = new Point(
-                boundRect.X + keypoints.RightBottom.X,
-                boundRect.Y + keypoints.RightBottom.Y);
+                boundRect.X + rightBottomX,
+                boundRect.Y + rightBottomY);
 
             keypoints.BottomRight = new Point(
-                boundRect.X + keypoints.BottomRight.X,
-                boundRect.Y + keypoints.BottomRight.Y);
+                boundRect.X + bottomRightX,
+                boundRect.Y + bottomRightY);
             keypoints.BottomLeft = new Point(
-                boundRect.X + keypoints.BottomLeft.X,
-                boundRect.Y + keypoints.BottomLeft.Y);
+                boundRect.X + bottomLeftX,
+                boundRect.Y + bottomLeftY);
 
             keypoints.LeftBottom = new Point(
-                boundRect.X + keypoints.LeftBottom.X,
-                boundRect.Y + keypoints.LeftBottom.Y);
+                boundRect.X + leftBottomX,
+                boundRect.Y + leftBottomY);
             keypoints.LeftTop = new Point(
-                boundRect.X + keypoints.LeftTop.X,
-                boundRect.Y + keypoints.LeftTop.Y);
+                boundRect.X + leftTopX,
+                boundRect.Y + leftTopY);
 
             return keypoints;
         }
