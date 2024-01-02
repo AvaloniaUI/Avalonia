@@ -254,7 +254,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                         if (templatedParentType is null)
                         {
-                            throw new XamlParseException("A binding with a TemplatedParent RelativeSource has to be in a ControlTemplate.", lineInfo);
+                            throw new XamlTransformException("A binding with a TemplatedParent RelativeSource has to be in a ControlTemplate.", lineInfo);
                         }
 
                         nodes.Add(new TemplatedParentPathElementNode(templatedParentType.GetClrType()));
