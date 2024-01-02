@@ -221,6 +221,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     internal void OnNodeValueChanged(int nodeIndex, object? value, Exception? dataValidationError)
     {
         Debug.Assert(value is not BindingNotification);
+        Debug.Assert(nodeIndex >= 0 && nodeIndex < _nodes.Count);
 
         if (nodeIndex == _nodes.Count - 1)
         {
@@ -536,6 +537,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         return AvaloniaProperty.UnsetValue;
     }
 
+    /// <summary>
+    /// Uncommonly used fields are separated out to reduce memory usage.
+    /// </summary>
     private class UncommonFields
     {
         public IValueConverter? _converter;

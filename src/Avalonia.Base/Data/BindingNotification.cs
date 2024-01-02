@@ -181,7 +181,7 @@ namespace Avalonia.Data
         /// </remarks>
         public static object? UpdateValue(object o, object value)
         {
-            if (o is BindingNotification { } n)
+            if (o is BindingNotification n)
             {
                 n.SetValue(ExtractValue(value));
                 return n;
