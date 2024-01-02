@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 /// A node in the binding path of an <see cref="BindingExpression"/> that reads a property
 /// via a predefined <see cref="IPropertyAccessorPlugin"/>.
 /// </summary>
-internal class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISettableNode
+internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISettableNode
 {
     private readonly Action<object?> _onValueChanged;
     private readonly IPropertyAccessorPlugin _plugin;

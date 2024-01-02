@@ -8,7 +8,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 /// A node in an <see cref="BindingExpression"/> which accesses an array with integer
 /// indexers.
 /// </summary>
-internal class ArrayIndexerNode : ExpressionNode, ISettableNode
+internal sealed class ArrayIndexerNode : ExpressionNode, ISettableNode
 {
     private readonly int[] _indexes;
 

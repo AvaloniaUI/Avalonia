@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class AvaloniaPropertyAccessorNode : ExpressionNode, ISettableNode
+internal sealed class AvaloniaPropertyAccessorNode : ExpressionNode, ISettableNode
 {
     private readonly EventHandler<AvaloniaPropertyChangedEventArgs> _onValueChanged;
 

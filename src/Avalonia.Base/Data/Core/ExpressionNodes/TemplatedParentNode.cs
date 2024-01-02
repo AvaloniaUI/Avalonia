@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class TemplatedParentNode : SourceNode
+internal sealed class TemplatedParentNode : SourceNode
 {
     public override void BuildString(StringBuilder builder)
     {         

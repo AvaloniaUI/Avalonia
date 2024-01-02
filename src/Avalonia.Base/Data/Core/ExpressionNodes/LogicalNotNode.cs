@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class LogicalNotNode : ExpressionNode, ISettableNode
+internal sealed class LogicalNotNode : ExpressionNode, ISettableNode
 {
     public override void BuildString(StringBuilder builder)
     {

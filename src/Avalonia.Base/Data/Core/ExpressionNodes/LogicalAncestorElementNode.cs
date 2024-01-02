@@ -5,7 +5,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class LogicalAncestorElementNode : SourceNode
+internal sealed class LogicalAncestorElementNode : SourceNode
 {
     private readonly Type? _ancestorType;
     private readonly int _ancestorLevel;

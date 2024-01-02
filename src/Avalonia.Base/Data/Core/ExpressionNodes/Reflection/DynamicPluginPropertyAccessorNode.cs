@@ -12,7 +12,7 @@ namespace Avalonia.Data.Core.ExpressionNodes.Reflection;
 /// <see cref="BindingPlugins.PropertyAccessors"/>.
 /// </summary>
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-internal class DynamicPluginPropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISettableNode
+internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISettableNode
 {
     private readonly Action<object?> _onValueChanged;
     private IPropertyAccessor? _accessor;

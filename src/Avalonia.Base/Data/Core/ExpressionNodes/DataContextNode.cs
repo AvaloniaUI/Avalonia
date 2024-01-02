@@ -2,7 +2,7 @@
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class DataContextNode : DataContextNodeBase
+internal sealed class DataContextNode : DataContextNodeBase
 {
     protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {

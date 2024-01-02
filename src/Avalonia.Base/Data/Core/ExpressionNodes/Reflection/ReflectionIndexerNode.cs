@@ -13,7 +13,7 @@ using Avalonia.Utilities;
 namespace Avalonia.Data.Core.ExpressionNodes.Reflection;
 
 [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-internal class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
+internal sealed class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
 {
     private static readonly BindingFlags InstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly;
     private MethodInfo? _getter;

@@ -6,7 +6,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 /// A node in an <see cref="BindingExpression"/> which selects the value of the visual
 /// parent's DataContext.
 /// </summary>
-internal class ParentDataContextNode : DataContextNodeBase
+internal sealed class ParentDataContextNode : DataContextNodeBase
 {
     private static readonly AvaloniaObject s_unset = new();
     private AvaloniaObject? _parent = s_unset;

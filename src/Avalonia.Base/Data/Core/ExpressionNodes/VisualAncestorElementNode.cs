@@ -5,7 +5,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class VisualAncestorElementNode : SourceNode
+internal sealed class VisualAncestorElementNode : SourceNode
 {
     private readonly Type? _ancestorType;
     private readonly int _ancestorLevel;

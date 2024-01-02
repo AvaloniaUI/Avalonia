@@ -7,7 +7,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 /// A node in an <see cref="BindingExpression"/> which uses a function to transform its
 /// value.
 /// </summary>
-internal class FuncTransformNode : ExpressionNode
+internal sealed class FuncTransformNode : ExpressionNode
 {
     private readonly Func<object?, object?> _transform;
 

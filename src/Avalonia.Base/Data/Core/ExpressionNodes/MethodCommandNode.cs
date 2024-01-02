@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 /// A node in an <see cref="BindingExpression"/> which converts methods to an
 /// <see cref="ICommand"/>.
 /// </summary>
-internal class MethodCommandNode : ExpressionNode
+internal sealed class MethodCommandNode : ExpressionNode
 {
     private readonly string _methodName;
     private readonly Action<object, object?> _execute;

@@ -6,7 +6,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class NamedElementNode : SourceNode
+internal sealed class NamedElementNode : SourceNode
 {
     private readonly WeakReference<INameScope?> _nameScope;
     private readonly string _name;

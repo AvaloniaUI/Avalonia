@@ -6,7 +6,7 @@ namespace Avalonia.Data.Core.ExpressionNodes.Reflection;
 /// <summary>
 /// A node in an <see cref="BindingExpression"/> which casts a value using reflection.
 /// </summary>
-internal class ReflectionTypeCastNode : ExpressionNode
+internal sealed class ReflectionTypeCastNode : ExpressionNode
 {
     private readonly Type _targetType;
 

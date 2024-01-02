@@ -4,7 +4,7 @@ using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class StreamNode : ExpressionNode, IObserver<object?>
+internal sealed class StreamNode : ExpressionNode, IObserver<object?>
 {
     private IStreamPlugin _plugin;
     private IDisposable? _subscription;
