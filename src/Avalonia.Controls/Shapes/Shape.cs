@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -62,14 +63,7 @@ namespace Avalonia.Controls.Shapes
         private Matrix _transform = Matrix.Identity;
         private Geometry? _definingGeometry;
         private Geometry? _renderedGeometry;
-
-        static Shape()
-        {
-            AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty);
-
-            AffectsRender<Shape>(FillProperty, StrokeProperty, StrokeDashArrayProperty, StrokeDashOffsetProperty,
-                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty);
-        }
+        private IPen? _strokePen;
 
         /// <summary>
         /// Gets a value that represents the <see cref="Geometry"/> of the shape.
@@ -199,30 +193,7 @@ namespace Avalonia.Controls.Shapes
 
             if (geometry != null)
             {
-                var stroke = Stroke;
-
-                ImmutablePen? pen = null;
-
-                if (stroke != null)
-                {
-                    var strokeDashArray = StrokeDashArray;
-
-                    ImmutableDashStyle? dashStyle = null;
-
-                    if (strokeDashArray != null && strokeDashArray.Count > 0)
-                    {
-                        dashStyle = new ImmutableDashStyle(strokeDashArray, StrokeDashOffset);
-                    }
-
-                    pen = new ImmutablePen(
-                        stroke.ToImmutable(),
-                        StrokeThickness,
-                        dashStyle,
-                        StrokeLineCap,
-                        StrokeJoin);
-                }
-
-                context.DrawGeometry(Fill, pen, geometry);
+                context.DrawGeometry(Fill, _strokePen, geometry);
             }
         }
 
@@ -264,6 +235,34 @@ namespace Avalonia.Controls.Shapes
             _definingGeometry = null;
 
             InvalidateMeasure();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == StrokeProperty
+                || change.Property == StrokeThicknessProperty
+                || change.Property == StrokeDashArrayProperty
+                || change.Property == StrokeDashOffsetProperty
+                || change.Property == StrokeLineCapProperty
+                || change.Property == StrokeJoinProperty)
+            {
+                if (change.Property == StrokeProperty
+                    || change.Property == StrokeThicknessProperty)
+                {
+                    InvalidateMeasure();
+                }
+                
+                if (!Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin))
+                {
+                    InvalidateVisual();
+                }
+            }
+            else if (change.Property == FillProperty)
+            {
+                InvalidateVisual();
+            }
         }
 
         protected override Size MeasureOverride(Size availableSize)
