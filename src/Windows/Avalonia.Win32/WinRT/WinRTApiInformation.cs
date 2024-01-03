@@ -4,6 +4,10 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT;
 
+/// <summary>
+/// Any WinRT API might not be available even if Windows version is supposed to support them (Win PE, Xbox...).
+/// Using ApiInformation is a typical solution in UWP/WinUI apps, so we should do as well.
+/// </summary>
 internal static unsafe class WinRTApiInformation
 {
     private static readonly Lazy<IApiInformationStatics?> s_statics = new(() =>
