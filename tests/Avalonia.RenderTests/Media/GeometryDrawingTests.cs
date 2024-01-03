@@ -48,6 +48,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData("l", "F1 M50,50z l -5,-5")]
         [InlineData("h", "F1 M50,50z h 10")]
         [InlineData("v", "F1 M50,50z v 10")]
+        [InlineData("m", "M50,50z l -5,-5")]
         public async void DrawingGeometry_RelativeLine_Commands(string name, string command)
         {
             var target = new Avalonia.Controls.Decorator
