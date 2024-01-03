@@ -28,7 +28,6 @@
       <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
       <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
       <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-      <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
       <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
       <Setter Property="MaxDropDownHeight" Value="{DynamicResource AutoCompleteListMaxHeight}" />
       <Setter Property="Template">

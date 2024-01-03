@@ -71,7 +71,6 @@
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type TimePicker}" TargetType="TimePicker">
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
@@ -178,7 +177,6 @@
     <Setter Property="Width" Value="242" />
     <Setter Property="MinWidth" Value="242" />
     <Setter Property="MaxHeight" Value="398" />
-    <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Background" Value="{DynamicResource TimePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerFlyoutPresenterBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource DateTimeFlyoutBorderThickness}" />
