@@ -103,10 +103,7 @@
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_HourTextBlock"
                       HorizontalAlignment="Center"
-                      Padding="{DynamicResource TimePickerHostPadding}"
-                      FontFamily="{TemplateBinding FontFamily}"
-                      FontWeight="{TemplateBinding FontWeight}"
-                      FontSize="{TemplateBinding FontSize}" />
+                      Padding="{DynamicResource TimePickerHostPadding}" />
                 </Border>
 
                 <Rectangle Name="PART_FirstColumnDivider"
@@ -121,10 +118,7 @@
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_MinuteTextBlock"
                              HorizontalAlignment="Center"
-                             Padding="{DynamicResource TimePickerHostPadding}"
-                             FontFamily="{TemplateBinding FontFamily}"
-                             FontWeight="{TemplateBinding FontWeight}"
-                             FontSize="{TemplateBinding FontSize}"/>
+                             Padding="{DynamicResource TimePickerHostPadding}"/>
                 </Border>
 
                 <Rectangle Name="PART_SecondColumnDivider"
@@ -139,10 +133,7 @@
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_PeriodTextBlock"
                              HorizontalAlignment="Center"
-                             Padding="{DynamicResource TimePickerHostPadding}"
-                             FontFamily="{TemplateBinding FontFamily}"
-                             FontWeight="{TemplateBinding FontWeight}"
-                             FontSize="{TemplateBinding FontSize}" />
+                             Padding="{DynamicResource TimePickerHostPadding}" />
                 </Border>
               </Grid>
             </Button>

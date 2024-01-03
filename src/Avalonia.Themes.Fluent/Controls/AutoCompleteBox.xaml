@@ -42,9 +42,6 @@
                      BorderThickness="{TemplateBinding BorderThickness}"
                      CornerRadius="{TemplateBinding CornerRadius}"
                      CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
-                     FontSize="{TemplateBinding FontSize}"
-                     FontFamily="{TemplateBinding FontFamily}"
-                     FontWeight="{TemplateBinding FontWeight}"
                      Padding="{TemplateBinding Padding}"
                      Margin="0"
                      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}" />

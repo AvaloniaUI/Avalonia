@@ -41,7 +41,6 @@
                               Content="{TemplateBinding Content}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                              FontSize="{TemplateBinding FontSize}"
                               Margin="{TemplateBinding Padding}" />
           </Border>
 

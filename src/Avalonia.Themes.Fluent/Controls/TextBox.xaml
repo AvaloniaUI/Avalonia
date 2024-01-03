@@ -133,7 +133,6 @@
                            Margin="{TemplateBinding Padding}">
                   <TextBlock Name="PART_FloatingWatermark"
                              Foreground="{DynamicResource SystemAccentColor}"
-                             FontSize="{TemplateBinding FontSize}"
                              IsVisible="False"
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />

@@ -103,7 +103,6 @@
                               VerticalAlignment="Stretch"
                               VerticalContentAlignment="Center"
                               Foreground="{TemplateBinding Foreground}"
-                              FontSize="{TemplateBinding FontSize}"
                               MinWidth="34">
                   <PathIcon Width="16"
                             Height="8"
@@ -118,7 +117,6 @@
                               VerticalAlignment="Stretch"
                               VerticalContentAlignment="Center"
                               Foreground="{TemplateBinding Foreground}"
-                              FontSize="{TemplateBinding FontSize}"
                               MinWidth="34">
                   <PathIcon Width="16"
                             Height="8"

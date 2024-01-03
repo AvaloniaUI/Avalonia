@@ -50,7 +50,6 @@
                    Padding="{TemplateBinding Padding}"
                    MinWidth="0"
                    Foreground="{TemplateBinding Foreground}"
-                   FontSize="{TemplateBinding FontSize}"
                    Watermark="{TemplateBinding Watermark}"
                    IsReadOnly="{TemplateBinding IsReadOnly}"
                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
