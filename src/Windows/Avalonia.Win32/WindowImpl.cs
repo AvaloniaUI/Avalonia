@@ -165,7 +165,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
             _storageProvider = new Win32StorageProvider(this);
-            _inputPane = Win32Platform.WindowsVersion >= PlatformConstants.Windows10 ? new WindowsInputPane(this) : null;
+            _inputPane = WindowsInputPane.TryCreate(this);
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
