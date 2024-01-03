@@ -26,7 +26,6 @@
     <Setter Property="Background" Value="{DynamicResource CalendarViewCalendarItemRevealBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewCalendarItemRevealBorderBrush}" />
     <Setter Property="BorderThickness" Value="2" />
-    <Setter Property="FontSize" Value="20" />
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -72,7 +71,7 @@
 
       <Style Selector="^ /template/ ContentPresenter#Content">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontWeight" Value="{DynamicResource CalendarViewTodayFontWeight}" />
       </Style>
 
       <Style Selector="^:pointerover">
