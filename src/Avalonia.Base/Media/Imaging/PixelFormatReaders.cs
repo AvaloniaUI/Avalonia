@@ -223,7 +223,6 @@ internal static unsafe class PixelFormatReader
         public void Reset(IntPtr address) => _address = (byte*)address;
     }
 
-
     public unsafe struct Rgba64PixelFormatReader : IPixelFormatReader
     {
         private Rgba64Pixel* _address;
@@ -382,5 +381,64 @@ internal static unsafe class PixelFormatReader
             default:
                 return false;
         }
-    } 
+    }
+
+    private static ReadOnlySpan<Rgba8888Pixel> Read<T>(IntPtr source, PixelSize size, int stride) where T : struct, IPixelFormatReader
+    {
+        var reader = new T();
+        var pixels = new Rgba8888Pixel[size.Width * size.Height];
+
+        var w = size.Width;
+        var h = size.Height;
+        var count = 0;
+
+        for (var y = 0; y < h; y++)
+        {
+            reader.Reset(source + stride * y);
+
+            for (var x = 0; x < w; x++)
+            {
+                pixels[count++] = reader.ReadNext();
+            }
+        }
+
+        return pixels;
+    }
+
+    public static ReadOnlySpan<Rgba8888Pixel> Read(IntPtr source, PixelSize size, int stride, PixelFormat format)
+    {
+        switch (format.FormatEnum)
+        {
+            case PixelFormatEnum.Rgb565:
+                return Read<Bgr565PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Rgba8888:
+                return Read<Rgba8888PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Bgra8888:
+                return Read<Bgra8888PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.BlackWhite:
+                return Read<BlackWhitePixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Gray2:
+                return Read<Gray2PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Gray4:
+                return Read<Gray4PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Gray8:
+                return Read<Gray8PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Gray16:
+                return Read<Gray16PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Gray32Float:
+                return Read<Gray32FloatPixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Rgba64:
+                return Read<Rgba64PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Rgb24:
+                return Read<Rgb24PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Bgr24:
+                return Read<Bgr24PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Bgr555:
+                return Read<Bgr555PixelFormatReader>(source, size, stride);
+            case PixelFormatEnum.Bgr565:
+                return Read<Bgr565PixelFormatReader>(source, size, stride);
+            default:
+                throw new NotSupportedException($"Pixel format {format} is not supported");
+        }
+    }
 }
