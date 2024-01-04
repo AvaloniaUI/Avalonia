@@ -1087,6 +1087,7 @@ interface IAvnApplicationEvents : IUnknown
 {
      void FilesOpened (IAvnStringArray* urls);
      bool TryShutdown();
+     void Clicked ();
 }
 
 [uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]

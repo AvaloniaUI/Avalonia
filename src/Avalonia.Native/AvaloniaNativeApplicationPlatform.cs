@@ -15,6 +15,11 @@ namespace Avalonia.Native
             ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
         }
 
+        void IAvnApplicationEvents.Clicked()
+        {
+            ((IApplicationPlatformEvents)Application.Current).Clicked();
+        }
+
         public int TryShutdown()
         {
             if (ShutdownRequested is null) return 1;

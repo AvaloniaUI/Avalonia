@@ -43,6 +43,12 @@ ComPtr<IAvnApplicationEvents> _events;
     [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
 
+-(BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
+{
+    _events->Clicked();
+    return YES;
+}
+
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
 {
     auto array = CreateAvnStringArray(filenames);
