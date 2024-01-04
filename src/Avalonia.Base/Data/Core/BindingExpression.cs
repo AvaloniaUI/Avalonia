@@ -395,9 +395,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             var trigger = UpdateSourceTrigger;
 
             if (trigger is UpdateSourceTrigger.PropertyChanged)
-                target.PropertyChanged += OnTargetPropertyChanged;
+                target.PropertyChanged -= OnTargetPropertyChanged;
             else if (trigger is UpdateSourceTrigger.LostFocus && target is IInputElement ie)
-                ie.LostFocus += OnTargetLostFocus;
+                ie.LostFocus -= OnTargetLostFocus;
         }
     }
 
