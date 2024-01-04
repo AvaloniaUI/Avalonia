@@ -26,7 +26,6 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
@@ -51,7 +50,6 @@
                    Padding="{TemplateBinding Padding}"
                    MinWidth="0"
                    Foreground="{TemplateBinding Foreground}"
-                   FontSize="{TemplateBinding FontSize}"
                    Watermark="{TemplateBinding Watermark}"
                    IsReadOnly="{TemplateBinding IsReadOnly}"
                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
