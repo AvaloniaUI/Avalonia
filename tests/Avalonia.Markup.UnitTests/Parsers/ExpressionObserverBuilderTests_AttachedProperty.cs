@@ -148,8 +148,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var r = new CharacterReader(path);
             var grammar = BindingExpressionGrammar.Parse(ref r).Nodes;
-            var nodes = new List<ExpressionNode>();
-            ExpressionNodeFactory.CreateFromAst(grammar, typeResolver, null, nodes, out _);
+            var nodes = ExpressionNodeFactory.CreateFromAst(grammar, typeResolver, null, out _);
             return new BindingExpression(source, nodes, AvaloniaProperty.UnsetValue).ToObservable();
         }
 

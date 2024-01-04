@@ -37,17 +37,20 @@ public abstract partial class BindingExpressionTests
             var target = new TargetClass { DataContext = dataContext };
             var (path, resolver) = BindingPathFromExpressionBuilder.Build(expression);
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
-            var nodes = new List<ExpressionNode>();
+            List<ExpressionNode>? nodes = null;
 
             if (!string.IsNullOrEmpty(path))
             {
                 var reader = new CharacterReader(path.AsSpan());
                 var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
-                ExpressionNodeFactory.CreateFromAst(astNodes, resolver, null, nodes, out _);
+                nodes = ExpressionNodeFactory.CreateFromAst(astNodes, resolver, null, out _);
             }
 
             if (!source.HasValue)
+            {
+                nodes ??= new();
                 nodes.Insert(0, new DataContextNode());
+            }
 
             var bindingExpression = new BindingExpression(
                 source.HasValue ? source.Value : target,

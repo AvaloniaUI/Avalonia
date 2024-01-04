@@ -34,11 +34,11 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
         CreateDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", new[] { typeof(Type), typeof(object) })!;
     }
 
-    public static ExpressionNode[] BuildNodes<TOut>(Expression<Func<TIn, TOut>> expression, bool enableDataValidation)
+    public static List<ExpressionNode> BuildNodes<TOut>(Expression<Func<TIn, TOut>> expression, bool enableDataValidation)
     {
         var visitor = new BindingExpressionVisitor<TIn>(expression, enableDataValidation);
         visitor.Visit(expression);
-        return visitor._nodes.ToArray();
+        return visitor._nodes;
     }
 
     protected override Expression VisitBinary(BinaryExpression node)

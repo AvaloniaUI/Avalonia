@@ -24,9 +24,10 @@ namespace Avalonia.Data.Core;
 /// </remarks>
 internal partial class BindingExpression : UntypedBindingExpressionBase, IDescription, IDisposable
 {
+    private static readonly List<ExpressionNode> s_emptyExpressionNodes = new();
     private readonly WeakReference<object?>? _source;
     private readonly BindingMode _mode;
-    private readonly IReadOnlyList<ExpressionNode> _nodes;
+    private readonly List<ExpressionNode> _nodes;
     private readonly TargetTypeConverter? _targetTypeConverter;
     private readonly UncommonFields? _uncommon;
 
@@ -54,7 +55,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// <param name="updateSourceTrigger">The trigger for updating the source value.</param>
     public BindingExpression(
         object? source,
-        IReadOnlyList<ExpressionNode> nodes,
+        List<ExpressionNode>? nodes,
         object? fallbackValue,
         IValueConverter? converter = null,
         CultureInfo? converterCulture = null,
@@ -78,7 +79,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
 
         _source = new(source);
         _mode = mode;
-        _nodes = nodes;
+        _nodes = nodes ?? s_emptyExpressionNodes;
         _targetTypeConverter = targetTypeConverter;
 
         if (converter is not null ||
@@ -108,12 +109,15 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
 
         IPropertyAccessorNode? leafAccessor = null;
 
-        for (var i = 0; i < nodes.Count; ++i)
+        if (nodes is not null)
         {
-            var node = nodes[i];
-            node.SetOwner(this, i);
-            if (node is IPropertyAccessorNode n)
-                leafAccessor = n;
+            for (var i = 0; i < nodes.Count; ++i)
+            {
+                var node = nodes[i];
+                node.SetOwner(this, i);
+                if (node is IPropertyAccessorNode n)
+                    leafAccessor = n;
+            }
         }
 
         if (enableDataValidation)

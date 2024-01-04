@@ -40,7 +40,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse(".");
 
-            Assert.Equal(0, result.Count);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -167,11 +167,9 @@ namespace Avalonia.Markup.UnitTests.Parsers
 
         private static List<ExpressionNode> Parse(string path)
         {
-            var nodes = new List<ExpressionNode>();
             var reader = new CharacterReader(path.AsSpan());
             var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
-            ExpressionNodeFactory.CreateFromAst(astNodes, null, null, nodes, out _);
-            return nodes;
+            return ExpressionNodeFactory.CreateFromAst(astNodes, null, null, out _);
         }
     }
 }

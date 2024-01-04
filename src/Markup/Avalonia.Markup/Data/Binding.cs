@@ -98,18 +98,17 @@ namespace Avalonia.Data
             if (Source != AvaloniaProperty.UnsetValue)
                 throw new NotSupportedException("Source bindings are not supported in this context.");
 
-            var nodes = new List<ExpressionNode>();
+            List<ExpressionNode>? nodes = null;
             var isRooted = false;
 
             if (!string.IsNullOrEmpty(Path))
             {
                 var reader = new CharacterReader(Path.AsSpan());
                 var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
-                ExpressionNodeFactory.CreateFromAst(
+                nodes = ExpressionNodeFactory.CreateFromAst(
                     astNodes,
                     TypeResolver,
                     GetNameScope(),
-                    nodes,
                     out isRooted);
             }
 
@@ -131,7 +130,7 @@ namespace Avalonia.Data
             object? anchor,
             bool enableDataValidation)
         {
-            var nodes = new List<ExpressionNode>();
+            List<ExpressionNode>? nodes = null;
             var isRooted = false;
 
             // Build the expression nodes from the binding path.
@@ -139,11 +138,10 @@ namespace Avalonia.Data
             {
                 var reader = new CharacterReader(Path.AsSpan());
                 var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
-                ExpressionNodeFactory.CreateFromAst(
+                nodes = ExpressionNodeFactory.CreateFromAst(
                     astNodes,
                     TypeResolver,
                     GetNameScope(),
-                    nodes,
                     out isRooted);
             }
 
@@ -152,11 +150,14 @@ namespace Avalonia.Data
             // depend on the ElementName and RelativeSource properties of the binding and if
             // neither of those are set will default to a data context node.
             if (Source == AvaloniaProperty.UnsetValue && !isRooted && CreateSourceNode(targetProperty) is { } sourceNode)
+            {
+                nodes ??= new();
                 nodes.Insert(0, sourceNode);
+            }
 
             // If the first node is an ISourceNode then allow it to select the source; otherwise
             // use the binding source if specified, falling back to the target.
-            var source = nodes.Count > 0 && nodes[0] is SourceNode sn ?
+            var source = nodes?.Count > 0 && nodes[0] is SourceNode sn ?
                 sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target) :
                 Source != AvaloniaProperty.UnsetValue ? Source : target;
 
