@@ -159,8 +159,12 @@ namespace Avalonia.Controls
             {
                 _transition = new CancellationTokenSource();
 
-                var forward = (_realizedIndex > _transitionFromIndex) || (_transitionFromIndex == Items.Count - 1 && _realizedIndex == 0);
-                forward = forward && !(_transitionFromIndex == 0 && _realizedIndex == Items.Count - 1);
+                var forward = (_realizedIndex > _transitionFromIndex);
+                if (Items.Count > 2)
+                {
+                    forward = forward || (_transitionFromIndex == Items.Count - 1 && _realizedIndex == 0);
+                    forward = forward && !(_transitionFromIndex == 0 && _realizedIndex == Items.Count - 1);
+                }
 
                 transition.Start(_transitionFrom, to, forward, _transition.Token)
                     .ContinueWith(TransitionFinished, TaskScheduler.FromCurrentSynchronizationContext());
