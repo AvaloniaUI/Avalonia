@@ -455,7 +455,16 @@ namespace Avalonia
             VerifyAccess();
             ValidatePriority(priority);
 
-            return _values.AddBinding(property, source, priority);
+            if (source is IBinding2 b)
+            {
+                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
+                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                return GetValueStore().AddBinding(property, expression);
+            }
+            else
+            {
+                return _values.AddBinding(property, source, priority);
+            }
         }
 
         /// <summary>
@@ -527,7 +536,16 @@ namespace Avalonia
                 throw new ArgumentException($"The property {property.Name} is readonly.");
             }
 
-            return _values.AddBinding(property, source);
+            if (source is IBinding2 b)
+            {
+                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
+                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                return GetValueStore().AddBinding(property, expression);
+            }
+            else
+            {
+                return _values.AddBinding(property, source);
+            }
         }
 
         /// <summary>
