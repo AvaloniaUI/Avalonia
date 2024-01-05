@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
@@ -104,7 +105,7 @@ namespace Avalonia.Data
             if (!string.IsNullOrEmpty(Path))
             {
                 var reader = new CharacterReader(Path.AsSpan());
-                var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
+                var (astNodes, sourceMode) = BindingExpressionGrammar.ParseToPooledList(ref reader);
                 nodes = ExpressionNodeFactory.CreateFromAst(
                     astNodes,
                     TypeResolver,
@@ -137,9 +138,9 @@ namespace Avalonia.Data
             if (!string.IsNullOrEmpty(Path))
             {
                 var reader = new CharacterReader(Path.AsSpan());
-                var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
+                var (astPool, sourceMode) = BindingExpressionGrammar.ParseToPooledList(ref reader);
                 nodes = ExpressionNodeFactory.CreateFromAst(
-                    astNodes,
+                    astPool,
                     TypeResolver,
                     GetNameScope(),
                     out isRooted);
