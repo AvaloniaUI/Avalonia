@@ -16,20 +16,19 @@ public class Binding_Setup
     }
 
     [Benchmark]
-    public void DataContext_Property_OneWay()
+    public void Setup_DataContext_Property_Binding_OneWay()
     {
         var target = _target;
         var binding = new Binding(nameof(_data.IntValue));
 
         for (var i = 0; i < 100; ++i)
         {
-            var d = target.Bind(TestControl.IntValueProperty, binding);
-            d.Dispose();
+            using var d = target.Bind(TestControl.IntValueProperty, binding);
         }
     }
 
     [Benchmark]
-    public void DataContext_Property_TwoWay()
+    public void Setup_DataContext_Property_Binding_TwoWay()
     {
         var target = _target;
         var binding = new Binding(nameof(_data.IntValue), mode: BindingMode.TwoWay);

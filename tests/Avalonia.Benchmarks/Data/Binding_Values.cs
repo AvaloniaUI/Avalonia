@@ -16,7 +16,7 @@ public class Binding_Values
     }
 
     [Benchmark]
-    public void DataContext_Property_OneWay()
+    public void Produce_DataContext_Property_Binding_Value_OneWay()
     {
         _data.IntValue = -1;
 
@@ -31,7 +31,7 @@ public class Binding_Values
     }
 
     [Benchmark]
-    public void DataContext_Property_TwoWay()
+    public void Produce_DataContext_Property_Binding_Value_TwoWay()
     {
         _data.IntValue = -1;
 
