@@ -56,7 +56,7 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
         {
             if (_enableDataValidation)
             {
-                foreach (var validator in BindingPlugins.DataValidators)
+                foreach (var validator in BindingPlugins.s_dataValidators)
                 {
                     if (validator.Match(reference, PropertyName))
                         accessor = validator.Start(reference, PropertyName, accessor);

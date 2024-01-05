@@ -51,7 +51,7 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         {
             if (_enableDataValidation)
             {
-                foreach (var validator in BindingPlugins.DataValidators)
+                foreach (var validator in BindingPlugins.s_dataValidators)
                 {
                     if (validator.Match(reference, PropertyName))
                         accessor = validator.Start(reference, PropertyName, accessor);
@@ -84,7 +84,7 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         if (source is null)
             return null;
 
-        foreach (var plugin in BindingPlugins.PropertyAccessors)
+        foreach (var plugin in BindingPlugins.s_propertyAccessors)
         {
             if (plugin.Match(source, PropertyName))
                 return plugin;

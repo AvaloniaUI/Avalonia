@@ -42,7 +42,7 @@ internal sealed class DynamicPluginStreamNode : ExpressionNode
         if (source is null)
             return null;
 
-        foreach (var plugin in BindingPlugins.StreamHandlers)
+        foreach (var plugin in BindingPlugins.s_streamHandlers)
         {
             if (plugin.Match(source))
                 return plugin;
