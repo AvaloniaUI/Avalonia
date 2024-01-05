@@ -72,7 +72,7 @@ namespace Avalonia.PropertyStore
                     var effective = GetEffectiveValue(property);
                     var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
 
-                    source.Attach(this, Owner, property, priority);
+                    source.Attach(this, frame, Owner, property, priority);
                     frame.AddBinding(source);
 
                     if (effective is null || priority <= effective.Priority)

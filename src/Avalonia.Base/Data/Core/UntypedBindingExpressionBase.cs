@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
@@ -24,6 +25,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     private readonly bool _isDataValidationEnabled;
     private object? _defaultValue;
     private BindingError? _error;
+    private ImmediateValueFrame? _frame;
     private bool _isDefaultValueInitialized;
     private bool _isRunning;
     private bool _produceValue;
@@ -99,8 +101,11 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         Stop();
 
         var sink = _sink;
+        var frame = _frame;
         _sink = null;
+        _frame = null;
         sink.OnCompleted(this);
+        frame?.OnEntryDisposed(this);
     }
 
     /// <summary>
@@ -177,11 +182,12 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
     internal override void Attach(
         ValueStore valueStore,
+        ImmediateValueFrame? frame,
         AvaloniaObject target,
         AvaloniaProperty targetProperty,
         BindingPriority priority)
     {
-        AttachCore(valueStore, target, targetProperty, priority);
+        AttachCore(valueStore, frame, target, targetProperty, priority);
     }
 
     /// <summary>
@@ -198,7 +204,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         AvaloniaProperty targetProperty,
         BindingPriority priority)
     {
-        AttachCore(subscriber, target, targetProperty, priority);
+        AttachCore(subscriber, null, target, targetProperty, priority);
         Start(produceValue: true);
     }
 
@@ -250,6 +256,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
     private void AttachCore(
         IBindingExpressionSink sink,
+        ImmediateValueFrame? frame,
         AvaloniaObject target,
         AvaloniaProperty targetProperty,
         BindingPriority priority)
@@ -258,6 +265,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             throw new InvalidOperationException("BindingExpression was already attached.");
 
         _sink = sink;
+        _frame = frame;
         _target = new(target);
         TargetProperty = targetProperty;
         TargetType = targetProperty.PropertyType;
@@ -483,6 +491,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// </summary>
     protected void Stop()
     {
+        if (!_isRunning)
+            return;
+
         StopCore();
         _isRunning = false;
         _value = AvaloniaProperty.UnsetValue;

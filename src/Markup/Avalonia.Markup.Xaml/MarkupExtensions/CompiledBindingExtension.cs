@@ -130,6 +130,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 converterParameter: ConverterParameter,
                 enableDataValidation: enableDataValidation,
                 mode: mode,
+                priority: Priority,
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetDefaultConverter(),

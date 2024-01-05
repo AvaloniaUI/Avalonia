@@ -42,11 +42,13 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance
     /// does not start it.
     /// </summary>
     /// <param name="valueStore">The value store to attach to.</param>
+    /// <param name="frame">The immediate value frame to attach to, if any.</param>
     /// <param name="target">The target object.</param>
     /// <param name="targetProperty">The target property.</param>
     /// <param name="priority">The priority of the binding.</param>
     internal abstract void Attach(
         ValueStore valueStore,
+        ImmediateValueFrame? frame,
         AvaloniaObject target,
         AvaloniaProperty targetProperty,
         BindingPriority priority);

@@ -173,6 +173,7 @@ namespace Avalonia.Data
                 converterParameter: ConverterParameter,
                 enableDataValidation: enableDataValidation,
                 mode: mode,
+                priority: Priority,
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
