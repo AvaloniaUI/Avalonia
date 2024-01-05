@@ -104,7 +104,7 @@ namespace Avalonia
         /// </summary>
         public static readonly DirectProperty<Visual, Visual?> VisualParentProperty =
             AvaloniaProperty.RegisterDirect<Visual, Visual?>(nameof(VisualParent), o => o._visualParent);
-        
+
         /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
         /// </summary>
@@ -120,7 +120,6 @@ namespace Avalonia
         private IRenderRoot? _visualRoot;
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
-        
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
 
         /// <summary>
@@ -148,7 +147,7 @@ namespace Avalonia
         {
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
-            
+
             var visualChildren = new AvaloniaList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = visual => ValidateVisualChild(visual);
