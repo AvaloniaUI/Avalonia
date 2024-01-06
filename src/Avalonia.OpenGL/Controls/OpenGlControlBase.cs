@@ -232,7 +232,7 @@ namespace Avalonia.OpenGL.Controls
             }
         }
 
-        private PixelSize GetPixelSize(IRenderRoot visualRoot)
+        protected virtual PixelSize GetPixelSize(IRenderRoot visualRoot)
         {
             var scaling = visualRoot.RenderScaling;
             return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
