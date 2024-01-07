@@ -75,5 +75,5 @@ public class KeyEventArgs : RoutedEventArgs
     /// <summary>
     /// Type of the device that fire the event
     /// </summary>
-    public KeyDeviceType KeyDeviceType { get; set; }
+    public KeyDeviceType KeyDeviceType { get; init; }
 }
