@@ -2066,9 +2066,16 @@ namespace Avalonia.Controls
 
         private void SetSelectionForControlBackspace()
         {
+            var text = Text ?? string.Empty;
             var selectionStart = CaretIndex;
 
             MoveHorizontal(-1, true, false);
+            
+            if (SelectionEnd > 0 && 
+                selectionStart < text.Length && text[selectionStart] == ' ')
+            {
+                SetCurrentValue(SelectionEndProperty, SelectionEnd - 1);
+            }
 
             SetCurrentValue(SelectionStartProperty, selectionStart);
         }
