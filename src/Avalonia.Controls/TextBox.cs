@@ -1976,7 +1976,7 @@ namespace Avalonia.Controls
 
                 _presenter?.MoveCaretToTextPosition(start);
 
-                SetCurrentValue(CaretIndexProperty, start);
+                SetCurrentValue(SelectionStartProperty, start);
 
                 ClearSelection();
 
