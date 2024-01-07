@@ -175,6 +175,29 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(6, target.CaretIndex);
             }
         }
+        
+        [Fact]
+        public void Control_Backspace_Should_Remove_The_Double_Whitespace_If_Caret_Index_Was_At_The_End_Of_A_Word()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First Second Third",
+                    SelectionStart = 12,
+                    SelectionEnd = 12
+                };
+
+                target.ApplyTemplate();
+                
+                // (First Second| Third)
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
+                // (First| Third)
+
+                Assert.Equal("First Third", target.Text);
+            }
+        }
 
         [Fact]
         public void Press_Ctrl_A_Select_All_Text()
