@@ -151,6 +151,30 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(4, target.CaretIndex);
             }
         }
+        
+        [Fact]
+        public void Control_Backspace_Should_Set_Caret_Position_To_The_Start_Of_The_Deletion()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First Second Third",
+                    SelectionStart = 13,
+                    SelectionEnd = 13
+                };
+
+                target.CaretIndex = 10;
+                target.ApplyTemplate();
+
+                // (First Second |Third)
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
+                // (First |Third)
+                
+                Assert.Equal(6, target.CaretIndex);
+            }
+        }
 
         [Fact]
         public void Press_Ctrl_A_Select_All_Text()
