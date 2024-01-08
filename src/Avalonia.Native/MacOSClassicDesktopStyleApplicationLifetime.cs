@@ -8,8 +8,10 @@ namespace Avalonia.Native;
 internal class MacOSClassicDesktopStyleApplicationLifetime : ClassicDesktopStyleApplicationLifetime,
     IActivatableApplicationLifetime
 {
+    /// <inheritdoc />
     public event EventHandler<ActivatedEventArgs>? Activated;
     
+    /// <inheritdoc />
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
     internal void RaiseUrl(Uri uri)
