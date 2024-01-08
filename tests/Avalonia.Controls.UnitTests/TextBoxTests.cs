@@ -200,6 +200,32 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Control_Backspace_Undo_Should_Return_Caret_Position()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First Second Third",
+                    SelectionStart = 9,
+                    SelectionEnd = 9
+                };
+
+                target.ApplyTemplate();
+                
+                // (First Second| Third)
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
+                // (First| Third)
+                
+                target.Undo();
+                // (First Second| Third)
+
+                Assert.Equal(9, target.CaretIndex);
+            }
+        }
+
+        [Fact]
         public void Press_Ctrl_A_Select_All_Text()
         {
             using (UnitTestApplication.Start(Services))
