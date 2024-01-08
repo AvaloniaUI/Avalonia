@@ -15,9 +15,28 @@ namespace Avalonia.Native
             ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
         }
 
-        void IAvnApplicationEvents.Clicked()
+        void IAvnApplicationEvents.OnReopen()
         {
-            ((IApplicationPlatformEvents)Application.Current).Clicked();
+            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                lifetime.RaiseActivated(ActivationReason.Reopen);    
+            }
+        }
+
+        void IAvnApplicationEvents.OnHide()
+        {
+            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                lifetime.RaiseDeactivated(ActivationReason.Background);    
+            }
+        }
+
+        void IAvnApplicationEvents.OnUnhide()
+        {
+            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                lifetime.RaiseActivated(ActivationReason.Background);    
+            }
         }
 
         public int TryShutdown()

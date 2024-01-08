@@ -45,8 +45,18 @@ ComPtr<IAvnApplicationEvents> _events;
 
 -(BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
 {
-    _events->Clicked();
+    _events->OnReopen();
     return YES;
+}
+
+- (void)applicationDidHide:(NSNotification *)notification
+{
+    _events->OnHide();
+}
+
+- (void)applicationDidUnhide:(NSNotification *)notification
+{
+    _events->OnUnhide();
 }
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames

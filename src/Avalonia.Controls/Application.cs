@@ -63,11 +63,6 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
-        /// <summary>
-        /// Raised when the application icon is clicked. (MacOS)
-        /// </summary>
-        public event EventHandler? Clicked;
-
         /// <inheritdoc/>
         public event EventHandler? ActualThemeVariantChanged;
 
@@ -277,11 +272,6 @@ namespace Avalonia
         void  IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
         {
             UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
-        }
-
-        void IApplicationPlatformEvents.Clicked()
-        {
-            Clicked?.Invoke(this, EventArgs.Empty);
         }
 
         private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
