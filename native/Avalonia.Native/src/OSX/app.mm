@@ -139,6 +139,13 @@ extern void ReleaseAvnAppEvents()
     }
 }
 
+HRESULT AvnApplicationCommands::UnhideApp()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] unhide:[NSApp delegate]];
+    return S_OK;
+}
+
 HRESULT AvnApplicationCommands::HideApp()
 {
     START_COM_CALL;

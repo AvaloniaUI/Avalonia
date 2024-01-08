@@ -18,4 +18,16 @@ public interface IActivatableApplicationLifetime
     /// as described by the <see cref="ActivationKind"/> enumeration.
     /// </summary>
     event EventHandler<ActivatedEventArgs> Deactivated;
+
+    /// <summary>
+    /// Tells the platform (OS) to activate the application.
+    /// For example on OSX this would be [NSApp unhide]
+    /// </summary>
+    public void Activate();
+
+    /// <summary>
+    /// Tells the platform (OS) to deactivate the application.
+    /// For example on OSX this would be [NSApp hide].
+    /// </summary>
+    public void Deactivate();
 }

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Platform;
 
 namespace Avalonia.Native;
 
@@ -13,6 +14,20 @@ internal class MacOSClassicDesktopStyleApplicationLifetime : ClassicDesktopStyle
     
     /// <inheritdoc />
     public event EventHandler<ActivatedEventArgs>? Deactivated;
+
+    /// <inheritdoc />
+    public void Activate()
+    {
+        var nativeApplicationCommands = AvaloniaLocator.Current.GetService<INativeApplicationCommands>();
+        nativeApplicationCommands?.ShowApp();
+    }
+
+    /// <inheritdoc />
+    public void Deactivate()
+    {
+        var nativeApplicationCommands = AvaloniaLocator.Current.GetService<INativeApplicationCommands>();
+        nativeApplicationCommands?.HideApp();
+    }
 
     internal void RaiseUrl(Uri uri)
     {
