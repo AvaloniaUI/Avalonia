@@ -19,7 +19,7 @@ namespace Avalonia.Native
         {
             if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
             {
-                lifetime.RaiseActivated(ActivationReason.Reopen);    
+                lifetime.RaiseActivated(ActivationKind.Reopen);    
             }
         }
 
@@ -27,7 +27,7 @@ namespace Avalonia.Native
         {
             if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
             {
-                lifetime.RaiseDeactivated(ActivationReason.Background);    
+                lifetime.RaiseDeactivated(ActivationKind.Background);    
             }
         }
 
@@ -35,7 +35,7 @@ namespace Avalonia.Native
         {
             if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
             {
-                lifetime.RaiseActivated(ActivationReason.Background);    
+                lifetime.RaiseActivated(ActivationKind.Background);    
             }
         }
 

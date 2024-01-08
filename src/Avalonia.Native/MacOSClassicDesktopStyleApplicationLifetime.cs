@@ -12,13 +12,16 @@ internal class MacOSClassicDesktopStyleApplicationLifetime : ClassicDesktopStyle
     
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
-    internal void RaiseActivated(ActivationReason reason)
     {
         Activated?.Invoke(this, new ActivatedEventArgs(reason));
+    
+    internal void RaiseActivated(ActivationKind kind)
+    {
+        Activated?.Invoke(this, new ActivatedEventArgs(kind));
     }
 
-    internal void RaiseDeactivated(ActivationReason reason)
+    internal void RaiseDeactivated(ActivationKind kind)
     {
-        Deactivated?.Invoke(this, new ActivatedEventArgs(reason));
+        Deactivated?.Invoke(this, new ActivatedEventArgs(kind));
     }
 }

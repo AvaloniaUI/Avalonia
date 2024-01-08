@@ -4,10 +4,10 @@ namespace Avalonia.Controls.ApplicationLifetimes;
 
 public class ActivatedEventArgs : EventArgs
 {
-    public ActivatedEventArgs(ActivationReason reason)
+    public ActivatedEventArgs(ActivationKind kind)
     {
-        Reason = reason;
+        Kind = kind;
     }
         
-    public ActivationReason Reason { get; }
+    public ActivationKind Kind { get; }
 }
