@@ -12,8 +12,10 @@ internal class MacOSClassicDesktopStyleApplicationLifetime : ClassicDesktopStyle
     
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
+    internal void RaiseUrl(Uri uri)
     {
-        Activated?.Invoke(this, new ActivatedEventArgs(reason));
+        Activated?.Invoke(this, new ProtocolActivatedEventArgs(ActivationKind.OpenUri, uri));
+    }
     
     internal void RaiseActivated(ActivationKind kind)
     {

@@ -13,6 +13,14 @@ namespace Avalonia.Native
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
             ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
+
+            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                foreach (var url in urls.ToStringArray())
+                {
+                    lifetime.RaiseUrl(new Uri(url));
+                }
+            }
         }
 
         void IAvnApplicationEvents.OnReopen()
