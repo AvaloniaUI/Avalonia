@@ -1275,13 +1275,13 @@ namespace Avalonia.Controls
                 {
                     case Key.Left:
                         selection = DetectSelection();
-                        MoveHorizontal(-1, hasWholeWordModifiers, selection);
+                        MoveHorizontal(-1, hasWholeWordModifiers, selection, true);
                         movement = true;
                         break;
 
                     case Key.Right:
                         selection = DetectSelection();
-                        MoveHorizontal(1, hasWholeWordModifiers, selection);
+                        MoveHorizontal(1, hasWholeWordModifiers, selection, true);
                         movement = true;
                         break;
 
@@ -1672,7 +1672,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void Clear() => SetCurrentValue(TextProperty, string.Empty);
 
-        private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
+        private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting, bool moveCaretPosition)
         {
             if (_presenter == null)
             {
@@ -1727,10 +1727,13 @@ namespace Avalonia.Controls
                 }
 
                 SetCurrentValue(SelectionEndProperty, SelectionEnd + offset);
+                
+                if (moveCaretPosition)
+                {
+                    _presenter.MoveCaretToTextPosition(SelectionEnd);
+                }
 
-                _presenter.MoveCaretToTextPosition(SelectionEnd);
-
-                if (!isSelecting)
+                if (!isSelecting && moveCaretPosition)
                 {
                     SetCurrentValue(CaretIndexProperty, SelectionEnd);
                 }
@@ -1867,7 +1870,7 @@ namespace Avalonia.Controls
 
                 _presenter?.MoveCaretToTextPosition(start);
 
-                SetCurrentValue(CaretIndexProperty, start);
+                SetCurrentValue(SelectionStartProperty, start);
 
                 ClearSelection();
 
@@ -1957,9 +1960,16 @@ namespace Avalonia.Controls
 
         private void SetSelectionForControlBackspace()
         {
+            var text = Text ?? string.Empty;
             var selectionStart = CaretIndex;
 
-            MoveHorizontal(-1, true, false);
+            MoveHorizontal(-1, true, false, false);
+            
+            if (SelectionEnd > 0 && 
+                selectionStart < text.Length && text[selectionStart] == ' ')
+            {
+                SetCurrentValue(SelectionEndProperty, SelectionEnd - 1);
+            }
 
             SetCurrentValue(SelectionStartProperty, selectionStart);
         }
@@ -1974,7 +1984,7 @@ namespace Avalonia.Controls
 
             SetCurrentValue(SelectionStartProperty, CaretIndex);
 
-            MoveHorizontal(1, true, true);
+            MoveHorizontal(1, true, true, false);
 
             if (SelectionEnd < textLength && Text![SelectionEnd] == ' ')
             {
