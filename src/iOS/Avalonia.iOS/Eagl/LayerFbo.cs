@@ -1,3 +1,4 @@
+#if !MACCATALYST
 using System;
 using System.Runtime.Versioning;
 using Avalonia.OpenGL;
@@ -148,3 +149,4 @@ namespace Avalonia.iOS
         public double Scaling => _oldLayerScale;
     }
 }
+#endif

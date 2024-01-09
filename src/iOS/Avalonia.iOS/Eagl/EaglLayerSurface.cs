@@ -1,10 +1,13 @@
-
+#if !MACCATALYST
 using System;
 using System.Runtime.Versioning;
 using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using CoreAnimation;
+using Foundation;
+using OpenGLES;
+using UIKit;
 
 namespace Avalonia.iOS
 {
@@ -84,7 +87,7 @@ namespace Avalonia.iOS
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
             CheckThread();
-            var ctx = Platform.GlFeature.Context;
+            var ctx = ((EaglPlatformGraphics)Platform.Graphics).Context;
             if (ctx != context)
                 throw new InvalidOperationException("Platform surface is only usable with tha main context");
             using (ctx.MakeCurrent())
@@ -97,3 +100,4 @@ namespace Avalonia.iOS
         }
     }
 }
+#endif

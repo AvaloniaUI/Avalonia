@@ -1,9 +1,8 @@
 using System;
-
-using Avalonia.Controls;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -11,6 +10,26 @@ using Avalonia.Threading;
 
 namespace Avalonia
 {
+    public enum iOSRenderingMode
+    {
+        OpenGl = 1,
+        Metal
+    }
+    
+    public class iOSPlatformOptions
+    {
+        /// <summary>
+        /// Gets or sets Avalonia rendering modes with fallbacks.
+        /// The first element in the array has the highest priority.
+        /// The default value is: <see cref="iOSRenderingMode.OpenGl"/>, <see cref="iOSRenderingMode.Metal"/>. 
+        /// </summary>
+        /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
+        public IReadOnlyList<iOSRenderingMode> RenderingMode { get; set; } = new[]
+        {
+            iOSRenderingMode.OpenGl, iOSRenderingMode.Metal
+        };
+    }
+
     public static class IOSApplicationExtensions
     {
         public static AppBuilder UseiOS(this AppBuilder builder)
@@ -27,18 +46,21 @@ namespace Avalonia.iOS
 {
     static class Platform
     {
-        public static EaglPlatformGraphics GlFeature;
+        public static iOSPlatformOptions Options;
+        public static IPlatformGraphics Graphics;
         public static DisplayLinkTimer Timer;
         internal static Compositor Compositor { get; private set; }
 
         public static void Register()
         {
-            GlFeature ??= new EaglPlatformGraphics();
+            Options = AvaloniaLocator.Current.GetService<iOSPlatformOptions>() ?? new iOSPlatformOptions();
+
+            Graphics = InitializeGraphics(Options);
             Timer ??= new DisplayLinkTimer();
             var keyboard = new KeyboardDevice();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformGraphics>().ToConstant((IPlatformGraphics) GlFeature)
+                .Bind<IPlatformGraphics>().ToConstant(Graphics)
                 .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
@@ -48,7 +70,34 @@ namespace Avalonia.iOS
                 .Bind<IDispatcherImpl>().ToConstant(DispatcherImpl.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 
-                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
+            Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
+        }
+
+        private static IPlatformGraphics InitializeGraphics(iOSPlatformOptions opts)
+        {
+            if (opts.RenderingMode is null || !opts.RenderingMode.Any())
+            {
+                throw new InvalidOperationException($"{nameof(iOSPlatformOptions)}.{nameof(iOSPlatformOptions.RenderingMode)} must not be empty or null");
+            }
+
+            foreach (var renderingMode in opts.RenderingMode)
+            {
+#if !MACCATALYST
+                if (renderingMode == iOSRenderingMode.OpenGl
+                    && EaglPlatformGraphics.TryCreate() is { } eaglGraphics)
+                {
+                    return eaglGraphics;
+                }
+#endif
+
+                if (renderingMode == iOSRenderingMode.Metal
+                    && MetalPlatformGraphics.TryCreate() is { } metalGraphics)
+                {
+                    return metalGraphics;
+                }
+            }
+
+            throw new InvalidOperationException($"{nameof(iOSPlatformOptions)}.{nameof(iOSPlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
         }
     }
 }

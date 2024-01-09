@@ -19,7 +19,6 @@ using Avalonia.Rendering.Composition;
 using CoreAnimation;
 using Foundation;
 using ObjCRuntime;
-using OpenGLES;
 using UIKit;
 using IInsetsManager = Avalonia.Controls.Platform.IInsetsManager;
 
@@ -36,6 +35,7 @@ namespace Avalonia.iOS
         private TextInputMethodClient? _client;
         private IAvaloniaViewController? _controller;
         private IInputRoot? _inputRoot;
+        private MetalRenderTarget? _currentRenderTarget;
 
         public AvaloniaView()
         {
@@ -47,23 +47,33 @@ namespace Avalonia.iOS
 
             _topLevel.StartRendering();
 
-            InitEagl();
+            InitLayerSurface();
             MultipleTouchEnabled = true;
         }
 
         [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
         [SupportedOSPlatform("ios")]
         [UnsupportedOSPlatform("maccatalyst")]
-        private void InitEagl()
+        private void InitLayerSurface()
         {
-            var l = (CAEAGLLayer)Layer;
+            var l = Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
             l.Opaque = true;
-            l.DrawableProperties = new NSDictionary(
-                EAGLDrawableProperty.RetainedBacking, false,
-                EAGLDrawableProperty.ColorFormat, EAGLColorFormat.RGBA8
-            );
-            _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(l) };
+#if !MACCATALYST
+            if (l is CAEAGLLayer eaglLayer)
+            {
+                eaglLayer.DrawableProperties = new NSDictionary(
+                    OpenGLES.EAGLDrawableProperty.RetainedBacking, false,
+                    OpenGLES.EAGLDrawableProperty.ColorFormat, OpenGLES.EAGLColorFormat.RGBA8
+                );
+                _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(eaglLayer) };
+            }
+            else
+#endif
+            if (l is CAMetalLayer metalLayer)
+            {
+                _topLevelImpl.Surfaces = new[] { new MetalPlatformSurface(metalLayer, this) };
+            }
         }
 
         /// <inheritdoc />
@@ -239,7 +249,16 @@ namespace Avalonia.iOS
         [Export("layerClass")]
         public static Class LayerClass()
         {
-            return new Class(typeof(CAEAGLLayer));
+#if !MACCATALYST
+            if (Platform.Graphics is EaglPlatformGraphics)
+            {
+                return new Class(typeof(CAEAGLLayer));
+            }
+            else
+#endif
+            {
+                return new Class(typeof(CAMetalLayer));
+            }
         }
 
         public override void TouchesBegan(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
@@ -253,6 +272,12 @@ namespace Avalonia.iOS
         public override void LayoutSubviews()
         {
             _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
+            if (_currentRenderTarget is not null)
+            {
+                _currentRenderTarget.PendingSize = new PixelSize((int)Bounds.Width, (int)Bounds.Height);
+                _currentRenderTarget.PendingScaling = Window.ContentScaleFactor;
+            }
+
             base.LayoutSubviews();
         }
 
@@ -260,6 +285,11 @@ namespace Avalonia.iOS
         {
             get => (Control?)_topLevel.Content;
             set => _topLevel.Content = value;
+        }
+
+        internal void SetRenderTarget(MetalRenderTarget target)
+        {
+            _currentRenderTarget = target;
         }
     }
 }

@@ -1,6 +1,8 @@
+#if !MACCATALYST
 using System;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Reactive;
@@ -19,7 +21,7 @@ namespace Avalonia.iOS
         public GlContext Context { get; }
         public static GlVersion GlVersion { get; } = new(GlProfileType.OpenGLES, 3, 0);
 
-        public EaglPlatformGraphics()
+        private EaglPlatformGraphics()
         {
             
             const string path = "/System/Library/Frameworks/OpenGLES.framework/OpenGLES";
@@ -28,6 +30,19 @@ namespace Avalonia.iOS
                 throw new OpenGlException("Unable to load " + path);
             var iface = new GlInterface(GlVersion, proc => ObjCRuntime.Dlfcn.dlsym(libGl, proc));
             Context = new(iface, null);
+        }
+        
+        public static EaglPlatformGraphics TryCreate()
+        {
+            try
+            {
+                return new EaglPlatformGraphics();
+            }
+            catch(Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log(null, "Unable to initialize EAGL-based rendering: {0}", e);
+                return null;
+            }
         }
     }
 
@@ -122,3 +137,4 @@ namespace Avalonia.iOS
         public object TryGetFeature(Type featureType) => null;
     }
 }
+#endif
