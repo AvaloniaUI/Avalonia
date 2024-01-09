@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !TVOS
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -275,3 +276,4 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
         }
     }
 }
+#endif

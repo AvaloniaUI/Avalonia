@@ -48,7 +48,9 @@ namespace Avalonia.iOS
             _topLevel.StartRendering();
 
             InitLayerSurface();
+#if !TVOS
             MultipleTouchEnabled = true;
+#endif
         }
 
         [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
@@ -111,9 +113,10 @@ namespace Avalonia.iOS
         {
             private readonly AvaloniaView _view;
             private readonly INativeControlHostImpl _nativeControlHost;
-            private readonly IStorageProvider _storageProvider;
             internal readonly InsetsManager _insetsManager;
-            private readonly ClipboardImpl _clipboard;
+            private readonly IStorageProvider? _storageProvider;
+            private readonly IClipboard? _clipboard;
+            private readonly IInputPane? _inputPane;
             private IDisposable? _paddingInsets;
 
             public AvaloniaView View => _view;
@@ -122,8 +125,12 @@ namespace Avalonia.iOS
             {
                 _view = view;
                 _nativeControlHost = new NativeControlHostImpl(view);
+#if !TVOS
                 _storageProvider = new IOSStorageProvider(view);
-                _insetsManager = new InsetsManager(view);
+                _clipboard = new ClipboardImpl();
+                _inputPane = UIKitInputPane.Instance;
+#endif
+                _insetsManager = new InsetsManager();
                 _insetsManager.DisplayEdgeToEdgeChanged += (_, edgeToEdge) =>
                 {
                     // iOS doesn't add any paddings/margins to the application by itself.
@@ -138,7 +145,6 @@ namespace Avalonia.iOS
                             BindingPriority.Style); // lower priority, so it can be redefined by user
                     }
                 };
-                _clipboard = new ClipboardImpl();
             }
 
             public void Dispose()
@@ -195,8 +201,11 @@ namespace Avalonia.iOS
 
             public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
             {
+#if !TVOS
                 // TODO adjust status bar depending on full screen mode.
-                if (OperatingSystem.IsIOSVersionAtLeast(13) && _view._controller is not null)
+                if ((OperatingSystem.IsIOSVersionAtLeast(13)
+                    || OperatingSystem.IsMacCatalyst())
+                    && _view._controller is not null)
                 {
                     _view._controller.PreferredStatusBarStyle = themeVariant switch
                     {
@@ -205,6 +214,7 @@ namespace Avalonia.iOS
                         _ => UIStatusBarStyle.Default
                     };
                 }
+#endif
             }
             
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
@@ -212,11 +222,6 @@ namespace Avalonia.iOS
 
             public object? TryGetFeature(Type featureType)
             {
-                if (featureType == typeof(IStorageProvider))
-                {
-                    return _storageProvider;
-                }
-
                 if (featureType == typeof(ITextInputMethodImpl))
                 {
                     return _view;
@@ -232,15 +237,22 @@ namespace Avalonia.iOS
                     return _insetsManager;
                 }
 
+#if !TVOS
                 if (featureType == typeof(IClipboard))
                 {
                     return _clipboard;
                 }
 
+                if (featureType == typeof(IStorageProvider))
+                {
+                    return _storageProvider;
+                }
+
                 if (featureType == typeof(IInputPane))
                 {
-                    return UIKitInputPane.Instance;
+                    return _inputPane;
                 }
+#endif
 
                 return null;
             }

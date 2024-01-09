@@ -11,6 +11,7 @@ namespace Avalonia.Compatibility
         public static bool IsLinux() => OperatingSystem.IsLinux();
         public static bool IsAndroid() => OperatingSystem.IsAndroid();
         public static bool IsIOS() => OperatingSystem.IsIOS();
+        public static bool IsTvOS() => OperatingSystem.IsTvOS();
         public static bool IsBrowser() => OperatingSystem.IsBrowser();
         public static bool IsOSPlatform(string platform) => OperatingSystem.IsOSPlatform(platform);
 #else
@@ -19,6 +20,7 @@ namespace Avalonia.Compatibility
         public static bool IsLinux() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
         public static bool IsAndroid() => IsOSPlatform("ANDROID");
         public static bool IsIOS() => IsOSPlatform("IOS");
+        public static bool IsTvOS() => IsOSPlatform("TVOS"); // untested
         public static bool IsBrowser() => IsOSPlatform("BROWSER");
         public static bool IsOSPlatform(string platform) => RuntimeInformation.IsOSPlatform(OSPlatform.Create(platform));
 #endif

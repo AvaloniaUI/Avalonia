@@ -1,3 +1,4 @@
+#if !TVOS
 using System;
 using System.Threading.Tasks;
 using Avalonia.Input;
@@ -32,3 +33,4 @@ namespace Avalonia.iOS
         public Task<object> GetDataAsync(string format) => Task.FromResult<object>(null);
     }
 }
+#endif

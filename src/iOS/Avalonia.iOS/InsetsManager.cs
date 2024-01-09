@@ -1,21 +1,14 @@
 using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
-using UIKit;
 
 namespace Avalonia.iOS;
 #nullable enable
 
 internal class InsetsManager : IInsetsManager
 {
-    private readonly AvaloniaView _view;
     private IAvaloniaViewController? _controller;
     private bool _displayEdgeToEdge = true;
-
-    public InsetsManager(AvaloniaView view)
-    {
-        _view = view;
-    }
 
     internal void InitWithController(IAvaloniaViewController controller)
     {
