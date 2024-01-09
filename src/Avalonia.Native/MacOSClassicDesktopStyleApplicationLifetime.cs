@@ -16,17 +16,21 @@ internal class MacOSClassicDesktopStyleApplicationLifetime : ClassicDesktopStyle
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
     /// <inheritdoc />
-    public void Activate()
+    public bool TryLeaveBackground()
     {
         var nativeApplicationCommands = AvaloniaLocator.Current.GetService<INativeApplicationCommands>();
         nativeApplicationCommands?.ShowApp();
+
+        return true;
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    public bool TryEnterBackground()
     {
         var nativeApplicationCommands = AvaloniaLocator.Current.GetService<INativeApplicationCommands>();
         nativeApplicationCommands?.HideApp();
+
+        return true;
     }
 
     internal void RaiseUrl(Uri uri)

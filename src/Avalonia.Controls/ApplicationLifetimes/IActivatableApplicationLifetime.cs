@@ -20,14 +20,16 @@ public interface IActivatableApplicationLifetime
     event EventHandler<ActivatedEventArgs> Deactivated;
 
     /// <summary>
-    /// Tells the platform (OS) to activate the application.
+    /// Tells the application that it should attempt to leave its background state.
     /// For example on OSX this would be [NSApp unhide]
     /// </summary>
-    public void Activate();
+    /// <returns>true if it was possible and the platform supports this. false otherwise</returns>
+    public bool TryLeaveBackground();
 
     /// <summary>
-    /// Tells the platform (OS) to deactivate the application.
-    /// For example on OSX this would be [NSApp hide].
+    /// Tells the application that it should attempt to enter its background state.
+    /// For example on OSX this would be [NSApp hide]
     /// </summary>
-    public void Deactivate();
+    /// <returns>true if it was possible and the platform supports this. false otherwise</returns>
+    public bool TryEnterBackground();
 }
