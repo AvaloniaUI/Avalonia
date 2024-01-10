@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Native;
 
 namespace Avalonia
@@ -23,6 +24,9 @@ namespace Avalonia
                         platform.SetupApplicationMenuExporter();
                     });
             });
+
+            AvaloniaLocator.CurrentMutable.Bind<ClassicDesktopStyleApplicationLifetime>()
+                .ToConstant(new MacOSClassicDesktopStyleApplicationLifetime());
 
             return builder;
         }
