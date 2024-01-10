@@ -40,7 +40,7 @@ namespace Avalonia.Android
             {
                 var builder = CreateAppBuilder();
 
-                builder.SetupWithLifetime(new SingleViewLifetime());
+                builder.SetupWithLifetime(new SingleViewLifetime(this));
 
                 s_appBuilder = builder;
             }
