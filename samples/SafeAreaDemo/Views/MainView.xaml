@@ -11,10 +11,11 @@
              Background="#ccc"
              TopLevel.AutoSafeAreaPadding="{Binding AutoSafeAreaPadding, Mode=TwoWay}">
     <Grid HorizontalAlignment="Stretch"
-          VerticalAlignment="Stretch">
-        <Border BorderBrush="Red"
-                Margin="{Binding ViewPadding}"
-                BorderThickness="1">
+          VerticalAlignment="Stretch"
+          Bounds="{Binding CanvasSize, Mode=OneWayToSource}">
+      <Border BorderBrush="Red"
+              Margin="{Binding ViewPadding}"
+              BorderThickness="1">
             <Grid>
             <Label Margin="5"
                    Foreground="Red"
@@ -51,5 +52,16 @@
                 </Grid>
             </DockPanel>
         </Border>
+        <Button Margin="{Binding InputPaneMarkerMargin}"
+                VerticalAlignment="Bottom"
+                Content="X">
+          <Button.Transitions>
+            <Transitions>
+              <ThicknessTransition Property="Margin"
+                                   Duration="{Binding InputPaneDuration}"
+                                   Easing="{Binding InputPaneEasing}"/>
+            </Transitions>
+          </Button.Transitions>
+        </Button>
     </Grid>
 </UserControl>

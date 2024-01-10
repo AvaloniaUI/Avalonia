@@ -871,3 +871,18 @@ interface IAccessibilitySettings : IInspectable
     [propget] HRESULT HighContrast([out] [retval] boolean* value);
     [propget] HRESULT HighContrastScheme([out] [retval] HSTRING* value);
 }
+
+[uuid(997439FE-F681-4A11-B416-C13A47E8BA36)]
+interface IApiInformationStatics : IInspectable
+{
+    int IsTypePresent(HSTRING typeName, boolean* result);
+    int IsMethodPresent(HSTRING typeName, HSTRING methodName, boolean* result);
+    int IsMethodPresentWithArity(HSTRING typeName, HSTRING methodName, UINT32 inputParameterCount, boolean* result);
+    int IsEventPresent(HSTRING typeName, HSTRING eventName, boolean* result);
+    int IsPropertyPresent(HSTRING typeName, HSTRING propertyName, boolean* result);
+    int IsReadOnlyPropertyPresent(HSTRING typeName, HSTRING propertyName, boolean* result);
+    int IsWriteablePropertyPresent(HSTRING typeName, HSTRING propertyName, boolean* result);
+    int IsEnumNamedValuePresent(HSTRING enumTypeName, HSTRING valueName, boolean* result);
+    int IsApiContractPresentByMajor(HSTRING contractName, UINT16 majorVersion, boolean* result);
+    int IsApiContractPresentByMajorAndMinor(HSTRING contractName, UINT16 majorVersion, UINT16 minorVersion, boolean* result);
+}

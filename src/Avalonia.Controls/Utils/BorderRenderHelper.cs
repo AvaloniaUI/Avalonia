@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Utils
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
         private bool _initialized;
+        private IPen? _cachedPen;
 
 
         void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
@@ -87,22 +88,17 @@ namespace Avalonia.Controls.Utils
 
         public void Render(DrawingContext context,
             Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-            IBrush? background, IBrush? borderBrush, BoxShadows boxShadows, double borderDashOffset = 0,
-            PenLineCap borderLineCap = PenLineCap.Flat, PenLineJoin borderLineJoin = PenLineJoin.Miter,
-            AvaloniaList<double>? borderDashArray = null)
+            IBrush? background, IBrush? borderBrush, BoxShadows boxShadows)
         {
             if (_size != finalSize
                 || _borderThickness != borderThickness
                 || _cornerRadius != cornerRadius
                 || !_initialized)
                 Update(finalSize, borderThickness, cornerRadius);
-            RenderCore(context, background, borderBrush, boxShadows, borderDashOffset, borderLineCap, borderLineJoin,
-                borderDashArray);
+            RenderCore(context, background, borderBrush, boxShadows);
         }
 
-        void RenderCore(DrawingContext context, IBrush? background, IBrush? borderBrush, BoxShadows boxShadows,
-            double borderDashOffset, PenLineCap borderLineCap, PenLineJoin borderLineJoin,
-            AvaloniaList<double>? borderDashArray)
+        void RenderCore(DrawingContext context, IBrush? background, IBrush? borderBrush, BoxShadows boxShadows)
         {
             if (_useComplexRendering)
             {
@@ -121,26 +117,8 @@ namespace Avalonia.Controls.Utils
             else
             {
                 var borderThickness = _borderThickness.Top;
-                IPen? pen = null;
 
-
-                ImmutableDashStyle? dashStyle = null;
-
-                if (borderDashArray != null && borderDashArray.Count > 0)
-                {
-                    dashStyle = new ImmutableDashStyle(borderDashArray, borderDashOffset);
-                }
-
-                if (borderBrush != null && borderThickness > 0)
-                {
-                    pen = new ImmutablePen(
-                        borderBrush.ToImmutable(),
-                        borderThickness,
-                        dashStyle,
-                        borderLineCap,
-                        borderLineJoin);
-                }
-
+                Pen.TryModifyOrCreate(ref _cachedPen, borderBrush, borderThickness);
 
                 var rect = new Rect(_size);
                 if (!MathUtilities.IsZero(borderThickness))
@@ -148,7 +126,7 @@ namespace Avalonia.Controls.Utils
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-                context.DrawRectangle(background, pen, rrect, boxShadows);
+                context.DrawRectangle(background, _cachedPen, rrect, boxShadows);
             }
         }
 

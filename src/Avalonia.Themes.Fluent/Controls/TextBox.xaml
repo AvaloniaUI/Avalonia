@@ -101,7 +101,6 @@
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
@@ -134,7 +133,6 @@
                            Margin="{TemplateBinding Padding}">
                   <TextBlock Name="PART_FloatingWatermark"
                              Foreground="{DynamicResource SystemAccentColor}"
-                             FontSize="{TemplateBinding FontSize}"
                              IsVisible="False"
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />
@@ -155,6 +153,7 @@
                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                       <TextPresenter Name="PART_TextPresenter"
                                     Text="{TemplateBinding Text, Mode=TwoWay}"
+                                    CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
                                     CaretIndex="{TemplateBinding CaretIndex}"
                                     SelectionStart="{TemplateBinding SelectionStart}"
                                     SelectionEnd="{TemplateBinding SelectionEnd}"

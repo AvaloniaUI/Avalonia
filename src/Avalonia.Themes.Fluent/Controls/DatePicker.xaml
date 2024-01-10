@@ -72,7 +72,6 @@
   </ControlTheme>
   
   <ControlTheme x:Key="{x:Type DatePicker}" TargetType="DatePicker">
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrush}"/>
@@ -99,20 +98,11 @@
                     TemplatedControl.IsTemplateFocusTarget="True">
               <Grid Name="PART_ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
                 <TextBlock Name="PART_DayTextBlock" Text="{DynamicResource LocaleDatePickerDayText}" HorizontalAlignment="Center"
-                           Padding="{DynamicResource DatePickerHostPadding}"
-                           FontFamily="{TemplateBinding FontFamily}"
-                           FontWeight="{TemplateBinding FontWeight}"
-                           FontSize="{TemplateBinding FontSize}"/>
+                           Padding="{DynamicResource DatePickerHostPadding}" />
                 <TextBlock Name="PART_MonthTextBlock" Text="{DynamicResource LocaleDatePickerMonthText}" TextAlignment="Left"
-                           Padding="{DynamicResource DatePickerHostMonthPadding}"
-                           FontFamily="{TemplateBinding FontFamily}"
-                           FontWeight="{TemplateBinding FontWeight}"
-                           FontSize="{TemplateBinding FontSize}"/>
+                           Padding="{DynamicResource DatePickerHostMonthPadding}" />
                 <TextBlock Name="PART_YearTextBlock" Text="{DynamicResource LocaleDatePickerYearText}" HorizontalAlignment="Center"
-                           Padding="{DynamicResource DatePickerHostPadding}"
-                           FontFamily="{TemplateBinding FontFamily}"
-                           FontWeight="{TemplateBinding FontWeight}"
-                           FontSize="{TemplateBinding FontSize}"/>
+                           Padding="{DynamicResource DatePickerHostPadding}" />
                 <Rectangle x:Name="PART_FirstSpacer"
                       Fill="{DynamicResource DatePickerSpacerFill}"
                       HorizontalAlignment="Center"
@@ -156,8 +146,6 @@
     <Setter Property="Width" Value="296" />
     <Setter Property="MinWidth" Value="296" />
     <Setter Property="MaxHeight" Value="398" />
-    <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerFlyoutPresenterBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource DateTimeFlyoutBorderThickness}" />

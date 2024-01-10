@@ -227,6 +227,11 @@ namespace Avalonia.iOS
                     return _clipboard;
                 }
 
+                if (featureType == typeof(IInputPane))
+                {
+                    return UIKitInputPane.Instance;
+                }
+
                 return null;
             }
         }

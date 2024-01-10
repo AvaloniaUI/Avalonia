@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -10,9 +11,95 @@ using System.Threading.Tasks;
 using Nuke.Common.Tooling;
 using static Serilog.Log;
 
-public static class ApiDiffValidation
+public static class ApiDiffHelper
 {
-    private static readonly HttpClient s_httpClient = new();
+    static readonly HttpClient s_httpClient = new();
+
+    public static async Task GetDiff(
+        Tool apiDiffTool, string outputFolder,
+        string packagePath, string baselineVersion)
+    {
+        await using var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion);
+        if (baselineStream == null)
+            return;
+
+        if (!Directory.Exists(outputFolder))
+        {
+            Directory.CreateDirectory(outputFolder!);
+        }
+
+        using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
+        using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
+        using (Helpers.UseTempDir(out var tempFolder))
+        {
+            var targetDlls = GetDlls(target);
+            var baselineDlls = GetDlls(baseline);
+
+            var pairs = new List<(string baseline, string target)>();
+
+            var packageId = GetPackageId(packagePath);
+
+            // Don't use Path.Combine with these left and right tool parameters.
+            // Microsoft.DotNet.ApiCompat.Tool is stupid and treats '/' and '\' as different assemblies in suppression files.
+            // So, always use Unix '/'
+            foreach (var baselineDll in baselineDlls)
+            {
+                var baselineDllPath = await ExtractDll("baseline", baselineDll, tempFolder);
+
+                var targetTfm = baselineDll.target;
+                if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
+                {
+                    targetTfm = newTfm;
+                }
+
+                var targetDll = targetDlls.FirstOrDefault(e =>
+                    e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
+                if (targetDll?.entry is null)
+                {
+                    throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
+                }
+
+                var targetDllPath = await ExtractDll("target", targetDll, tempFolder);
+
+                pairs.Add((baselineDllPath, targetDllPath));
+            }
+
+            await Task.WhenAll(pairs.Select(p => Task.Run(() =>
+            {
+                var baselineApi = p.baseline + ".api.cs";
+                var targetApi = p.target + ".api.cs";
+                var resultDiff = p.target + ".api.diff.cs";
+                
+                GenerateApiListing(apiDiffTool, p.baseline, baselineApi, tempFolder);
+                GenerateApiListing(apiDiffTool, p.target, targetApi, tempFolder);
+
+                var args = $"""-c core.autocrlf=false diff --no-index --minimal """;
+                args += """--ignore-matching-lines="^\[assembly: System.Reflection.AssemblyVersionAttribute" """;
+                args += $""" --output {resultDiff} {baselineApi} {targetApi}""";
+
+                using (var gitProcess = new Process())
+                {
+                    gitProcess.StartInfo = new ProcessStartInfo
+                    {
+                        CreateNoWindow = true,
+                        RedirectStandardError = false,
+                        RedirectStandardOutput = false,
+                        FileName = "git",
+                        Arguments = args,
+                        WorkingDirectory = tempFolder
+                    };
+                    gitProcess.Start();
+                    gitProcess.WaitForExit();
+                }
+
+                var resultFile = new FileInfo(Path.Combine(tempFolder, resultDiff));
+                if (resultFile.Length > 0)
+                {
+                    resultFile.CopyTo(Path.Combine(outputFolder, Path.GetFileName(resultDiff)), true);
+                }
+            })));
+        }
+    }
 
     private static readonly (string oldTfm, string newTfm)[] s_tfmRedirects = new[]
     {
@@ -25,12 +112,6 @@ public static class ApiDiffValidation
         Tool apiCompatTool, string packagePath, string baselineVersion,
         string suppressionFilesFolder, bool updateSuppressionFile)
     {
-        if (baselineVersion is null)
-        {
-            throw new InvalidOperationException(
-                "Build \"api-baseline\" parameter must be set when running Nuke CreatePackages");
-        }
-
         if (!Directory.Exists(suppressionFilesFolder))
         {
             Directory.CreateDirectory(suppressionFilesFolder!);
@@ -58,13 +139,7 @@ public static class ApiDiffValidation
             // So, always use Unix '/'
             foreach (var baselineDll in baselineDlls)
             {
-                var baselineDllPath = $"baseline/{baselineDll.target}/{baselineDll.entry.Name}";
-                var baselineDllRealPath = Path.Combine(tempFolder, baselineDllPath);
-                Directory.CreateDirectory(Path.GetDirectoryName(baselineDllRealPath)!);
-                await using (var baselineDllFile = File.Create(baselineDllRealPath))
-                {
-                    await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
-                }
+                var baselineDllPath = await ExtractDll("baseline", baselineDll, tempFolder);
 
                 var targetTfm = baselineDll.target;
                 if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
@@ -79,13 +154,7 @@ public static class ApiDiffValidation
                     throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
                 }
 
-                var targetDllPath = $"target/{targetDll.target}/{targetDll.entry.Name}";
-                var targetDllRealPath = Path.Combine(tempFolder, targetDllPath);
-                Directory.CreateDirectory(Path.GetDirectoryName(targetDllRealPath)!);
-                await using (var targetDllFile = File.Create(targetDllRealPath))
-                {
-                    await targetDll.entry.Open().CopyToAsync(targetDllFile);
-                }
+                var targetDllPath = await ExtractDll("target", targetDll, tempFolder);
 
                 left.Add(baselineDllPath);
                 right.Add(targetDllPath);
@@ -116,7 +185,9 @@ public static class ApiDiffValidation
         }
     }
 
-    private static IReadOnlyCollection<(string target, ZipArchiveEntry entry)> GetDlls(ZipArchive archive)
+    record DllEntry(string target, ZipArchiveEntry entry);
+    
+    static IReadOnlyCollection<DllEntry> GetDlls(ZipArchive archive)
     {
         return archive.Entries
             .Where(e => Path.GetExtension(e.FullName) == ".dll"
@@ -130,12 +201,18 @@ public static class ApiDiffValidation
             )
             .GroupBy(e => (e.target, e.entry.Name))
             .Select(g => g.MaxBy(e => e.isRef))
-            .Select(e => (e.target, e.entry))
+            .Select(e => new DllEntry(e.target, e.entry))
             .ToArray();
     }
 
     static async Task<Stream> DownloadBaselinePackage(string packagePath, string baselineVersion)
     {
+        if (baselineVersion is null)
+        {
+            throw new InvalidOperationException(
+                "Build \"api-baseline\" parameter must be set when running Nuke CreatePackages");
+        }
+
         /*
          Gets package name from versions like:
          Avalonia.0.10.0-preview1
@@ -164,6 +241,31 @@ public static class ApiDiffValidation
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Downloading baseline package for {packageId} {baselineVersion} failed.\r" + ex.Message, ex);
+        }
+    }
+
+    static async Task<string> ExtractDll(string basePath, DllEntry dllEntry, string targetFolder)
+    {
+        var dllPath = $"{basePath}/{dllEntry.target}/{dllEntry.entry.Name}";
+        var dllRealPath = Path.Combine(targetFolder, dllPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(dllRealPath)!);
+        await using (var dllFile = File.Create(dllRealPath))
+        {
+            await dllEntry.entry.Open().CopyToAsync(dllFile);
+        }
+
+        return dllPath;
+    }
+
+    static void GenerateApiListing(Tool apiDiffTool, string inputFile, string outputFile, string workingDif)
+    {
+        var args = $""" --assembly={inputFile}  --output-path={outputFile}  --include-assembly-attributes=true""";
+        var result = apiDiffTool(args, workingDif)
+            .Where(t => t.Type == OutputType.Err).ToArray();
+        if (result.Any())
+        {
+            throw new AggregateException($"GetApi tool failed task has failed",
+                result.Select(r => new Exception(r.Text)));
         }
     }
 

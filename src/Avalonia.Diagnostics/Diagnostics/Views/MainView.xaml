@@ -20,7 +20,7 @@
       <Setter Property="Margin" Value="10 0 -20 0"/>
     </Style>
   </UserControl.Styles>
-  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,0,Auto">
+  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,Auto">
     <Menu>
       <MenuItem Header="_File">
         <MenuItem Header="E_xit" Command="{Binding $parent[Window].Close}" />
@@ -56,13 +56,6 @@
         </MenuItem>
       </MenuItem>
       <MenuItem Header="_View">
-        <MenuItem Header="_Console" Command="{Binding $parent[views:MainView].ToggleConsole}">
-          <MenuItem.Icon>
-            <CheckBox BorderThickness="0"
-                      IsChecked="{Binding Console.IsVisible}"
-                      IsEnabled="False" />
-          </MenuItem.Icon>
-        </MenuItem>
         <MenuItem Header="Control _Details">
           <MenuItem Header="Show Implemented Interfaces" Command="{Binding ToggleShowImplementedInterfaces}">
             <MenuItem.Icon>
@@ -273,13 +266,7 @@
                   Background="{DynamicResource ThemeControlMidBrush}"
                   IsVisible="False" />
 
-    <views:ConsoleView Name="console"
-                       Grid.Row="4"
-                       DataContext="{Binding Console}"
-                       IsVisible="{Binding IsVisible}" />
-
-
-    <Border Grid.Row="5"
+    <Border Grid.Row="4"
             BorderBrush="{DynamicResource ThemeControlMidBrush}"
             BorderThickness="0,1,0,0">
       <Grid ColumnDefinitions="*, Auto">

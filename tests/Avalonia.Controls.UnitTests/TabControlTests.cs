@@ -572,6 +572,83 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("Header from style", tabItem.Header);
         }
 
+        [Fact]
+        public void TabItem_TabStripPlacement_Should_Be_Correctly_Set()
+        {
+            var items = new object[]
+            {
+                "Foo",
+                new TabItem { Content = new TextBlock { Text = "Baz" } }
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = "Base",
+                ItemsSource = items
+            };
+
+            ApplyTemplate(target);
+
+            var result = target.GetLogicalChildren()
+                .OfType<TabItem>()
+                .ToList();
+            Assert.Collection(
+                result,
+                x => Assert.Equal(Dock.Top, x.TabStripPlacement),
+                x => Assert.Equal(Dock.Top, x.TabStripPlacement)
+            );
+
+            target.TabStripPlacement = Dock.Right;
+            result = target.GetLogicalChildren()
+                .OfType<TabItem>()
+                .ToList();
+            Assert.Collection(
+                result,
+                x => Assert.Equal(Dock.Right, x.TabStripPlacement),
+                x => Assert.Equal(Dock.Right, x.TabStripPlacement)
+            );
+        }
+        
+        [Fact]
+        public void TabItem_TabStripPlacement_Should_Be_Correctly_Set_For_New_Items()
+        {
+            var items = new object[]
+            {
+                "Foo",
+                new TabItem { Content = new TextBlock { Text = "Baz" } }
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = "Base"
+            };
+
+            ApplyTemplate(target);
+
+            target.ItemsSource = items;
+            
+            var result = target.GetLogicalChildren()
+                .OfType<TabItem>()
+                .ToList();
+            Assert.Collection(
+                result,
+                x => Assert.Equal(Dock.Top, x.TabStripPlacement),
+                x => Assert.Equal(Dock.Top, x.TabStripPlacement)
+            );
+
+            target.TabStripPlacement = Dock.Right;
+            result = target.GetLogicalChildren()
+                .OfType<TabItem>()
+                .ToList();
+            Assert.Collection(
+                result,
+                x => Assert.Equal(Dock.Right, x.TabStripPlacement),
+                x => Assert.Equal(Dock.Right, x.TabStripPlacement)
+            );
+        }
+        
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
