@@ -90,7 +90,7 @@
               <StackPanel DockPanel.Dock="Left"
                           Orientation="Horizontal">
                 <CheckBox IsChecked="{Binding ShowHiddenFiles}">
-                  <TextBlock Text="{DynamicResource LocaleManagedFileChooserShowHiddenFilesText}" />
+                  <TextBlock Text="{DynamicResource StringManagedFileChooserShowHiddenFilesText}" />
                 </CheckBox>
               </StackPanel>
               <StackPanel HorizontalAlignment="Right"
@@ -101,8 +101,8 @@
                     <Setter Property="Margin" Value="4" />
                   </Style>
                 </StackPanel.Styles>
-                <Button Command="{Binding Ok}" MinWidth="60" Content="{DynamicResource LocaleManagedFileChooserOkText}" />
-                <Button Command="{Binding Cancel}" MinWidth="60" Content="{DynamicResource LocaleManagedFileChooserCancelText}" />
+                <Button Command="{Binding Ok}" MinWidth="60" Content="{DynamicResource StringManagedFileChooserOkText}" />
+                <Button Command="{Binding Cancel}" MinWidth="60" Content="{DynamicResource StringManagedFileChooserCancelText}" />
               </StackPanel>
             </DockPanel>
 
@@ -115,7 +115,7 @@
             <TextBox DockPanel.Dock="Bottom"
                      IsVisible="{Binding !SelectingFolder}"
                      Text="{Binding FileName}"
-                     Watermark="{DynamicResource LocaleManagedFileChooserFileNameWatermark}" />
+                     Watermark="{DynamicResource StringManagedFileChooserFileNameWatermark}" />
 
             <ListBox x:Name="PART_QuickLinks"
                      MaxWidth="200"
@@ -155,13 +155,13 @@
                   <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="1"
-                           Text="{DynamicResource LocaleManagedFileChooserNameColumn}" />
+                           Text="{DynamicResource StringManagedFileChooserNameColumn}" />
                 <GridSplitter Grid.Column="2"
                               ResizeDirection="Columns"
                               Background="Transparent" />
                 <Rectangle HorizontalAlignment="Left" Grid.Column="2" VerticalAlignment="Stretch" Width="1" Fill="{DynamicResource ThemeControlMidBrush}"/>
                 <TextBlock Grid.Column="3"
-                           Text="{DynamicResource LocaleManagedFileChooserDateModifiedColumn}" />
+                           Text="{DynamicResource StringManagedFileChooserDateModifiedColumn}" />
                 <GridSplitter Grid.Column="4"
                               ResizeDirection="Columns"
                               Background="Transparent" />
@@ -172,7 +172,7 @@
                            Fill="{DynamicResource ThemeControlMidBrush}"/>
 
                 <TextBlock Grid.Column="5"
-                           Text="{DynamicResource LocaleManagedFileChooserTypeColumn}" />
+                           Text="{DynamicResource StringManagedFileChooserTypeColumn}" />
                 <GridSplitter Grid.Column="6" ResizeDirection="Columns"
                               Background="Transparent" />
                 <Rectangle HorizontalAlignment="Left"
@@ -182,7 +182,7 @@
                            Fill="{DynamicResource ThemeControlMidBrush}"/>
 
                 <TextBlock Grid.Column="7"
-                           Text="{DynamicResource LocaleManagedFileChooserSizeColumn}" />
+                           Text="{DynamicResource StringManagedFileChooserSizeColumn}" />
                 <GridSplitter Grid.Column="8"
                               ResizeDirection="Columns"
                               Background="Transparent" />
@@ -260,7 +260,7 @@
                   <MultiBinding.Converter>
                     <converters:StringFormatConverter />
                   </MultiBinding.Converter>
-                  <DynamicResource ResourceKey="LocaleManagedFileChooserOverwritePromptFileAlreadyExistsText"/>
+                  <DynamicResource ResourceKey="StringManagedFileChooserOverwritePromptFileAlreadyExistsText"/>
                   <Binding Path ="FileName" RelativeSource="{RelativeSource TemplatedParent}" />
                 </MultiBinding>
               </TextBlock.Text>
@@ -268,12 +268,12 @@
             <StackPanel HorizontalAlignment="Right"
                         Spacing="10"
                         Orientation="Horizontal">
-              <Button Classes="accent" Content="{DynamicResource LocaleManagedFileChooserOverwritePromptConfirmText}"
+              <Button Classes="accent" Content="{DynamicResource StringManagedFileChooserOverwritePromptConfirmText}"
                       MinWidth="80"
                       HorizontalContentAlignment="Center"
                       IsDefault="True"
                       Command="{Binding Confirm, RelativeSource={RelativeSource TemplatedParent}}" />
-              <Button Content="{DynamicResource LocaleManagedFileChooserOverwritePromptCancelText}"
+              <Button Content="{DynamicResource StringManagedFileChooserOverwritePromptCancelText}"
                       MinWidth="80"
                       IsCancel="True"
                       HorizontalContentAlignment="Center"

@@ -10,7 +10,7 @@
     <AvaloniaResource Include="**/*.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaResource Include="..\Avalonia.Themes.Fluent\Locales\InvariantResources.xaml" Link="Locales\InvariantResources.xaml" />
+    <AvaloniaResource Include="..\Avalonia.Themes.Fluent\Strings\InvariantResources.xaml" Link="Strings\InvariantResources.xaml" />
   </ItemGroup>
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
