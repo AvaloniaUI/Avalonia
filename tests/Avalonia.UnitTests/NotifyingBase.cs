@@ -1,3 +1,6 @@
+#nullable enable
+
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -6,9 +9,9 @@ namespace Avalonia.UnitTests
 {
     public class NotifyingBase : INotifyPropertyChanged
     {
-        private PropertyChangedEventHandler _propertyChanged;
+        private PropertyChangedEventHandler? _propertyChanged;
 
-        public event PropertyChangedEventHandler PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged
         {
             add
             {
@@ -32,9 +35,19 @@ namespace Avalonia.UnitTests
             private set;
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value))
+                return false;
+
+            field = value;
+            RaisePropertyChanged(propertyName);
+            return true;
         }
     }
 }
