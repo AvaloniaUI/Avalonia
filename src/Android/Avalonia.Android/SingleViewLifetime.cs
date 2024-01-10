@@ -14,7 +14,7 @@ namespace Avalonia.Android
         {
             _activity = activity;
 
-            if (activity is IActivableActivity activableActivity)
+            if (activity is IAvaloniaActivity activableActivity)
             {
                 activableActivity.Activated += (_, args) => Activated?.Invoke(this, args);
                 activableActivity.Deactivated += (_, args) => Deactivated?.Invoke(this, args);

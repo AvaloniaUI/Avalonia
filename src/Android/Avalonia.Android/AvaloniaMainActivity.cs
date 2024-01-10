@@ -11,7 +11,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android
 {
-    public class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler, IActivityNavigationService, IActivableActivity
+    public class AvaloniaMainActivity : AppCompatActivity, IAvaloniaActivity
     {
         private EventHandler<ActivatedEventArgs> _onActivated, _onDeactivated;
         
@@ -19,13 +19,13 @@ namespace Avalonia.Android
         public Action<int, string[], Permission[]> RequestPermissionsResult { get; set; }
 
         public event EventHandler<AndroidBackRequestedEventArgs> BackRequested;
-        event EventHandler<ActivatedEventArgs> IActivableActivity.Activated
+        event EventHandler<ActivatedEventArgs> IAvaloniaActivity.Activated
         {
             add { _onActivated += value; }
             remove { _onActivated -= value; }
         }
 
-        event EventHandler<ActivatedEventArgs> IActivableActivity.Deactivated
+        event EventHandler<ActivatedEventArgs> IAvaloniaActivity.Deactivated
         {
             add { _onDeactivated += value; }
             remove { _onDeactivated -= value; }
