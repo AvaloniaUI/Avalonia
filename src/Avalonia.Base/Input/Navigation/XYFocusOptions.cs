@@ -9,7 +9,7 @@ internal class XYFocusOptions
     public XYFocusNavigationStrategy? NavigationStrategyOverride { get; set; }
     public bool IgnoreClipping { get; set; } = true;
     public bool IgnoreCone { get; set; }
-    public bool ShouldConsiderXYFocusKeyboardNavigation { get; set; }
+    public KeyDeviceType? KeyDeviceType { get; set; }
     public bool ConsiderEngagement { get; set; } = true;
     public bool UpdateManifold { get; set; } = true;
     public bool UpdateManifoldsFromFocusHintRect { get; set; }

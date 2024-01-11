@@ -71,16 +71,16 @@ public partial class XYFocus
     public static XYFocusNavigationStrategy GetRightNavigationStrategy(InputElement obj) =>
         obj.GetValue(RightNavigationStrategyProperty);
 
-    public static readonly AttachedProperty<XYFocusKeyboardNavigationMode> KeyboardNavigationEnabledProperty =
-        AvaloniaProperty.RegisterAttached<XYFocus, InputElement, XYFocusKeyboardNavigationMode>(
-            "KeyboardNavigation", inherits: true);
+    public static readonly AttachedProperty<XYFocusNavigationModes> NavigationModesProperty =
+        AvaloniaProperty.RegisterAttached<XYFocus, InputElement, XYFocusNavigationModes>(
+            "NavigationModes", XYFocusNavigationModes.Gamepad | XYFocusNavigationModes.Remote, inherits: true);
 
-    public static void SetKeyboardNavigationEnabled(InputElement obj, XYFocusKeyboardNavigationMode value) =>
-        obj.SetValue(KeyboardNavigationEnabledProperty, value);
+    public static void SetNavigationModes(InputElement obj, XYFocusNavigationModes value) =>
+        obj.SetValue(NavigationModesProperty, value);
 
-    public static XYFocusKeyboardNavigationMode GetKeyboardNavigationEnabled(InputElement obj) =>
-        obj.GetValue(KeyboardNavigationEnabledProperty);
-    
+    public static XYFocusNavigationModes GetNavigationModes(InputElement obj) =>
+        obj.GetValue(NavigationModesProperty);
+
     internal static readonly AttachedProperty<bool> IsFocusEngagementEnabledProperty =
         AvaloniaProperty.RegisterAttached<XYFocus, InputElement, bool>("IsFocusEngagementEnabled");
 

@@ -74,7 +74,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         var (canvas, buttons) = CreateXYTestLayout();
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = canvas
         };
         window.Show();
@@ -114,7 +114,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         var (canvas, buttons) = CreateXYTestLayout();
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = canvas
         };
         window.Show();
@@ -154,7 +154,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         var (canvas, buttons) = CreateXYTestLayout();
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = canvas
         };
         window.Show();
@@ -188,7 +188,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         };
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = new Canvas
             {
                 Children =
@@ -217,7 +217,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         };
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = center
         };
         window.Show();
@@ -249,7 +249,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         };
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -276,7 +276,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         };
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = parent,
             Height = 30
         };
@@ -300,7 +300,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         };
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = new ScrollViewer
             {
                 Content = parent
@@ -333,7 +333,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         }] = candidate;
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = new Canvas
             {
                 Children = { current, candidate }
@@ -361,7 +361,7 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         var current = new Button();
         var window = new Window
         {
-            [XYFocus.KeyboardNavigationEnabledProperty] = XYFocusKeyboardNavigationMode.Enabled,
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
             Content = new Canvas
             {
                 Children = { current }

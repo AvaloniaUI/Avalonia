@@ -53,7 +53,8 @@ public partial class XYFocus
     internal static InputElement? TryDirectionalFocus(
         NavigationDirection direction,
         IInputElement? element,
-        InputElement? engagedControl)
+        InputElement? engagedControl,
+        KeyDeviceType? keyDeviceType)
     {
         /*
          * UWP/WinUI Behavior is a bit different with handling of manifolds.
@@ -80,10 +81,7 @@ public partial class XYFocus
             return null;
         }
 
-        // UWP still allows XY navigation via programmatic way or with Gamepad/Controller, when KeyboardNavigationEnabled is false,
-        // as KeyboardNavigationEnabled should only affect keyboard input.
-        // TODO: remove this condition after FocusManager refactoring or addition of basic Gamepad input.
-        if (GetKeyboardNavigationEnabled(inputElement) != XYFocusKeyboardNavigationMode.Enabled)
+        if (!IsAllowedNavigationMode(GetNavigationModes(inputElement), keyDeviceType))
         {
             return null;
         }
@@ -97,8 +95,8 @@ public partial class XYFocus
 
         return _instance.GetNextFocusableElement(direction, inputElement, engagedControl, true, new XYFocusOptions
         {
+            KeyDeviceType = keyDeviceType,
             FocusedElementBounds = bounds,
-            ShouldConsiderXYFocusKeyboardNavigation = true,
             UpdateManifold = true,
             SearchRoot = inputElement.GetVisualRoot() as InputElement
         });
@@ -156,7 +154,7 @@ public partial class XYFocus
         {
             GetAllValidFocusableChildren(candidateList, root, direction, element, engagedControl,
                 xyFocusOptions.SearchRoot, activeScroller, xyFocusOptions.IgnoreClipping,
-                xyFocusOptions.ShouldConsiderXYFocusKeyboardNavigation);
+                xyFocusOptions.KeyDeviceType);
 
             if (candidateList.Count > 0)
             {
@@ -276,7 +274,7 @@ public partial class XYFocus
         InputElement? searchScope,
         InputElement? activeScroller,
         bool ignoreClipping,
-        bool shouldConsiderXYFocusKeyboardNavigation)
+        KeyDeviceType? inputKeyDeviceType)
     {
         var rootForTreeWalk = startRoot;
 
@@ -289,14 +287,14 @@ public partial class XYFocus
         if (engagedControl == null)
         {
             FindElements(candidateList, rootForTreeWalk, currentElement, activeScroller, ignoreClipping,
-                shouldConsiderXYFocusKeyboardNavigation);
+                inputKeyDeviceType);
         }
         else
         {
             // Only run through this when you are an engaged element. Being an engaged element means that you should only
             // look at the children of the engaged element and any children of popups that were opened during engagement
             FindElements(candidateList, engagedControl, currentElement, activeScroller, ignoreClipping,
-                shouldConsiderXYFocusKeyboardNavigation);
+                inputKeyDeviceType);
             
             // Iterate through the popups and add their children to the list
             // TODO: Avalonia, missing Popup API
@@ -435,5 +433,17 @@ public partial class XYFocus
         }
 
         return null;
+    }
+
+    private static bool IsAllowedNavigationMode(XYFocusNavigationModes modes, KeyDeviceType? keyDeviceType)
+    {
+        return keyDeviceType switch
+        {
+            null => true, // programmatic input, allow any subtree.
+            KeyDeviceType.Keyboard => modes.HasFlag(XYFocusNavigationModes.Keyboard),
+            KeyDeviceType.Gamepad => modes.HasFlag(XYFocusNavigationModes.Gamepad),
+            KeyDeviceType.Remote => modes.HasFlag(XYFocusNavigationModes.Remote),
+            _ => throw new ArgumentOutOfRangeException(nameof(keyDeviceType), keyDeviceType, null)
+        };
     }
 }

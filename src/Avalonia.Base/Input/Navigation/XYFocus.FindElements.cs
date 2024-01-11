@@ -14,7 +14,7 @@ public partial class XYFocus
         InputElement? currentElement,
         InputElement? activeScroller,
         bool ignoreClipping,
-        bool shouldConsiderXYFocusKeyboardNavigation)
+        KeyDeviceType? inputKeyDeviceType)
     {
         var isScrolling = (activeScroller != null);
         var collection = startRoot.VisualChildren;
@@ -30,7 +30,8 @@ public partial class XYFocus
 
             var isEngagementEnabledButNotEngaged = GetIsFocusEngagementEnabled(child) && !GetIsFocusEngaged(child);
 
-            if (child != currentElement && FocusManager.CanFocus(child)
+            if (child != currentElement
+                && IsValidCandidate(child, inputKeyDeviceType)
                 && GetBoundsForRanking(child, ignoreClipping) is {} bounds)
             {
                 if (isScrolling)
@@ -48,23 +49,25 @@ public partial class XYFocus
                 }
             }
 
-            if (IsValidFocusSubtree(child, shouldConsiderXYFocusKeyboardNavigation) && !isEngagementEnabledButNotEngaged)
+            if (IsValidFocusSubtree(child) && !isEngagementEnabledButNotEngaged)
             {
-                FindElements(focusList, child, currentElement, activeScroller, ignoreClipping, shouldConsiderXYFocusKeyboardNavigation);
+                FindElements(focusList, child, currentElement, activeScroller, ignoreClipping, inputKeyDeviceType);
             }
         }
     }
 
-    private static bool IsValidFocusSubtree(InputElement element, bool shouldConsiderXYFocusKeyboardNavigation)
+    private static bool IsValidFocusSubtree(InputElement candidate)
     {
-        var isDirectionalRegion =
-            shouldConsiderXYFocusKeyboardNavigation &&
-            IsDirectionalRegion(element);
-
         // We don't need to check for effective values, as we've already checked parents of this subtree on previous steps. 
-        return element.IsVisible &&
-               element.IsEnabled &&
-               (!shouldConsiderXYFocusKeyboardNavigation || isDirectionalRegion);
+        return candidate.IsVisible &&
+               candidate.IsEnabled;
+    }
+
+    private static bool IsValidCandidate(InputElement candidate, KeyDeviceType? inputKeyDeviceType)
+    {
+        return candidate.Focusable && candidate.IsEnabled && candidate.IsVisible
+               // Only allow candidate focus, if original key device type could focus it.
+               && IsAllowedNavigationMode(GetNavigationModes(candidate), inputKeyDeviceType);
     }
 
     /// Check if candidate's direct scroller is the same as active focused scroller.
@@ -98,15 +101,6 @@ public partial class XYFocus
             parent = parent.Parent;
         }
         return false;
-    }
-
-    private static bool IsDirectionalRegion(InputElement? element)
-    {
-        if (element is null)
-            return false;
-
-        var mode = GetKeyboardNavigationEnabled(element);
-        return mode != XYFocusKeyboardNavigationMode.Disabled;
     }
     
     private static bool IsOccluded(InputElement element, Rect elementBounds)

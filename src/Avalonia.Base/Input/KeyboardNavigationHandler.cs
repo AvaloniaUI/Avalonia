@@ -50,6 +50,14 @@ namespace Avalonia.Input
             IInputElement element,
             NavigationDirection direction)
         {
+            return GetNextPrivate(element, direction, null);
+        }
+
+        private static IInputElement? GetNextPrivate(
+            IInputElement element,
+            NavigationDirection direction,
+            KeyDeviceType? keyDeviceType)
+        {
             element = element ?? throw new ArgumentNullException(nameof(element));
 
             // If there's a custom keyboard navigation handler as an ancestor, use that.
@@ -63,7 +71,7 @@ namespace Avalonia.Input
                 NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
                 NavigationDirection.Up or NavigationDirection.Down
                     or NavigationDirection.Left or NavigationDirection.Right
-                    => XYFocus.TryDirectionalFocus(direction, element, null),
+                    => XYFocus.TryDirectionalFocus(direction, element, null, keyDeviceType),
                 _ => throw new NotSupportedException(),
             };
 
@@ -86,17 +94,18 @@ namespace Avalonia.Input
             NavigationDirection direction,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            MovePrivate(element, direction, keyModifiers);
+            MovePrivate(element, direction, keyModifiers, null);
         }
 
-        private bool MovePrivate(IInputElement? element, NavigationDirection direction, KeyModifiers keyModifiers)
+        // TODO12: remove MovePrivate, and make Move return boolean. Or even remove whole KeyboardNavigationHandler.
+        private bool MovePrivate(IInputElement? element, NavigationDirection direction, KeyModifiers keyModifiers, KeyDeviceType? deviceType)
         {
             if (element is null && _owner is null)
             {
                 return false;
             }
 
-            var next = GetNext(element ?? _owner!, direction);
+            var next = GetNextPrivate(element ?? _owner!, direction, deviceType);
 
             if (next != null)
             {
@@ -121,7 +130,7 @@ namespace Avalonia.Input
                 var current = FocusManager.GetFocusManager(e.Source as IInputElement)?.GetFocusedElement();
                 var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
                     NavigationDirection.Next : NavigationDirection.Previous;
-                e.Handled = MovePrivate(current, direction, e.KeyModifiers);
+                e.Handled = MovePrivate(current, direction, e.KeyModifiers, e.KeyDeviceType);
             }
             else if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
             {
@@ -134,7 +143,7 @@ namespace Avalonia.Input
                     Key.Down => NavigationDirection.Down,
                     _ => throw new ArgumentOutOfRangeException()
                 };
-                e.Handled = MovePrivate(current, direction, e.KeyModifiers);
+                e.Handled = MovePrivate(current, direction, e.KeyModifiers, e.KeyDeviceType);
             }
         }
 

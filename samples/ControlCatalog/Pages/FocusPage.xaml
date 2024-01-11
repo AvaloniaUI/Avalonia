@@ -7,14 +7,14 @@
              x:Class="ControlCatalog.Pages.FocusPage">
   <TabControl>
     <TabItem Header="XY Focus">
-      <StackPanel x:Name="TabRoot" XYFocus.KeyboardNavigationEnabled="{Binding #KeyboardNavigation.SelectedItem}">
+      <StackPanel x:Name="TabRoot" XYFocus.NavigationModes="{Binding #KeyboardNavigation.SelectedItem}">
         <StackPanel Orientation="Horizontal" Spacing="10">
           <TextBlock Text="Navigation: " />
           <ComboBox x:Name="KeyboardNavigation" SelectedIndex="0">
             <ComboBox.ItemsSource>
-              <generic:List x:TypeArguments="XYFocusKeyboardNavigationMode">
-                <XYFocusKeyboardNavigationMode>Enabled</XYFocusKeyboardNavigationMode>
-                <XYFocusKeyboardNavigationMode>Disabled</XYFocusKeyboardNavigationMode>
+              <generic:List x:TypeArguments="XYFocusNavigationModes">
+                <XYFocusNavigationModes>Enabled</XYFocusNavigationModes>
+                <XYFocusNavigationModes>Disabled</XYFocusNavigationModes>
               </generic:List>
             </ComboBox.ItemsSource>
           </ComboBox>
