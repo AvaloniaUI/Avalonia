@@ -324,6 +324,7 @@ namespace Avalonia.Controls
         private bool _canCopy;
         private bool _canPaste;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
+        private static readonly char[] crlf = new char[] { '\r', '\n' };
         private bool _canUndo;
         private bool _canRedo;
 
@@ -1013,7 +1014,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            input = RemoveInvalidCharacters(input);
+            input = SanitizeInputText(input);
 
             if (string.IsNullOrEmpty(input))
             {
@@ -1066,10 +1067,20 @@ namespace Avalonia.Controls
             }
         }
 
-        private string? RemoveInvalidCharacters(string? text)
+        private string? SanitizeInputText(string? text)
         {
             if (text is null)
                 return null;
+
+            if (!AcceptsReturn)
+            {
+                var endOfFirstLine = text.IndexOfAny(crlf);
+                if (endOfFirstLine >= 0)
+                {
+                    // All lines except the first one are discarded when TextBox does not accept Return key
+                    text = text.Substring(0, endOfFirstLine);
+                }
+            }
 
             for (var i = 0; i < invalidCharacters.Length; i++)
             {

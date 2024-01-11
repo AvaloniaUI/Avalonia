@@ -950,6 +950,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Insert_Multiline_Text_Should_Accept_Extra_Lines_When_AcceptsReturn_Is_True()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = true
+                };
+
+                RaiseTextEvent(target, $"123{Environment.NewLine}456");
+
+                Assert.Equal($"123{Environment.NewLine}456", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Insert_Multiline_Text_Should_Discard_Extra_Lines_When_AcceptsReturn_Is_False()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = false
+                };
+
+                RaiseTextEvent(target, $"123{Environment.NewLine}456");
+
+                Assert.Equal("123", target.Text);
+            }
+        }
+
+        [Fact]
         public void Should_Fullfill_MaxLines_Contraint()
         {
             using (UnitTestApplication.Start(Services))
