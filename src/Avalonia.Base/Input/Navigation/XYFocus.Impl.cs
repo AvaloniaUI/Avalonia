@@ -52,7 +52,8 @@ public partial class XYFocus
 
     internal static InputElement? TryDirectionalFocus(
         NavigationDirection direction,
-        IInputElement? element,
+        IInputElement element,
+        IInputElement? owner,
         InputElement? engagedControl,
         KeyDeviceType? keyDeviceType)
     {
@@ -98,7 +99,7 @@ public partial class XYFocus
             KeyDeviceType = keyDeviceType,
             FocusedElementBounds = bounds,
             UpdateManifold = true,
-            SearchRoot = inputElement.GetVisualRoot() as InputElement
+            SearchRoot = owner as InputElement ?? inputElement.GetVisualRoot() as InputElement
         });
     }
 

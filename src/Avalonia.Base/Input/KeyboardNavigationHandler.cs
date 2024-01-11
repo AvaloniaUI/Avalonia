@@ -50,34 +50,49 @@ namespace Avalonia.Input
             IInputElement element,
             NavigationDirection direction)
         {
-            return GetNextPrivate(element, direction, null);
+            element = element ?? throw new ArgumentNullException(nameof(element));
+            return GetNextPrivate(element, null, direction, null);
         }
 
         private static IInputElement? GetNextPrivate(
-            IInputElement element,
+            IInputElement? element,
+            IInputRoot? owner,
             NavigationDirection direction,
             KeyDeviceType? keyDeviceType)
         {
-            element = element ?? throw new ArgumentNullException(nameof(element));
+            var elementOrOwner = element ?? owner ?? throw new ArgumentNullException(nameof(owner));
 
             // If there's a custom keyboard navigation handler as an ancestor, use that.
             var custom = (element as Visual)?.FindAncestorOfType<ICustomKeyboardNavigation>(true);
-            if (custom is not null && HandlePreCustomNavigation(custom, element, direction, out var ce))
+            if (custom is not null && HandlePreCustomNavigation(custom, elementOrOwner, direction, out var ce))
                 return ce;
 
-            var result = direction switch
+            IInputElement? result;
+            if (direction is NavigationDirection.Next)
             {
-                NavigationDirection.Next => TabNavigation.GetNextTab(element, false),
-                NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
-                NavigationDirection.Up or NavigationDirection.Down
-                    or NavigationDirection.Left or NavigationDirection.Right
-                    => XYFocus.TryDirectionalFocus(direction, element, null, keyDeviceType),
-                _ => throw new NotSupportedException(),
-            };
+                result = TabNavigation.GetNextTab(elementOrOwner, false);
+            }
+            else if (direction is NavigationDirection.Previous)
+            {
+                result = TabNavigation.GetPrevTab(elementOrOwner, null, false);
+            }
+            else if (direction is NavigationDirection.Up or NavigationDirection.Down
+                     or NavigationDirection.Left or NavigationDirection.Right)
+            {
+                // HACK: a window should always have some element focused,
+                // it seems to be a difference between UWP and Avalonia focus manager implementations.
+                result = element is null
+                    ? TabNavigation.GetNextTab(elementOrOwner, true)
+                    : XYFocus.TryDirectionalFocus(direction, element, owner, null, keyDeviceType);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+            }
 
             // If there wasn't a custom navigation handler as an ancestor of the current element,
             // but there is one as an ancestor of the new element, use that.
-            if (custom is null && HandlePostCustomNavigation(element, result, direction, out ce))
+            if (custom is null && HandlePostCustomNavigation(elementOrOwner, result, direction, out ce))
                 return ce;
 
             return result;
@@ -100,12 +115,7 @@ namespace Avalonia.Input
         // TODO12: remove MovePrivate, and make Move return boolean. Or even remove whole KeyboardNavigationHandler.
         private bool MovePrivate(IInputElement? element, NavigationDirection direction, KeyModifiers keyModifiers, KeyDeviceType? deviceType)
         {
-            if (element is null && _owner is null)
-            {
-                return false;
-            }
-
-            var next = GetNextPrivate(element ?? _owner!, direction, deviceType);
+            var next = GetNextPrivate(element, _owner, direction, deviceType);
 
             if (next != null)
             {

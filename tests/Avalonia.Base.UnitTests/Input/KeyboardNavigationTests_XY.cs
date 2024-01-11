@@ -376,4 +376,46 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
         Assert.Equal(current, FocusManager.GetFocusManager(current)!.GetFocusedElement());
         Assert.False(args.Handled);
     }
+
+    [Fact]
+    public void Can_Focus_Child_Of_Current_Focused()
+    {
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+        var candidate = new Button() { Height = 20, Width = 20 };
+        var window = new Window
+        {
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
+            Content = candidate,
+            Height = 30
+        };
+        window.Show();
+
+        Assert.Null(KeyboardNavigationHandler.GetNext(window, NavigationDirection.Down));
+    }
+
+    [Fact]
+    public void Can_Focus_Any_Element_If_Nothing_Was_Focused()
+    {
+        // In the future we might auto-focus any element, but for now XY algorithm should be aware of Avalonia specifics.
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+        var candidate = new Button();
+        var window = new Window
+        {
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
+            Content = new Canvas
+            {
+                Children = { candidate }
+            }
+        };
+        window.Show();
+
+        Assert.Null(FocusManager.GetFocusManager(window)!.GetFocusedElement());
+
+        var args = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Down, Source = window };
+        window.RaiseEvent(args);
+
+        Assert.Equal(candidate, FocusManager.GetFocusManager(window)!.GetFocusedElement());
+    }
 }
