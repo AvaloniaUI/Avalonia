@@ -619,45 +619,17 @@ namespace Avalonia.Controls.Primitives
         /// <param name="pixelWidth">The pixel width of the bitmap.</param>
         /// <param name="pixelHeight">The pixel height of the bitmap.</param>
         /// <returns>A new <see cref="WriteableBitmap"/>.</returns>
-        public static WriteableBitmap CreateBitmapFromPixelData(
+        public static unsafe Bitmap CreateBitmapFromPixelData(
             ArrayList<byte> bgraPixelData,
             int pixelWidth,
             int pixelHeight)
         {
-            // Standard may need to change on some devices
-            Vector dpi = new Vector(96, 96);
-
-            var bitmap = new WriteableBitmap(
-                new PixelSize(pixelWidth, pixelHeight),
-                dpi,
-                PixelFormat.Bgra8888,
-                AlphaFormat.Premul);
-
-            using (var frameBuffer = bitmap.Lock())
+            fixed (byte* array = bgraPixelData.Array)
             {
-                Marshal.Copy(bgraPixelData.Array, 0, frameBuffer.Address, bgraPixelData.Array.Length);
+                return new Bitmap(PixelFormat.Bgra8888, AlphaFormat.Premul, new IntPtr(array),
+                    new PixelSize(pixelWidth, pixelHeight),
+                    new Vector(96, 96), pixelWidth * 4);
             }
-
-            return bitmap;
-        }
-
-        /// <summary>
-        /// Updates the given <see cref="WriteableBitmap"/> with new, raw BGRA pre-multiplied alpha pixel data.
-        /// TODO: THIS METHOD IS CURRENTLY PROVIDED AS REFERENCE BUT CAUSES INTERMITTENT CRASHES IF USED.
-        /// WARNING: The bitmap's width, height and byte count MUST not have changed and MUST be enforced externally.
-        /// </summary>
-        /// <param name="bitmap">The existing <see cref="WriteableBitmap"/> to update.</param>
-        /// <param name="bgraPixelData">The bitmap (in raw BGRA pre-multiplied alpha pixels).</param>
-        public static void UpdateBitmapFromPixelData(
-            WriteableBitmap bitmap,
-            ArrayList<byte> bgraPixelData)
-        {
-            using (var frameBuffer = bitmap.Lock())
-            {
-                Marshal.Copy(bgraPixelData.Array, 0, frameBuffer.Address, bgraPixelData.Array.Length);
-            }
-
-            return;
         }
     }
 }

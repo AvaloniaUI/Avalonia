@@ -64,19 +64,19 @@ namespace Avalonia.Controls.Primitives
         private Panel? _selectionEllipsePanel;
 
         // Put the spectrum images in a bitmap, which is then given to an ImageBrush.
-        private WriteableBitmap? _hueRedBitmap;
-        private WriteableBitmap? _hueYellowBitmap;
-        private WriteableBitmap? _hueGreenBitmap;
-        private WriteableBitmap? _hueCyanBitmap;
-        private WriteableBitmap? _hueBlueBitmap;
-        private WriteableBitmap? _huePurpleBitmap;
+        private Bitmap? _hueRedBitmap;
+        private Bitmap? _hueYellowBitmap;
+        private Bitmap? _hueGreenBitmap;
+        private Bitmap? _hueCyanBitmap;
+        private Bitmap? _hueBlueBitmap;
+        private Bitmap? _huePurpleBitmap;
 
-        private WriteableBitmap? _saturationMinimumBitmap;
-        private WriteableBitmap? _saturationMaximumBitmap;
+        private Bitmap? _saturationMinimumBitmap;
+        private Bitmap? _saturationMaximumBitmap;
 
-        private WriteableBitmap? _valueBitmap;
-        private WriteableBitmap? _minBitmap;
-        private WriteableBitmap? _maxBitmap;
+        private Bitmap? _valueBitmap;
+        private Bitmap? _minBitmap;
+        private Bitmap? _maxBitmap;
 
         // Fields used by UpdateEllipse() to ensure that it's using the data
         // associated with the last call to CreateBitmapsAndColorMap(),
@@ -1201,20 +1201,29 @@ namespace Avalonia.Controls.Primitives
                 {
                     case ColorSpectrumComponents.HueValue:
                     case ColorSpectrumComponents.ValueHue:
+                        _saturationMinimumBitmap?.Dispose();
                         _saturationMinimumBitmap = _minBitmap;
+                        _saturationMaximumBitmap?.Dispose();
                         _saturationMaximumBitmap = _maxBitmap;
                         break;
                     case ColorSpectrumComponents.HueSaturation:
                     case ColorSpectrumComponents.SaturationHue:
+                        _valueBitmap?.Dispose();
                         _valueBitmap = _maxBitmap;
                         break;
                     case ColorSpectrumComponents.ValueSaturation:
                     case ColorSpectrumComponents.SaturationValue:
+                        _hueRedBitmap?.Dispose();
                         _hueRedBitmap = _minBitmap;
+                        _hueYellowBitmap?.Dispose();
                         _hueYellowBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle1PixelData, pixelWidth, pixelHeight);
+                        _hueGreenBitmap?.Dispose();
                         _hueGreenBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle2PixelData, pixelWidth, pixelHeight);
+                        _hueCyanBitmap?.Dispose();
                         _hueCyanBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle3PixelData, pixelWidth, pixelHeight);
+                        _hueBlueBitmap?.Dispose();
                         _hueBlueBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle4PixelData, pixelWidth, pixelHeight);
+                        _huePurpleBitmap?.Dispose();
                         _huePurpleBitmap = _maxBitmap;
                         break;
                 }
