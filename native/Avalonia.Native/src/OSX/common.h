@@ -101,6 +101,7 @@ class AvnApplicationCommands : public ComSingleObject<IAvnApplicationCommands, &
 public:
     FORWARD_IUNKNOWN()
     
+    virtual HRESULT UnhideApp() override;
     virtual HRESULT HideApp() override;
     virtual HRESULT ShowAll() override;
     virtual HRESULT HideOthers() override;
