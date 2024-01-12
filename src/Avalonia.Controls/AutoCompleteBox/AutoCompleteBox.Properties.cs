@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -268,6 +269,7 @@ namespace Avalonia.Controls
         /// <value>The <see cref="T:Avalonia.Data.IBinding" /> object used
         /// when binding to a collection property.</value>
         [AssignBinding]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IBinding? ValueMemberBinding
         {
             get => _valueBindingEvaluator?.ValueBinding;
