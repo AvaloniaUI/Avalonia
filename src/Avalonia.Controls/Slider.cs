@@ -45,7 +45,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_DecreaseButton", typeof(Button))]
     [TemplatePart("PART_IncreaseButton", typeof(Button))]
-    [TemplatePart("PART_Track",          typeof(Track))]
+    [TemplatePart("PART_Track",          typeof(Track), IsRequired = true)]
     [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {
@@ -203,13 +203,10 @@ namespace Avalonia.Controls
             _pointerMovedDispose?.Dispose();
 
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
-            _track = e.NameScope.Find<Track>("PART_Track");
+            _track = e.NameScope.Get<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
-            if (_track != null)
-            {
-                _track.IgnoreThumbDrag = true;
-            }
+            _track.IgnoreThumbDrag = true;
 
             if (_decreaseButton != null)
             {

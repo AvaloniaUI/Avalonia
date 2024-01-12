@@ -17,7 +17,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A drop-down list control.
     /// </summary>
-    [TemplatePart("PART_Popup", typeof(Popup))]
+    [TemplatePart("PART_Popup", typeof(Popup), IsRequired = true)]
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
