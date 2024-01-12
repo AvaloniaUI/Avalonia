@@ -672,15 +672,12 @@ namespace Avalonia.Win32
             // So we don't need to check whether the button has been swapped here.
             if (e.Pointer.IsPrimary)
             {
-                if (WindowState == WindowState.Normal)
-                {
-                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                    // message or not, so they are not interesting
- 
-                    SendMessage( _hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                    SendMessage( _hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
-                }
+                // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                // message or not, so they are not interesting
+
+                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
             }
             else
             {
