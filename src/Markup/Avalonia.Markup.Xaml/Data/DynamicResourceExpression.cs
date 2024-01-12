@@ -86,6 +86,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         private void ActualThemeVariantChanged(object? sender, EventArgs e)
         {
+            if (!IsRunning)
+                return;
+
             _themeVariant = ((IThemeVariantHost)sender!).ActualThemeVariant;
             PublishValue();
         }
