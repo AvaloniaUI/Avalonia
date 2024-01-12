@@ -55,7 +55,7 @@
               </Panel>
             </Viewbox>
           </Grid>
-          <ContentPresenter x:Name="ContentPresenter"
+          <ContentPresenter x:Name="PART_ContentPresenter"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
                           Margin="{TemplateBinding Padding}"

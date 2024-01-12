@@ -183,7 +183,8 @@
                     <ColumnDefinition Width="Auto" MinWidth="{DynamicResource DataGridSortIconMinWidth}" />
                   </Grid.ColumnDefinitions>
                 
-                  <ContentPresenter Content="{TemplateBinding Content}"
+                  <ContentPresenter x:Name="PART_ContentPresenter"
+                                    Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                 
                   <Path Name="SortIcon"
