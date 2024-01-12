@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Collections.Pooled;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -34,7 +35,8 @@ namespace Avalonia.Controls.Primitives
         /// <param name="isPerceptive">Whether the slider adapts rendering to improve user-perception over exactness.
         /// This will ensure colors are always discernible.</param>
         /// <returns>A new bitmap representing a gradient of color component values.</returns>
-        public static async Task<ArrayList<byte>> CreateComponentBitmapAsync(
+        public static Task CreateComponentBitmapAsync(
+            PooledList<byte> bgraPixelData,
             int width,
             int height,
             Orientation orientation,
@@ -46,22 +48,19 @@ namespace Avalonia.Controls.Primitives
         {
             if (width == 0 || height == 0)
             {
-                return new ArrayList<byte>(0);
+                return Task.CompletedTask;
             }
 
-            var bitmap = await Task.Run<ArrayList<byte>>(() =>
+            return Task.Run(() =>
             {
                 int pixelDataIndex = 0;
                 double componentStep;
-                ArrayList<byte> bgraPixelData;
                 Color baseRgbColor = Colors.White;
                 Color rgbColor;
                 int bgraPixelDataHeight;
                 int bgraPixelDataWidth;
 
-                // Allocate the buffer
                 // BGRA formatted color components 1 byte each (4 bytes in a pixel)
-                bgraPixelData       = new ArrayList<byte>(width * height * 4);
                 bgraPixelDataHeight = height * 4;
                 bgraPixelDataWidth  = width * 4;
 
@@ -318,8 +317,6 @@ namespace Avalonia.Controls.Primitives
 
                 return bgraPixelData;
             });
-
-            return bitmap;
         }
 
         public static Hsv IncrementColorComponent(
@@ -620,11 +617,11 @@ namespace Avalonia.Controls.Primitives
         /// <param name="pixelHeight">The pixel height of the bitmap.</param>
         /// <returns>A new <see cref="WriteableBitmap"/>.</returns>
         public static unsafe Bitmap CreateBitmapFromPixelData(
-            ArrayList<byte> bgraPixelData,
+            PooledList<byte> bgraPixelData,
             int pixelWidth,
             int pixelHeight)
         {
-            fixed (byte* array = bgraPixelData.Array)
+            fixed (byte* array = bgraPixelData.Span)
             {
                 return new Bitmap(PixelFormat.Bgra8888, AlphaFormat.Premul, new IntPtr(array),
                     new PixelSize(pixelWidth, pixelHeight),

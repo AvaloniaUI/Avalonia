@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using Avalonia.Collections.Pooled;
 using Avalonia.Controls.Metadata;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -114,7 +116,10 @@ namespace Avalonia.Controls.Primitives
 
             if (pixelWidth != 0 && pixelHeight != 0)
             {
-                ArrayList<byte> bgraPixelData = await ColorPickerHelpers.CreateComponentBitmapAsync(
+                // siteToCapacity = true, because CreateComponentBitmapAsync sets bytes via indexer over pre-allocated buffer. 
+                using var bgraPixelData = new PooledList<byte>(pixelWidth * pixelHeight * 4, ClearMode.Never, true);
+                await ColorPickerHelpers.CreateComponentBitmapAsync(
+                    bgraPixelData,
                     pixelWidth,
                     pixelHeight,
                     Orientation,
