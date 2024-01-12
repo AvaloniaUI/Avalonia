@@ -53,6 +53,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlDuplicateSettersChecker(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
+                new AvaloniaXamlIlControlTemplatePartsChecker(),
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),
