@@ -52,6 +52,9 @@ public abstract class OnFormFactorExtensionBase<TReturn, TOn> : IAddChild<TOn>
     [MarkupExtensionOption(FormFactorType.Mobile)]
     public TReturn? Mobile { get; set; }
 
+    [MarkupExtensionOption(FormFactorType.Tv)]
+    public TReturn? Tv { get; set; }
+
     // Required for the compiler, will be replaced with actual method compile time.
     public object ProvideValue() { return this; }
     void IAddChild<TOn>.AddChild(TOn child) {}
