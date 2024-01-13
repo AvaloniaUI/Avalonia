@@ -26,6 +26,7 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
+using Avalonia.Threading;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 using static Avalonia.Controls.Platform.Win32SpecificOptions;
 
@@ -668,21 +669,22 @@ namespace Avalonia.Win32
         {
             e.Pointer.Capture(null);
 
-            // Mouse.LeftButton actually reflects the primary button user is using.
-            // So we don't need to check whether the button has been swapped here.
-            if (e.Pointer.IsPrimary)
+            Dispatcher.UIThread.Post(() =>
             {
-                // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                // message or not, so they are not interesting
+                if (e.Pointer.IsPrimary)
+                {
+                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                    // message or not, so they are not interesting
 
-                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
-            }
-            else
-            {
-                throw new InvalidOperationException("BeginMoveDrag Failed");
-            }
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                }
+                else
+                {
+                    throw new InvalidOperationException("BeginMoveDrag Failed");
+                }
+            }, DispatcherPriority.Send);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
