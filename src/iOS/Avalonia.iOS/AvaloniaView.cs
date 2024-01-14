@@ -32,7 +32,7 @@ namespace Avalonia.iOS
 
         private readonly TopLevelImpl _topLevelImpl;
         private readonly EmbeddableControlRoot _topLevel;
-        private readonly TouchHandler _touches;
+        private readonly InputHandler _input;
         private TextInputMethodClient? _client;
         private IAvaloniaViewController? _controller;
         private IInputRoot? _inputRoot;
@@ -41,7 +41,7 @@ namespace Avalonia.iOS
         public AvaloniaView()
         {
             _topLevelImpl = new TopLevelImpl(this);
-            _touches = new TouchHandler(this, _topLevelImpl);
+            _input = new InputHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
 
             _topLevel.Prepare();
@@ -49,12 +49,33 @@ namespace Avalonia.iOS
             _topLevel.StartRendering();
 
             InitLayerSurface();
-#if !TVOS
-            if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
+
+            // Remote touch handling
+            if (OperatingSystem.IsTvOS())
             {
-                MultipleTouchEnabled = true;
+                AddGestureRecognizer(new UISwipeGestureRecognizer(_input.Handle)
+                {
+                    Direction = UISwipeGestureRecognizerDirection.Up
+                });
+                AddGestureRecognizer(new UISwipeGestureRecognizer(_input.Handle)
+                {
+                    Direction = UISwipeGestureRecognizerDirection.Right
+                });
+                AddGestureRecognizer(new UISwipeGestureRecognizer(_input.Handle)
+                {
+                    Direction = UISwipeGestureRecognizerDirection.Down
+                });
+                AddGestureRecognizer(new UISwipeGestureRecognizer(_input.Handle)
+                {
+                    Direction = UISwipeGestureRecognizerDirection.Left
+                });
             }
+            else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
+            {
+#if !TVOS
+                MultipleTouchEnabled = true;
 #endif
+            }
         }
 
         [SuppressMessage("Interoperability", "CA1422:Validate platform compatibility")]
@@ -284,14 +305,55 @@ namespace Avalonia.iOS
             }
         }
 
-        public override void TouchesBegan(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
+        /// <inheritdoc/>
+        public override void TouchesBegan(NSSet touches, UIEvent? evt) => _input.Handle(touches, evt);
 
-        public override void TouchesMoved(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
+        /// <inheritdoc/>
+        public override void TouchesMoved(NSSet touches, UIEvent? evt) => _input.Handle(touches, evt);
 
-        public override void TouchesEnded(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
+        /// <inheritdoc/>
+        public override void TouchesEnded(NSSet touches, UIEvent? evt) => _input.Handle(touches, evt);
 
-        public override void TouchesCancelled(NSSet touches, UIEvent? evt) => _touches.Handle(touches, evt);
+        /// <inheritdoc/>
+        public override void TouchesCancelled(NSSet touches, UIEvent? evt) => _input.Handle(touches, evt);
 
+        /// <inheritdoc/>
+        public override void PressesBegan(NSSet<UIPress> presses, UIPressesEvent evt)
+        {
+            if (!_input.Handle(presses, evt))
+            {
+                base.PressesBegan(presses, evt);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void PressesChanged(NSSet<UIPress> presses, UIPressesEvent evt)
+        {
+            if (!_input.Handle(presses, evt))
+            {
+                base.PressesBegan(presses, evt);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void PressesEnded(NSSet<UIPress> presses, UIPressesEvent evt)
+        {
+            if (!_input.Handle(presses, evt))
+            {
+                base.PressesEnded(presses, evt);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void PressesCancelled(NSSet<UIPress> presses, UIPressesEvent evt)
+        {
+            if (!_input.Handle(presses, evt))
+            {
+                base.PressesCancelled(presses, evt);
+            }
+        }
+
+        /// <inheritdoc/>
         public override void LayoutSubviews()
         {
             _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
