@@ -12,21 +12,28 @@ namespace Avalonia
 {
     public enum iOSRenderingMode
     {
+        /// <summary>
+        /// Enables EaGL rendering for iOS and tvOS. Not supported on macCatalyst.
+        /// </summary>
         OpenGl = 1,
+        
+        /// <summary>
+        /// Enables Metal rendering for all apple targets. Not stable and currently only works on iOS.
+        /// </summary>
         Metal
     }
-    
+
     public class iOSPlatformOptions
     {
         /// <summary>
         /// Gets or sets Avalonia rendering modes with fallbacks.
         /// The first element in the array has the highest priority.
-        /// The default value is: <see cref="iOSRenderingMode.OpenGl"/>, <see cref="iOSRenderingMode.Metal"/>. 
+        /// The default value is: <see cref="iOSRenderingMode.OpenGl"/>. 
         /// </summary>
         /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
         public IReadOnlyList<iOSRenderingMode> RenderingMode { get; set; } = new[]
         {
-            iOSRenderingMode.OpenGl, iOSRenderingMode.Metal
+            iOSRenderingMode.OpenGl
         };
     }
 
