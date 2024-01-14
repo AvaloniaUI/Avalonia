@@ -84,7 +84,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         }
     }
 
-    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    public Task<IStorageItem?> MoveAsync(IStorageFolder destination)
     {
         if (destination is not IOSStorageFolder folder)
         {
@@ -101,9 +101,9 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
             if (NSFileManager.DefaultManager.Move(Url, newPath, out var error))
             {
-                return isDir
+                return Task.FromResult<IStorageItem?>(isDir
                     ? new IOSStorageFolder(newPath)
-                    : new IOSStorageFile(newPath);
+                    : new IOSStorageFile(newPath));
             }
 
             if (error is not null)
@@ -111,7 +111,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 throw new NSErrorException(error);
             }
 
-            return null;
+            return Task.FromResult<IStorageItem?>(null);
         }
         finally
         {
