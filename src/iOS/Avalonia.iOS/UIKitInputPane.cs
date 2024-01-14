@@ -7,7 +7,6 @@ using Avalonia.Controls.Platform;
 using Foundation;
 using UIKit;
 
-#nullable enable
 namespace Avalonia.iOS;
 
 [UnsupportedOSPlatform("tvos")]

@@ -2,9 +2,8 @@ using Avalonia.Metal;
 using Avalonia.Platform;
 using CoreAnimation;
 using CoreGraphics;
-using Foundation;
 
-namespace Avalonia.iOS;
+namespace Avalonia.iOS.Metal;
 
 internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
 {
@@ -28,7 +27,7 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
     public IMetalPlatformSurfaceRenderingSession BeginRendering()
     {
         // Flush all existing rendering
-        var buffer = _device.Queue.CommandBuffer();
+        var buffer = _device.Queue.CommandBuffer()!;
         buffer.Commit();
         buffer.WaitUntilCompleted();
         _size = PendingSize;

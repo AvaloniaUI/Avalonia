@@ -1,9 +1,10 @@
 using System;
+using System.Runtime.Versioning;
 using Avalonia.Metal;
 using Avalonia.Utilities;
 using Metal;
 
-namespace Avalonia.iOS;
+namespace Avalonia.iOS.Metal;
 
 internal class MetalDevice : IMetalDevice
 {
@@ -12,7 +13,8 @@ internal class MetalDevice : IMetalDevice
     public MetalDevice(IMTLDevice device)
     {
         Device = device;
-        Queue = device.CreateCommandQueue();
+        Queue = device.CreateCommandQueue()
+            ?? throw new InvalidOperationException("IMTLCommandQueue is not available");
     }
 
     public IMTLDevice Device { get; }
@@ -23,7 +25,7 @@ internal class MetalDevice : IMetalDevice
     public bool IsLost => false;
 
     public IDisposable EnsureCurrent() => _syncRoot.Lock();
-    public object TryGetFeature(Type featureType) => null;
+    public object? TryGetFeature(Type featureType) => null;
 
     public void Dispose()
     {

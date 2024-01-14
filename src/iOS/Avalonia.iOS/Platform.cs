@@ -46,10 +46,10 @@ namespace Avalonia.iOS
 {
     static class Platform
     {
-        public static iOSPlatformOptions Options;
-        public static IPlatformGraphics Graphics;
-        public static DisplayLinkTimer Timer;
-        internal static Compositor Compositor { get; private set; }
+        public static iOSPlatformOptions? Options;
+        public static IPlatformGraphics? Graphics;
+        public static DisplayLinkTimer? Timer;
+        internal static Compositor? Compositor { get; private set; }
 
         public static void Register()
         {
@@ -84,14 +84,17 @@ namespace Avalonia.iOS
             {
 #if !MACCATALYST
                 if (renderingMode == iOSRenderingMode.OpenGl
-                    && EaglPlatformGraphics.TryCreate() is { } eaglGraphics)
+                    && !OperatingSystem.IsMacCatalyst()
+#pragma warning disable CA1422
+                    && Eagl.EaglPlatformGraphics.TryCreate() is { } eaglGraphics)
+#pragma warning restore CA1422
                 {
                     return eaglGraphics;
                 }
 #endif
 
                 if (renderingMode == iOSRenderingMode.Metal
-                    && MetalPlatformGraphics.TryCreate() is { } metalGraphics)
+                    && Metal.MetalPlatformGraphics.TryCreate() is { } metalGraphics)
                 {
                     return metalGraphics;
                 }

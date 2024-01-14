@@ -10,8 +10,6 @@ using Foundation;
 
 using UIKit;
 
-#nullable enable
-
 namespace Avalonia.iOS.Storage;
 
 internal abstract class IOSStorageItem : IStorageBookmarkItem
@@ -57,7 +55,10 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
         var properties = attributes is null ?
             new StorageItemProperties() :
-            new StorageItemProperties(attributes.Size, (DateTime)attributes.CreationDate, (DateTime)attributes.ModificationDate);
+            new StorageItemProperties(
+                attributes.Size,
+                attributes.CreationDate is { } creationDate ? (DateTime)creationDate : null,
+                attributes.ModificationDate is { } modificationDate ? (DateTime)modificationDate : null);
 
         return Task.FromResult(properties);
     }

@@ -5,14 +5,14 @@ using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using CoreAnimation;
-using Foundation;
-using OpenGLES;
-using UIKit;
 
-namespace Avalonia.iOS
+namespace Avalonia.iOS.Eagl
 {
     [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [ObsoletedOSPlatform("tvos12.0", "Use 'Metal' instead.")]
     [SupportedOSPlatform("ios")]
+    [SupportedOSPlatform("tvos")]
+    [UnsupportedOSPlatform("maccatalyst")]
     class EaglLayerSurface : IGlPlatformSurface
     {
         private readonly CAEAGLLayer _layer;
@@ -80,19 +80,19 @@ namespace Avalonia.iOS
 
         static void CheckThread()
         {
-            if (Platform.Timer.TimerThread != Thread.CurrentThread)
+            if (Platform.Timer!.TimerThread != Thread.CurrentThread)
                 throw new InvalidOperationException("Invalid thread, go away");
         }
         
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
             CheckThread();
-            var ctx = ((EaglPlatformGraphics)Platform.Graphics).Context;
+            var ctx = ((EaglPlatformGraphics)Platform.Graphics!).Context;
             if (ctx != context)
                 throw new InvalidOperationException("Platform surface is only usable with tha main context");
             using (ctx.MakeCurrent())
             {
-                var fbo = new SizeSynchronizedLayerFbo(ctx.Context, ctx.GlInterface, _layer);
+                var fbo = new SizeSynchronizedLayerFbo(ctx.Context!, ctx.GlInterface, _layer);
                 if (!fbo.Sync())
                     throw new InvalidOperationException("Unable to create render target");
                 return new RenderTarget(ctx, fbo);

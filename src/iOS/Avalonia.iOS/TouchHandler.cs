@@ -11,7 +11,7 @@ namespace Avalonia.iOS
     {
         private readonly AvaloniaView _view;
         private readonly ITopLevelImpl _tl;
-        public TouchDevice _device = new TouchDevice();
+        public TouchDevice _device = new();
 
         public TouchHandler(AvaloniaView view, ITopLevelImpl tl)
         {
@@ -19,12 +19,12 @@ namespace Avalonia.iOS
             _tl = tl;
         }
 
-        static ulong Ts(UIEvent evt) => (ulong) (evt.Timestamp * 1000);
+        static ulong Ts(UIEvent? evt) => evt is null ? 0 : (ulong) (evt.Timestamp * 1000);
         private IInputRoot Root => _view.InputRoot;
         private static long _nextTouchPointId = 1;
         private Dictionary<UITouch, long> _knownTouches = new Dictionary<UITouch, long>();
 
-        public void Handle(NSSet touches, UIEvent evt)
+        public void Handle(NSSet touches, UIEvent? evt)
         {
             foreach (UITouch t in touches)
             {

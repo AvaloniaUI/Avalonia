@@ -3,7 +3,6 @@ using Avalonia.Controls.Platform;
 using Avalonia.Media;
 
 namespace Avalonia.iOS;
-#nullable enable
 
 internal class InsetsManager : IInsetsManager
 {

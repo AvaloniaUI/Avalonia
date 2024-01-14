@@ -12,7 +12,7 @@ public interface IAvaloniaViewController
 #endif
     bool PrefersStatusBarHidden { get; set; }
     Thickness SafeAreaPadding { get; }
-    event EventHandler SafeAreaPaddingChanged;
+    event EventHandler? SafeAreaPaddingChanged;
 }
 
 /// <inheritdoc cref="IAvaloniaViewController" />
@@ -78,5 +78,5 @@ public class DefaultAvaloniaViewController : UIViewController, IAvaloniaViewCont
     public Thickness SafeAreaPadding { get; private set; }
 
     /// <inheritdoc/>
-    public event EventHandler SafeAreaPaddingChanged;
+    public event EventHandler? SafeAreaPaddingChanged;
 }

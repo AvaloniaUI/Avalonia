@@ -1,7 +1,7 @@
 using Avalonia.Metal;
 using CoreAnimation;
 
-namespace Avalonia.iOS;
+namespace Avalonia.iOS.Metal;
 
 internal class MetalPlatformSurface : IMetalPlatformSurface
 {

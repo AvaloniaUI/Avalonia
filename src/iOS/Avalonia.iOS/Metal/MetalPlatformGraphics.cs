@@ -1,20 +1,26 @@
 using System;
+using System.Runtime.Versioning;
 using Avalonia.Platform;
 using Metal;
 using SkiaSharp;
 
-namespace Avalonia.iOS;
-#nullable enable
+namespace Avalonia.iOS.Metal;
 
+[SupportedOSPlatform("ios")]
+[SupportedOSPlatform("macos")]
+[SupportedOSPlatform("maccatalyst")]
+[SupportedOSPlatform("tvos")]
 internal class MetalPlatformGraphics : IPlatformGraphics
 {
-    private MetalPlatformGraphics()
+    private readonly IMTLDevice _defaultDevice;
+
+    private MetalPlatformGraphics(IMTLDevice defaultDevice)
     {
-        
+        _defaultDevice = defaultDevice;
     }
     
     public bool UsesSharedContext => false;
-    public IPlatformGraphicsContext CreateContext() => new MetalDevice(MTLDevice.SystemDefault);
+    public IPlatformGraphicsContext CreateContext() => new MetalDevice(_defaultDevice);
 
     public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();
 
@@ -38,6 +44,6 @@ internal class MetalPlatformGraphics : IPlatformGraphics
         }
 #endif
 
-        return new MetalPlatformGraphics();
+        return new MetalPlatformGraphics(device);
     }
 }

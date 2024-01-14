@@ -1,7 +1,6 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
@@ -12,7 +11,6 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.iOS.Storage;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
@@ -24,6 +22,9 @@ using IInsetsManager = Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.iOS
 {
+    /// <summary>
+    /// Root view container for Avalonia content, that can be embedded into iOS visual tree.
+    /// </summary>
     public partial class AvaloniaView : UIView, ITextInputMethodImpl
     {
         internal IInputRoot InputRoot
@@ -35,7 +36,7 @@ namespace Avalonia.iOS
         private TextInputMethodClient? _client;
         private IAvaloniaViewController? _controller;
         private IInputRoot? _inputRoot;
-        private MetalRenderTarget? _currentRenderTarget;
+        private Metal.MetalRenderTarget? _currentRenderTarget;
 
         public AvaloniaView()
         {
@@ -49,13 +50,14 @@ namespace Avalonia.iOS
 
             InitLayerSurface();
 #if !TVOS
-            MultipleTouchEnabled = true;
+            if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
+            {
+                MultipleTouchEnabled = true;
+            }
 #endif
         }
 
-        [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
-        [SupportedOSPlatform("ios")]
-        [UnsupportedOSPlatform("maccatalyst")]
+        [SuppressMessage("Interoperability", "CA1422:Validate platform compatibility")]
         private void InitLayerSurface()
         {
             var l = Layer;
@@ -68,13 +70,13 @@ namespace Avalonia.iOS
                     OpenGLES.EAGLDrawableProperty.RetainedBacking, false,
                     OpenGLES.EAGLDrawableProperty.ColorFormat, OpenGLES.EAGLColorFormat.RGBA8
                 );
-                _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(eaglLayer) };
+                _topLevelImpl.Surfaces = new[] { new Eagl.EaglLayerSurface(eaglLayer) };
             }
             else
 #endif
             if (l is CAMetalLayer metalLayer)
             {
-                _topLevelImpl.Surfaces = new[] { new MetalPlatformSurface(metalLayer, this) };
+                _topLevelImpl.Surfaces = new[] { new Metal.MetalPlatformSurface(metalLayer, this) };
             }
         }
 
@@ -85,6 +87,12 @@ namespace Avalonia.iOS
         public override bool CanResignFirstResponder => true;
 
         /// <inheritdoc />
+        [ObsoletedOSPlatform("ios17.0", "Use the 'UITraitChangeObservable' protocol instead.")]
+        [ObsoletedOSPlatform("maccatalyst17.0", "Use the 'UITraitChangeObservable' protocol instead.")]
+        [ObsoletedOSPlatform("tvos17.0", "Use the 'UITraitChangeObservable' protocol instead.")]
+        [SupportedOSPlatform("ios")]
+        [SupportedOSPlatform("tvos")]
+        [SupportedOSPlatform("maccatalyst")]
         public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
         {
             base.TraitCollectionDidChange(previousTraitCollection);
@@ -125,8 +133,12 @@ namespace Avalonia.iOS
             {
                 _view = view;
                 _nativeControlHost = new NativeControlHostImpl(view);
-#if !TVOS
-                _storageProvider = new IOSStorageProvider(view);
+#if TVOS
+                _storageProvider = null;
+                _clipboard = null;
+                _inputPane = null;
+#else
+                _storageProvider = new Storage.IOSStorageProvider(view);
                 _clipboard = new ClipboardImpl();
                 _inputPane = UIKitInputPane.Instance;
 #endif
@@ -152,7 +164,8 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public Compositor Compositor => Platform.Compositor;
+            public Compositor Compositor => Platform.Compositor
+                ?? throw new InvalidOperationException("iOS backend wasn't initialized. Make sure UseiOS was called.");
 
             public void Invalidate(Rect rect)
             {
@@ -237,7 +250,6 @@ namespace Avalonia.iOS
                     return _insetsManager;
                 }
 
-#if !TVOS
                 if (featureType == typeof(IClipboard))
                 {
                     return _clipboard;
@@ -252,7 +264,6 @@ namespace Avalonia.iOS
                 {
                     return _inputPane;
                 }
-#endif
 
                 return null;
             }
@@ -262,7 +273,7 @@ namespace Avalonia.iOS
         public static Class LayerClass()
         {
 #if !MACCATALYST
-            if (Platform.Graphics is EaglPlatformGraphics)
+            if (Platform.Graphics is Eagl.EaglPlatformGraphics)
             {
                 return new Class(typeof(CAEAGLLayer));
             }
@@ -299,7 +310,7 @@ namespace Avalonia.iOS
             set => _topLevel.Content = value;
         }
 
-        internal void SetRenderTarget(MetalRenderTarget target)
+        internal void SetRenderTarget(Metal.MetalRenderTarget target)
         {
             _currentRenderTarget = target;
         }

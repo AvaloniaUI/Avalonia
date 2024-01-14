@@ -2,7 +2,7 @@ using System;
 using Avalonia.Metal;
 using CoreAnimation;
 
-namespace Avalonia.iOS;
+namespace Avalonia.iOS.Metal;
 
 internal class MetalDrawingSession : IMetalPlatformSurfaceRenderingSession
 {
@@ -21,7 +21,7 @@ internal class MetalDrawingSession : IMetalPlatformSurfaceRenderingSession
     public void Dispose()
     {
         var buffer = _device.Queue.CommandBuffer();
-        buffer.PresentDrawable(_drawable);
+        buffer!.PresentDrawable(_drawable);
         buffer.Commit();
     }
 
