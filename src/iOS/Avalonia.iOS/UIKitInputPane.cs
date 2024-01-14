@@ -1,13 +1,17 @@
+#if !TVOS
 using System;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Platform;
 using Foundation;
 using UIKit;
 
-#nullable enable
 namespace Avalonia.iOS;
 
+[UnsupportedOSPlatform("tvos")]
+[SupportedOSPlatform("maccatalyst")]
+[SupportedOSPlatform("ios")]
 internal sealed class UIKitInputPane : IInputPane
 {
     public static UIKitInputPane Instance { get; } = new();
@@ -33,7 +37,11 @@ internal sealed class UIKitInputPane : IInputPane
     private void RaiseEventFromNotification(bool isUp, NSNotification notification)
     {
         State = isUp ? InputPaneState.Open : InputPaneState.Closed;
-
+#if MACCATALYST
+        OccludedRect = default;
+        StateChanged?.Invoke(this, new InputPaneStateEventArgs(
+            State, null, OccludedRect));
+#else
         var startFrame = UIKeyboard.FrameBeginFromNotification(notification);
         var endFrame = UIKeyboard.FrameEndFromNotification(notification);
         var duration = UIKeyboard.AnimationDurationFromNotification(notification);
@@ -50,5 +58,7 @@ internal sealed class UIKitInputPane : IInputPane
 
         StateChanged?.Invoke(this, new InputPaneStateEventArgs(
             State, startRect, OccludedRect, TimeSpan.FromSeconds(duration), easing));
+#endif
     }
 }
+#endif

@@ -1,13 +1,17 @@
+#if !MACCATALYST
 using System;
 using System.Runtime.Versioning;
 using Avalonia.OpenGL;
 using CoreAnimation;
 using OpenGLES;
 
-namespace Avalonia.iOS
+namespace Avalonia.iOS.Eagl
 {
     [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [ObsoletedOSPlatform("tvos12.0", "Use 'Metal' instead.")]
     [SupportedOSPlatform("ios")]
+    [SupportedOSPlatform("tvos")]
+    [UnsupportedOSPlatform("maccatalyst")]
     internal class LayerFbo
     {
         private readonly EAGLContext _context;
@@ -28,7 +32,7 @@ namespace Avalonia.iOS
             _depthBuffer = depthBuffer;
         }
 
-        public static LayerFbo TryCreate(EAGLContext context, GlInterface gl, CAEAGLLayer layer)
+        public static LayerFbo? TryCreate(EAGLContext context, GlInterface gl, CAEAGLLayer layer)
         {
             if (context != EAGLContext.CurrentContext)
                 return null;
@@ -77,7 +81,7 @@ namespace Avalonia.iOS
         public void Present()
         {
             Bind();
-            var success = _context.PresentRenderBuffer(GlConsts.GL_RENDERBUFFER);
+            _context.PresentRenderBuffer(GlConsts.GL_RENDERBUFFER);
         }
 
         public void Dispose()
@@ -94,13 +98,16 @@ namespace Avalonia.iOS
     }
 
     [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [ObsoletedOSPlatform("tvos12.0", "Use 'Metal' instead.")]
     [SupportedOSPlatform("ios")]
+    [SupportedOSPlatform("tvos")]
+    [UnsupportedOSPlatform("maccatalyst")]
     class SizeSynchronizedLayerFbo : IDisposable
     {
         private readonly EAGLContext _context;
         private readonly GlInterface _gl;
         private readonly CAEAGLLayer _layer;
-        private LayerFbo _fbo;
+        private LayerFbo? _fbo;
         private double _oldLayerWidth, _oldLayerHeight, _oldLayerScale;
         
         public SizeSynchronizedLayerFbo(EAGLContext context, GlInterface gl, CAEAGLLayer layer)
@@ -138,13 +145,14 @@ namespace Avalonia.iOS
         {
             if(!Sync())
                 throw new InvalidOperationException("Unable to create a render target");
-            _fbo.Bind();
+            _fbo!.Bind();
         }
 
-        public void Present() => _fbo.Present();
+        public void Present() => _fbo!.Present();
 
         public int Width => _fbo?.Width ?? 0;
         public int Height => _fbo?.Height ?? 0;
         public double Scaling => _oldLayerScale;
     }
 }
+#endif
