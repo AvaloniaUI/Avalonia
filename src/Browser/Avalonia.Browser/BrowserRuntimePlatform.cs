@@ -35,7 +35,7 @@ internal class BrowserRuntimePlatform : StandardRuntimePlatform
         {
             IsMobile = isMobile && !isTv,
             IsDesktop = !isMobile && !isTv,
-            IsTv = isTv
+            IsTV = isTv
         };
         
         return result;

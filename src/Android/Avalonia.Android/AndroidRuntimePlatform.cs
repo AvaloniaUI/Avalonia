@@ -29,15 +29,20 @@ namespace Avalonia
     {
         private static readonly Lazy<RuntimePlatformInfo> Info = new(() =>
         {
+            var isDesktop = IsRunningOnDesktop(App.Context);
             var isTv = IsRunningOnTv(App.Context);
 
             return new RuntimePlatformInfo
             {
-                IsMobile = !isTv,
-                IsTv = isTv,
-                IsDesktop = false
+                IsDesktop = isDesktop,
+                IsMobile = !isTv && !isDesktop,
+                IsTV = isTv
             };
         });
+
+        private static bool IsRunningOnDesktop(Context context) =>
+            context.PackageManager.HasSystemFeature("org.chromium.arc") ||
+            context.PackageManager.HasSystemFeature("org.chromium.arc.device_management");
 
         private static bool IsRunningOnTv(Context context) => 
             context.PackageManager.HasSystemFeature(PackageManager.FeatureLeanback);

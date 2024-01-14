@@ -29,7 +29,7 @@ internal class TizenRuntimePlatform : StandardRuntimePlatform
         return new RuntimePlatformInfo
         {
             IsMobile = profile.Equals("mobile", StringComparison.OrdinalIgnoreCase),
-            IsTv = profile.Equals("tv", StringComparison.OrdinalIgnoreCase),
+            IsTV = profile.Equals("tv", StringComparison.OrdinalIgnoreCase),
             IsDesktop = false
         };
     });

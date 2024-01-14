@@ -13,10 +13,10 @@ namespace Avalonia.Platform
     public record struct RuntimePlatformInfo
     {
         public FormFactorType FormFactor => IsDesktop ? FormFactorType.Desktop :
-            IsMobile ? FormFactorType.Mobile : IsTv ? FormFactorType.Tv : FormFactorType.Unknown;
+            IsMobile ? FormFactorType.Mobile : IsTV ? FormFactorType.TV : FormFactorType.Unknown;
         public bool IsDesktop { get; set; }
         public bool IsMobile { get; set; }
-        public bool IsTv { get; set; }
+        public bool IsTV { get; set; }
     }
 
     public enum FormFactorType
@@ -24,6 +24,6 @@ namespace Avalonia.Platform
         Unknown,
         Desktop,
         Mobile,
-        Tv
+        TV
     }
 }
