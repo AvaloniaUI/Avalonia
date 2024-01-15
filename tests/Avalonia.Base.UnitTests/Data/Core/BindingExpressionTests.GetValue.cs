@@ -124,4 +124,21 @@ public abstract partial class BindingExpressionTests
 
         Assert.Equal("fooTargetClass", target.String);
     }
+
+    [Fact]
+    public void Should_Not_Pass_UnsetValue_To_Converter_Until_First_Value_Produced()
+    {
+        var data = new ViewModel { StringValue = "Bar" };
+        var converter = new PrefixConverter();
+        var target = CreateTarget<ViewModel, string?>(
+            o => o.StringValue,
+            converter: converter,
+            converterParameter: "foo");
+
+        Assert.Null(target.String);
+
+        target.DataContext = data;
+
+        Assert.Equal("fooBar", target.String);
+    }
 }

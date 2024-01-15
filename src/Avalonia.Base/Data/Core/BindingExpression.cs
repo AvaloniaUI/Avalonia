@@ -303,8 +303,12 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         if (_nodes.Count == 0 || LeafNode is not ISettableNode setter || setter.ValueType is not { } type)
             return false;
 
-        if (Converter is not null)
-            value = ConvertBack(Converter, ConverterCulture, ConverterParameter, value, type);
+        if (Converter is { } converter &&
+            value != AvaloniaProperty.UnsetValue &&
+            value != BindingOperations.DoNothing)
+        {
+            value = ConvertBack(converter, ConverterCulture, ConverterParameter, value, type);
+        }
 
         if (value == BindingOperations.DoNothing)
             return true;
@@ -436,9 +440,13 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     {
         var isTargetNullValue = false;
 
-        // All values other than DoNothing should be passed to the converter.
-        if (value != BindingOperations.DoNothing && Converter is { } converter)
+        // All values other than UnsetValue and DoNothing should be passed to the converter.
+        if (Converter is { } converter &&
+            value != AvaloniaProperty.UnsetValue &&
+            value != BindingOperations.DoNothing)
+        {
             value = Convert(converter, ConverterCulture, ConverterParameter, value, TargetType, ref error);
+        }
 
         // Check this here as the converter may return DoNothing.
         if (value == BindingOperations.DoNothing)
