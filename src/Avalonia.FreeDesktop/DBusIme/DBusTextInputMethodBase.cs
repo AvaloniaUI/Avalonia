@@ -179,12 +179,23 @@ namespace Avalonia.FreeDesktop.DBusIme
                 _disposables.Add(d);
         }
 
-        public void Dispose()
+        public async void Dispose()
         {
             foreach(var d in _disposables)
                 d.Dispose();
             _disposables.Clear();
-            _ = DisconnectAsync();
+            if (!IsConnected)
+                return;
+            try
+            {
+                await DisconnectAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Error, "IME")
+                    ?.Log(this, "Error while destroying the context:\n" + ex);
+            }
+
             _currentName = null;
         }
 

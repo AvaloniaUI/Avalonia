@@ -263,6 +263,14 @@ export class InputHelper {
         }
     }
 
+    public static subscribeVisibilityChange(
+        handler: (state: boolean) => void): boolean {
+        document.addEventListener("visibilitychange", () => {
+            handler(document.visibilityState === "visible");
+        });
+        return document.visibilityState === "visible";
+    }
+
     public static clearInput(inputElement: HTMLInputElement) {
         inputElement.value = "";
     }

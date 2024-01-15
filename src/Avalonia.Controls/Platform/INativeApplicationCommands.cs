@@ -5,6 +5,7 @@ namespace Avalonia.Controls.Platform
     /// </summary>
     internal interface INativeApplicationCommands
     {
+        void ShowApp();
         void HideApp();
         void ShowAll();
         void HideOthers();

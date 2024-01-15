@@ -20,6 +20,7 @@ namespace Avalonia.Visuals.Platform
             _pathGeometry = null;
         }
 
+        /// <inheritdoc/>
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
             var arcSegment = new ArcSegment
@@ -34,6 +35,7 @@ namespace Avalonia.Visuals.Platform
             CurrentFigureSegments().Add(arcSegment);
         }
 
+        /// <inheritdoc/>
         public void BeginFigure(Point startPoint, bool isFilled)
         {
             ThrowIfDisposed();
@@ -44,30 +46,34 @@ namespace Avalonia.Visuals.Platform
             _pathGeometry.Figures.Add(_currentFigure);
         }
 
-        public void CubicBezierTo(Point point1, Point point2, Point point3)
+        /// <inheritdoc/>
+        public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint)
         {
-            var bezierSegment = new BezierSegment { Point1 = point1, Point2 = point2, Point3 = point3 };
+            var bezierSegment = new BezierSegment { Point1 = controlPoint1, Point2 = controlPoint2, Point3 = endPoint };
 
             CurrentFigureSegments().Add(bezierSegment);
         }
 
-        public void QuadraticBezierTo(Point control, Point endPoint)
+        /// <inheritdoc/>
+        public void QuadraticBezierTo(Point controlPoint , Point endPoint)
         {
-            var quadraticBezierSegment = new QuadraticBezierSegment { Point1 = control, Point2 = endPoint };
+            var quadraticBezierSegment = new QuadraticBezierSegment { Point1 = controlPoint , Point2 = endPoint };
 
             CurrentFigureSegments().Add(quadraticBezierSegment);
         }
 
-        public void LineTo(Point point)
+        /// <inheritdoc/>
+        public void LineTo(Point endPoint)
         {
             var lineSegment = new LineSegment
             {
-                Point = point
+                Point = endPoint
             };
 
             CurrentFigureSegments().Add(lineSegment);
         }
 
+        /// <inheritdoc/>
         public void EndFigure(bool isClosed)
         {
             if (_currentFigure != null)
@@ -78,6 +84,7 @@ namespace Avalonia.Visuals.Platform
             _currentFigure = null;
         }
 
+        /// <inheritdoc/>
         public void SetFillRule(FillRule fillRule)
         {
             ThrowIfDisposed();

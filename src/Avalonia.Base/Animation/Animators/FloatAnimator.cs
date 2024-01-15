@@ -5,7 +5,7 @@
     /// </summary>
     internal class FloatAnimator : Animator<float>
     {
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public override float Interpolate(double progress, float oldValue, float newValue)
         {
             return (float)(((newValue - oldValue) * progress) + oldValue);

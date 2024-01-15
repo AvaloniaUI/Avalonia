@@ -20,7 +20,7 @@ namespace Avalonia
         public static AppBuilder UseAndroid(this AppBuilder builder)
         {
             return builder
-                .UseStandardRuntimePlatformSubsystem()
+                .UseAndroidRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
                 .UseSkia();
         }

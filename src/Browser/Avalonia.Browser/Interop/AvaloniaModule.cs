@@ -33,7 +33,10 @@ internal static partial class AvaloniaModule
 
     [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]
     public static partial bool IsMobile();
-    
+
+    [JSImport("Caniuse.isTv", AvaloniaModule.MainModuleName)]
+    public static partial bool IsTv();
+
     [JSImport("registerServiceWorker", AvaloniaModule.MainModuleName)]
     public static partial void RegisterServiceWorker(string path, string? scope);
 }

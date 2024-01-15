@@ -18,6 +18,7 @@ using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
+using Nuke.Common.IO;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -33,6 +34,9 @@ partial class Build : NukeBuild
 
     [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
     Tool ApiCompatTool;
+    
+    [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
+    Tool ApiGenTool;
 
     protected override void OnBuildInitialized()
     {
@@ -283,9 +287,19 @@ partial class Build : NukeBuild
         .Executes(async () =>
         {
             await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffValidation.ValidatePackage(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.ValidatePackage(
                     ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
                     Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
+        });
+    
+    Target OutputApiDiff => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(async () =>
+        {
+            await Task.WhenAll(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.GetDiff(
+                    ApiGenTool, RootDirectory / "api" / "diff",
+                    nugetPackage, Parameters.ApiValidationBaseline)));
         });
     
     Target RunTests => _ => _

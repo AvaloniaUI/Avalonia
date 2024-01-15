@@ -223,28 +223,31 @@ namespace Avalonia.X11
 
         private void InteractHandler(IntPtr smcConn)
         {
-            Dispatcher.UIThread.Post(() => ActualInteractHandler(smcConn));
+            Dispatcher.UIThread.Post(ActualInteractHandler, smcConn);
         }
 
-        private void ActualInteractHandler(IntPtr smcConn)
+        private void ActualInteractHandler(object? state)
         {
-            var e = new ShutdownRequestedEventArgs();
-
-            if (_platform.Options?.EnableSessionManagement ?? false)
+            if (state is IntPtr smcConn)
             {
-                ShutdownRequested?.Invoke(this, e);
+                var e = new ShutdownRequestedEventArgs();
+
+                if (_platform.Options?.EnableSessionManagement ?? false)
+                {
+                    ShutdownRequested?.Invoke(this, e);
+                }
+
+                SMLib.SmcInteractDone(smcConn, e.Cancel);
+
+                if (e.Cancel)
+                {
+                    return;
+                }
+
+                _saveYourselfPhase = false;
+
+                SMLib.SmcSaveYourselfDone(smcConn, true);
             }
-
-            SMLib.SmcInteractDone(smcConn, e.Cancel);
-
-            if (e.Cancel)
-            {
-                return;
-            }
-
-            _saveYourselfPhase = false;
-
-            SMLib.SmcSaveYourselfDone(smcConn, true);
         }
 
         private static void IceWatchHandler(IntPtr iceConn, IntPtr clientData, bool opening, IntPtr* watchData)

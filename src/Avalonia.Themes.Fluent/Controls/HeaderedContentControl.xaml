@@ -19,10 +19,6 @@
                               ContentTemplate="{TemplateBinding HeaderTemplate}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                              FontSize="{TemplateBinding FontSize}"
-                              FontWeight="{TemplateBinding FontWeight}"
-                              FontFamily="{TemplateBinding FontFamily}"
-                              FontStyle="{TemplateBinding FontStyle}"
                               Grid.Row="0" />
             <ContentPresenter Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -30,10 +26,6 @@
                               RecognizesAccessKey="True"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              FontSize="{TemplateBinding FontSize}"
-                              FontWeight="{TemplateBinding FontWeight}"
-                              FontFamily="{TemplateBinding FontFamily}"
-                              FontStyle="{TemplateBinding FontStyle}"
                               Grid.Row="1" />
           </Grid>
         </Border>

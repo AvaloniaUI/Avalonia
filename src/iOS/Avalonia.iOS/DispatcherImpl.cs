@@ -2,12 +2,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Threading;
 using CoreFoundation;
 using Foundation;
-using ObjCRuntime;
-using CFIndex = System.IntPtr;
 
 namespace Avalonia.iOS;
 
@@ -20,30 +19,28 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     internal static readonly DispatcherImpl Instance = new();
 
     private readonly Stopwatch _clock = Stopwatch.StartNew();
-    private readonly Action _checkSignaledAction;
-    private readonly Action _wakeUpLoopAction;
+    private readonly object _sync = new();
     private readonly IntPtr _timer;
+    private readonly IntPtr _mainLoop;
+    private readonly IntPtr _mainQueue;
     private Thread? _loopThread;
     private bool _backgroundProcessingRequested, _signaled;
 
-    private DispatcherImpl()
+    private unsafe DispatcherImpl()
     {
-        _checkSignaledAction = CheckSignaled;
-        _wakeUpLoopAction = () =>
-        {
-            // This is needed to wakeup the loop if we are called from inside of BeforeWait hook
-        };
+        _mainLoop = Interop.CFRunLoopGetMain();
+        _mainQueue = DispatchQueue.MainQueue.Handle.Handle;
 
         var observer = Interop.CFRunLoopObserverCreate(IntPtr.Zero,
             Interop.CFOptionFlags.kCFRunLoopAfterWaiting | Interop.CFOptionFlags.kCFRunLoopBeforeSources |
             Interop.CFOptionFlags.kCFRunLoopBeforeWaiting,
-            true, 0, ObserverCallback, IntPtr.Zero);
-        Interop.CFRunLoopAddObserver(Interop.CFRunLoopGetMain(), observer, Interop.kCFRunLoopCommonModes);
+            1, 0, &ObserverCallback, IntPtr.Zero);
+        Interop.CFRunLoopAddObserver(_mainLoop, observer, Interop.kCFRunLoopDefaultMode);
 
         _timer = Interop.CFRunLoopTimerCreate(IntPtr.Zero,
             Interop.CFAbsoluteTimeGetCurrent() + DistantFutureInterval,
-            DistantFutureInterval, 0, 0, TimerCallback, IntPtr.Zero);
-        Interop.CFRunLoopAddTimer(Interop.CFRunLoopGetMain(), _timer, Interop.kCFRunLoopCommonModes);
+            DistantFutureInterval, 0, 0, &TimerCallback, IntPtr.Zero);
+        Interop.CFRunLoopAddTimer(_mainLoop, _timer, Interop.kCFRunLoopDefaultMode);
     }
 
     public event Action? Signaled;
@@ -63,16 +60,16 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
         }
     }
 
-    public void Signal()
+    public unsafe void Signal()
     {
-        lock (this)
+        lock (_sync)
         {
             if (_signaled)
                 return;
             _signaled = true;
 
-            DispatchQueue.MainQueue.DispatchAsync(_checkSignaledAction);
-            CFRunLoop.Main.WakeUp();
+            Interop.dispatch_async_f(_mainQueue, IntPtr.Zero, &CheckSignaled);
+            Interop.CFRunLoopWakeUp(_mainLoop);
         }
     }
 
@@ -86,18 +83,18 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
 
     public long Now => _clock.ElapsedMilliseconds;
 
-    public void RequestBackgroundProcessing()
+    public unsafe void RequestBackgroundProcessing()
     {
         if (_backgroundProcessingRequested)
             return;
         _backgroundProcessingRequested = true;
-        DispatchQueue.MainQueue.DispatchAsync(_wakeUpLoopAction);
+        Interop.dispatch_async_f(_mainQueue, IntPtr.Zero, &WakeUpCallback);
     }
 
     private void CheckSignaled()
     {
         bool signaled;
-        lock (this)
+        lock (_sync)
         {
             signaled = _signaled;
             _signaled = false;
@@ -109,13 +106,25 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
         }
     }
 
-    [MonoPInvokeCallback(typeof(Interop.CFRunLoopObserverCallback))]
+    [UnmanagedCallersOnly]
+    private static void CheckSignaled(IntPtr context)
+    {
+        Instance.CheckSignaled();
+    }
+
+    [UnmanagedCallersOnly]
+    private static void WakeUpCallback(IntPtr context)
+    {
+        
+    }
+
+    [UnmanagedCallersOnly]
     private static void ObserverCallback(IntPtr observer, Interop.CFOptionFlags activity, IntPtr info)
     {
         if (activity == Interop.CFOptionFlags.kCFRunLoopBeforeWaiting)
         {
             bool triggerProcessing;
-            lock (Instance)
+            lock (Instance._sync)
             {
                 triggerProcessing = Instance._backgroundProcessingRequested;
                 Instance._backgroundProcessingRequested = false;
@@ -127,7 +136,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
         Instance.CheckSignaled();
     }
 
-    [MonoPInvokeCallback(typeof(Interop.CFRunLoopTimerCallback))]
+    [UnmanagedCallersOnly]
     private static void TimerCallback(IntPtr timer, IntPtr info)
     {
         Instance.Timer?.Invoke();

@@ -9,7 +9,7 @@ namespace Avalonia.Animation.Animators
     {
         const double maxVal = (double)UInt64.MaxValue;
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public override UInt64 Interpolate(double progress, UInt64 oldValue, UInt64 newValue)
         {
             var normOV = oldValue / maxVal;

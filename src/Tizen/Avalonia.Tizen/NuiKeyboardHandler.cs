@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using System.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Logging;
 using Avalonia.Tizen.Platform.Input;
@@ -26,14 +27,10 @@ internal class NuiKeyboardHandler
 
         if (ShouldSendKeyEvent(e, out var keyCode))
         {
-            var mapped = TizenKeyboardDevice.ConvertKey(keyCode);
-            if (mapped == Input.Key.None)
-                return;
-
             Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Triggering key event {text}", e.Key.KeyString);
-            SendKeyEvent(e, mapped);
+            SendKeyEvent(e, keyCode);
         }
-        else if (e.Key.State == Key.StateType.Up)
+        else if (e.Key.State == Key.StateType.Up && !string.IsNullOrEmpty(e.Key.KeyString))
         {
             Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Triggering text input {text}", e.Key.KeyString);
             _view.TopLevelImpl.TextInput(e.Key.KeyString);
@@ -44,6 +41,7 @@ internal class NuiKeyboardHandler
     {
         var type = GetKeyEventType(e);
         var modifiers = GetModifierKey(e);
+        var deviceType = GetDeviceType(e);
 
         _view.TopLevelImpl.Input?.Invoke(
             new RawKeyEventArgs(
@@ -52,22 +50,25 @@ internal class NuiKeyboardHandler
                 _view.InputRoot,
                 type,
                 mapped,
-                modifiers));
+                modifiers,
+                PhysicalKey.None,
+                deviceType,
+                e.Key.KeyString
+                ));
     }
 
-    private bool ShouldSendKeyEvent(Window.KeyEventArgs e, out global::Tizen.Uix.InputMethod.KeyCode keyCode)
+    private bool ShouldSendKeyEvent(Window.KeyEventArgs e, out Input.Key keyCode)
     {
-        if (string.IsNullOrEmpty(e.Key.KeyString) || 
-            e.Key.KeyPressedName is "Delete" or "BackSpace" ||
-            e.Key.IsCtrlModifier() || 
-            e.Key.IsAltModifier())
+        keyCode = TizenKeyboardDevice.GetSpecialKey(e.Key.KeyPressedName);
+        if (keyCode != Input.Key.None)
+            return true;
+
+        if ((e.Key.IsCtrlModifier() || e.Key.IsAltModifier()) && !string.IsNullOrEmpty(e.Key.KeyString))
         {
-            if (Enum.TryParse(e.Key.KeyPressedName, true, out keyCode) ||
-                Enum.TryParse($"Keypad{e.Key.KeyPressedName}", true, out keyCode))
-                return true;
+            var c = e.Key.KeyPressedName.Length == 1 ? e.Key.KeyPressedName[0] : (char)e.Key.KeyCode;
+            return (keyCode = TizenKeyboardDevice.GetAsciiKey(c)) != Input.Key.None;
         }
 
-        keyCode = 0;
         return false;
     }
 
@@ -98,5 +99,16 @@ internal class NuiKeyboardHandler
             modifiers |= RawInputModifiers.Control;
 
         return modifiers;
+    }
+
+    private KeyDeviceType GetDeviceType(Window.KeyEventArgs ev)
+    {
+        if (ev.Key.DeviceClass == DeviceClassType.Gamepad)
+            return KeyDeviceType.Gamepad;
+
+        if (ev.Key.DeviceSubClass == DeviceSubClassType.Remocon)
+            return KeyDeviceType.Remote;
+
+        return KeyDeviceType.Keyboard;
     }
 }

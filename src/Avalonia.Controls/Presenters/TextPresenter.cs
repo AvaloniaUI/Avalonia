@@ -595,12 +595,6 @@ namespace Avalonia.Controls.Presenters
             InvalidateMeasure();
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
-            EnsureTextSelectionLayer();
-        }
-
         protected override Size MeasureOverride(Size availableSize)
         {
             _constraint = availableSize;
@@ -894,8 +888,7 @@ namespace Avalonia.Controls.Presenters
 
             ResetCaretTimer();
 
-            if (TextSelectionHandleCanvas is { } canvas && _layer != null && !_layer.Children.Contains(canvas))
-                _layer?.Add(TextSelectionHandleCanvas);
+            EnsureTextSelectionLayer();
         }
 
         private void EnsureTextSelectionLayer()
@@ -903,10 +896,17 @@ namespace Avalonia.Controls.Presenters
             if (TextSelectionHandleCanvas == null)
             {
                 TextSelectionHandleCanvas = new TextSelectionHandleCanvas();
-                TextSelectionHandleCanvas.SetPresenter(this);
             }
+            TextSelectionHandleCanvas.SetPresenter(this);
             _layer = TextSelectorLayer.GetTextSelectorLayer(this);
-            if (_layer != null && !_layer.Children.Contains(TextSelectionHandleCanvas))
+            if (TextSelectionHandleCanvas.VisualParent is { } parent && parent != _layer)
+            {
+                if (parent is TextSelectorLayer l)
+                {
+                    l.Remove(TextSelectionHandleCanvas);
+                }
+            }
+            if (_layer != null && TextSelectionHandleCanvas.VisualParent != _layer)
                 _layer?.Add(TextSelectionHandleCanvas);
         }
 

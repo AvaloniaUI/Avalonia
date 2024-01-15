@@ -6,7 +6,7 @@
     <Setter Property="Background" Value="{DynamicResource NotificationCardBackgroundBrush}" />
     <Setter Property="UseLayoutRounding" Value="True" />
     <Setter Property="Width" Value="350" />
-    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="RenderTransformOrigin" Value="50%,75%" />
     <Setter Property="Template">

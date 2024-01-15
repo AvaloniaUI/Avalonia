@@ -30,23 +30,23 @@ namespace Avalonia.Platform
         /// <summary>
         /// Draws a Bezier curve to the specified point.
         /// </summary>
-        /// <param name="point1">The first control point used to specify the shape of the curve.</param>
-        /// <param name="point2">The second control point used to specify the shape of the curve.</param>
-        /// <param name="point3">The destination point for the end of the curve.</param>
-        void CubicBezierTo(Point point1, Point point2, Point point3);
+        /// <param name="controlPoint1">The first control point used to specify the shape of the curve.</param>
+        /// <param name="controlPoint2">The second control point used to specify the shape of the curve.</param>
+        /// <param name="endPoint">The destination point for the end of the curve.</param>
+        void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint);
 
         /// <summary>
         /// Draws a quadratic Bezier curve to the specified point
         /// </summary>
-        /// <param name="control">Control point</param>
+        /// <param name="controlPoint ">Control point</param>
         /// <param name="endPoint">DestinationPoint</param>
-        void QuadraticBezierTo(Point control, Point endPoint);
+        void QuadraticBezierTo(Point controlPoint , Point endPoint);
 
         /// <summary>
         /// Draws a line to the specified point.
         /// </summary>
-        /// <param name="point">The destination point.</param>
-        void LineTo(Point point);
+        /// <param name="endPoint">The destination point.</param>
+        void LineTo(Point endPoint);
 
         /// <summary>
         /// Ends the figure started by <see cref="BeginFigure(Point, bool)"/>.
@@ -55,9 +55,9 @@ namespace Avalonia.Platform
         void EndFigure(bool isClosed);
 
         /// <summary>
-        /// Sets the fill rule.
+        /// Sets path's winding rule (default is EvenOdd). You should call this method before any calls to BeginFigure.
         /// </summary>
-        /// <param name="fillRule">The fill rule.</param>
+        /// <param name="fillRule"></param>
         void SetFillRule(FillRule fillRule);
     }
 }

@@ -4,7 +4,5 @@
   <ControlTheme x:Key="{x:Type ThemeVariantScope}"
                 TargetType="ThemeVariantScope">
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
-    <Setter Property="TextElement.FontSize" Value="{DynamicResource ControlContentThemeFontSize}"/>
-    <Setter Property="TextElement.FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
   </ControlTheme>
 </ResourceDictionary>

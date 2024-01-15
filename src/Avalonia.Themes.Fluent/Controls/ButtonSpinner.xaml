@@ -79,7 +79,6 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Focusable" Value="True"/>
@@ -104,7 +103,6 @@
                               VerticalAlignment="Stretch"
                               VerticalContentAlignment="Center"
                               Foreground="{TemplateBinding Foreground}"
-                              FontSize="{TemplateBinding FontSize}"
                               MinWidth="34">
                   <PathIcon Width="16"
                             Height="8"
@@ -119,7 +117,6 @@
                               VerticalAlignment="Stretch"
                               VerticalContentAlignment="Center"
                               Foreground="{TemplateBinding Foreground}"
-                              FontSize="{TemplateBinding FontSize}"
                               MinWidth="34">
                   <PathIcon Width="16"
                             Height="8"

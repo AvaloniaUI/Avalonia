@@ -21,7 +21,6 @@
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
     <Setter Property="ScrollViewer.IsScrollInertiaEnabled" Value="True" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
