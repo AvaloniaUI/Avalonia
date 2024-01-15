@@ -110,8 +110,6 @@ public class DispatcherTests
                     Thread.Sleep(10);
             }
         }
-
-
     }
     
     
@@ -502,5 +500,28 @@ public class DispatcherTests
             Assert.True(t.IsCompletedSuccessfully);
             t.GetAwaiter().GetResult();
         }
+    }
+
+    [Fact]
+    public async Task DispatcherYieldContinuesOnUIThread()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                await Task.Delay(1).ConfigureAwait(false);
+                Assert.False(Dispatcher.UIThread.CheckAccess());
+
+                await Dispatcher.UIThread.Yield();
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
     }
 }
