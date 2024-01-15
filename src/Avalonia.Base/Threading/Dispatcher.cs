@@ -99,10 +99,10 @@ public partial class Dispatcher : IDispatcher
     /// </returns>
     /// <remarks>
     /// This method is equivalent to calling the <see cref="Yield(DispatcherPriority)"/> method
-    /// and passing in <see cref="DispatcherPriority.Default"/>.
+    /// and passing in <see cref="DispatcherPriority.Background"/>.
     /// </remarks>
     public DispatcherYieldAwaitable Yield() =>
-        new(this, DispatcherPriority.Default);
+        new(this, DispatcherPriority.Background);
 
     /// <summary>
     /// Creates an awaitable object that asynchronously yields control back to the current dispatcher
