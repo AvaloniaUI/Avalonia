@@ -9,7 +9,7 @@ namespace Avalonia.Animation.Animators
     {
         const double maxVal = (double)byte.MaxValue;
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public override byte Interpolate(double progress, byte oldValue, byte newValue)
         {
             var normOV = oldValue / maxVal;

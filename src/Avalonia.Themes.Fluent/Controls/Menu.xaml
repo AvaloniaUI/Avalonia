@@ -17,7 +17,6 @@
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
     <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource MenuBarItemPadding}" />
     <Setter Property="Template">
       <ControlTemplate>

@@ -4,6 +4,5 @@
   <ControlTheme x:Key="{x:Type ThemeVariantScope}"
                 TargetType="ThemeVariantScope">
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-    <Setter Property="TextElement.FontSize" Value="{DynamicResource FontSizeNormal}" />
   </ControlTheme>
 </ResourceDictionary>

@@ -293,6 +293,7 @@ namespace Avalonia.Controls
                             KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
                             Key = rawKeyEventArgs.Key,
                             PhysicalKey = rawKeyEventArgs.PhysicalKey,
+                            KeyDeviceType= rawKeyEventArgs.KeyDeviceType,
                             KeySymbol = rawKeyEventArgs.KeySymbol
                         };
 
