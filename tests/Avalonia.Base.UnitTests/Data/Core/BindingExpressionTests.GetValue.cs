@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Data;
 using Xunit;
 
 #nullable enable
@@ -108,5 +109,19 @@ public abstract partial class BindingExpressionTests
 
         expression.UpdateTarget();
         Assert.Equal("bar", target.String);
+    }
+
+    [Fact]
+    public void Should_Use_Converter_For_RelativeSource_Self_Binding_With_No_Path()
+    {
+        var converter = new PrefixConverter();
+        var target = CreateTarget<TargetClass, TargetClass>(
+            o => o,
+            converter: converter,
+            converterParameter: "foo",
+            relativeSource: new RelativeSource(RelativeSourceMode.Self),
+            targetProperty: TargetClass.StringProperty);
+
+        Assert.Equal("fooTargetClass", target.String);
     }
 }

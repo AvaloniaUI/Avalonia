@@ -365,7 +365,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             if (_nodes.Count > 0)
                 _nodes[0].SetSource(source, null);
             else
-                PublishValue(source);
+                ConvertAndPublishValue(source, null);
 
             if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
                 TryGetTarget(out var target) &&

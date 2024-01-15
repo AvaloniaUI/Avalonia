@@ -30,6 +30,7 @@ public abstract partial class BindingExpressionTests
             bool enableDataValidation,
             Optional<object?> fallbackValue,
             BindingMode mode,
+            RelativeSource? relativeSource,
             Optional<TIn> source,
             object? targetNullValue,
             UpdateSourceTrigger updateSourceTrigger)
@@ -39,6 +40,9 @@ public abstract partial class BindingExpressionTests
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
             List<ExpressionNode>? nodes = null;
 
+            if (relativeSource is not null && relativeSource.Mode is not RelativeSourceMode.Self)
+                throw new NotImplementedException();
+
             if (!string.IsNullOrEmpty(path))
             {
                 var reader = new CharacterReader(path.AsSpan());
@@ -46,7 +50,7 @@ public abstract partial class BindingExpressionTests
                 nodes = ExpressionNodeFactory.CreateFromAst(astNodes, resolver, null, out _);
             }
 
-            if (!source.HasValue)
+            if (!source.HasValue && relativeSource is null)
             {
                 nodes ??= new();
                 nodes.Insert(0, new DataContextNode());
@@ -80,6 +84,7 @@ public abstract partial class BindingExpressionTests
             bool enableDataValidation,
             Optional<object?> fallbackValue,
             BindingMode mode,
+            RelativeSource? relativeSource,
             Optional<TIn> source,
             object? targetNullValue,
             UpdateSourceTrigger updateSourceTrigger)
@@ -89,9 +94,12 @@ public abstract partial class BindingExpressionTests
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
             var path = CompiledBindingPathFromExpressionBuilder.Build(expression, enableDataValidation);
 
+            if (relativeSource is not null && relativeSource.Mode is not RelativeSourceMode.Self)
+                throw new NotImplementedException();
+
             path.BuildExpression(nodes, out var _);
 
-            if (!source.HasValue)
+            if (!source.HasValue && relativeSource is null)
                 nodes.Insert(0, new DataContextNode());
 
             var bindingExpression = new BindingExpression(
@@ -119,6 +127,7 @@ public abstract partial class BindingExpressionTests
         bool enableDataValidation = false,
         Optional<object?> fallbackValue = default,
         BindingMode mode = BindingMode.OneWay,
+        RelativeSource? relativeSource = null,
         Optional<TIn> source = default,
         object? targetNullValue = null)
             where TIn : class?
@@ -132,6 +141,7 @@ public abstract partial class BindingExpressionTests
             enableDataValidation,
             fallbackValue,
             mode,
+            relativeSource,
             source,
             targetNullValue);
         return target;
@@ -146,6 +156,7 @@ public abstract partial class BindingExpressionTests
         bool enableDataValidation = false,
         Optional<object?> fallbackValue = default,
         BindingMode mode = BindingMode.OneWay,
+        RelativeSource? relativeSource = null,
         object? targetNullValue = null,
         UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
             where TIn : class?
@@ -159,6 +170,7 @@ public abstract partial class BindingExpressionTests
             enableDataValidation,
             fallbackValue,
             mode,
+            relativeSource,
             source,
             targetNullValue,
             updateSourceTrigger);
@@ -174,6 +186,7 @@ public abstract partial class BindingExpressionTests
         bool enableDataValidation = false,
         Optional<object?> fallbackValue = default,
         BindingMode mode = BindingMode.OneWay,
+        RelativeSource? relativeSource = null,
         Optional<TIn> source = default,
         object? targetNullValue = null,
         UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
@@ -197,6 +210,7 @@ public abstract partial class BindingExpressionTests
             enableDataValidation,
             fallbackValue,
             mode,
+            relativeSource,
             source,
             targetNullValue,
             updateSourceTrigger);
@@ -211,6 +225,7 @@ public abstract partial class BindingExpressionTests
         bool enableDataValidation,
         Optional<object?> fallbackValue,
         BindingMode mode,
+        RelativeSource? relativeSource,
         Optional<TIn> source,
         object? targetNullValue,
         UpdateSourceTrigger updateSourceTrigger)
@@ -365,6 +380,8 @@ public abstract partial class BindingExpressionTests
         }
 
         public Dictionary<AvaloniaProperty, BindingNotification> BindingNotifications { get; } = new();
+
+        public override string ToString() => nameof(TargetClass);
 
         protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {
