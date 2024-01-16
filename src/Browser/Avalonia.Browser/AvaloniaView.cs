@@ -71,26 +71,18 @@ namespace Avalonia.Browser
             _splash = DomHelper.GetElementById("avalonia-splash");
 
             _topLevelImpl = new BrowserTopLevelImpl(this, _containerElement);
-
-            _topLevel = new WebEmbeddableControlRoot(_topLevelImpl, () =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (_splash != null)
-                    {
-                        DomHelper.AddCssClass(_splash, "splash-close");
-                    }
-                });
-            });
-
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
                 InputHelper.SetCursor(_containerElement, cursor);
             };
 
+            _topLevel = new EmbeddableControlRoot(_topLevelImpl);
             _topLevel.Prepare();
-
             _topLevel.Renderer.Start();
+            if (_splash != null)
+            {
+                _topLevel.RequestAnimationFrame(_ => DomHelper.AddCssClass(_splash, "splash-close"));
+            }
 
             InputHelper.InitializeBackgroundHandlers();
 
