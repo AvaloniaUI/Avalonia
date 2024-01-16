@@ -338,6 +338,7 @@ namespace Avalonia.Diagnostics.ViewModels
             StartupScreenIndex = options.StartupScreenIndex;
             ShowImplementedInterfaces = options.ShowImplementedInterfaces;
             FocusHighlighter = options.FocusHighlighterBrush;
+            SelectedTab = (int)options.LaunchView;
         }
 
         public bool ShowImplementedInterfaces

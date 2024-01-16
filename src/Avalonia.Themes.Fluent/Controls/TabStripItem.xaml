@@ -39,10 +39,7 @@
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Content}"
-                ContentTemplate="{TemplateBinding ContentTemplate}"
-                FontFamily="{TemplateBinding FontFamily}"
-                FontSize="{TemplateBinding FontSize}"
-                FontWeight="{TemplateBinding FontWeight}" />
+                ContentTemplate="{TemplateBinding ContentTemplate}" />
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
                     CornerRadius="{DynamicResource ControlCornerRadius}"
