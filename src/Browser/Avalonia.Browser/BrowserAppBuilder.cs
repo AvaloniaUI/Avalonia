@@ -58,6 +58,7 @@ public static class BrowserAppBuilder
             .AfterSetup(_ =>
             {
                 lifetime.View = new AvaloniaView(mainDivId);
+                lifetime.CompleteSetup();
             })
             .SetupWithLifetime(lifetime);
     }
@@ -77,6 +78,10 @@ public static class BrowserAppBuilder
 
         var lifetime = new BrowserSingleViewLifetime();
         builder
+            .AfterSetup(_ =>
+            {
+                lifetime.CompleteSetup();
+            })
             .SetupWithLifetime(lifetime);
     }
 
