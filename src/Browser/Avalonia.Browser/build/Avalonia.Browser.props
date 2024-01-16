@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <ShouldIncludeAvaloniaAssets Condition=" '$(ShouldIncludeAvaloniaAssets)' == '' ">True</ShouldIncludeAvaloniaAssets>
+    <ShouldIncludeAvaloniaLegacyAssets Condition=" '$(ShouldIncludeAvaloniaLegacyAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True' AND '$(StaticWebAssetsEnabled)' != 'True'">True</ShouldIncludeAvaloniaLegacyAssets>
+    <ShouldIncludeAvaloniaStaticAsset Condition=" '$(ShouldIncludeAvaloniaStaticAsset)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True' AND '$(StaticWebAssetsEnabled)' == 'True'">True</ShouldIncludeAvaloniaStaticAsset>
+
+    <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">True</ShouldIncludeNativeSkiaSharp>
+    <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">True</ShouldIncludeNativeHarfBuzzSharp>
+    <!-- .NET 8 changes default location for dotnet script to the "_framework" subfolder, -->
+    <!-- But this change would introduce a breaking change to Avalonia users, so we revert it back to the .NET 7 state. -->
+    <WasmRuntimeAssetsLocation Condition="'$(WasmRuntimeAssetsLocation)' == ''">./</WasmRuntimeAssetsLocation>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssets.props" />
+</Project>

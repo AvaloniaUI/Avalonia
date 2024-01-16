@@ -38,6 +38,6 @@
     <WasmExtraFilesToDeploy Include="app.css" />
   </ItemGroup>
 
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.props" />
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.targets" />
+  <Import Project="..\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.props" />
+  <Import Project="..\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.targets" />
 </Project>
