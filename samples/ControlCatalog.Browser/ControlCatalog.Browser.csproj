@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <WasmRuntimeAssetsLocation>./</WasmRuntimeAssetsLocation>
   </PropertyGroup>
 
   <ItemGroup>
