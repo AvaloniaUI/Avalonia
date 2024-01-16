@@ -9,7 +9,7 @@ namespace Avalonia.Animation.Animators
     {
         const double maxVal = (double)Int16.MaxValue;
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public override Int16 Interpolate(double progress, Int16 oldValue, Int16 newValue)
         {
             var normOV = oldValue / maxVal;
