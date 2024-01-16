@@ -2,7 +2,7 @@
   <PropertyGroup>
     <_AvaloniaWebAssetsFolder>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../staticwebassets/))</_AvaloniaWebAssetsFolder>
   </PropertyGroup>
-  <ItemGroup Condition="'$(ShouldIncludeAvaloniaStaticAsset)' == 'True'">
+  <ItemGroup Condition="'$(ShouldIncludeAvaloniaStaticAssets)' == 'True'">
     <!-- This file repricates how StaticWebAsset SDK generates static web assets for Blazor nuget packages, which we don't use here. -->
     <_AvaloniaWebAssets Include="$(_AvaloniaWebAssetsFolder)**/*.*" />
     <StaticWebAsset Include="@(_AvaloniaWebAssets)">

@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <ShouldIncludeAvaloniaAssets Condition=" '$(ShouldIncludeAvaloniaAssets)' == '' ">True</ShouldIncludeAvaloniaAssets>
-    <ShouldIncludeAvaloniaLegacyAssets Condition=" '$(ShouldIncludeAvaloniaLegacyAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True' AND '$(StaticWebAssetsEnabled)' != 'True'">True</ShouldIncludeAvaloniaLegacyAssets>
-    <ShouldIncludeAvaloniaStaticAsset Condition=" '$(ShouldIncludeAvaloniaStaticAsset)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True' AND '$(StaticWebAssetsEnabled)' == 'True'">True</ShouldIncludeAvaloniaStaticAsset>
+    <ShouldIncludeAvaloniaLegacyAssets Condition=" '$(ShouldIncludeAvaloniaLegacyAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True'">True</ShouldIncludeAvaloniaLegacyAssets>
+    <ShouldIncludeAvaloniaStaticAssets Condition=" '$(ShouldIncludeAvaloniaStaticAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True'">True</ShouldIncludeAvaloniaStaticAssets>
 
     <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">True</ShouldIncludeNativeSkiaSharp>
     <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">True</ShouldIncludeNativeHarfBuzzSharp>
