@@ -877,9 +877,9 @@ namespace Avalonia.Controls
             }
         }
 
-#pragma warning disable CA1815 // Equals und Gleichheitsoperator für Werttypen außer Kraft setzen
+#pragma warning disable CA1815
         protected readonly struct InlinesTextSource : ITextSource
-#pragma warning restore CA1815 // Equals und Gleichheitsoperator für Werttypen außer Kraft setzen
+#pragma warning restore CA1815
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
             private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
