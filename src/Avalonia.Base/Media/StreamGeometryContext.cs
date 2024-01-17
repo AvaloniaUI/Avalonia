@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -13,6 +14,17 @@ namespace Avalonia.Media
     public class StreamGeometryContext : IGeometryContext
     {
         private readonly IStreamGeometryContextImpl _impl;
+        private abstract record Command
+        {
+            public sealed record Fill(FillRule rule) : Command;
+            public sealed record ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection) : Command;
+            public sealed record BeginFigure(Point startPoint, bool isFilled) : Command;
+            public sealed record CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint) : Command;
+            public sealed record QuadraticBezierTo(Point controlPoint, Point endPoint) : Command;
+            public sealed record LineTo(Point endPoint) : Command;
+            public sealed record EndFigure(bool isClosed) : Command;
+        }
+        private readonly List<Command> _commands = new();
 
         private Point _currentPoint;
 
@@ -29,19 +41,15 @@ namespace Avalonia.Media
         /// Sets path's winding rule (default is EvenOdd). You should call this method before any calls to BeginFigure. If you wonder why, ask Direct2D guys about their design decisions.
         /// </summary>
         /// <param name="fillRule"></param>
-        public void SetFillRule(FillRule fillRule)
-        {
-            _impl.SetFillRule(fillRule);
-        }
-
+        public void SetFillRule(FillRule fillRule) =>
+            _commands.Add(new Command.Fill(fillRule));
 
         /// <inheritdoc/>
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            _impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
+            _commands.Add(new Command.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection));
             _currentPoint = point;
         }
-
 
         /// <summary>
         /// Draws an arc to the specified point using polylines, quadratic or cubic Bezier curves
@@ -57,42 +65,87 @@ namespace Avalonia.Media
         public void PreciseArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
             PreciseEllipticArcHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
+            _currentPoint = point;
         }
-
 
         /// <inheritdoc/>
         public void BeginFigure(Point startPoint, bool isFilled)
         {
-            _impl.BeginFigure(startPoint, isFilled);
+            _commands.Add(new Command.BeginFigure(startPoint, isFilled));
             _currentPoint = startPoint;
         }
 
         /// <inheritdoc/>
         public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint)
         {
-            _impl.CubicBezierTo(controlPoint1, controlPoint2, endPoint);
+            _commands.Add(new Command.CubicBezierTo(controlPoint1, controlPoint2, endPoint));
             _currentPoint = endPoint;
         }
 
         /// <inheritdoc/>
-        public void QuadraticBezierTo(Point controlPoint , Point endPoint)
+        public void QuadraticBezierTo(Point controlPoint, Point endPoint)
         {
-            _impl.QuadraticBezierTo(controlPoint , endPoint);
+            _commands.Add(new Command.QuadraticBezierTo(controlPoint, endPoint));
             _currentPoint = endPoint;
         }
-
 
         /// <inheritdoc/>
         public void LineTo(Point endPoint)
         {
-            _impl.LineTo(endPoint);
+            _commands.Add(new Command.LineTo(endPoint));
             _currentPoint = endPoint;
         }
 
         /// <inheritdoc/>
         public void EndFigure(bool isClosed)
         {
-            _impl.EndFigure(isClosed);
+            var endFigureIndex = _commands.Count;
+            _commands.Add(new Command.EndFigure(isClosed));
+            var nCommands = endFigureIndex + 1;
+            if (nCommands > 1)
+            {
+                var empty = false;
+                for (int i = 0; !empty == i < nCommands; i++)
+                {
+                    var currentCommand = _commands[i];
+                    switch (currentCommand)
+                    {
+                        case Command.BeginFigure begin:
+                            {
+                                if (i + 1 == endFigureIndex)
+                                {
+                                    empty = true;
+                                }
+                                else
+                                {
+                                    _impl.BeginFigure(begin.startPoint, begin.isFilled);
+                                }
+                            }
+                            break;
+                        case Command.EndFigure end:
+                            _impl.EndFigure(end.isClosed);
+                            break;
+                        case Command.ArcTo arc:
+                            _impl.ArcTo(arc.point, arc.size, arc.rotationAngle, arc.isLargeArc, arc.sweepDirection);
+                            break;
+                        case Command.CubicBezierTo cBezier:
+                            _impl.CubicBezierTo(cBezier.controlPoint1, cBezier.controlPoint2, cBezier.endPoint);
+                            break;
+                        case Command.Fill fill:
+                            _impl.SetFillRule(fill.rule);
+                            break;
+                        case Command.LineTo line:
+                            _impl.LineTo(line.endPoint);
+                            break;
+                        case Command.QuadraticBezierTo qBezier:
+                            _impl.QuadraticBezierTo(qBezier.controlPoint, qBezier.endPoint);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            _commands.Clear();
         }
 
         /// <summary>
