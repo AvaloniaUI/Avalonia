@@ -341,6 +341,7 @@ namespace Avalonia.Controls
                 _resizeData.Adorner = new PreviewAdorner(builtPreviewContent);
 
                 AdornerLayer.SetAdornedElement(_resizeData.Adorner, this);
+                AdornerLayer.SetIsClipEnabled(_resizeData.Adorner, false);
 
                 adornerLayer.Children.Add(_resizeData.Adorner);
 
