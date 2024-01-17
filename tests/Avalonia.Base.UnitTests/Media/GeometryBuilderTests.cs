@@ -57,29 +57,5 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.True(points.IsRounded);
         }
-
-        [Theory]
-        [InlineData(20.0, 10.0)]
-        public void CalculateRoundedCornersRectangle_OuterBorderEdge_Test(
-            double uniformBorders,
-            double uniformCorners)
-        {
-            var bounds = new Rect(new Size(100, 100));
-            var borderThickness = new Thickness(uniformBorders);
-            var cornerRadius = new CornerRadius(uniformCorners);
-
-            var points = GeometryBuilder.CalculateRoundedCornersRectangle(bounds, borderThickness, cornerRadius, BackgroundSizing.OuterBorderEdge);
-
-            Assert.Equal(new Point(0, uniformCorners), points.LeftTop);
-            Assert.Equal(new Point(uniformCorners, 0), points.TopLeft);
-            Assert.Equal(new Point(100 - uniformCorners, 0), points.TopRight);
-            Assert.Equal(new Point(100, uniformCorners), points.RightTop);
-            Assert.Equal(new Point(100, 100 - uniformCorners), points.RightBottom);
-            Assert.Equal(new Point(100 - uniformCorners, 100), points.BottomRight);
-            Assert.Equal(new Point(uniformCorners, 100), points.BottomLeft);
-            Assert.Equal(new Point(0, 100 - uniformCorners), points.LeftBottom);
-
-            Assert.True(points.IsRounded);
-        }
     }
 }

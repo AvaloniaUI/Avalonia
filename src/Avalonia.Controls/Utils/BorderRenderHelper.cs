@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Utils
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
                     backgroundGeometry = new StreamGeometry();
-                    var backgroundOuterKeypoints = GeometryBuilder.CalculateRoundedCornersRectangle(
+                    var backgroundOuterKeypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
                         boundRect,
                         borderThickness,
                         cornerRadius,
@@ -71,12 +71,12 @@ namespace Avalonia.Controls.Utils
                 if (boundRect.Width != 0 && boundRect.Height != 0)
                 {
                     var borderGeometry = new StreamGeometry();
-                    var borderInnerKeypoints = GeometryBuilder.CalculateRoundedCornersRectangle(
+                    var borderInnerKeypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
                         boundRect,
                         borderThickness,
                         cornerRadius,
                         BackgroundSizing.InnerBorderEdge);
-                    var borderOuterKeypoints = GeometryBuilder.CalculateRoundedCornersRectangle(
+                    var borderOuterKeypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
                         boundRect,
                         borderThickness,
                         cornerRadius,
