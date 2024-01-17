@@ -197,6 +197,10 @@ namespace Avalonia.Media
         /// Calculates the keypoints of a rounded rectangle using a custom algorithm that produces straight-edges (no hooks).
         /// These keypoints may then be drawn or transformed into other types.
         /// </summary>
+        /// <remarks>
+        /// This is a new implementation for Avalonia not directly based on any other code.
+        /// It more closely follows what is done in other designer software rather than WinUI.
+        /// </remarks>
         /// <param name="boundRect">The outer bounds of the rounded rectangle.
         /// This should be the overall bounds and size of the shape/control without any
         /// corner radii or border thickness adjustments.</param>
@@ -211,57 +215,132 @@ namespace Avalonia.Media
             CornerRadius cornerRadius,
             BackgroundSizing sizing)
         {
-            // This is a new implementation for Avalonia not based on any other code
-            // It is the initial calculation algorithm supporting BackgroundSizing
+            double left;
+            double right;
+            double top;
+            double bottom;
 
-            // Both the border thickness (offsets) and corner radius need to be adjust here
-            // The borderThickenss is treating as offsets in the following code and those offsets
+            double topLeftRadiusX;
+            double topLeftRadiusY;
+            double topRightRadiusX;
+            double topRightRadiusY;
+            double bottomRightRadiusX;
+            double bottomRightRadiusY;
+            double bottomLeftRadiusX;
+            double bottomLeftRadiusY;
+
+            // Both the border thickness (offsets) and corner radius need to be adjust here.
+            //
+            // The borderThickness is treated as offsets in the following code and those offsets
             // change whether the rounded rectangle is outside or inside the bounding box border.
+            //
+            // Corner radius is also treated as offsets from the non-rounded rectangle corner.
+            // The algorithm below uses corner radius values directly for the rounded rect.
+            // (Whatever corner radius is passed to the algorithm will be the radius on the rounded rect)
+            // However, the input corner radius (in XAML) is defined to be the middle of the stroke (border).
+            // Therefore, the corner radius must be adjusted depending on outside or inside sizing as well.
+
+            if (borderThickness != default)
+            {
+                left = 0.5 * borderThickness.Left;
+                right = 0.5 * borderThickness.Right;
+                top = 0.5 * borderThickness.Top;
+                bottom = 0.5 * borderThickness.Bottom;
+            }
+            else
+            {
+                left = 0.0;
+                right = 0.0;
+                top = 0.0;
+                bottom = 0.0;
+            }
+
             if (sizing == BackgroundSizing.InnerBorderEdge)
             {
-                // borderThickness has no changes
+                topLeftRadiusX = Math.Max(0.0, cornerRadius.TopLeft - left);
+                topLeftRadiusY = Math.Max(0.0, cornerRadius.TopLeft - top);
+                topRightRadiusX = Math.Max(0.0, cornerRadius.TopRight - right);
+                topRightRadiusY = Math.Max(0.0, cornerRadius.TopRight - top);
+                bottomRightRadiusX = Math.Max(0.0, cornerRadius.BottomRight - right);
+                bottomRightRadiusY = Math.Max(0.0, cornerRadius.BottomRight - bottom);
+                bottomLeftRadiusX = Math.Max(0.0, cornerRadius.BottomLeft - left);
+                bottomLeftRadiusY = Math.Max(0.0, cornerRadius.BottomLeft - bottom);
             }
             else if (sizing == BackgroundSizing.OuterBorderEdge)
             {
-                borderThickness = new Thickness(0);
+                if (MathUtilities.AreClose(cornerRadius.TopLeft, 0.0, Epsilon))
+                {
+                    topLeftRadiusX = 0.0;
+                    topLeftRadiusY = 0.0;
+                }
+                else
+                {
+                    topLeftRadiusX = cornerRadius.TopLeft + left;
+                    topLeftRadiusY = cornerRadius.TopLeft + top;
+                }
+
+                if (MathUtilities.AreClose(cornerRadius.TopRight, 0.0, Epsilon))
+                {
+                    topRightRadiusX = 0.0;
+                    topRightRadiusY = 0.0;
+                }
+                else
+                {
+                    topRightRadiusX = cornerRadius.TopRight + top;
+                    topRightRadiusY = cornerRadius.TopRight + right;
+                }
+
+                if (MathUtilities.AreClose(cornerRadius.BottomRight, 0.0, Epsilon))
+                {
+                    bottomRightRadiusX = 0.0;
+                    bottomRightRadiusY = 0.0;
+                }
+                else
+                {
+                    bottomRightRadiusX = cornerRadius.BottomRight + right;
+                    bottomRightRadiusY = cornerRadius.BottomRight + bottom;
+                }
+
+                if (MathUtilities.AreClose(cornerRadius.BottomLeft, 0.0, Epsilon))
+                {
+                    bottomLeftRadiusX = 0.0;
+                    bottomLeftRadiusY = 0.0;
+                }
+                else
+                {
+                    bottomLeftRadiusX = cornerRadius.BottomLeft + bottom;
+                    bottomLeftRadiusY = cornerRadius.BottomLeft + left;
+                }
+            }
+            else
+            {
+                topLeftRadiusX = cornerRadius.TopLeft;
+                topLeftRadiusY = cornerRadius.TopLeft;
+                topRightRadiusX = cornerRadius.TopRight;
+                topRightRadiusY = cornerRadius.TopRight;
+                bottomRightRadiusX = cornerRadius.BottomRight;
+                bottomRightRadiusY = cornerRadius.BottomRight;
+                bottomLeftRadiusX = cornerRadius.BottomLeft;
+                bottomLeftRadiusY = cornerRadius.BottomLeft;
+            }
+
+            Thickness sideOffsets;
+            if (sizing == BackgroundSizing.InnerBorderEdge)
+            {
+                sideOffsets = borderThickness;
+            }
+            else if (sizing == BackgroundSizing.OuterBorderEdge)
+            {
+                sideOffsets = new Thickness(0);
             }
             else // CenterBorder
             {
-                borderThickness = new Thickness(
+                sideOffsets = new Thickness(
                     0.5 * borderThickness.Left,
                     0.5 * borderThickness.Top,
                     0.5 * borderThickness.Right,
                     0.5 * borderThickness.Bottom);
             }
-
-            double topLeftRadiusX = cornerRadius.TopLeft;
-            double topLeftRadiusY = cornerRadius.TopLeft;
-            double topRightRadiusX = cornerRadius.TopRight;
-            double topRightRadiusY = cornerRadius.TopRight;
-            double bottomRightRadiusX = cornerRadius.BottomRight;
-            double bottomRightRadiusY = cornerRadius.BottomRight;
-            double bottomLeftRadiusX = cornerRadius.BottomLeft;
-            double bottomLeftRadiusY = cornerRadius.BottomLeft;
-
-            // Reduce the corner radius based on the thickness
-            // Don't worry about keeping the radius circular here, it is adjusted later
-            topLeftRadiusX = Math.Max(0, topLeftRadiusX - borderThickness.Left);
-            topLeftRadiusY = Math.Max(0, topLeftRadiusY - borderThickness.Top);
-            topRightRadiusX = Math.Max(0, topRightRadiusX - borderThickness.Right);
-            topRightRadiusY = Math.Max(0, topRightRadiusY - borderThickness.Top);
-            bottomRightRadiusX = Math.Max(0, bottomRightRadiusX - borderThickness.Right);
-            bottomRightRadiusY = Math.Max(0, bottomRightRadiusY - borderThickness.Bottom);
-            bottomLeftRadiusX = Math.Max(0, bottomLeftRadiusX - borderThickness.Left);
-            bottomLeftRadiusY = Math.Max(0, bottomLeftRadiusY - borderThickness.Bottom);
-
-            topLeftRadiusX = (borderThickness.Left > topLeftRadiusX ? 0 : topLeftRadiusX);
-            topLeftRadiusY = (borderThickness.Top > topLeftRadiusY ? 0 : topLeftRadiusY);
-            topRightRadiusX = (borderThickness.Right > topRightRadiusX ? 0 : topRightRadiusX);
-            topRightRadiusY = (borderThickness.Top > topRightRadiusY ? 0 : topRightRadiusY);
-            bottomRightRadiusX = (borderThickness.Right > bottomRightRadiusX ? 0 : bottomRightRadiusX);
-            bottomRightRadiusY = (borderThickness.Bottom > bottomRightRadiusY ? 0 : bottomRightRadiusY);
-            bottomLeftRadiusX = (borderThickness.Left > bottomLeftRadiusX ? 0 : bottomLeftRadiusX);
-            bottomLeftRadiusY = (borderThickness.Bottom > bottomLeftRadiusY ? 0 : bottomLeftRadiusY);
 
             // Normalize corner radius
             // They should always be uniform in the X/Y directions as the original corner radius struct
@@ -280,29 +359,29 @@ namespace Avalonia.Media
             // That is undesirable for performance and unnecessary for these calculations
             var keypoints = new RoundedRectKeypoints();
             keypoints.LeftTop = new Point(
-                boundRect.TopLeft.X + borderThickness.Left,
-                boundRect.TopLeft.Y + (topLeftRadiusY + borderThickness.Top));
+                boundRect.TopLeft.X + sideOffsets.Left,
+                boundRect.TopLeft.Y + (topLeftRadiusY + sideOffsets.Top));
             keypoints.TopLeft = new Point(
-                boundRect.TopLeft.X + (topLeftRadiusX + borderThickness.Left),
-                boundRect.TopLeft.Y + borderThickness.Top);
+                boundRect.TopLeft.X + (topLeftRadiusX + sideOffsets.Left),
+                boundRect.TopLeft.Y + sideOffsets.Top);
             keypoints.TopRight = new Point(
-                boundRect.TopLeft.X + boundRect.Width - (topRightRadiusX + borderThickness.Right),
-                boundRect.TopLeft.Y + borderThickness.Top);
+                boundRect.TopLeft.X + boundRect.Width - (topRightRadiusX + sideOffsets.Right),
+                boundRect.TopLeft.Y + sideOffsets.Top);
             keypoints.RightTop = new Point(
-                boundRect.TopLeft.X + boundRect.Width - borderThickness.Right,
-                boundRect.TopLeft.Y + (topRightRadiusY + borderThickness.Top));
+                boundRect.TopLeft.X + boundRect.Width - sideOffsets.Right,
+                boundRect.TopLeft.Y + (topRightRadiusY + sideOffsets.Top));
             keypoints.RightBottom = new Point(
-                boundRect.TopLeft.X + boundRect.Width - borderThickness.Right,
-                boundRect.TopLeft.Y + boundRect.Height - (bottomRightRadiusY + borderThickness.Bottom));
+                boundRect.TopLeft.X + boundRect.Width - sideOffsets.Right,
+                boundRect.TopLeft.Y + boundRect.Height - (bottomRightRadiusY + sideOffsets.Bottom));
             keypoints.BottomRight = new Point(
-                boundRect.TopLeft.X + boundRect.Width - (bottomRightRadiusX + borderThickness.Right),
-                boundRect.TopLeft.Y + boundRect.Height - borderThickness.Bottom);
+                boundRect.TopLeft.X + boundRect.Width - (bottomRightRadiusX + sideOffsets.Right),
+                boundRect.TopLeft.Y + boundRect.Height - sideOffsets.Bottom);
             keypoints.BottomLeft = new Point(
-                boundRect.TopLeft.X + (bottomLeftRadiusX + borderThickness.Left),
-                boundRect.TopLeft.Y + boundRect.Height - borderThickness.Bottom);
+                boundRect.TopLeft.X + (bottomLeftRadiusX + sideOffsets.Left),
+                boundRect.TopLeft.Y + boundRect.Height - sideOffsets.Bottom);
             keypoints.LeftBottom = new Point(
-                boundRect.TopLeft.X + borderThickness.Left,
-                boundRect.TopLeft.Y + boundRect.Height - (bottomLeftRadiusY + borderThickness.Bottom));
+                boundRect.TopLeft.X + sideOffsets.Left,
+                boundRect.TopLeft.Y + boundRect.Height - (bottomLeftRadiusY + sideOffsets.Bottom));
 
             return keypoints;
         }
