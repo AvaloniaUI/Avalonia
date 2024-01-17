@@ -437,25 +437,8 @@ namespace Avalonia.Media
 
             // Start of WinUI converted code
             // WinUI's Point struct fields can be modified directly, Avalonia's Point is read-only.
-            // Therefore, we will use doubles for calculation here so multiple Point structs aren't
+            // Therefore, we will use doubles for calculation so multiple Point structs aren't
             // required during calculations -- everything can be done with these double variables.
-            double topLeftX;
-            double topLeftY;
-            double topRightX;
-            double topRightY;
-            double rightTopX;
-            double rightTopY;
-            double rightBottomX;
-            double rightBottomY;
-            double bottomRightX;
-            double bottomRightY;
-            double bottomLeftX;
-            double bottomLeftY;
-            double leftBottomX;
-            double leftBottomY;
-            double leftTopX;
-            double leftTopY;
-
             double fLeftTop;
             double fLeftBottom;
             double fTopLeft;
@@ -503,6 +486,7 @@ namespace Avalonia.Media
                     fLeftTop = cornerRadius.TopLeft + left;
                     fTopLeft = cornerRadius.TopLeft + top;
                 }
+
                 if (MathUtilities.AreClose(cornerRadius.TopRight, 0.0, Epsilon))
                 {
                     fTopRight = 0.0;
@@ -513,6 +497,7 @@ namespace Avalonia.Media
                     fTopRight = cornerRadius.TopRight + top;
                     fRightTop = cornerRadius.TopRight + right;
                 }
+
                 if (MathUtilities.AreClose(cornerRadius.BottomRight, 0.0, Epsilon))
                 {
                     fRightBottom = 0.0;
@@ -523,6 +508,7 @@ namespace Avalonia.Media
                     fRightBottom = cornerRadius.BottomRight + right;
                     fBottomRight = cornerRadius.BottomRight + bottom;
                 }
+
                 if (MathUtilities.AreClose(cornerRadius.BottomLeft, 0.0, Epsilon))
                 {
                     fBottomLeft = 0.0;
@@ -546,29 +532,29 @@ namespace Avalonia.Media
                 fLeftBottom = Math.Max(0.0, cornerRadius.BottomLeft - left);
             }
 
-            topLeftX = fLeftTop;
-            topLeftY = 0;
+            double topLeftX = fLeftTop;
+            double topLeftY = 0;
 
-            topRightX = boundRect.Width - fRightTop;
-            topRightY = 0;
+            double topRightX = boundRect.Width - fRightTop;
+            double topRightY = 0;
 
-            rightTopX = boundRect.Width;
-            rightTopY = fTopRight;
+            double rightTopX = boundRect.Width;
+            double rightTopY = fTopRight;
 
-            rightBottomX = boundRect.Width;
-            rightBottomY = boundRect.Height - fBottomRight;
+            double rightBottomX = boundRect.Width;
+            double rightBottomY = boundRect.Height - fBottomRight;
 
-            bottomRightX = boundRect.Width - fRightBottom;
-            bottomRightY = boundRect.Height;
+            double bottomRightX = boundRect.Width - fRightBottom;
+            double bottomRightY = boundRect.Height;
 
-            bottomLeftX = fLeftBottom;
-            bottomLeftY = boundRect.Height;
+            double bottomLeftX = fLeftBottom;
+            double bottomLeftY = boundRect.Height;
 
-            leftBottomX = 0;
-            leftBottomY = boundRect.Height - fBottomLeft;
+            double leftBottomX = 0;
+            double leftBottomY = boundRect.Height - fBottomLeft;
 
-            leftTopX = 0;
-            leftTopY = fTopLeft;
+            double leftTopX = 0;
+            double leftTopY = fTopLeft;
 
             // check keypoints for overlap and resolve by partitioning radii according to
             // the percentage of each one.
