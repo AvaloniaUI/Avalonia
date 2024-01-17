@@ -209,7 +209,7 @@ namespace Avalonia.Media
         /// The corner radius is defined to be the middle of the border stroke (center of the border).</param>
         /// <param name="sizing">The sizing mode used to calculate the final rounded rectangle size.</param>
         /// <returns>New rounded rectangle keypoints.</returns>
-        public static RoundedRectKeypoints CalculateRoundedCornersRectangleAlternate(
+        public static RoundedRectKeypoints CalculateRoundedCornersRectangle(
             Rect boundRect,
             Thickness borderThickness,
             CornerRadius cornerRadius,
@@ -398,7 +398,7 @@ namespace Avalonia.Media
         /// The corner radius is defined to be the middle of the border stroke (center of the border).</param>
         /// <param name="sizing">The sizing mode used to calculate the final rounded rectangle size.</param>
         /// <returns>New rounded rectangle keypoints.</returns>
-        public static RoundedRectKeypoints CalculateRoundedCornersRectangle(
+        public static RoundedRectKeypoints CalculateRoundedCornersRectangleWinUI(
             Rect outerBounds,
             Thickness borderThickness,
             CornerRadius cornerRadius,
