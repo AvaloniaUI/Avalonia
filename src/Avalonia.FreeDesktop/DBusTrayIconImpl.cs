@@ -207,7 +207,7 @@ namespace Avalonia.FreeDesktop
     /// <remarks>
     /// Useful guide: https://web.archive.org/web/20210818173850/https://www.notmart.org/misc/statusnotifieritem/statusnotifieritem.html
     /// </remarks>
-    internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem
+    internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem2
     {
         public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
