@@ -120,16 +120,6 @@ namespace Avalonia.Controls.Utils
                 Update(finalSize, borderThickness, cornerRadius, backgroundSizing);
             }
 
-            RenderCore(context, background, borderBrush, backgroundSizing, boxShadows);
-        }
-
-        private void RenderCore(
-            DrawingContext context,
-            IBrush? background,
-            IBrush? borderBrush,
-            BackgroundSizing backgroundSizing,
-            BoxShadows boxShadows)
-        {
             if (_useComplexRendering)
             {
                 var backgroundGeometry = _backgroundGeometryCache;
@@ -146,13 +136,13 @@ namespace Avalonia.Controls.Utils
             }
             else
             {
-                var borderThickness = _borderThickness.Top;
+                var thickness = _borderThickness.Top;
 
-                Pen.TryModifyOrCreate(ref _cachedPen, borderBrush, borderThickness);
+                Pen.TryModifyOrCreate(ref _cachedPen, borderBrush, thickness);
 
                 var rect = new Rect(_size);
-                if (!MathUtilities.IsZero(borderThickness))
-                    rect = rect.Deflate(borderThickness * 0.5);
+                if (!MathUtilities.IsZero(thickness))
+                    rect = rect.Deflate(thickness * 0.5);
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
