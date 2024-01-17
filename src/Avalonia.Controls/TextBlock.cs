@@ -672,9 +672,12 @@ namespace Avalonia.Controls
         {
             _textLayout?.Dispose();
             _textLayout = null;
+            
+            VisualChildren.Clear();
+
+            _textRuns = null;
 
             InvalidateVisual();
-
             InvalidateMeasure();
         }
 
@@ -691,8 +694,6 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
-                VisualChildren.Clear();
-
                 var textRuns = new List<TextRun>();
 
                 foreach (var inline in inlines!)
@@ -876,9 +877,9 @@ namespace Avalonia.Controls
             }
         }
 
-#pragma warning disable CA1815 // Equals und Gleichheitsoperator f¸r Werttypen auﬂer Kraft setzen
+#pragma warning disable CA1815 // Equals und Gleichheitsoperator f√ºr Werttypen au√üer Kraft setzen
         protected readonly struct InlinesTextSource : ITextSource
-#pragma warning restore CA1815 // Equals und Gleichheitsoperator f¸r Werttypen auﬂer Kraft setzen
+#pragma warning restore CA1815 // Equals und Gleichheitsoperator f√ºr Werttypen au√üer Kraft setzen
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
             private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
