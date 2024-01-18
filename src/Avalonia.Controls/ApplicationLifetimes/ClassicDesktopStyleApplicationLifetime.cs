@@ -209,7 +209,7 @@ namespace Avalonia
     public static class ClassicDesktopStyleApplicationLifetimeExtensions
     {
         public static int StartWithClassicDesktopLifetime(
-            this AppBuilder builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
+            this AppBuilder builder, string[] args, Action<IClassicDesktopStyleApplicationLifetime> lifetimeBuilder)
         {
             var lifetime = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetime>();
 
@@ -219,10 +219,16 @@ namespace Avalonia
             }
 
             lifetime.Args = args;
-            lifetime.ShutdownMode = shutdownMode;
+            lifetimeBuilder(lifetime);
 
             builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
+        }
+        
+        public static int StartWithClassicDesktopLifetime(
+            this AppBuilder builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
+        {
+            return builder.StartWithClassicDesktopLifetime(args, l => l.ShutdownMode = shutdownMode);
         }
     }
 }
