@@ -195,6 +195,9 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
 namespace Avalonia
 {
+    /// <summary>
+    /// IClassicDesktopStyleApplicationLifetime related AppBuilder extensions.
+    /// </summary>
     public static class ClassicDesktopStyleApplicationLifetimeExtensions
     {
         private static ClassicDesktopStyleApplicationLifetime PrepareLifetime(string[] args,
@@ -213,6 +216,13 @@ namespace Avalonia
             return lifetime;
         }
 
+        /// <summary>
+        /// Setups the Application with a IClassicDesktopStyleApplicationLifetime, but doesn't show the main window and doesn't run application main loop.
+        /// </summary>
+        /// <param name="builder">Application builder.</param>
+        /// <param name="args">Startup arguments.</param>
+        /// <param name="lifetimeBuilder">Lifetime builder to modify the lifetime before application started.</param>
+        /// <returns>Exit code.</returns>
         public static AppBuilder SetupWithClassicDesktopLifetime(this AppBuilder builder, string[] args,
             Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
         {
@@ -220,6 +230,13 @@ namespace Avalonia
             return builder.SetupWithLifetime(lifetime);
         }
 
+        /// <summary>
+        /// Starts the Application with a IClassicDesktopStyleApplicationLifetime, shows main window and runs application main loop.
+        /// </summary>
+        /// <param name="builder">Application builder.</param>
+        /// <param name="args">Startup arguments.</param>
+        /// <param name="lifetimeBuilder">Lifetime builder to modify the lifetime before application started.</param>
+        /// <returns>Exit code.</returns>
         public static int StartWithClassicDesktopLifetime(
             this AppBuilder builder, string[] args,
             Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
@@ -229,6 +246,13 @@ namespace Avalonia
             return lifetime.StartMainLoop();
         }
 
+        /// <summary>
+        /// Starts the Application with a IClassicDesktopStyleApplicationLifetime, shows main window and runs application main loop.
+        /// </summary>
+        /// <param name="builder">Application builder.</param>
+        /// <param name="args">Startup arguments.</param>
+        /// <param name="shutdownMode">Lifetime shutdown mode.</param>
+        /// <returns>Exit code.</returns>
         public static int StartWithClassicDesktopLifetime(
             this AppBuilder builder, string[] args, ShutdownMode shutdownMode)
         {
