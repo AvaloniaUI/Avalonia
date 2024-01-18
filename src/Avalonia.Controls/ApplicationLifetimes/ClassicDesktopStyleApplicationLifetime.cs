@@ -68,8 +68,15 @@ namespace Avalonia.Controls.ApplicationLifetimes
             return DoShutdown(new ShutdownRequestedEventArgs(), true, false, exitCode);
         }
 
-        public void Setup(string[] args)
+        internal void SetupCore(string[] args)
         {
+            if (_compositeDisposable is not null)
+            {
+                // There could be a case, when lifetime was setup without starting.
+                // Until developer started it manually later. To avoid API breaking changes, it will execute Setup method twice.
+                return;
+            }
+            
             _compositeDisposable = new CompositeDisposable(
                 Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (sender, _) =>
                 {
@@ -104,8 +111,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 lifetimeEvents.ShutdownRequested += OnShutdownRequested;
         }
 
-        public int StartMainLoop()
+        public int Start(string[] args)
         {
+            SetupCore(args);
+            
             _cts = new CancellationTokenSource();
 
             // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
@@ -211,7 +220,6 @@ namespace Avalonia
 
             lifetime.Args = args;
             lifetimeBuilder?.Invoke(lifetime);
-            lifetime.Setup(args);
 
             return lifetime;
         }
@@ -227,6 +235,7 @@ namespace Avalonia
             Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
         {
             var lifetime = PrepareLifetime(args, lifetimeBuilder);
+            lifetime.SetupCore(args);
             return builder.SetupWithLifetime(lifetime);
         }
 
@@ -243,7 +252,7 @@ namespace Avalonia
         {
             var lifetime = PrepareLifetime(args, lifetimeBuilder);
             builder.SetupWithLifetime(lifetime);
-            return lifetime.StartMainLoop();
+            return lifetime.Start(args);
         }
 
         /// <summary>
@@ -258,7 +267,7 @@ namespace Avalonia
         {
             var lifetime = PrepareLifetime(args, l => l.ShutdownMode = shutdownMode);
             builder.SetupWithLifetime(lifetime);
-            return lifetime.StartMainLoop();
+            return lifetime.Start(args);
         }
     }
 }
