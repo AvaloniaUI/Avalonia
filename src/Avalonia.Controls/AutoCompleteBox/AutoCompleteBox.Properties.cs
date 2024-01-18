@@ -22,8 +22,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<AutoCompleteBox>(new(
                 defaultValue: 0,
-                defaultBindingMode:BindingMode.TwoWay,
-                coerce: TextBox.CoerceCaretIndex));
+                defaultBindingMode:BindingMode.TwoWay));
 
         public static readonly StyledProperty<string?> WatermarkProperty =
             TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
