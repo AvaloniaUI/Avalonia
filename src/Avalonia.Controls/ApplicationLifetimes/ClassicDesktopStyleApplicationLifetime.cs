@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.ApplicationLifetimes
@@ -18,38 +19,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private CancellationTokenSource? _cts;
         private bool _isShuttingDown;
         private readonly AvaloniaList<Window> _windows = new();
-
-        private static ClassicDesktopStyleApplicationLifetime? s_activeLifetime;
-
-        static ClassicDesktopStyleApplicationLifetime()
-        {
-            Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
-            Window.WindowClosedEvent.AddClassHandler(typeof(Window), OnWindowClosed);
-        }
-
-        private static void OnWindowClosed(object? sender, RoutedEventArgs e)
-        {
-            var window = (Window)sender!;
-            s_activeLifetime?._windows.Remove(window);
-            s_activeLifetime?.HandleWindowClosed(window);
-        }
-
-        private static void OnWindowOpened(object? sender, RoutedEventArgs e)
-        {
-            var window = (Window)sender!;
-            if (s_activeLifetime is not null && !s_activeLifetime._windows.Contains(window))
-            {
-                s_activeLifetime._windows.Add(window);
-            }
-        }
-
-        public ClassicDesktopStyleApplicationLifetime()
-        {
-            if (s_activeLifetime != null)
-                throw new InvalidOperationException(
-                    "Can not have multiple active ClassicDesktopStyleApplicationLifetime instances and the previously created one was not disposed");
-            s_activeLifetime = this;
-        }
+        private CompositeDisposable? _compositeDisposable; 
 
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs>? Startup;
@@ -97,7 +67,26 @@ namespace Avalonia.Controls.ApplicationLifetimes
         {
             return DoShutdown(new ShutdownRequestedEventArgs(), true, false, exitCode);
         }
-        
+
+        public void Setup()
+        {
+            _compositeDisposable = new CompositeDisposable(
+                Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (sender, _) =>
+                {
+                    var window = (Window)sender!;
+                    if (!_windows.Contains(window))
+                    {
+                        _windows.Add(window);
+                    }
+                }),
+                Window.WindowClosedEvent.AddClassHandler(typeof(Window), (sender, _) =>
+                {
+                    var window = (Window)sender!;
+                    _windows.Remove(window);
+                    HandleWindowClosed(window);
+                }));
+        }
+
         public int Start(string[] args)
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
@@ -137,8 +126,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         public void Dispose()
         {
-            if (s_activeLifetime == this)
-                s_activeLifetime = null;
+            _compositeDisposable?.Dispose();
+            _compositeDisposable = null;
         }
 
         private bool DoShutdown(
@@ -221,6 +210,7 @@ namespace Avalonia
             lifetime.Args = args;
             lifetimeBuilder(lifetime);
 
+            lifetime.Setup();
             builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
         }
