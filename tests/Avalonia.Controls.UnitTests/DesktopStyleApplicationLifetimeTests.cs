@@ -32,7 +32,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())    
             {
                 Dispatcher.UIThread.Post(() => lifetime.Shutdown(1337));
-                var exitCode = lifetime.Start(Array.Empty<string>());
+                var exitCode = lifetime.StartMainLoop(Array.Empty<string>());
 
                 Assert.Equal(1337, exitCode);
             }
@@ -234,7 +234,7 @@ namespace Avalonia.Controls.UnitTests
                 
                 // Force exit immediately
                 Dispatcher.UIThread.Post(Dispatcher.UIThread.ExitAllFrames);
-                lifetime.Start(Array.Empty<string>());
+                lifetime.StartMainLoop(Array.Empty<string>());
 
                 var window = new Window();
                 var raised = 0;

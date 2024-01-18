@@ -68,7 +68,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             return DoShutdown(new ShutdownRequestedEventArgs(), true, false, exitCode);
         }
 
-        public void Setup()
+        public void Setup(string[] args)
         {
             _compositeDisposable = new CompositeDisposable(
                 Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (sender, _) =>
@@ -85,10 +85,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     _windows.Remove(window);
                     HandleWindowClosed(window);
                 }));
-        }
 
-        public int Start(string[] args)
-        {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
             var options = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetimeOptions>();
@@ -105,9 +102,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             if (lifetimeEvents != null)
                 lifetimeEvents.ShutdownRequested += OnShutdownRequested;
+        }
 
+        public int StartMainLoop()
+        {
             _cts = new CancellationTokenSource();
-            
+
             // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
             // gets stuffed into a local var and can not be GCed until after the program stops.
             // this method never exits until program end.
@@ -208,7 +208,7 @@ namespace Avalonia
 
             lifetime.Args = args;
             lifetimeBuilder?.Invoke(lifetime);
-            lifetime.Setup();
+            lifetime.Setup(args);
 
             return lifetime;
         }
@@ -226,7 +226,7 @@ namespace Avalonia
         {
             var lifetime = PrepareLifetime(args, lifetimeBuilder);
             builder.SetupWithLifetime(lifetime);
-            return lifetime.Start(args);
+            return lifetime.StartMainLoop();
         }
 
         public static int StartWithClassicDesktopLifetime(
@@ -234,7 +234,7 @@ namespace Avalonia
         {
             var lifetime = PrepareLifetime(args, l => l.ShutdownMode = shutdownMode);
             builder.SetupWithLifetime(lifetime);
-            return lifetime.Start(args);
+            return lifetime.StartMainLoop();
         }
     }
 }
