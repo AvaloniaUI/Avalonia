@@ -2,16 +2,13 @@
 using Android.Content.PM;
 using Avalonia;
 using Avalonia.Android;
-using static Android.Content.Intent;
 
 namespace ControlCatalog.Android
 {
-    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", MainLauncher = true, Exported = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
-    // IntentFilter are here to test IActivatableApplicationLifetime 
-    [IntentFilter(new [] { ActionView }, Categories = new [] { CategoryDefault, CategoryBrowsable }, DataScheme = "avln" )]
+    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", MainLauncher = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
     public class MainActivity : AvaloniaMainActivity<App>
     {
-        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
+        protected override Avalonia.AppBuilder CustomizeAppBuilder(Avalonia.AppBuilder builder)
         {
             return base.CustomizeAppBuilder(builder)
                  .AfterSetup(_ =>

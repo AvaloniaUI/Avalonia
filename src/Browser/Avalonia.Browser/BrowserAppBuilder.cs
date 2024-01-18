@@ -75,9 +75,8 @@ public static class BrowserAppBuilder
     {
         builder = await PreSetupBrowser(builder, options);
 
-        var lifetime = new BrowserSingleViewLifetime();
         builder
-            .SetupWithLifetime(lifetime);
+            .SetupWithoutStarting();
     }
 
     internal static async Task<AppBuilder> PreSetupBrowser(AppBuilder builder, BrowserPlatformOptions? options)

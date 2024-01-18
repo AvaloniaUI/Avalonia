@@ -13,11 +13,6 @@ namespace Avalonia.Native
             _commands = commands;
         }
 
-        public void ShowApp()
-        {
-            _commands.UnhideApp();
-        }
-
         public void HideApp()
         {
             _commands.HideApp();
@@ -32,6 +27,7 @@ namespace Avalonia.Native
         {
             _commands.HideOthers();
         }
+
 
         public static readonly AttachedProperty<bool> IsServicesSubmenuProperty =
             AvaloniaProperty.RegisterAttached<MacOSNativeMenuCommands, NativeMenu, bool>("IsServicesSubmenu", false);

@@ -211,16 +211,11 @@ namespace Avalonia
         public static int StartWithClassicDesktopLifetime(
             this AppBuilder builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
         {
-            var lifetime = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetime>();
-
-            if (lifetime == null)
+            var lifetime = new ClassicDesktopStyleApplicationLifetime()
             {
-                lifetime = new ClassicDesktopStyleApplicationLifetime();
-            }
-
-            lifetime.Args = args;
-            lifetime.ShutdownMode = shutdownMode;
-
+                Args = args,
+                ShutdownMode = shutdownMode
+            };
             builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
         }
