@@ -197,28 +197,44 @@ namespace Avalonia
 {
     public static class ClassicDesktopStyleApplicationLifetimeExtensions
     {
-        public static int StartWithClassicDesktopLifetime(
-            this AppBuilder builder, string[] args, Action<IClassicDesktopStyleApplicationLifetime> lifetimeBuilder)
+        private static ClassicDesktopStyleApplicationLifetime PrepareLifetime(string[] args,
+            Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder)
         {
             var lifetime = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetime>();
-
             if (lifetime == null)
             {
                 lifetime = new ClassicDesktopStyleApplicationLifetime();
             }
 
             lifetime.Args = args;
-            lifetimeBuilder(lifetime);
-
+            lifetimeBuilder?.Invoke(lifetime);
             lifetime.Setup();
+
+            return lifetime;
+        }
+
+        public static AppBuilder SetupWithClassicDesktopLifetime(this AppBuilder builder, string[] args,
+            Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
+        {
+            var lifetime = PrepareLifetime(args, lifetimeBuilder);
+            return builder.SetupWithLifetime(lifetime);
+        }
+
+        public static int StartWithClassicDesktopLifetime(
+            this AppBuilder builder, string[] args,
+            Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
+        {
+            var lifetime = PrepareLifetime(args, lifetimeBuilder);
             builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
         }
-        
+
         public static int StartWithClassicDesktopLifetime(
-            this AppBuilder builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
+            this AppBuilder builder, string[] args, ShutdownMode shutdownMode)
         {
-            return builder.StartWithClassicDesktopLifetime(args, l => l.ShutdownMode = shutdownMode);
+            var lifetime = PrepareLifetime(args, l => l.ShutdownMode = shutdownMode);
+            builder.SetupWithLifetime(lifetime);
+            return lifetime.Start(args);
         }
     }
 }
