@@ -220,15 +220,15 @@ namespace Avalonia.OpenGL.Controls
 
         [Obsolete("Use RequestNextFrameRendering()"), EditorBrowsable(EditorBrowsableState.Never)]
         // ReSharper disable once MemberCanBeProtected.Global
-        public new void InvalidateVisual() => RequestNextFrameRendering(); 
-        
+        public new void InvalidateVisual() => RequestNextFrameRendering();
+
         public void RequestNextFrameRendering()
         {
             if ((_initialization == null || _initialization is { Status: TaskStatus.RanToCompletion }) &&
-                !_updateQueued)
+                !_updateQueued && _compositor != null)
             {
                 _updateQueued = true;
-                _compositor?.RequestCompositionUpdate(_update);
+                _compositor.RequestCompositionUpdate(_update);
             }
         }
 

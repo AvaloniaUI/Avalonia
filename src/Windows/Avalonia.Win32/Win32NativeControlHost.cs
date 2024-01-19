@@ -137,7 +137,7 @@ namespace Avalonia.Win32
                 _holder = holder;
                 _child = child;
                 UnmanagedMethods.SetParent(child.Handle, _holder.Handle);
-                UnmanagedMethods.ShowWindow(child.Handle, UnmanagedMethods.ShowWindowCommand.Show);
+                UnmanagedMethods.ShowWindow(child.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
             }
 
             [MemberNotNull(nameof(_holder))]

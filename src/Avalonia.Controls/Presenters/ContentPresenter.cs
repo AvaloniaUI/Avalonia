@@ -169,7 +169,12 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static ContentPresenter()
         {
-            AffectsRender<ContentPresenter>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
+            AffectsRender<ContentPresenter>(
+                BackgroundProperty,
+                BorderBrushProperty,
+                BorderThicknessProperty,
+                CornerRadiusProperty,
+                BoxShadowProperty);
             AffectsArrange<ContentPresenter>(HorizontalContentAlignmentProperty, VerticalContentAlignmentProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
         }

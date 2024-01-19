@@ -8,6 +8,10 @@ namespace Avalonia.Win32;
 
 internal class Win32PlatformSettings : DefaultPlatformSettings
 {
+    private static readonly Lazy<bool> s_uiSettingsSupported = new(() =>
+        WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.UISettings")
+        && WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.AccessibilitySettings")); 
+
     private PlatformColorValues? _lastColorValues;
 
     public override Size GetTapSize(PointerType type)
@@ -32,7 +36,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     
     public override PlatformColorValues GetColorValues()
     {
-        if (Win32Platform.WindowsVersion.Major < 10)
+        if (!s_uiSettingsSupported.Value)
         {
             return base.GetColorValues();
         }
