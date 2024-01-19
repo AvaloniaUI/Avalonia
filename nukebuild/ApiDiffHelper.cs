@@ -105,7 +105,9 @@ public static class ApiDiffHelper
     {
         // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1)
         ("net6.0-android", "net7.0-android"),
-        ("net6.0-ios", "net7.0-ios")
+        ("net6.0-ios", "net7.0-ios"),
+        // Designer was moved from netcoreapp to netstandard 
+        ("netcoreapp2.0", "netstandard2.0")
     };
 
     public static async Task ValidatePackage(
