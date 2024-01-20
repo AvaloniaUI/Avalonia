@@ -15,7 +15,9 @@ internal sealed class InputHandler
 
     private readonly AvaloniaView _view;
     private readonly ITopLevelImpl _tl;
-    public TouchDevice _device = new();
+    public TouchDevice _touchDevice = new();
+    public MouseDevice _mouseDevice = new();
+    public PenDevice _penDevice = new();
     private static long _nextTouchPointId = 1;
     private readonly Dictionary<UITouch, long> _knownTouches = new Dictionary<UITouch, long>();
 
@@ -32,23 +34,54 @@ internal sealed class InputHandler
     {
         foreach (UITouch t in touches)
         {
-            var pt = t.LocationInView(_view).ToAvalonia();
+            if (t.Type == UITouchType.Indirect)
+            {
+                // Ignore Indirect input, like remote controller trackpad.
+                // For Avalonia we handle it independently with gestures.
+                continue;
+            }
+
             if (!_knownTouches.TryGetValue(t, out var id))
                 _knownTouches[t] = id = _nextTouchPointId++;
 
-            var ev = new RawTouchEventArgs(_device, Ts(evt), Root,
-                t.Phase switch
+            var point = new RawPointerPoint
+            {
+                Position = t.LocationInView(_view).ToAvalonia(),
+                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average"
+                Pressure = (float)t.Force / 2
+            };
+
+            IInputDevice device = t.Type switch
+            {
+                UITouchType.Stylus => _penDevice,
+                UITouchType.IndirectPointer => _mouseDevice,
+                _ => _touchDevice
+            };
+
+            var ev = new RawTouchEventArgs(device, Ts(evt), Root,
+                (device, t.Phase) switch
                 {
-                    UITouchPhase.Began => RawPointerEventType.TouchBegin,
-                    UITouchPhase.Ended => RawPointerEventType.TouchEnd,
-                    UITouchPhase.Cancelled => RawPointerEventType.TouchCancel,
-                    _ => RawPointerEventType.TouchUpdate
-                }, pt, RawInputModifiers.None, id);
+                    (TouchDevice, UITouchPhase.Began) => RawPointerEventType.TouchBegin,
+                    (TouchDevice, UITouchPhase.Ended) => RawPointerEventType.TouchEnd,
+                    (TouchDevice, UITouchPhase.Cancelled) => RawPointerEventType.TouchCancel,
+                    (TouchDevice, _) => RawPointerEventType.TouchUpdate,
+                    
+                    (_, UITouchPhase.Began) => IsRightClick() ? RawPointerEventType.RightButtonDown : RawPointerEventType.LeftButtonDown,
+                    (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick() ? RawPointerEventType.RightButtonUp : RawPointerEventType.RightButtonDown,
+                    (_, _) => RawPointerEventType.Move,
+                }, point, ConvertModifierKeys(evt?.ModifierFlags), id);
 
             _tl.Input?.Invoke(ev);
 
             if (t.Phase == UITouchPhase.Cancelled || t.Phase == UITouchPhase.Ended)
                 _knownTouches.Remove(t);
+            
+            bool IsRightClick()
+#if !TVOS
+                => evt?.ButtonMask.HasFlag(UIEventButtonMask.Secondary) ?? false;
+#else
+                => false;
+#endif
         }
     }
 
@@ -65,15 +98,7 @@ internal sealed class InputHandler
             if (_supportsKey && p.Key is { } uiKey
                              && s_keys.TryGetValue(uiKey.KeyCode, out physicalKey))
             {
-                var uiModifier = uiKey.ModifierFlags;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Shift))
-                    modifier |= RawInputModifiers.Shift;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Alternate))
-                    modifier |= RawInputModifiers.Alt;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Control))
-                    modifier |= RawInputModifiers.Control;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Command))
-                    modifier |= RawInputModifiers.Meta;
+                modifier = ConvertModifierKeys(uiKey.ModifierFlags);
 
                 keyDeviceType = KeyDeviceType.Keyboard; // very likely
 
@@ -169,6 +194,24 @@ internal sealed class InputHandler
 
             return handled;
         }
+    }
+
+    private static RawInputModifiers ConvertModifierKeys(UIKeyModifierFlags? uiModifier)
+    {
+        RawInputModifiers modifier = default;
+        if (uiModifier is { } flags)
+        {
+            if (flags.HasFlag(UIKeyModifierFlags.Shift))
+                modifier |= RawInputModifiers.Shift;
+            if (flags.HasFlag(UIKeyModifierFlags.Alternate))
+                modifier |= RawInputModifiers.Alt;
+            if (flags.HasFlag(UIKeyModifierFlags.Control))
+                modifier |= RawInputModifiers.Control;
+            if (flags.HasFlag(UIKeyModifierFlags.Command))
+                modifier |= RawInputModifiers.Meta;
+        }
+
+        return modifier;
     }
 
     private static Dictionary<UIKeyboardHidUsage, PhysicalKey> s_keys = new()
