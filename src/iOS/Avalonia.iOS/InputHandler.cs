@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -10,6 +11,7 @@ namespace Avalonia.iOS;
 
 internal sealed class InputHandler
 {
+    private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
     private readonly bool _supportsKey = OperatingSystem.IsIOSVersionAtLeast(13, 4)
                                          || OperatingSystem.IsTvOSVersionAtLeast(13, 4);
 
@@ -44,13 +46,6 @@ internal sealed class InputHandler
             if (!_knownTouches.TryGetValue(t, out var id))
                 _knownTouches[t] = id = _nextTouchPointId++;
 
-            var point = new RawPointerPoint
-            {
-                Position = t.LocationInView(_view).ToAvalonia(),
-                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average"
-                Pressure = (float)t.Force / 2
-            };
-
             IInputDevice device = t.Type switch
             {
                 UITouchType.Stylus => _penDevice,
@@ -69,13 +64,36 @@ internal sealed class InputHandler
                     (_, UITouchPhase.Began) => IsRightClick() ? RawPointerEventType.RightButtonDown : RawPointerEventType.LeftButtonDown,
                     (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick() ? RawPointerEventType.RightButtonUp : RawPointerEventType.RightButtonDown,
                     (_, _) => RawPointerEventType.Move,
-                }, point, ConvertModifierKeys(evt?.ModifierFlags), id);
+                }, ToPointerPoint(t), ConvertModifierKeys(evt?.ModifierFlags), id)
+            {
+                IntermediatePoints = evt is {} thisEvent ? new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+                {
+                    var coalesced = thisEvent.GetCoalescedTouches(t) ?? Array.Empty<UITouch>();
+                    s_intermediatePointsPooledList.Clear();
+                    s_intermediatePointsPooledList.Capacity = coalesced.Length - 1;
+
+                    // Skip the last one, as it is already processed point.
+                    for (var i = 0; i < coalesced.Length - 1; i++)
+                    {
+                        s_intermediatePointsPooledList.Add(ToPointerPoint(coalesced[i]));
+                    }
+
+                    return s_intermediatePointsPooledList;
+                }) : null
+            };
 
             _tl.Input?.Invoke(ev);
 
             if (t.Phase == UITouchPhase.Cancelled || t.Phase == UITouchPhase.Ended)
                 _knownTouches.Remove(t);
-            
+
+            RawPointerPoint ToPointerPoint(UITouch touch) => new()
+            {
+                Position = touch.LocationInView(_view).ToAvalonia(),
+                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average"
+                Pressure = (float)t.Force / 2
+            };
+
             bool IsRightClick()
 #if !TVOS
                 => evt?.ButtonMask.HasFlag(UIEventButtonMask.Secondary) ?? false;
