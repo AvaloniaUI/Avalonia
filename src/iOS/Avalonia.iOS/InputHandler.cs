@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -10,12 +11,15 @@ namespace Avalonia.iOS;
 
 internal sealed class InputHandler
 {
+    private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
     private readonly bool _supportsKey = OperatingSystem.IsIOSVersionAtLeast(13, 4)
                                          || OperatingSystem.IsTvOSVersionAtLeast(13, 4);
 
     private readonly AvaloniaView _view;
     private readonly ITopLevelImpl _tl;
-    public TouchDevice _device = new();
+    public TouchDevice _touchDevice = new();
+    public MouseDevice _mouseDevice = new();
+    public PenDevice _penDevice = new();
     private static long _nextTouchPointId = 1;
     private readonly Dictionary<UITouch, long> _knownTouches = new Dictionary<UITouch, long>();
 
@@ -32,23 +36,70 @@ internal sealed class InputHandler
     {
         foreach (UITouch t in touches)
         {
-            var pt = t.LocationInView(_view).ToAvalonia();
+            if (t.Type == UITouchType.Indirect)
+            {
+                // Ignore Indirect input, like remote controller trackpad.
+                // For Avalonia we handle it independently with gestures.
+                continue;
+            }
+
             if (!_knownTouches.TryGetValue(t, out var id))
                 _knownTouches[t] = id = _nextTouchPointId++;
 
-            var ev = new RawTouchEventArgs(_device, Ts(evt), Root,
-                t.Phase switch
+            IInputDevice device = t.Type switch
+            {
+                UITouchType.Stylus => _penDevice,
+                UITouchType.IndirectPointer => _mouseDevice,
+                _ => _touchDevice
+            };
+
+            var ev = new RawTouchEventArgs(device, Ts(evt), Root,
+                (device, t.Phase) switch
                 {
-                    UITouchPhase.Began => RawPointerEventType.TouchBegin,
-                    UITouchPhase.Ended => RawPointerEventType.TouchEnd,
-                    UITouchPhase.Cancelled => RawPointerEventType.TouchCancel,
-                    _ => RawPointerEventType.TouchUpdate
-                }, pt, RawInputModifiers.None, id);
+                    (TouchDevice, UITouchPhase.Began) => RawPointerEventType.TouchBegin,
+                    (TouchDevice, UITouchPhase.Ended) => RawPointerEventType.TouchEnd,
+                    (TouchDevice, UITouchPhase.Cancelled) => RawPointerEventType.TouchCancel,
+                    (TouchDevice, _) => RawPointerEventType.TouchUpdate,
+                    
+                    (_, UITouchPhase.Began) => IsRightClick() ? RawPointerEventType.RightButtonDown : RawPointerEventType.LeftButtonDown,
+                    (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick() ? RawPointerEventType.RightButtonUp : RawPointerEventType.RightButtonDown,
+                    (_, _) => RawPointerEventType.Move,
+                }, ToPointerPoint(t), ConvertModifierKeys(evt?.ModifierFlags), id)
+            {
+                IntermediatePoints = evt is {} thisEvent ? new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+                {
+                    var coalesced = thisEvent.GetCoalescedTouches(t) ?? Array.Empty<UITouch>();
+                    s_intermediatePointsPooledList.Clear();
+                    s_intermediatePointsPooledList.Capacity = coalesced.Length - 1;
+
+                    // Skip the last one, as it is already processed point.
+                    for (var i = 0; i < coalesced.Length - 1; i++)
+                    {
+                        s_intermediatePointsPooledList.Add(ToPointerPoint(coalesced[i]));
+                    }
+
+                    return s_intermediatePointsPooledList;
+                }) : null
+            };
 
             _tl.Input?.Invoke(ev);
 
             if (t.Phase == UITouchPhase.Cancelled || t.Phase == UITouchPhase.Ended)
                 _knownTouches.Remove(t);
+
+            RawPointerPoint ToPointerPoint(UITouch touch) => new()
+            {
+                Position = touch.LocationInView(_view).ToAvalonia(),
+                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average"
+                Pressure = (float)t.Force / 2
+            };
+
+            bool IsRightClick()
+#if !TVOS
+                => evt?.ButtonMask.HasFlag(UIEventButtonMask.Secondary) ?? false;
+#else
+                => false;
+#endif
         }
     }
 
@@ -65,15 +116,7 @@ internal sealed class InputHandler
             if (_supportsKey && p.Key is { } uiKey
                              && s_keys.TryGetValue(uiKey.KeyCode, out physicalKey))
             {
-                var uiModifier = uiKey.ModifierFlags;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Shift))
-                    modifier |= RawInputModifiers.Shift;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Alternate))
-                    modifier |= RawInputModifiers.Alt;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Control))
-                    modifier |= RawInputModifiers.Control;
-                if (uiModifier.HasFlag(UIKeyModifierFlags.Command))
-                    modifier |= RawInputModifiers.Meta;
+                modifier = ConvertModifierKeys(uiKey.ModifierFlags);
 
                 keyDeviceType = KeyDeviceType.Keyboard; // very likely
 
@@ -169,6 +212,24 @@ internal sealed class InputHandler
 
             return handled;
         }
+    }
+
+    private static RawInputModifiers ConvertModifierKeys(UIKeyModifierFlags? uiModifier)
+    {
+        RawInputModifiers modifier = default;
+        if (uiModifier is { } flags)
+        {
+            if (flags.HasFlag(UIKeyModifierFlags.Shift))
+                modifier |= RawInputModifiers.Shift;
+            if (flags.HasFlag(UIKeyModifierFlags.Alternate))
+                modifier |= RawInputModifiers.Alt;
+            if (flags.HasFlag(UIKeyModifierFlags.Control))
+                modifier |= RawInputModifiers.Control;
+            if (flags.HasFlag(UIKeyModifierFlags.Command))
+                modifier |= RawInputModifiers.Meta;
+        }
+
+        return modifier;
     }
 
     private static Dictionary<UIKeyboardHidUsage, PhysicalKey> s_keys = new()
