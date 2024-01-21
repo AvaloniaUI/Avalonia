@@ -9,6 +9,7 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
 {
     private readonly CAMetalLayer _layer;
     private readonly MetalDevice _device;
+    private (PixelSize size, double scaling) _lastLayout;
 
     public MetalRenderTarget(CAMetalLayer layer, MetalDevice device)
     {
@@ -23,12 +24,12 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
 
     public IMetalPlatformSurfaceRenderingSession BeginRendering()
     {
-        // Flush all existing rendering
-        var buffer = _device.Queue.CommandBuffer()!;
-        buffer.Commit();
-        buffer.WaitUntilCompleted();
         var (size, scaling) = PendingLayout;
-        _layer.DrawableSize = new CGSize(size.Width, size.Height);
+        if (_lastLayout != (size, scaling))
+        {
+            _lastLayout = (size, scaling);
+            _layer.DrawableSize = new CGSize(size.Width, size.Height);
+        }
 
         var drawable = _layer.NextDrawable() ?? throw new PlatformGraphicsContextLostException();
         return new MetalDrawingSession(_device, drawable, size, scaling);
