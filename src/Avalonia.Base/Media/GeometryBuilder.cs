@@ -11,7 +11,6 @@
 // Ignore Spelling: keypoints
 
 using System;
-using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -33,7 +32,6 @@ namespace Avalonia.Media
         /// </remarks>
         /// <param name="context">The geometry context to draw into.</param>
         /// <param name="keypoints">The rounded rectangle keypoints defining the rectangle to draw.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DrawRoundedCornersRectangle(
             StreamGeometryContext context,
             RoundedRectKeypoints keypoints)
@@ -127,7 +125,6 @@ namespace Avalonia.Media
         /// <param name="rect">The existing rectangle dimensions without corner radii.</param>
         /// <param name="radiusX">The radius on the X-axis used to round the corners of the rectangle.</param>
         /// <param name="radiusY">The radius on the Y-axis used to round the corners of the rectangle.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DrawRoundedCornersRectangle(
             StreamGeometryContext context,
             Rect rect,
