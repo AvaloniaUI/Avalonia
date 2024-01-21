@@ -12,16 +12,14 @@ namespace Avalonia.iOS;
 internal sealed class InputHandler
 {
     private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
-    private readonly bool _supportsKey = OperatingSystem.IsIOSVersionAtLeast(13, 4)
-                                         || OperatingSystem.IsTvOSVersionAtLeast(13, 4);
 
     private readonly AvaloniaView _view;
     private readonly ITopLevelImpl _tl;
-    public TouchDevice _touchDevice = new();
-    public MouseDevice _mouseDevice = new();
-    public PenDevice _penDevice = new();
+    private readonly TouchDevice _touchDevice = new();
+    private readonly MouseDevice _mouseDevice = new();
+    private readonly PenDevice _penDevice = new();
     private static long _nextTouchPointId = 1;
-    private readonly Dictionary<UITouch, long> _knownTouches = new Dictionary<UITouch, long>();
+    private readonly Dictionary<UITouch, long> _knownTouches = new();
 
     public InputHandler(AvaloniaView view, ITopLevelImpl tl)
     {
@@ -49,10 +47,19 @@ internal sealed class InputHandler
             IInputDevice device = t.Type switch
             {
                 UITouchType.Stylus => _penDevice,
+#pragma warning disable CA1416
                 UITouchType.IndirectPointer => _mouseDevice,
+#pragma warning restore CA1416
                 _ => _touchDevice
             };
 
+            var modifiers = RawInputModifiers.None;
+            if (OperatingSystem.IsIOSVersionAtLeast(13, 4)
+                 || OperatingSystem.IsTvOSVersionAtLeast(13, 4))
+            {
+                modifiers = ConvertModifierKeys(evt?.ModifierFlags);
+            }
+            
             var ev = new RawTouchEventArgs(device, Ts(evt), Root,
                 (device, t.Phase) switch
                 {
@@ -64,7 +71,7 @@ internal sealed class InputHandler
                     (_, UITouchPhase.Began) => IsRightClick() ? RawPointerEventType.RightButtonDown : RawPointerEventType.LeftButtonDown,
                     (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick() ? RawPointerEventType.RightButtonUp : RawPointerEventType.RightButtonDown,
                     (_, _) => RawPointerEventType.Move,
-                }, ToPointerPoint(t), ConvertModifierKeys(evt?.ModifierFlags), id)
+                }, ToPointerPoint(t), modifiers, id)
             {
                 IntermediatePoints = evt is {} thisEvent ? new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
                 {
@@ -84,19 +91,20 @@ internal sealed class InputHandler
 
             _tl.Input?.Invoke(ev);
 
-            if (t.Phase == UITouchPhase.Cancelled || t.Phase == UITouchPhase.Ended)
+            if (t.Phase is UITouchPhase.Cancelled or UITouchPhase.Ended)
                 _knownTouches.Remove(t);
 
             RawPointerPoint ToPointerPoint(UITouch touch) => new()
             {
                 Position = touch.LocationInView(_view).ToAvalonia(),
-                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average"
-                Pressure = (float)t.Force / 2
+                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average".
+                // If MaximumPossibleForce is 0, we ignore it completely.
+                Pressure = t.MaximumPossibleForce == 0 ? 0.5f : (float)t.Force / 2
             };
 
             bool IsRightClick()
 #if !TVOS
-                => evt?.ButtonMask.HasFlag(UIEventButtonMask.Secondary) ?? false;
+                => OperatingSystem.IsIOSVersionAtLeast(13, 4) && (evt?.ButtonMask.HasFlag(UIEventButtonMask.Secondary) ?? false);
 #else
                 => false;
 #endif
@@ -113,8 +121,10 @@ internal sealed class InputHandler
             string? characters = null;
             KeyDeviceType keyDeviceType;
 
-            if (_supportsKey && p.Key is { } uiKey
-                             && s_keys.TryGetValue(uiKey.KeyCode, out physicalKey))
+            if ((OperatingSystem.IsIOSVersionAtLeast(13, 4)
+                || OperatingSystem.IsTvOSVersionAtLeast(13, 4))
+                && p.Key is { } uiKey
+                && s_keys.TryGetValue(uiKey.KeyCode, out physicalKey))
             {
                 modifier = ConvertModifierKeys(uiKey.ModifierFlags);
 
@@ -134,8 +144,10 @@ internal sealed class InputHandler
                     UIPressType.Select => PhysicalKey.Space,
                     UIPressType.Menu => PhysicalKey.ContextMenu,
                     UIPressType.PlayPause => PhysicalKey.MediaPlayPause,
+#pragma warning disable CA1416
                     UIPressType.PageUp => PhysicalKey.PageUp,
                     UIPressType.PageDown => PhysicalKey.PageDown,
+#pragma warning restore CA1416
                     _ => PhysicalKey.None
                 };
                 keyDeviceType = KeyDeviceType.Remote; // very likely
@@ -232,6 +244,7 @@ internal sealed class InputHandler
         return modifier;
     }
 
+#pragma warning disable CA1416
     private static Dictionary<UIKeyboardHidUsage, PhysicalKey> s_keys = new()
     {
         //[UIKeyboardHidUsage.KeyboardErrorRollOver] = PhysicalKey.None,
@@ -415,4 +428,5 @@ internal sealed class InputHandler
         [UIKeyboardHidUsage.KeyboardRightGui] = PhysicalKey.MetaRight,
         //[UIKeyboardHidUsage.KeyboardReserved] = 65535,
     };
+#pragma warning restore CA1416
 }
