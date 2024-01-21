@@ -97,8 +97,9 @@ internal sealed class InputHandler
             RawPointerPoint ToPointerPoint(UITouch touch) => new()
             {
                 Position = touch.LocationInView(_view).ToAvalonia(),
-                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average"
-                Pressure = (float)t.Force / 2
+                // in iOS "1.0 represents the force of an average touch", when Avalonia expects 0.5 for "average".
+                // If MaximumPossibleForce is 0, we ignore it completely.
+                Pressure = t.MaximumPossibleForce == 0 ? 0.5f : (float)t.Force / 2
             };
 
             bool IsRightClick()
