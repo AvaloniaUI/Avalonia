@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.XamlIl;
+using TinyJson;
 
 namespace Avalonia.Designer.HostApp;
 
@@ -39,7 +38,7 @@ class DesignXamlLoader : AvaloniaXamlLoader.IRuntimeXamlLoader
         /*
          We can't use any references in the Avalonia.Designer.HostApp. Including even json.
          Ideally we would prefer Microsoft.Extensions.DependencyModel package, but can't use it here.
-         So, instead we need to fallback to some JSON parsing using pretty easy regex.
+         So, instead we need to fallback to some JSON parsing with copy-paste tiny json.
          
          Json part example:
 "Avalonia.Xaml.Interactions/11.0.0-preview5": {
@@ -59,21 +58,53 @@ class DesignXamlLoader : AvaloniaXamlLoader.IRuntimeXamlLoader
         No need to handle special cases with .NET Framework and GAC.
          */
         var text = new StreamReader(stream).ReadToEnd();
-        var matches = Regex.Matches( text, """runtime"\s*:\s*{\s*"([^"]+)""");
+        var deps = ParseRuntimeDeps(text);
 
-        foreach (Match match in matches)
+        foreach (var dependencyRuntimeLibs in deps)
         {
-            if (match.Groups[1] is { Success: true } g)
+            foreach (var runtimeLib in dependencyRuntimeLibs)
             {
-                var assemblyName = Path.GetFileNameWithoutExtension(g.Value);
+                var assemblyName = Path.GetFileNameWithoutExtension(runtimeLib);
                 try
                 {
                     _ = Assembly.Load(new AssemblyName(assemblyName));
                 }
                 catch
                 {
+                }   
+            }
+        }
+    }
+
+    private static List<IEnumerable<string>> ParseRuntimeDeps(string text)
+    {
+        var runtimeDeps = new List<IEnumerable<string>>();
+        try
+        {
+            var value = JSONParser.FromJson<Dictionary<string, object>>(text);
+            if (value?.TryGetValue("targets", out var targetsObj) == true
+                && targetsObj is Dictionary<string, object> targets)
+            {
+                foreach (var target in targets)
+                {
+                    if (target.Value is Dictionary<string, object> libraries)
+                    {
+                        foreach (var library in libraries)
+                        {
+                            if ((library.Value as Dictionary<string, object>)?.TryGetValue("runtime", out var runtimeObj) == true
+                                && runtimeObj is Dictionary<string, object> runtime)
+                            {
+                                runtimeDeps.Add(runtime.Keys);
+                            }
+                        }
+                    }
                 }
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine(".deps.json file parsing failed, it might affect previewer stability.\r\n" + ex);
+        }
+        return runtimeDeps;
     }
 }
