@@ -1,4 +1,3 @@
-#if !MACCATALYST
 using System;
 using System.Runtime.Versioning;
 using System.Threading;
@@ -100,4 +99,3 @@ namespace Avalonia.iOS.Eagl
         }
     }
 }
-#endif

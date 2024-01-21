@@ -1,5 +1,4 @@
-﻿#if !TVOS
-using System.IO;
+﻿using System.IO;
 
 using Foundation;
 
@@ -67,4 +66,3 @@ internal sealed class IOSSecurityScopedStream : Stream
         }
     }
 }
-#endif

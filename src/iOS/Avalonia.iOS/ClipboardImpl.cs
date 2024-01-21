@@ -1,4 +1,3 @@
-#if !TVOS
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -60,4 +59,3 @@ namespace Avalonia.iOS
         }
     }
 }
-#endif

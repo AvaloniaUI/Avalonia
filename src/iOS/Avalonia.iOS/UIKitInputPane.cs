@@ -1,4 +1,3 @@
-#if !TVOS
 using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
@@ -61,4 +60,3 @@ internal sealed class UIKitInputPane : IInputPane
 #endif
     }
 }
-#endif

@@ -1,5 +1,4 @@
-﻿#if !TVOS
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -247,4 +246,3 @@ internal class IOSStorageProvider : IStorageProvider
         }
     }
 }
-#endif

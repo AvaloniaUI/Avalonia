@@ -1,4 +1,3 @@
-#if !MACCATALYST
 using System;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
@@ -144,4 +143,3 @@ namespace Avalonia.iOS.Eagl
         public object? TryGetFeature(Type featureType) => null;
     }
 }
-#endif
