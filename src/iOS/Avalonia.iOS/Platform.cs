@@ -33,7 +33,7 @@ namespace Avalonia
         /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
         public IReadOnlyList<iOSRenderingMode> RenderingMode { get; set; } = new[]
         {
-            iOSRenderingMode.OpenGl
+            iOSRenderingMode.OpenGl, iOSRenderingMode.Metal
         };
     }
 

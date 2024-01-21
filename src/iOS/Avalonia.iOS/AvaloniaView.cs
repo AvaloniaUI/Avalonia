@@ -37,6 +37,7 @@ namespace Avalonia.iOS
         private IAvaloniaViewController? _controller;
         private IInputRoot? _inputRoot;
         private Metal.MetalRenderTarget? _currentRenderTarget;
+        private (PixelSize size, double scaling) _latestLayoutProps;
 
         public AvaloniaView()
         {
@@ -357,10 +358,11 @@ namespace Avalonia.iOS
         public override void LayoutSubviews()
         {
             _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
+            var scaling = (double)ContentScaleFactor;
+            _latestLayoutProps = (new PixelSize((int)(Bounds.Width * scaling), (int)(Bounds.Height * scaling)), scaling);
             if (_currentRenderTarget is not null)
             {
-                _currentRenderTarget.PendingSize = new PixelSize((int)Bounds.Width, (int)Bounds.Height);
-                _currentRenderTarget.PendingScaling = Window.ContentScaleFactor;
+                _currentRenderTarget.PendingLayout = _latestLayoutProps;
             }
 
             base.LayoutSubviews();
@@ -375,6 +377,7 @@ namespace Avalonia.iOS
         internal void SetRenderTarget(Metal.MetalRenderTarget target)
         {
             _currentRenderTarget = target;
+            _currentRenderTarget.PendingLayout = _latestLayoutProps;
         }
     }
 }
