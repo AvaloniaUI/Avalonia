@@ -24,6 +24,12 @@ internal abstract class TargetTypeConverter
     {
         public override bool TryConvert(object? value, Type type, CultureInfo culture, out object? result)
         {
+            if (value?.GetType() == type)
+            {
+                result = value;
+                return true;
+            }
+
             var t = Nullable.GetUnderlyingType(type) ?? type;
 
             if (value is null)
@@ -94,7 +100,12 @@ internal abstract class TargetTypeConverter
     {
         public override bool TryConvert(object? value, Type type, CultureInfo culture, out object? result)
         {
-            if (value == AvaloniaProperty.UnsetValue)
+            if (value?.GetType() == type)
+            {
+                result = value;
+                return true;
+            }
+            else if (value == AvaloniaProperty.UnsetValue)
             {
                 result = Activator.CreateInstance(type);
                 return true;
