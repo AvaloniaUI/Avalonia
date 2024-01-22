@@ -459,7 +459,12 @@ namespace Avalonia
             {
                 if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
                     throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
-                return GetValueStore().AddBinding(property, expression, priority);
+                if (priority != expression.Priority)
+                    throw new NotSupportedException(
+                        $"The binding priority passed to AvaloniaObject.Bind ('{priority}') " +
+                        "conflicts with the binding priority of the provided binding expression " +
+                        $" ({expression.Priority}').");
+                return GetValueStore().AddBinding(property, expression);
             }
             else
             {

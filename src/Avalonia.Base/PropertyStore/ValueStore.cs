@@ -45,8 +45,7 @@ namespace Avalonia.PropertyStore
 
         public BindingExpressionBase AddBinding(
             AvaloniaProperty property,
-            UntypedBindingExpressionBase source,
-            BindingPriority? priorityOverride = null)
+            UntypedBindingExpressionBase source)
         {
             if (property.IsDirect)
             {
@@ -58,7 +57,7 @@ namespace Avalonia.PropertyStore
             }
             else
             {
-                var priority = priorityOverride ?? source.Priority;
+                var priority = source.Priority;
 
                 if (priority == BindingPriority.LocalValue)
                 {

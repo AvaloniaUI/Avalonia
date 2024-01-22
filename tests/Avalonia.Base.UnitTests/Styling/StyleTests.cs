@@ -67,7 +67,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var templatedParent = new Class1 { Foo = "unset-foo" };
             var target = new Class1 { TemplatedParent = templatedParent };
-            target.Bind(Class1.FooProperty, new TemplateBinding(Class1.FooProperty));
+            target.Bind(Class1.FooProperty, new TemplateBinding(Class1.FooProperty), BindingPriority.Template);
 
             StyleHelpers.TryAttach(style, target);
             Assert.Equal("unset-foo", target.Foo);
