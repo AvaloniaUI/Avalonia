@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Logging;
 using Avalonia.Styling;
 
 namespace Avalonia.Data
@@ -127,6 +128,28 @@ namespace Avalonia.Data
             }
         }
 
+        private object? ConvertToTargetType(object? value)
+        {
+            var converter = TargetTypeConverter.GetDefaultConverter();
+
+            if (converter.TryConvert(value, TargetType, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+            else
+            {
+                if (TryGetTarget(out var target))
+                {
+                    var valueString = value?.ToString() ?? "(null)";
+                    var valueTypeName = value?.GetType().FullName ?? "null";
+                    var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{TargetType}'.";
+                    Log(target, message, LogEventLevel.Warning);
+                }
+
+                return AvaloniaProperty.UnsetValue;
+            }
+        }
+
         private TemplateBinding InstanceCore()
         {
             if (Mode is BindingMode.OneTime or BindingMode.OneWayToSource)
@@ -172,6 +195,7 @@ namespace Avalonia.Data
                 if (Converter is not null)
                     value = Convert(Converter, ConverterCulture, ConverterParameter, value, TargetType, ref error);
 
+                value = ConvertToTargetType(value);
                 PublishValue(value, error);
 
                 if (Mode == BindingMode.OneTime)
