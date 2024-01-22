@@ -174,7 +174,7 @@ namespace Avalonia.DesignerSupport.Remote
             var transport = CreateTransport(args);
             if (transport is ITransportWithEnforcedMethod enforcedMethod)
                 args.Method = enforcedMethod.PreviewerMethod;
-            var asm = Assembly.LoadFile(System.IO.Path.GetFullPath(args.AppPath));
+            var asm = Assembly.LoadFrom(System.IO.Path.GetFullPath(args.AppPath));
             var entryPoint = asm.EntryPoint ?? throw Die($"Assembly {args.AppPath} doesn't have an entry point");
             Log($"Initializing application in design mode");
             Design.IsDesignMode = true;
