@@ -24,6 +24,8 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Platform.Storage.FileIO;
+
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -897,6 +899,11 @@ namespace Avalonia.X11
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;

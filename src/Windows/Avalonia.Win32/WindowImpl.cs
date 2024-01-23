@@ -26,6 +26,7 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Threading;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 using static Avalonia.Controls.Platform.Win32SpecificOptions;
@@ -344,10 +345,15 @@ namespace Avalonia.Win32
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
-            
+
             if (featureType == typeof(IInputPane))
             {
                 return _inputPane;
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;
