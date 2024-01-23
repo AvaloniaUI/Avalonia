@@ -228,6 +228,8 @@ namespace Avalonia.Controls
         {
             if (_isDragging)
             {
+                e.Handled = true;
+                
                 bool shouldBecomeChecked = Canvas.GetLeft(_knobsPanel!) >= (_switchKnob!.Bounds.Width / 2);
                 _knobsPanel!.ClearValue(Canvas.LeftProperty);
 

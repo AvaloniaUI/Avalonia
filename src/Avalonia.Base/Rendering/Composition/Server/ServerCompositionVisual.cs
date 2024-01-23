@@ -205,7 +205,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
 
             _combinedTransformedClipBounds =
-                AdornedVisual?._combinedTransformedClipBounds
+                (AdornerIsClipped ? AdornedVisual?._combinedTransformedClipBounds : null)
                 ?? (Parent?.Effect == null ? Parent?._combinedTransformedClipBounds : null)
                 ?? new Rect(Root!.Size);
 

@@ -1029,6 +1029,28 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Equal(Brushes.Blue, border.Background);
         }
 
+        [Fact]
+        public void Should_Not_Share_Instance_When_Or_Selector_Is_Present()
+        {
+            // Issue #13910
+            Style style = new Style(x => Selectors.Or(x.OfType<Class1>(), x.OfType<Class2>().Class("bar")))
+            {
+                Setters =
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
+            };
+
+            var target1 = new Class1 { Classes = { "foo" } };
+            var target2 = new Class2();
+
+            StyleHelpers.TryAttach(style, target1);
+            StyleHelpers.TryAttach(style, target2);
+
+            Assert.Equal("Foo", target1.Foo);
+            Assert.Equal("foodefault", target2.Foo);
+        }
+
         private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =
@@ -1061,6 +1083,23 @@ namespace Avalonia.Base.UnitTests.Styling
             protected override Size MeasureOverride(Size availableSize)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class Class2 : Control
+        {
+            public static readonly StyledProperty<string> FooProperty =
+                Class1.FooProperty.AddOwner<Class2>();
+
+            public string Foo
+            {
+                get { return GetValue(FooProperty); }
+                set { SetValue(FooProperty, value); }
+            }
+
+            protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+            {
+                base.OnPropertyChanged(change);
             }
         }
     }

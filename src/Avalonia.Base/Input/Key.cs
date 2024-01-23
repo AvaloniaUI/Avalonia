@@ -1036,5 +1036,74 @@ namespace Avalonia.Input
         /// OSX Platform-specific Fn+Down key
         /// </summary>
         FnDownArrow = 10004,
+
+        /// <summary>
+        /// Remove control home button
+        /// </summary>
+        MediaHome = 100000,
+        /// <summary>
+        /// TV Channel up
+        /// </summary>
+        MediaChannelList = 100001,
+        /// <summary>
+        /// TV Channel up
+        /// </summary>
+        MediaChannelRaise = 100002,
+        /// <summary>
+        /// TV Channel down
+        /// </summary>
+        MediaChannelLower = 100003,
+        /// <summary>
+        /// TV Channel down
+        /// </summary>
+        MediaRecord = 100005,
+        /// <summary>
+        /// Remote control Red button
+        /// </summary>
+        MediaRed = 100010,
+        /// <summary>
+        /// Remote control Green button
+        /// </summary>
+        MediaGreen = 100011,
+        /// <summary>
+        /// Remote control Yellow button
+        /// </summary>
+        MediaYellow = 100012,
+        /// <summary>
+        /// Remote control Blue button
+        /// </summary>
+        MediaBlue = 100013,
+        /// <summary>
+        /// Remote control Menu button
+        /// </summary>
+        MediaMenu = 100020,
+        /// <summary>
+        /// Remote control dots button
+        /// </summary>
+        MediaMore = 100021,
+        /// <summary>
+        /// Remote control option button
+        /// </summary>
+        MediaOption = 100022,
+        /// <summary>
+        /// Remote control channel info button
+        /// </summary>
+        MediaInfo = 100023,
+        /// <summary>
+        /// Remote control search button
+        /// </summary>
+        MediaSearch = 100024,
+        /// <summary>
+        /// Remote control subtitle/caption button
+        /// </summary>
+        MediaSubtitle = 100025,
+        /// <summary>
+        /// Remote control Tv guide detail button
+        /// </summary>
+        MediaTvGuide = 100026,
+        /// <summary>
+        /// Remote control Previous Channel
+        /// </summary>
+        MediaPreviousChannel = 100027,
     }
 }

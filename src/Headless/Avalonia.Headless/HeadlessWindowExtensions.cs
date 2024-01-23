@@ -41,7 +41,7 @@ public static class HeadlessWindowExtensions
     }
 
     /// <summary>
-    /// Simulates keyboard press on the headless window/toplevel.
+    /// Simulates a keyboard press on the headless window/toplevel.
     /// </summary>
     [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyPressQwerty alternatively.")]
     public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
@@ -61,7 +61,7 @@ public static class HeadlessWindowExtensions
         RunJobsOnImpl(topLevel, w => w.KeyPress(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
 
     /// <summary>
-    /// Simulates keyboard release on the headless window/toplevel.
+    /// Simulates a keyboard release on the headless window/toplevel.
     /// </summary>
     [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyReleaseQwerty alternatively.")]
     public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
@@ -81,41 +81,47 @@ public static class HeadlessWindowExtensions
         RunJobsOnImpl(topLevel, w => w.KeyRelease(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
 
     /// <summary>
-    /// Simulates a text input event on the headless window/toplevel
+    /// Simulates a text input event on the headless window/toplevel.
     /// </summary>
+    /// <remarks>
+    /// This event is independent of KeyPress and KeyRelease. If you need to simulate text input to a TextBox or a similar control, please use KeyTextInput.
+    /// </remarks>
     public static void KeyTextInput(this TopLevel topLevel, string text) =>
         RunJobsOnImpl(topLevel, w => w.TextInput(text));
 
     /// <summary>
-    /// Simulates mouse down on the headless window/toplevel.
+    /// Simulates a mouse down on the headless window/toplevel.
     /// </summary>
+    /// <remarks>
+    /// In the headless platform, there is a single mouse pointer. There are no helper methods for touch or pen input.
+    /// </remarks>
     public static void MouseDown(this TopLevel topLevel, Point point, MouseButton button,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseDown(point, button, modifiers));
 
     /// <summary>
-    /// Simulates mouse move on the headless window/toplevel.
+    /// Simulates a mouse move on the headless window/toplevel.
     /// </summary>
     public static void MouseMove(this TopLevel topLevel, Point point,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseMove(point, modifiers));
 
     /// <summary>
-    /// Simulates mouse up on the headless window/toplevel.
+    /// Simulates a mouse up on the headless window/toplevel.
     /// </summary>
     public static void MouseUp(this TopLevel topLevel, Point point, MouseButton button,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseUp(point, button, modifiers));
 
     /// <summary>
-    /// Simulates mouse wheel on the headless window/toplevel.
+    /// Simulates a mouse wheel on the headless window/toplevel.
     /// </summary>
     public static void MouseWheel(this TopLevel topLevel, Point point, Vector delta,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseWheel(point, delta, modifiers));
 
     /// <summary>
-    /// Simulates drag'n'drop target on the headless window/toplevel.
+    /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
     /// </summary>
     public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataObject data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
