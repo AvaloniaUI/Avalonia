@@ -290,6 +290,35 @@ namespace ControlCatalog.Pages
                 await SetPickerResult(folder is null ? null : new[] { folder });
                 SetFolder(folder);
             };
+            
+            this.Get<Button>("LaunchUri").Click += async delegate
+            {
+                var statusBlock = this.Get<TextBox>("LaunchStatus");
+                if (Uri.TryCreate(this.Get<TextBox>("UriToLaunch").Text, UriKind.Absolute, out var uri))
+                {
+                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
+                    statusBlock.Text = "LaunchUriAsync returned " + result;
+                }
+                else
+                {
+                    statusBlock.Text = "Can't parse the Uri";
+                }
+            };
+
+            this.Get<Button>("LaunchFile").Click += async delegate
+            {
+                var statusBlock = this.Get<TextBox>("LaunchStatus");
+                var item = (results.ItemsSource as IStorageItem[])?.FirstOrDefault();
+                if (item is not null)
+                {
+                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchFileAsync(item);
+                    statusBlock.Text = "LaunchFileAsync returned " + result;
+                }
+                else
+                {
+                    statusBlock.Text = "Please select any file or folder first";
+                }
+            };
 
             void SetFolder(IStorageFolder? folder)
             {
