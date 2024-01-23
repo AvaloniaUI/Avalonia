@@ -195,23 +195,32 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
-        public bool IsEffectivelyVisible
+        public bool IsEffectivelyVisible { get; private set; } = true;
+        
+        /// <summary>
+        /// Updates the <see cref="IsEffectivelyVisible"/> property based on the parent's
+        /// <see cref="IsEffectivelyVisible"/>.
+        /// </summary>
+        /// <param name="parentState">The effective visibility of the parent control.</param>
+        private void UpdateIsEffectivelyVisible(bool parentState)
         {
-            get
+            var isEffectivelyVisible = parentState && IsVisible;
+
+            if (IsEffectivelyVisible == isEffectivelyVisible)
+                return;
+
+            IsEffectivelyVisible = isEffectivelyVisible;
+
+            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // will cause extra allocations and overhead.
+            
+            var children = VisualChildren;
+
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < children.Count; ++i)
             {
-                Visual? node = this;
-
-                while (node != null)
-                {
-                    if (!node.IsVisible)
-                    {
-                        return false;
-                    }
-
-                    node = node.VisualParent;
-                }
-
-                return true;
+                var child = children[i];
+                child.UpdateIsEffectivelyVisible(isEffectivelyVisible);
             }
         }
 
@@ -453,7 +462,11 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == FlowDirectionProperty)
+            if (change.Property == IsVisibleProperty)
+            {
+                UpdateIsEffectivelyVisible(VisualParent?.IsEffectivelyVisible ?? true);
+            } 
+            else if (change.Property == FlowDirectionProperty)
             {
                 InvalidateMirrorTransform();
 
@@ -463,7 +476,7 @@ namespace Avalonia
                 }
             }
         }
-
+ 
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
@@ -492,14 +505,16 @@ namespace Avalonia
                 AttachToCompositor(compositingRenderer.Compositor);
             }
             InvalidateMirrorTransform();
+            UpdateIsEffectivelyVisible(_visualParent!.IsEffectivelyVisible);
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
+            
             _visualRoot.Renderer.RecalculateChildren(_visualParent!);
-
-            if (ZIndex != 0 && VisualParent is Visual parent)
-                parent.HasNonUniformZIndexChildren = true;
-
+            
+            if (ZIndex != 0 && _visualParent is { })
+                _visualParent.HasNonUniformZIndexChildren = true;
+            
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
 
@@ -529,6 +544,7 @@ namespace Avalonia
             }
 
             DisableTransitions();
+            UpdateIsEffectivelyVisible(true);
             OnDetachedFromVisualTree(e);
             DetachFromCompositor();
 
