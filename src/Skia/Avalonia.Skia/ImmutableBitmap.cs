@@ -12,7 +12,6 @@ namespace Avalonia.Skia
     /// </summary>
     internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapWithAlphaImpl
     {
-        private readonly SKImage _image;
         private readonly SKBitmap? _bitmap;
 
         /// <summary>
@@ -21,27 +20,22 @@ namespace Avalonia.Skia
         /// <param name="stream">Stream containing encoded data.</param>
         public ImmutableBitmap(Stream stream)
         {
-            using (var skiaStream = new SKManagedStream(stream))
-            {
-                using (var data = SKData.Create(skiaStream))
-                    _bitmap = SKBitmap.Decode(data);
-                
-                if (_bitmap == null)
-                    throw new ArgumentException("Unable to load bitmap from provided data");
+            _bitmap = SKBitmap.Decode(stream);
 
-                _bitmap.SetImmutable();
-                _image = SKImage.FromBitmap(_bitmap);
+            if (_bitmap == null)
+                throw new ArgumentException("Unable to load bitmap from provided data");
 
-                PixelSize = new PixelSize(_image.Width, _image.Height);
+            _bitmap.SetImmutable();
 
-                // TODO: Skia doesn't have an API for DPI.
-                Dpi = new Vector(96, 96);
-            }
+            PixelSize = new PixelSize(_bitmap.Width, _bitmap.Height);
+
+            // TODO: Skia doesn't have an API for DPI.
+            Dpi = new Vector(96, 96);
         }
 
         public ImmutableBitmap(SKImage image)
         {
-            _image = image;
+            _bitmap = SKBitmap.FromImage(image);
             PixelSize = new PixelSize(image.Width, image.Height);
             Dpi = new Vector(96, 96);
         }
@@ -50,11 +44,10 @@ namespace Avalonia.Skia
         {
             SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);
             _bitmap = new SKBitmap(info);
-            src._image.ScalePixels(_bitmap.PeekPixels(), interpolationMode.ToSKFilterQuality());
+            src._bitmap?.ScalePixels(_bitmap.PeekPixels(), interpolationMode.ToSKFilterQuality());
             _bitmap.SetImmutable();
-            _image = SKImage.FromBitmap(_bitmap);
 
-            PixelSize = new PixelSize(_image.Width, _image.Height);
+            PixelSize = new PixelSize(_bitmap.Width, _bitmap.Height);
 
             // TODO: Skia doesn't have an API for DPI.
             Dpi = new Vector(96, 96);
@@ -102,14 +95,7 @@ namespace Avalonia.Skia
                 
                 _bitmap.SetImmutable();
 
-                _image = SKImage.FromBitmap(_bitmap);
-
-                if (_image == null)
-                {
-                    throw new ArgumentException("Unable to load bitmap from provided data");
-                }
-
-                PixelSize = new PixelSize(_image.Width, _image.Height);
+                PixelSize = new PixelSize(_bitmap.Width, _bitmap.Height);
 
                 // TODO: Skia doesn't have an API for DPI.
                 Dpi = new Vector(96, 96);
@@ -134,13 +120,8 @@ namespace Avalonia.Skia
                     data);
                 _bitmap = tmp.Copy();
             }
-            _bitmap.SetImmutable();
-            _image = SKImage.FromBitmap(_bitmap);
 
-            if (_image == null)
-            {
-                throw new ArgumentException("Unable to create bitmap from provided data");
-            }
+            _bitmap.SetImmutable();
 
             PixelSize = size;
             Dpi = dpi;
@@ -154,26 +135,31 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Dispose()
         {
-            _image.Dispose();
             _bitmap?.Dispose();
         }
 
         /// <inheritdoc />
         public void Save(string fileName, int? quality = null)
         {
-            ImageSavingHelper.SaveImage(_image, fileName, quality);
+            if (_bitmap == null)
+                throw new NotSupportedException("A bitmap is needed for saving");
+
+            ImageSavingHelper.SaveImage(_bitmap, fileName, quality);
         }
 
         /// <inheritdoc />
         public void Save(Stream stream, int? quality = null)
         {
-            ImageSavingHelper.SaveImage(_image, stream, quality);
+            if (_bitmap == null)
+                throw new NotSupportedException("A bitmap is needed for saving");
+
+            ImageSavingHelper.SaveImage(_bitmap, stream, quality);
         }
 
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
-            context.Canvas.DrawImage(_image, sourceRect, destRect, paint);
+            context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);
         }
 
         public PixelFormat? Format => _bitmap?.ColorType.ToAvalonia();
