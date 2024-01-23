@@ -24,9 +24,10 @@ namespace Avalonia.Skia.Helpers
             if (image == null) throw new ArgumentNullException(nameof(image));
             if (fileName == null) throw new ArgumentNullException(nameof(fileName));
 
-            using var stream = File.Create(fileName);
-
-            SaveImage(image, stream, quality);
+            using (var stream = File.Create(fileName))
+            {
+                SaveImage(image, stream, quality);
+            }
         }
 
         /// <summary>
@@ -46,9 +47,10 @@ namespace Avalonia.Skia.Helpers
             if (fileName == null)
                 throw new ArgumentNullException(nameof(fileName));
 
-            using var stream = File.Create(fileName);
-
-            SaveImage(bitmap, stream, quality);
+            using (var stream = File.Create(fileName))
+            {
+                SaveImage(bitmap, stream, quality);
+            }
         }
 
         /// <summary>
@@ -68,9 +70,10 @@ namespace Avalonia.Skia.Helpers
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            using var data = bitmap.Encode(SKEncodedImageFormat.Png, quality ?? 100);
-
-            data.SaveTo(stream);
+            using (var data = bitmap.Encode(SKEncodedImageFormat.Png, quality ?? 100))
+            {
+                data.SaveTo(stream);
+            }
         }
 
         /// <summary>
@@ -88,9 +91,10 @@ namespace Avalonia.Skia.Helpers
             if (image == null) throw new ArgumentNullException(nameof(image));
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            using var data = image.Encode(SKEncodedImageFormat.Png, quality ?? 100);
-
-            data.SaveTo(stream);
+            using (var data = image.Encode(SKEncodedImageFormat.Png, quality ?? 100))
+            {
+                data.SaveTo(stream);
+            }
         }
 
         // This method is here mostly for debugging purposes
