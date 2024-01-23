@@ -25,6 +25,7 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
 
             IStorageFolder? lastSelectedDirectory = null;
+            IStorageItem? lastSelectedItem = null;
             bool ignoreTextChanged = false;
 
             var results = this.Get<ItemsControl>("PickerLastResults");
@@ -293,7 +294,7 @@ namespace ControlCatalog.Pages
             
             this.Get<Button>("LaunchUri").Click += async delegate
             {
-                var statusBlock = this.Get<TextBox>("LaunchStatus");
+                var statusBlock = this.Get<TextBlock>("LaunchStatus");
                 if (Uri.TryCreate(this.Get<TextBox>("UriToLaunch").Text, UriKind.Absolute, out var uri))
                 {
                     var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
@@ -307,11 +308,10 @@ namespace ControlCatalog.Pages
 
             this.Get<Button>("LaunchFile").Click += async delegate
             {
-                var statusBlock = this.Get<TextBox>("LaunchStatus");
-                var item = (results.ItemsSource as IStorageItem[])?.FirstOrDefault();
-                if (item is not null)
+                var statusBlock = this.Get<TextBlock>("LaunchStatus");
+                if (lastSelectedItem is not null)
                 {
-                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchFileAsync(item);
+                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchFileAsync(lastSelectedItem);
                     statusBlock.Text = "LaunchFileAsync returned " + result;
                 }
                 else
@@ -324,6 +324,7 @@ namespace ControlCatalog.Pages
             {
                 ignoreTextChanged = true;
                 lastSelectedDirectory = folder;
+                lastSelectedItem = folder;
                 currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
                 ignoreTextChanged = false;
             }
@@ -373,6 +374,7 @@ namespace ControlCatalog.Pages
                             }
                         }
                     }
+                    lastSelectedItem = item;
                 }
 
                 results.ItemsSource = mappedResults;
