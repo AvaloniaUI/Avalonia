@@ -50,7 +50,14 @@ internal static partial class InputHelper
     [JSImport("InputHelper.subscribeDropEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeDropEvents(JSObject containerElement,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>] Func<JSObject, bool> dragEvent);
-    
+
+    [JSImport("InputHelper.subscribeKeyboardGeometryChange", AvaloniaModule.MainModuleName)]
+    public static partial void SubscribeKeyboardGeometryChange(JSObject containerElement,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>] Func<JSObject, bool> handler);
+
+    [JSImport("InputHelper.subscribeVisibilityChange", AvaloniaModule.MainModuleName)]
+    public static partial bool SubscribeVisibilityChange([JSMarshalAs<JSType.Function<JSType.Boolean>>] Action<bool> handler);
+
     [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
     [return: JSMarshalAs<JSType.Array<JSType.Object>>]
     public static partial JSObject[] GetCoalescedEvents(JSObject pointerEvent);

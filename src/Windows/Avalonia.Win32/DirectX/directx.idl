@@ -215,7 +215,7 @@ interface IDXGIAdapter : IDXGIObject
 [uuid(310d36a0-d2e7-4c0a-aa04-6a9d23b8886a)]
 interface IDXGISwapChain : IDXGIDeviceSubObject
 {
-    HRESULT Present([in] UINT SyncInterval, [in] UINT Flags);
+    INT32 Present([in] UINT SyncInterval, [in] UINT Flags);
     HRESULT GetBuffer([in] UINT Buffer, [in, annotation("_In_")] REFIID riid, [in, out, annotation("_COM_Outptr_")] void** ppSurface);
     HRESULT SetFullscreenState([in] BOOL Fullscreen, [in, annotation("_In_opt_")] IDXGIOutput* pTarget);
     HRESULT GetFullscreenState([out, annotation("_Out_opt_")] BOOL* pFullscreen, [out, annotation("_COM_Outptr_opt_result_maybenull_")] IDXGIOutput** ppTarget);

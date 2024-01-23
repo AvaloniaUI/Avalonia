@@ -312,3 +312,19 @@ interface IDropTarget : IUnknown
         [in] DropEffect* pdwEffect
     );
 }
+
+[uuid(226C537B-1E76-4D9E-A760-33DB29922F18)]
+interface IFrameworkInputPaneHandler : IUnknown
+{
+    HRESULT Showing(RECT* prcInputPaneScreenLocation, boolean fEnsureFocusedElementInView);
+    HRESULT Hiding(boolean fEnsureFocusedElementInView);
+}
+
+[uuid(5752238B-24F0-495A-82F1-2FD593056796)]
+interface IFrameworkInputPane : IUnknown
+{
+    int Advise(IUnknown* pWindow, IFrameworkInputPaneHandler* pHandler, uint* pdwCookie);
+    int AdviseWithHWND(HWND hwnd, IFrameworkInputPaneHandler* pHandler, uint* pdwCookie);
+    int Unadvise(uint dwCookie);
+    int Location(RECT* prcInputPaneScreenLocation);
+}

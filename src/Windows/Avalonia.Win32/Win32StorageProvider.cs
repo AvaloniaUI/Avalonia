@@ -39,7 +39,7 @@ namespace Avalonia.Win32
             return await ShowFilePicker(
                 true, true,
                 options.AllowMultiple, false,
-                options.Title, null, options.SuggestedStartLocation, null, null,
+                options.Title, options.SuggestedFileName, options.SuggestedStartLocation, null, null,
                 f => new BclStorageFolder(new DirectoryInfo(f)))
                 .ConfigureAwait(false);
         }
@@ -49,7 +49,7 @@ namespace Avalonia.Win32
             return await ShowFilePicker(
                 true, false,
                 options.AllowMultiple, false,
-                options.Title, null, options.SuggestedStartLocation,
+                options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
                 null, options.FileTypeFilter,
                 f => new BclStorageFile(new FileInfo(f)))
                 .ConfigureAwait(false);
@@ -87,7 +87,7 @@ namespace Avalonia.Win32
                 {
                     var clsid = isOpenFile ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                     var iid = UnmanagedMethods.ShellIds.IFileDialog;
-                    var frm = UnmanagedMethods.CreateInstance<IFileDialog>(ref clsid, ref iid);
+                    var frm = UnmanagedMethods.CreateInstance<IFileDialog>(in clsid, in iid);
 
                     var options = frm.Options;
                     options |= DefaultDialogOptions;

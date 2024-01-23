@@ -1245,8 +1245,9 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var textMetrics = textRun.TextMetrics;
                             var glyphRun = textRun.GlyphRun;
+                            var runBounds = glyphRun.InkBounds.WithX(widthIncludingWhitespace + glyphRun.InkBounds.X);
 
-                            bounds = bounds.Union(glyphRun.InkBounds);
+                            bounds = bounds.Union(runBounds);
 
                             if (fontRenderingEmSize < textMetrics.FontRenderingEmSize)
                             {

@@ -110,6 +110,7 @@ namespace Avalonia.Win32
                         }
 
                         _framebuffer.Dispose();
+                        _inputPane?.Dispose();
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;

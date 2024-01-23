@@ -77,7 +77,7 @@ namespace Avalonia.Animation
             set { SetAndRaise(EasingProperty, ref _easing, value); }
         }
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         [DisallowNull]
         public AvaloniaProperty? Property
         {
@@ -91,7 +91,7 @@ namespace Avalonia.Animation
             set => Property = value;
         }
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         IDisposable ITransition.Apply(Animatable control, IClock clock, object? oldValue, object? newValue)
             => Apply(control, clock, oldValue, newValue);
         

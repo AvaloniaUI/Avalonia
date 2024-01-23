@@ -4,11 +4,34 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using System.Runtime.Versioning;
 using Avalonia.Browser;
+using Avalonia.Browser.Interop;
+using Avalonia.Threading;
 
 namespace Avalonia;
 
-internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
+internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, IActivatableApplicationLifetime
 {
+    public BrowserSingleViewLifetime()
+    {
+        bool? initiallyVisible = InputHelper.SubscribeVisibilityChange(visible =>
+        {
+            initiallyVisible = null;
+            (visible ? Activated : Deactivated)?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+        });
+
+        // Trigger Activated as an initial state, if web page is visible, and wasn't hidden during initialization.
+        if (initiallyVisible == true)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                if (initiallyVisible == true)
+                {
+                    Activated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+                }
+            });
+        }
+    }
+    
     public AvaloniaView? View;
 
     public Control? MainView
@@ -33,4 +56,10 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
             throw new InvalidOperationException("Browser lifetime was not initialized. Make sure AppBuilder.StartBrowserApp was called.");
         }
     }
+
+    public event EventHandler<ActivatedEventArgs>? Activated;
+    public event EventHandler<ActivatedEventArgs>? Deactivated;
+
+    public bool TryLeaveBackground() => false;
+    public bool TryEnterBackground() => true;
 }

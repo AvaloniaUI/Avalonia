@@ -843,7 +843,7 @@ namespace Avalonia.PropertyStore
                     // evaluated last as it can cause bindings to be subscribed.
                     if (foundEntry &&
                         HasHigherPriority(entry!, priority, current, changedValueEntry) && 
-                        entry!.HasValue)
+                        entry!.HasValue())
                     {
                         if (current is not null)
                         {
@@ -911,7 +911,7 @@ namespace Avalonia.PropertyStore
                 {
                     var frame = _frames[i];
 
-                    if (!frame.IsActive)
+                    if (!frame.IsActive())
                         continue;
 
                     var priority = frame.Priority;
@@ -927,7 +927,7 @@ namespace Avalonia.PropertyStore
                         if (!HasHigherPriority(entry, priority, effectiveValue, changedValueEntry))
                             continue;
 
-                        if (!entry.HasValue)
+                        if (!entry.HasValue())
                             continue;
 
                         if (effectiveValue is not null)

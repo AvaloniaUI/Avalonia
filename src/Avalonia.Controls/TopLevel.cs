@@ -291,6 +291,7 @@ namespace Avalonia.Controls
                             KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
                             Key = rawKeyEventArgs.Key,
                             PhysicalKey = rawKeyEventArgs.PhysicalKey,
+                            KeyDeviceType= rawKeyEventArgs.KeyDeviceType,
                             KeySymbol = rawKeyEventArgs.KeySymbol
                         };
 
@@ -547,6 +548,7 @@ namespace Avalonia.Controls
             ?? new NoopStorageProvider();
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
+        public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();
 
         /// <summary>
         /// Gets the platform's clipboard implementation

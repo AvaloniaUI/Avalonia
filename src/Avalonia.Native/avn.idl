@@ -1087,11 +1087,15 @@ interface IAvnApplicationEvents : IUnknown
 {
      void FilesOpened (IAvnStringArray* urls);
      bool TryShutdown();
+     void OnReopen ();
+     void OnHide ();
+     void OnUnhide ();
 }
 
 [uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]
 interface IAvnApplicationCommands : IUnknown
 {
+    HRESULT UnhideApp();
     HRESULT HideApp();
     HRESULT ShowAll();
     HRESULT HideOthers();

@@ -51,6 +51,14 @@ namespace ControlCatalog
                 singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
             }
 
+            if (ApplicationLifetime is IActivatableApplicationLifetime activatableApplicationLifetime)
+            {
+                activatableApplicationLifetime.Activated += (sender, args) =>
+                    Console.WriteLine($"App activated: {args.Kind}");
+                activatableApplicationLifetime.Deactivated += (sender, args) =>
+                    Console.WriteLine($"App deactivated: {args.Kind}");
+            }
+
             base.OnFrameworkInitializationCompleted();
         }
 
