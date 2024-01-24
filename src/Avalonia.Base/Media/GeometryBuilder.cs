@@ -34,7 +34,7 @@ namespace Avalonia.Media
         /// <param name="keypoints">The rounded rectangle keypoints defining the rectangle to draw.</param>
         public static void DrawRoundedCornersRectangle(
             StreamGeometryContext context,
-            RoundedRectKeypoints keypoints)
+            ref RoundedRectKeypoints keypoints)
         {
             double radiusX;
             double radiusY;

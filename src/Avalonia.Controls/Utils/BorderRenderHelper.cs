@@ -58,7 +58,7 @@ namespace Avalonia.Controls.Utils
 
                     using (var ctx = backgroundGeometry.Open())
                     {
-                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, backgroundOuterKeypoints);
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref backgroundOuterKeypoints);
                     }
 
                     _backgroundGeometryCache = backgroundGeometry;
@@ -84,11 +84,11 @@ namespace Avalonia.Controls.Utils
 
                     using (var ctx = borderGeometry.Open())
                     {
-                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderOuterKeypoints);
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref borderOuterKeypoints);
 
                         if (backgroundGeometry != null)
                         {
-                            GeometryBuilder.DrawRoundedCornersRectangle(ctx, borderInnerKeypoints);
+                            GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref borderInnerKeypoints);
                         }
                     }
 
