@@ -21,6 +21,7 @@ namespace Avalonia.Input.GestureRecognizers
         private int _gestureId;
         private Point _pointerPressedPoint;
         private VelocityTracker? _velocityTracker;
+        private Visual? _rootTarget;
 
         // Movement per second
         private Vector _inertia;
@@ -99,7 +100,8 @@ namespace Avalonia.Input.GestureRecognizers
                 EndGesture();
                 _tracking = e.Pointer;
                 _gestureId = ScrollGestureEventArgs.GetNextFreeId();
-                _trackedRootPoint = _pointerPressedPoint = e.GetPosition((Visual?)Target);
+                _rootTarget = (Visual?)(Target as Visual)?.VisualRoot;
+                _trackedRootPoint = _pointerPressedPoint = e.GetPosition(_rootTarget);
             }
         }
 
@@ -107,7 +109,7 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (e.Pointer == _tracking)
             {
-                var rootPoint = e.GetPosition((Visual?)Target);
+                var rootPoint = e.GetPosition(_rootTarget);
                 if (!_scrolling)
                 {
                     if (CanHorizontallyScroll && Math.Abs(_trackedRootPoint.X - rootPoint.X) > ScrollStartDistance)
@@ -134,8 +136,8 @@ namespace Avalonia.Input.GestureRecognizers
                     _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), _pointerPressedPoint - rootPoint);
 
                     _lastMoveTimestamp = e.Timestamp;
-                    _trackedRootPoint = rootPoint;
                     Target!.RaiseEvent(new ScrollGestureEventArgs(_gestureId, vector));
+                    _trackedRootPoint = rootPoint;
                     e.Handled = true;
                 }
             }
@@ -156,6 +158,7 @@ namespace Avalonia.Input.GestureRecognizers
                 Target!.RaiseEvent(new ScrollGestureEndedEventArgs(_gestureId));
                 _gestureId = 0;
                 _lastMoveTimestamp = null;
+                _rootTarget = null;
             }
             
         }
