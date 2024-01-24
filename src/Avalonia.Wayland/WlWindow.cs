@@ -41,6 +41,7 @@ namespace Avalonia.Wayland
             public PixelSize Bounds;
             public PixelPoint Position;
             public WindowState WindowState;
+            public WindowTransparencyLevel TransparencyLevel;
             public bool HasWindowDecorations;
             public bool Activated;
         }
@@ -91,7 +92,7 @@ namespace Avalonia.Wayland
 
         public double DesktopScaling => RenderScaling;
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel => AppliedState.TransparencyLevel;
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => default;
 
@@ -149,8 +150,7 @@ namespace Avalonia.Wayland
                     return;
                 if (!TryApplyTransparencyLevel(transparencyLevel))
                     continue;
-                TransparencyLevel = transparencyLevel;
-                TransparencyLevelChanged?.Invoke(transparencyLevel);
+                PendingState.TransparencyLevel = transparencyLevel;
                 break;
             }
         }
@@ -242,6 +242,8 @@ namespace Avalonia.Wayland
         protected virtual void ApplyConfigure()
         {
             var didResize = AppliedState.Size != PendingState.Size;
+            var didTransparencyChange = AppliedState.TransparencyLevel != PendingState.TransparencyLevel;
+            var needsPaint = false;
 
             AppliedState = PendingState;
 
@@ -251,12 +253,19 @@ namespace Avalonia.Wayland
                 if (AppliedState.Size == default)
                     AppliedState.Size = new PixelSize(Math.Max((int)(AppliedState.Bounds.Width * 0.75), 300), Math.Max((int)(AppliedState.Bounds.Height * 0.7), 200));
                 _didReceiveInitialConfigure = true;
-                DoPaint();
+                needsPaint = true;
             }
             else if (didResize && _frameCallback is null)
             {
                 _frameCallback = WlSurface.Frame();
                 _frameCallback.Events = this;
+                needsPaint = true;
+            }
+
+            if (needsPaint || didTransparencyChange)
+            {
+                _wpViewport?.SetDestination(AppliedState.Size.Width, AppliedState.Size.Height);
+                TransparencyLevelChanged?.Invoke(AppliedState.TransparencyLevel);
                 DoPaint();
             }
         }
@@ -266,8 +275,6 @@ namespace Avalonia.Wayland
             lock (_resizeLock)
             {
                 Resized?.Invoke(ClientSize, WindowResizeReason.Application);
-                _wpViewport?.SetDestination(AppliedState.Size.Width, AppliedState.Size.Height);
-                TryApplyTransparencyLevel(TransparencyLevel);
                 Paint?.Invoke(default);
             }
         }
