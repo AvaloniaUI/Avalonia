@@ -4,7 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
-using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
@@ -201,6 +200,10 @@ namespace Avalonia.Wayland
         {
             if (featureType == typeof(IClipboard))
                 return _platform.WlDataHandler;
+            if (featureType == typeof(WlDisplay))
+                return _platform.WlDisplay;
+            if (featureType == typeof(WlSurface))
+                return WlSurface;
             return null;
         }
 
