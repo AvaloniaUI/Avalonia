@@ -40,9 +40,8 @@ namespace Avalonia.Wayland
 
         public void OnGlobalRemove(WlRegistry eventSender, uint name)
         {
-            if (!_globals.TryGetValue(name, out var glob))
+            if (!_globals.Remove(name, out var glob))
                 return;
-            _globals.Remove(name);
             GlobalRemoved?.Invoke(glob);
         }
 
