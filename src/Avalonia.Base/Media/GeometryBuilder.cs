@@ -39,7 +39,7 @@ namespace Avalonia.Media
             double radiusX;
             double radiusY;
 
-            context.BeginFigure(keypoints.TopLeft, true);
+            context.BeginFigure(keypoints.TopLeft, isFilled: true);
 
             // Top
             context.LineTo(keypoints.TopRight);
@@ -114,7 +114,7 @@ namespace Avalonia.Media
                     SweepDirection.Clockwise);
             }
 
-            context.EndFigure(true);
+            context.EndFigure(isClosed: true);
         }
 
         /// <summary>
@@ -150,8 +150,9 @@ namespace Avalonia.Media
             // - Lines 2,4 follow the deflated rectangle bounds minus RadiusY
             // - All corners are constructed using elliptical arcs 
 
+            context.BeginFigure(new Point(rect.Left + radiusX, rect.Top), isFilled: true);
+
             // Line 1 + Corner 1
-            context.BeginFigure(new Point(rect.Left + radiusX, rect.Top), true);
             context.LineTo(new Point(rect.Right - radiusX, rect.Top));
             context.ArcTo(
                 new Point(rect.Right, rect.Top + radiusY),
@@ -187,7 +188,7 @@ namespace Avalonia.Media
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
-            context.EndFigure(true);
+            context.EndFigure(isClosed: true);
         }
 
         /// <summary>
