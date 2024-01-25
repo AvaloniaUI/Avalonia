@@ -41,6 +41,13 @@ namespace Avalonia.Android
             set { _root.Content = value; }
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _root?.Dispose();
+            _root = null;
+        }
+
         public override bool DispatchKeyEvent(KeyEvent e)
         {
             return _view.View.DispatchKeyEvent(e);
