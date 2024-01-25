@@ -1,5 +1,10 @@
 <Project>
   <PropertyGroup>
-    <EmccInitialHeapSize>16384000</EmccInitialHeapSize> <!-- must be a multiple of 64KiB, 1024000 * num MB, number grows -->
+    <ShouldIncludeAvaloniaJavaScript Condition=" '$(ShouldIncludeAvaloniaJavaScript)' == '' ">True</ShouldIncludeAvaloniaJavaScript>
+    <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">True</ShouldIncludeNativeSkiaSharp>
+    <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">True</ShouldIncludeNativeHarfBuzzSharp>
+    <!-- .NET 8 changes default location for dotnet script to the "_framework" subfolder, -->
+    <!-- But this change would introduce a breaking change to Avalonia users, so we revert it back to the .NET 7 state. -->
+    <WasmRuntimeAssetsLocation Condition="'$(WasmRuntimeAssetsLocation)' == ''">./</WasmRuntimeAssetsLocation>
   </PropertyGroup>
 </Project>

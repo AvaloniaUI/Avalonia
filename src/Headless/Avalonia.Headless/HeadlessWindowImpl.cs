@@ -369,7 +369,7 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
             
         }

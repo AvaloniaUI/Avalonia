@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Content.Res;
 using Android.Runtime;
@@ -41,11 +42,19 @@ namespace Avalonia.Android
             set { _root.Content = value; }
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _root?.Dispose();
+            _root = null;
+        }
+
         public override bool DispatchKeyEvent(KeyEvent e)
         {
             return _view.View.DispatchKeyEvent(e);
         }
 
+        [SupportedOSPlatform("android24.0")]
         public override void OnVisibilityAggregated(bool isVisible)
         {
             base.OnVisibilityAggregated(isVisible);

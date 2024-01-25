@@ -53,29 +53,31 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
             var physicalKey = AndroidKeyInterop.PhysicalKeyFromScanCode(e.ScanCode);
             var keySymbol = GetKeySymbol(e.UnicodeChar, physicalKey);
+            var keyDeviceType = GetKeyDeviceType(e);
 
             var rawKeyEvent = new RawKeyEventArgs(
-                          AndroidKeyboardDevice.Instance,
+                          AndroidKeyboardDevice.Instance!,
                           Convert.ToUInt64(e.EventTime),
                           _view.InputRoot,
                           e.Action == KeyEventActions.Down ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                           AndroidKeyboardDevice.ConvertKey(e.KeyCode),
                           GetModifierKeys(e),
                           physicalKey,
+                          keyDeviceType,
                           keySymbol);
 
-            _view.Input(rawKeyEvent);
+            _view.Input?.Invoke(rawKeyEvent);
 
             if ((e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
                 || unicodeTextInput != null)
             {
                 var rawTextEvent = new RawTextInputEventArgs(
-                  AndroidKeyboardDevice.Instance,
+                  AndroidKeyboardDevice.Instance!,
                   Convert.ToUInt64(e.EventTime),
                   _view.InputRoot,
                   unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
                   );
-                _view.Input(rawTextEvent);
+                _view.Input?.Invoke(rawTextEvent);
             }
 
             if (e.Action == KeyEventActions.Up)
@@ -122,6 +124,20 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     }
                     return char.ConvertFromUtf32(unicodeChar);
             }
+        }
+
+        private KeyDeviceType GetKeyDeviceType(KeyEvent e)
+        {
+            var source = e.Device?.Sources ?? InputSourceType.Unknown;
+            if (source is InputSourceType.Joystick or
+                InputSourceType.ClassJoystick or
+                InputSourceType.Gamepad)
+                return KeyDeviceType.Gamepad;
+
+            if (source == InputSourceType.Dpad && e.Device?.KeyboardType == InputKeyboardType.NonAlphabetic)
+                return KeyDeviceType.Remote;
+
+            return KeyDeviceType.Keyboard;
         }
 
         public void Dispose()

@@ -771,14 +771,6 @@ namespace Avalonia.Controls
             if (OwningGrid != null)
             {
                 OwningGrid.IsDoubleClickRecordsClickOnCall(this);
-                if (OwningGrid.UpdatedStateOnMouseLeftButtonDown)
-                {
-                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = false;
-                }
-                else
-                {
-                    e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, -1, Slot, false);
-                }
             }
         }
 

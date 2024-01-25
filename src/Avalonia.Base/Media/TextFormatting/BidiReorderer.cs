@@ -30,18 +30,25 @@ namespace Avalonia.Media.TextFormatting
 
             try
             {
+                sbyte? previousLevel = null;
+
                 _runs.Add(textRuns.Length);
 
                 // Build up the collection of ordered runs.
                 for (var i = 0; i < textRuns.Length; i++)
                 {
                     var textRun = textRuns[i];
-                    _runs[i] = new OrderedBidiRun(i, textRun, GetRunBidiLevel(textRun, flowDirection));
+
+                    var orderedRun = new OrderedBidiRun(i, textRun, GetRunBidiLevel(textRun, flowDirection, previousLevel));
+
+                    _runs[i] = orderedRun;
 
                     if (i > 0)
                     {
                         _runs[i - 1].NextRunIndex = i;
                     }
+
+                    previousLevel = orderedRun.Level;
                 }
 
                 // Reorder them into visual order.
@@ -72,7 +79,8 @@ namespace Avalonia.Media.TextFormatting
 
                 for (var i = 0; i < textRuns.Length; i++)
                 {
-                    var level = GetRunBidiLevel(textRuns[i], flowDirection);
+                    var level = _runs[i].Level;
+
                     if (level > max)
                     {
                         max = level;
@@ -150,15 +158,26 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        private static sbyte GetRunBidiLevel(TextRun run, FlowDirection flowDirection)
+        private static sbyte GetRunBidiLevel(TextRun run, FlowDirection flowDirection, sbyte? previousLevel)
         {
             if (run is ShapedTextRun shapedTextRun)
             {
                 return shapedTextRun.BidiLevel;
             }
 
-            var defaultLevel = flowDirection == FlowDirection.LeftToRight ? 0 : 1;
-            return (sbyte)defaultLevel;
+            var defaultLevel = (sbyte)(flowDirection == FlowDirection.LeftToRight ? 0 : 1);
+
+            if (run is TextEndOfLine)
+            {
+                return defaultLevel;
+            }
+
+            if(previousLevel is not null)
+            {
+                return previousLevel.Value;
+            }
+
+            return defaultLevel;
         }
 
         /// <summary>

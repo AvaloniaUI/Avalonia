@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -33,6 +34,9 @@ namespace Avalonia.Controls.Presenters
 
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
+
+        public static readonly StyledProperty<TimeSpan> CaretBlinkIntervalProperty =
+            TextBox.CaretBlinkIntervalProperty.AddOwner<TextPresenter>();
 
         public static readonly StyledProperty<int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
@@ -88,7 +92,7 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextPresenter>();
 
-        private readonly DispatcherTimer _caretTimer;
+        private DispatcherTimer? _caretTimer;
         private bool _caretBlink;
         private TextLayout? _textLayout;
         private Size _constraint;
@@ -101,13 +105,10 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, TextElement.ForegroundProperty);
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, SelectionForegroundBrushProperty, TextElement.ForegroundProperty);
         }
 
-        public TextPresenter()
-        {
-            _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        }
+        public TextPresenter() { }
 
         public event EventHandler? CaretBoundsChanged;
 
@@ -288,6 +289,15 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(CaretBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the caret blink rate
+        /// </summary>
+        public TimeSpan CaretBlinkInterval
+        {
+            get => GetValue(CaretBlinkIntervalProperty);
+            set => SetValue(CaretBlinkIntervalProperty, value);
+        }
+
         public int SelectionStart
         {
             get => GetValue(SelectionStartProperty);
@@ -443,7 +453,7 @@ namespace Avalonia.Controls.Presenters
         public void ShowCaret()
         {
             _caretBlink = true;
-            _caretTimer.Start();
+            _caretTimer?.Start();
             InvalidateVisual();
         }
 
@@ -454,7 +464,7 @@ namespace Avalonia.Controls.Presenters
             {
                 TextSelectionHandleCanvas.ShowHandles = false;
             }
-            _caretTimer.Stop();
+            _caretTimer?.Stop();
             InvalidateVisual();
         }
 
@@ -465,18 +475,18 @@ namespace Avalonia.Controls.Presenters
                 return;
             }
 
-            if (_caretTimer.IsEnabled)
+            if (_caretTimer?.IsEnabled ?? false)
             {
                 _caretBlink = true;
-                _caretTimer.Stop();
-                _caretTimer.Start();
+                _caretTimer?.Stop();
+                _caretTimer?.Start();
                 InvalidateVisual();
             }
             else
             {
-                _caretTimer.Start();
+                _caretTimer?.Start();
                 InvalidateVisual();
-                _caretTimer.Stop();
+                _caretTimer?.Stop();
             }
 
             if (IsMeasureValid)
@@ -583,12 +593,6 @@ namespace Avalonia.Controls.Presenters
             _textLayout = null;
 
             InvalidateMeasure();
-        }
-
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
-            EnsureTextSelectionLayer();
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -714,6 +718,33 @@ namespace Avalonia.Controls.Presenters
             _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
 
             CaretChanged();
+        }
+
+        private void ResetCaretTimer()
+        {
+            bool isEnabled = false;
+
+            if (_caretTimer != null)
+            {
+                _caretTimer.Tick -= CaretTimerTick;
+
+                if (_caretTimer.IsEnabled)
+                {
+                    _caretTimer.Stop();
+                    isEnabled = true;
+                }
+
+                _caretTimer = null;
+            }
+
+            if (CaretBlinkInterval.TotalMilliseconds > 0) 
+            {
+                _caretTimer = new DispatcherTimer { Interval = CaretBlinkInterval };
+                _caretTimer.Tick += CaretTimerTick;
+
+                if (isEnabled)
+                    _caretTimer.Start();
+            }
         }
 
         public CharacterHit GetNextCharacterHit(LogicalDirection direction = LogicalDirection.Forward)
@@ -855,10 +886,9 @@ namespace Avalonia.Controls.Presenters
         {
             base.OnAttachedToVisualTree(e);
 
-            _caretTimer.Tick += CaretTimerTick;
+            ResetCaretTimer();
 
-            if (TextSelectionHandleCanvas is { } canvas && _layer != null && !_layer.Children.Contains(canvas))
-                _layer?.Add(TextSelectionHandleCanvas);
+            EnsureTextSelectionLayer();
         }
 
         private void EnsureTextSelectionLayer()
@@ -866,10 +896,17 @@ namespace Avalonia.Controls.Presenters
             if (TextSelectionHandleCanvas == null)
             {
                 TextSelectionHandleCanvas = new TextSelectionHandleCanvas();
-                TextSelectionHandleCanvas.SetPresenter(this);
             }
+            TextSelectionHandleCanvas.SetPresenter(this);
             _layer = TextSelectorLayer.GetTextSelectorLayer(this);
-            if (_layer != null && !_layer.Children.Contains(TextSelectionHandleCanvas))
+            if (TextSelectionHandleCanvas.VisualParent is { } parent && parent != _layer)
+            {
+                if (parent is TextSelectorLayer l)
+                {
+                    l.Remove(TextSelectionHandleCanvas);
+                }
+            }
+            if (_layer != null && TextSelectionHandleCanvas.VisualParent != _layer)
                 _layer?.Add(TextSelectionHandleCanvas);
         }
 
@@ -882,9 +919,11 @@ namespace Avalonia.Controls.Presenters
                 c.SetPresenter(null);
             }
 
-            _caretTimer.Stop();
-
-            _caretTimer.Tick -= CaretTimerTick;
+            if (_caretTimer != null)
+            {
+                _caretTimer.Stop();
+                _caretTimer.Tick -= CaretTimerTick;
+            }
         }
         
         private void OnPreeditChanged(string? preeditText, int? cursorPosition)
@@ -937,6 +976,11 @@ namespace Avalonia.Controls.Presenters
                 {
                     SetCurrentValue(PreeditTextProperty, null);
                 }
+            }
+
+            if (change.Property == CaretBlinkIntervalProperty)
+            {
+                ResetCaretTimer();
             }
 
             switch (change.Property.Name)

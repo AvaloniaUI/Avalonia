@@ -26,6 +26,7 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
+using Avalonia.Threading;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 using static Avalonia.Controls.Platform.Win32SpecificOptions;
 
@@ -77,6 +78,7 @@ namespace Avalonia.Win32
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
+        private readonly WindowsInputPane? _inputPane;
         private WndProc _wndProcDelegate;
         private string? _className;
         private IntPtr _hwnd;
@@ -164,7 +166,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
             _storageProvider = new Win32StorageProvider(this);
-
+            _inputPane = WindowsInputPane.TryCreate(this);
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
@@ -341,6 +343,11 @@ namespace Avalonia.Win32
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+            
+            if (featureType == typeof(IInputPane))
+            {
+                return _inputPane;
             }
 
             return null;
@@ -661,8 +668,23 @@ namespace Avalonia.Win32
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             e.Pointer.Capture(null);
-            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int)HitTestValues.HTCAPTION), IntPtr.Zero);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (e.Pointer.IsPrimary)
+                {
+                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                    // message or not, so they are not interesting
+
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                }
+                else
+                {
+                    throw new InvalidOperationException("BeginMoveDrag Failed");
+                }
+            }, DispatcherPriority.Send);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -1087,6 +1109,8 @@ namespace Avalonia.Win32
                     throw new ArgumentException("Invalid WindowState.");
             }
 
+            newWindowProperties.WindowState = state;
+
             UpdateWindowProperties(newWindowProperties);
 
             if (command.HasValue)
@@ -1292,7 +1316,7 @@ namespace Avalonia.Win32
                 if (IsWindowVisible(_hwnd))
                     style |= WindowStyles.WS_VISIBLE;
 
-                if (newProperties.IsResizable)
+                if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
                 {
                     style |= WindowStyles.WS_SIZEFRAME;
                     style |= WindowStyles.WS_MAXIMIZEBOX;
@@ -1303,7 +1327,7 @@ namespace Avalonia.Win32
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1313,7 +1337,7 @@ namespace Avalonia.Win32
                 {
                     style &= ~fullDecorationFlags;
 
-                    if (newProperties.Decorations == SystemDecorations.BorderOnly && WindowState != WindowState.Maximized)
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
                     }
@@ -1340,7 +1364,7 @@ namespace Avalonia.Win32
             else
                 SetFullScreen(newProperties.IsFullScreen);
 
-            if (!_isFullScreenActive)
+            if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
             {
                 var style = GetStyle();
 
@@ -1487,6 +1511,7 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
+            public WindowState WindowState;
         }
 
         private struct ResizeReasonScope : IDisposable

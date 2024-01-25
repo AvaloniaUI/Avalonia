@@ -160,7 +160,7 @@ namespace ControlCatalog.Pages
                 }
                 else
                 {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
+                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result!));
                     results.ItemsSource = new[] { result };
                     resultsVisible.IsVisible = true;
                 }
@@ -222,6 +222,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Open file",
                     FileTypeFilter = GetFileTypes(),
+                    SuggestedFileName = "FileName",
                     SuggestedStartLocation = lastSelectedDirectory,
                     AllowMultiple = openMultiple.IsChecked == true
                 });
@@ -238,7 +239,7 @@ namespace ControlCatalog.Pages
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     DefaultExtension = fileTypes?.Any() == true ? "txt" : null,
-                    ShowOverwritePrompt = false
+                    ShowOverwritePrompt = true
                 });
 
                 if (file is not null)
@@ -264,6 +265,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Folder file",
                     SuggestedStartLocation = lastSelectedDirectory,
+                    SuggestedFileName = "FileName",
                     AllowMultiple = openMultiple.IsChecked == true
                 });
 
@@ -436,7 +438,7 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         {
             var forceManaged = this.Get<CheckBox>("ForceManaged").IsChecked ?? false;
             return forceManaged
-                ? new ManagedStorageProvider<Window>(GetWindow(), null)
+                ? new ManagedStorageProvider(GetWindow())
                 : GetTopLevel().StorageProvider;
         }
 

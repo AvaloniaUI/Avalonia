@@ -14,8 +14,8 @@ public class DispatcherTests
 {
     class SimpleDispatcherImpl : IDispatcherImpl, IDispatcherImplWithPendingInput
     {
-        private Thread _loopThread = Thread.CurrentThread;
-        private object _lock = new();
+        private readonly Thread _loopThread = Thread.CurrentThread;
+        private readonly object _lock = new();
         public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _loopThread;
         public void Signal()
         {
@@ -221,7 +221,8 @@ public class DispatcherTests
                 0 => 1,
                 1 => 4,
                 2 => 8,
-                3 => 10
+                3 => 10,
+                _ => throw new InvalidOperationException($"Unexpected value {c}")
             };
             
             Assert.Equal(Enumerable.Range(0, expectedCount), actions);
@@ -380,7 +381,7 @@ public class DispatcherTests
     class WaitHelper : SynchronizationContext, NonPumpingLockHelper.IHelperImpl
     {
         public int WaitCount;
-        public int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
+        public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
             WaitCount++;
             return base.Wait(waitHandles, waitAll, millisecondsTimeout);
@@ -502,7 +503,7 @@ public class DispatcherTests
             t.GetAwaiter().GetResult();
         }
     }
-    
+
     [Fact]
     public void DispatcherHandlesException()
     {

@@ -174,7 +174,7 @@ internal partial class X11Screens
             try
             {
                 var split = screenFactorsString.Split(';').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-                if (split[0].Contains("="))
+                if (split[0].Contains('='))
                 {
                     userConfig = new UserScalingConfiguration
                     {
@@ -197,7 +197,7 @@ internal partial class X11Screens
         }
         
         
-        if (globalFactorString == null && screenFactorsString == null && usePhysicalDpi == null)
+        if (globalFactorString == null && screenFactorsString == null)
             return null;
 
         return (userConfig, globalFactor ?? 1, usePhysicalDpi);

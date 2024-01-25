@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.ComponentModel;
@@ -15,10 +14,12 @@ namespace Avalonia.Win32
 {
     internal class Win32StorageProvider : BclStorageProvider
     {
-        private const uint SIGDN_FILESYSPATH = 0x80058000;
+        private const uint SIGDN_DESKTOPABSOLUTEPARSING = 0x80028000;
 
-        private const FILEOPENDIALOGOPTIONS DefaultDialogOptions = FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM | FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE |
-            FILEOPENDIALOGOPTIONS.FOS_NOTESTFILECREATE | FILEOPENDIALOGOPTIONS.FOS_DONTADDTORECENT;
+        private const FILEOPENDIALOGOPTIONS DefaultDialogOptions =
+            FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST | FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM |
+            FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE | FILEOPENDIALOGOPTIONS.FOS_NOTESTFILECREATE |
+            FILEOPENDIALOGOPTIONS.FOS_DONTADDTORECENT;
 
         private readonly WindowImpl _windowImpl;
 
@@ -35,21 +36,23 @@ namespace Avalonia.Win32
 
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
         {
-            var files = await ShowFilePicker(
+            return await ShowFilePicker(
                 true, true,
                 options.AllowMultiple, false,
-                options.Title, null, options.SuggestedStartLocation, null, null);
-            return files.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray();
+                options.Title, options.SuggestedFileName, options.SuggestedStartLocation, null, null,
+                f => new BclStorageFolder(new DirectoryInfo(f)))
+                .ConfigureAwait(false);
         }
 
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
-            var files = await ShowFilePicker(
+            return await ShowFilePicker(
                 true, false,
                 options.AllowMultiple, false,
-                options.Title, null, options.SuggestedStartLocation,
-                null, options.FileTypeFilter);
-            return files.Select(f => new BclStorageFile(new FileInfo(f))).ToArray();
+                options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
+                null, options.FileTypeFilter,
+                f => new BclStorageFile(new FileInfo(f)))
+                .ConfigureAwait(false);
         }
 
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
@@ -58,11 +61,13 @@ namespace Avalonia.Win32
                 false, false,
                 false, options.ShowOverwritePrompt,
                 options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
-                options.DefaultExtension, options.FileTypeChoices);
-            return files.Select(f => new BclStorageFile(new FileInfo(f))).FirstOrDefault();
+                options.DefaultExtension, options.FileTypeChoices,
+                f => new BclStorageFile(new FileInfo(f)))
+                .ConfigureAwait(false);
+            return files.Count > 0 ? files[0] : null;
         }
 
-        private unsafe Task<IEnumerable<string>> ShowFilePicker(
+        private unsafe Task<IReadOnlyList<TStorageItem>> ShowFilePicker<TStorageItem>(
             bool isOpenFile,
             bool openFolder,
             bool allowMultiple,
@@ -71,16 +76,18 @@ namespace Avalonia.Win32
             string? suggestedFileName,
             IStorageFolder? folder,
             string? defaultExtension,
-            IReadOnlyList<FilePickerFileType>? filters)
+            IReadOnlyList<FilePickerFileType>? filters,
+            Func<string, TStorageItem> convert)
+            where TStorageItem : IStorageItem
         {
             return Task.Run(() =>
             {
-                IEnumerable<string> result = Array.Empty<string>();
+                IReadOnlyList<TStorageItem> result = Array.Empty<TStorageItem>();
                 try
                 {
                     var clsid = isOpenFile ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                     var iid = UnmanagedMethods.ShellIds.IFileDialog;
-                    var frm = UnmanagedMethods.CreateInstance<IFileDialog>(ref clsid, ref iid);
+                    var frm = UnmanagedMethods.CreateInstance<IFileDialog>(in clsid, in iid);
 
                     var options = frm.Options;
                     options |= DefaultDialogOptions;
@@ -101,7 +108,7 @@ namespace Avalonia.Win32
 
                     if (defaultExtension is null)
                     {
-                        defaultExtension = String.Empty;
+                        defaultExtension = string.Empty;
                     }
 
                     fixed (char* pExt = defaultExtension)
@@ -162,22 +169,22 @@ namespace Avalonia.Win32
                         var shellItemArray = fileOpenDialog.Results;
                         var count = shellItemArray.Count;
 
-                        var results = new List<string>();
+                        var results = new List<TStorageItem>();
                         for (int i = 0; i < count; i++)
                         {
                             var shellItem = shellItemArray.GetItemAt(i);
-                            if (GetAbsoluteFilePath(shellItem) is { } selected)
+                            if (GetParsingName(shellItem) is { } selected)
                             {
-                                results.Add(selected);
+                                results.Add(convert(selected));
                             }
                         }
 
                         result = results;
                     }
                     else if (frm.Result is { } shellItem
-                        && GetAbsoluteFilePath(shellItem) is { } singleResult)
+                        && GetParsingName(shellItem) is { } singleResult)
                     {
-                        result = new[] { singleResult };
+                        result = new[] { convert(singleResult) };
                     }
 
                     return result;
@@ -191,18 +198,23 @@ namespace Avalonia.Win32
         }
 
 
-        private static unsafe string? GetAbsoluteFilePath(IShellItem shellItem)
+        private static string? GetParsingName(IShellItem shellItem)
         {
-            var pszString = new IntPtr(shellItem.GetDisplayName(SIGDN_FILESYSPATH));
-            if (pszString != IntPtr.Zero)
+            return GetDisplayName(shellItem, SIGDN_DESKTOPABSOLUTEPARSING);
+        }
+        
+        private static unsafe string? GetDisplayName(IShellItem shellItem, uint sigdnName)
+        {
+            char* pszString = null;
+            if (shellItem.GetDisplayName(sigdnName, &pszString) == 0)
             {
                 try
                 {
-                    return Marshal.PtrToStringUni(pszString);
+                    return Marshal.PtrToStringUni((IntPtr)pszString);
                 }
                 finally
                 {
-                    Marshal.FreeCoTaskMem(pszString);
+                    Marshal.FreeCoTaskMem((IntPtr)pszString);
                 }
             }
             return default;
@@ -224,7 +236,7 @@ namespace Avalonia.Win32
             for (int i = 0; i < filters.Count; i++)
             {
                 var filter = filters[i];
-                if (filter.Patterns is null || !filter.Patterns.Any())
+                if (filter.Patterns is null || filter.Patterns.Count == 0)
                 {
                     continue;
                 }
