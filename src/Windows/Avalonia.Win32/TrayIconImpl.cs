@@ -76,6 +76,11 @@ namespace Avalonia.Win32
         }
 
         /// <inheritdoc />
+        public void SetIsTemplateIcon(bool isTemplateIcon)
+        {
+        }
+
+        /// <inheritdoc />
         public void SetToolTipText(string? text)
         {
             _tooltipText = text;

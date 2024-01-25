@@ -182,6 +182,11 @@ namespace Avalonia.Controls
 
         public INativeMenuExporter? NativeMenuExporter => _impl?.MenuExporter;
 
+        internal void SetIsTemplateIcon(bool isTemplateIcon)
+        {
+            _impl?.SetIsTemplateIcon(isTemplateIcon);
+        }
+
         private static void Lifetime_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         {
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");

@@ -192,6 +192,11 @@ namespace Avalonia.FreeDesktop
             _isVisible = visible;
         }
 
+        public void SetIsTemplateIcon(bool isTemplateIcon)
+        {
+            
+        }
+
         public void SetToolTipText(string? text)
         {
             if (_isDisposed || text is null)

@@ -41,6 +41,11 @@ namespace Avalonia.X11
             NotImplemented();
         }
 
+        public void SetIsTemplateIcon(bool isTemplateIcon)
+        {
+            NotImplemented();
+        }
+
         public INativeMenuExporter MenuExporter { get; }
         public Action OnClicked { get; set; }
     }

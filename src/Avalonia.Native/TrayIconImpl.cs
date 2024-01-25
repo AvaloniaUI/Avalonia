@@ -58,6 +58,11 @@ namespace Avalonia.Native
             _native.SetIsVisible(visible.AsComBool());
         }
 
+        public void SetIsTemplateIcon(bool isTemplateIcon)
+        {
+            _native.SetIsTemplateIcon(isTemplateIcon.AsComBool());
+        }
+
         public INativeMenuExporter? MenuExporter { get; }
     }
 }
