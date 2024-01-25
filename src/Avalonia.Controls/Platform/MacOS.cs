@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Controls.Platform;
+﻿namespace Avalonia.Controls;
 
 /// <summary>
 /// Set of MacOS specific attached properties that allow deeper customization of the application per platform.
