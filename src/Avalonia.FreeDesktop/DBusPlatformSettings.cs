@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -20,6 +21,7 @@ namespace Avalonia.FreeDesktop
             if (DBusHelper.Connection is null)
                 return;
 
+            using var context = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Send);
             _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
             _ = TryGetInitialValuesAsync();
