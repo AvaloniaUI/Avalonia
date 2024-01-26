@@ -9,4 +9,4 @@
 	url = https://github.com/Gillibald/il-repack
 [submodule "external/Tmds.DBus.SourceGenerator"]
 	path = external/Tmds.DBus.SourceGenerator
-	url = git@github.com:jmacato/Tmds.DBus.SourceGenerator.git
+	url = https://github.com/jmacato/Tmds.DBus.SourceGenerator.git
