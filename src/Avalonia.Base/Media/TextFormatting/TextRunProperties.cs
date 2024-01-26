@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -49,7 +47,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Optional features of used font.
         /// </summary>
-        public virtual ISet<FontFeature>? FontFeatures => null;
+        public virtual FontFeatureCollection? FontFeatures => null;
 
         /// <summary>
         /// Run vertical box alignment
@@ -72,8 +70,7 @@ namespace Avalonia.Media.TextFormatting
                    Equals(ForegroundBrush, other.ForegroundBrush) &&
                    Equals(BackgroundBrush, other.BackgroundBrush) &&
                    Equals(CultureInfo, other.CultureInfo) &&
-                   (ReferenceEquals(FontFeatures, other.FontFeatures) ||
-                   (FontFeatures != null && other.FontFeatures != null && FontFeatures.SetEquals(other.FontFeatures)));
+                   Equals(FontFeatures, other.FontFeatures);
         }
 
         public override bool Equals(object? obj)

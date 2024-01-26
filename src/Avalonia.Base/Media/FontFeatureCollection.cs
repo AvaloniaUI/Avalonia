@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Avalonia.Collections;
 
 namespace Avalonia.Media;
@@ -8,11 +7,4 @@ namespace Avalonia.Media;
 /// </summary>
 public class FontFeatureCollection : AvaloniaList<FontFeature>
 {
-    public FontFeatureCollection()
-    {
-    }
-
-    public FontFeatureCollection(IEnumerable<FontFeature> features) : base(features)
-    {
-    }
 }

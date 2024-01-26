@@ -3,6 +3,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 
@@ -232,7 +233,8 @@ namespace Avalonia.Media
                 }
 
                 if ((fontFeatures == null && runProps.FontFeatures == null) ||
-                    (fontFeatures != null && runProps.FontFeatures != null && runProps.FontFeatures.SetEquals(fontFeatures)))
+                    (fontFeatures != null && runProps.FontFeatures != null && 
+                     fontFeatures.SequenceEqual(runProps.FontFeatures)))
                 {
                     continue;
                 }

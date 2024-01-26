@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 
 namespace Avalonia.Media.TextFormatting
@@ -21,9 +20,10 @@ namespace Avalonia.Media.TextFormatting
         {
         }
 
+        // TODO12:Change signature in 12.0.0
         public TextShaperOptions(
             IGlyphTypeface typeface, 
-            ISet<FontFeature>? fontFeatures,
+            IReadOnlyList<FontFeature>? fontFeatures,
             double fontRenderingEmSize = 12, 
             sbyte bidiLevel = 0, 
             CultureInfo? culture = null, 
@@ -71,6 +71,6 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Get features.
         /// </summary>
-        public ISet<FontFeature>? FontFeatures { get; } 
+        public IReadOnlyList<FontFeature>? FontFeatures { get; } 
     }
 }
