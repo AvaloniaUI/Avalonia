@@ -349,7 +349,9 @@ namespace Avalonia
         
         private void OnColorValuesChanged(object? sender, PlatformColorValues e)
         {
-            SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant, BindingPriority.Template);
+            Avalonia.Dispatcher.UIThread.Post(()=>{
+                SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant, BindingPriority.Template);
+            });
         }
     }
 }
