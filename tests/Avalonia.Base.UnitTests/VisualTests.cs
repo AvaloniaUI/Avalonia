@@ -365,6 +365,7 @@ namespace Avalonia.Base.UnitTests
         public void IsEffectivelyVisible_Propagates_To_Visual_Children(int[] assignOrder, bool rootV, bool child1V,
             bool child2V, bool rootExpected, bool child1Expected, bool child2Expected, bool initialSetToFalse = false)
         {
+            using var app = UnitTestApplication.Start();
             var child2 = new Decorator();
             var child1 = new Decorator { Child = child2 };
             var root = new TestRoot { Child = child1 };
@@ -402,6 +403,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Added_Child_Has_Correct_IsEffectivelyVisible()
         {
+            using var app = UnitTestApplication.Start();
             var root = new TestRoot { IsVisible = false };
             var child = new Decorator();
 
@@ -412,6 +414,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Added_Grandchild_Has_Correct_IsEffectivelyVisible()
         {
+            using var app = UnitTestApplication.Start();
             var child = new Decorator();
             var grandchild = new Decorator();
             var root = new TestRoot 
@@ -427,6 +430,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Removing_Child_Resets_IsEffectivelyVisible()
         {
+            using var app = UnitTestApplication.Start();
             var child = new Decorator();
             var root = new TestRoot { Child = child, IsVisible = false };
 
@@ -440,6 +444,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Removing_Child_Resets_IsEffectivelyVisible_Of_Grandchild()
         {
+            using var app = UnitTestApplication.Start();
             var grandchild = new Decorator();
             var child = new Decorator { Child = grandchild };
             var root = new TestRoot { Child = child, IsVisible = false };
