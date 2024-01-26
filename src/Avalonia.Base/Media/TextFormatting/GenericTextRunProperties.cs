@@ -21,9 +21,15 @@ namespace Avalonia.Media.TextFormatting
         {
         }
         
-        public GenericTextRunProperties(Typeface typeface, IEnumerable<FontFeature>? fontFeatures, double fontRenderingEmSize = DefaultFontRenderingEmSize,
-            TextDecorationCollection? textDecorations = null, IBrush? foregroundBrush = null,
-            IBrush? backgroundBrush = null, BaselineAlignment baselineAlignment = BaselineAlignment.Baseline,
+        // TODO12:Change signature in 12.0.0
+        public GenericTextRunProperties(
+            Typeface typeface, 
+            FontFeatureCollection? fontFeatures, 
+            double fontRenderingEmSize = DefaultFontRenderingEmSize,
+            TextDecorationCollection? textDecorations = null,
+            IBrush? foregroundBrush = null,
+            IBrush? backgroundBrush = null,
+            BaselineAlignment baselineAlignment = BaselineAlignment.Baseline,
             CultureInfo? cultureInfo = null)
         {
             Typeface = typeface;
@@ -33,7 +39,7 @@ namespace Avalonia.Media.TextFormatting
             BackgroundBrush = backgroundBrush;
             BaselineAlignment = baselineAlignment;
             CultureInfo = cultureInfo;
-            FontFeatures = fontFeatures == null ? null : new HashSet<FontFeature>(fontFeatures);
+            FontFeatures = fontFeatures;
         }
 
         /// <inheritdoc />
@@ -52,7 +58,7 @@ namespace Avalonia.Media.TextFormatting
         public override IBrush? BackgroundBrush { get; }
 
         /// <inheritdoc />
-        public override ISet<FontFeature>? FontFeatures { get; }
+        public override FontFeatureCollection? FontFeatures { get; }
 
         /// <inheritdoc />
         public override BaselineAlignment BaselineAlignment { get; }

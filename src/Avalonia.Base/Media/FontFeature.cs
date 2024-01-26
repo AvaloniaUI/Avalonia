@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -8,7 +7,7 @@ namespace Avalonia.Media;
 /// <summary>
 /// Font feature
 /// </summary>
-public struct FontFeature : IEquatable<FontFeature>
+public record FontFeature
 {
     private const int DefaultValue = 1;
     private const int InfinityEnd = -1;
@@ -21,28 +20,28 @@ public struct FontFeature : IEquatable<FontFeature>
     public string Tag
     {
         get;
-        set;
+        init;
     }
 
     /// <summary>Gets or sets the value.</summary>
     public int Value
     {
         get;
-        set;
+        init;
     }
 
     /// <summary>Gets or sets the start.</summary>
     public int Start
     {
         get;
-        set;
+        init;
     }
 
     /// <summary>Gets or sets the end.</summary>
     public int End
     {
         get;
-        set;
+        init;
     }
     
     /// <summary>
@@ -81,12 +80,16 @@ public struct FontFeature : IEquatable<FontFeature>
     /// </summary>
     /// <param name="s">The string.</param>
     /// <returns>The <see cref="FontFeature"/>.</returns>
+    // ReSharper disable once UnusedMember.Global
     public static FontFeature Parse(string s)
     {
-        var result = new FontFeature();
         var match = s_featureRegex.Match(s);
+        
         if (!match.Success)
-            return default;
+        {
+            return new FontFeature();
+        }
+           
         var hasSeparator = match.Groups["Separator"].Value == ":";
         var hasStart = int.TryParse(match.Groups["Start"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var start);
         var hasEnd = int.TryParse(match.Groups["End"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var end);
@@ -96,12 +99,15 @@ public struct FontFeature : IEquatable<FontFeature>
             stringValue = "0";
         if (stringValue == "+" || stringValue.ToUpperInvariant() == "ON")
             stringValue = "1";
-        
-        result.Tag = match.Groups["Tag"].Value;
-        result.Start = hasStart ? start : 0;
-        result.End = hasEnd ? end : (hasStart && !hasSeparator ? (start + 1) : InfinityEnd);
-        result.Value = int.TryParse(stringValue, NumberStyles.None, CultureInfo.InvariantCulture, out var value) ? value : DefaultValue;
-        
+
+        var result = new FontFeature
+        {
+            Tag = match.Groups["Tag"].Value,
+            Start = hasStart ? start : 0,
+            End = hasEnd ? end : hasStart && !hasSeparator ? (start + 1) : InfinityEnd,
+            Value = int.TryParse(stringValue, NumberStyles.None, CultureInfo.InvariantCulture, out var value) ? value : DefaultValue,
+        };
+
         return result;
     }
     
@@ -133,63 +139,15 @@ public struct FontFeature : IEquatable<FontFeature>
             
             result.Append(']');
         }
-        if (Value != DefaultValue && Value != 0)
+
+        if (Value is DefaultValue or 0)
         {
-            result.Append('=');
-            result.Append(Value.ToString(CultureInfo.InvariantCulture));
+            return result.ToString();
         }
+        
+        result.Append('=');
+        result.Append(Value.ToString(CultureInfo.InvariantCulture));
 
         return result.ToString();
-    }
-
-    /// <summary>
-    /// Compares two FontFeature structures for equality.
-    /// </summary>
-    /// <param name="other">The structure with which to test equality.</param>
-    /// <returns>True if the structures are equal, otherwise false.</returns>
-    public bool Equals(FontFeature other)
-    {
-        return Tag == other.Tag && Value == other.Value && Start == other.Start && End == other.End;
-    }
-
-    /// <summary>
-    /// Determines whether the <see cref="FontFeature"/> is equal to the specified object.
-    /// </summary>
-    /// <param name="obj">The object with which to test equality.</param>
-    /// <returns>True if the objects are equal, otherwise false.</returns>
-    public override bool Equals(object? obj)
-    {
-        return obj is FontFeature other && Equals(other);
-    }
-
-    /// <summary>
-    /// Gets a hash code for the GridLength.
-    /// </summary>
-    /// <returns>The hash code.</returns>
-    public override int GetHashCode()
-    {
-        return (Tag?.GetHashCode() ?? 0) ^ Value.GetHashCode() ^ Start.GetHashCode() ^ End.GetHashCode();
-    }
-
-    /// <summary>
-    /// Compares two GridLength structures for equality.
-    /// </summary>
-    /// <param name="left">The first FontFeature.</param>
-    /// <param name="right">The second FontFeature.</param>
-    /// <returns>True if the structures are equal, otherwise false.</returns>
-    public static bool operator ==(FontFeature left, FontFeature right)
-    {
-        return left.Equals(right);
-    }
-
-    /// <summary>
-    /// Compares two FontFeature structures for inequality.
-    /// </summary>
-    /// <param name="left">The first GridLength.</param>
-    /// <param name="right">The first GridLength.</param>
-    /// <returns>True if the structures are unequal, otherwise false.</returns>
-    public static bool operator !=(FontFeature left, FontFeature right)
-    {
-        return !left.Equals(right);
     }
 }
