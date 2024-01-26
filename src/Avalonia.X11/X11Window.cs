@@ -237,7 +237,7 @@ namespace Avalonia.X11
 
             _storageProvider = new CompositeStorageProvider(new[]
             {
-                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider?>(null),
+                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync($"x11:{Handle:X}") : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this)
             });
 
@@ -405,6 +405,10 @@ namespace Avalonia.X11
         }
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public SystemDecorations RequestedManagedDecorations => SystemDecorations.None;
+
+        public Action<SystemDecorations>? RequestedManagedDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins { get; } = new Thickness();
 
@@ -1370,14 +1374,16 @@ namespace Avalonia.X11
         {
         }
 
+        public void SetIsLightDismissEnabledHint(bool enabled)
+        {
+        }
+
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
-
-        public bool NeedsManagedDecorations => false;
 
         public bool IsEnabled => !_disabled;
 

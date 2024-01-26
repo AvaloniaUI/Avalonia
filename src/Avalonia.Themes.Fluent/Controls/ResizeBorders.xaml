@@ -1,0 +1,20 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ControlTheme x:Key="{x:Type ResizeBorders}" TargetType="ResizeBorders">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="7, *, 7" RowDefinitions="7, *, 7">
+                    <Rectangle Grid.Row="0" Grid.Column="0" Name="PART_BorderTopLeft" Fill="Transparent" />
+                    <Rectangle Grid.Row="0" Grid.Column="1" Name="PART_BorderTop" Fill="Transparent" />
+                    <Rectangle Grid.Row="0" Grid.Column="2" Name="PART_BorderTopRight" Fill="Transparent" />
+                    <Rectangle Grid.Row="1" Grid.Column="0" Name="PART_BorderLeft" Fill="Transparent" />
+                    <Rectangle Grid.Row="1" Grid.Column="2" Name="PART_BorderRight" Fill="Transparent" />
+                    <Rectangle Grid.Row="2" Grid.Column="0" Name="PART_BorderBottomLeft" Fill="Transparent" />
+                    <Rectangle Grid.Row="2" Grid.Column="1" Name="PART_BorderBottom" Fill="Transparent" />
+                    <Rectangle Grid.Row="2" Grid.Column="2" Name="PART_BorderBottomRight" Fill="Transparent" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>
