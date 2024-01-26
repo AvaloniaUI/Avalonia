@@ -1,4 +1,7 @@
-﻿namespace Avalonia.Platform.Storage;
+﻿using System.Collections.Generic;
+using Avalonia.Platform.Storage;
+
+namespace Avalonia.Platform.Storage;
 
 /// <summary>
 /// Common options for <see cref="IStorageProvider.OpenFolderPickerAsync"/>, <see cref="IStorageProvider.OpenFilePickerAsync"/> and <see cref="IStorageProvider.SaveFilePickerAsync"/> methods. 
@@ -16,4 +19,9 @@ public class PickerOptions
     /// or <see cref="IStorageProvider.TryGetWellKnownFolderAsync"/>.
     /// </summary>
     public IStorageFolder? SuggestedStartLocation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the file name that the file picker suggests to the user.
+    /// </summary>
+    public string? SuggestedFileName { get; set; }
 }
