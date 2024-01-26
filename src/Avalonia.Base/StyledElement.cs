@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -911,6 +910,22 @@ namespace Avalonia
                 if (logicalChildren[i] is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToLogicalTreeCore(e);
+                }
+            }
+        }
+
+        internal void CloseAllObserverCore()
+        {
+            GetValueStore().CloseAllObserver();
+
+            var logicalChildren = LogicalChildren;
+            var logicalChildrenCount = logicalChildren.Count;
+
+            for (var i = 0; i < logicalChildrenCount; i++)
+            {
+                if (logicalChildren[i] is StyledElement child)
+                {
+                    child.CloseAllObserverCore();
                 }
             }
         }

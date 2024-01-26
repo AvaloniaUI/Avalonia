@@ -709,10 +709,12 @@ namespace Avalonia.Controls
 
             var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
             OnDetachedFromVisualTreeCore(visualArgs);
-            
+
             OnClosed(EventArgs.Empty);
 
             LayoutManager.Dispose();
+
+            Dispatcher.UIThread.Post(CloseAllObserverCore);
         }
 
         /// <summary>
