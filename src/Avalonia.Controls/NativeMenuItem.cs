@@ -128,10 +128,19 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsEnabledProperty =
            AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsEnabled), true);
 
+        public static readonly StyledProperty<bool> IsVisibleProperty =
+           AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsVisible), true);
+
         public bool IsEnabled
         {
             get => GetValue(IsEnabledProperty);
             set => SetValue(IsEnabledProperty, value);
+        }
+
+        public bool IsVisible
+        {
+            get => GetValue(IsVisibleProperty);
+            set => SetValue(IsVisibleProperty, value);
         }
 
         void CanExecuteChanged()
