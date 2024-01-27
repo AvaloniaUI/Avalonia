@@ -1,5 +1,4 @@
 ﻿using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -12,8 +11,8 @@ namespace Avalonia.Controls.Utils
     {
         private bool _useComplexRendering;
         private bool? _backendSupportsIndividualCorners;
-        private StreamGeometry? _backgroundGeometryCache;
-        private StreamGeometry? _borderGeometryCache;
+        private Geometry? _backgroundGeometryCache;
+        private Geometry? _borderGeometryCache;
         private Size _size;
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
@@ -45,17 +44,16 @@ namespace Avalonia.Controls.Utils
 
                 var boundRect = new Rect(finalSize);
                 var innerRect = boundRect.Deflate(borderThickness);
-                StreamGeometry? backgroundGeometry = null;
 
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
-                    backgroundGeometry = new StreamGeometry();
                     var backgroundOuterKeypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
                         boundRect,
                         borderThickness,
                         cornerRadius,
                         backgroundSizing);
 
+                    var backgroundGeometry = new StreamGeometry();
                     using (var ctx = backgroundGeometry.Open())
                     {
                         GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref backgroundOuterKeypoints);
@@ -70,7 +68,6 @@ namespace Avalonia.Controls.Utils
 
                 if (boundRect.Width != 0 && boundRect.Height != 0)
                 {
-                    var borderGeometry = new StreamGeometry();
                     var borderInnerKeypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
                         boundRect,
                         borderThickness,
@@ -82,17 +79,19 @@ namespace Avalonia.Controls.Utils
                         cornerRadius,
                         BackgroundSizing.OuterBorderEdge);
 
-                    using (var ctx = borderGeometry.Open())
+                    var borderInnerGeometry = new StreamGeometry();
+                    using (var ctx = borderInnerGeometry.Open())
                     {
-                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref borderOuterKeypoints);
-
-                        if (backgroundGeometry != null)
-                        {
-                            GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref borderInnerKeypoints);
-                        }
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref borderInnerKeypoints);
                     }
 
-                    _borderGeometryCache = borderGeometry;
+                    var borderOuterGeometry = new StreamGeometry();
+                    using (var ctx = borderOuterGeometry.Open())
+                    {
+                        GeometryBuilder.DrawRoundedCornersRectangle(ctx, ref borderOuterKeypoints);
+                    }
+
+                    _borderGeometryCache = new CombinedGeometry(GeometryCombineMode.Exclude, borderOuterGeometry, borderInnerGeometry);
                 }
                 else
                 {
@@ -122,16 +121,14 @@ namespace Avalonia.Controls.Utils
 
             if (_useComplexRendering)
             {
-                var backgroundGeometry = _backgroundGeometryCache;
-                if (backgroundGeometry != null)
+                if (_backgroundGeometryCache != null)
                 {
-                    context.DrawGeometry(background, null, backgroundGeometry);
+                    context.DrawGeometry(background, null, _backgroundGeometryCache);
                 }
 
-                var borderGeometry = _borderGeometryCache;
-                if (borderGeometry != null)
+                if (_borderGeometryCache != null)
                 {
-                    context.DrawGeometry(borderBrush, null, borderGeometry);
+                    context.DrawGeometry(borderBrush, null, _borderGeometryCache);
                 }
             }
             else
