@@ -671,9 +671,12 @@ namespace Avalonia.Controls
         {
             _textLayout?.Dispose();
             _textLayout = null;
+            
+            VisualChildren.Clear();
+
+            _textRuns = null;
 
             InvalidateVisual();
-
             InvalidateMeasure();
         }
 
@@ -690,8 +693,6 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
-                VisualChildren.Clear();
-
                 var textRuns = new List<TextRun>();
 
                 foreach (var inline in inlines!)
@@ -875,7 +876,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private readonly struct InlinesTextSource : ITextSource
+#pragma warning disable CA1815
+        protected readonly struct InlinesTextSource : ITextSource
+#pragma warning restore CA1815
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
 
