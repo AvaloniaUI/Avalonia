@@ -26,7 +26,12 @@ internal unsafe class SkiaMetalApi
         // Make sure that skia is loaded
         GC.KeepAlive(new SKPaint());
 
-        var dll = NativeLibraryEx.Load("libSkiaSharp", typeof(SKPaint).Assembly);
+        // https://github.com/mono/SkiaSharp/blob/25e70a390e2128e5a54d28795365bf9fdaa7161c/binding/SkiaSharp/SkiaApi.cs#L9-L13
+        // Note, IsIOS also returns true on MacCatalyst.
+        var libSkiaSharpPath = OperatingSystemEx.IsIOS() || OperatingSystemEx.IsTvOS() ?
+            "@rpath/libSkiaSharp.framework/libSkiaSharp" :
+            "libSkiaSharp";
+        var dll = NativeLibraryEx.Load(libSkiaSharpPath, typeof(SKPaint).Assembly);
 
         IntPtr address;
 
@@ -75,7 +80,7 @@ internal unsafe class SkiaMetalApi
         var context = _gr_direct_context_make_metal_with_options(device, queue, pOptions);
         Marshal.FreeHGlobal(pOptions);
         if (context == IntPtr.Zero)
-            throw new ArgumentException();
+            throw new InvalidOperationException("Unable to create GRContext from Metal device.");
         return (GRContext)_contextCtor.Invoke(new object[] { context, true });
     }
 

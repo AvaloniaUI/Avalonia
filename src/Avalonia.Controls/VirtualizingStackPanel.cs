@@ -629,7 +629,7 @@ namespace Avalonia.Controls
                 generator.ItemContainerPrepared(controlItem, item, index);
             }
 
-            controlItem.IsVisible = true;
+            controlItem.SetCurrentValue(Visual.IsVisibleProperty, true);
             return controlItem;
         }
 
@@ -645,7 +645,7 @@ namespace Avalonia.Controls
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
                 var recycled = recyclePool.Pop();
-                recycled.IsVisible = true;
+                recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
                 return recycled;
@@ -684,7 +684,7 @@ namespace Avalonia.Controls
             }
             else if (recycleKey == s_itemIsItsOwnContainer)
             {
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
             else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
@@ -695,7 +695,7 @@ namespace Avalonia.Controls
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
         }
 
@@ -713,7 +713,7 @@ namespace Avalonia.Controls
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
         }
 

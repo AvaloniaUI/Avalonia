@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Reactive;
 using OpenGLES;
 
-namespace Avalonia.iOS
+namespace Avalonia.iOS.Eagl
 {
     [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [ObsoletedOSPlatform("tvos12.0", "Use 'Metal' instead.")]
+    [UnsupportedOSPlatform("maccatalyst")]
     [SupportedOSPlatform("ios")]
+    [SupportedOSPlatform("tvos")]
     class EaglPlatformGraphics : IPlatformGraphics
     {
         public IPlatformGraphicsContext GetSharedContext() => Context;
@@ -19,7 +23,7 @@ namespace Avalonia.iOS
         public GlContext Context { get; }
         public static GlVersion GlVersion { get; } = new(GlProfileType.OpenGLES, 3, 0);
 
-        public EaglPlatformGraphics()
+        private EaglPlatformGraphics()
         {
             
             const string path = "/System/Library/Frameworks/OpenGLES.framework/OpenGLES";
@@ -29,15 +33,30 @@ namespace Avalonia.iOS
             var iface = new GlInterface(GlVersion, proc => ObjCRuntime.Dlfcn.dlsym(libGl, proc));
             Context = new(iface, null);
         }
+        
+        public static EaglPlatformGraphics? TryCreate()
+        {
+            try
+            {
+                return new EaglPlatformGraphics();
+            }
+            catch(Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log(null, "Unable to initialize EAGL-based rendering: {0}", e);
+                return null;
+            }
+        }
     }
 
     [ObsoletedOSPlatform("ios12.0", "Use 'Metal' instead.")]
+    [ObsoletedOSPlatform("tvos12.0", "Use 'Metal' instead.")]
     [SupportedOSPlatform("ios")]
+    [SupportedOSPlatform("tvos")]
     class GlContext : IGlContext
     {
-        public EAGLContext Context { get; private set; }
+        public EAGLContext? Context { get; private set; }
         
-        public GlContext(GlInterface glInterface, EAGLSharegroup sharegroup)
+        public GlContext(GlInterface glInterface, EAGLSharegroup? sharegroup)
         {
             GlInterface = glInterface;
             Context = sharegroup == null ?
@@ -53,10 +72,10 @@ namespace Avalonia.iOS
 
         class ResetContext : IDisposable
         {
-            private EAGLContext _old;
+            private EAGLContext? _old;
             private bool _disposed;
 
-            public ResetContext(EAGLContext old)
+            public ResetContext(EAGLContext? old)
             {
                 _old = old;
             }
@@ -87,7 +106,7 @@ namespace Avalonia.iOS
         {
             if (Context == null)
                 throw new PlatformGraphicsContextLostException();
-            if(EAGLContext.CurrentContext == Context)
+            if (EAGLContext.CurrentContext == Context)
                 return Disposable.Empty;
             return MakeCurrent();
         }
@@ -95,8 +114,10 @@ namespace Avalonia.iOS
         public bool IsSharedWith(IGlContext context) => context is GlContext other
             && ReferenceEquals(other.Context?.ShareGroup, Context?.ShareGroup);
         public bool CanCreateSharedContext => true;
-        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null)
+        public IGlContext CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null)
         {
+            if (Context == null)
+                throw new PlatformGraphicsContextLostException();
             return new GlContext(GlInterface, Context.ShareGroup);
         }
 
@@ -119,6 +140,6 @@ namespace Avalonia.iOS
             }
         }
 
-        public object TryGetFeature(Type featureType) => null;
+        public object? TryGetFeature(Type featureType) => null;
     }
 }
