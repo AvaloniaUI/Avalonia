@@ -222,6 +222,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Open file",
                     FileTypeFilter = GetFileTypes(),
+                    SuggestedFileName = "FileName",
                     SuggestedStartLocation = lastSelectedDirectory,
                     AllowMultiple = openMultiple.IsChecked == true
                 });
@@ -264,6 +265,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Folder file",
                     SuggestedStartLocation = lastSelectedDirectory,
+                    SuggestedFileName = "FileName",
                     AllowMultiple = openMultiple.IsChecked == true
                 });
 

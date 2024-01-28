@@ -1067,6 +1067,118 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Fullfill_MinLines_Contraint()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABC \n DEF \n GHI",
+                    MinLines = 3,
+                    AcceptsReturn = true
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate()
+                };
+                topLevel.Content = target;
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                target.ApplyTemplate();
+                target.Measure(Size.Infinity);
+
+                var initialHeight = target.DesiredSize.Height;
+
+                target.Text = "";
+
+                target.InvalidateMeasure();
+                target.Measure(Size.Infinity);
+
+                Assert.Equal(initialHeight, target.DesiredSize.Height);
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void MinLines_Sets_ScrollViewer_MinHeight(int minLines)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    MinLines = minLines,
+
+                    // Define explicit whole number line height for predictable calculations
+                    LineHeight = 20
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.Equal("PART_TextPresenter", textPresenter.Name);
+                Assert.Equal(new Thickness(0), textPresenter.Margin); // Test assumes no margin on TextPresenter
+
+                var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
+                Assert.Equal(minLines * target.LineHeight, scrollViewer.MinHeight);
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void MinLines_Sets_ScrollViewer_MinHeight_With_TextPresenter_Margin(int minLines)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    MinLines = minLines,
+
+                    // Define explicit whole number line height for predictable calculations
+                    LineHeight = 20
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.Equal("PART_TextPresenter", textPresenter.Name);
+                var textPresenterMargin = new Thickness(horizontal: 0, vertical: 3);
+                textPresenter.Margin = textPresenterMargin;
+
+                target.InvalidateMeasure();
+                target.Measure(Size.Infinity);
+
+                var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
+                Assert.Equal((minLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MinHeight);
+            }
+        }
+
+        [Fact]
         public void CanUndo_CanRedo_Is_False_When_Initialized()
         {
             using (UnitTestApplication.Start(Services))
