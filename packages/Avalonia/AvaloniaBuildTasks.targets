@@ -164,7 +164,7 @@
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
       Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:NoWarn=$(_NoWarnForExec) /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
   </Target>
-
+  
   
   <ItemGroup>
     <UpToDateCheckInput Include="@(AvaloniaResource)" />
@@ -217,4 +217,20 @@
     <Delete Files="$(TargetRefPath)" Condition="Exists('$(TargetRefPath)')" />
   </Target>
 
+  <!--
+  $(IntermediateOutputPath)/Avalonia/references is using from AvaloniaVS for retrive library refernces.
+  This target generate $(IntermediateOutputPath)/Avalonia/references for in XApp Template.
+  -->
+  <Target Name="GenerateIntelliSenseReference"
+          AfterTargets="AfterCompile"
+          Condition="('@(AvaloniaResource->Count())' == 0) and ('@(AvaloniaXaml->Count())' == 0)">
+    <PropertyGroup>
+      <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
+    </PropertyGroup>
+    <WriteLinesToFile
+      Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
+      File="$(AvaloniaXamlReferencesTemporaryFilePath)"
+      Lines="@(ReferencePathWithRefAssemblies)"
+      Overwrite="true" />
+  </Target>
 </Project>
