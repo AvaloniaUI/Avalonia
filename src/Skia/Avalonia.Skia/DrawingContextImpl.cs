@@ -1183,7 +1183,7 @@ namespace Avalonia.Skia
 
             paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
-            if (RenderOptions.OverlayMode == true)
+            if (RenderOptions.ShowOutlines == true)
             {
                 paint.Color = SKColors.Black;
                 paint.StrokeWidth = 0;
@@ -1265,7 +1265,7 @@ namespace Avalonia.Skia
 
             var rv = CreatePaint(paint, brush, targetSize);
 
-            if (RenderOptions.OverlayMode == true)
+            if (RenderOptions.ShowOutlines == true)
             {
                 return rv;
             }

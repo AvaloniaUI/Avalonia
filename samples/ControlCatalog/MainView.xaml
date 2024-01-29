@@ -5,7 +5,7 @@
              xmlns:models="using:ControlCatalog.Models"
              xmlns:pages="using:ControlCatalog.Pages"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
-             RenderOptions.OverlayMode="False"
+             RenderOptions.ShowOutlines="False"
              x:DataType="viewModels:MainWindowViewModel">
   <Grid>
     <Grid.Styles>

@@ -9,7 +9,7 @@ namespace Avalonia.Media
         public TextRenderingMode TextRenderingMode { get; init; }
         public BitmapBlendingMode BitmapBlendingMode { get; init; }
         public bool? RequiresFullOpacityHandling { get; init; }
-        public bool? OverlayMode { get; init; }
+        public bool? ShowOutlines { get; init; }
 
         /// <summary>
         /// Gets the value of the BitmapInterpolationMode attached property for a visual.
@@ -112,23 +112,23 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the value of the OverlayMode attached property for a visual.
+        /// Gets the value of the ShowOutlines attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
         /// <returns>The value.</returns>
-        public static bool? GetOverlayMode(Visual visual)
+        public static bool? GetShowOutlines(Visual visual)
         {
-            return visual.RenderOptions.OverlayMode;
+            return visual.RenderOptions.ShowOutlines;
         }
 
         /// <summary>
-        /// Sets the value of the OverlayMode attached property for a visual.
+        /// Sets the value of the ShowOutlines attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
         /// <param name="value">The value.</param>
-        public static void SetOverlayMode(Visual visual, bool? value)
+        public static void SetShowOutlines(Visual visual, bool? value)
         {
-            visual.RenderOptions = visual.RenderOptions with { OverlayMode = value };
+            visual.RenderOptions = visual.RenderOptions with { ShowOutlines = value };
         }
 
         public RenderOptions MergeWith(RenderOptions other)
@@ -168,11 +168,11 @@ namespace Avalonia.Media
                 requiresFullOpacityHandling = other.RequiresFullOpacityHandling;
             }
             
-            var overlayMode = OverlayMode;
+            var showOutlines = ShowOutlines;
 
-            if (overlayMode == null)
+            if (showOutlines == null)
             {
-                overlayMode = other.OverlayMode;
+                showOutlines = other.ShowOutlines;
             }
             return new RenderOptions
             {
@@ -181,7 +181,7 @@ namespace Avalonia.Media
                 TextRenderingMode = textRenderingMode,
                 BitmapBlendingMode = bitmapBlendingMode,
                 RequiresFullOpacityHandling = requiresFullOpacityHandling,
-                OverlayMode = overlayMode
+                ShowOutlines = showOutlines
             };
         }
     }
