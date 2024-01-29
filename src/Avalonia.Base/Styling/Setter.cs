@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
 using Avalonia.PropertyStore;
 
@@ -75,8 +76,10 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException(
                     $"Cannot set direct property '{Property}' in '{instance.Source}' because the style has an activator.");
 
-            if (Value is IBinding binding)
+            if (Value is IBinding2 binding)
                 return SetBinding((StyleInstance)instance, ao, binding);
+            else if (Value is IBinding)
+                throw new AvaloniaInternalException("TODO: Make all IBindings implement IBinding2.");
             else if (Value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
                 return new PropertySetterTemplateInstance(Property, template);
             else if (!Property.IsValidValue(Value))
@@ -102,25 +105,13 @@ namespace Avalonia.Styling
             return Property ?? throw new InvalidOperationException("Setter.Property must be set.");
         }
 
-        private ISetterInstance SetBinding(StyleInstance instance, AvaloniaObject target, IBinding binding)
+        private ISetterInstance SetBinding(StyleInstance instance, AvaloniaObject target, IBinding2 binding)
         {
             if (!Property!.IsDirect)
             {
-                var hasDataValidation = Property.GetMetadata(target.GetType()).EnableDataValidation ?? false;
-                var i = binding.Initiate(target, Property, enableDataValidation: hasDataValidation)!;
-                var mode = i.Mode;
-
-                if (mode == BindingMode.Default)
-                {
-                    mode = Property!.GetMetadata(target.GetType()).DefaultBindingMode;
-                }
-
-                if (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
-                {
-                    return new PropertySetterBindingInstance(target, instance, Property, mode, i.Source);
-                }
-
-                throw new NotSupportedException();
+                var expression = binding.Instance(target, Property, null);
+                expression.Attach(target.GetValueStore(), null, target, Property, instance.Priority);
+                return expression;
             }
             else
             {

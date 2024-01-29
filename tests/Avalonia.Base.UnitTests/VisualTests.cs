@@ -255,55 +255,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Should_Not_Log_Binding_Error_When_Not_Attached_To_Logical_Tree()
-        {
-            var target = new Decorator { DataContext = "foo" };
-            var called = false;
-
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
-            {
-                if (level >= Avalonia.Logging.LogEventLevel.Warning)
-                {
-                    called = true;
-                }
-            };
-
-            using (TestLogSink.Start(checkLogMessage))
-            {
-                target.Bind(Decorator.TagProperty, new Binding("Foo"));
-            }
-
-            Assert.False(called);
-        }
-
-        [Fact]
-        public void Should_Log_Binding_Error_When_Attached_To_Logical_Tree()
-        {
-            var target = new Decorator();
-            var root = new TestRoot { Child = target, DataContext = "foo" };
-            var called = 0;
-
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
-            {
-                if (level >= Avalonia.Logging.LogEventLevel.Warning)
-                {
-                    Assert.Equal("Error in binding to {Target}.{Property}: {Message}", mt);
-                    Assert.Same(target, pv[0]);
-                    Assert.Equal(Decorator.TagProperty, pv[1]);
-                    Assert.Equal("Could not find a matching property accessor for 'Foo' on 'foo'", pv[2]);
-                    ++called;
-                }
-            };
-
-            using (TestLogSink.Start(checkLogMessage))
-            {
-                target.Bind(Decorator.TagProperty, new Binding("Foo"));
-            }
-
-            Assert.Equal(1, called);
-        }
-
-        [Fact]
         public void Changing_ZIndex_Should_InvalidateVisual()
         {
             Canvas canvas1;

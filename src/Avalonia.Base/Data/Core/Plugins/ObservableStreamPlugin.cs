@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Avalonia.Reactive;
 using System.Reflection;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -10,6 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// Handles binding to <see cref="IObservable{T}"/>s for the '^' stream binding operator.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
+    [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
     internal class ObservableStreamPlugin : IStreamPlugin
     {
         private static MethodInfo? s_observableGeneric;
@@ -18,15 +19,14 @@ namespace Avalonia.Data.Core.Plugins
         [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, "Avalonia.Data.Core.Plugins.ObservableStreamPlugin", "Avalonia.Base")]
         public ObservableStreamPlugin()
         {
-            
+
         }
-        
+
         /// <summary>
         /// Checks whether this plugin handles the specified value.
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public virtual bool Match(WeakReference<object?> reference)
         {
             reference.TryGetTarget(out var target);
@@ -43,7 +43,6 @@ namespace Avalonia.Data.Core.Plugins
         /// <returns>
         /// An observable that produces the output for the value.
         /// </returns>
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public virtual IObservable<object?> Start(WeakReference<object?> reference)
         {
             if (!reference.TryGetTarget(out var target) || target is null)
