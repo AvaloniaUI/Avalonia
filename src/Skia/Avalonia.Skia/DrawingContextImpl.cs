@@ -1183,6 +1183,14 @@ namespace Avalonia.Skia
 
             paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
+            if (RenderOptions.OverlayMode == true)
+            {
+                paint.Color = SKColors.Black;
+                paint.StrokeWidth = 0;
+                paint.Style = SKPaintStyle.Stroke;
+                return paintWrapper;
+            }
+            
             double opacity = brush.Opacity * (_useOpacitySaveLayer ? 1 :_currentOpacity);
 
             if (brush is ISolidColorBrush solid)

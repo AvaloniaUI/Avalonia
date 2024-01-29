@@ -9,6 +9,7 @@ namespace Avalonia.Media
         public TextRenderingMode TextRenderingMode { get; init; }
         public BitmapBlendingMode BitmapBlendingMode { get; init; }
         public bool? RequiresFullOpacityHandling { get; init; }
+        public bool? OverlayMode { get; init; }
 
         /// <summary>
         /// Gets the value of the BitmapInterpolationMode attached property for a visual.
@@ -110,6 +111,26 @@ namespace Avalonia.Media
             visual.RenderOptions = visual.RenderOptions with { RequiresFullOpacityHandling = value };
         }
 
+        /// <summary>
+        /// Gets the value of the OverlayMode attached property for a visual.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <returns>The value.</returns>
+        public static bool? GetOverlayMode(Visual visual)
+        {
+            return visual.RenderOptions.OverlayMode;
+        }
+
+        /// <summary>
+        /// Sets the value of the OverlayMode attached property for a visual.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <param name="value">The value.</param>
+        public static void SetOverlayMode(Visual visual, bool? value)
+        {
+            visual.RenderOptions = visual.RenderOptions with { OverlayMode = value };
+        }
+
         public RenderOptions MergeWith(RenderOptions other)
         {
             var bitmapInterpolationMode = BitmapInterpolationMode;
@@ -146,14 +167,21 @@ namespace Avalonia.Media
             {
                 requiresFullOpacityHandling = other.RequiresFullOpacityHandling;
             }
+            
+            var overlayMode = OverlayMode;
 
+            if (overlayMode == null)
+            {
+                overlayMode = other.OverlayMode;
+            }
             return new RenderOptions
             {
                 BitmapInterpolationMode = bitmapInterpolationMode,
                 EdgeMode = edgeMode,
                 TextRenderingMode = textRenderingMode,
                 BitmapBlendingMode = bitmapBlendingMode,
-                RequiresFullOpacityHandling = requiresFullOpacityHandling
+                RequiresFullOpacityHandling = requiresFullOpacityHandling,
+                OverlayMode = overlayMode
             };
         }
     }
