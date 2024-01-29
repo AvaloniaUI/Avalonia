@@ -711,6 +711,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushGeometryClip(IGeometryImpl clip)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Save();
             Canvas.ClipPath(((GeometryImpl)clip).FillPath, SKClipOperation.Intersect, true);
@@ -719,6 +724,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopGeometryClip()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Restore();
         }
@@ -726,6 +736,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             var paint = SKPaintCache.Shared.Get();
@@ -737,6 +752,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopOpacityMask()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             var paint = SKPaintCache.Shared.Get();
