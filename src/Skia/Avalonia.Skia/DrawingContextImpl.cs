@@ -554,6 +554,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushClip(Rect clip)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Save();
             Canvas.ClipRect(clip.ToSKRect());
@@ -561,6 +566,11 @@ namespace Avalonia.Skia
 
         public void PushClip(RoundedRect clip)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Save();
 
@@ -586,6 +596,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopClip()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Restore();
         }
@@ -593,6 +608,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushOpacity(double opacity, Rect? bounds)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             _opacityStack.Push(_currentOpacity);
@@ -624,6 +644,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopOpacity()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
