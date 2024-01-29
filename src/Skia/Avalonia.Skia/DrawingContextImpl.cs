@@ -1265,6 +1265,11 @@ namespace Avalonia.Skia
 
             var rv = CreatePaint(paint, brush, targetSize);
 
+            if (RenderOptions.OverlayMode == true)
+            {
+                return rv;
+            }
+
             paint.IsStroke = true;
             paint.StrokeWidth = (float) pen.Thickness;
 
