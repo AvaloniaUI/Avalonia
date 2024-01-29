@@ -16,9 +16,7 @@ namespace Avalonia.Win32
 {
     internal class TrayIconImpl : ITrayIconImpl
     {
-        private static readonly Win32Icon s_emptyIcon = new(new WriteableBitmap(new PixelSize(32, 32),
-            new Vector(96, 96),
-            PixelFormats.Bgra8888, AlphaFormat.Unpremul));
+        private static readonly Win32Icon s_emptyIcon;
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private bool _iconAdded;
@@ -29,6 +27,13 @@ namespace Avalonia.Win32
         private bool _disposedValue;
         private static readonly uint WM_TASKBARCREATED = RegisterWindowMessage("TaskbarCreated");
 
+        static TrayIconImpl()
+        {
+            using var bitmap = new WriteableBitmap(
+                new PixelSize(32, 32), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Unpremul);
+            s_emptyIcon = new Win32Icon(bitmap);
+        }
+        
         public TrayIconImpl()
         {
             _exporter = new Win32NativeToManagedMenuExporter();
