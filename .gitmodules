@@ -7,3 +7,6 @@
 [submodule "nukebuild/il-repack"]
 	path = nukebuild/il-repack
 	url = https://github.com/Gillibald/il-repack
+[submodule "external/Tmds.DBus.SourceGenerator"]
+	path = external/Tmds.DBus.SourceGenerator
+	url = https://github.com/jmacato/Tmds.DBus.SourceGenerator.git

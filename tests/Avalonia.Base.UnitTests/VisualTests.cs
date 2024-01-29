@@ -349,5 +349,113 @@ namespace Avalonia.Base.UnitTests
 
             renderer.Verify(x => x.RecalculateChildren(stackPanel));
         }
+
+        [Theory]
+        [InlineData(new[] { 1, 2, 3 }, true, true, true, true, true, true)]
+        [InlineData(new[] { 3, 2, 1 }, true, true, true, true, true, true)]
+        [InlineData(new[] { 1 }, false, true, true, false, false, false)]
+        [InlineData(new[] { 2 }, true, false, true, true, false, false)]
+        [InlineData(new[] { 3 }, true, true, false, true, true, false)]
+        [InlineData(new[] { 3, 1}, true, true, false, true, true, false)]
+        
+        [InlineData(new[] { 2, 3, 1 }, true, false, true, true, false, false, true)]
+        [InlineData(new[] { 3, 1, 2 }, true, true, false, true, true, false, true)]
+        [InlineData(new[] { 3, 2, 1 }, true, true, false, true, true, false, true)]
+
+        public void IsEffectivelyVisible_Propagates_To_Visual_Children(int[] assignOrder, bool rootV, bool child1V,
+            bool child2V, bool rootExpected, bool child1Expected, bool child2Expected, bool initialSetToFalse = false)
+        {
+            using var app = UnitTestApplication.Start();
+            var child2 = new Decorator();
+            var child1 = new Decorator { Child = child2 };
+            var root = new TestRoot { Child = child1 };
+
+            Assert.True(child2.IsEffectivelyVisible);
+
+            if (initialSetToFalse)
+            {
+                root.IsVisible = false;
+                child1.IsVisible = false;
+                child2.IsVisible = false;
+            }
+
+            foreach (var order in assignOrder)
+            {
+                switch (order)
+                {
+                    case 1:
+                        root.IsVisible = rootV;
+                        break;
+                    case 2:
+                        child1.IsVisible = child1V;
+                        break;
+                    case 3:
+                        child2.IsVisible = child2V;
+                        break;
+                }
+            }
+
+            Assert.Equal(rootExpected, root.IsEffectivelyVisible);
+            Assert.Equal(child1Expected, child1.IsEffectivelyVisible);
+            Assert.Equal(child2Expected, child2.IsEffectivelyVisible);
+        }
+
+        [Fact]
+        public void Added_Child_Has_Correct_IsEffectivelyVisible()
+        {
+            using var app = UnitTestApplication.Start();
+            var root = new TestRoot { IsVisible = false };
+            var child = new Decorator();
+
+            root.Child = child;
+            Assert.False(child.IsEffectivelyVisible);
+        }
+
+        [Fact]
+        public void Added_Grandchild_Has_Correct_IsEffectivelyVisible()
+        {
+            using var app = UnitTestApplication.Start();
+            var child = new Decorator();
+            var grandchild = new Decorator();
+            var root = new TestRoot 
+            { 
+                IsVisible = false,
+                Child = child
+            };
+
+            child.Child = grandchild;
+            Assert.False(grandchild.IsEffectivelyVisible);
+        }
+
+        [Fact]
+        public void Removing_Child_Resets_IsEffectivelyVisible()
+        {
+            using var app = UnitTestApplication.Start();
+            var child = new Decorator();
+            var root = new TestRoot { Child = child, IsVisible = false };
+
+            Assert.False(child.IsEffectivelyVisible);
+
+            root.Child = null;
+
+            Assert.True(child.IsEffectivelyVisible);
+        }
+
+        [Fact]
+        public void Removing_Child_Resets_IsEffectivelyVisible_Of_Grandchild()
+        {
+            using var app = UnitTestApplication.Start();
+            var grandchild = new Decorator();
+            var child = new Decorator { Child = grandchild };
+            var root = new TestRoot { Child = child, IsVisible = false };
+
+            Assert.False(child.IsEffectivelyVisible);
+            Assert.False(grandchild.IsEffectivelyVisible);
+
+            root.Child = null;
+
+            Assert.True(child.IsEffectivelyVisible);
+            Assert.True(grandchild.IsEffectivelyVisible);
+        }
     }
 }
