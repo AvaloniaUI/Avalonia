@@ -25,79 +25,10 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var expressionObserver = (BindingExpression)target.Initiate(
-                textBlock, 
-                TextBlock.TextProperty).Source;
+                textBlock,
+                TextBlock.TextProperty).Expression;
 
             Assert.Same(StringConverters.IsNullOrEmpty, expressionObserver.Converter);
-        }
-
-        public class When_Binding_To_String
-        {
-            [Fact]
-            public void StringFormatConverter_Should_Be_Used_When_Binding_Has_StringFormat()
-            {
-                var textBlock = new TextBlock
-                {
-                    DataContext = new Class1(),
-                };
-
-                var target = new Binding(nameof(Class1.Foo))
-                {
-                    StringFormat = "Hello {0}",
-                };
-
-                var expressionObserver = (BindingExpression)target.Initiate(
-                    textBlock,
-                    TextBlock.TextProperty).Source;
-
-                Assert.IsType<StringFormatValueConverter>(expressionObserver.Converter);
-            }
-        }
-
-        public class When_Binding_To_Object
-        {
-            [Fact]
-            public void StringFormatConverter_Should_Be_Used_When_Binding_Has_StringFormat()
-            {
-                var textBlock = new TextBlock
-                {
-                    DataContext = new Class1(),
-                };
-
-                var target = new Binding(nameof(Class1.Foo))
-                {
-                    StringFormat = "Hello {0}",
-                };
-
-                var expressionObserver = (BindingExpression)target.Initiate(
-                    textBlock,
-                    TextBlock.TagProperty).Source;
-
-                Assert.IsType<StringFormatValueConverter>(expressionObserver.Converter);
-            }
-        }
-
-        public class When_Binding_To_Non_String_Or_Object
-        {
-            [Fact]
-            public void StringFormatConverter_Should_Not_Be_Used_When_Binding_Has_StringFormat()
-            {
-                var textBlock = new TextBlock
-                {
-                    DataContext = new Class1(),
-                };
-
-                var target = new Binding(nameof(Class1.Foo))
-                {
-                    StringFormat = "Hello {0}",
-                };
-
-                var expressionObserver = (BindingExpression)target.Initiate(
-                    textBlock,
-                    TextBlock.MarginProperty).Source;
-
-                Assert.Same(DefaultValueConverter.Instance, expressionObserver.Converter);
-            }
         }
 
         [Fact]

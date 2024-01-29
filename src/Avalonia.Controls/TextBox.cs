@@ -125,6 +125,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines));
 
         /// <summary>
+        /// Defines the <see cref="MinLines"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> MinLinesProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(MinLines));
+
+        /// <summary>
         /// Defines the <see cref="Text"/> property
         /// </summary>
         public static readonly StyledProperty<string?> TextProperty =
@@ -520,6 +526,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the minimum number of visible lines to size to.
+        /// </summary>
+        public int MinLines
+        {
+            get => GetValue(MinLinesProperty);
+            set => SetValue(MinLinesProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the spacing between characters
         /// </summary>
         public double LetterSpacing
@@ -910,6 +925,10 @@ namespace Avalonia.Controls
                 OnSelectionEndChanged(change);
             }
             else if (change.Property == MaxLinesProperty)
+            {
+                InvalidateMeasure();
+            }
+            else if (change.Property == MinLinesProperty)
             {
                 InvalidateMeasure();
             }
@@ -1307,13 +1326,13 @@ namespace Avalonia.Controls
                 {
                     case Key.Left:
                         selection = DetectSelection();
-                        MoveHorizontal(-1, hasWholeWordModifiers, selection);
+                        MoveHorizontal(-1, hasWholeWordModifiers, selection, true);
                         movement = true;
                         break;
 
                     case Key.Right:
                         selection = DetectSelection();
-                        MoveHorizontal(1, hasWholeWordModifiers, selection);
+                        MoveHorizontal(1, hasWholeWordModifiers, selection, true);
                         movement = true;
                         break;
 
@@ -1781,7 +1800,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void Clear() => SetCurrentValue(TextProperty, string.Empty);
 
-        private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
+        private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting, bool moveCaretPosition)
         {
             if (_presenter == null)
             {
@@ -1837,9 +1856,12 @@ namespace Avalonia.Controls
 
                 SetCurrentValue(SelectionEndProperty, SelectionEnd + offset);
 
-                _presenter.MoveCaretToTextPosition(SelectionEnd);
+                if (moveCaretPosition)
+                {
+                    _presenter.MoveCaretToTextPosition(SelectionEnd);
+                }
 
-                if (!isSelecting)
+                if (!isSelecting && moveCaretPosition)
                 {
                     SetCurrentValue(CaretIndexProperty, SelectionEnd);
                 }
@@ -1976,7 +1998,7 @@ namespace Avalonia.Controls
 
                 _presenter?.MoveCaretToTextPosition(start);
 
-                SetCurrentValue(CaretIndexProperty, start);
+                SetCurrentValue(SelectionStartProperty, start);
 
                 ClearSelection();
 
@@ -2031,7 +2053,7 @@ namespace Avalonia.Controls
 
                     var margin = visual.GetValue<Thickness>(Layoutable.MarginProperty);
                     var padding = visual.GetValue<Thickness>(Decorator.PaddingProperty);
-                    
+
                     verticalSpace += margin.Top + padding.Top + padding.Bottom + margin.Bottom;
 
                     visual = visual.VisualParent;
@@ -2066,9 +2088,16 @@ namespace Avalonia.Controls
 
         private void SetSelectionForControlBackspace()
         {
+            var text = Text ?? string.Empty;
             var selectionStart = CaretIndex;
 
-            MoveHorizontal(-1, true, false);
+            MoveHorizontal(-1, true, false, false);
+
+            if (SelectionEnd > 0 &&
+                selectionStart < text.Length && text[selectionStart] == ' ')
+            {
+                SetCurrentValue(SelectionEndProperty, SelectionEnd - 1);
+            }
 
             SetCurrentValue(SelectionStartProperty, selectionStart);
         }
@@ -2083,7 +2112,7 @@ namespace Avalonia.Controls
 
             SetCurrentValue(SelectionStartProperty, CaretIndex);
 
-            MoveHorizontal(1, true, true);
+            MoveHorizontal(1, true, true, false);
 
             if (SelectionEnd < textLength && Text![SelectionEnd] == ' ')
             {
@@ -2193,30 +2222,46 @@ namespace Avalonia.Controls
                     var fontSize = FontSize;
                     var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
                     var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
-                    var textLayout = new TextLayout(new MaxLinesTextSource(MaxLines), paragraphProperties);
+                    var textLayout = new TextLayout(new LineTextSource(MaxLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
 
                     maxHeight = Math.Ceiling(textLayout.Height + verticalSpace);
                 }
 
                 _scrollViewer.SetCurrentValue(MaxHeightProperty, maxHeight);
+
+
+                var minHeight = 0.0;
+
+                if (MinLines > 0 && double.IsNaN(Height))
+                {
+                    var fontSize = FontSize;
+                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
+                    var textLayout = new TextLayout(new LineTextSource(MinLines), paragraphProperties);
+                    var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
+
+                    minHeight = Math.Ceiling(textLayout.Height + verticalSpace);
+                }
+
+                _scrollViewer.SetCurrentValue(MinHeightProperty, minHeight);
             }
 
             return base.MeasureOverride(availableSize);
         }
 
-        private class MaxLinesTextSource : ITextSource
+        private class LineTextSource : ITextSource
         {
-            private readonly int _maxLines;
+            private readonly int _lines;
 
-            public MaxLinesTextSource(int maxLines)
+            public LineTextSource(int lines)
             {
-                _maxLines = maxLines;
+                _lines = lines;
             }
 
             public TextRun? GetTextRun(int textSourceIndex)
             {
-                if (textSourceIndex >= _maxLines)
+                if (textSourceIndex >= _lines)
                 {
                     return null;
                 }

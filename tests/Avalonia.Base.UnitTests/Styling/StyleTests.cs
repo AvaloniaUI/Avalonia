@@ -55,6 +55,29 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void Style_With_Class_Selector_Should_Update_And_Restore_Value_With_TemplateBinding()
+        {
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
+            };
+
+            var templatedParent = new Class1 { Foo = "unset-foo" };
+            var target = new Class1 { TemplatedParent = templatedParent };
+            target.Bind(Class1.FooProperty, new TemplateBinding(Class1.FooProperty), BindingPriority.Template);
+
+            StyleHelpers.TryAttach(style, target);
+            Assert.Equal("unset-foo", target.Foo);
+            target.Classes.Add("foo");
+            Assert.Equal("Foo", target.Foo);
+            target.Classes.Remove("foo");
+            Assert.Equal("unset-foo", target.Foo);
+        }
+
+        [Fact]
         public void Style_With_No_Selector_Should_Apply_To_Containing_Control()
         {
             Style style = new Style

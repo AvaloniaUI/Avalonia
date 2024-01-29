@@ -26,9 +26,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template()
             };
 
-            sic.SelectedItem = items[0];
+            sic.SelectedItem = items[1];
 
-            Assert.Equal(items[0].Name, sic.SelectedValue);
+            Assert.Equal(items[1].Name, sic.SelectedValue);
         }
 
         [Fact]
@@ -42,9 +42,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template()
             };
 
-            sic.SelectedIndex = 0;
+            sic.SelectedIndex = 1;
 
-            Assert.Equal(items[0].Name, sic.SelectedValue);
+            Assert.Equal(items[1].Name, sic.SelectedValue);
         }
 
         [Fact]
@@ -60,14 +60,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             sic.SelectedItems = new List<TestClass>
             {
-                items[1],
-                items[3],
-                items[4]
+                items[2],
+                items[4],
+                items[5]
             };
 
             // When interacting, SelectedItem is the first item in the SelectedItems collection
             // But when set here, it's the last
-            Assert.Equal(items[4].Name, sic.SelectedValue);
+            Assert.Equal(items[5].Name, sic.SelectedValue);
         }
 
         [Fact]
@@ -85,9 +85,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 Prepare(sic);
 
-                sic.SelectedValue = items[1].Name;
+                sic.SelectedValue = items[2].Name;
 
-                Assert.Equal(1, sic.SelectedIndex);
+                Assert.Equal(2, sic.SelectedIndex);
             }                
         }
 
@@ -108,7 +108,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 sic.SelectedValue = "Item2";
 
-                Assert.Equal(items[1], sic.SelectedItem);
+                Assert.Equal(items[2], sic.SelectedItem);
             }                
         }
 
@@ -130,7 +130,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 sic.SelectedValueBinding = new Binding("AltProperty");
 
                 // Ensure SelectedItem didn't change
-                Assert.Equal(items[1], sic.SelectedItem);
+                Assert.Equal(items[2], sic.SelectedItem);
 
 
                 Assert.Equal("Alt2", sic.SelectedValue);
@@ -147,9 +147,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template()
             };
 
-            sic.SelectedIndex = 0;
+            sic.SelectedIndex = 1;
 
-            Assert.Equal(items[0], sic.SelectedValue);
+            Assert.Equal(items[1], sic.SelectedValue);
         }
 
         [Fact]
@@ -167,7 +167,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             sic.BeginInit();
             sic.EndInit();
 
-            Assert.Equal(items[1].Name, sic.SelectedValue);
+            Assert.Equal(items[2].Name, sic.SelectedValue);
         }
 
         [Fact]
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             sic.SelectedValue = "Item1";
             sic.EndInit();
 
-            Assert.Equal(items[0].Name, sic.SelectedValue);
+            Assert.Equal(items[1].Name, sic.SelectedValue);
         }
 
         [Fact]
@@ -234,7 +234,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var called = false;
                 sic.SelectionChanged += (s, e) =>
                 {
-                    Assert.Same(items[1], e.AddedItems.Cast<object>().Single());
+                    Assert.Same(items[2], e.AddedItems.Cast<object>().Single());
                     Assert.Empty(e.RemovedItems);
                     called = true;
                 };
@@ -259,7 +259,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var called = false;
             sic.SelectionChanged += (s, e) =>
             {
-                Assert.Same(items[1], e.RemovedItems.Cast<object>().Single());
+                Assert.Same(items[2], e.RemovedItems.Cast<object>().Single());
                 Assert.Empty(e.AddedItems);
                 called = true;
             };
@@ -276,7 +276,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var sic = new SelectingItemsControl
             {
                 ItemsSource = items,
-                SelectedIndex = 0,
+                SelectedIndex = 1,
                 SelectedValueBinding = new Binding("Name"),
                 Template = Template()
             };
@@ -333,6 +333,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             return new List<TestClass>
             {
+                new TestClass(null, null),
                 new TestClass("Item1", "Alt1"),
                 new TestClass("Item2", "Alt2"),
                 new TestClass("Item3", "Alt3"),
