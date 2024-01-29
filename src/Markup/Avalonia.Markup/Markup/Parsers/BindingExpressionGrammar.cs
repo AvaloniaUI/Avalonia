@@ -312,6 +312,45 @@ namespace Avalonia.Markup.Parsers
                     Level = ancestorLevel
                 });
             }
+            else if (mode.SequenceEqual("visualparent".AsSpan()))
+            {
+                string? ancestorNamespace = null;
+                string? ancestorType = null;
+                var ancestorLevel = 0;
+                if (PeekOpenBracket(ref r))
+                {
+                    var args = r.ParseArguments('[', ']', ';');
+                    if (args.Count > 2 || args.Count == 0)
+                    {
+                        throw new ExpressionParseException(r.Position, "Too many arguments in RelativeSource syntax sugar");
+                    }
+                    else if (args.Count == 1)
+                    {
+                        if (int.TryParse(args[0], out int level))
+                        {
+                            ancestorType = null;
+                            ancestorLevel = level;
+                        }
+                        else
+                        {
+                            var reader = new CharacterReader(args[0].AsSpan());
+                            (ancestorNamespace, ancestorType) = ParseTypeName(ref reader);
+                        }
+                    }
+                    else
+                    {
+                        var reader = new CharacterReader(args[0].AsSpan());
+                        (ancestorNamespace, ancestorType) = ParseTypeName(ref reader);
+                        ancestorLevel = int.Parse(args[1]);
+                    }
+                }
+                nodes.Add(new VisualAncestorNode()
+                {
+                    Namespace = ancestorNamespace,
+                    TypeName = ancestorType,
+                    Level = ancestorLevel
+                });
+            }
             else
             {
                 throw new ExpressionParseException(r.Position, "Unknown RelativeSource mode.");
@@ -459,6 +498,13 @@ namespace Avalonia.Markup.Parsers
         }
 
         public class AncestorNode : INode
+        {
+            public string? Namespace { get; set; }
+            public string? TypeName { get; set; }
+            public int Level { get; set; }
+        }
+        
+        public class VisualAncestorNode : INode
         {
             public string? Namespace { get; set; }
             public string? TypeName { get; set; }
