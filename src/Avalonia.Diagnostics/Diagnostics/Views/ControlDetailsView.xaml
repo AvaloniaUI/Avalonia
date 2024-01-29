@@ -5,6 +5,7 @@
              xmlns:controls="using:Avalonia.Diagnostics.Controls"
              xmlns:vm="using:Avalonia.Diagnostics.ViewModels"
              xmlns:lb="using:Avalonia.Diagnostics.Behaviors"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              x:Class="Avalonia.Diagnostics.Views.ControlDetailsView"
              x:Name="Main"
              x:DataType="vm:ControlDetailsViewModel">
@@ -153,22 +154,22 @@
         <Grid Grid.Row="0" Margin="4" RowDefinitions="Auto,Auto">
 
           <Grid Grid.Row="0" Margin="2" ColumnDefinitions="Auto,*,Auto,Auto">
-            <TextBlock FontWeight="Bold" Grid.Column="0" Text="{Binding StyleStatus}" VerticalAlignment="Center" />
-            <CheckBox Margin="2,0,0,0" Grid.Column="2" Content="Show inactive" IsChecked="{Binding ShowInactiveStyles}" ToolTip.Tip="Show styles that are currently inactive" />
-            <ToggleButton Margin="2,0,0,0" Grid.Column="3" ToolTip.Tip="Snapshot current styles (Alt+S/Alt+D to enable/disable within debugged window)" Content="Snapshot" IsChecked="{Binding SnapshotStyles}" />
+            <TextBlock FontWeight="Bold" Grid.Column="0" Text="{Binding FramesStatus}" VerticalAlignment="Center" />
+            <CheckBox Margin="2,0,0,0" Grid.Column="2" Content="Show inactive" IsChecked="{Binding ShowInactiveFrames}" ToolTip.Tip="Show values that are currently inactive" />
+            <ToggleButton Margin="2,0,0,0" Grid.Column="3" ToolTip.Tip="Snapshot current values (Alt+S/Alt+D to enable/disable within debugged window)" Content="Snapshot" IsChecked="{Binding SnapshotFrames}" />
           </Grid>
 
           <controls:FilterTextBox Grid.Row="1" Margin="2" Grid.Column="0"
                                   DataContext="{Binding TreePage.SettersFilter}"
                                   Text="{Binding FilterString}"
-                                  Watermark="Filter setters"
+                                  Watermark="Filter values"
                                   UseCaseSensitiveFilter="{Binding UseCaseSensitiveFilter}"
                                   UseWholeWordFilter="{Binding UseWholeWordFilter}"
                                   UseRegexFilter="{Binding UseRegexFilter}" />
         </Grid>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
-          <ItemsControl ItemsSource="{Binding AppliedStyles}" >
+          <ItemsControl ItemsSource="{Binding AppliedFrames}" >
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Border BorderThickness="0,0,0,1" BorderBrush="#6C6C6C" Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}">
@@ -176,14 +177,14 @@
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                       <MultiBinding Converter="{x:Static BoolConverters.Or}" >
                         <Binding Path="IsActive" />
-                        <Binding Path="#Main.((vm:ControlDetailsViewModel)DataContext).ShowInactiveStyles" />
+                        <Binding Path="#Main.((vm:ControlDetailsViewModel)DataContext).ShowInactiveFrames" />
                       </MultiBinding>
                       <Binding Path="IsVisible" />
                     </MultiBinding>
                   </Border.IsVisible>
                   <Expander IsExpanded="True" Margin="0" Padding="8,0" ContentTransition="{x:Null}" >
                     <Expander.Header>
-                      <TextBlock Grid.Row="0" Text="{Binding Name}" />
+                      <TextBlock Grid.Row="0" Text="{Binding Description}" />
                     </Expander.Header>
 
                     <ItemsControl Margin="20,0,0,0" Grid.Row="1" ItemsSource="{Binding Setters}">
@@ -259,7 +260,13 @@
                             <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Left">
                               <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
-                              <ContentControl Content="{Binding Value}"/>
+                              <ContentControl Content="{Binding Value}">
+                                <ContentControl.ContentTemplate>
+                                  <DataTemplate x:DataType="system:Object">
+                                    <TextBlock Text="{Binding}" />
+                                  </DataTemplate>
+                                </ContentControl.ContentTemplate>
+                              </ContentControl>
                               <TextBlock>(</TextBlock>
                               <Ellipse Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}" ToolTip.Tip="{Binding ValueTypeTooltip}"/>
                               <TextBlock FontStyle="Italic" Text="{Binding Key}" />
@@ -280,7 +287,13 @@
                             <StackPanel Orientation="Horizontal" Spacing="2">
                               <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
-                              <ContentControl Content="{Binding Value}"/>
+                              <ContentControl Content="{Binding Value}">
+                                <ContentControl.ContentTemplate>
+                                  <DataTemplate x:DataType="system:Object">
+                                    <TextBlock Text="{Binding}" />
+                                  </DataTemplate>
+                                </ContentControl.ContentTemplate>
+                              </ContentControl>
                             </StackPanel>
                             <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>

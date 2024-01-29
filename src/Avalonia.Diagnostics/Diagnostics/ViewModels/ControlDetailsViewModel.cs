@@ -11,6 +11,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -21,9 +22,9 @@ namespace Avalonia.Diagnostics.ViewModels
         private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
-        private bool _snapshotStyles;
-        private bool _showInactiveStyles;
-        private string? _styleStatus;
+        private bool _snapshotFrames;
+        private bool _showInactiveFrames;
+        private string? _framesStatus;
         private object? _selectedEntity;
         private readonly Stack<(string Name, object Entry)> _selectedEntitiesStack = new();
         private string? _selectedEntityName;
@@ -46,12 +47,12 @@ namespace Avalonia.Diagnostics.ViewModels
             _pinnedProperties = pinnedProperties;
             TreePage = treePage;
             Layout = avaloniaObject is Visual visual
-    ? new ControlLayoutViewModel(visual)
-    : default;
+                ? new ControlLayoutViewModel(visual)
+                : default;
 
             NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());
 
-            AppliedStyles = new ObservableCollection<StyleViewModel>();
+            AppliedFrames = new ObservableCollection<ValueFrameViewModel>();
             PseudoClasses = new ObservableCollection<PseudoClassViewModel>();
 
             if (avaloniaObject is StyledElement styledElement)
@@ -68,64 +69,13 @@ namespace Avalonia.Diagnostics.ViewModels
                     }
                 }
 
-                var styleDiagnostics = styledElement.GetStyleDiagnostics();
+                var styleDiagnostics = styledElement.GetValueStoreDiagnostic();
 
                 var clipboard = TopLevel.GetTopLevel(_avaloniaObject as Visual)?.Clipboard;
 
-                // We need to place styles without activator first, such styles will be overwritten by ones with activators.
-                foreach (var appliedStyle in styleDiagnostics.AppliedStyles.OrderBy(s => s.HasActivator))
+                foreach (var appliedStyle in styleDiagnostics.AppliedFrames.OrderBy(s => s.Priority))
                 {
-                    var styleSource = appliedStyle.Style;
-
-                    var setters = new List<SetterViewModel>();
-
-                    if (styleSource is StyleBase style)
-                    {
-                        var selector = style switch
-                        {
-                            Style s => s.Selector?.ToString(),
-                            ControlTheme t => t.TargetType?.Name.ToString(),
-                            _ => null,
-                        };
-
-                        foreach (var setter in style.Setters)
-                        {
-                            if (setter is Setter regularSetter
-                                && regularSetter.Property != null)
-                            {
-                                var setterValue = regularSetter.Value;
-
-                                var resourceInfo = GetResourceInfo(setterValue);
-
-                                SetterViewModel setterVm;
-
-                                if (resourceInfo.HasValue)
-                                {
-                                    var resourceKey = resourceInfo.Value.resourceKey;
-                                    var resourceValue = styledElement.FindResource(resourceKey);
-
-                                    setterVm = new ResourceSetterViewModel(regularSetter.Property, resourceKey, resourceValue, resourceInfo.Value.isDynamic, clipboard);
-                                }
-                                else
-                                {
-                                    var isBinding = IsBinding(setterValue);
-
-                                    if (isBinding)
-                                    {
-                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue, clipboard);
-                                    }
-                                    else
-                                    {
-                                        setterVm = new SetterViewModel(regularSetter.Property, setterValue, clipboard);
-                                    }
-                                }
-
-                                setters.Add(setterVm);
-                            }
-                        }
-
-                        AppliedStyles.Add(new StyleViewModel(appliedStyle, selector ?? "No selector", setters));
-                    }
+                    AppliedFrames.Add(new ValueFrameViewModel(styledElement, appliedStyle, clipboard));
                 }
 
                 UpdateStyles();
@@ -133,35 +83,6 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public bool CanNavigateToParentProperty => _selectedEntitiesStack.Count >= 1;
-
-        private static (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
-        {
-            if (value is StaticResourceExtension staticResource
-                && staticResource.ResourceKey != null)
-            {
-                return (staticResource.ResourceKey, false);
-            }
-            else if (value is DynamicResourceExtension dynamicResource
-                && dynamicResource.ResourceKey != null)
-            {
-                return (dynamicResource.ResourceKey, true);
-            }
-
-            return null;
-        }
-
-        private static bool IsBinding(object? value)
-        {
-            switch (value)
-            {
-                case Binding:
-                case CompiledBindingExtension:
-                case TemplateBinding:
-                    return true;
-            }
-
-            return false;
-        }
 
         public TreePageViewModel TreePage { get; }
 
@@ -171,7 +92,7 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _propertiesView, value);
         }
 
-        public ObservableCollection<StyleViewModel> AppliedStyles { get; }
+        public ObservableCollection<ValueFrameViewModel> AppliedFrames { get; }
 
         public ObservableCollection<PseudoClassViewModel> PseudoClasses { get; }
 
@@ -199,22 +120,22 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _selectedProperty, value);
         }
 
-        public bool SnapshotStyles
+        public bool SnapshotFrames
         {
-            get => _snapshotStyles;
-            set => RaiseAndSetIfChanged(ref _snapshotStyles, value);
+            get => _snapshotFrames;
+            set => RaiseAndSetIfChanged(ref _snapshotFrames, value);
         }
 
-        public bool ShowInactiveStyles
+        public bool ShowInactiveFrames
         {
-            get => _showInactiveStyles;
-            set => RaiseAndSetIfChanged(ref _showInactiveStyles, value);
+            get => _showInactiveFrames;
+            set => RaiseAndSetIfChanged(ref _showInactiveFrames, value);
         }
 
-        public string? StyleStatus
+        public string? FramesStatus
         {
-            get => _styleStatus;
-            set => RaiseAndSetIfChanged(ref _styleStatus, value);
+            get => _framesStatus;
+            set => RaiseAndSetIfChanged(ref _framesStatus, value);
         }
 
         public ControlLayoutViewModel? Layout { get; }
@@ -223,9 +144,9 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             base.OnPropertyChanged(e);
 
-            if (e.PropertyName == nameof(SnapshotStyles))
+            if (e.PropertyName == nameof(SnapshotFrames))
             {
-                if (!SnapshotStyles)
+                if (!SnapshotFrames)
                 {
                     UpdateStyles();
                 }
@@ -234,7 +155,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void UpdateStyleFilters()
         {
-            foreach (var style in AppliedStyles)
+            foreach (var style in AppliedFrames)
             {
                 var hasVisibleSetter = false;
 
@@ -332,17 +253,17 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
 
-            if (!SnapshotStyles)
+            if (!SnapshotFrames)
             {
-                UpdateStyles();
+                Dispatcher.UIThread.Post(UpdateStyles);
             }
         }
 
         void IClassesChangedListener.Changed()
         {
-            if (!SnapshotStyles)
+            if (!SnapshotFrames)
             {
-                UpdateStyles();
+                Dispatcher.UIThread.Post(UpdateStyles);
             }
         }
 
@@ -350,7 +271,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             int activeCount = 0;
 
-            foreach (var style in AppliedStyles)
+            foreach (var style in AppliedFrames)
             {
                 style.Update();
 
@@ -362,7 +283,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             var propertyBuckets = new Dictionary<AvaloniaProperty, List<SetterViewModel>>();
 
-            foreach (var style in AppliedStyles)
+            foreach (var style in AppliedFrames.Reverse())
             {
                 if (!style.IsActive)
                 {
@@ -398,7 +319,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 pseudoClass.Update();
             }
 
-            StyleStatus = $"Styles ({activeCount}/{AppliedStyles.Count} active)";
+            FramesStatus = $"Value Frames ({activeCount}/{AppliedFrames.Count} active)";
         }
 
         private bool FilterProperty(object arg)

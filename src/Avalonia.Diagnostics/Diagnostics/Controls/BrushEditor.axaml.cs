@@ -23,7 +23,14 @@ namespace Avalonia.Diagnostics.Controls
         public BrushEditor()
         {
             FlyoutBase.SetAttachedFlyout(this, new Flyout { Content = _colorView });
-            _colorView.ColorChanged += (_, e) => Brush = new ImmutableSolidColorBrush(e.NewColor);
+            _colorView.ColorChanged += (_, e) =>
+            {
+                // Avoid unnecessary value setters by checking if color was actually changed.
+                if (Brush is null || Brush is not ISolidColorBrush oldSolidBrush || oldSolidBrush.Color != e.NewColor)
+                {
+                    Brush = new ImmutableSolidColorBrush(e.NewColor);
+                }
+            };
             clearHandler = (s, e) => Brush = default;
         }
 
