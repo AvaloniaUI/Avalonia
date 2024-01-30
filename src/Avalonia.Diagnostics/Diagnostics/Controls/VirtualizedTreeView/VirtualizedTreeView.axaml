@@ -1,0 +1,30 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:treeView="clr-namespace:Avalonia.Diagnostics.Controls.VirtualizedTreeView"
+        x:ClassModifier="internal">
+  <Styles.Resources>
+    <ControlTheme x:Key="{x:Type treeView:VirtualizedTreeView}"
+                  TargetType="treeView:VirtualizedTreeView">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <treeView:VirtualizedTreeListBox ItemsSource="{TemplateBinding Source}"
+                                           SelectedValueBinding="{ReflectionBinding Node}"
+                                           SelectedValue="{TemplateBinding SelectedItem, Mode=TwoWay}">
+            <treeView:VirtualizedTreeListBox.ItemTemplate>
+              <DataTemplate x:DataType="treeView:FlatTreeNode">
+                <ContentPresenter Content="{CompiledBinding Node}"
+                                  ContentTemplate="{Binding $parent[treeView:VirtualizedTreeView].ItemTemplate}" />
+              </DataTemplate>
+            </treeView:VirtualizedTreeListBox.ItemTemplate>
+          </treeView:VirtualizedTreeListBox>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+  </Styles.Resources>
+
+  <Style Selector="treeView|VirtualizedTreeView treeView|VirtualizedTreeViewItem">
+    <Setter Property="IsExpanded" Value="{CompiledBinding Node.IsExpanded}" x:DataType="treeView:FlatTreeNode" />
+    <Setter Property="HasChildren" Value="{CompiledBinding Node.HasChildren}" x:DataType="treeView:FlatTreeNode" />
+    <Setter Property="IndentLevel" Value="{CompiledBinding Level}" x:DataType="treeView:FlatTreeNode" />
+  </Style>
+</Styles>
