@@ -829,7 +829,11 @@ namespace Avalonia.Controls
                     pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
                 }
 
-                _inputManager?.ProcessInput(e);
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    _inputManager?.ProcessInput(e);
+                }, DispatcherPriority.Input);
+
             }
             else
             {
