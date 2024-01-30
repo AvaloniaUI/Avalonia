@@ -45,48 +45,30 @@ ComPtr<IAvnApplicationEvents> _events;
 
 -(BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
 {
-    if([[NSApplication self] isRunning]){
-        _events->OnReopen();
-    }
+    _events->OnReopen();
     
     return YES;
 }
 
 - (void)applicationDidHide:(NSNotification *)notification
 {
-    if(![[NSApplication self] isRunning]){
-        return;
-    }
-    
     _events->OnHide();
 }
 
 - (void)applicationDidUnhide:(NSNotification *)notification
 {
-    if(![[NSApplication self] isRunning]){
-        return;
-    }
-    
     _events->OnUnhide();
 }
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
 {
-    if(![[NSApplication self] isRunning]){
-        return;
-    }
-    
     auto array = CreateAvnStringArray(filenames);
     
-    _events->FilesOpened(array);
+    //_events->FilesOpened(array);
 }
 
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
 {
-    if(![[NSApplication self] isRunning]){
-        return;
-    }
-    
     auto array = CreateAvnStringArray(urls);
     
     _events->FilesOpened(array);
