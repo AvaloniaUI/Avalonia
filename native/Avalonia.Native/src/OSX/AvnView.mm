@@ -24,6 +24,7 @@
     NSRange _selectedRange;
     NSRange _markedRange;
     NSEvent* _lastKeyDownEvent;
+    NSString* _lastKeySymbol;
 }
 
 - (void)onClosed
@@ -538,7 +539,7 @@
     auto scanCode = [event keyCode];
     auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
-    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
+    _lastKeySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
     
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
@@ -548,8 +549,11 @@
         
         //Handle keyDown first if an input modifier is present
         if(hasInputModifier){
-            if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
+            if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:_lastKeySymbol]){
                 //User code has handled the event
+                _lastKeySymbol = nullptr;
+                _lastKeyDownEvent = nullptr;
+                
                 return;
             }
         }
@@ -559,28 +563,44 @@
                 
             //Only raise a keyDown if we don't have a modifier
             if(!hasInputModifier){
-                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
+                auto handled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:_lastKeySymbol];
+                
+                if(handled){
+                    _lastKeyDownEvent = nullptr;
+                    _lastKeySymbol = nullptr;
+                }
             }
         }
         
     }
     //InputMethod not active
     else{
-        auto keyDownHandled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
+        //if(keySymbol != nullptr){
+            auto keyDownHandled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:_lastKeySymbol];
+            
+            //Raise text input event for unhandled key down
+            if(keyDownHandled){
+                _lastKeySymbol = nullptr;
+                _lastKeyDownEvent = nullptr;
+            }
+        //}
         
-        //Raise text input event for unhandled key down if there is some key symbol and no input modifier is present
-        if(!keyDownHandled && modifiers == AvnInputModifiersNone && keySymbol != NULL){
-            _parent->BaseEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
-        }
     }
-    
-    _lastKeyDownEvent = nullptr;
 }
 
 - (void)keyUp:(NSEvent *)event
 {
     [self keyboardEvent:event withType:KeyUp];
     [super keyUp:event];
+    
+    if(_lastKeyDownEvent != nullptr && _lastKeySymbol != nullptr){
+        auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+        
+        _parent->BaseEvents->RawTextInputEvent(timestamp, [_lastKeySymbol UTF8String]);
+    }
+    
+    _lastKeySymbol = nullptr;
+    _lastKeyDownEvent = nullptr;
 }
 
 - (void) doCommandBySelector:(SEL)selector{
