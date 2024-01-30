@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
@@ -8,7 +9,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class LogicalTreeNode : TreeNode
+    internal sealed class LogicalTreeNode : TreeNode
     {
         public LogicalTreeNode(AvaloniaObject avaloniaObject, TreeNode? parent)
             : base(avaloniaObject, parent)
@@ -19,9 +20,17 @@ namespace Avalonia.Diagnostics.ViewModels
                 Controls.TopLevelGroup host => new TopLevelGroupHostLogical(this, host),
                 _ => TreeNodeCollection.Empty
             };
+
+            Children.CollectionChanged += (_, e) =>
+            {
+                CollectionChanged?.Invoke(this, e);
+                RaisePropertyChanged(nameof(HasChildren));
+            };
         }
 
         public override TreeNodeCollection Children { get; }
+        
+        public override event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         public static LogicalTreeNode[] Create(object control)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -11,7 +12,7 @@ using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class VisualTreeNode : TreeNode
+    internal sealed class VisualTreeNode : TreeNode
     {
         public VisualTreeNode(AvaloniaObject avaloniaObject, TreeNode? parent, string? customName = null)
             : base(avaloniaObject, parent, customName)
@@ -25,11 +26,19 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (Visual is StyledElement styleable)
                 IsInTemplate = styleable.TemplatedParent != null;
+
+            Children.CollectionChanged += (_, e) =>
+            {
+                CollectionChanged?.Invoke(this, e);
+                RaisePropertyChanged(nameof(HasChildren));
+            };
         }
 
         public bool IsInTemplate { get; }
 
         public override TreeNodeCollection Children { get; }
+        
+        public override event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         public static VisualTreeNode[] Create(object control)
         {

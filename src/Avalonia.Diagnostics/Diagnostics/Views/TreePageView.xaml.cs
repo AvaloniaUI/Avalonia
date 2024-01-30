@@ -1,6 +1,8 @@
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
+using Avalonia.Diagnostics.Controls.VirtualizedTreeView;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
@@ -13,13 +15,13 @@ namespace Avalonia.Diagnostics.Views
     {
         private readonly Panel _adorner;
         private AdornerLayer? _currentLayer;
-        private TreeViewItem? _hovered;
-        private TreeView _tree;
+        private VirtualizedTreeViewItem? _hovered;
+        private VirtualizedTreeView _tree;
 
         public TreePageView()
         {
             InitializeComponent();
-            _tree = this.GetControl<TreeView>("tree");
+            _tree = this.GetControl<VirtualizedTreeView>("tree");
 
             _adorner = new Panel
             {
@@ -44,7 +46,7 @@ namespace Avalonia.Diagnostics.Views
 
         protected void AddAdorner(object? sender, PointerEventArgs e)
         {
-            var node = (TreeNode?)((Control)sender!).DataContext;
+            var node = (TreeNode?)((FlatTreeNode?)((Control)sender!).DataContext)?.Node;
             var vm = (TreePageViewModel?)DataContext;
             if (node is null || vm is null)
             {
@@ -103,7 +105,7 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var item = source.FindLogicalAncestorOfType<TreeViewItem>();
+            var item = source.FindLogicalAncestorOfType<VirtualizedTreeViewItem>();
             if (item == _hovered)
             {
                 return;
@@ -111,7 +113,7 @@ namespace Avalonia.Diagnostics.Views
 
             RemoveAdorner(sender, e);
 
-            if (item is null || item.TreeViewOwner != _tree)
+            if (item is null)
             {
                 _hovered = null;
                 return;

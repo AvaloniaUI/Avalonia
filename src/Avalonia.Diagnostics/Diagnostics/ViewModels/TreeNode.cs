@@ -1,15 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Diagnostics.Controls.VirtualizedTreeView;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal abstract class TreeNode : ViewModelBase, IDisposable
+    internal abstract class TreeNode : ViewModelBase, ITreeNode, IDisposable
     {
         private readonly IDisposable? _classesSubscription;
         private string _classes;
@@ -49,6 +51,10 @@ namespace Avalonia.Diagnostics.ViewModels
                                Visual is IPopupHost;
 
         public FontWeight FontWeight { get; }
+
+        public bool HasChildren => Children.Count > 0;
+        
+        IReadOnlyList<ITreeNode> ITreeNode.Children => Children;
 
         public abstract TreeNodeCollection Children
         {
@@ -93,5 +99,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _classesSubscription?.Dispose();
             Children.Dispose();
         }
+
+        public abstract event NotifyCollectionChangedEventHandler? CollectionChanged;
     }
 }
