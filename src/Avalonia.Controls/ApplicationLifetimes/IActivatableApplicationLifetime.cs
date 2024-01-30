@@ -1,11 +1,13 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes;
 
 /// <summary>
 /// An interface for ApplicationLifetimes where the application can be Activated and Deactivated.
 /// </summary>
-public interface IActivatableApplicationLifetime
+[NotClientImplementable]
+public interface IActivatableApplicationLifetime : IApplicationLifetime
 {
     /// <summary>
     /// An event that is raised when the application is Activated for various reasons
