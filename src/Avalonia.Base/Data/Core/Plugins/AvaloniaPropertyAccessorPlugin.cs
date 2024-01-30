@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Plugins
@@ -11,7 +9,6 @@ namespace Avalonia.Data.Core.Plugins
     internal class AvaloniaPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         /// <inheritdoc/>
-        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             if (obj is AvaloniaObject o)
@@ -31,7 +28,6 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor? Start(WeakReference<object?> reference, string propertyName)
         {
             _ = reference ?? throw new ArgumentNullException(nameof(reference));
