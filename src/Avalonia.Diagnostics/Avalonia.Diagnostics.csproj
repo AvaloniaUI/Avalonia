@@ -21,4 +21,7 @@
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Diagnostics.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
 </Project>
