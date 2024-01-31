@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests.Automation
             }
 
             [Fact]
-            public void Updates_Children_When_Visibility_Changes()
+            public void Updates_Children_When_Visibility_Changes_From_Visible_To_Invisible()
             {
                 var panel = new Panel
                 {
@@ -124,6 +124,27 @@ namespace Avalonia.Controls.UnitTests.Automation
 
                 panel.Children[1].IsVisible = false;
                 children = target.GetChildren();
+                Assert.Equal(1, children.Count);
+
+                panel.Children[1].IsVisible = true;
+                children = target.GetChildren();
+                Assert.Equal(2, children.Count);
+            }
+
+            [Fact]
+            public void Updates_Children_When_Visibility_Changes_From_Invisible_To_Visible()
+            {
+                var panel = new Panel
+                {
+                    Children =
+                    {
+                        new Border(),
+                        new Border { IsVisible = false },
+                    },
+                };
+
+                var target = CreatePeer(panel);
+                var children = target.GetChildren();
                 Assert.Equal(1, children.Count);
 
                 panel.Children[1].IsVisible = true;
