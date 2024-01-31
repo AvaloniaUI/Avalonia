@@ -78,7 +78,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
         {
-            if (e is not null and not ObjectDisposedException)
+            if (e is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnForwardKey failed: {e}");
                 return;
@@ -112,7 +112,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 // check if we have any pending Reset calls and ignore the signal here
                 return;
             }
-            if (e is not null and not ObjectDisposedException)
+            if (e is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitText failed: {e}");
                 return;

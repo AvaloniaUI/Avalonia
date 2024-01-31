@@ -71,7 +71,7 @@ namespace Avalonia.FreeDesktop
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
-                if (e is not null and not ObjectDisposedException)
+                if (e is not null)
                     tsc.TrySetException(e);
                 else
                     tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
@@ -100,7 +100,7 @@ namespace Avalonia.FreeDesktop
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
-                if (e is not null and not ObjectDisposedException)
+                if (e is not null)
                     tsc.TrySetException(e);
                 else
                     tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
@@ -133,7 +133,7 @@ namespace Avalonia.FreeDesktop
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
-                if (e is not null and not ObjectDisposedException)
+                if (e is not null)
                     tsc.TrySetException(e);
                 else
                     tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());

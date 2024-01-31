@@ -192,7 +192,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 
         private void OnCommitString(Exception? e, string s)
         {
-            if (e is not null and not ObjectDisposedException)
+            if (e is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitString failed: {e}");
                 return;
