@@ -12,8 +12,8 @@
                                            SelectedValue="{TemplateBinding SelectedItem, Mode=TwoWay}">
             <treeView:VirtualizedTreeListBox.ItemTemplate>
               <DataTemplate x:DataType="treeView:FlatTreeNode">
-                <ContentPresenter Content="{CompiledBinding Node}"
-                                  ContentTemplate="{Binding $parent[treeView:VirtualizedTreeView].ItemTemplate}" />
+                <ContentControl Content="{CompiledBinding Node}"
+                                ContentTemplate="{Binding $parent[treeView:VirtualizedTreeView].ItemTemplate}" />
               </DataTemplate>
             </treeView:VirtualizedTreeListBox.ItemTemplate>
           </treeView:VirtualizedTreeListBox>
