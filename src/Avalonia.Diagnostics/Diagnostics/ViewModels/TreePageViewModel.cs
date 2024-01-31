@@ -106,8 +106,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (node != null)
             {
-                SelectedNode = node;
                 ExpandNode(node.Parent);
+                SelectedNode = node;
             }
         }
 
