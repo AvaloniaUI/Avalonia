@@ -87,9 +87,11 @@ namespace Avalonia.Automation.Peers
 
             foreach (var child in children)
             {
-                if (child is Control c && c.IsVisible)
+                if (child is Control c)
                 {
-                    result.Add(GetOrCreate(c));
+                    var peer = GetOrCreate(c);
+                    if (c.IsVisible)
+                        result.Add(peer);
                 }
             }
 
