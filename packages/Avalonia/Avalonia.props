@@ -8,6 +8,7 @@
     <EnableAvaloniaXamlCompilation Condition="'$(EnableAvaloniaXamlCompilation)'==''">true</EnableAvaloniaXamlCompilation>
     <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)'==''">false</AvaloniaXamlIlVerifyIl>
     <AvaloniaUseCompiledBindingsByDefault Condition="'$(AvaloniaUseCompiledBindingsByDefault)'==''">false</AvaloniaUseCompiledBindingsByDefault>
+    <AvaloniaNameGeneratorAttachDevTools Condition="'$(AvaloniaNameGeneratorAttachDevTools)' == ''">true</AvaloniaNameGeneratorAttachDevTools>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\Avalonia.Generators.props"/>
