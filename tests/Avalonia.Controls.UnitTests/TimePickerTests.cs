@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -130,6 +133,48 @@ namespace Avalonia.Controls.UnitTests
 
                 timePicker.SelectedTime = null;
                 Assert.False(string.IsNullOrEmpty(periodText.Text));
+            }
+        }
+
+        [Fact]
+        public void SelectedTime_EnableDataValidation()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var handled = false;
+                var timePicker = new TimePicker();
+
+                timePicker.SelectedTimeChanged += (s, e) =>
+                {
+                    var minTime = new TimeSpan(10, 0, 0);
+                    var maxTime = new TimeSpan(15, 0, 0);
+
+                    if (e.NewTime < minTime)
+                        throw new DataValidationException($"time is less than {maxTime}");
+
+                    if (e.NewTime > maxTime)
+                        throw new DataValidationException($"time is over {maxTime}");
+
+                    handled = true;
+                };
+
+                // time is less than
+                Assert.Throws<DataValidationException>(() => timePicker.SelectedTime = new TimeSpan(1, 2, 3));
+
+                // time is over
+                Assert.Throws<DataValidationException>(() => timePicker.SelectedTime = new TimeSpan(21, 22, 23));
+
+                var exception = new DataValidationException("failed validation");
+                var observable =
+                    new BehaviorSubject<BindingNotification>(new BindingNotification(exception,
+                        BindingErrorType.DataValidationError));
+                timePicker.Bind(TimePicker.SelectedTimeProperty, observable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(timePicker));
+
+                Dispatcher.UIThread.RunJobs();
+                timePicker.SelectedTime = new TimeSpan(11, 12, 13);
+                Assert.True(handled);
             }
         }
 
