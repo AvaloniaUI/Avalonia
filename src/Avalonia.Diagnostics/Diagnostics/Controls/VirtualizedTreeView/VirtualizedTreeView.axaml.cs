@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Styling;
 
 namespace Avalonia.Diagnostics.Controls.VirtualizedTreeView;
 
@@ -11,8 +12,8 @@ internal class VirtualizedTreeView : TemplatedControl
 {
     private FlatTree _source = new(Array.Empty<ITreeNode>());
 
-    public static readonly DirectProperty<VirtualizedTreeView, FlatTree> SourceProperty = 
-        AvaloniaProperty.RegisterDirect<VirtualizedTreeView, FlatTree>(nameof(Source), 
+    public static readonly DirectProperty<VirtualizedTreeView, FlatTree> SourceProperty =
+        AvaloniaProperty.RegisterDirect<VirtualizedTreeView, FlatTree>(nameof(Source),
             o => o.Source);
 
     /// <summary>
@@ -34,12 +35,18 @@ internal class VirtualizedTreeView : TemplatedControl
         AvaloniaProperty.Register<VirtualizedTreeView, object?>(nameof(SelectedItem),
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Defines the <see cref="ItemContainerTheme"/> property.
+    /// </summary>
+    public static readonly StyledProperty<ControlTheme?> ItemContainerThemeProperty =
+        AvaloniaProperty.Register<VirtualizedTreeView, ControlTheme?>(nameof(ItemContainerTheme));
+
     public IEnumerable? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
-    
+
     public IDataTemplate? ItemTemplate
     {
         get => GetValue(ItemTemplateProperty);
@@ -50,6 +57,12 @@ internal class VirtualizedTreeView : TemplatedControl
     {
         get => GetValue(SelectedItemProperty);
         set => SetValue(SelectedItemProperty, value);
+    }
+
+    public ControlTheme? ItemContainerTheme
+    {
+        get => GetValue(ItemContainerThemeProperty);
+        set => SetValue(ItemContainerThemeProperty, value);
     }
 
     public FlatTree Source

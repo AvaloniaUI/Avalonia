@@ -11,4 +11,9 @@ internal sealed class VirtualizedTreeListBox : ListBox
     {
         return new VirtualizedTreeViewItem();
     }
+
+    protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+    {
+        return NeedsContainer<VirtualizedTreeViewItem>(item, out recycleKey);
+    }
 }
