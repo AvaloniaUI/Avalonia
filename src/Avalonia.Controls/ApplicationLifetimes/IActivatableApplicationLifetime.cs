@@ -7,7 +7,7 @@ namespace Avalonia.Controls.ApplicationLifetimes;
 /// An interface for ApplicationLifetimes where the application can be Activated and Deactivated.
 /// </summary>
 [NotClientImplementable]
-public interface IActivatableApplicationLifetime : IApplicationLifetime
+public interface IActivatableApplicationLifetime
 {
     /// <summary>
     /// An event that is raised when the application is Activated for various reasons
