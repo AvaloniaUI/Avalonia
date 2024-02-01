@@ -68,9 +68,10 @@ namespace Avalonia.Threading
         public override void Send(SendOrPostCallback d, object? state)
         {
             if (_dispatcher.CheckAccess())
-                d(state);
+                // Same-thread, use send priority to avoid any reentrancy.
+                _dispatcher.Send(d, state, DispatcherPriority.Send);
             else
-                _dispatcher.InvokeAsync(() => d(state), DispatcherPriority.Send).GetAwaiter().GetResult();
+                _dispatcher.Send(d, state, Priority);
         }
         
 #if !NET6_0_OR_GREATER

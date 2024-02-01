@@ -625,6 +625,34 @@ public partial class Dispatcher
         _ = action ?? throw new ArgumentNullException(nameof(action));
         InvokeAsyncImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true), CancellationToken.None);
     }
+    
+    /// <summary>
+    /// Sends an action that will be invoked on the dispatcher thread.
+    /// </summary>
+    /// <param name="action">The method.</param>
+    /// <param name="arg">The argument of method to call.</param>
+    /// <param name="priority">The priority with which to invoke the method.</param>
+    internal void Send(SendOrPostCallback action, object? arg, DispatcherPriority priority)
+    {
+        _ = action ?? throw new ArgumentNullException(nameof(action));
+        if (CheckAccess() && priority == DispatcherPriority.Send)
+        {
+            try
+            {
+                action(arg);
+            }
+            catch (Exception ex) when (ExceptionFilter(ex))
+            {
+                if (!CatchException(ex))
+                    throw;
+            }
+        }
+        else
+        {
+            InvokeAsyncImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true),
+                CancellationToken.None);
+        }
+    }
 
     /// <summary>
     /// Returns a task awaitable that would invoke continuation on specified dispatcher priority
