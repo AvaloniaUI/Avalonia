@@ -27,6 +27,10 @@
     <ProjectReference Remove="src/iOS/**/*.*proj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(SkipObscurePlatforms)' == 'True'">
+    <ProjectReference Remove="**/*Tizen/**/*.*proj" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
   </ItemGroup>
