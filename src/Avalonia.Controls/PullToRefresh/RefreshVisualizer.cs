@@ -135,16 +135,17 @@ namespace Avalonia.Controls
                 {
                     _content = new PathIcon()
                     {
-                        Height = DefaultIndicatorSize,
-                        Width = DefaultIndicatorSize,
-                        Name = "PART_Icon"
+                        Height = DefaultIndicatorSize, Width = DefaultIndicatorSize, Name = "PART_Icon"
                     };
+                }
 
+                if (_content is PathIcon)
+                {
                     _content.Loaded += (s, e) =>
                     {
                         var composition = ElementComposition.GetElementVisual(_content);
 
-                        if(composition == null)
+                        if (composition == null)
                             return;
 
                         var compositor = composition.Compositor;
@@ -184,11 +185,14 @@ namespace Avalonia.Controls
                         UpdateContent();
                     };
 
-                    SetCurrentValue(ContentProperty, _content);
+                    if (_content != Content)
+                        SetCurrentValue(ContentProperty, _content);
+                    else
+                        RaisePropertyChanged(ContentProperty, null, Content, Data.BindingPriority.Style, true);
                 }
                 else
                 {
-                    RaisePropertyChanged(ContentProperty, null, Content, Data.BindingPriority.Style, false);
+                    RaisePropertyChanged(ContentProperty, null, Content, Data.BindingPriority.Style, true);
                 }
             }
 
@@ -229,6 +233,7 @@ namespace Avalonia.Controls
                             visualizerVisual.Offset = IsPullDirectionVertical ?
                                 new Vector3D(visualizerVisual.Offset.X, 0, 0) :
                                 new Vector3D(0, visualizerVisual.Offset.Y, 0);
+                            visual.Offset = visualizerVisual.Offset;
                             _content.InvalidateMeasure();
                             break;
                         case RefreshVisualizerState.Interacting:
