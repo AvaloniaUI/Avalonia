@@ -10,7 +10,7 @@ using Avalonia.Utilities;
 using Xunit;
 namespace Avalonia.Base.UnitTests;
 
-public class DispatcherTests
+public partial class DispatcherTests
 {
     class SimpleDispatcherImpl : IDispatcherImpl, IDispatcherImplWithPendingInput
     {
