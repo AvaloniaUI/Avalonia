@@ -33,9 +33,14 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsTypePresent(string typeName)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var typeNamePtr = new HStringInterop(typeName);
         var result = 0;
-        if (s_statics.Value?.IsTypePresent(typeNamePtr.Handle, &result) == 0)
+        if (s_statics.Value.IsTypePresent(typeNamePtr.Handle, &result) == 0)
         {
             return result == 1;
         }
@@ -45,10 +50,15 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsMethodPresent(string typeName, string methodName)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var typeNamePtr = new HStringInterop(typeName);
         using var methodNamePtr = new HStringInterop(methodName);
         var result = 0;
-        if (s_statics.Value?.IsMethodPresent(typeNamePtr.Handle, methodNamePtr.Handle, &result) == 0)
+        if (s_statics.Value.IsMethodPresent(typeNamePtr.Handle, methodNamePtr.Handle, &result) == 0)
         {
             return result == 1;
         }
@@ -58,10 +68,15 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsMethodPresentWithArity(string typeName, string methodName, uint inputParameterCount)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var typeNamePtr = new HStringInterop(typeName);
         using var methodNamePtr = new HStringInterop(methodName);
         var result = 0;
-        if (s_statics.Value?.IsMethodPresentWithArity(typeNamePtr.Handle, methodNamePtr.Handle, inputParameterCount, &result) == 0)
+        if (s_statics.Value.IsMethodPresentWithArity(typeNamePtr.Handle, methodNamePtr.Handle, inputParameterCount, &result) == 0)
         {
             return result == 1;
         }
@@ -71,10 +86,15 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsEventPresent(string typeName, string eventName)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var typeNamePtr = new HStringInterop(typeName);
         using var eventNamePtr = new HStringInterop(eventName);
         var result = 0;
-        if (s_statics.Value?.IsEventPresent(typeNamePtr.Handle, eventNamePtr.Handle, &result) == 0)
+        if (s_statics.Value.IsEventPresent(typeNamePtr.Handle, eventNamePtr.Handle, &result) == 0)
         {
             return result == 1;
         }
@@ -84,10 +104,15 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsPropertyPresent(string typeName, string propertyName)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var typeNamePtr = new HStringInterop(typeName);
         using var propertyNamePtr = new HStringInterop(propertyName);
         var result = 0;
-        if (s_statics.Value?.IsPropertyPresent(typeNamePtr.Handle, propertyNamePtr.Handle, &result) == 0)
+        if (s_statics.Value.IsPropertyPresent(typeNamePtr.Handle, propertyNamePtr.Handle, &result) == 0)
         {
             return result == 1;
         }
@@ -97,10 +122,15 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsReadOnlyPropertyPresent(string typeName, string propertyName)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var typeNamePtr = new HStringInterop(typeName);
         using var propertyNamePtr = new HStringInterop(propertyName);
         var result = 0;
-        if (s_statics.Value?.IsReadOnlyPropertyPresent(typeNamePtr.Handle, propertyNamePtr.Handle, &result) == 0)
+        if (s_statics.Value.IsReadOnlyPropertyPresent(typeNamePtr.Handle, propertyNamePtr.Handle, &result) == 0)
         {
             return result == 1;
         }
@@ -110,10 +140,15 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsWriteablePropertyPresent(string typeName, string propertyName)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var typeNamePtr = new HStringInterop(typeName);
         using var propertyNamePtr = new HStringInterop(propertyName);
         var result = 0;
-        if (s_statics.Value?.IsWriteablePropertyPresent(typeNamePtr.Handle, propertyNamePtr.Handle, &result) == 0)
+        if (s_statics.Value.IsWriteablePropertyPresent(typeNamePtr.Handle, propertyNamePtr.Handle, &result) == 0)
         {
             return result == 1;
         }
@@ -123,10 +158,15 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsEnumNamedValuePresent(string enumTypeName, string valueName)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var enumTypeNamePtr = new HStringInterop(enumTypeName);
         using var valueNamePtr = new HStringInterop(valueName);
         var result = 0;
-        if (s_statics.Value?.IsEnumNamedValuePresent(enumTypeNamePtr.Handle, valueNamePtr.Handle, &result) == 0)
+        if (s_statics.Value.IsEnumNamedValuePresent(enumTypeNamePtr.Handle, valueNamePtr.Handle, &result) == 0)
         {
             return result == 1;
         }
@@ -136,9 +176,14 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsApiContractPresentByMajor(string contractName, ushort majorVersion)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var contractNamePtr = new HStringInterop(contractName);
         var result = 0;
-        if (s_statics.Value?.IsApiContractPresentByMajor(contractNamePtr.Handle, majorVersion, &result) == 0)
+        if (s_statics.Value.IsApiContractPresentByMajor(contractNamePtr.Handle, majorVersion, &result) == 0)
         {
             return result == 1;
         }
@@ -148,9 +193,14 @@ internal static unsafe class WinRTApiInformation
 
     public static bool IsApiContractPresentByMajorAndMinor(string contractName, ushort majorVersion, ushort minorVersion)
     {
+        if (s_statics.Value == null)
+        {
+            return false;
+        }
+
         using var contractNamePtr = new HStringInterop(contractName);
         var result = 0;
-        if (s_statics.Value?.IsApiContractPresentByMajorAndMinor(contractNamePtr.Handle, majorVersion, minorVersion, &result) == 0)
+        if (s_statics.Value.IsApiContractPresentByMajorAndMinor(contractNamePtr.Handle, majorVersion, minorVersion, &result) == 0)
         {
             return result == 1;
         }
