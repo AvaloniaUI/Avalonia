@@ -402,7 +402,7 @@ public class DispatcherTests
                 Assert.Throws<InvalidOperationException>(() => Dispatcher.UIThread.RunJobs());
             }
 
-            var avaloniaContext = new AvaloniaSynchronizationContext(true);
+            var avaloniaContext = new AvaloniaSynchronizationContext(Dispatcher.UIThread, DispatcherPriority.Default, true);
             SynchronizationContext.SetSynchronizationContext(avaloniaContext);
 
             var waitHandle = new ManualResetEvent(true);

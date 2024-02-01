@@ -86,6 +86,6 @@ public partial class Dispatcher : IDispatcher
     {
         DispatcherPriority.Validate(priority, nameof(priority));
         var index = priority - DispatcherPriority.MinValue;
-        return _priorityContexts[index] ??= new(priority);
+        return _priorityContexts[index] ??= new(this, priority);
     }
 }
