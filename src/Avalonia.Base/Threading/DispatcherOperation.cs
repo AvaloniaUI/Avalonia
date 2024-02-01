@@ -290,8 +290,10 @@ public class DispatcherOperation
                     tcs.SetException(e);
             }
 
-            if (ThrowOnUiThread)
+            if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
+            {
                 throw;
+            }
         }
     }
 
@@ -411,8 +413,10 @@ internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperatio
                     tcs.SetException(e);
             }
 
-            if (ThrowOnUiThread)
+            if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
+            {
                 throw;
+            }
         }
     }
 }

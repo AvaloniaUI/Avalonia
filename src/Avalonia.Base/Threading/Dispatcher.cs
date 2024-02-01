@@ -39,6 +39,9 @@ public partial class Dispatcher : IDispatcher
             MaximumInputStarvationTimeInExplicitProcessingExplicitMode;
         if (_backgroundProcessingImpl != null)
             _backgroundProcessingImpl.ReadyForBackgroundProcessing += OnReadyForExplicitBackgroundProcessing;
+
+        _unhandledExceptionEventArgs = new DispatcherUnhandledExceptionEventArgs(this);
+        _exceptionFilterEventArgs = new DispatcherUnhandledExceptionFilterEventArgs(this);
     }
     
     public static Dispatcher UIThread => s_uiThread ??= CreateUIThreadDispatcher();
