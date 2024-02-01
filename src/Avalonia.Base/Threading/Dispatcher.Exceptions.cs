@@ -4,7 +4,7 @@ namespace Avalonia.Threading;
 
 public partial class Dispatcher
 {
-    private static readonly object s_exceptionDataKey = new();
+    internal static readonly object ExceptionDataKey = new();
     private DispatcherUnhandledExceptionFilterEventHandler? _unhandledExceptionFilter;
 
     // Pre-allocated arguments for exception handling.
@@ -51,10 +51,10 @@ public partial class Dispatcher
         // see whether this dispatcher has already seen the exception.
         // This can happen when the dispatcher is re-entered via
         // PushFrame (or similar).
-        if (!e.Data.Contains(s_exceptionDataKey))
+        if (!e.Data.Contains(ExceptionDataKey))
         {
             // first time we've seen this exception - add data to the exception
-            e.Data.Add(s_exceptionDataKey, null);
+            e.Data.Add(ExceptionDataKey, null);
         }
         else
         {
