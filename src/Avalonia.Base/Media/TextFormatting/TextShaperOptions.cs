@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -7,8 +8,22 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly record struct TextShaperOptions
     {
+        // TODO12: Remove in 12.0.0 and make fontFeatures parameter in main ctor optional
+        public TextShaperOptions(
+            IGlyphTypeface typeface,
+            double fontRenderingEmSize = 12,
+            sbyte bidiLevel = 0,
+            CultureInfo? culture = null,
+            double incrementalTabWidth = 0,
+            double letterSpacing = 0)
+            : this(typeface, null, fontRenderingEmSize, bidiLevel, culture, incrementalTabWidth, letterSpacing)
+        {
+        }
+
+        // TODO12:Change signature in 12.0.0
         public TextShaperOptions(
             IGlyphTypeface typeface, 
+            IReadOnlyList<FontFeature>? fontFeatures,
             double fontRenderingEmSize = 12, 
             sbyte bidiLevel = 0, 
             CultureInfo? culture = null, 
@@ -21,6 +36,7 @@ namespace Avalonia.Media.TextFormatting
             Culture = culture;
             IncrementalTabWidth = incrementalTabWidth;
             LetterSpacing = letterSpacing;
+            FontFeatures = fontFeatures;
         }
 
         /// <summary>
@@ -52,5 +68,9 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         public double LetterSpacing { get; }
 
+        /// <summary>
+        /// Get features.
+        /// </summary>
+        public IReadOnlyList<FontFeature>? FontFeatures { get; } 
     }
 }
