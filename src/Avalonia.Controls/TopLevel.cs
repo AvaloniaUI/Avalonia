@@ -824,12 +824,16 @@ namespace Avalonia.Controls
         {
             if (PlatformImpl != null)
             {
-                if (e is RawPointerEventArgs pointerArgs)
+                Dispatcher.UIThread.Send(static state =>
                 {
-                    pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
-                }
+                    var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
+                    if (e is RawPointerEventArgs pointerArgs)
+                    {
+                        pointerArgs.InputHitTestResult = topLevel.InputHitTest(pointerArgs.Position);
+                    }
 
-                _inputManager?.ProcessInput(e);
+                    topLevel._inputManager?.ProcessInput(e);
+                }, (this, e), DispatcherPriority.Send);
             }
             else
             {
