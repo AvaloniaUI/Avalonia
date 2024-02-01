@@ -129,68 +129,60 @@ namespace Avalonia.Controls
 
             if (_root != null)
             {
-                _content = Content as Control ?? new PathIcon()
+                OnOrientationChanged();
+                
+                if (_root != null && _content != null)
                 {
-                    Height = DefaultIndicatorSize,
-                    Width = DefaultIndicatorSize,
-                    Name = "PART_Icon",
-                    Data = StreamGeometry.Parse(
-                        "M18.6195264,3.31842271 C19.0080059,3.31842271 19.3290603,3.60710385 19.3798716,3.9816481 L19.3868766,4.08577298 L19.3868766,6.97963208 C19.3868766,7.36811161 19.0981955,7.68916605 18.7236513,7.73997735 L18.6195264,7.74698235 L15.7256673,7.74698235 C15.3018714,7.74698235 14.958317,7.40342793 14.958317,6.97963208 C14.958317,6.59115255 15.2469981,6.27009811 15.6215424,6.21928681 L15.7256673,6.21228181 L16.7044011,6.21182461 C13.7917384,3.87107476 9.52212532,4.05209336 6.81933829,6.75488039 C3.92253872,9.65167996 3.92253872,14.34832 6.81933829,17.2451196 C9.71613786,20.1419192 14.4127779,20.1419192 17.3095775,17.2451196 C19.0725398,15.4821573 19.8106555,12.9925923 19.3476248,10.58925 C19.2674502,10.173107 19.5398064,9.77076216 19.9559494,9.69058758 C20.3720923,9.610413 20.7744372,9.88276918 20.8546118,10.2989121 C21.4129973,13.1971899 20.5217103,16.2033812 18.3947747,18.3303168 C14.8986373,21.8264542 9.23027854,21.8264542 5.73414113,18.3303168 C2.23800371,14.8341794 2.23800371,9.16582064 5.73414113,5.66968323 C9.05475132,2.34907304 14.3349409,2.18235834 17.8523166,5.16953912 L17.8521761,4.08577298 C17.8521761,3.66197713 18.1957305,3.31842271 18.6195264,3.31842271 Z")
-                };
-
-                _content.Loaded += (s, e) =>
-                {
-                    var composition = ElementComposition.GetElementVisual(_content);
-
-                    if (composition == null)
-                        return;
-
-                    var compositor = composition.Compositor;
-                    composition.Opacity = 0;
-
-                    var smoothRotationAnimation
-                        = compositor.CreateScalarKeyFrameAnimation();
-                    smoothRotationAnimation.Target = "RotationAngle";
-                    smoothRotationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                    smoothRotationAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-                    var opacityAnimation
-                        = compositor.CreateScalarKeyFrameAnimation();
-                    opacityAnimation.Target = "Opacity";
-                    opacityAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                    opacityAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-                    var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
-                    offsetAnimation.Target = "Offset";
-                    offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                    offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
-
-                    var scaleAnimation
-                        = compositor.CreateVector3KeyFrameAnimation();
-                    scaleAnimation.Target = "Scale";
-                    scaleAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                    scaleAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-                    var animation = compositor.CreateImplicitAnimationCollection();
-                    animation["RotationAngle"] = smoothRotationAnimation;
-                    animation["Offset"] = offsetAnimation;
-                    animation["Scale"] = scaleAnimation;
-                    animation["Opacity"] = opacityAnimation;
-
-                    composition.ImplicitAnimations = animation;
+                    _root.Children.Insert(0, _content);
+                    _content.VerticalAlignment = Layout.VerticalAlignment.Center;
+                    _content.HorizontalAlignment = Layout.HorizontalAlignment.Center;
 
                     UpdateContent();
-                };
-
-                if (_content != Content)
-                    SetCurrentValue(ContentProperty, _content);
-                else
-                    RaisePropertyChanged(ContentProperty, null, Content, Data.BindingPriority.Style, true);
-
-                OnOrientationChanged();
-
-                UpdateContent();
+                }
             }
+        }
+
+        private void OnContentLoaded(object? s, RoutedEventArgs e)
+        {
+            if (_content == null)
+                return;
+            
+            var composition = ElementComposition.GetElementVisual(_content);
+
+            if (composition == null) return;
+
+            var compositor = composition.Compositor;
+            composition.Opacity = 0;
+
+            var smoothRotationAnimation = compositor.CreateScalarKeyFrameAnimation();
+            smoothRotationAnimation.Target = "RotationAngle";
+            smoothRotationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            smoothRotationAnimation.Duration = TimeSpan.FromMilliseconds(100);
+
+            var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Target = "Opacity";
+            opacityAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(100);
+
+            var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+            offsetAnimation.Target = "Offset";
+            offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
+
+            var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Target = "Scale";
+            scaleAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(100);
+
+            var animation = compositor.CreateImplicitAnimationCollection();
+            animation["RotationAngle"] = smoothRotationAnimation;
+            animation["Offset"] = offsetAnimation;
+            animation["Scale"] = scaleAnimation;
+            animation["Opacity"] = opacityAnimation;
+
+            composition.ImplicitAnimations = animation;
+
+            UpdateContent();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -350,14 +342,27 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ContentProperty)
             {
+                if (change.OldValue is Control c)
+                {
+                    c.Loaded -= OnContentLoaded;
+                    _root?.Children.Remove(c);
+                }
+
+                _content = change.NewValue as Control;
+
+                if (_content != null)
+                {
+                    _content.Loaded += OnContentLoaded;
+                }
+
                 if (_root != null && _content != null)
                 {
                     _root.Children.Insert(0, _content);
                     _content.VerticalAlignment = Layout.VerticalAlignment.Center;
                     _content.HorizontalAlignment = Layout.HorizontalAlignment.Center;
-                }
 
-                UpdateContent();
+                    UpdateContent();
+                }
             }
             else if (change.Property == OrientationProperty)
             {
