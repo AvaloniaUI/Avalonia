@@ -3,7 +3,6 @@ using Avalonia.Platform;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using WebKit;
 using Avalonia.iOS;
 using ControlCatalog.Pages;
 
@@ -13,14 +12,16 @@ public class EmbedSampleIOS : INativeDemoControl
 {
     public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
+#if !TVOS
         if (isSecond)
         {
-            var webView = new WKWebView(CGRect.Empty, new WKWebViewConfiguration());
+            var webView = new WebKit.WKWebView(CGRect.Empty, new WebKit.WKWebViewConfiguration());
             webView.LoadRequest(new NSUrlRequest(new NSUrl("https://www.apple.com/")));
 
             return new UIViewControlHandle(webView);
         }
         else
+#endif
         {
             var button = new UIButton();
             var clickCount = 0;

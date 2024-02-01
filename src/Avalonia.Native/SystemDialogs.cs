@@ -41,7 +41,7 @@ namespace Avalonia.Native
                                     options.AllowMultiple.AsComBool(),
                                     options.Title ?? string.Empty,
                                     suggestedDirectory,
-                                    string.Empty,
+                                    options.SuggestedFileName ?? string.Empty,
                                     fileTypes);
 
             var result = await events.Task.ConfigureAwait(false);
