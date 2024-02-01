@@ -635,11 +635,12 @@ public partial class Dispatcher
     internal void Send(SendOrPostCallback action, object? arg, DispatcherPriority priority)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
-        if (CheckAccess() && priority == DispatcherPriority.Send)
+        if (priority == DispatcherPriority.Send && CheckAccess())
         {
             try
             {
-                action(arg);
+                using (AvaloniaSynchronizationContext.Ensure(this, priority))
+                    action(arg);
             }
             catch (Exception ex) when (ExceptionFilter(ex))
             {
