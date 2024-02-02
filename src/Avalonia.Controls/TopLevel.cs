@@ -45,7 +45,8 @@ namespace Avalonia.Controls
         ICloseable,
         IStyleHost,
         ILogicalRoot,
-        ITextInputMethodRoot
+        ITextInputMethodRoot,
+        IMediaProviderHost
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -137,6 +138,7 @@ namespace Avalonia.Controls
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
+        private IMediaProvider? _mediaProvider;
         private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
         
         /// <summary>
@@ -546,6 +548,13 @@ namespace Avalonia.Controls
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
             ?? new NoopStorageProvider();
+        
+        /// <summary>
+        /// Media service for querying screen size and device capabilities.
+        /// </summary>
+        public IMediaProvider MediaProvider => _mediaProvider
+            ??= PlatformImpl?.TryGetFeature<IMediaProvider>()
+            ?? new VisualMediaProvider(this);
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
         public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();

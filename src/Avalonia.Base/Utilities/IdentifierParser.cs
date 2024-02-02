@@ -24,6 +24,11 @@ namespace Avalonia.Utilities
             }
         }
 
+        public static ReadOnlySpan<char> ParseNumber(this ref CharacterReader r)
+        {
+            return r.TakeWhile(c => IsValidNumberChar(c));
+        }
+
         private static bool IsValidIdentifierStart(char c)
         {
             return char.IsLetter(c) || c == '_';
@@ -44,6 +49,12 @@ namespace Avalonia.Utilities
                        cat == UnicodeCategory.Format ||
                        cat == UnicodeCategory.DecimalDigitNumber;
             }
+        }
+
+        private static bool IsValidNumberChar(char c)
+        {
+            var cat = CharUnicodeInfo.GetUnicodeCategory(c);
+            return cat == UnicodeCategory.DecimalDigitNumber;
         }
     }
 }

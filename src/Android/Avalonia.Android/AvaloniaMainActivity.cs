@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -19,6 +20,9 @@ namespace Avalonia.Android
         public Action<int, string[], Permission[]> RequestPermissionsResult { get; set; }
 
         public event EventHandler<AndroidBackRequestedEventArgs> BackRequested;
+
+        public event EventHandler ConfigurationChanged;
+
         event EventHandler<ActivatedEventArgs> IAvaloniaActivity.Activated
         {
             add { _onActivated += value; }
@@ -31,6 +35,7 @@ namespace Avalonia.Android
             remove { _onDeactivated -= value; }
         }
 
+
         public override void OnBackPressed()
         {
             var eventArgs = new AndroidBackRequestedEventArgs();
@@ -41,6 +46,13 @@ namespace Avalonia.Android
             {
                 base.OnBackPressed();
             }
+        }
+
+        public override void OnConfigurationChanged(Configuration newConfig)
+        {
+            base.OnConfigurationChanged(newConfig);
+
+            ConfigurationChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected override void OnCreate(Bundle savedInstanceState)

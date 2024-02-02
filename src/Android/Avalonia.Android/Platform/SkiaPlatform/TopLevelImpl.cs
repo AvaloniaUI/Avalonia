@@ -43,6 +43,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly IStorageProvider _storageProvider;
         private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
         private readonly AndroidInsetsManager _insetsManager;
+        private readonly AndroidMediaProvider _mediaProvider;
         private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
         private WindowTransparencyLevel _transparencyLevel;
@@ -55,6 +56,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
+            _mediaProvider = new AndroidMediaProvider(this);
             _clipboard = new ClipboardImpl(avaloniaView.Context?.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
 
             RenderScaling = _view.Scaling;
@@ -161,11 +163,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         protected virtual void OnResized(Size size)
         {
             Resized?.Invoke(size, WindowResizeReason.Unspecified);
+
+            _mediaProvider?.RaiseSizeChanged();
         }
 
         internal void Resize(Size size)
         {
             Resized?.Invoke(size, WindowResizeReason.Layout);
+
+            _mediaProvider?.RaiseSizeChanged();
         }
 
         class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo
@@ -402,6 +408,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if(featureType == typeof(IClipboard))
             {
                 return _clipboard;
+            }
+
+            if(featureType == typeof(IMediaProvider))
+            {
+                return _mediaProvider;
             }
 
             return null;
