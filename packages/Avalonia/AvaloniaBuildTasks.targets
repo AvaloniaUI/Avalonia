@@ -164,7 +164,7 @@
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
       Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:NoWarn=$(_NoWarnForExec) /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
   </Target>
-  
+
   
   <ItemGroup>
     <UpToDateCheckInput Include="@(AvaloniaResource)" />
@@ -218,10 +218,11 @@
   </Target>
 
   <!--
-  $(IntermediateOutputPath)/Avalonia/references is using from AvaloniaVS for retrive library refernces.
-  This target generate $(IntermediateOutputPath)/Avalonia/references for in XApp Template.
+  $(IntermediateOutputPath)/Avalonia/references is using from AvaloniaVS for retrieve library references.
+  This target generate $(IntermediateOutputPath)/Avalonia/references for in xplat Template
+  (see: https://github.com/AvaloniaUI/avalonia-dotnet-templates/tree/e4a489ae828f005f625145c563785174403e267c/templates/csharp/xplat).
   -->
-  <Target Name="GenerateIntelliSenseReference"
+  <Target Name="GenerateIntellisenseReferences"
           AfterTargets="AfterCompile"
           Condition="('@(AvaloniaResource->Count())' == 0) and ('@(AvaloniaXaml->Count())' == 0)">
     <PropertyGroup>
