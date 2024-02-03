@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia
@@ -407,6 +409,19 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="binding">The binding.</param>
+        /// <returns>
+        /// The binding expression which represents the binding instance on this object.
+        /// </returns>
+        public BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding)
+        {
+            return Bind(property, binding, null);
+        }
+
+        /// <summary>
         /// Binds a <see cref="AvaloniaProperty"/> to an observable.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -440,7 +455,21 @@ namespace Avalonia
             VerifyAccess();
             ValidatePriority(priority);
 
-            return _values.AddBinding(property, source, priority);
+            if (source is IBinding2 b)
+            {
+                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
+                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                if (priority != expression.Priority)
+                    throw new NotSupportedException(
+                        $"The binding priority passed to AvaloniaObject.Bind ('{priority}') " +
+                        "conflicts with the binding priority of the provided binding expression " +
+                        $" ({expression.Priority}').");
+                return GetValueStore().AddBinding(property, expression);
+            }
+            else
+            {
+                return _values.AddBinding(property, source, priority);
+            }
         }
 
         /// <summary>
@@ -512,7 +541,16 @@ namespace Avalonia
                 throw new ArgumentException($"The property {property.Name} is readonly.");
             }
 
-            return _values.AddBinding(property, source);
+            if (source is IBinding2 b)
+            {
+                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
+                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                return GetValueStore().AddBinding(property, expression);
+            }
+            else
+            {
+                return _values.AddBinding(property, source);
+            }
         }
 
         /// <summary>
@@ -573,6 +611,30 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
 
+        /// <summary>
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="binding">The binding.</param>
+        /// <param name="anchor">
+        /// An optional anchor from which to locate required context. When binding to objects that
+        /// are not in the logical tree, certain types of binding need an anchor into the tree in 
+        /// order to locate named controls or resources. The <paramref name="anchor"/> parameter 
+        /// can be used to provide this context.
+        /// </param>
+        /// <returns>
+        /// The binding expression which represents the binding instance on this object.
+        /// </returns>
+        internal BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding, object? anchor)
+        {
+            if (binding is not IBinding2 b)
+                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
+            if (b.Instance(this, property, anchor) is not UntypedBindingExpressionBase expression)
+                throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+
+            return GetValueStore().AddBinding(property, expression);
+        }
+
         internal void AddInheritanceChild(AvaloniaObject child)
         {
             _inheritanceChildren ??= new List<AvaloniaObject>();
@@ -607,22 +669,6 @@ namespace Avalonia
 
         internal ValueStore GetValueStore() => _values;
         internal IReadOnlyList<AvaloniaObject>? GetInheritanceChildren() => _inheritanceChildren;
-
-        /// <summary>
-        /// Gets a logger to which a binding warning may be written.
-        /// </summary>
-        /// <param name="property">The property that the error occurred on.</param>
-        /// <param name="e">The binding exception, if any.</param>
-        /// <remarks>
-        /// This is overridden in <see cref="Visual"/> to prevent logging binding errors when a
-        /// control is not attached to the visual tree.
-        /// </remarks>
-        internal virtual ParametrizedLogger? GetBindingWarningLogger(
-            AvaloniaProperty property,
-            Exception? e)
-        {
-            return Logger.TryGet(LogEventLevel.Warning, LogArea.Binding);
-        }
 
         /// <summary>
         /// Called to update the validation state for properties for which data validation is
@@ -757,8 +803,6 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         internal void SetDirectValueUnchecked<T>(DirectPropertyBase<T> property, BindingValue<T> value)
         {
-            LoggingUtils.LogIfNecessary(this, property, value);
-
             switch (value.Type)
             {
                 case BindingValueType.UnsetValue:

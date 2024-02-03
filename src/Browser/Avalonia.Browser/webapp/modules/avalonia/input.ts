@@ -245,6 +245,32 @@ export class InputHelper {
         return pointerEvent.getCoalescedEvents();
     }
 
+    public static subscribeKeyboardGeometryChange(
+        element: HTMLInputElement,
+        handler: (args: any) => boolean) {
+        if ("virtualKeyboard" in navigator) {
+            // (navigator as any).virtualKeyboard.overlaysContent = true;
+            (navigator as any).virtualKeyboard.addEventListener("geometrychange", (event: any) => {
+                const elementRect = element.getBoundingClientRect();
+                const keyboardRect = event.target.boundingRect as DOMRect;
+                handler({
+                    x: keyboardRect.x - elementRect.x,
+                    y: keyboardRect.y - elementRect.y,
+                    width: keyboardRect.width,
+                    height: keyboardRect.height
+                });
+            });
+        }
+    }
+
+    public static subscribeVisibilityChange(
+        handler: (state: boolean) => void): boolean {
+        document.addEventListener("visibilitychange", () => {
+            handler(document.visibilityState === "visible");
+        });
+        return document.visibilityState === "visible";
+    }
+
     public static clearInput(inputElement: HTMLInputElement) {
         inputElement.value = "";
     }

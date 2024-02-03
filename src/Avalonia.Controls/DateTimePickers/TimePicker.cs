@@ -5,6 +5,7 @@ using Avalonia.Data;
 using Avalonia.Layout;
 using System;
 using System.Globalization;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
@@ -43,7 +44,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<TimeSpan?> SelectedTimeProperty =
             AvaloniaProperty.Register<TimePicker, TimeSpan?>(nameof(SelectedTime),
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         // Template Items
         private TimePickerPresenter? _presenter;
@@ -227,8 +228,7 @@ namespace Avalonia.Controls
                 _minuteText.Text = newTime.ToString("mm");
                 PseudoClasses.Set(":hasnotime", false);
 
-                _periodText.Text = time.Value.Hours >= 12 ? CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator :
-                    CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator;
+                _periodText.Text = time.Value.Hours >= 12 ? TimeUtils.GetPMDesignator() : TimeUtils.GetAMDesignator();
             }
             else
             {
@@ -236,8 +236,7 @@ namespace Avalonia.Controls
                 _minuteText.Text = "minute";
                 PseudoClasses.Set(":hasnotime", true);
 
-                _periodText.Text = DateTime.Now.Hour >= 12 ? CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator :
-                    CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator;
+                _periodText.Text = DateTime.Now.Hour >= 12 ?  TimeUtils.GetPMDesignator() :  TimeUtils.GetAMDesignator();
             }
         }
 
@@ -290,6 +289,14 @@ namespace Avalonia.Controls
         public void Clear()
         {
             SetCurrentValue(SelectedTimeProperty, null);
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
+
+            if (property == SelectedTimeProperty)
+                DataValidationErrors.SetError(this, error);
         }
     }
 }

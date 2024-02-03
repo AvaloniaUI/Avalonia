@@ -209,6 +209,7 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
             CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, hint => PlatformImpl!.SetExtendClientAreaChromeHints(hint));
+            CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, height => PlatformImpl!.SetExtendClientAreaTitleBarHeightHint(height));
 
             CreatePlatformImplBinding(MinWidthProperty, UpdateMinMaxSize);
             CreatePlatformImplBinding(MaxWidthProperty, UpdateMinMaxSize);
@@ -477,16 +478,11 @@ namespace Avalonia.Controls
                 child.CloseInternal();
             }
 
-            if (Owner is Window owner)
-            {
-                owner.RemoveChild(this);
-            }
-
-            Owner = null;
-
             PlatformImpl?.Dispose();
 
             _showingAsDialog = false;
+
+            Owner = null;
         }
 
         private bool ShouldCancelClose(WindowClosingEventArgs args)
@@ -553,11 +549,6 @@ namespace Avalonia.Controls
 
                 StopRendering();
 
-                if (Owner is Window owner)
-                {
-                    owner.RemoveChild(this);
-                }
-
                 if (_children.Count > 0)
                 {
                     foreach (var child in _children.ToArray())
@@ -566,10 +557,11 @@ namespace Avalonia.Controls
                     }
                 }
 
-                Owner = null;
                 PlatformImpl?.Hide();
                 IsVisible = false;
                 _shown = false;
+
+                Owner = null;
             }
         }
 
@@ -688,13 +680,7 @@ namespace Avalonia.Controls
 
                 LayoutManager.ExecuteInitialLayoutPass();
 
-                if (PlatformImpl != null && owner?.PlatformImpl is not null)
-                {
-                    PlatformImpl.SetParent(owner.PlatformImpl);
-                }
-
                 Owner = owner;
-                owner?.AddChild(this, false);
 
                 SetWindowStartupLocation(owner);
 
@@ -769,9 +755,7 @@ namespace Avalonia.Controls
 
                 var result = new TaskCompletionSource<TResult>();
 
-                PlatformImpl?.SetParent(owner.PlatformImpl!);
                 Owner = owner;
-                owner.AddChild(this, true);
 
                 SetWindowStartupLocation(owner);
 
@@ -973,11 +957,6 @@ namespace Avalonia.Controls
 
             base.HandleClosed();
 
-            if (Owner is Window owner)
-            {
-                owner.RemoveChild(this);
-            }
-
             Owner = null;
         }
 
@@ -1029,6 +1008,20 @@ namespace Avalonia.Controls
                 var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
+            }
+
+            if (change.Property == OwnerProperty)
+            {
+                var oldParent = change.OldValue as Window;
+                var newParent = change.NewValue as Window;
+
+                oldParent?.RemoveChild(this);
+                newParent?.AddChild(this, _showingAsDialog);
+
+                if (PlatformImpl is IWindowImpl impl)
+                {
+                    impl.SetParent(_showingAsDialog ? newParent?.PlatformImpl! : (newParent?.PlatformImpl ?? null));
+                }
             }
         }
 

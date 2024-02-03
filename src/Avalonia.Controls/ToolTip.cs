@@ -3,6 +3,7 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -76,6 +77,9 @@ namespace Avalonia.Controls
             VerticalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
             PlacementProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
         }
+
+        internal Control? AdornedControl { get; private set; }
+        internal event EventHandler? Closed;
 
         /// <summary>
         /// Gets the value of the ToolTip.Tip attached property.
@@ -213,31 +217,32 @@ namespace Avalonia.Controls
         {
             var control = (Control)e.Sender;
             var newValue = (bool)e.NewValue!;
-            ToolTip? toolTip;
 
             if (newValue)
             {
                 var tip = GetTip(control);
                 if (tip == null) return;
 
-                toolTip = control.GetValue(ToolTipProperty);
+                var toolTip = control.GetValue(ToolTipProperty);
                 if (toolTip == null || (tip != toolTip && tip != toolTip.Content))
                 {
                     toolTip?.Close();
 
                     toolTip = tip as ToolTip ?? new ToolTip { Content = tip };
                     control.SetValue(ToolTipProperty, toolTip);
+                    toolTip.SetValue(ThemeVariant.RequestedThemeVariantProperty, control.ActualThemeVariant);
                 }
 
+                toolTip.AdornedControl = control;
                 toolTip.Open(control);
+                toolTip?.UpdatePseudoClasses(newValue);
             }
-            else
+            else if (control.GetValue(ToolTipProperty) is { } toolTip)
             {
-                toolTip = control.GetValue(ToolTipProperty);
-                toolTip?.Close();
+                toolTip.AdornedControl = null;
+                toolTip.Close();
+                toolTip?.UpdatePseudoClasses(newValue);
             }
-
-            toolTip?.UpdatePseudoClasses(newValue);
         }
 
         private static void RecalculatePositionOnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
@@ -291,6 +296,7 @@ namespace Avalonia.Controls
                 _popupHost.Dispose();
                 _popupHost = null;
                 _popupHostChangedHandler?.Invoke(null);
+                Closed?.Invoke(this, EventArgs.Empty);
             }
         }
 

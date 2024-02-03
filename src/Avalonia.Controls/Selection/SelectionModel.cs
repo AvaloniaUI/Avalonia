@@ -69,6 +69,18 @@ namespace Avalonia.Controls.Selection
             get => _selectedIndex;
             set
             {
+                if (_operation is not null && _operation.UpdateCount == 0)
+                {
+                    // An operation is in the process of being committed. In this case, if the new
+                    // value for SelectedIndex is unchanged then we need to ignore it. It could be
+                    // the result of a two-way binding to SelectedIndex writing back to the
+                    // property. The binding system should really be fixed to ensure that it's not
+                    // writing back the same value, but this is a workaround until the binding
+                    // refactor is complete. See #13676.
+                    if (value == _selectedIndex)
+                        return;
+                }
+
                 using var update = BatchUpdate();
                 Clear();
                 Select(value);
@@ -674,7 +686,37 @@ namespace Avalonia.Controls.Selection
                         indexesChanged |= CommitDeselect(range.Begin, range.End) > 0;
                     }
                 }
+                
+                if (raisePropertyChanged)
+                {
+                    if (oldSelectedIndex != _selectedIndex)
+                    {
+                        indexesChanged = true;
+                        RaisePropertyChanged(nameof(SelectedIndex));
+                    }
 
+                    if (oldSelectedIndex != _selectedIndex || operation.IsSourceUpdate)
+                    {
+                        RaisePropertyChanged(nameof(SelectedItem));
+                    }
+
+                    if (oldAnchorIndex != _anchorIndex)
+                    {
+                        indexesChanged = true;
+                        RaisePropertyChanged(nameof(AnchorIndex));
+                    }
+
+                    if (indexesChanged)
+                    {
+                        RaisePropertyChanged(nameof(SelectedIndexes));
+                    }
+
+                    if (indexesChanged || operation.IsSourceUpdate)
+                    {
+                        RaisePropertyChanged(nameof(SelectedItems));
+                    }
+                } 
+                
                 if (SelectionChanged is not null || _untypedSelectionChanged is not null)
                 {
                     IReadOnlyList<IndexRange>? deselected = operation.DeselectedRanges;
@@ -713,36 +755,6 @@ namespace Avalonia.Controls.Selection
                             SelectedItems<T>.Create(selected, Source is not null ? ItemsView : null));
                         SelectionChanged?.Invoke(this, e);
                         _untypedSelectionChanged?.Invoke(this, e);
-                    }
-                }
-
-                if (raisePropertyChanged)
-                {
-                    if (oldSelectedIndex != _selectedIndex)
-                    {
-                        indexesChanged = true;
-                        RaisePropertyChanged(nameof(SelectedIndex));
-                    }
-
-                    if (oldSelectedIndex != _selectedIndex || operation.IsSourceUpdate)
-                    {
-                        RaisePropertyChanged(nameof(SelectedItem));
-                    }
-
-                    if (oldAnchorIndex != _anchorIndex)
-                    {
-                        indexesChanged = true;
-                        RaisePropertyChanged(nameof(AnchorIndex));
-                    }
-
-                    if (indexesChanged)
-                    {
-                        RaisePropertyChanged(nameof(SelectedIndexes));
-                    }
-
-                    if (indexesChanged || operation.IsSourceUpdate)
-                    {
-                        RaisePropertyChanged(nameof(SelectedItems));
                     }
                 }
             }

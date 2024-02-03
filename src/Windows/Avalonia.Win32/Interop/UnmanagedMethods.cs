@@ -1151,6 +1151,9 @@ namespace Avalonia.Win32.Interop
             uint uStartScan, uint cScanLines,
            IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
 
+        [DllImport("gdi32.dll", SetLastError = false, ExactSpelling = true)]
+        public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
+
         [DllImport("user32.dll")]
         public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
@@ -1180,7 +1183,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
         public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
+        
+        public const int SC_MOUSEMOVE = 0xf012;
+ 
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+        
         [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
         public static extern IntPtr DispatchMessage(ref MSG lpmsg);
 
@@ -1318,6 +1326,10 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr CreateIconIndirect([In] ref ICONINFO iconInfo);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr CreateIconFromResourceEx(byte* pbIconBits, uint cbIconBits,
+            int fIcon, int dwVersion, int csDesired, int cyDesired, int flags);
 
         [DllImport("user32.dll")]
         public static extern bool DestroyIcon(IntPtr hIcon);
@@ -1474,18 +1486,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "SetCursor")]
         internal static extern IntPtr SetCursor(IntPtr hCursor);
-
+        
         [DllImport("ole32.dll", PreserveSig = true)]
-        internal static extern int CoCreateInstance(ref Guid clsid,
-            IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);
+        internal static extern int CoCreateInstance(in Guid clsid,
+            IntPtr ignore1, int ignore2, in Guid iid, [Out] out IntPtr pUnkOuter);
 
-        [DllImport("ole32.dll", PreserveSig = true)]
-        internal static extern int CoCreateInstance(ref Guid clsid,
-            IntPtr ignore1, int ignore2, ref Guid iid, [Out] out IntPtr pUnkOuter);
-
-        internal static T CreateInstance<T>(ref Guid clsid, ref Guid iid) where T : IUnknown
+        internal static T CreateInstance<T>(in Guid clsid, in Guid iid) where T : IUnknown
         {
-            var hresult = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out IntPtr pUnk);
+            var hresult = CoCreateInstance(in clsid, IntPtr.Zero, 1, in iid, out IntPtr pUnk);
             if (hresult != 0)
             {
                 throw new COMException("CreateInstance", hresult);
@@ -1606,6 +1614,8 @@ namespace Avalonia.Win32.Interop
         public static extern bool CloseHandle(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
         public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateBitmap(int width, int height, int planes, int bitCount, IntPtr data);
         [DllImport("gdi32.dll")]
         public static extern int DeleteObject(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
@@ -1704,8 +1714,8 @@ namespace Avalonia.Win32.Interop
         [DllImport("dwmapi.dll")]
         public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
 
-        [DllImport("dwmapi.dll")]
-        public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
+        [DllImport("dwmapi.dll", SetLastError = false)]
+        public static extern int DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
         
         [Flags]
         public enum LayeredWindowFlags
@@ -1732,14 +1742,6 @@ namespace Avalonia.Win32.Interop
             public bool fEnable;
             public IntPtr hRgnBlur;
             public bool fTransitionOnMaximized;
-
-            public DWM_BLURBEHIND(bool enabled)
-            {
-                fEnable = enabled;
-                hRgnBlur = IntPtr.Zero;
-                fTransitionOnMaximized = false;
-                dwFlags = DWM_BB.Enable;
-            }
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1828,22 +1830,6 @@ namespace Avalonia.Win32.Interop
             }
 
             return result;
-        }
-
-        internal static int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data)
-        {
-            var user32 = LoadLibrary("user32.dll");
-            var pfnSetWindowCompositionAttribute = (delegate* unmanaged[Stdcall]<IntPtr, WindowCompositionAttributeData*, int>)GetProcAddress(user32, nameof(SetWindowCompositionAttribute));
-            if (pfnSetWindowCompositionAttribute == null)
-            {
-                // This preserves the same behavior as using the DllImport attribute.
-                throw new EntryPointNotFoundException("The unsupported SetWindowCompositionAttribute-function has been removed from the operating system.");
-            }
-
-            fixed (WindowCompositionAttributeData* pData = &data)
-            {
-                return pfnSetWindowCompositionAttribute(hwnd, pData);
-            }
         }
 
         [Flags]
@@ -2109,6 +2095,8 @@ namespace Avalonia.Win32.Interop
         public enum DEVICECAP
         {
             HORZRES = 8,
+            BITSPIXEL = 12,
+            PLANES = 14,
             DESKTOPHORZRES = 118
         }
 

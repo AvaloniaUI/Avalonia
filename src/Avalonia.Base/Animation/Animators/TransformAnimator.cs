@@ -92,7 +92,7 @@ namespace Avalonia.Animation.Animators
             return null;
         }
 
-        /// <inheritdocs/> 
+        /// <inheritdoc/> 
         public override double Interpolate(double p, double o, double n) => 0;
     }
 }

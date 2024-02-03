@@ -183,6 +183,37 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("bar", presenter2.Content);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Transition_Should_Be_Reversed_If_Property_Is_Set(bool reversed)
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var (target, transition) = CreateTarget("foo");
+            var presenter2 = GetContentPresenters2(target);
+
+            target.IsTransitionReversed = reversed;
+
+            target.Content = "bar";
+
+            var startedRaised = 0;
+
+            transition.Started += (from, to, forward) =>
+            {
+                Assert.Equal(reversed, !forward);
+
+                ++startedRaised;
+            };
+
+            Layout(target);
+            sync.ExecutePostedCallbacks();
+
+            Assert.Equal(1, startedRaised);
+            Assert.Equal("foo", target.Presenter!.Content);
+            Assert.Equal("bar", presenter2.Content);
+        }
+
         [Fact]
         public void Logical_Children_Should_Not_Be_Duplicated()
         {
@@ -209,6 +240,28 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, target.LogicalChildren.Count);
             Assert.Equal(target.LogicalChildren[0], childControl);
+        }
+
+        [Fact]
+        public void Old_Content_Should_Be_Null_When_New_Content_Is_Old_one()
+        {
+            using var app = Start();
+            var (target, transition) = CreateTarget("");
+            var presenter2 = GetContentPresenters2(target);
+            target.PageTransition = null;
+
+            var childControl = new Control();
+            target.Presenter!.Content = childControl;
+
+            const string fakePage1 = "fakePage1";
+            const string fakePage2 = "fakePage2";
+
+            target.Presenter!.Content = fakePage1;
+            target.Presenter!.Content = fakePage2;
+            target.Presenter!.Content = fakePage1;
+
+            Assert.Equal(fakePage1, target.Presenter!.Content);
+            Assert.Equal(null, presenter2.Content);
         }
 
         private static IDisposable Start()

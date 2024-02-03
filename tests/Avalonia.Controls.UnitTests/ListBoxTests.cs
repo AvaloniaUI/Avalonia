@@ -181,10 +181,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = ListBoxTemplate(),
                     DataContext = "Base",
-                    DataTemplates =
-                    {
-                        new FuncDataTemplate<Item>((x, _) => new Button { Content = x })
-                    },
+                    ItemTemplate = new FuncDataTemplate<Item>((x, _) => new Button { Content = x }),
                     ItemsSource = items,
                 };
 
@@ -219,6 +216,9 @@ namespace Avalonia.Controls.UnitTests
                 // Make sure we're virtualized and first item is selected.
                 Assert.Equal(10, target.Presenter.Panel.Children.Count);
                 Assert.True(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
+
+                // The selected item must not be the anchor, otherwise it won't get recycled.
+                target.Selection.AnchorIndex = -1;
 
                 // Scroll down a page.
                 target.Scroll.Offset = new Vector(0, 10);
@@ -1289,6 +1289,55 @@ namespace Avalonia.Controls.UnitTests
                 RaiseKeyEvent(target, Key.Space, KeyModifiers.None);
 
                 Assert.Equal(1, nKeyDown);
+            }
+        }
+
+        [Fact]
+        public void ListBoxItem_Should_Not_Block_Tapped_Events()
+        {
+
+            // #13474
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+
+                Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+                ulong nextStamp = 1;
+
+                var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    ItemsSource = items,
+                    SelectionMode = SelectionMode.Toggle,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
+                };
+
+                Prepare(target);
+
+                var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
+
+                var item = lbItems[0];
+
+                int tappedCount = 0;
+                target.Tapped += (s, e) =>
+                {
+                    tappedCount++;
+                };
+
+                _mouse.Click(item);
+                Assert.Equal(1, tappedCount);
+
+                // Raise PointerPressed and PointerReleased events with the Left Button pressed.  TouchTestHelper 
+                // assumes no button pressed, which prevents it from generating Tapped events, or I would use that.
+
+                item.RaiseEvent(new PointerPressedEventArgs(item, _pointer, (Visual)item, default, nextStamp++,
+                    new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None));
+
+
+                item.RaiseEvent(new PointerReleasedEventArgs(item, _pointer, (Visual)item, default, nextStamp++,
+                    PointerPointProperties.None, KeyModifiers.None, MouseButton.Left));
+
+                Assert.Equal(2, tappedCount);
             }
         }
 

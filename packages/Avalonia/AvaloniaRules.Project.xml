@@ -18,11 +18,6 @@
                 Description="Enable/Disable XAML Compiling"
                 Category="Compile" />
 
-  <BoolProperty Name="AvaloniaXamlIlVerifyIl"
-                DisplayName="Verify IL"
-                Description="Enable/Disable Verify IL after XAML Compiling"
-                Category="Compile" />
-
   <BoolProperty Name="AvaloniaUseCompiledBindingsByDefault"
               DisplayName="Use CompiledBindings"
               Description="Use compiled bindings by default"
@@ -32,10 +27,15 @@
   <!-- Debug -->
 
   <BoolProperty Name="AvaloniaXamlIlDebuggerLaunch"
-          DisplayName="Debug XAML Compiler"
-          Description="Allow debug XAML compilation"
-          Category="Debug" />
+                DisplayName="Debug XAML Compiler"
+                Description="Allow debug XAML compilation"
+                Category="Debug" />
 
+  <BoolProperty Name="AvaloniaXamlVerboseExceptions"
+                DisplayName="Report verbose internal exceptions with stack traces"
+                Description="Also includes inner exceptions"
+                Category="Debug" />
+  
   <EnumProperty Name="AvaloniaXamlReportImportance"
                 DisplayName="XAML Report Importance"
                 Description="Provides levels of importance for XAML Compiler messages"
@@ -50,7 +50,7 @@
   <BoolProperty Name="AvaloniaNameGeneratorIsEnabled"
               DisplayName="Use Name Generator"
               Description="Enable/Disable Avalonia Name Source Generator"
-              HelpUrl="https://github.com/AvaloniaUI/Avalonia/blob/master/src/tools/Avalonia.Generators/README.md"
+              HelpUrl="https://github.com/AvaloniaUI/Avalonia/blob/master/src/tools/Avalonia.Generators/README.md#advanced-usage"
               Category="NameGenerator" />
 
   <EnumProperty Name="AvaloniaNameGeneratorBehavior"
@@ -66,6 +66,18 @@
       </NameValuePair>
     </EnumProperty.Metadata>
   </EnumProperty>
+
+  <BoolProperty Name="AvaloniaNameGeneratorAttachDevTools"
+              DisplayName="Attach Dev Tools"
+              Description="Allowed to automatic attach DevTools in Window InitializeComponent method."
+              Category="NameGenerator">
+    <BoolProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorBehavior" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorBehavior" "InitializeComponent")</NameValuePair.Value>
+      </NameValuePair>
+    </BoolProperty.Metadata>
+  </BoolProperty>
 
   <EnumProperty Name="AvaloniaNameGeneratorDefaultFieldModifier"
               DisplayName="Default Class Field/Property Modifier"

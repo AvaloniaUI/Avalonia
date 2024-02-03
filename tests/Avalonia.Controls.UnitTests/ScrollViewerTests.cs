@@ -359,6 +359,46 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Deferred_Scrolling_Defers_Scrolling_Until_Pointer_Up()
+        {
+            var content = new TestContent();
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                IsDeferredScrollingEnabled = true,
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // We're working in absolute coordinates (i.e. relative to the root) and clicking on
+            // the center of the vertical thumb.
+            var thumb = GetVerticalThumb(target);
+            var p = GetRootPoint(thumb, thumb.Bounds.Center);
+
+            Assert.Equal(Vector.Zero, target.Offset);
+            Assert.Equal(0, thumb.Bounds.Top);
+
+            // Press the mouse button in the center of the thumb.
+            _mouse.Down(thumb, position: p);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Drag the thumb down 100 pixels.
+            _mouse.Move(thumb, p += new Vector(0, 100));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(Vector.Zero, target.Offset); // no change to scroll...
+            Assert.Equal(100, thumb.Bounds.Top); // ...but the Thumb has moved
+
+            // Release the mouse
+            _mouse.Up(thumb, position: p);
+
+            Assert.Equal(new Vector(0, 200), target.Offset);
+            Assert.Equal(100, thumb.Bounds.Top);
+        }
+
+        [Fact]
         public void BringIntoViewOnFocusChange_Scrolls_Child_Control_Into_View_When_Focused()
         {
             using var app = UnitTestApplication.Start(TestServices.RealFocus);
@@ -493,6 +533,7 @@ namespace Avalonia.Controls.UnitTests
                     [!!Track.ValueProperty] = scrollBar[!!RangeBase.ValueProperty],
                     [!Track.ViewportSizeProperty] = scrollBar[!ScrollBar.ViewportSizeProperty],
                     [!Track.OrientationProperty] = scrollBar[!ScrollBar.OrientationProperty],
+                    [!Track.DeferThumbDragProperty] = scrollBar.TemplatedParent[!ScrollViewer.IsDeferredScrollingEnabledProperty],
                     Thumb = new Thumb
                     {
                         Template = new FuncControlTemplate<Thumb>(CreateThumbTemplate),

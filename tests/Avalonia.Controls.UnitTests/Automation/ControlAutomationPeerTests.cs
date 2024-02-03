@@ -1,11 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Provider;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Platform;
-using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -41,7 +37,7 @@ namespace Avalonia.Controls.UnitTests.Automation
             {
                 var contentControl = new ContentControl
                 {
-                    Template = new FuncControlTemplate<ContentControl>((o, ns) =>
+                    Template = new FuncControlTemplate<ContentControl>((o, _) =>
                         new ContentPresenter
                         {
                             Name = "PART_ContentPresenter",
@@ -106,7 +102,7 @@ namespace Avalonia.Controls.UnitTests.Automation
             }
 
             [Fact]
-            public void Updates_Children_When_Visibility_Changes()
+            public void Updates_Children_When_Visibility_Changes_From_Visible_To_Invisible()
             {
                 var panel = new Panel
                 {
@@ -124,6 +120,27 @@ namespace Avalonia.Controls.UnitTests.Automation
 
                 panel.Children[1].IsVisible = false;
                 children = target.GetChildren();
+                Assert.Equal(1, children.Count);
+
+                panel.Children[1].IsVisible = true;
+                children = target.GetChildren();
+                Assert.Equal(2, children.Count);
+            }
+
+            [Fact]
+            public void Updates_Children_When_Visibility_Changes_From_Invisible_To_Visible()
+            {
+                var panel = new Panel
+                {
+                    Children =
+                    {
+                        new Border(),
+                        new Border { IsVisible = false },
+                    },
+                };
+
+                var target = CreatePeer(panel);
+                var children = target.GetChildren();
                 Assert.Equal(1, children.Count);
 
                 panel.Children[1].IsVisible = true;
@@ -179,51 +196,6 @@ namespace Avalonia.Controls.UnitTests.Automation
         private static AutomationPeer CreatePeer(Control control)
         {
             return ControlAutomationPeer.CreatePeerForElement(control);
-        }
-
-        private class TestControl : Control
-        {
-            protected override AutomationPeer OnCreateAutomationPeer()
-            {
-                return new TestAutomationPeer(this);
-            }
-        }
-
-        private class AutomationTestRoot : TestRoot
-        {
-            protected override AutomationPeer OnCreateAutomationPeer()
-            {
-                return new TestRootAutomationPeer(this);
-            }
-        }
-
-        private class TestAutomationPeer : ControlAutomationPeer
-        {
-            public TestAutomationPeer( Control owner)
-                : base(owner)
-            {
-            }
-        }
-
-        private class TestRootAutomationPeer : ControlAutomationPeer, IRootProvider
-        {
-            public TestRootAutomationPeer(Control owner)
-                : base(owner)
-            {
-            }
-
-            public ITopLevelImpl PlatformImpl => throw new System.NotImplementedException();
-            public event EventHandler? FocusChanged;
-
-            public AutomationPeer GetFocus()
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public AutomationPeer GetPeerFromPoint(Point p)
-            {
-                throw new System.NotImplementedException();
-            }
         }
     }
 }

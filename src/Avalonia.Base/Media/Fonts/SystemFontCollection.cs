@@ -47,17 +47,45 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName, (key) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
+            var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName,
+                (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
 
-            if (!glyphTypefaces.TryGetValue(key, out glyphTypeface))
+            if (glyphTypefaces.TryGetValue(key, out glyphTypeface))
             {
-                _fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
+                return glyphTypeface != null;
+            }
 
-                if (!glyphTypefaces.TryAdd(key, glyphTypeface))
+            if(!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface) || 
+                !glyphTypeface.FamilyName.Contains(familyName))
+            {
+                //Try to find nearest match if possible
+                TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
+            }
+
+            if(glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+            {
+                var fontSimulations = FontSimulations.None;
+
+                if(style != FontStyle.Normal && glyphTypeface2.Style != style)
                 {
-                    return false;
+                    fontSimulations |= FontSimulations.Oblique;
+                }
+
+                if((int)weight >= 600 && glyphTypeface2.Weight != weight)
+                {
+                    fontSimulations |= FontSimulations.Bold;
+                }
+
+                if(fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
+                {
+                    using (stream)
+                    {
+                        _fontManager.PlatformImpl.TryCreateGlyphTypeface(stream, fontSimulations, out glyphTypeface);
+                    }
                 }
             }
+
+            glyphTypefaces.TryAdd(key, glyphTypeface);
 
             return glyphTypeface != null;
         }
@@ -87,7 +115,7 @@ namespace Avalonia.Media.Fonts
             {
                 var stream = assetLoader.Open(fontAsset);
 
-                if (fontManager.TryCreateGlyphTypeface(stream, out var glyphTypeface))
+                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                 {
                     if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
                     {
@@ -101,9 +129,9 @@ namespace Avalonia.Media.Fonts
                     }
 
                     var key = new FontCollectionKey(
-                           glyphTypeface.Style,
-                           glyphTypeface.Weight,
-                           glyphTypeface.Stretch);
+                        glyphTypeface.Style,
+                        glyphTypeface.Weight,
+                        glyphTypeface.Stretch);
 
                     glyphTypefaces.TryAdd(key, glyphTypeface);
                 }

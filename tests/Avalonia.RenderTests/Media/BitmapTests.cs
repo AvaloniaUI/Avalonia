@@ -1,16 +1,16 @@
+#nullable enable
+
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
-using Avalonia.Controls.Shapes;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Xunit;
 using Path = System.IO.Path;
+
 #pragma warning disable CS0649
 
 #if AVALONIA_SKIA
@@ -69,7 +69,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var fmt = new PixelFormat(fmte);
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
             var fb = new Framebuffer(fmt, new PixelSize(80, 80));
-            var r = Avalonia.AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            var r = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             using(var cpuContext = r.CreateBackendContext(null))
             using (var target = cpuContext.CreateRenderTarget(new object[] { fb }))
             using (var ctx = target.CreateDrawingContext())
@@ -94,7 +94,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     var rc = new Rect(0, 0, 60, 60);
                     ctx.DrawBitmap(bmp.PlatformImpl, 1, rc, rc);
                 }
-                rtb.Save(System.IO.Path.Combine(OutputPath, testName + ".out.png"));
+                rtb.Save(Path.Combine(OutputPath, testName + ".out.png"));
             }
             CompareImagesNoRenderer(testName);
         }
@@ -123,7 +123,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             var name = nameof(WriteableBitmapShouldBeUsable) + "_" + fmt;
 
-            writeableBitmap.Save(System.IO.Path.Combine(OutputPath, name + ".out.png"));
+            writeableBitmap.Save(Path.Combine(OutputPath, name + ".out.png"));
             CompareImagesNoRenderer(name);
 
         }
@@ -177,7 +177,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
                 var testName = nameof(BitmapsShouldSupportTranscoders_Lenna) + "_" + formatName + names[step];
 
-                var path = System.IO.Path.Combine(OutputPath, testName + ".out.png");
+                var path = Path.Combine(OutputPath, testName + ".out.png");
                 fixed (byte* pData = data)
                 {
                     Bitmap? b = null;

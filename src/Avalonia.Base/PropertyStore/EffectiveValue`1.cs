@@ -66,6 +66,14 @@ namespace Avalonia.PropertyStore
             }
         }
 
+        public override void SetLocalValueAndRaise(
+            ValueStore owner,
+            AvaloniaProperty property,
+            object? value)
+        {
+            SetLocalValueAndRaise(owner, (StyledProperty<T>)property, (T)value!);
+        }
+
         public void SetLocalValueAndRaise(
             ValueStore owner,
             StyledProperty<T> property,
@@ -138,6 +146,10 @@ namespace Avalonia.PropertyStore
 
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
         {
+            var clearDataValidation = ValueEntry?.GetDataValidationState(out _, out _) ??
+                BaseValueEntry?.GetDataValidationState(out _, out _) ??
+                false;
+
             ValueEntry?.Unsubscribe();
             BaseValueEntry?.Unsubscribe();
 
@@ -163,12 +175,8 @@ namespace Avalonia.PropertyStore
                     owner.OnInheritedEffectiveValueDisposed(p, Value, newValue);
             }
 
-            if (ValueEntry?.GetDataValidationState(out _, out _) ??
-                BaseValueEntry?.GetDataValidationState(out _, out _) ??
-                false)
-            {
+            if (clearDataValidation)
                 owner.Owner.OnUpdateDataValidation(p, BindingValueType.UnsetValue, null);
-            }
         }
 
         protected override void CoerceDefaultValueAndRaise(ValueStore owner, AvaloniaProperty property)

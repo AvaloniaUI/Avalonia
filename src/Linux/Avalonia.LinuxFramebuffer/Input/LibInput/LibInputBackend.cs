@@ -19,15 +19,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         public LibInputBackend()
         {
             var ctx = libinput_path_create_context();
-            new Thread(() => InputThread(ctx)).Start();
+            new Thread(() => InputThread(ctx))
+            {
+                IsBackground = true
+            }.Start();
         }
 
         private unsafe void InputThread(IntPtr ctx)
         {
             var fd = libinput_get_fd(ctx);
-
-            var timeval = stackalloc IntPtr[2];
-
 
             foreach (var f in Directory.GetFiles("/dev/input", "event*"))
                 libinput_path_add_device(ctx, f);

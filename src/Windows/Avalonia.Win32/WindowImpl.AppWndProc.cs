@@ -100,7 +100,7 @@ namespace Avalonia.Win32
                         }
 
                         // Cleanup render targets
-                        (_gl as IDisposable)?.Dispose();
+                        (_glSurface as IDisposable)?.Dispose();
 
                         if (_dropTarget != null)
                         {
@@ -110,6 +110,7 @@ namespace Avalonia.Win32
                         }
 
                         _framebuffer.Dispose();
+                        _inputPane?.Dispose();
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
@@ -614,6 +615,12 @@ namespace Avalonia.Win32
                         if (windowState != _lastWindowState)
                         {
                             _lastWindowState = windowState;
+
+                            var newWindowProperties = _windowProperties;
+
+                            newWindowProperties.WindowState = windowState;
+
+                            UpdateWindowProperties(newWindowProperties);
 
                             WindowStateChanged?.Invoke(windowState);
 

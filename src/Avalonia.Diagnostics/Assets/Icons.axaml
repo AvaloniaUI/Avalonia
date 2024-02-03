@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush Color="Black" x:Key="PinColor"/>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush Color="White" x:Key="PinColor"/>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- Add Resources Here -->
+  <DrawingGroup x:Key="Pin_xaml">
+    <DrawingGroup.ClipGeometry>
+      <RectangleGeometry Rect="0.0,-960.0,960.0,960.0"/>
+    </DrawingGroup.ClipGeometry>
+    <GeometryDrawing Brush="{DynamicResource PinColor}">
+      <GeometryDrawing.Geometry>
+        <PathGeometry Figures="m 640 -480 l 80 80 v 80 H 520 v 240 l -40 40 l -40 -40 v -240 H 240 v -80 l 80 -80 v -280 h -40 v -80 h 400 v 80 h -40 v 280 Z m -286 80 h 252 l -46 -46 v -314 H 400 v 314 l -46 46 Z m 126 0 Z" FillRule="NonZero"/>
+      </GeometryDrawing.Geometry>
+    </GeometryDrawing>
+  </DrawingGroup>
+
+  <DrawingGroup x:Key="unpin_xaml">
+    <DrawingGroup.ClipGeometry>
+      <RectangleGeometry Rect="0.0,-960.0,960.0,960.0"/>
+    </DrawingGroup.ClipGeometry>
+    <GeometryDrawing Brush="{DynamicResource PinColor}">
+      <GeometryDrawing.Geometry>
+        <PathGeometry Figures="m 440 -600 l 80 -80 h 80 v 200 h 240 l 40 40 l -40 40 H 600 v 200 h -80 l -80 -80 H 160 v 40 H 80 v -400 h 80 v 40 z m 80 286 v -252 l -46 46 H 160 v 160 h 314 z m 0 -126 z" FillRule="NonZero"/>
+      </GeometryDrawing.Geometry>
+    </GeometryDrawing>
+  </DrawingGroup>
+
+  <DrawingImage Drawing="{StaticResource unpin_xaml}" x:Key="UnpinIcon"/>
+  <DrawingImage Drawing="{StaticResource Pin_xaml}" x:Key="PinIcon"/>
+
+</ResourceDictionary>

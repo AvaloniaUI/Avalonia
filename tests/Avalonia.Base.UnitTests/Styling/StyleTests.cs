@@ -55,6 +55,29 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void Style_With_Class_Selector_Should_Update_And_Restore_Value_With_TemplateBinding()
+        {
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
+            };
+
+            var templatedParent = new Class1 { Foo = "unset-foo" };
+            var target = new Class1 { TemplatedParent = templatedParent };
+            target.Bind(Class1.FooProperty, new TemplateBinding(Class1.FooProperty), BindingPriority.Template);
+
+            StyleHelpers.TryAttach(style, target);
+            Assert.Equal("unset-foo", target.Foo);
+            target.Classes.Add("foo");
+            Assert.Equal("Foo", target.Foo);
+            target.Classes.Remove("foo");
+            Assert.Equal("unset-foo", target.Foo);
+        }
+
+        [Fact]
         public void Style_With_No_Selector_Should_Apply_To_Containing_Control()
         {
             Style style = new Style
@@ -1029,6 +1052,28 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Equal(Brushes.Blue, border.Background);
         }
 
+        [Fact]
+        public void Should_Not_Share_Instance_When_Or_Selector_Is_Present()
+        {
+            // Issue #13910
+            Style style = new Style(x => Selectors.Or(x.OfType<Class1>(), x.OfType<Class2>().Class("bar")))
+            {
+                Setters =
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
+            };
+
+            var target1 = new Class1 { Classes = { "foo" } };
+            var target2 = new Class2();
+
+            StyleHelpers.TryAttach(style, target1);
+            StyleHelpers.TryAttach(style, target2);
+
+            Assert.Equal("Foo", target1.Foo);
+            Assert.Equal("foodefault", target2.Foo);
+        }
+
         private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =
@@ -1061,6 +1106,23 @@ namespace Avalonia.Base.UnitTests.Styling
             protected override Size MeasureOverride(Size availableSize)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class Class2 : Control
+        {
+            public static readonly StyledProperty<string> FooProperty =
+                Class1.FooProperty.AddOwner<Class2>();
+
+            public string Foo
+            {
+                get { return GetValue(FooProperty); }
+                set { SetValue(FooProperty, value); }
+            }
+
+            protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+            {
+                base.OnPropertyChanged(change);
             }
         }
     }

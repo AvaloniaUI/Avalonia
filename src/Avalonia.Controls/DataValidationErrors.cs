@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Reactive;
@@ -18,6 +18,8 @@ namespace Avalonia.Controls
     [PseudoClasses(":error")]
     public class DataValidationErrors : ContentControl
     {
+        private static bool s_overridingErrors;
+        
         /// <summary>
         /// Defines the DataValidationErrors.Errors attached property.
         /// </summary>
@@ -29,10 +31,24 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<bool> HasErrorsProperty =
             AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, bool>("HasErrors");
+        
+        /// <summary>
+        /// Defines the DataValidationErrors.ErrorConverter attached property.
+        /// </summary>
+        public static readonly AttachedProperty<Func<object, object>?> ErrorConverterProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, Func<object, object>?>("ErrorConverter");
 
+        /// <summary>
+        /// Defines the DataValidationErrors.ErrorTemplate property.
+        /// </summary>
         public static readonly StyledProperty<IDataTemplate> ErrorTemplateProperty =
             AvaloniaProperty.Register<DataValidationErrors, IDataTemplate>(nameof(ErrorTemplate));
 
+        /// <summary>
+        /// Stores the original, not converted errors passed by the control
+        /// </summary>
+        private static readonly AttachedProperty<IEnumerable<object>?> OriginalErrorsProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>?>("OriginalErrors");
 
         private Control? _owner;
 
@@ -56,6 +72,12 @@ namespace Avalonia.Controls
             ErrorsProperty.Changed.Subscribe(ErrorsChanged);
             HasErrorsProperty.Changed.Subscribe(HasErrorsChanged);
             TemplatedParentProperty.Changed.AddClassHandler<DataValidationErrors>((x, e) => x.OnTemplatedParentChange(e));
+            ErrorConverterProperty.Changed.Subscribe(OnErrorConverterChanged);
+        }
+
+        private static void OnErrorConverterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            OnErrorsOrConverterChanged((Control)e.Sender);
         }
 
         private void OnTemplatedParentChange(AvaloniaPropertyChangedEventArgs e)
@@ -74,15 +96,17 @@ namespace Avalonia.Controls
 
         private static void ErrorsChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            if (s_overridingErrors) return;
+
             var control = (Control)e.Sender;
             var errors = (IEnumerable<object>?)e.NewValue;
 
-            var hasErrors = false;
-            if (errors != null && errors.Any())
-                hasErrors = true;
+            // Update original errors
+            control.SetValue(OriginalErrorsProperty, errors);
 
-            control.SetValue(HasErrorsProperty, hasErrors);
+            OnErrorsOrConverterChanged(control);
         }
+        
         private static void HasErrorsChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
@@ -100,8 +124,35 @@ namespace Avalonia.Controls
         }
         public static void SetError(Control control, Exception? error)
         {
-            SetErrors(control, UnpackException(error));
+            SetErrors(control, UnpackException(error)?
+                .Select(UnpackDataValidationException)
+                .Where(e => e is not null)
+                .ToArray()!);
         }
+
+        private static void OnErrorsOrConverterChanged(Control control)
+        {
+            var converter = GetErrorConverter(control);
+            var originalErrors = control.GetValue(OriginalErrorsProperty);
+            var newErrors = (converter is null ?
+                originalErrors :
+                originalErrors?.Select(converter)
+                    .Where(e => e is not null))?
+                .ToArray();
+
+            s_overridingErrors = true;
+            try
+            {
+                control.SetCurrentValue(ErrorsProperty, newErrors!);
+            }
+            finally
+            {
+                s_overridingErrors = false;
+            }
+
+            control.SetValue(HasErrorsProperty, newErrors?.Any() == true);
+        }
+
         public static void ClearErrors(Control control)
         {
             SetErrors(control, null);
@@ -111,30 +162,36 @@ namespace Avalonia.Controls
             return control.GetValue(HasErrorsProperty);
         }
 
-        private static IEnumerable<object>? UnpackException(Exception? exception)
+        public static Func<object, object?>? GetErrorConverter(Control control)
+        {
+            return control.GetValue(ErrorConverterProperty);
+        }
+
+        public static void SetErrorConverter(Control control, Func<object, object>? converter)
+        {
+            control.SetValue(ErrorConverterProperty, converter);
+        }
+
+        private static IEnumerable<Exception>? UnpackException(Exception? exception)
         {
             if (exception != null)
             {
-                var aggregate = exception as AggregateException;
-                var exceptions = aggregate == null ?
-                    new[] { GetExceptionData(exception) } :
-                    aggregate.InnerExceptions.Select(GetExceptionData).ToArray();
-                var filtered = exceptions.Where(x => !(x is BindingChainException)).ToList();
+                var exceptions = exception is AggregateException aggregate ?
+                    aggregate.InnerExceptions :
+                    (IEnumerable<Exception>)new[] { exception };
 
-                if (filtered.Count > 0)
-                {
-                    return filtered;
-                }
+                return exceptions.Where(x => !(x is BindingChainException)).ToArray();
             }
 
             return null;
         }
 
-        private static object GetExceptionData(Exception exception)
+        private static object? UnpackDataValidationException(Exception exception)
         {
-            if (exception is DataValidationException dataValidationException &&
-                dataValidationException.ErrorData is object data)
-                return data;
+            if (exception is DataValidationException dataValidationException)
+            {
+                return dataValidationException.ErrorData;
+            }
 
             return exception;
         }

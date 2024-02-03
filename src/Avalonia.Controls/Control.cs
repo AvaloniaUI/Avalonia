@@ -212,14 +212,6 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
-        static Control()
-        {
-            Gestures.HoldingEvent.AddClassHandler<Control>((control, e) =>
-            {
-                control.OnHoldEvent(control, e);
-            });
-        }
-
         /// <inheritdoc/>
         void ISetterValue.Initialize(SetterBase setter)
         {
@@ -382,14 +374,19 @@ namespace Avalonia.Controls
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
+
+            Holding += OnHoldEvent;
         }
 
         private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
         {
-            if (!e.Handled && e.HoldingState == HoldingState.Started)
+            if (e.Source == this && !e.Handled && e.HoldingState == HoldingState.Started)
             {
                 // Trigger ContentRequest when hold has started
-                RaiseEvent(e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs());
+                var contextEvent = e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs();
+                RaiseEvent(contextEvent);
+
+                e.Handled = contextEvent.Handled;
             }
         }
 
@@ -399,6 +396,8 @@ namespace Avalonia.Controls
             base.OnDetachedFromVisualTreeCore(e);
 
             OnUnloadedCore();
+
+            Holding -= OnHoldEvent;
         }
 
         /// <inheritdoc/>
