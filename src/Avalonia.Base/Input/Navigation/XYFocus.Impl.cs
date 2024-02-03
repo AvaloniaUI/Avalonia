@@ -82,7 +82,7 @@ public partial class XYFocus
             return null;
         }
 
-        if (!IsAllowedNavigationMode(GetNavigationModes(inputElement), keyDeviceType))
+        if (!XYFocusHelpers.IsAllowedNavigationMode(inputElement, keyDeviceType))
         {
             return null;
         }
@@ -434,17 +434,5 @@ public partial class XYFocus
         }
 
         return null;
-    }
-
-    private static bool IsAllowedNavigationMode(XYFocusNavigationModes modes, KeyDeviceType? keyDeviceType)
-    {
-        return keyDeviceType switch
-        {
-            null => true, // programmatic input, allow any subtree.
-            KeyDeviceType.Keyboard => modes.HasFlag(XYFocusNavigationModes.Keyboard),
-            KeyDeviceType.Gamepad => modes.HasFlag(XYFocusNavigationModes.Gamepad),
-            KeyDeviceType.Remote => modes.HasFlag(XYFocusNavigationModes.Remote),
-            _ => throw new ArgumentOutOfRangeException(nameof(keyDeviceType), keyDeviceType, null)
-        };
     }
 }
