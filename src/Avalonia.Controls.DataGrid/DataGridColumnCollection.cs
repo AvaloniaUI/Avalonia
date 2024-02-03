@@ -237,7 +237,8 @@ namespace Avalonia.Controls
 
         protected override void SetItem(int columnIndex, DataGridColumn dataGridColumn)
         {
-            throw new NotSupportedException();
+            RemoveItem(columnIndex);
+            InsertItem(columnIndex, dataGridColumn);
         }
 
         internal bool DisplayInOrder(int columnIndex1, int columnIndex2)
