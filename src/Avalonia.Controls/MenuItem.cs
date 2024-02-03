@@ -22,7 +22,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_Popup", typeof(Popup))]
     [PseudoClasses(":separator", ":radio", ":toggle", ":checked", ":icon", ":open", ":pressed", ":selected")]
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource, IClickableControl, IGroupRadioButton
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource, IClickableControl, IRadioButton
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -307,7 +307,7 @@ namespace Avalonia.Controls
             set => SetValue(IsCheckedProperty, value);
         }
         
-        bool IGroupRadioButton.IsChecked
+        bool IRadioButton.IsChecked
         {
             get => IsChecked;
             set => SetCurrentValue(IsCheckedProperty, value);

@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a button that allows a user to select a single option from a group of options.
     /// </summary>
-    public class RadioButton : ToggleButton, IGroupRadioButton
+    public class RadioButton : ToggleButton, IRadioButton
     {
         /// <summary>
         /// Identifies the GroupName dependency property.
@@ -33,13 +33,13 @@ namespace Avalonia.Controls
             set => SetValue(GroupNameProperty, value);
         }
 
-        bool IGroupRadioButton.IsChecked
+        bool IRadioButton.IsChecked
         {
             get => IsChecked.GetValueOrDefault();
             set => SetCurrentValue(IsCheckedProperty, value);
         }
 
-        MenuItemToggleType IGroupRadioButton.ToggleType => MenuItemToggleType.Radio;
+        MenuItemToggleType IRadioButton.ToggleType => MenuItemToggleType.Radio;
 
         protected override void Toggle()
         {

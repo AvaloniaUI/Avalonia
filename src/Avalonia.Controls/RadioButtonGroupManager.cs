@@ -8,7 +8,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Controls;
 
-internal interface IGroupRadioButton : ILogical
+internal interface IRadioButton : ILogical
 {
     string? GroupName { get; }
     MenuItemToggleType ToggleType { get; }
@@ -20,7 +20,7 @@ internal class RadioButtonGroupManager
     private static readonly RadioButtonGroupManager s_default = new();
     private static readonly ConditionalWeakTable<IRenderRoot, RadioButtonGroupManager> s_registeredVisualRoots = new();
 
-    private readonly Dictionary<string, List<WeakReference<IGroupRadioButton>>> _registeredGroups = new();
+    private readonly Dictionary<string, List<WeakReference<IRadioButton>>> _registeredGroups = new();
     private bool _ignoreCheckedChanges;
 
     public static RadioButtonGroupManager GetOrCreateForRoot(IRenderRoot? root)
@@ -30,22 +30,22 @@ internal class RadioButtonGroupManager
         return s_registeredVisualRoots.GetValue(root, key => new RadioButtonGroupManager());
     }
 
-    public void Add(IGroupRadioButton radioButton)
+    public void Add(IRadioButton radioButton)
     {
         var groupName = radioButton.GroupName;
         if (groupName is not null && radioButton.ToggleType == MenuItemToggleType.Radio)
         {
             if (!_registeredGroups.TryGetValue(groupName, out var group))
             {
-                group = new List<WeakReference<IGroupRadioButton>>();
+                group = new List<WeakReference<IRadioButton>>();
                 _registeredGroups.Add(groupName, group);
             }
 
-            group.Add(new WeakReference<IGroupRadioButton>(radioButton));
+            group.Add(new WeakReference<IRadioButton>(radioButton));
         }
     }
 
-    public void Remove(IGroupRadioButton radioButton, string? oldGroupName)
+    public void Remove(IRadioButton radioButton, string? oldGroupName)
     {
         if (!string.IsNullOrEmpty(oldGroupName) && _registeredGroups.TryGetValue(oldGroupName, out var group))
         {
@@ -68,7 +68,7 @@ internal class RadioButtonGroupManager
         }
     }
 
-    public void OnCheckedChanged(IGroupRadioButton radioButton)
+    public void OnCheckedChanged(IRadioButton radioButton)
     {
         if (_ignoreCheckedChanges || radioButton.ToggleType != MenuItemToggleType.Radio)
         {
@@ -102,11 +102,11 @@ internal class RadioButtonGroupManager
                         _registeredGroups.Remove(groupName);
                     }
 
-                    var parent = radioButton.LogicalParent as IGroupRadioButton;
+                    var parent = radioButton.LogicalParent as IRadioButton;
                     while (parent is not null && parent.GroupName == groupName)
                     {
                         parent.IsChecked = true;
-                        parent = parent.LogicalParent as IGroupRadioButton;
+                        parent = parent.LogicalParent as IRadioButton;
                     }
                 }
             }
@@ -117,7 +117,7 @@ internal class RadioButtonGroupManager
                     foreach (var sibling in parent.LogicalChildren)
                     {
                         if (sibling != radioButton
-                            && sibling is IGroupRadioButton { ToggleType: MenuItemToggleType.Radio } button
+                            && sibling is IRadioButton { ToggleType: MenuItemToggleType.Radio } button
                             && string.IsNullOrEmpty(button.GroupName)
                             && button.IsChecked)
                         {

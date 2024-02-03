@@ -581,13 +581,13 @@ namespace Avalonia.Controls.Platform
 
         internal void OnCheckedChanged(IMenuItem item)
         {
-            if (item is IGroupRadioButton radioButton)
+            if (item is IRadioButton radioButton)
             {
                 _groupManager?.OnCheckedChanged(radioButton);
             }
         }
         
-        internal void OnGroupOrTypeChanged(IGroupRadioButton button, string? oldGroupName)
+        internal void OnGroupOrTypeChanged(IRadioButton button, string? oldGroupName)
         {
             if (!string.IsNullOrEmpty(oldGroupName))
             {
@@ -624,7 +624,7 @@ namespace Avalonia.Controls.Platform
         private static void AddMenuItemToRadioGroup(RadioButtonGroupManager manager, IMenuElement element)
         {
             // Instead add menu item to the group on attached/detached + ensure checked stated on attached.
-            if (element is IGroupRadioButton button)
+            if (element is IRadioButton button)
             {
                 manager.Add(button);
             }
@@ -637,7 +637,7 @@ namespace Avalonia.Controls.Platform
 
         private static void RemoveMenuItemFromRadioGroup(RadioButtonGroupManager manager, IMenuElement element)
         {
-            if (element is IGroupRadioButton button)
+            if (element is IRadioButton button)
             {
                 manager.Remove(button, button.GroupName);
             }
