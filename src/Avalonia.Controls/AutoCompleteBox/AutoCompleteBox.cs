@@ -463,6 +463,7 @@ namespace Avalonia.Controls
         static AutoCompleteBox()
         {
             FocusableProperty.OverrideDefaultValue<AutoCompleteBox>(true);
+            IsTabStopProperty.OverrideDefaultValue<AutoCompleteBox>(false);
 
             MinimumPopulateDelayProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnMinimumPopulateDelayChanged(e));
             IsDropDownOpenProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnIsDropDownOpenChanged(e));
@@ -770,33 +771,7 @@ namespace Avalonia.Controls
         /// <returns>true to indicate the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> has focus;
         /// otherwise, false.</returns>
-        protected bool HasFocus()
-        {
-            Visual? focused = FocusManager.GetFocusManager(this)?.GetFocusedElement() as Visual;
-
-            while (focused != null)
-            {
-                if (object.ReferenceEquals(focused, this))
-                {
-                    return true;
-                }
-
-                // This helps deal with popups that may not be in the same
-                // visual tree
-                Visual? parent = focused.GetVisualParent();
-                if (parent == null)
-                {
-                    // Try the logical parent.
-                    Control? element = focused as Control;
-                    if (element != null)
-                    {
-                        parent = element.VisualParent;
-                    }
-                }
-                focused = parent;
-            }
-            return false;
-        }
+        protected bool HasFocus() => IsKeyboardFocusWithin;
 
         /// <summary>
         /// Handles the FocusChanged event.
@@ -820,8 +795,7 @@ namespace Avalonia.Controls
                 if (!wasFocused && TextBox != null && TextBoxSelectionLength <= 0)
                 {
                     TextBox.Focus();
-                    TextBox.SelectionStart = 0;
-                    TextBox.SelectionEnd = TextBox.Text?.Length ?? 0;
+                    TextBox.SelectAll();
                 }
             }
             else
