@@ -40,11 +40,6 @@ namespace ControlCatalog.ViewModels
                 (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
 
-            ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
-            {
-                // handle
-            });
-
             WindowState = WindowState.Normal;
 
             WindowStates = new WindowState[]
@@ -140,8 +135,6 @@ namespace ControlCatalog.ViewModels
         public MiniCommand AboutCommand { get; }
 
         public MiniCommand ExitCommand { get; }
-
-        public MiniCommand ToggleMenuItemCheckedCommand { get; }
 
         private DateTime? _validatedDateExample;
 
