@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -19,7 +20,7 @@ namespace Avalonia.Diagnostics.Views
     internal class MainWindow : Window, IStyleHost
     {
         private readonly IDisposable? _inputSubscription;
-        private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
+        private readonly HashSet<Popup> _frozenPopupStates;
         private AvaloniaObject? _root;
         private PixelPoint _lastPointerPosition;
 
@@ -45,7 +46,7 @@ namespace Avalonia.Diagnostics.Views
                     }
                 });
             
-            _frozenPopupStates = new Dictionary<Popup, IDisposable>();
+            _frozenPopupStates = new HashSet<Popup>();
 
             EventHandler? lh = default;
             lh = (s, e) =>
@@ -101,7 +102,7 @@ namespace Avalonia.Diagnostics.Views
 
             foreach (var state in _frozenPopupStates)
             {
-                state.Value.Dispose();
+                state.Closing -= PopupOnClosing;
             }
 
             _frozenPopupStates.Clear();
@@ -224,24 +225,13 @@ namespace Avalonia.Diagnostics.Views
                         {
                             if (vm.FreezePopups)
                             {
-                                var lightDismissEnabledState = popup.SetValue(
-                                    Popup.IsLightDismissEnabledProperty,
-                                    !vm.FreezePopups,
-                                    BindingPriority.Animation);
-
-                                if (lightDismissEnabledState != null)
-                                {
-                                    _frozenPopupStates[popup] = lightDismissEnabledState;
-                                }
+                                popup.Closing += PopupOnClosing;
+                                _frozenPopupStates.Add(popup);
                             }
                             else
                             {
-                                //TODO Use Dictionary.Remove(Key, out Value) in netstandard 2.1
-                                if (_frozenPopupStates.TryGetValue(popup, out var value))
-                                {
-                                    value.Dispose();
-                                    _frozenPopupStates.Remove(popup);
-                                }
+                                popup.Closing -= PopupOnClosing;
+                                _frozenPopupStates.Remove(popup);
                             }
                         }
                     }
@@ -258,6 +248,15 @@ namespace Avalonia.Diagnostics.Views
             }
         }
 
+        private void PopupOnClosing(object? sender, CancelEventArgs e)
+        {
+            var vm = (MainViewModel?)DataContext;
+            if (vm?.FreezePopups == true)
+            {
+                e.Cancel = true;
+            }
+        }
+        
         private void RootClosed(object? sender, EventArgs e) => Close();
 
         public void SetOptions(DevToolsOptions options)
