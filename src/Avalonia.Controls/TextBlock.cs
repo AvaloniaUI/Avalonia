@@ -149,6 +149,12 @@ namespace Avalonia.Controls
             Inline.TextDecorationsProperty.AddOwner<TextBlock>();
 
         /// <summary>
+        /// Defines the <see cref="FontFeatures"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
+            TextElement.FontFeaturesProperty.AddOwner<TextBlock>();
+
+        /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
         public static readonly DirectProperty<TextBlock, InlineCollection?> InlinesProperty =
@@ -337,6 +343,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(TextDecorationsProperty);
             set => SetValue(TextDecorationsProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font features.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => GetValue(FontFeaturesProperty);
+            set => SetValue(FontFeaturesProperty, value);
         }
 
         /// <summary>
@@ -635,6 +650,7 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
+                FontFeatures,
                 FontSize,
                 TextDecorations,
                 Foreground);
@@ -806,6 +822,7 @@ namespace Avalonia.Controls
 
                 case nameof(Text):
                 case nameof(TextDecorations):
+                case nameof(FontFeatures):
                 case nameof(Foreground):
                     {
                         InvalidateTextLayout();
