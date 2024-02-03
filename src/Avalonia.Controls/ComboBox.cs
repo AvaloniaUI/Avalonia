@@ -213,7 +213,7 @@ namespace Avalonia.Controls
             }
             // Ignore key buttons, if they are used for XY focus.
             else if (!IsDropDownOpen
-                     && !XYFocusHelpers.IsAllowedNavigationMode(this, e.KeyDeviceType))
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 if (e.Key == Key.Down)
                 {

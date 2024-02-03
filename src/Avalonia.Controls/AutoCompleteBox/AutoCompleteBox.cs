@@ -713,7 +713,7 @@ namespace Avalonia.Controls
                 // The drop down is not open, the Down key will toggle it open.
                 // Ignore key buttons, if they are used for XY focus.
                 if (e.Key == Key.Down
-                    && !XYFocusHelpers.IsAllowedNavigationMode(this, e.KeyDeviceType))
+                    && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, true);
                     e.Handled = true;

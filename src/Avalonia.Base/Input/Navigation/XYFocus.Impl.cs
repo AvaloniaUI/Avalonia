@@ -82,7 +82,7 @@ public partial class XYFocus
             return null;
         }
 
-        if (!XYFocusHelpers.IsAllowedNavigationMode(inputElement, keyDeviceType))
+        if (!XYFocusHelpers.IsAllowedXYNavigationMode(inputElement, keyDeviceType))
         {
             return null;
         }

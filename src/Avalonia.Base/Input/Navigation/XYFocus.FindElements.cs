@@ -67,7 +67,7 @@ public partial class XYFocus
     {
         return candidate.Focusable && candidate.IsEnabled && candidate.IsVisible
                // Only allow candidate focus, if original key device type could focus it.
-               && XYFocusHelpers.IsAllowedNavigationMode(candidate, inputKeyDeviceType);
+               && XYFocusHelpers.IsAllowedXYNavigationMode(candidate, inputKeyDeviceType);
     }
 
     /// Check if candidate's direct scroller is the same as active focused scroller.

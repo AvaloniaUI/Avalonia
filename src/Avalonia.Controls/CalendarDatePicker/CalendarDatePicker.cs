@@ -439,7 +439,7 @@ namespace Avalonia.Controls
                 // Other controls open the popup/flyout here.
             }
             else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
-                     && !XYFocusHelpers.IsAllowedNavigationMode(this, e.KeyDeviceType))
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 // It is only possible to open the popup using these keys.
                 // This is important as the down key is handled by calendar.

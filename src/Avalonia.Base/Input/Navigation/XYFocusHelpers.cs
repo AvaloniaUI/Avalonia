@@ -4,12 +4,12 @@ namespace Avalonia.Input;
 
 internal static class XYFocusHelpers
 {
-    internal static bool IsAllowedNavigationMode(this InputElement visual, KeyDeviceType? keyDeviceType)
+    internal static bool IsAllowedXYNavigationMode(this InputElement visual, KeyDeviceType? keyDeviceType)
     {
-        return IsAllowedNavigationMode(XYFocus.GetNavigationModes(visual), keyDeviceType);
+        return IsAllowedXYNavigationMode(XYFocus.GetNavigationModes(visual), keyDeviceType);
     }
 
-    private static bool IsAllowedNavigationMode(XYFocusNavigationModes modes, KeyDeviceType? keyDeviceType)
+    private static bool IsAllowedXYNavigationMode(XYFocusNavigationModes modes, KeyDeviceType? keyDeviceType)
     {
         return keyDeviceType switch
         {

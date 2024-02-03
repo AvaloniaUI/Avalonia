@@ -336,7 +336,7 @@ namespace Avalonia.Controls
                 }
             }
             else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
-                     && !XYFocusHelpers.IsAllowedNavigationMode(this, e.KeyDeviceType))
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 OpenFlyout();
                 e.Handled = true;
