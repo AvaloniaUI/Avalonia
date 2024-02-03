@@ -52,7 +52,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/v7.0.400/workload/scripts/workload-install.sh | sudo bash -s -- -d "/opt/hostedtoolcache/dotnet"
+       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash -s -- -d "/opt/hostedtoolcache/dotnet"
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -98,7 +98,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/v7.0.400/workload/scripts/workload-install.sh | sudo bash
+       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
   
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
@@ -178,7 +178,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-       (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/v7.0.400/workload/scripts/workload-install.ps1') | Invoke-Expression
+       (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1') | Invoke-Expression
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
