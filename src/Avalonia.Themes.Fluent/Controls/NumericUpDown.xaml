@@ -36,6 +36,7 @@
                        BorderThickness="{TemplateBinding BorderThickness}"
                        BorderBrush="{TemplateBinding BorderBrush}"
                        CornerRadius="{TemplateBinding CornerRadius}"
+                       IsTabStop="False"
                        Padding="0"
                        MinWidth="0"
                        HorizontalContentAlignment="Stretch"

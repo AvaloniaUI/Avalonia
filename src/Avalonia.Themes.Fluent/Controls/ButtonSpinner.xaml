@@ -93,10 +93,12 @@
                   MinHeight="{TemplateBinding MinHeight}">
             <DockPanel>
               <StackPanel Name="PART_SpinnerPanel"
+                          TabIndex="2"
                           DockPanel.Dock="Right"
                           Orientation="Horizontal"
                           IsVisible="{TemplateBinding ShowButtonSpinner}">
                 <RepeatButton Name="PART_IncreaseButton"
+                              IsTabStop="{TemplateBinding IsTabStop}"
                               Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
                               Background="{TemplateBinding Background}"
                               BorderBrush="{TemplateBinding BorderBrush}"
@@ -112,6 +114,7 @@
                 </RepeatButton>
 
                 <RepeatButton Name="PART_DecreaseButton"
+                              IsTabStop="{TemplateBinding IsTabStop}"
                               Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
                               Background="{TemplateBinding Background}"
                               BorderBrush="{TemplateBinding BorderBrush}"
@@ -129,6 +132,7 @@
 
               <ContentPresenter Name="PART_ContentPresenter"
                                 Grid.Column="1"
+                                TabIndex="1"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Content="{TemplateBinding Content}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
