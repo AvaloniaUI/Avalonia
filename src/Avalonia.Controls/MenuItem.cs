@@ -376,13 +376,8 @@ namespace Avalonia.Controls
         public void Close() => SetCurrentValue(IsSubMenuOpenProperty, false);
 
         /// <inheritdoc/>
-        void IMenuItem.RaiseClick() => OnClick();
+        void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
-        protected virtual void OnClick()
-        {
-            RaiseEvent(new RoutedEventArgs(ClickEvent));
-        }
-        
         protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
             return new MenuItem();
