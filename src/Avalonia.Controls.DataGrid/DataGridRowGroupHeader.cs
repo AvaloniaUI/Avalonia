@@ -430,6 +430,10 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates number format of items count
+        /// </summary>
+        public string CountFormat { get; set; } = "N1";
         internal void UpdateTitleElements()
         {
             if (_propertyNameElement != null)
@@ -444,10 +448,10 @@ namespace Avalonia.Controls
             if (_itemCountElement != null && RowGroupInfo != null && RowGroupInfo.CollectionViewGroup != null)
             {
                 string formatString;
-                if(RowGroupInfo.CollectionViewGroup.ItemCount == 1)
+                if (RowGroupInfo.CollectionViewGroup.ItemCount == 1)
                     formatString = "({0} Item)";
                 else
-                    formatString = "({0} Items)";
+                    formatString = $"({{0:{CountFormat}}} Items)";
 
                 _itemCountElement.Text = String.Format(formatString, RowGroupInfo.CollectionViewGroup.ItemCount);
             }
