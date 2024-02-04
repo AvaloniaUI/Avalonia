@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using Avalonia.Collections.Pooled;
 using Avalonia.Controls.Metadata;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -32,7 +34,7 @@ namespace Avalonia.Controls.Primitives
 
         protected bool ignorePropertyChanged = false;
 
-        private WriteableBitmap? _backgroundBitmap;
+        private Bitmap? _backgroundBitmap;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.
@@ -114,7 +116,10 @@ namespace Avalonia.Controls.Primitives
 
             if (pixelWidth != 0 && pixelHeight != 0)
             {
-                ArrayList<byte> bgraPixelData = await ColorPickerHelpers.CreateComponentBitmapAsync(
+                // siteToCapacity = true, because CreateComponentBitmapAsync sets bytes via indexer over pre-allocated buffer. 
+                using var bgraPixelData = new PooledList<byte>(pixelWidth * pixelHeight * 4, ClearMode.Never, true);
+                await ColorPickerHelpers.CreateComponentBitmapAsync(
+                    bgraPixelData,
                     pixelWidth,
                     pixelHeight,
                     Orientation,
@@ -124,23 +129,8 @@ namespace Avalonia.Controls.Primitives
                     IsAlphaVisible,
                     IsPerceptive);
 
-                if (_backgroundBitmap != null)
-                {
-                    // TODO: CURRENTLY DISABLED DUE TO INTERMITTENT CRASHES IN SKIA/RENDERER
-                    //
-                    // Re-use the existing WriteableBitmap
-                    // This assumes the height, width and byte counts are the same and must be set to null
-                    // elsewhere if that assumption is ever not true.
-                    // ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bgraPixelData);
-
-                    // TODO: ALSO DISABLED DISPOSE DUE TO INTERMITTENT CRASHES
-                    //_backgroundBitmap?.Dispose();
-                    _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
-                }
-                else
-                {
-                    _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
-                }
+                _backgroundBitmap?.Dispose();
+                _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
 
                 Background = new ImageBrush(_backgroundBitmap);
             }

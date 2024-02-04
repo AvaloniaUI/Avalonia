@@ -53,6 +53,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
             var physicalKey = AndroidKeyInterop.PhysicalKeyFromScanCode(e.ScanCode);
             var keySymbol = GetKeySymbol(e.UnicodeChar, physicalKey);
+            var keyDeviceType = GetKeyDeviceType(e);
 
             var rawKeyEvent = new RawKeyEventArgs(
                           AndroidKeyboardDevice.Instance!,
@@ -62,6 +63,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                           AndroidKeyboardDevice.ConvertKey(e.KeyCode),
                           GetModifierKeys(e),
                           physicalKey,
+                          keyDeviceType,
                           keySymbol);
 
             _view.Input?.Invoke(rawKeyEvent);
@@ -122,6 +124,20 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     }
                     return char.ConvertFromUtf32(unicodeChar);
             }
+        }
+
+        private KeyDeviceType GetKeyDeviceType(KeyEvent e)
+        {
+            var source = e.Device?.Sources ?? InputSourceType.Unknown;
+            if (source is InputSourceType.Joystick or
+                InputSourceType.ClassJoystick or
+                InputSourceType.Gamepad)
+                return KeyDeviceType.Gamepad;
+
+            if (source == InputSourceType.Dpad && e.Device?.KeyboardType == InputKeyboardType.NonAlphabetic)
+                return KeyDeviceType.Remote;
+
+            return KeyDeviceType.Keyboard;
         }
 
         public void Dispose()

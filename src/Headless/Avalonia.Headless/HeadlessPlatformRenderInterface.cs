@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -48,8 +49,14 @@ namespace Avalonia.Headless
         }
 
         public IStreamGeometryImpl CreateStreamGeometry() => new HeadlessStreamingGeometryStub();
-        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) => throw new NotImplementedException();
-        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) => throw new NotImplementedException();
+
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) =>
+            new HeadlessGeometryStub(children.Count != 0 ?
+                children.Select(c => c.Bounds).Aggregate((a, b) => a.Union(b)) :
+                default);
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) 
+            => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
         public bool IsLost => false;

@@ -5,6 +5,9 @@
              d:DesignWidth="400"
              x:Class="ControlCatalog.Pages.BorderPage">
   <StackPanel Orientation="Vertical" Spacing="4">
+    <StackPanel.Resources>
+      <SolidColorBrush x:Key="SemiTransparentSystemAccentBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.4" />
+    </StackPanel.Resources>
     <TextBlock Classes="h2">A control which decorates a child with a border and background</TextBlock>
 
     <StackPanel Orientation="Vertical"
@@ -15,10 +18,25 @@
         <TextBlock>Border</TextBlock>
       </Border>
       <Border Background="{DynamicResource SystemAccentColorDark1}" 
-              BorderBrush="{DynamicResource SystemAccentColor}" 
-              BorderThickness="4" 
-              Padding="16">
-        <TextBlock>Border and Background</TextBlock>
+              BorderBrush="{DynamicResource SemiTransparentSystemAccentBrush}" 
+              BackgroundSizing="CenterBorder"
+              BorderThickness="8" 
+              Padding="12">
+        <TextBlock>Background And CenterBorder</TextBlock>
+      </Border>
+      <Border Background="{DynamicResource SystemAccentColorDark1}" 
+              BorderBrush="{DynamicResource SemiTransparentSystemAccentBrush}" 
+              BackgroundSizing="InnerBorderEdge"
+              BorderThickness="8" 
+              Padding="12">
+        <TextBlock>Background And InnerBorder</TextBlock>
+      </Border>
+      <Border Background="{DynamicResource SystemAccentColorDark1}" 
+              BorderBrush="{DynamicResource SemiTransparentSystemAccentBrush}" 
+              BackgroundSizing="OuterBorderEdge"
+              BorderThickness="8" 
+              Padding="12">
+        <TextBlock>Background And OuterBorderEdge</TextBlock>
       </Border>
       <Border BorderBrush="{DynamicResource SystemAccentColor}"
               BorderThickness="4" 

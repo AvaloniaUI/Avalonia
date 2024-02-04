@@ -415,6 +415,45 @@ namespace Avalonia.Data
                 e);
         }
 
+        /// <summary>
+        /// Creates a <see cref="BindingValue{T}"/> from an object, handling the special values
+        /// <see cref="AvaloniaProperty.UnsetValue"/>, <see cref="BindingOperations.DoNothing"/> and
+        /// <see cref="BindingNotification"/> without type conversion.
+        /// </summary>
+        /// <param name="value">The untyped value.</param>
+        /// <returns>The typed binding value.</returns>
+        internal static BindingValue<T> FromUntypedStrict(object? value)
+        {
+            if (value == AvaloniaProperty.UnsetValue)
+                return Unset;
+            else if (value == BindingOperations.DoNothing)
+                return DoNothing;
+
+            var type = BindingValueType.Value;
+            T? v = default;
+            Exception? error = null;
+
+            if (value is BindingNotification n)
+            {
+                error = n.Error;
+                type = n.ErrorType switch
+                {
+                    BindingErrorType.Error => BindingValueType.BindingError,
+                    BindingErrorType.DataValidationError => BindingValueType.DataValidationError,
+                    _ => BindingValueType.Value,
+                };
+
+                if (n.HasValue)
+                    type |= BindingValueType.HasValue;
+                value = n.Value;
+            }
+
+            if ((type & BindingValueType.HasValue) != 0)
+                v = (T)value!;
+
+            return new BindingValue<T>(type, v, error);
+        }
+
         [Conditional("DEBUG")]
         private static void ValidateValue(T value)
         {
