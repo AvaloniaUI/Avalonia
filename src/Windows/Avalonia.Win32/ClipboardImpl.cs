@@ -18,12 +18,14 @@ namespace Avalonia.Win32
         private async Task<IDisposable> OpenClipboard()
         {
             var i = OleRetryCount;
+            var delay = 100;
 
             while (!UnmanagedMethods.OpenClipboard(IntPtr.Zero))
             {
                 if (--i == 0)
                     throw new TimeoutException("Timeout opening clipboard.");
-                await Task.Delay(100);
+                await Task.Delay(delay);
+                delay += 100;
             }
 
             return Disposable.Create(() => UnmanagedMethods.CloseClipboard());
@@ -31,23 +33,30 @@ namespace Avalonia.Win32
 
         public async Task<string> GetTextAsync()
         {
-            using(await OpenClipboard())
+            try
             {
-                IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
-                if (hText == IntPtr.Zero)
+                using (await OpenClipboard())
                 {
-                    return null;
-                }
+                    IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
+                    if (hText == IntPtr.Zero)
+                    {
+                        return null;
+                    }
 
-                var pText = UnmanagedMethods.GlobalLock(hText);
-                if (pText == IntPtr.Zero)
-                {
-                    return null;
-                }
+                    var pText = UnmanagedMethods.GlobalLock(hText);
+                    if (pText == IntPtr.Zero)
+                    {
+                        return null;
+                    }
 
-                var rv = Marshal.PtrToStringUni(pText);
-                UnmanagedMethods.GlobalUnlock(hText);
-                return rv;
+                    var rv = Marshal.PtrToStringUni(pText);
+                    UnmanagedMethods.GlobalUnlock(hText);
+                    return rv;
+                }
+            }
+            catch (TimeoutException)
+            {
+                return "CAN'T OPEN THE CLIPBOARD. PLS TRY AGAIN.";
             }
         }
 
@@ -58,20 +67,37 @@ namespace Avalonia.Win32
                 throw new ArgumentNullException(nameof(text));
             }
 
-            using(await OpenClipboard())
+            try
             {
-                UnmanagedMethods.EmptyClipboard();
+                using (await OpenClipboard())
+                {
+                    UnmanagedMethods.EmptyClipboard();
 
-                var hGlobal = Marshal.StringToHGlobalUni(text);
-                UnmanagedMethods.SetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, hGlobal);
+                    var hGlobal = Marshal.StringToHGlobalUni(text);
+                    UnmanagedMethods.SetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, hGlobal);
+                }
+            }
+            catch (TimeoutException)
+            {
+                Console.WriteLine("COULD NOT OPEN CLIPBOARD. COULDN'T SET TEXT");
+                Console.WriteLine("--BEGINNING OF TEXT--");
+                Console.WriteLine(text);
+                Console.WriteLine("--END OF TEXT--");
             }
         }
 
         public async Task ClearAsync()
         {
-            using(await OpenClipboard())
+            try
             {
-                UnmanagedMethods.EmptyClipboard();
+                using (await OpenClipboard())
+                {
+                    UnmanagedMethods.EmptyClipboard();
+                }
+            }
+            catch (TimeoutException)
+            {
+                Console.WriteLine("COULD NOT OPEN CLIPBOARD. IT WASN'T CLEARED");
             }
         }
 
