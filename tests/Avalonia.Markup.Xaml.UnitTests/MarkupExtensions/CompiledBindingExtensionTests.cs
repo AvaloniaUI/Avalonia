@@ -825,6 +825,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void ResolvesElementNameBindingFromLongFormWithoutPath()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <StackPanel>
+        <TextBlock Text='{CompiledBinding StringProperty}' x:Name='text' />
+        <TextBlock Text='{CompiledBinding ElementName=text}' x:Name='text2' />
+    </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("text2");
+
+                Assert.Equal("Avalonia.Controls.TextBlock", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void ResolvesRelativeSourceBindingLongForm()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -1494,6 +1516,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void Binds_To_Self()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Name='textBlock' Text='{CompiledBinding $self}' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
+
+                Assert.Equal("Avalonia.Controls.TextBlock", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void Binds_To_Self_Without_DataType()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -1542,6 +1586,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 button.IsEnabled = false;
 
                 Assert.False(button.IsVisible);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_RelativeSource_Self()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Name='textBlock' Text='{CompiledBinding RelativeSource={RelativeSource Self}}' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
+
+                Assert.Equal("Avalonia.Controls.TextBlock", textBlock.Text);
             }
         }
 
