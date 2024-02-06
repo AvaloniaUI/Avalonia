@@ -1327,13 +1327,19 @@ namespace Avalonia.Controls
                     case Key.Left:
                         selection = DetectSelection();
                         MoveHorizontal(-1, hasWholeWordModifiers, selection, true);
-                        movement = true;
+                        if (caretIndex != _presenter.CaretIndex)
+                        {
+                            movement = true;
+                        }
                         break;
 
                     case Key.Right:
                         selection = DetectSelection();
                         MoveHorizontal(1, hasWholeWordModifiers, selection, true);
-                        movement = true;
+                        if (caretIndex != _presenter.CaretIndex)
+                        {
+                            movement = true;
+                        }
                         break;
 
                     case Key.Up:
