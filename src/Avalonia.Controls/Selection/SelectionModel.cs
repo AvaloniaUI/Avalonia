@@ -69,6 +69,18 @@ namespace Avalonia.Controls.Selection
             get => _selectedIndex;
             set
             {
+                if (_operation is not null && _operation.UpdateCount == 0)
+                {
+                    // An operation is in the process of being committed. In this case, if the new
+                    // value for SelectedIndex is unchanged then we need to ignore it. It could be
+                    // the result of a two-way binding to SelectedIndex writing back to the
+                    // property. The binding system should really be fixed to ensure that it's not
+                    // writing back the same value, but this is a workaround until the binding
+                    // refactor is complete. See #13676.
+                    if (value == _selectedIndex)
+                        return;
+                }
+
                 using var update = BatchUpdate();
                 Clear();
                 Select(value);
@@ -675,8 +687,6 @@ namespace Avalonia.Controls.Selection
                     }
                 }
                 
-                
-
                 if (raisePropertyChanged)
                 {
                     if (oldSelectedIndex != _selectedIndex)

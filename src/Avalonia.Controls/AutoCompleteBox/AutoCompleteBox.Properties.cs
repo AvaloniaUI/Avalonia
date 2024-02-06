@@ -10,11 +10,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
     public partial class AutoCompleteBox
     {
+        /// <summary>
+        /// Defines see <see cref="TextBox.CaretIndex"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> CaretIndexProperty =
+            TextBox.CaretIndexProperty.AddOwner<AutoCompleteBox>(new(
+                defaultValue: 0,
+                defaultBindingMode:BindingMode.TwoWay));
+
         public static readonly StyledProperty<string?> WatermarkProperty =
             TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
 
@@ -159,6 +168,15 @@ namespace Avalonia.Controls
                 nameof(AsyncPopulator));
 
         /// <summary>
+        /// Gets or sets the caret index
+        /// </summary>
+        public int CaretIndex
+        {
+            get => GetValue(CaretIndexProperty);
+            set => SetValue(CaretIndexProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the minimum number of characters required to be entered
         /// in the text box before the <see cref="AutoCompleteBox" /> displays possible matches.
         /// </summary>
@@ -268,6 +286,7 @@ namespace Avalonia.Controls
         /// <value>The <see cref="T:Avalonia.Data.IBinding" /> object used
         /// when binding to a collection property.</value>
         [AssignBinding]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IBinding? ValueMemberBinding
         {
             get => _valueBindingEvaluator?.ValueBinding;

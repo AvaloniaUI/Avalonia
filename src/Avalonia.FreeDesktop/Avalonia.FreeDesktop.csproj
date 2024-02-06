@@ -13,7 +13,13 @@
 
   <ItemGroup>
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.15.0" />
-    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.11" PrivateAssets="All" />
+    <ProjectReference 
+      Include="..\..\external\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all"
+    />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DBusGeneratorMode" />
   </ItemGroup>
 
   <ItemGroup>

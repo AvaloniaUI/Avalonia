@@ -35,7 +35,7 @@ namespace Avalonia.DesignerSupport
                         new Uri($"avares://{Path.GetFileNameWithoutExtension(assemblyPath)}{xamlFileProjectPath}");
                 }
 
-                var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
+                var localAsm = assemblyPath != null ? Assembly.LoadFrom(Path.GetFullPath(assemblyPath)) : null;
                 var useCompiledBindings = localAsm?.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .FirstOrDefault(a => a.Key == "AvaloniaUseCompiledBindingsByDefault")?.Value;
 

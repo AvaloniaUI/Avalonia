@@ -17,6 +17,7 @@ namespace Avalonia.Media.TextFormatting
 
         private int _textSourceLength;
 
+        // TODO12: Remove in 12.0.0 and make fontFeatures parameter in main ctor optional
         /// <summary>
         /// Initializes a new instance of the <see cref="TextLayout" /> class.
         /// </summary>
@@ -51,10 +52,52 @@ namespace Avalonia.Media.TextFormatting
             double letterSpacing = 0,
             int maxLines = 0,
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
+            : this(text, typeface, null, fontSize, foreground, textAlignment, textWrapping, textTrimming, textDecorations, 
+            flowDirection, maxWidth, maxHeight, lineHeight, letterSpacing, maxLines, textStyleOverrides)
+        {
+        }
+        
+        // TODO12:Change signature in 12.0.0
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextLayout" /> class.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="typeface">The typeface.</param>
+        /// <param name="fontSize">Size of the font.</param>
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="textAlignment">The text alignment.</param>
+        /// <param name="textWrapping">The text wrapping.</param>
+        /// <param name="textTrimming">The text trimming.</param>
+        /// <param name="textDecorations">The text decorations.</param>
+        /// <param name="flowDirection">The text flow direction.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="lineHeight">The height of each line of text.</param>
+        /// <param name="letterSpacing">The letter spacing that is applied to rendered glyphs.</param>
+        /// <param name="maxLines">The maximum number of text lines.</param>
+        /// <param name="textStyleOverrides">The text style overrides.</param>
+        /// <param name="fontFeatures">Optional list of turned on/off features.</param>
+        public TextLayout(
+            string? text,
+            Typeface typeface,
+            FontFeatureCollection? fontFeatures,
+            double fontSize,
+            IBrush? foreground,
+            TextAlignment textAlignment = TextAlignment.Left,
+            TextWrapping textWrapping = TextWrapping.NoWrap,
+            TextTrimming? textTrimming = null,
+            TextDecorationCollection? textDecorations = null,
+            FlowDirection flowDirection = FlowDirection.LeftToRight,
+            double maxWidth = double.PositiveInfinity,
+            double maxHeight = double.PositiveInfinity,
+            double lineHeight = double.NaN,
+            double letterSpacing = 0,
+            int maxLines = 0,
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
         {
             _paragraphProperties =
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
-                    textDecorations, flowDirection, lineHeight, letterSpacing);
+                    textDecorations, flowDirection, lineHeight, letterSpacing, fontFeatures);
 
             _textSource = new FormattedTextSource(text ?? "", _paragraphProperties.DefaultTextRunProperties, textStyleOverrides);
 
@@ -484,13 +527,14 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="flowDirection">The text flow direction.</param>
         /// <param name="lineHeight">The height of each line of text.</param>
         /// <param name="letterSpacing">The letter spacing that is applied to rendered glyphs.</param>
+        /// <param name="features">Optional list of turned on/off features.</param>
         /// <returns></returns>
         internal static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
             IBrush? foreground, TextAlignment textAlignment, TextWrapping textWrapping,
             TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight,
-            double letterSpacing)
+            double letterSpacing, FontFeatureCollection? features)
         {
-            var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
+            var textRunStyle = new GenericTextRunProperties(typeface, features, fontSize, textDecorations, foreground);
 
             return new GenericTextParagraphProperties(flowDirection, textAlignment, true, false,
                 textRunStyle, textWrapping, lineHeight, 0, letterSpacing);
