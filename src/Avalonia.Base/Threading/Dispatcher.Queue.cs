@@ -194,7 +194,6 @@ public partial class Dispatcher
                 
                 if (Now - backgroundJobExecutionStartedAt.Value > _maximumInputStarvationTime)
                 {
-                    _signaled = true;
                     RequestBackgroundProcessing();
                     return;
                 }

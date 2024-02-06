@@ -116,7 +116,7 @@ namespace Avalonia.Skia
                 {
                     if (!_isDisposed)
                     {
-                        _context.Canvas.SetMatrix(_revertTransform);
+                        _context.Canvas.CSetMatrix(_revertTransform);
                         _context._leased = false;
                         _isDisposed = true;
                     }
@@ -273,7 +273,7 @@ namespace Avalonia.Skia
             {
                 var ac = shadow.Color;
 
-                var filter = SKImageFilter.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
+                var filter = SkiaCompat.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
                 var color = new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity));
 
                 paint.Reset();
@@ -752,7 +752,7 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                Canvas.SetMatrix(transform.ToSKMatrix());
+                Canvas.CSetMatrix(transform.ToSKMatrix());
             }
         }
 
