@@ -1,12 +1,14 @@
 using System;
-using System.Runtime.InteropServices;
-using Avalonia.Compatibility;
+using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 
 namespace Avalonia.Skia;
 
-internal static unsafe partial class SkiaCompat
+internal static partial class SkiaCompat
 {
+    private delegate void CanvasSetMatrixDelegate(SKCanvas canvas, in SKMatrix matrix);
+    private static CanvasSetMatrixDelegate? s_canvasSetMatrix; 
+
     public static void CSetMatrix(this SKCanvas canvas, SKMatrix matrix)
     {
         if (IsSkiaSharp3)
@@ -18,22 +20,19 @@ internal static unsafe partial class SkiaCompat
             LegacyCall(canvas, matrix);
         }
 
+        [DynamicDependency("SetMatrix(SkiaSharp.SKMatrix)", typeof(SKCanvas))]
         static void NewCall(SKCanvas canvas, SKMatrix matrix)
         {
-            var m44 = ToSkMatrix44(matrix);
-            if (OperatingSystemEx.IsIOS() || OperatingSystemEx.IsTvOS())
-                sk_canvas_set_matrix_ios(canvas.Handle, &m44);
-            else
-                sk_canvas_set_matrix(canvas.Handle, &m44);
+            if (s_canvasSetMatrix is null)
+            {
+                var method = typeof(SKCanvas).GetMethod("SetMatrix", new[] { typeof(SKMatrix).MakeByRefType() })!;
+                s_canvasSetMatrix = (CanvasSetMatrixDelegate)Delegate.CreateDelegate(typeof(CanvasSetMatrixDelegate), method);
+            }
+
+            s_canvasSetMatrix(canvas, matrix);
         }
 
         static void LegacyCall(SKCanvas canvas, SKMatrix matrix) =>
             canvas.SetMatrix(matrix);
     }
-
-    [DllImport("libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void sk_canvas_set_matrix(IntPtr ccanvas, sk_matrix44_t* cmatrix);
-
-    [DllImport("@rpath/libSkiaSharp.framework/libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void sk_canvas_set_matrix_ios(IntPtr ccanvas, sk_matrix44_t* cmatrix);
 }

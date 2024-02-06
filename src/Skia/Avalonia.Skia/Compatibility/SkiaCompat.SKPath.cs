@@ -1,24 +1,38 @@
 using System;
-using System.Runtime.InteropServices;
-using Avalonia.Compatibility;
+using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 
 namespace Avalonia.Skia;
 
-internal static unsafe partial class SkiaCompat
+internal static partial class SkiaCompat
 {
+    private delegate void PathTransformDelegate(SKPath canvas, in SKMatrix matrix);
+    private static PathTransformDelegate? s_pathTransform; 
+
     public static void CTransform(this SKPath path, ref SKMatrix matrix)
     {
-        fixed (SKMatrix* m = &matrix)
-            if (OperatingSystemEx.IsIOS() || OperatingSystemEx.IsTvOS())
-                sk_path_transform_ios(path.Handle, m);
-            else
-                sk_path_transform(path.Handle, m);
+        if (IsSkiaSharp3)
+        {
+            NewCall(path, matrix);
+        }
+        else
+        {
+            LegacyCall(path, matrix);
+        }
+
+        [DynamicDependency("Transform(SkiaSharp.SKMatrix)", typeof(SKPath))]
+        static void NewCall(SKPath path, SKMatrix matrix)
+        {
+            if (s_pathTransform is null)
+            {
+                var method = typeof(SKPath).GetMethod("Transform", new[] { typeof(SKMatrix).MakeByRefType() })!;
+                s_pathTransform = (PathTransformDelegate)Delegate.CreateDelegate(typeof(PathTransformDelegate), method);
+            }
+
+            s_pathTransform(path, matrix);
+        }
+
+        static void LegacyCall(SKPath path, SKMatrix matrix) =>
+            path.Transform(matrix);
     }
-
-    [DllImport("libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void sk_path_transform(IntPtr cpath, SKMatrix* cmatrix);
-
-    [DllImport("@rpath/libSkiaSharp.framework/libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void sk_path_transform_ios(IntPtr cpath, SKMatrix* cmatrix);
 }
