@@ -375,9 +375,6 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
                 TryGetTarget(out var target) &&
                 TargetProperty is not null)
             {
-                if (_mode is BindingMode.OneWayToSource)
-                    PublishValue(target.GetValue(TargetProperty));
-
                 var trigger = UpdateSourceTrigger;
 
                 if (trigger is UpdateSourceTrigger.PropertyChanged)
