@@ -102,6 +102,22 @@
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled"
                       ResourceKey="SystemControlDisabledTransparentBrush" />
 
+      <!-- Resources for HyperlinkButton.xaml -->
+      <StaticResource x:Key="HyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
+      <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+      <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="#681DA8" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPointerOver" Color="#681DA8" Opacity="0.9" />
+      <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+
       <!-- Resources for ComboBox.xaml -->
       <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
       <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
@@ -896,6 +912,22 @@
                       ResourceKey="SystemControlHighlightTransparentBrush" />
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled"
                       ResourceKey="SystemControlDisabledTransparentBrush" />
+
+      <!-- Resources for HyperlinkButton.xaml -->
+      <StaticResource x:Key="HyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
+      <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+      <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="#C58AF9"/>
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPointerOver" Color="#C58AF9" Opacity="0.9" />
+      <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
 
       <!-- Resources for ComboBox.xaml -->
       <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>

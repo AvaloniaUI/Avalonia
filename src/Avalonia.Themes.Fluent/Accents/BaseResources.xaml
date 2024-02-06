@@ -15,6 +15,7 @@
   <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
   <sys:Double x:Key="RefreshVisualizerIndicatorSize">24</sys:Double>
   <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
+  <Thickness x:Key="HyperlinkButtonBorderThemeThickness">1</Thickness>
 
   <!-- Override system shape defaults -->
   <CornerRadius x:Key="ControlCornerRadius">3</CornerRadius>
