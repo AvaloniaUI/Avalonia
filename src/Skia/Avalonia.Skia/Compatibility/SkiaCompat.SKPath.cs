@@ -20,7 +20,7 @@ internal static partial class SkiaCompat
             LegacyCall(path, matrix);
         }
 
-        [DynamicDependency("Transform(SkiaSharp.SKMatrix)", typeof(SKPath))]
+        [DynamicDependency("Transform", typeof(SKPath))]
         static void NewCall(SKPath path, SKMatrix matrix)
         {
             if (s_pathTransform is null)

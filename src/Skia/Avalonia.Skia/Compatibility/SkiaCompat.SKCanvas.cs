@@ -20,7 +20,7 @@ internal static partial class SkiaCompat
             LegacyCall(canvas, matrix);
         }
 
-        [DynamicDependency("SetMatrix(SkiaSharp.SKMatrix)", typeof(SKCanvas))]
+        [DynamicDependency("SetMatrix", typeof(SKCanvas))]
         static void NewCall(SKCanvas canvas, SKMatrix matrix)
         {
             if (s_canvasSetMatrix is null)
