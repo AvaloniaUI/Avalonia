@@ -711,7 +711,15 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
+            string text = null;
+            try
+            {
+                text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
+            }
+            catch (TimeoutException)
+            {
+                // Silently ignore.
+            }
 
             if (string.IsNullOrEmpty(text))
             {
