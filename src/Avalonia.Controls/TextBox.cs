@@ -1147,7 +1147,16 @@ namespace Avalonia.Controls
             var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
             if (clipboard != null)
-                text = await clipboard.GetTextAsync();
+            {
+                try
+                {
+                    text = await clipboard.GetTextAsync();
+                }
+                catch (TimeoutException)
+                {
+                    // Silently ignore.
+                }
+            }
 
             if (string.IsNullOrEmpty(text))
             {
