@@ -1411,7 +1411,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
-            keyboardNavigation: new KeyboardNavigationHandler(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new HeadlessTextShaperStub(),
