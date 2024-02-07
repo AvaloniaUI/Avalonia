@@ -44,6 +44,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
         private readonly AndroidInsetsManager _insetsManager;
         private readonly ClipboardImpl _clipboard;
+        private readonly AndroidLauncher _launcher;
         private ViewImpl _view;
         private WindowTransparencyLevel _transparencyLevel;
 
@@ -70,6 +71,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
             _transparencyLevel = WindowTransparencyLevel.None;
+            _launcher = new AndroidLauncher((Activity)avaloniaView.Context);
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
 
@@ -402,6 +404,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if(featureType == typeof(IClipboard))
             {
                 return _clipboard;
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return _launcher;
             }
 
             return null;
