@@ -959,9 +959,9 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true
                 };
 
-                RaiseTextEvent(target, $"123{Environment.NewLine}456");
+                RaiseTextEvent(target, $"123 {Environment.NewLine}456");
 
-                Assert.Equal($"123{Environment.NewLine}456", target.Text);
+                Assert.Equal($"123 {Environment.NewLine}456", target.Text);
             }
         }
 
@@ -975,9 +975,9 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = false
                 };
 
-                RaiseTextEvent(target, $"123{Environment.NewLine}456");
+                RaiseTextEvent(target, $"123 {Environment.NewLine}456");
 
-                Assert.Equal("123", target.Text);
+                Assert.Equal("123 ", target.Text);
             }
         }
 

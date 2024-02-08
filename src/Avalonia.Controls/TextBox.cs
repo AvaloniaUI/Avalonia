@@ -16,6 +16,7 @@ using Avalonia.Utilities;
 using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Automation.Peers;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -1074,12 +1075,19 @@ namespace Avalonia.Controls
 
             if (!AcceptsReturn)
             {
-                var endOfFirstLine = text.IndexOfAny(crlf);
-                if (endOfFirstLine >= 0)
+                var linebreakEnumerator = new LineBreakEnumerator(text.AsSpan());
+
+                while(linebreakEnumerator.MoveNext(out var linebreak))
                 {
-                    // All lines except the first one are discarded when TextBox does not accept Return key
-                    text = text.Substring(0, endOfFirstLine);
+                    if (linebreak.Required)
+                    {
+                        // All lines except the first one are discarded when TextBox does not accept Return key
+                        text = text.Substring(0, Math.Max(0, linebreak.PositionWrap - 1));
+
+                        break;
+                    }
                 }
+
             }
 
             for (var i = 0; i < invalidCharacters.Length; i++)
