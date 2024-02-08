@@ -216,7 +216,15 @@ namespace Avalonia.Controls
                 if (clipboard is null)
                     return;
 
-                var text = await clipboard.GetTextAsync();
+                string? text = null;
+                try
+                {
+                    text = await clipboard.GetTextAsync();
+                }
+                catch (TimeoutException)
+                {
+                    // Silently ignore.
+                }
 
                 if (text == null)
                     return;

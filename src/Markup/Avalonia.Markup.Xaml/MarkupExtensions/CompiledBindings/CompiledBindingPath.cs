@@ -255,7 +255,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         {
             Method = MethodBase.GetMethodFromHandle(method) as MethodInfo
                 ?? throw new ArgumentException("Invalid method handle", nameof(method));
-            DelegateType = Type.GetTypeFromHandle(delegateType);
+            DelegateType = Type.GetTypeFromHandle(delegateType)
+                ?? throw new ArgumentException("Unexpected null returned from Type.GetTypeFromHandle in MethodAsDelegateElement");
         }
 
         public MethodInfo Method { get; }

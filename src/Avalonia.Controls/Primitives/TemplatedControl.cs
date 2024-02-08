@@ -53,6 +53,12 @@ namespace Avalonia.Controls.Primitives
             TextElement.FontFamilyProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="FontFeaturesProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
+            TextElement.FontFeaturesProperty.AddOwner<TemplatedControl>();
+        
+        /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly StyledProperty<double> FontSizeProperty =
@@ -180,6 +186,15 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(FontFamilyProperty);
             set => SetValue(FontFamilyProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font features turned on/off.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => GetValue(FontFeaturesProperty);
+            set => SetValue(FontFeaturesProperty, value);
         }
 
         /// <summary>

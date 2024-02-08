@@ -1147,7 +1147,16 @@ namespace Avalonia.Controls
             var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
             if (clipboard != null)
-                text = await clipboard.GetTextAsync();
+            {
+                try
+                {
+                    text = await clipboard.GetTextAsync();
+                }
+                catch (TimeoutException)
+                {
+                    // Silently ignore.
+                }
+            }
 
             if (string.IsNullOrEmpty(text))
             {
@@ -1327,13 +1336,19 @@ namespace Avalonia.Controls
                     case Key.Left:
                         selection = DetectSelection();
                         MoveHorizontal(-1, hasWholeWordModifiers, selection, true);
-                        movement = true;
+                        if (caretIndex != _presenter.CaretIndex)
+                        {
+                            movement = true;
+                        }
                         break;
 
                     case Key.Right:
                         selection = DetectSelection();
                         MoveHorizontal(1, hasWholeWordModifiers, selection, true);
-                        movement = true;
+                        if (caretIndex != _presenter.CaretIndex)
+                        {
+                            movement = true;
+                        }
                         break;
 
                     case Key.Up:
@@ -2221,7 +2236,7 @@ namespace Avalonia.Controls
                 {
                     var fontSize = FontSize;
                     var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
+                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
                     var textLayout = new TextLayout(new LineTextSource(MaxLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
 
@@ -2237,7 +2252,7 @@ namespace Avalonia.Controls
                 {
                     var fontSize = FontSize;
                     var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
+                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
                     var textLayout = new TextLayout(new LineTextSource(MinLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
 
