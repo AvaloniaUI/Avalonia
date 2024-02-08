@@ -1100,10 +1100,12 @@ namespace Avalonia.X11
                     UpdateSizeHints(null);
                 }
 
+                XTranslateCoordinates(_x11.Display, _parentHandle, _x11.RootWindow, 0, 0, out var wx, out var wy, out _);
+
                 var changes = new XWindowChanges
                 {
-                    x = value.X,
-                    y = (int)value.Y
+                    x = value.X - wx,
+                    y = (int)value.Y - wy
                 };
 
                 XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWX | ChangeWindowFlags.CWY,
