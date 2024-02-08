@@ -325,14 +325,17 @@ namespace Avalonia.Controls
 
             if (key == Key.Space || key == Key.Enter)
             {
-                _isKeyboardPressed = false;
-                UpdatePseudoClasses();
-
-                // Consider this a click on the primary button
-                if (IsEffectivelyEnabled)
+                if (_isKeyboardPressed)
                 {
-                    OnClickPrimary(null);
-                    e.Handled = true;
+                    _isKeyboardPressed = false;
+                    UpdatePseudoClasses();
+
+                    // Consider this a click on the primary button
+                    if (IsEffectivelyEnabled)
+                    {
+                        OnClickPrimary(null);
+                        e.Handled = true;
+                    }
                 }
             }
             else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
