@@ -153,6 +153,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the font family.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => TextElement.GetFontFeatures(this);
+            set => TextElement.SetFontFeatures(this, value);
+        }
+
+        /// <summary>
         /// Gets or sets the font size.
         /// </summary>
         public double FontSize
@@ -329,7 +338,7 @@ namespace Avalonia.Controls.Presenters
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
 
-            var textLayout = new TextLayout(text, typeface, FontSize, foreground, TextAlignment,
+            var textLayout = new TextLayout(text, typeface, FontFeatures, FontSize, foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
                 flowDirection: FlowDirection, lineHeight: LineHeight, letterSpacing: LetterSpacing);
 
@@ -531,7 +540,7 @@ namespace Avalonia.Controls.Presenters
             if (!string.IsNullOrEmpty(preeditText))
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
-                        new GenericTextRunProperties(typeface, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
 
@@ -547,7 +556,7 @@ namespace Avalonia.Controls.Presenters
                     textStyleOverrides = new[]
                     {
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
                             foregroundBrush: SelectionForegroundBrush))
                     };
                 }
@@ -593,12 +602,6 @@ namespace Avalonia.Controls.Presenters
             _textLayout = null;
 
             InvalidateMeasure();
-        }
-
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
-            EnsureTextSelectionLayer();
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -894,8 +897,7 @@ namespace Avalonia.Controls.Presenters
 
             ResetCaretTimer();
 
-            if (TextSelectionHandleCanvas is { } canvas && _layer != null && !_layer.Children.Contains(canvas))
-                _layer?.Add(TextSelectionHandleCanvas);
+            EnsureTextSelectionLayer();
         }
 
         private void EnsureTextSelectionLayer()
@@ -903,10 +905,17 @@ namespace Avalonia.Controls.Presenters
             if (TextSelectionHandleCanvas == null)
             {
                 TextSelectionHandleCanvas = new TextSelectionHandleCanvas();
-                TextSelectionHandleCanvas.SetPresenter(this);
             }
+            TextSelectionHandleCanvas.SetPresenter(this);
             _layer = TextSelectorLayer.GetTextSelectorLayer(this);
-            if (_layer != null && !_layer.Children.Contains(TextSelectionHandleCanvas))
+            if (TextSelectionHandleCanvas.VisualParent is { } parent && parent != _layer)
+            {
+                if (parent is TextSelectorLayer l)
+                {
+                    l.Remove(TextSelectionHandleCanvas);
+                }
+            }
+            if (_layer != null && TextSelectionHandleCanvas.VisualParent != _layer)
                 _layer?.Add(TextSelectionHandleCanvas);
         }
 

@@ -174,7 +174,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             SetAdornedElement(adorner, visual);
-            SetIsClipEnabled(adorner, false);
 
             ((ISetLogicalParent) adorner).SetParent(visual);
             layer.Children.Add(adorner);

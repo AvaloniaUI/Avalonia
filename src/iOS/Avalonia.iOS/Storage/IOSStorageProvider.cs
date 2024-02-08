@@ -12,8 +12,6 @@ using UniformTypeIdentifiers;
 using UTTypeLegacy = MobileCoreServices.UTType;
 using UTType = UniformTypeIdentifiers.UTType;
 
-#nullable enable
-
 namespace Avalonia.iOS.Storage;
 
 internal class IOSStorageProvider : IStorageProvider
@@ -68,8 +66,10 @@ internal class IOSStorageProvider : IStorageProvider
             var allowedUtils = options.FileTypeFilter?.SelectMany(f => f.AppleUniformTypeIdentifiers ?? Array.Empty<string>())
                 .ToArray() ?? new[]
             {
+#pragma warning disable CA1422
                 UTTypeLegacy.Content,
                 UTTypeLegacy.Item,
+#pragma warning restore CA1422
                 "public.data"
             };
             documentPicker = new UIDocumentPickerViewController(allowedUtils, UIDocumentPickerMode.Open);
@@ -148,7 +148,9 @@ internal class IOSStorageProvider : IStorageProvider
     {
         using var documentPicker = OperatingSystem.IsIOSVersionAtLeast(14) ?
             new UIDocumentPickerViewController(new[] { UTTypes.Folder }, false) :
+#pragma warning disable CA1422
             new UIDocumentPickerViewController(new string[] { UTTypeLegacy.Folder }, UIDocumentPickerMode.Open);
+#pragma warning restore CA1422
 
         if (OperatingSystem.IsIOSVersionAtLeast(13))
         {

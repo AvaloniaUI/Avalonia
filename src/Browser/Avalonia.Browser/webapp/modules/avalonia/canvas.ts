@@ -206,6 +206,7 @@ export class SizeWatcher {
     static observer: ResizeObserver;
     static elements: Map<string, HTMLElement>;
     private static lastMove: number;
+    private static timeoutHandle?: number;
 
     public static observe(element: HTMLElement, elementId: string | undefined, callback: (width: number, height: number) => void): void {
         if (!element || !callback) {
@@ -220,6 +221,20 @@ export class SizeWatcher {
             if (Date.now() - SizeWatcher.lastMove > 33) {
                 callback(element.clientWidth, element.clientHeight);
                 SizeWatcher.lastMove = Date.now();
+                if (SizeWatcher.timeoutHandle) {
+                    clearTimeout(SizeWatcher.timeoutHandle);
+                    SizeWatcher.timeoutHandle = undefined;
+                }
+            } else {
+                if (SizeWatcher.timeoutHandle) {
+                    clearTimeout(SizeWatcher.timeoutHandle);
+                }
+
+                SizeWatcher.timeoutHandle = setTimeout(() => {
+                    callback(element.clientWidth, element.clientHeight);
+                    SizeWatcher.lastMove = Date.now();
+                    SizeWatcher.timeoutHandle = undefined;
+                }, 100);
             }
         };
 

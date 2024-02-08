@@ -24,6 +24,8 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Platform.Storage.FileIO;
+
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -142,7 +144,9 @@ namespace Avalonia.X11
             defaultWidth = Math.Max(defaultWidth, 300);
             defaultHeight = Math.Max(defaultHeight, 200);
 
-            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
+            var parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
+
+            _handle = XCreateWindow(_x11.Display, parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
@@ -591,6 +595,9 @@ namespace Avalonia.X11
 
         private Thickness? GetFrameExtents()
         {
+            if (_systemDecorations != SystemDecorations.Full)
+                return new Thickness(0);
+
             XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_FRAME_EXTENTS, IntPtr.Zero,
                 new IntPtr(4), false, (IntPtr)Atom.AnyPropertyType, out var _,
                 out var _, out var nitems, out var _, out var prop);
@@ -897,6 +904,11 @@ namespace Avalonia.X11
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;
