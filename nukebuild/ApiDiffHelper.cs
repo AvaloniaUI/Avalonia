@@ -171,8 +171,15 @@ public static class ApiDiffHelper
 
                 if (targetDll?.entry is null)
                 {
+                    if (packageId == "Avalonia"
+                        && baselineDll.target is "net461" or "netcoreapp2.0")
+                    {
+                        // In 11.1 we have removed net461 and netcoreapp2.0 targets from Avalonia package.
+                        continue;
+                    }
+                    
                     var actualTargets = string.Join(", ",
-                        targetDlls.Select(d => $"{d.target} ({baselineDll.entry.Name})"));
+                        targetDlls.Select(d => $"{d.target} ({d.entry.Name})"));
                     throw new InvalidOperationException(
                         $"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}."
                         + $"\r\nActual targets: {actualTargets}.");
