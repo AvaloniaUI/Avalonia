@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 namespace Avalonia.Media.Imaging;
 
 internal static unsafe class PixelFormatTranscoder
@@ -15,8 +17,16 @@ internal static unsafe class PixelFormatTranscoder
         PixelFormat destFormat,
         AlphaFormat destAlphaFormat)
     {
-        var pixels = PixelFormatReader.Read(source, srcSize, sourceStride, srcFormat);
+        var pixelCount = srcSize.Width * srcSize.Height;
+        var bufferSize = pixelCount * Marshal.SizeOf<Rgba8888Pixel>();
+        var blob = new UnmanagedBlob(bufferSize);
+      
+        var pixels = new Span<Rgba8888Pixel>((void*)blob.Address, pixelCount);
 
-        PixelFormatWriter.Write(dest, srcSize, destStride, destFormat, destAlphaFormat, srcAlphaFormat, pixels);
+        PixelFormatReader.Read(pixels, source, srcSize, sourceStride, srcFormat);
+
+        PixelFormatWriter.Write(pixels, dest, srcSize, destStride, destFormat, destAlphaFormat, srcAlphaFormat);
+
+        blob.Dispose();
     }
 }

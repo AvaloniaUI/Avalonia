@@ -322,12 +322,12 @@ internal static unsafe class PixelFormatWriter
     }
 
     private static void Write<T>(
+        ReadOnlySpan<Rgba8888Pixel> pixels,
         IntPtr dest,
         PixelSize size,
         int stride,
         AlphaFormat alphaFormat,
-        AlphaFormat srcAlphaFormat,
-        ReadOnlySpan<Rgba8888Pixel> pixels) where T : struct, IPixelFormatWriter
+        AlphaFormat srcAlphaFormat) where T : struct, IPixelFormatWriter
     {
         var writer = new T();
 
@@ -390,57 +390,58 @@ internal static unsafe class PixelFormatWriter
         };
     }
 
-    public static void Write(IntPtr dest,
+    public static void Write(
+        ReadOnlySpan<Rgba8888Pixel> pixels,
+        IntPtr dest,
         PixelSize size,
         int stride,
         PixelFormat format,
         AlphaFormat alphaFormat,
-        AlphaFormat srcAlphaFormat,
-        ReadOnlySpan<Rgba8888Pixel> pixels)
+        AlphaFormat srcAlphaFormat)
     {
         switch (format.FormatEnum)
         {
             case PixelFormatEnum.Rgb565:
-                Write<Bgr565PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Bgr565PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Rgba8888:
-                Write<Rgba8888PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Rgba8888PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Bgra8888:
-                Write<Bgra8888PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Bgra8888PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.BlackWhite:
-                Write<BlackWhitePixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<BlackWhitePixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Gray2:
-                Write<Gray2PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Gray2PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Gray4:
-                Write<Gray4PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Gray4PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Gray8:
-                Write<Gray8PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Gray8PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Gray16:
-                Write<Gray16PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Gray16PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Gray32Float:
-                Write<Gray32FloatPixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Gray32FloatPixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Rgba64:
-                Write<Rgba64PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Rgba64PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Rgb24:
-                Write<Rgb24PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Rgb24PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Bgr24:
-                Write<Bgr24PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Bgr24PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Bgr555:
-                Write<Bgr555PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Bgr555PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Bgr565:
-                Write<Bgr565PixelFormatWriter>(dest, size, stride, alphaFormat, srcAlphaFormat, pixels);
+                Write<Bgr565PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             default:
                 throw new NotSupportedException($"Pixel format {format} is not supported");
