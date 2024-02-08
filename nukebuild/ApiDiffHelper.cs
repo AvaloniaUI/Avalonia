@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Nuke.Common.Tooling;
+using Serilog;
 using static Serilog.Log;
 
 public static class ApiDiffHelper
@@ -47,13 +48,18 @@ public static class ApiDiffHelper
                 var baselineDllPath = await ExtractDll("baseline", baselineDll, tempFolder);
 
                 var targetTfm = baselineDll.target;
-                if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
-                {
-                    targetTfm = newTfm;
-                }
-
                 var targetDll = targetDlls.FirstOrDefault(e =>
                     e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
+                if (targetDll is null)
+                {
+                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
+                    {
+                        targetTfm = newTfm;
+                        targetDll = targetDlls.FirstOrDefault(e =>
+                            e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
+                    }
+                }
+
                 if (targetDll?.entry is null)
                 {
                     throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
@@ -142,16 +148,32 @@ public static class ApiDiffHelper
                 var baselineDllPath = await ExtractDll("baseline", baselineDll, tempFolder);
 
                 var targetTfm = baselineDll.target;
-                if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
-                {
-                    targetTfm = newTfm;
-                }
-
                 var targetDll = targetDlls.FirstOrDefault(e =>
                     e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
-                if (targetDll.entry is null)
+                if (targetDll?.entry is null)
                 {
-                    throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
+                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
+                    {
+                        targetTfm = newTfm;
+                        targetDll = targetDlls.FirstOrDefault(e =>
+                            e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
+                    }
+                }
+                if (targetDll?.entry is null && targetDlls.Count == 1)
+                {
+                    targetDll = targetDlls.First();
+                    Warning(
+                        $"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}." +
+                        $"Resolved: {targetDll.target} ({targetDll.entry.Name})");
+                }
+
+                if (targetDll?.entry is null)
+                {
+                    var actualTargets = string.Join(", ",
+                        targetDlls.Select(d => $"{d.target} ({baselineDll.entry.Name})"));
+                    throw new InvalidOperationException(
+                        $"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}."
+                        + $"\r\nActual targets: {actualTargets}.");
                 }
 
                 var targetDllPath = await ExtractDll("target", targetDll, tempFolder);
