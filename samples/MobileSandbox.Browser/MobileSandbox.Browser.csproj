@@ -5,7 +5,6 @@
     <WasmMainJSPath>main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <WasmBuildNative>true</WasmBuildNative>
     <WasmRuntimeAssetsLocation>./</WasmRuntimeAssetsLocation>
   </PropertyGroup>
