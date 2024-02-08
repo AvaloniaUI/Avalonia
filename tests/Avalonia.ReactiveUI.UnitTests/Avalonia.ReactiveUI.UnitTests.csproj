@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
