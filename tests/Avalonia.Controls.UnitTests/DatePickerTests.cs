@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -201,6 +204,44 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(yearText.Text == "year");
                 Assert.True(datePicker.Classes.Contains(":hasnodate"));
             }
+        }
+
+        [Fact]
+        public void SelectedDate_EnableDataValidation()
+        {
+            var handled = false;
+            var datePicker = new DatePicker();
+
+            datePicker.SelectedDateChanged += (s, e) =>
+            {
+                var minDateTime = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
+                var maxDateTime = new DateTimeOffset(2010, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+                if (e.NewDate < minDateTime)
+                    throw new DataValidationException($"dateTime is less than {minDateTime}");
+                if (e.NewDate > maxDateTime)
+                    throw new DataValidationException($"dateTime is over {maxDateTime}");
+
+                handled = true;
+            };
+
+            // dateTime is less than
+            Assert.Throws<DataValidationException>(() => datePicker.SelectedDate = new DateTimeOffset(1999, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+            // dateTime is over
+            Assert.Throws<DataValidationException>(() => datePicker.SelectedDate = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+            var exception = new DataValidationException("failed validation");
+            var observable =
+                new BehaviorSubject<BindingNotification>(new BindingNotification(exception,
+                    BindingErrorType.DataValidationError));
+            datePicker.Bind(DatePicker.SelectedDateProperty, observable);
+
+            Assert.True(DataValidationErrors.GetHasErrors(datePicker));
+
+            Dispatcher.UIThread.RunJobs();
+            datePicker.SelectedDate = new DateTimeOffset(2005, 5, 10, 11, 12, 13, TimeSpan.Zero);
+            Assert.True(handled);
         }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(

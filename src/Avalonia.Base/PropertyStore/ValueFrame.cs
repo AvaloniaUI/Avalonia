@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
 namespace Avalonia.PropertyStore

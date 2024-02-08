@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 using Xunit;
 

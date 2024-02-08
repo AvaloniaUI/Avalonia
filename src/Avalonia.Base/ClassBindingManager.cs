@@ -14,7 +14,7 @@ namespace Avalonia
         {
             if (!s_RegisteredProperties.TryGetValue(className, out var prop))
                 s_RegisteredProperties[className] = prop = RegisterClassProxyProperty(className);
-            return target.Bind(prop, source, anchor);
+            return target.Bind(prop, source);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1001:The same AvaloniaProperty should not be registered twice",

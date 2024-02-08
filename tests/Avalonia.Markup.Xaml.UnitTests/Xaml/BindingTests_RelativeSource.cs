@@ -74,25 +74,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Binding_To_First_Ancestor_Without_AncestorType_Throws_Exception()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <Border Name='border1'>
-      <ContentControl Name='contentControl'>
-        <Button Name='button' Content='{Binding Name, RelativeSource={RelativeSource AncestorLevel=1}}'/>
-      </ContentControl>
-    </Border>
-</Window>";
-                Assert.Throws<InvalidOperationException>( () => AvaloniaRuntimeXamlLoader.Load(xaml));
-            }
-        }
-
-        [Fact]
         public void Binding_To_First_Ancestor_With_Shorthand_Works()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

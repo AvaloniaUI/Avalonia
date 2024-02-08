@@ -70,7 +70,7 @@ ComPtr<IAvnApplicationEvents> _events;
 {
     auto array = CreateAvnStringArray(urls);
     
-    _events->FilesOpened(array);
+    _events->UrlsOpened(array);
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender

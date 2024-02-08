@@ -13,12 +13,21 @@ namespace Avalonia.Native
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
             ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
+        }
+        
+        void IAvnApplicationEvents.UrlsOpened(IAvnStringArray urls)
+        {
+            // Raise the urls opened event to be compatible with legacy behavior.
+            ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
 
             if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
             {
                 foreach (var url in urls.ToStringArray())
                 {
-                    lifetime.RaiseUrl(new Uri(url));
+                    if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+                    {
+                        lifetime.RaiseUrl(uri);
+                    }
                 }
             }
         }

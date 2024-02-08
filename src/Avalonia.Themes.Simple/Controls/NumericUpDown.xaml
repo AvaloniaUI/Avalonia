@@ -12,6 +12,7 @@
         <ButtonSpinner Name="PART_Spinner"
                        HorizontalContentAlignment="Stretch"
                        VerticalContentAlignment="Stretch"
+                       IsTabStop="False"
                        AllowSpin="{TemplateBinding AllowSpin}"
                        Background="{TemplateBinding Background}"
                        BorderBrush="{TemplateBinding BorderBrush}"

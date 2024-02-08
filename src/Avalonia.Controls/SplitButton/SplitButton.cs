@@ -309,7 +309,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
+            if (key == Key.Space || key == Key.Enter)
             {
                 _isKeyboardPressed = true;
                 UpdatePseudoClasses();
@@ -323,7 +323,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
+            if (key == Key.Space || key == Key.Enter)
             {
                 _isKeyboardPressed = false;
                 UpdatePseudoClasses();
@@ -335,7 +335,8 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
-            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
+            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 OpenFlyout();
                 e.Handled = true;

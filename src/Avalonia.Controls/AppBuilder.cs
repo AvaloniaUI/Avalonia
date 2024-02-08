@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Media.Fonts;
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia
 {
@@ -53,6 +54,11 @@ namespace Avalonia
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
         public Action? RenderingSubsystemInitializer { get; private set; }
+
+        /// <summary>
+        /// Gets a method to override a lifetime factory.
+        /// </summary>
+        public Func<Type, IApplicationLifetime?>? LifetimeOverride { get; private set; }
 
         /// <summary>
         /// Gets the name of the currently selected rendering subsystem.
@@ -235,6 +241,13 @@ namespace Avalonia
         {
             RuntimePlatformServicesInitializer = () => StandardRuntimePlatformServices.Register(ApplicationType?.Assembly);
             RuntimePlatformServicesName = nameof(StandardRuntimePlatform);
+            return Self;
+        }
+
+        [PrivateApi]
+        public AppBuilder UseLifetimeOverride(Func<Type, IApplicationLifetime?> func)
+        {
+            LifetimeOverride = func;
             return Self;
         }
 

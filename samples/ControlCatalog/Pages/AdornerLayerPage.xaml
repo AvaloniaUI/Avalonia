@@ -50,7 +50,8 @@
                     Background="Cyan"
                     IsHitTestVisible="False"
                     Opacity="0.3"
-                    IsVisible="True">
+                    IsVisible="True"
+                    AdornerLayer.IsClipEnabled="False">
               <Line StartPoint="-10000,0" EndPoint="10000,0" Stroke="Cyan" StrokeThickness="1" />
               <Line StartPoint="-10000,42" EndPoint="10000,42" Stroke="Cyan" StrokeThickness="1" />
               <Line StartPoint="0,-10000" EndPoint="0,10000" Stroke="Cyan" StrokeThickness="1" />

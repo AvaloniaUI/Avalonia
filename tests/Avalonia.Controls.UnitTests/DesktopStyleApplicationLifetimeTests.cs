@@ -31,6 +31,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(new TestServices(dispatcherImpl: new ManagedDispatcherImpl(null))))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())    
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 Dispatcher.UIThread.Post(() => lifetime.Shutdown(1337));
                 var exitCode = lifetime.Start(Array.Empty<string>());
 
@@ -45,6 +47,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var windows = new List<Window> { new Window(), new Window(), new Window(), new Window() };
 
                 foreach (var window in windows)
@@ -65,6 +69,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                lifetime.SetupCore(Array.Empty<string>());
 
                 var hasExit = false;
 
@@ -99,6 +104,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                lifetime.SetupCore(Array.Empty<string>());
 
                 var hasExit = false;
 
@@ -127,6 +133,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnLastWindowClose;
+                lifetime.SetupCore(Array.Empty<string>());
 
                 var hasExit = false;
 
@@ -156,6 +163,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var window = new Window();
 
                 window.Show();
@@ -170,6 +179,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var window = new Window();
 
                 window.Show();
@@ -188,6 +199,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var window = new Window();
 
                 window.Show();
@@ -213,6 +226,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(services))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var window = new Window();
 
                 window.Show();
@@ -261,6 +276,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                lifetime.SetupCore(Array.Empty<string>());
 
                 var hasExit = false;
 
@@ -298,6 +314,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnLastWindowClose;
+                lifetime.SetupCore(Array.Empty<string>());
 
                 var hasExit = false;
 
@@ -336,6 +353,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var hasExit = false;
 
                 lifetime.Exit += (_, _) => hasExit = true;
@@ -369,6 +388,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: CreateDispatcherWithInstantMainLoop())))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var hasExit = false;
 
                 lifetime.Exit += (_, _) => hasExit = true;
@@ -402,6 +423,8 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                lifetime.SetupCore(Array.Empty<string>());
+
                 var hasExit = false;
 
                 lifetime.Exit += (_, _) => hasExit = true;

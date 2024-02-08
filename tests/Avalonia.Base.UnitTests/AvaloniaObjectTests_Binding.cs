@@ -462,7 +462,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object>();
 
-            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+            target.Bind(Class1.QuxProperty, source);
 
             source.OnNext(AvaloniaProperty.UnsetValue);
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
@@ -477,7 +477,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object>();
 
-            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+            target.Bind(Class1.QuxProperty, source);
 
             source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
@@ -851,103 +851,6 @@ namespace Avalonia.Base.UnitTests
             source.OnNext(BindingValue<string>.DataValidationError(new InvalidOperationException("Foo"), "bar"));
 
             Assert.Equal("bar", target.GetValue(Class1.FooProperty));
-        }
-
-        [Fact]
-        public void Bind_Logs_Binding_Error()
-        {
-            var target = new Class1();
-            var source = new Subject<BindingValue<double>>();
-            var called = false;
-            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
-
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
-            {
-                if (level == LogEventLevel.Warning &&
-                    area == LogArea.Binding &&
-                    mt == expectedMessageTemplate)
-                {
-                    called = true;
-                }
-            };
-
-            using (TestLogSink.Start(checkLogMessage))
-            {
-                target.Bind(Class1.QuxProperty, source);
-                source.OnNext(6.7);
-                source.OnNext(BindingValue<double>.BindingError(new InvalidOperationException("Foo")));
-
-                Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
-                Assert.True(called);
-            }
-        }
-
-        [Fact]
-        public void Untyped_LocalValue_Binding_Logs_Invalid_Value_Type()
-        {
-            var target = new Class1();
-            var source = new Subject<object?>();
-            var called = false;
-            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
-            var message = "Unable to convert object 'foo' of type 'System.String' to type 'System.Double'.";
-
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
-            {
-                if (level == LogEventLevel.Warning &&
-                    area == LogArea.Binding &&
-                    mt == expectedMessageTemplate &&
-                    src == target &&
-                    pv[0].GetType() == typeof(Class1) &&
-                    (AvaloniaProperty)pv[1] == Class1.QuxProperty &&
-                    (string)pv[2] == message)
-                {
-                    called = true;
-                }
-            };
-
-            using (TestLogSink.Start(checkLogMessage))
-            {
-                target.Bind(Class1.QuxProperty, source);
-                source.OnNext(1.2);
-                source.OnNext("foo");
-
-                Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
-                Assert.True(called);
-            }
-        }
-
-        [Fact]
-        public void Untyped_Style_Binding_Logs_Invalid_Value_Type()
-        {
-            var target = new Class1();
-            var source = new Subject<object?>();
-            var called = false;
-            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
-            var expectedMessage = "Unable to convert object 'foo' of type 'System.String' to type 'System.Double'.";
-
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
-            {
-                if (level == LogEventLevel.Warning &&
-                    area == LogArea.Binding &&
-                    mt == expectedMessageTemplate &&
-                    src == target &&
-                    pv[0].GetType() == typeof(Class1) &&
-                    (AvaloniaProperty)pv[1] == Class1.QuxProperty &&
-                    (string)pv[2] == expectedMessage)
-                {
-                    called = true;
-                }
-            };
-
-            using (TestLogSink.Start(checkLogMessage))
-            {
-                target.Bind(Class1.QuxProperty, source, BindingPriority.Style);
-                source.OnNext(1.2);
-                source.OnNext("foo");
-
-                Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
-                Assert.True(called);
-            }
         }
 
         [Theory]

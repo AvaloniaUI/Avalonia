@@ -66,7 +66,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                             bindingPathAssignment.Values[0] = new ParsedBindingPathNode(pathValue, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
                         }
+
+                        foundPath = true;
                     }
+                }
+
+                if (!foundPath && convertedNode != null)
+                {
+                    var nodes = new List<BindingExpressionGrammar.INode> { convertedNode };
+                    binding.Arguments.Add(new ParsedBindingPathNode(binding, context.GetAvaloniaTypes().CompiledBindingPath, nodes));
                 }
             }
 

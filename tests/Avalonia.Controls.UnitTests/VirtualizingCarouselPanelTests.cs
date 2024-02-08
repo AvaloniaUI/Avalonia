@@ -148,6 +148,55 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void Changing_SelectedIndex_transitions_forward_cycle()
+            {
+                using var app = Start();
+                var items = new Control[] { new Button(), new Canvas(), new Label() };
+                var transition = new Mock<IPageTransition>();
+                var (target, carousel) = CreateTarget(items, transition.Object);
+                var cycleindexes = new[] { 1, 2, 0};
+
+                for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                {
+                    carousel.SelectedIndex = cycleindexes[cycleIndex];
+                    Layout(target);
+
+                    var index = cycleIndex;
+                    transition.Verify(x => x.Start(
+                            index > 0 ? items[cycleindexes[index - 1]] : items[0],
+                            items[cycleindexes[index]],
+                            true,
+                            It.IsAny<CancellationToken>()),
+                        Times.Once);
+                }
+            }
+
+            [Fact]
+            public void Changing_SelectedIndex_transitions_backward_cycle()
+            {
+                using var app = Start();
+                var items = new Control[] { new Button(), new Canvas(), new Label() };
+                var transition = new Mock<IPageTransition>();
+                var (target, carousel) = CreateTarget(items, transition.Object);
+
+                var cycleindexes = new[] { 2, 1, 0};
+
+                for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                {
+                    carousel.SelectedIndex = cycleindexes[cycleIndex];
+                    Layout(target);
+
+                    var index = cycleIndex;
+                    transition.Verify(x => x.Start(
+                            index > 0 ? items[cycleindexes[index - 1]] : items[0],
+                            items[cycleindexes[index]],
+                            false,
+                            It.IsAny<CancellationToken>()),
+                        Times.Once);
+                }
+            }
+
+            [Fact]
             public void TransitionFrom_Control_Is_Recycled_When_Transition_Completes()
             {
                 using var app = Start();

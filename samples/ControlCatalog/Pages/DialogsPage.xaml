@@ -51,6 +51,15 @@
         <Button Name="OpenBoth">Select _Both</Button>
       </StackPanel>
     </Expander>
+    
+    <Expander Header="Launcher dialogs">
+      <StackPanel Spacing="4">
+        <TextBox Name="UriToLaunch" Watermark="Uri to launch" Text="https://avaloniaui.net/" />
+        <Button Name="LaunchUri">Launch Uri</Button>
+        <Button Name="LaunchFile">Launch File</Button>
+        <TextBlock Name="LaunchStatus" />
+      </StackPanel>
+    </Expander>
 
     <AutoCompleteBox x:Name="CurrentFolderBox" Watermark="Write full path/uri or well known folder name">
       <AutoCompleteBox.ItemsSource>

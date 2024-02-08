@@ -550,6 +550,8 @@
         if(hasInputModifier){
             if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
                 //User code has handled the event
+                _lastKeyDownEvent = nullptr;
+                
                 return;
             }
         }
@@ -567,10 +569,14 @@
     //InputMethod not active
     else{
         auto keyDownHandled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
-        
-        //Raise text input event for unhandled key down if there is some key symbol and no input modifier is present
-        if(!keyDownHandled && modifiers == AvnInputModifiersNone && keySymbol != NULL){
-            _parent->BaseEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
+            
+        //Raise text input event for unhandled key down
+        if(!keyDownHandled){
+            if(keySymbol != nullptr && key != AvnKeyEnter){
+                auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+                
+                _parent->BaseEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
+            }
         }
     }
     

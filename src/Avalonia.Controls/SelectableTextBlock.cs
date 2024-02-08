@@ -186,6 +186,7 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
+                FontFeatures,
                 FontSize,
                 TextDecorations,
                 Foreground);
@@ -207,7 +208,7 @@ namespace Avalonia.Controls
                 textStyleOverrides = new[]
                 {
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
                             foregroundBrush: SelectionForegroundBrush))
                     };
             }

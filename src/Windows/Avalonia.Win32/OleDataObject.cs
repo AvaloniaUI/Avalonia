@@ -41,6 +41,7 @@ namespace Avalonia.Win32
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms dragndrop compatability")]
+        [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "We still use BinaryFormatter for WinForms dragndrop compatability")]
         private unsafe object? GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
         {
             var formatEtc = new Interop.FORMATETC();
@@ -75,8 +76,8 @@ namespace Avalonia.Win32
                             using (var ms = new MemoryStream(data))
                             {
                                 ms.Position = DataObject.SerializedObjectGUID.Length;
-                                BinaryFormatter binaryFormatter = new BinaryFormatter();
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
+                                BinaryFormatter binaryFormatter = new BinaryFormatter();
                                 return binaryFormatter.Deserialize(ms);
 #pragma warning restore SYSLIB0011 // Type or member is obsolete
                             }

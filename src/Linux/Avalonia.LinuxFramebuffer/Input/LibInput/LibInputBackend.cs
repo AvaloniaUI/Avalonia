@@ -29,9 +29,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             var fd = libinput_get_fd(ctx);
 
-            var timeval = stackalloc IntPtr[2];
-
-
             foreach (var f in Directory.GetFiles("/dev/input", "event*"))
                 libinput_path_add_device(ctx, f);
             while (true)

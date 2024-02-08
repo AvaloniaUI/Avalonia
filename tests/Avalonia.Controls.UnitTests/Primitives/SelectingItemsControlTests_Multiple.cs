@@ -1349,7 +1349,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
-                    keyboardNavigation: new KeyboardNavigationHandler(),
+                    keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
                     textShaperImpl: new HeadlessTextShaperStub()));

@@ -1,11 +1,9 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
-    /// Defines how a member is read, written and observed by an
-    /// <see cref="ExpressionObserver"/>.
+    /// Defines how a member is read, written and observed by a binding.
     /// </summary>
     public interface IPropertyAccessorPlugin
     {
@@ -15,7 +13,6 @@ namespace Avalonia.Data.Core.Plugins
         /// <param name="obj">The object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <returns>True if the plugin can handle the property on the object; otherwise false.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         bool Match(object obj, string propertyName);
 
         /// <summary>
@@ -27,7 +24,6 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         IPropertyAccessor? Start(WeakReference<object?> reference,
             string propertyName);
     }

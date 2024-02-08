@@ -4,11 +4,16 @@ using Avalonia;
 using Avalonia.Android;
 using static Android.Content.Intent;
 
+// leanback and touchscreen are required for the Android TV.
+[assembly: UsesFeature("android.software.leanback", Required = false)]
+[assembly: UsesFeature("android.hardware.touchscreen", Required = false)]
+
 namespace ControlCatalog.Android
 {
     [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", MainLauncher = true, Exported = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
-    // IntentFilter are here to test IActivatableApplicationLifetime 
-    [IntentFilter(new [] { ActionView }, Categories = new [] { CategoryDefault, CategoryBrowsable }, DataScheme = "avln" )]
+    // CategoryBrowsable and DataScheme are required for Protocol activation.
+    // CategoryLeanbackLauncher is required for Android TV.
+    [IntentFilter(new [] { ActionView }, Categories = new [] { CategoryDefault, CategoryBrowsable, CategoryLeanbackLauncher }, DataScheme = "avln" )]
     public class MainActivity : AvaloniaMainActivity<App>
     {
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)

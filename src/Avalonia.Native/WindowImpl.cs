@@ -215,7 +215,7 @@ namespace Avalonia.Native
 
         public void SetParent(IWindowImpl parent)
         {
-            _native.SetParent(((WindowImpl)parent).Native);
+            _native.SetParent(((WindowImpl)parent)?.Native);
         }
 
         public void SetEnabled(bool enable)

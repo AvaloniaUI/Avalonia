@@ -31,10 +31,6 @@ namespace Avalonia.Android.Platform.Input
             { Keycode.PageDown, Key.PageDown },
             { Keycode.MoveEnd, Key.End },
             { Keycode.MoveHome, Key.Home },
-            { Keycode.DpadLeft, Key.Left },
-            { Keycode.DpadUp, Key.Up },
-            { Keycode.DpadRight, Key.Right },
-            { Keycode.DpadDown, Key.Down },
            // { Keycode.ButtonSelect?, Key.Select },
            // { Keycode.print?, Key.Print },
             //{ Keycode.execute?, Key.Execute },
@@ -209,7 +205,15 @@ namespace Avalonia.Android.Platform.Input
             //{ Keycode.?, Key.DbeEnterDialogConversionMode }
             //{ Keycode.?, Key.OemClear }
             //{ Keycode.?, Key.DeadCharProcessed }
-            { Keycode.Backslash, Key.OemBackslash }
+            { Keycode.Backslash, Key.OemBackslash },
+
+            // Loosely mapping DPad keys to Avalonia keys
+            { Keycode.Back, Key.Escape },
+            { Keycode.DpadCenter, Key.Space },
+            { Keycode.DpadLeft, Key.Left },
+            { Keycode.DpadUp, Key.Up },
+            { Keycode.DpadRight, Key.Right },
+            { Keycode.DpadDown, Key.Down }
         };
 
         internal static Key ConvertKey(Keycode key)

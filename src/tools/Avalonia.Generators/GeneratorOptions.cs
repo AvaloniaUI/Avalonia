@@ -14,7 +14,7 @@ internal enum BuildProperties
     AvaloniaNameGeneratorFilterByPath = 3,
     AvaloniaNameGeneratorFilterByNamespace = 4,
     AvaloniaNameGeneratorViewFileNamingStrategy = 5,
-    
+    AvaloniaNameGeneratorAttachDevTools = 6,
     // TODO add other generators properties here.
 }
 
@@ -47,6 +47,10 @@ internal class GeneratorOptions
     public string[] AvaloniaNameGeneratorFilterByNamespace => GetStringArrayProperty(
         BuildProperties.AvaloniaNameGeneratorFilterByNamespace,
         "*");
+
+    public bool AvaloniaNameGeneratorAttachDevTools => GetBoolProperty(
+        BuildProperties.AvaloniaNameGeneratorAttachDevTools,
+        true);
 
     private string[] GetStringArrayProperty(BuildProperties name, string defaultValue)
     {

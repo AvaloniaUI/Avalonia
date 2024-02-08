@@ -20,7 +20,11 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
             Fd = fd;
             _dev = dev;
             Name = Marshal.PtrToStringAnsi(NativeUnsafeMethods.libevdev_get_name(_dev));
+#if NET6_0_OR_GREATER
+            foreach (EvType type in Enum.GetValues<EvType>())
+#else 
             foreach (EvType type in Enum.GetValues(typeof(EvType)))
+#endif
             {
                 if (NativeUnsafeMethods.libevdev_has_event_type(dev, type) != 0)
                     EventTypes.Add(type);

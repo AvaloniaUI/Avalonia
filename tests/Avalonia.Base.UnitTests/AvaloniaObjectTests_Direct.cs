@@ -490,37 +490,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Binding_To_Direct_Property_Logs_BindingError()
-        {
-            var target = new Class1();
-            var source = new Subject<BindingValue<string>>();
-            var called = false;
-
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
-            {
-                if (level == LogEventLevel.Warning &&
-                    area == LogArea.Binding &&
-                    mt == "Error in binding to {Target}.{Property}: {Message}" &&
-                    pv.Length == 3 &&
-                    pv[0] is Class1 &&
-                    object.ReferenceEquals(pv[1], Class1.FooProperty) &&
-                    (string)pv[2] == "Binding Error Message")
-                {
-                    called = true;
-                }
-            };
-
-            using (TestLogSink.Start(checkLogMessage))
-            {
-                target.Bind(Class1.FooProperty, source);
-                source.OnNext("baz");
-                source.OnNext(BindingValue<string>.BindingError(new InvalidOperationException("Binding Error Message")));
-            }
-
-            Assert.True(called);
-        }
-
-        [Fact]
         public void Bind_Executes_On_UIThread()
         {
             AsyncContext.Run(async () =>

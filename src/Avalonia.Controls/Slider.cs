@@ -87,6 +87,7 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private bool _isDragging;
+        private bool _isFocusEngaged;
         private Track? _track;
         private Button? _decreaseButton;
         private Button? _increaseButton;
@@ -233,17 +234,29 @@ namespace Avalonia.Controls
 
             if (e.Handled || e.KeyModifiers != KeyModifiers.None) return;
 
+            var usingXyNavigation = this.IsAllowedXYNavigationMode(e.KeyDeviceType);
+            var allowArrowKeys = _isFocusEngaged || !usingXyNavigation; 
+
             var handled = true;
 
             switch (e.Key)
             {
-                case Key.Down:
-                case Key.Left:
+                case Key.Enter when usingXyNavigation:
+                    _isFocusEngaged = !_isFocusEngaged;
+                    handled = true;
+                    break;
+                case Key.Escape when usingXyNavigation:
+                    _isFocusEngaged = false;
+                    handled = true;
+                    break;
+                
+                case Key.Down when allowArrowKeys:
+                case Key.Left when allowArrowKeys:
                     MoveToNextTick(IsDirectionReversed ? SmallChange : -SmallChange);
                     break;
 
-                case Key.Up:
-                case Key.Right:
+                case Key.Up when allowArrowKeys:
+                case Key.Right when allowArrowKeys:
                     MoveToNextTick(IsDirectionReversed ? -SmallChange : SmallChange);
                     break;
 

@@ -13,20 +13,19 @@ namespace Avalonia
             builder
                 .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() =>
-            {
-                var platform = AvaloniaNativePlatform.Initialize(
-                    AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
-                    new AvaloniaNativePlatformOptions());
+                {
+                    var platform = AvaloniaNativePlatform.Initialize(
+                        AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
+                        new AvaloniaNativePlatformOptions());
 
-                    builder.AfterSetup (x=>
-                    {
-                        platform.SetupApplicationName();
-                        platform.SetupApplicationMenuExporter();
-                    });
-            });
-
-            AvaloniaLocator.CurrentMutable.Bind<ClassicDesktopStyleApplicationLifetime>()
-                .ToConstant(new MacOSClassicDesktopStyleApplicationLifetime());
+                        builder.AfterSetup (x=>
+                        {
+                            platform.SetupApplicationName();
+                            platform.SetupApplicationMenuExporter();
+                        });
+                })
+                .UseLifetimeOverride(type => type == typeof(ClassicDesktopStyleApplicationLifetime)
+                    ? new MacOSClassicDesktopStyleApplicationLifetime() : null);
 
             return builder;
         }

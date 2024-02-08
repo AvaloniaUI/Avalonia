@@ -42,6 +42,8 @@ namespace Avalonia
         private bool _notifyingResourcesChanged;
         private Action<IReadOnlyList<IStyle>>? _stylesAdded;
         private Action<IReadOnlyList<IStyle>>? _stylesRemoved;
+        private IApplicationLifetime? _applicationLifetime;
+        private bool _setupCompleted;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -60,7 +62,7 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
-        /// <inheritdoc/>
+        [Obsolete("Cast ApplicationLifetime to IActivatableApplicationLifetime instead.")]
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
         /// <inheritdoc/>
@@ -170,15 +172,28 @@ namespace Avalonia
 
         /// <inheritdoc/>
         bool IStyleHost.IsStylesInitialized => _styles != null;
-       
+
         /// <summary>
         /// Application lifetime, use it for things like setting the main window and exiting the app from code
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
         /// - <see cref="ISingleViewApplicationLifetime"/>
         /// - <see cref="IControlledApplicationLifetime"/> 
+        /// - <see cref="IActivatableApplicationLifetime"/> 
         /// </summary>
-        public IApplicationLifetime? ApplicationLifetime { get; set; }
+        public IApplicationLifetime? ApplicationLifetime
+        {
+            get => _applicationLifetime;
+            set
+            {
+                if (_setupCompleted)
+                {
+                    throw new InvalidOperationException($"It's not possible to change {nameof(ApplicationLifetime)} after Application was initialized.");
+                }
+
+                _applicationLifetime = value;
+            }
+        }
 
         /// <summary>
         /// Represents a contract for accessing global platform-specific settings.
@@ -207,7 +222,7 @@ namespace Avalonia
         /// Initializes the application by loading XAML etc.
         /// </summary>
         public virtual void Initialize() { }
-
+        
         /// <inheritdoc/>
         public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
@@ -263,13 +278,15 @@ namespace Avalonia
 
             AvaloniaLocator.CurrentMutable.Bind<IGlobalClock>()
                 .ToConstant(MediaContext.Instance.Clock);
+
+            _setupCompleted = true;
         }
 
         public virtual void OnFrameworkInitializationCompleted()
         {
         }
         
-        void  IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
+        void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
         {
             UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }

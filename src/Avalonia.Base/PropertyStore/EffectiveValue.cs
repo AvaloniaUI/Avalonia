@@ -128,6 +128,18 @@ namespace Avalonia.PropertyStore
             BindingPriority priority);
 
         /// <summary>
+        /// Sets the value and base value for a LocalValue priority, raising 
+        /// <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
+        /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being changed.</param>
+        /// <param name="value">The new value of the property.</param>
+        public abstract void SetLocalValueAndRaise(
+            ValueStore owner,
+            AvaloniaProperty property,
+            object? value);
+
+        /// <summary>
         /// Raises <see cref="AvaloniaObject.PropertyChanged"/> in response to an inherited value
         /// change.
         /// </summary>

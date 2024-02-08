@@ -1,8 +1,10 @@
-﻿using Avalonia.Reactive;
+﻿using System;
+using Avalonia.Data.Core;
+using Avalonia.Diagnostics;
 
 namespace Avalonia.Data
 {
-    internal class IndexerBinding : IBinding
+    internal class IndexerBinding : IBinding2
     {
         public IndexerBinding(
             AvaloniaObject source,
@@ -18,16 +20,20 @@ namespace Avalonia.Data
         public AvaloniaProperty Property { get; }
         private BindingMode Mode { get; }
 
+        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            var subject = new CombinedSubject<object?>(
-                new AnonymousObserver<object?>(x => Source.SetValue(Property, x, BindingPriority.LocalValue)),
-                Source.GetObservable(Property));
-            return new InstancedBinding(subject, Mode, BindingPriority.LocalValue);
+            var expression = new IndexerBindingExpression(Source, Property, target, targetProperty, Mode);
+            return new InstancedBinding(expression, Mode, BindingPriority.LocalValue);
+        }
+
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty targetProperty, object? anchor)
+        {
+            return new IndexerBindingExpression(Source, Property, target, targetProperty, Mode);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<TimeSpan?> SelectedTimeProperty =
             AvaloniaProperty.Register<TimePicker, TimeSpan?>(nameof(SelectedTime),
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         // Template Items
         private TimePickerPresenter? _presenter;
@@ -289,6 +289,14 @@ namespace Avalonia.Controls
         public void Clear()
         {
             SetCurrentValue(SelectedTimeProperty, null);
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
+
+            if (property == SelectedTimeProperty)
+                DataValidationErrors.SetError(this, error);
         }
     }
 }

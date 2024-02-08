@@ -5,13 +5,14 @@ using System.Linq;
 using Avalonia.Reactive;
 using Avalonia.Data.Converters;
 using Avalonia.Metadata;
+using Avalonia.Data.Core;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
     /// </summary>
-    public class MultiBinding : IBinding
+    public class MultiBinding : IBinding2
     {
         /// <summary>
         /// Gets the collection of child bindings.
@@ -72,25 +73,7 @@ namespace Avalonia.Data
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            var targetType = targetProperty?.PropertyType ?? typeof(object);
-            var converter = Converter;
-            // We only respect `StringFormat` if the type of the property we're assigning to will
-            // accept a string. Note that this is slightly different to WPF in that WPF only applies
-            // `StringFormat` for target type `string` (not `object`).
-            if (!string.IsNullOrWhiteSpace(StringFormat) &&
-                (targetType == typeof(string) || targetType == typeof(object)))
-            {
-                converter = new StringFormatMultiValueConverter(StringFormat!, converter);
-            }
-
-            var children = Bindings.Select(x => x.Initiate(target, null));
-
-            var input = children.Select(x => x?.Source)
-                                .Where(x => x is not null)!
-                                .CombineLatest()
-                                .Select(x => ConvertValue(x, targetType, converter))
-                                .Where(x => x != BindingOperations.DoNothing);
-
+            var input = InstanceCore(target, targetProperty);
             var mode = Mode == BindingMode.Default ?
                 targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
@@ -104,6 +87,35 @@ namespace Avalonia.Data
                     throw new NotSupportedException(
                         "MultiBinding currently only supports OneTime and OneWay BindingMode.");
             }
+        }
+
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
+        {
+            // TODO: Implement MultiBindingExpression instead of wrapping an observable.
+            var o = InstanceCore(target, property);
+            return new UntypedObservableBindingExpression(o, BindingPriority.LocalValue);
+        }
+
+        private IObservable<object?> InstanceCore(AvaloniaObject target, AvaloniaProperty? targetProperty)
+        {
+            var targetType = targetProperty?.PropertyType ?? typeof(object);
+            var converter = Converter;
+            // We only respect `StringFormat` if the type of the property we're assigning to will
+            // accept a string. Note that this is slightly different to WPF in that WPF only applies
+            // `StringFormat` for target type `string` (not `object`).
+            if (!string.IsNullOrWhiteSpace(StringFormat) &&
+                (targetType == typeof(string) || targetType == typeof(object)))
+            {
+                converter = new StringFormatMultiValueConverter(StringFormat!, converter);
+            }
+
+            var children = Bindings.Select(x => x.Initiate(target, null));
+
+            return children.Select(x => x?.Source)
+                .Where(x => x is not null)!
+                .CombineLatest()
+                .Select(x => ConvertValue(x, targetType, converter))
+                .Where(x => x != BindingOperations.DoNothing);
         }
 
         private object ConvertValue(IList<object?> values, Type targetType, IMultiValueConverter? converter)

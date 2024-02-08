@@ -12,6 +12,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -579,6 +580,11 @@ namespace Avalonia.Native
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;

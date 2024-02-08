@@ -11,7 +11,7 @@ namespace Avalonia.iOS
 {
     class DisplayLinkTimer : IRenderTimer
     {
-        public event Action<TimeSpan> Tick;
+        public event Action<TimeSpan>? Tick;
         private Stopwatch _st = Stopwatch.StartNew();
 
         public DisplayLinkTimer()

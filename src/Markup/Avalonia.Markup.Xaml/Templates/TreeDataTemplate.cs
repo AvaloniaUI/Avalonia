@@ -34,19 +34,19 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "If ItemsSource is a CompiledBinding, then path members will be preserver")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "If ItemsSource is a CompiledBinding, then path members will be preserved")]
         public InstancedBinding? ItemsSelector(object item)
         {
             if (ItemsSource != null)
             {
-                var obs = ItemsSource switch
+                var expression = ItemsSource switch
                 {
-                    Binding reflection => ExpressionObserverBuilder.Build(item, reflection.Path),
-                    CompiledBindingExtension compiled => new ExpressionObserver(item, compiled.Path.BuildExpression(false)),
+                    Binding reflection => reflection.CreateObservableForTreeDataTemplate(item),
+                    CompiledBindingExtension compiled => compiled.CreateObservableForTreeDataTemplate(item),
                     _ => throw new InvalidOperationException("TreeDataTemplate currently only supports Binding and CompiledBindingExtension!")
                 };
 
-                return InstancedBinding.OneWay(obs, BindingPriority.Style);
+                return new InstancedBinding(null, expression, BindingMode.OneWay, BindingPriority.Style);
             }
 
             return null;

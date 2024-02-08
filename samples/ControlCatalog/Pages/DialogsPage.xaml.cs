@@ -25,6 +25,7 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
 
             IStorageFolder? lastSelectedDirectory = null;
+            IStorageItem? lastSelectedItem = null;
             bool ignoreTextChanged = false;
 
             var results = this.Get<ItemsControl>("PickerLastResults");
@@ -222,6 +223,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Open file",
                     FileTypeFilter = GetFileTypes(),
+                    SuggestedFileName = "FileName",
                     SuggestedStartLocation = lastSelectedDirectory,
                     AllowMultiple = openMultiple.IsChecked == true
                 });
@@ -264,6 +266,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Folder file",
                     SuggestedStartLocation = lastSelectedDirectory,
+                    SuggestedFileName = "FileName",
                     AllowMultiple = openMultiple.IsChecked == true
                 });
 
@@ -288,11 +291,40 @@ namespace ControlCatalog.Pages
                 await SetPickerResult(folder is null ? null : new[] { folder });
                 SetFolder(folder);
             };
+            
+            this.Get<Button>("LaunchUri").Click += async delegate
+            {
+                var statusBlock = this.Get<TextBlock>("LaunchStatus");
+                if (Uri.TryCreate(this.Get<TextBox>("UriToLaunch").Text, UriKind.Absolute, out var uri))
+                {
+                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
+                    statusBlock.Text = "LaunchUriAsync returned " + result;
+                }
+                else
+                {
+                    statusBlock.Text = "Can't parse the Uri";
+                }
+            };
+
+            this.Get<Button>("LaunchFile").Click += async delegate
+            {
+                var statusBlock = this.Get<TextBlock>("LaunchStatus");
+                if (lastSelectedItem is not null)
+                {
+                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchFileAsync(lastSelectedItem);
+                    statusBlock.Text = "LaunchFileAsync returned " + result;
+                }
+                else
+                {
+                    statusBlock.Text = "Please select any file or folder first";
+                }
+            };
 
             void SetFolder(IStorageFolder? folder)
             {
                 ignoreTextChanged = true;
                 lastSelectedDirectory = folder;
+                lastSelectedItem = folder;
                 currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
                 ignoreTextChanged = false;
             }
@@ -342,6 +374,7 @@ namespace ControlCatalog.Pages
                             }
                         }
                     }
+                    lastSelectedItem = item;
                 }
 
                 results.ItemsSource = mappedResults;

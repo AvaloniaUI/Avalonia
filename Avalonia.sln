@@ -301,6 +301,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildTasks", "BuildTasks", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PInvoke", "tests\TestFiles\BuildTasks\PInvoke\PInvoke.csproj", "{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus.SourceGenerator", "external\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator.csproj", "{068247A8-21E8-40D2-83CF-8758410FACAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -710,6 +712,10 @@ Global
 		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{068247A8-21E8-40D2-83CF-8758410FACAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{068247A8-21E8-40D2-83CF-8758410FACAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{068247A8-21E8-40D2-83CF-8758410FACAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{068247A8-21E8-40D2-83CF-8758410FACAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -798,6 +804,7 @@ Global
 		{9D6AEF22-221F-4F4B-B335-A4BA510F002C} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{5BF0C3B8-E595-4940-AB30-2DA206C2F085} = {9D6AEF22-221F-4F4B-B335-A4BA510F002C}
 		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4} = {5BF0C3B8-E595-4940-AB30-2DA206C2F085}
+		{068247A8-21E8-40D2-83CF-8758410FACAD} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

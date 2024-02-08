@@ -4,6 +4,7 @@ using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.Win32Com;
 using Avalonia.Win32.WinRT;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.Input;
 
@@ -18,13 +19,17 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
     private static readonly Guid SID_IFrameworkInputPane  = new(0x5752238B, 0x24F0, 0x495A, 0x82, 0xF1, 0x2F, 0xD5, 0x93, 0x05, 0x67, 0x96);
 
     private readonly WindowImpl _windowImpl;
-    private readonly IFrameworkInputPane _inputPane;
+    private IFrameworkInputPane? _inputPane;
     private readonly uint _cookie;
 
     private WindowsInputPane(WindowImpl windowImpl)
     {
         _windowImpl = windowImpl;
-        _inputPane = UnmanagedMethods.CreateInstance<IFrameworkInputPane>(in CLSID_FrameworkInputPane, in SID_IFrameworkInputPane);
+        using (var inputPane =
+               UnmanagedMethods.CreateInstance<IFrameworkInputPane>(in CLSID_FrameworkInputPane, in SID_IFrameworkInputPane))
+        {
+            _inputPane = inputPane.CloneReference();
+        }
 
         using (var handler = new Handler(this))
         {
@@ -73,12 +78,16 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
 
     public void Dispose()
     {
-        if (_cookie != 0)
+        if (_inputPane is not null)
         {
-            _inputPane.Unadvise(_cookie);
-        }
+            if (_cookie != 0)
+            {
+                _inputPane.Unadvise(_cookie);
+            }
 
-        _inputPane.Dispose();
+            _inputPane.Dispose();
+            _inputPane = null;
+        }
     }
 
     private class Handler : CallbackBase, IFrameworkInputPaneHandler

@@ -543,6 +543,14 @@ namespace Avalonia
         internal abstract void RouteSetCurrentValue(AvaloniaObject o, object? value);
 
         /// <summary>
+        /// Routes an untyped SetDirectValueUnchecked call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="value">The value.</param>
+        internal virtual void RouteSetDirectValueUnchecked(AvaloniaObject o, object? value) =>
+            throw new NotSupportedException();
+
+        /// <summary>
         /// Routes an untyped Bind call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>

@@ -12,16 +12,16 @@ internal class SingleViewLifetime : ISingleViewApplicationLifetime, IActivatable
         avaloniaAppDelegate.Deactivated += (_, args) => Deactivated?.Invoke(this, args);
     }
             
-    public AvaloniaView View;
+    public AvaloniaView? View;
 
-    public Control MainView
+    public Control? MainView
     {
-        get => View.Content;
-        set => View.Content = value;
+        get => View!.Content;
+        set => View!.Content = value;
     }
 
-    public event EventHandler<ActivatedEventArgs> Activated;
-    public event EventHandler<ActivatedEventArgs> Deactivated;
+    public event EventHandler<ActivatedEventArgs>? Activated;
+    public event EventHandler<ActivatedEventArgs>? Deactivated;
     public bool TryLeaveBackground() => false;
     public bool TryEnterBackground() => false;
 }

@@ -896,6 +896,34 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.DoesNotContain("foo", resourceProvider.RequestedResources);
         }
 
+        [Fact]
+        public void Can_Detach_Control_With_DynamicResource_ControlTheme_That_Contains_DynamicResource()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    RequestedThemeVariant='Light'>
+    <Window.Resources>
+        <SolidColorBrush x:Key='Blue'>Blue</SolidColorBrush>
+        <ControlTheme x:Key='MyTheme' TargetType='Button'>
+            <Setter Property='Background' Value='{{DynamicResource Blue}}'/>
+        </ControlTheme>
+    </Window.Resources>
+
+    <Button Theme='{{DynamicResource MyTheme}}'/>
+</Window>";
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var target = Assert.IsType<Button>(window.Content);
+
+            window.Show();
+
+            Assert.Equal(Colors.Blue, ((ISolidColorBrush)target.Background).Color);
+
+            window.Content = null;
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

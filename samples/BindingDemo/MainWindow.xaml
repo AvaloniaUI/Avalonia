@@ -23,6 +23,7 @@
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Simple Bindings"/>
             <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
+            <TextBox Watermark="Two Way (LostFocus)" UseFloatingWatermark="True" Text="{Binding Path=StringValue, UpdateSourceTrigger=LostFocus}"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
             <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
             <!-- Removed due to #2983: reinstate when that's fixed.

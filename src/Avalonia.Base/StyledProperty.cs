@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
 
@@ -160,10 +161,16 @@ namespace Avalonia
 
         bool IStyledPropertyAccessor.ValidateValue(object? value)
         {
-            if (value is null && !typeof(TValue).IsValueType)
-                return ValidateValue?.Invoke(default!) ?? true;
-            if (value is TValue typed)
+            if (value is null)
+            {
+                if (!typeof(TValue).IsValueType || Nullable.GetUnderlyingType(typeof(TValue)) != null)
+                    return ValidateValue?.Invoke(default!) ?? true;
+            }
+            else if (value is TValue typed)
+            {
                 return ValidateValue?.Invoke(typed) ?? true;
+            }
+
             return false;
         }
 

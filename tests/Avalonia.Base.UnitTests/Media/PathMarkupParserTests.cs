@@ -319,5 +319,24 @@ namespace Avalonia.Base.UnitTests.Media
                 Assert.IsType<ArcSegment>(arcSegment);
             }
         }
+
+        [Fact]
+        public void Should_Handle_StartPoint_After_Empty_Figure()
+        {
+            var pathGeometry = new PathGeometry();
+            using var context = new PathGeometryContext(pathGeometry);
+            using var parser = new PathMarkupParser(context);
+            parser.Parse("M50,50z l -5,-5");
+
+            Assert.Equal(2, pathGeometry.Figures.Count);
+
+            var firstFigure = pathGeometry.Figures[0];
+
+            Assert.Equal(new Point(50, 50), firstFigure.StartPoint);
+
+            var secondFigure = pathGeometry.Figures[1];
+
+            Assert.Equal(new Point(50, 50), secondFigure.StartPoint);
+        }
     }
 }

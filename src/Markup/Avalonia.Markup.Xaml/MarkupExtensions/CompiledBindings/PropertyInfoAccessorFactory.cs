@@ -132,7 +132,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                 var value = Value;
                 PublishValue(value);
             }
-            catch { }
+            catch (Exception e)
+            {
+                PublishValue(new BindingNotification(e, BindingErrorType.Error));
+            }
         }
 
         private void SubscribeToChanges()

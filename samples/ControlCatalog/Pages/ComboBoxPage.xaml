@@ -33,13 +33,13 @@
                 </ComboBox>
 
                 <ComboBox WrapSelection="{Binding WrapSelection}">
-                    <ComboBox.Items>
+                    <ComboBox.ItemsSource>
                         <col:ArrayList>
                             <x:Null />
                             <sys:String>Hello</sys:String>
                             <sys:String>World</sys:String>
                         </col:ArrayList>
-                    </ComboBox.Items>
+                    </ComboBox.ItemsSource>
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="sys:String">
                             <Panel>

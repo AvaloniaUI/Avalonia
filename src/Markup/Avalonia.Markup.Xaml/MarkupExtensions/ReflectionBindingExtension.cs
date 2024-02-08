@@ -60,7 +60,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
 
-        public object? Source { get; set; }
+        public object? Source { get; set; } = AvaloniaProperty.UnsetValue;
 
         public string? StringFormat { get; set; }
 

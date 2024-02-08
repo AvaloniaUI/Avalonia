@@ -7,16 +7,20 @@ namespace Avalonia.iOS;
 [Unstable]
 public interface IAvaloniaViewController
 {
+#if !TVOS
     UIStatusBarStyle PreferredStatusBarStyle { get; set; }
+#endif
     bool PrefersStatusBarHidden { get; set; }
     Thickness SafeAreaPadding { get; }
-    event EventHandler SafeAreaPaddingChanged;
+    event EventHandler? SafeAreaPaddingChanged;
 }
 
 /// <inheritdoc cref="IAvaloniaViewController" />
 public class DefaultAvaloniaViewController : UIViewController, IAvaloniaViewController
 {
+#if !TVOS
     private UIStatusBarStyle? _preferredStatusBarStyle;
+#endif
     private bool? _prefersStatusBarHidden;
     
     /// <inheritdoc/>
@@ -33,6 +37,7 @@ public class DefaultAvaloniaViewController : UIViewController, IAvaloniaViewCont
         }
     }
 
+#if !TVOS
     /// <inheritdoc/>
     public override bool PrefersStatusBarHidden()
     {
@@ -55,6 +60,7 @@ public class DefaultAvaloniaViewController : UIViewController, IAvaloniaViewCont
             SetNeedsStatusBarAppearanceUpdate();
         }
     }
+#endif
 
     bool IAvaloniaViewController.PrefersStatusBarHidden
     {
@@ -62,7 +68,9 @@ public class DefaultAvaloniaViewController : UIViewController, IAvaloniaViewCont
         set
         {
             _prefersStatusBarHidden = value;
+#if !TVOS
             SetNeedsStatusBarAppearanceUpdate();
+#endif
         }
     }
 
@@ -70,5 +78,5 @@ public class DefaultAvaloniaViewController : UIViewController, IAvaloniaViewCont
     public Thickness SafeAreaPadding { get; private set; }
 
     /// <inheritdoc/>
-    public event EventHandler SafeAreaPaddingChanged;
+    public event EventHandler? SafeAreaPaddingChanged;
 }

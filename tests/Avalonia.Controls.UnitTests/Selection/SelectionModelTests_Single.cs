@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
@@ -1345,6 +1346,38 @@ namespace Avalonia.Controls.UnitTests.Selection
                 target.Source = null;
 
                 Assert.Equal(0, raised);
+            }
+
+            [Fact]
+            public void LostSelection_Is_Called_When_Source_Changed_While_CollectionChange_In_Progress()
+            {
+                // Issue #12733.
+                var data1 = new AvaloniaList<string> { "foo1", "bar1", "baz1" };
+                var data2 = new AvaloniaList<string> { "foo1", "bar1", "baz1" };
+                var target = new DerivedSelectionModel { Source = data1 };
+                var raised = 0;
+
+                target.LostSelection += (s, e) =>
+                {
+                    if (target.Source == data2)
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.UpdateSource(data2);
+
+                Assert.Equal(1, raised);
+            }
+
+            private class DerivedSelectionModel : SelectionModel<string?>
+            {
+                public void UpdateSource(IEnumerable? source)
+                {
+                    OnSourceCollectionChangeStarted();
+                    Source = source;
+                    OnSourceCollectionChangeFinished();
+                }
             }
         }
 

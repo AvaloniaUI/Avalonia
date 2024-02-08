@@ -1,3 +1,5 @@
+using System;
+using Avalonia.Diagnostics;
 using Avalonia.Metadata;
 
 namespace Avalonia.Data
@@ -23,6 +25,7 @@ namespace Avalonia.Data
         /// <returns>
         /// A <see cref="InstancedBinding"/> or null if the binding could not be resolved.
         /// </returns>
+        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         InstancedBinding? Initiate(
             AvaloniaObject target, 
             AvaloniaProperty? targetProperty,

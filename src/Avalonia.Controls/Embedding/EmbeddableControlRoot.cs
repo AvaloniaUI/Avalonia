@@ -51,6 +51,11 @@ namespace Avalonia.Controls.Embedding
         }
 
         protected override Type StyleKeyOverride => typeof(EmbeddableControlRoot);
-        public void Dispose() => PlatformImpl?.Dispose();
+
+        public void Dispose()
+        {
+            PlatformImpl?.Dispose();
+            LayoutManager?.Dispose();
+        }
     }
 }

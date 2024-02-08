@@ -32,5 +32,11 @@ namespace Avalonia
         /// <param name="instance">The instance.</param>
         /// <param name="value">The value.</param>
         void SetValue(AvaloniaObject instance, object? value);
+
+        /// <summary>
+        /// Gets the unset value of the property for the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        object? GetUnsetValue(Type type);
     }
 }

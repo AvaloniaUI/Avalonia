@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -141,6 +140,12 @@ namespace Avalonia
             }
 
             Setter((TOwner)instance, (TValue)value!);
+        }
+
+        object? IDirectPropertyAccessor.GetUnsetValue(Type type)
+        {
+            var metadata = GetMetadata(type);
+            return metadata.UnsetValue;
         }
     }
 }

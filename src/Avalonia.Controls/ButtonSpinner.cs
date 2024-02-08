@@ -157,6 +157,12 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            // If XY navigation is enabled - do not spin with arrow keys, instead use spinner buttons.
+            if (this.IsAllowedXYNavigationMode(e.KeyDeviceType))
+            {
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.Up:

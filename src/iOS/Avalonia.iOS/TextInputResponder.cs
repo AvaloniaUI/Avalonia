@@ -14,8 +14,6 @@ using UIKit;
 
 namespace Avalonia.iOS;
 
-#nullable enable
-
 partial class AvaloniaView
 {
 
@@ -108,7 +106,12 @@ partial class AvaloniaView
         {
             get
             {
-                var mode = UITextInputMode.CurrentInputMode;
+                UITextInputMode? mode = null;
+#if !TVOS
+#pragma warning disable CA1422
+                mode = UITextInputMode.CurrentInputMode;
+#pragma warning restore CA1422
+#endif
                 // Can be empty see https://developer.apple.com/documentation/uikit/uitextinputmode/1614522-activeinputmodes
                 if (mode is null && UITextInputMode.ActiveInputModes.Length > 0)
                 {

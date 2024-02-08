@@ -1,14 +1,11 @@
-using System;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
 {
@@ -16,6 +13,7 @@ namespace Avalonia.Diagnostics.Views
     {
         private readonly Panel _adorner;
         private AdornerLayer? _currentLayer;
+        private TreeViewItem? _hovered;
         private TreeView _tree;
 
         public TreePageView()
@@ -37,6 +35,11 @@ namespace Avalonia.Diagnostics.Views
                 },
             };
             AdornerLayer.SetIsClipEnabled(_adorner, false);
+        }
+
+        private static Thickness InvertThickness(Thickness input)
+        {
+            return new Thickness(-input.Left, -input.Top, -input.Right, -input.Bottom);
         }
 
         protected void AddAdorner(object? sender, PointerEventArgs e)
@@ -80,11 +83,6 @@ namespace Avalonia.Diagnostics.Views
             }
         }
 
-        private static Thickness InvertThickness(Thickness input)
-        {
-            return new Thickness(-input.Left, -input.Top, -input.Right, -input.Bottom);
-        }
-
         protected void RemoveAdorner(object? sender, PointerEventArgs e)
         {
             foreach (var border in _adorner.Children.OfType<Border>())
@@ -96,6 +94,31 @@ namespace Avalonia.Diagnostics.Views
 
             _currentLayer?.Children.Remove(_adorner);
             _currentLayer = null;
+        }
+
+        protected void UpdateAdorner(object? sender, PointerEventArgs e)
+        {
+            if (e.Source is not StyledElement source)
+            {
+                return;
+            }
+
+            var item = source.FindLogicalAncestorOfType<TreeViewItem>();
+            if (item == _hovered)
+            {
+                return;
+            }
+
+            RemoveAdorner(sender, e);
+
+            if (item is null || item.TreeViewOwner != _tree)
+            {
+                _hovered = null;
+                return;
+            }
+
+            _hovered = item;
+            AddAdorner(item, e);
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

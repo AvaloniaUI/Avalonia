@@ -139,8 +139,6 @@ namespace Avalonia.PropertyStore
                 var property = instance.Property;
                 var originalType = value.Type;
 
-                LoggingUtils.LogIfNecessary(owner, property, value);
-
                 if (!value.HasValue && value.Type != BindingValueType.DataValidationError)
                     value = value.WithValue(instance.GetCachedDefaultValue());
 
