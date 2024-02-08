@@ -53,6 +53,7 @@ namespace Avalonia.X11
         private PixelSize _realSize;
         private bool _cleaningUp;
         private IntPtr _handle;
+        private IntPtr _parentHandle;
         private IntPtr _xic;
         private IntPtr _renderHandle;
         private IntPtr _xSyncCounter;
@@ -84,6 +85,7 @@ namespace Avalonia.X11
             _mouse = new MouseDevice();
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
+            _parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
 
             var glfeature = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
@@ -121,7 +123,7 @@ namespace Avalonia.X11
             {
                 visual = visualInfo.Value.visual;
                 depth = (int)visualInfo.Value.depth;
-                attr.colormap = XCreateColormap(_x11.Display, _x11.RootWindow, visualInfo.Value.visual, 0);
+                attr.colormap = XCreateColormap(_x11.Display, _parentHandle, visualInfo.Value.visual, 0);
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
@@ -144,9 +146,7 @@ namespace Avalonia.X11
             defaultWidth = Math.Max(defaultWidth, 300);
             defaultHeight = Math.Max(defaultHeight, 200);
 
-            var parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
-
-            _handle = XCreateWindow(_x11.Display, parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
+            _handle = XCreateWindow(_x11.Display, _parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
@@ -517,7 +517,7 @@ namespace Avalonia.X11
                     _configurePoint = new PixelPoint(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
                 else
                 {
-                    XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
+                    XTranslateCoordinates(_x11.Display, _handle, _parentHandle,
                         0, 0,
                         out var tx, out var ty, out _);
                     _configurePoint = new PixelPoint(tx, ty);
@@ -1166,7 +1166,7 @@ namespace Avalonia.X11
                 }
             };
             xev.ClientMessageEvent.ptr4 = l4 ?? IntPtr.Zero;
-            XSendEvent(_x11.Display, _x11.RootWindow, false,
+            XSendEvent(_x11.Display, _parentHandle, false,
                 new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
 
         }
