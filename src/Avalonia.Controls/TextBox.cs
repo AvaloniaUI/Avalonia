@@ -325,7 +325,6 @@ namespace Avalonia.Controls
         private bool _canCopy;
         private bool _canPaste;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
-        private static readonly char[] crlf = new char[] { '\r', '\n' };
         private bool _canUndo;
         private bool _canRedo;
 
