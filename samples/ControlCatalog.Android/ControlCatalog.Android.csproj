@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0-android</TargetFramework>
+    <TargetFramework>net8.0-android</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
