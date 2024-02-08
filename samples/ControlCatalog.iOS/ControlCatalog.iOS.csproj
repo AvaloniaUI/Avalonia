@@ -2,8 +2,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
-    <TargetFramework>net7.0-ios</TargetFramework>
-<!--    <TargetFramework>net7.0-tvos</TargetFramework>-->
+    <TargetFramework>net8.0-ios</TargetFramework>
+<!--    <TargetFramework>net8.0-tvos</TargetFramework>-->
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
