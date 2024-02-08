@@ -256,7 +256,7 @@ namespace Avalonia.Browser
 
         private bool OnWheel(JSObject args)
         {
-            return _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+            return _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY")),
                 new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)), GetModifiers(args));
         }
 
