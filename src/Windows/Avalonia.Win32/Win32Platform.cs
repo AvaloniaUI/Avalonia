@@ -236,13 +236,11 @@ namespace Avalonia.Win32
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
-            using (var memoryStream = new MemoryStream())
+            using (var stream = new MemoryStream())
             {
-                bitmap.Save(memoryStream);
+                bitmap.Save(stream);
 
-                var iconData = memoryStream.ToArray();
-
-                return new IconImpl(new Win32Icon(iconData), iconData);
+                return CreateIconImpl(stream);
             }
         }
 
