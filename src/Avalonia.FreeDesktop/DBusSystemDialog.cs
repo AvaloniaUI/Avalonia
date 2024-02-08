@@ -129,8 +129,6 @@ namespace Avalonia.FreeDesktop
                 { "multiple", new DBusVariantItem("b", new DBusBoolItem(options.AllowMultiple)) }
             };
 
-            if (options.SuggestedFileName is { } currentName)
-                chooserOptions.Add("current_name", new DBusVariantItem("s", new DBusStringItem(currentName)));
             if (options.SuggestedStartLocation?.TryGetLocalPath()  is { } folderPath)
                 chooserOptions.Add("current_folder", new DBusVariantItem("ay", new DBusByteArrayItem(Encoding.UTF8.GetBytes(folderPath + "\0"))));
 
