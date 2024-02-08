@@ -1367,6 +1367,29 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var button = new Button();
+                var root = new TestRoot()
+                {
+                    Child = new VisualLayerManager()
+                    {
+                        Child = button
+                    }
+                };
+                var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
+
+                var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, button);
+
+                root.Measure(Size.Infinity);
+            }
+        }
+
         [Theory]
         [InlineData("A\nBB\nCCC\nDDDD", 0, 0)]
         [InlineData("A\nBB\nCCC\nDDDD", 1, 2)]
@@ -1411,7 +1434,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
-            keyboardNavigation: new KeyboardNavigationHandler(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new HeadlessTextShaperStub(),

@@ -287,6 +287,11 @@ namespace Avalonia.iOS
                     return _inputPane;
                 }
 
+                if (featureType == typeof(ILauncher))
+                {
+                    return new IOSLauncher();
+                }
+
                 return null;
             }
         }
