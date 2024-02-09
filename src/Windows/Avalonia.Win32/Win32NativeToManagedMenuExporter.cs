@@ -32,6 +32,7 @@ namespace Avalonia.Win32
                         [!MenuItem.IconProperty] = item.GetObservable(NativeMenuItem.IconProperty)
                             .Select(i => i is {} bitmap ? new Image { Source = bitmap } : null).ToBinding(),
                         [!MenuItem.IsEnabledProperty] = item.GetObservable(NativeMenuItem.IsEnabledProperty).ToBinding(),
+                        [!MenuItem.IsVisibleProperty] = item.GetObservable(NativeMenuItem.IsVisibleProperty).ToBinding(),
                         [!MenuItem.CommandProperty] = item.GetObservable(NativeMenuItem.CommandProperty).ToBinding(),
                         [!MenuItem.CommandParameterProperty] = item.GetObservable(NativeMenuItem.CommandParameterProperty).ToBinding(),
                         [!MenuItem.InputGestureProperty] = item.GetObservable(NativeMenuItem.GestureProperty).ToBinding()
