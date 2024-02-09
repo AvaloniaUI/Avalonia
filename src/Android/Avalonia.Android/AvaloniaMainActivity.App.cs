@@ -1,10 +1,14 @@
 ﻿#nullable enable
 
+using Avalonia.Android.Platform;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform;
+
 namespace Avalonia.Android
 {
     partial class AvaloniaMainActivity<TApp> where TApp : Application, new()
     {
-        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid(this);
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
 
         private static AppBuilder? s_appBuilder;
         internal static object? ViewContent;
@@ -40,6 +44,12 @@ namespace Avalonia.Android
 
                 s_appBuilder = builder;
             }
+
+            if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
+                is AndroidActivatableLifetime activatableLifetime)
+            {
+                activatableLifetime.Activity = this;
+            }            
 
             View = new AvaloniaView(this);
             if (ViewContent != null)

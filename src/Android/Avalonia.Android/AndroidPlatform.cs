@@ -18,15 +18,13 @@ namespace Avalonia
 {
     public static class AndroidApplicationExtensions
     {
-        public static AppBuilder UseAndroid(this AppBuilder builder, IAvaloniaActivity avaloniaActivity)
+        public static AppBuilder UseAndroid(this AppBuilder builder)
         {
             return builder
                 .UseAndroidRuntimePlatformSubsystem()
-                .UseWindowingSubsystem(() => AndroidPlatform.Initialize(avaloniaActivity), "Android")
+                .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
                 .UseSkia();
         }
-
-        public static AppBuilder UseAndroid(this AppBuilder builder) => UseAndroid(builder, null!);
     }
 
     /// <summary>
@@ -72,7 +70,7 @@ namespace Avalonia.Android
 
         internal static Compositor Compositor { get; private set; }
 
-        public static void Initialize(IAvaloniaActivity? avaloniaActivity)
+        public static void Initialize()
         {
             Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
@@ -84,13 +82,8 @@ namespace Avalonia.Android
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-
-            if (avaloniaActivity is not null)
-            {
-                AvaloniaLocator.CurrentMutable
-                    .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime(avaloniaActivity));
-            }
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());
 
             var graphics = InitializeGraphics(Options);
             if (graphics is not null)

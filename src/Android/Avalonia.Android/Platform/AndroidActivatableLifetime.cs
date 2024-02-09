@@ -6,18 +6,42 @@ namespace Avalonia.Android.Platform;
 
 internal class AndroidActivatableLifetime : IActivatableLifetime
 {
-    private readonly IAvaloniaActivity _activity;
+    private IAvaloniaActivity _activity;
 
-    public AndroidActivatableLifetime(IAvaloniaActivity activity)
+    public IAvaloniaActivity Activity
     {
-        _activity = activity;
-        _activity.Activated += (_, args) => Activated?.Invoke(this, args);
-        _activity.Deactivated += (_, args) => Deactivated?.Invoke(this, args);
-    }
+        get => _activity;
+        set
+        {
+            if (_activity is not null)
+            {
+                _activity.Activated -= ActivityOnActivated;
+                _activity.Deactivated -= ActivityOnDeactivated;
+            }
 
+            _activity = value;
+
+            if (_activity is not null)
+            {
+                _activity.Activated += ActivityOnActivated;
+                _activity.Deactivated += ActivityOnDeactivated;
+            }
+        }
+    }
+    
     public event EventHandler<ActivatedEventArgs> Activated;
     public event EventHandler<ActivatedEventArgs> Deactivated;
 
     public bool TryLeaveBackground() => (_activity as Activity)?.MoveTaskToBack(true) == true;
     public bool TryEnterBackground() => false;
+
+    private void ActivityOnDeactivated(object sender, ActivatedEventArgs e)
+    {
+        Deactivated?.Invoke(this, e);
+    }
+
+    private void ActivityOnActivated(object sender, ActivatedEventArgs e)
+    {
+        Activated?.Invoke(this, e);
+    }
 }
