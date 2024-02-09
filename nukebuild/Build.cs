@@ -89,7 +89,9 @@ partial class Build : NukeBuild
         if (Parameters.IsPackingToLocalCache)
             c
                 .AddProperty("ForcePackAvaloniaNative", "True")
-                .AddProperty("SkipObscurePlatforms", "True");
+                .AddProperty("SkipObscurePlatforms", "True")
+                .AddProperty("SkipBuildingSamples", "True")
+                .AddProperty("SkipBuildingTests", "True");
         return c;
     }
     DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
