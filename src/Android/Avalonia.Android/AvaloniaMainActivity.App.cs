@@ -4,7 +4,7 @@ namespace Avalonia.Android
 {
     partial class AvaloniaMainActivity<TApp> where TApp : Application, new()
     {
-        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid(this);
 
         private static AppBuilder? s_appBuilder;
         internal static object? ViewContent;
@@ -36,7 +36,7 @@ namespace Avalonia.Android
             {
                 var builder = CreateAppBuilder();
 
-                builder.SetupWithLifetime(new SingleViewLifetime(this));
+                builder.SetupWithLifetime(new SingleViewLifetime());
 
                 s_appBuilder = builder;
             }
