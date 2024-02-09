@@ -447,6 +447,20 @@ namespace Avalonia.Media
             return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb.ToString("x8", CultureInfo.InvariantCulture)}";
         }
 
+        internal void ToString(System.Text.StringBuilder builder)
+        {
+            uint rgb = ToUInt32();
+            if(KnownColors.TryGetKnownColorName(rgb, out var name))
+            {
+                builder.Append(name);
+            }
+            else
+            {
+                builder.Append('#');
+                builder.AppendFormat(CultureInfo.InvariantCulture, "{0:x8}", rgb);
+            }
+        }
+
         /// <summary>
         /// Returns the integer representation of the color.
         /// </summary>
