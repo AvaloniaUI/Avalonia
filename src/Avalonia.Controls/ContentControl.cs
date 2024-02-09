@@ -47,6 +47,7 @@ namespace Avalonia.Controls
             {
                 Name = "PART_ContentPresenter",
                 [~BackgroundProperty] = new TemplateBinding(BackgroundProperty),
+                [~BackgroundSizingProperty] = new TemplateBinding(BackgroundSizingProperty),
                 [~BorderBrushProperty] = new TemplateBinding(BorderBrushProperty),
                 [~BorderThicknessProperty] = new TemplateBinding(BorderThicknessProperty),
                 [~CornerRadiusProperty] = new TemplateBinding(CornerRadiusProperty),

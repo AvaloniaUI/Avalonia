@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Native;
 
 namespace Avalonia
@@ -12,17 +13,19 @@ namespace Avalonia
             builder
                 .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() =>
-            {
-                var platform = AvaloniaNativePlatform.Initialize(
-                    AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
-                    new AvaloniaNativePlatformOptions());
+                {
+                    var platform = AvaloniaNativePlatform.Initialize(
+                        AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
+                        new AvaloniaNativePlatformOptions());
 
-                    builder.AfterSetup (x=>
-                    {
-                        platform.SetupApplicationName();
-                        platform.SetupApplicationMenuExporter();
-                    });
-            });
+                        builder.AfterSetup (x=>
+                        {
+                            platform.SetupApplicationName();
+                            platform.SetupApplicationMenuExporter();
+                        });
+                })
+                .UseLifetimeOverride(type => type == typeof(ClassicDesktopStyleApplicationLifetime)
+                    ? new MacOSClassicDesktopStyleApplicationLifetime() : null);
 
             return builder;
         }

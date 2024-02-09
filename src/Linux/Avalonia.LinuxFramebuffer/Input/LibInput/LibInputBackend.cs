@@ -46,9 +46,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         private unsafe void InputThread(object state)
         {
             var ctx = (IntPtr)state;
-            var fd = libinput_get_fd(ctx);
-            
+            var fd = libinput_get_fd(ctx); 
             var pfd = new pollfd { fd = fd, events = NativeUnsafeMethods.EPOLLIN };
+
 
             foreach (var f in Directory.GetFiles("/dev/input", "event*"))
             {

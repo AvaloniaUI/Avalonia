@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using Avalonia.DesignerSupport;
@@ -6,6 +7,7 @@ using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Designer.HostApp
 {
+    [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
     class Program
     {
 #if NETFRAMEWORK
