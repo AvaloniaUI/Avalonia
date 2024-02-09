@@ -62,7 +62,7 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
-        [Obsolete("Cast ApplicationLifetime to IActivatableApplicationLifetime instead.")]
+        [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
         /// <inheritdoc/>
@@ -346,6 +346,11 @@ namespace Avalonia
             if (featureType == typeof(IPlatformSettings))
             {
                 return AvaloniaLocator.Current.GetService<IPlatformSettings>();
+            }
+
+            if (featureType == typeof(IActivatableLifetime))
+            {
+                return AvaloniaLocator.Current.GetService<IActivatableLifetime>();
             }
 
             // Do not return just any service from AvaloniaLocator.
