@@ -299,6 +299,18 @@ namespace Avalonia.Controls
         public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
 
         /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        public void ScrollIntoView(int index) => Presenter?.ScrollIntoView(index);
+
+        /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
+
+        /// <summary>
         /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
         /// </summary>
         /// <param name="container">The container.</param>
