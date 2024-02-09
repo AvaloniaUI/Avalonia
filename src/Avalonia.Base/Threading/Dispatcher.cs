@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Avalonia.Platform;
 
 namespace Avalonia.Threading;
@@ -90,6 +88,33 @@ public partial class Dispatcher : IDispatcher
     }
 
     /// <summary>
+    /// Creates an awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </summary>
+    /// <returns>
+    /// An awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </returns>
+    /// <remarks>
+    /// This method is equivalent to calling the <see cref="Resume(DispatcherPriority)"/> method
+    /// and passing in <see cref="DispatcherPriority.Background"/>.
+    /// </remarks>
+    public DispatcherPriorityAwaitable Resume() =>
+        Resume(DispatcherPriority.Background);
+
+    /// <summary>``
+    /// Creates an awaitable object that asynchronously resumes execution on the dispatcher. The work that occurs
+    /// when control returns to the code awaiting the result of this method is scheduled with the specified priority.
+    /// </summary>
+    /// <param name="priority">The priority at which to schedule the continuation.</param>
+    /// <returns>
+    /// An awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </returns>
+    public DispatcherPriorityAwaitable Resume(DispatcherPriority priority)
+    {
+        DispatcherPriority.Validate(priority, nameof(priority));
+        return new(this, priority);
+    }
+
+    /// <summary>
     /// Creates an awaitable object that asynchronously yields control back to the current dispatcher
     /// and provides an opportunity for the dispatcher to process other events.
     /// </summary>
@@ -101,8 +126,11 @@ public partial class Dispatcher : IDispatcher
     /// This method is equivalent to calling the <see cref="Yield(DispatcherPriority)"/> method
     /// and passing in <see cref="DispatcherPriority.Background"/>.
     /// </remarks>
-    public DispatcherYieldAwaitable Yield() =>
-        new(this, DispatcherPriority.Background);
+    /// <exception cref="InvalidOperationException">
+    /// The current thread is not the UI thread.
+    /// </exception>
+    public static DispatcherPriorityAwaitable Yield() =>
+        Yield(DispatcherPriority.Background);
 
     /// <summary>
     /// Creates an awaitable object that asynchronously yields control back to the current dispatcher
@@ -114,6 +142,16 @@ public partial class Dispatcher : IDispatcher
     /// An awaitable object that asynchronously yields control back to the current dispatcher
     /// and provides an opportunity for the dispatcher to process other events.
     /// </returns>
-    public DispatcherYieldAwaitable Yield(DispatcherPriority priority) =>
-        new(this, priority);
+    /// <exception cref="InvalidOperationException">
+    /// The current thread is not the UI thread.
+    /// </exception>
+    public static DispatcherPriorityAwaitable Yield(DispatcherPriority priority)
+    {
+        // When multiple dispatcher are supported by Avalonia
+        // there should be a member to fetch the current Dispatcher.
+        // But for now there's only one and it's fine to request it.
+        var current = UIThread;
+        current.VerifyAccess();
+        return current.Resume(priority);
+    }
 }
