@@ -16,6 +16,7 @@ using Avalonia.Utilities;
 using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Automation.Peers;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -839,9 +840,9 @@ namespace Avalonia.Controls
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if(e.Property == TextPresenter.PreeditTextProperty)
+            if (e.Property == TextPresenter.PreeditTextProperty)
             {
-                if(string.IsNullOrEmpty(e.OldValue as string) && !string.IsNullOrEmpty(e.NewValue as string))
+                if (string.IsNullOrEmpty(e.OldValue as string) && !string.IsNullOrEmpty(e.NewValue as string))
                 {
                     PseudoClasses.Set(":empty", false);
 
@@ -962,7 +963,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            input = RemoveInvalidCharacters(input);
+            input = SanitizeInputText(input);
 
             if (string.IsNullOrEmpty(input))
             {
@@ -1015,10 +1016,29 @@ namespace Avalonia.Controls
             }
         }
 
-        private string? RemoveInvalidCharacters(string? text)
+        private string? SanitizeInputText(string? text)
         {
             if (text is null)
                 return null;
+
+            if (!AcceptsReturn)
+            {
+                var lineBreakStart = 0;
+                var graphemeEnumerator = new GraphemeEnumerator(text.AsSpan());
+
+                while (graphemeEnumerator.MoveNext(out var grapheme))
+                {
+                    if (grapheme.FirstCodepoint.IsBreakChar)
+                    {
+                        break;
+                    }
+
+                    lineBreakStart += grapheme.Length;
+                }
+
+                // All lines except the first one are discarded when TextBox does not accept Return key
+                text = text.Substring(0, lineBreakStart);
+            }
 
             for (var i = 0; i < invalidCharacters.Length; i++)
             {
@@ -2085,7 +2105,7 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if(_scrollViewer != null)
+            if (_scrollViewer != null)
             {
                 var maxHeight = double.PositiveInfinity;
 
