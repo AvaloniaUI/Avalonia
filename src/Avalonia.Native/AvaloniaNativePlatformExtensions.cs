@@ -23,9 +23,7 @@ namespace Avalonia
                             platform.SetupApplicationName();
                             platform.SetupApplicationMenuExporter();
                         });
-                })
-                .UseLifetimeOverride(type => type == typeof(ClassicDesktopStyleApplicationLifetime)
-                    ? new MacOSClassicDesktopStyleApplicationLifetime() : null);
+                });
 
             return builder;
         }
