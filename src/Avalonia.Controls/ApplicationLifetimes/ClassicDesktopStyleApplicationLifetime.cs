@@ -68,7 +68,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             return DoShutdown(new ShutdownRequestedEventArgs(), true, false, exitCode);
         }
 
-        internal void SetupCore(string[] args)
+        internal void SubscribeGlobalEvents()
         {
             if (_compositeDisposable is not null)
             {
@@ -76,7 +76,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 // Until developer started it manually later. To avoid API breaking changes, it will execute Setup method twice.
                 return;
             }
-            
+
             _compositeDisposable = new CompositeDisposable(
                 Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (sender, _) =>
                 {
@@ -91,7 +91,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     var window = (Window)sender!;
                     _windows.Remove(window);
                     HandleWindowClosed(window);
-                }));
+                }));            
+        }
+
+        internal void SetupCore(string[] args)
+        {
+            SubscribeGlobalEvents();
 
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
@@ -214,6 +219,7 @@ namespace Avalonia
         {
             var lifetime = builder.LifetimeOverride?.Invoke(typeof(ClassicDesktopStyleApplicationLifetime)) as ClassicDesktopStyleApplicationLifetime 
                 ?? new ClassicDesktopStyleApplicationLifetime();
+            lifetime.SubscribeGlobalEvents();
 
             lifetime.Args = args;
             lifetimeBuilder?.Invoke(lifetime);
