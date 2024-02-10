@@ -132,6 +132,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Media.TextAlignment> TextAlignmentProperty =
             TextBox.TextAlignmentProperty.AddOwner<NumericUpDown>();
 
+        /// <summary>
+        /// Defines the <see cref="InnerContent"/> property
+        /// </summary>
+        public static readonly StyledProperty<object?> InnerContentProperty =
+            AvaloniaProperty.Register<NumericUpDown, object?>(nameof(InnerContent));
+
         private IDisposable? _textBoxTextChangedSubscription;
 
         private bool _internalValueSet;
@@ -329,6 +335,15 @@ namespace Avalonia.Controls
 
                 SetValidSpinDirection();
             };
+        }
+
+        /// <summary>
+        /// Gets or sets custom content in inside layout box. It is positioned on the opposite side to <see cref="ButtonSpinnerLocation"/>
+        /// </summary>
+        public object? InnerContent
+        {
+            get => GetValue(InnerContentProperty);
+            set => SetValue(InnerContentProperty, value);
         }
 
         /// <summary>

@@ -15,6 +15,16 @@
                        HorizontalContentAlignment="Center"
                        ButtonSpinnerLocation="Left"
                        Watermark="Enter text" />
+        <NumericUpDown ButtonSpinnerLocation="Left">
+          <NumericUpDown.InnerContent>
+            <Button Content="X"/>
+          </NumericUpDown.InnerContent>
+        </NumericUpDown>
+        <NumericUpDown ButtonSpinnerLocation="Right">
+          <NumericUpDown.InnerContent>
+            <Button Content="X"/>
+          </NumericUpDown.InnerContent>
+        </NumericUpDown>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
@@ -62,5 +72,12 @@
         </ButtonSpinner>
       </ControlTemplate>
     </Setter>
+    <Style Selector="^[ButtonSpinnerLocation=Left] /template/ TextBox#PART_TextBox">
+      <Setter Property="InnerRightContent" Value="{Binding InnerContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+    </Style>
+
+    <Style Selector="^[ButtonSpinnerLocation=Right] /template/ TextBox#PART_TextBox">
+      <Setter Property="InnerLeftContent" Value="{Binding InnerContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+    </Style>
   </ControlTheme>
 </ResourceDictionary>
