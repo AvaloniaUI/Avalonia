@@ -211,7 +211,7 @@ HRESULT AvnAppMenuItem::SetIsVisible (bool isVisible)
     
     @autoreleasepool
     {
-        [_native setHidden:(isHidden ? NSOnState : NSOffState)];
+        [_native setHidden:(isVisible ? NSOnState : NSOffState)];
         return S_OK;
     }
 }
