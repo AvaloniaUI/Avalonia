@@ -22,14 +22,6 @@ namespace Avalonia.Controls
                 defaultValue: false);
 
         /// <summary>
-        /// Defines the <see cref="IsVisitedOnClick"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsVisitedOnClickProperty =
-            AvaloniaProperty.Register<HyperlinkButton, bool>(
-                nameof(IsVisitedOnClick),
-                defaultValue: true);
-
-        /// <summary>
         /// Defines the <see cref="NavigateUri"/> property.
         /// </summary>
         public static readonly StyledProperty<Uri?> NavigateUriProperty =
@@ -54,21 +46,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the <see cref="IsVisited"/> property is automatically
-        /// set to true when the <see cref="HyperlinkButton"/> is clicked and the <see cref="NavigateUri"/>
-        /// is successfully launched.
-        /// </summary>
-        public bool IsVisitedOnClick
-        {
-            get => GetValue(IsVisitedOnClickProperty);
-            set => SetValue(IsVisitedOnClickProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the Uniform Resource Identifier (URI) navigated to when clicked.
+        /// Gets or sets the Uniform Resource Identifier (URI) automatically navigated to when the
+        /// <see cref="HyperlinkButton"/> is clicked.
         /// </summary>
         /// <remarks>
-        /// The URI may be any website or file location that can be launched by the Launcher service.
+        /// The URI may be any website or file location that can be launched using the Launcher service.
+        /// <br/><br/>
+        /// If a URI should not be automatically handled, leave this property unset and use the
+        /// <see cref="Button.Click"/> and <see cref="IsVisited"/> properties manually.
         /// </remarks>
         public Uri? NavigateUri
         {
@@ -92,21 +77,17 @@ namespace Avalonia.Controls
         {
             base.OnClick();
 
-            if (IsVisitedOnClick)
+            Uri? uri = NavigateUri;
+            if (uri is not null)
             {
-                Uri? uri = NavigateUri;
-
-                if (uri is not null)
+                Dispatcher.UIThread.Post(async () =>
                 {
-                    Dispatcher.UIThread.Post(async () =>
+                    bool success = true; // await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
+                    if (success)
                     {
-                        bool success = true; // await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
-                        if (success)
-                        {
-                            SetCurrentValue(IsVisitedProperty, true);
-                        }
-                    });
-                }
+                        SetCurrentValue(IsVisitedProperty, true);
+                    }
+                });
             }
         }
     }
