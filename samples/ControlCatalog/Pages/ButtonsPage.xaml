@@ -165,8 +165,8 @@
         <StackPanel Orientation="Horizontal">
           <HyperlinkButton x:Name="EnabledHyperlinkButton"
                            VerticalAlignment="Center"
-                           NavigateUri="https://en.wikipedia.org/wiki/Avalonia_(software_framework)">
-            <TextBlock Text="Avalonia Wiki" />
+                           NavigateUri="https://docs.avaloniaui.net/docs/welcome">
+            <TextBlock Text="Avalonia Docs" />
           </HyperlinkButton>
           <CheckBox IsChecked="{Binding #EnabledHyperlinkButton.IsVisited}"
                     Content="IsVisited"
@@ -174,8 +174,8 @@
                     Margin="10,0,0,0" />
         </StackPanel>
         <HyperlinkButton IsEnabled="False"
-                         NavigateUri="https://en.wikipedia.org/wiki/Avalonia_(software_framework)">
-          <TextBlock Text="Avalonia Wiki" />
+                         NavigateUri="https://docs.avaloniaui.net/docs/welcome">
+          <TextBlock Text="Avalonia Docs" />
         </HyperlinkButton>
       </StackPanel>
     </Border>

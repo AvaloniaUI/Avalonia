@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Metadata;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -50,10 +51,10 @@ namespace Avalonia.Controls
         /// <see cref="HyperlinkButton"/> is clicked.
         /// </summary>
         /// <remarks>
-        /// The URI may be any website or file location that can be launched using the Launcher service.
+        /// The URI may be any website or file location that can be launched using the <see cref="ILauncher"/> service.
         /// <br/><br/>
-        /// If a URI should not be automatically handled, leave this property unset and use the
-        /// <see cref="Button.Click"/> and <see cref="IsVisited"/> properties manually.
+        /// If a URI should not be automatically launched, leave this property unset and use the
+        /// <see cref="Button.Click"/> and <see cref="IsVisited"/> members directly.
         /// </remarks>
         public Uri? NavigateUri
         {
@@ -82,7 +83,7 @@ namespace Avalonia.Controls
             {
                 Dispatcher.UIThread.Post(async () =>
                 {
-                    bool success = true; // await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
+                    bool success = await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
                     if (success)
                     {
                         SetCurrentValue(IsVisitedProperty, true);
