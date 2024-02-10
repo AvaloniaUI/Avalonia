@@ -730,7 +730,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
-                        Imm32InputMethod.Current.HandleCompositionEnd();
+                        Imm32InputMethod.Current.HandleCompositionEnd(timestamp);
 
                         return IntPtr.Zero;
                     }
