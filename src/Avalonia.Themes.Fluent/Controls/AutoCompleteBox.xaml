@@ -44,7 +44,10 @@
                      CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
                      Padding="{TemplateBinding Padding}"
                      Margin="0"
-                     DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}" />
+                     DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                     InnerLeftContent="{TemplateBinding InnerLeftContent}"
+                     InnerRightContent="{TemplateBinding InnerRightContent}"
+                     />
             <Popup Name="PART_Popup" 
                    WindowManagerAddShadowHint="False"
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}" 
