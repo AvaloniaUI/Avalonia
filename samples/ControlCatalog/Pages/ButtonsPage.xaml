@@ -169,7 +169,7 @@
             <TextBlock Text="Avalonia Wiki" />
           </HyperlinkButton>
           <CheckBox IsChecked="{Binding #EnabledHyperlinkButton.IsVisited}"
-                    Content=":visited"
+                    Content="IsVisited"
                     VerticalAlignment="Center"
                     Margin="10,0,0,0" />
         </StackPanel>

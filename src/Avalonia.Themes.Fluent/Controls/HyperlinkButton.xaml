@@ -10,7 +10,10 @@
     </Border>
   </Design.PreviewWith>
 
+  <Thickness x:Key="HyperlinkButtonBorderThemeThickness">1</Thickness>
+
   <ControlTheme x:Key="{x:Type HyperlinkButton}" TargetType="HyperlinkButton">
+    <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Background" Value="{DynamicResource HyperlinkButtonBackground}" />
     <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
     <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForeground}" />
@@ -54,7 +57,7 @@
       <Setter Property="RenderTransform" Value="scale(0.98)" />
     </Style>
 
-    <Style Selector="^:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource HyperlinkButtonBackgroundPressed}" />
       <Setter Property="BorderBrush" Value="{DynamicResource HyperlinkButtonBorderBrushPressed}" />
       <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundPressed}" />

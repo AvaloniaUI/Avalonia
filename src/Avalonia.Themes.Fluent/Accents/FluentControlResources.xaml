@@ -104,8 +104,8 @@
 
       <!-- Resources for HyperlinkButton.xaml -->
       <StaticResource x:Key="HyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
-      <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.9" />
+      <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
       <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
       <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="#681DA8" />
       <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPointerOver" Color="#681DA8" Opacity="0.9" />
@@ -915,8 +915,8 @@
 
       <!-- Resources for HyperlinkButton.xaml -->
       <StaticResource x:Key="HyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
-      <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.9" />
+      <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
       <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
       <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="#C58AF9"/>
       <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPointerOver" Color="#C58AF9" Opacity="0.9" />
