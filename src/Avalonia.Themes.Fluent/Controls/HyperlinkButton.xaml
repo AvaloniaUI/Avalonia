@@ -69,8 +69,10 @@
       <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundDisabled}" />
     </Style>
 
-    <Style Selector="^:visited /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundVisited}" />
+    <Style Selector="^:visited">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundVisited}" />
+      </Style>
 
       <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundVisitedPointerOver}" />
