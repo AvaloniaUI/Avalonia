@@ -144,9 +144,7 @@ namespace Avalonia.X11
             defaultWidth = Math.Max(defaultWidth, 300);
             defaultHeight = Math.Max(defaultHeight, 200);
 
-            var parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
-
-            _handle = XCreateWindow(_x11.Display, parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
+            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
