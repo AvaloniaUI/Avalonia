@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
     <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)/interop.js"</EmccExtraLDFlags>
-    <EmccFlags>$(EmccExtraLDFlags) -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
+    <EmccFlags>$(EmccFlags) -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
+    <EmccFlags Condition="'$(AvaloniaAllowWebGl2)' == 'true'">$(EmccFlags) -sUSE_WEBGL2=1 -sMAX_WEBGL_VERSION=2 -lGL </EmccFlags>
   </PropertyGroup>
 
   <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->
