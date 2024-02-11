@@ -105,7 +105,8 @@ namespace Avalonia.X11
             XVisualInfo? visualInfo = null;
 
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
-            _useRenderWindow = glfeature != null;
+            // however, render window cause issues on gamescope for popups, disable it in that case
+            _useRenderWindow = !_popup && glfeature != null;
             
             var glx = glfeature as GlxPlatformGraphics;
             if (glx != null)
