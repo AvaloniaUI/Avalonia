@@ -398,6 +398,45 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal(RuntimeXamlDiagnosticSeverity.Error, warning.Severity);
             Assert.Contains("'ContentPresenter'", warning.Title);
         }
+
+        [Fact]
+        public void ControlTemplate_Outputs_Error_When_Missing_TemplatePart_Nested_ItemTemplate_Case()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui'
+                 xmlns:controls='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+                 TargetType='controls:CustomControlWithParts'>
+    <Border Name='PART_Typo_MainContentBorder'>
+        <StackPanel>
+            <ItemsControl>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- This PART_MainContentBorder shouldn't full parent ControlTemplate, PART_Typo_MainContentBorder still isn't properly named. -->
+                        <Border Name='PART_MainContentBorder' />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ContentPresenter Name='PART_ContentPresenter'
+                              Content='{TemplateBinding Content}'/>
+        </StackPanel>
+    </Border>
+</ControlTemplate>";
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml), new RuntimeXamlLoaderConfiguration
+            {
+                LocalAssembly = typeof(XamlIlTests).Assembly,
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            });
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Info, warning.Severity);
+            Assert.Contains("'PART_MainContentBorder'", warning.Title);
+        }
     }
     public class ListBoxHierarchyLine : Panel
     {
