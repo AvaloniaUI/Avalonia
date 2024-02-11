@@ -13,18 +13,14 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, IActi
 {
     public BrowserSingleViewLifetime()
     {
-        _initiallyVisible = InputHelper.SubscribeVisibilityChange(visible =>
+        bool? initiallyVisible = InputHelper.SubscribeVisibilityChange(visible =>
         {
-            _initiallyVisible = null;
-            var eventToTrigger = (visible ? Activated : Deactivated);
-            Dispatcher.UIThread.Invoke(
-                () => eventToTrigger?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background)),
-                DispatcherPriority.Background);
+            initiallyVisible = null;
+            (visible ? Activated : Deactivated)?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
         });
     }
     
     public AvaloniaView? View;
-    private bool? _initiallyVisible;
 
     public Control? MainView
     {
@@ -53,17 +49,5 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, IActi
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
     public bool TryLeaveBackground() => false;
-    public bool TryEnterBackground() => false;
-
-    internal void CompleteSetup()
-    {
-        // Trigger Activated as an initial state, if web page is visible, and wasn't hidden during initialization.
-        Dispatcher.UIThread.Invoke(() =>
-        {
-            if (_initiallyVisible == true)
-            {
-                Activated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
-            }
-        }, DispatcherPriority.Background);
-    }
+    public bool TryEnterBackground() => true;
 }
