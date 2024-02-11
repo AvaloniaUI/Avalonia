@@ -1,0 +1,50 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:generic="clr-namespace:System.Collections.Generic;assembly=netstandard"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.FocusPage">
+  <TabControl>
+    <TabItem Header="XY Focus">
+      <StackPanel x:Name="TabRoot" XYFocus.NavigationModes="{Binding #KeyboardNavigation.SelectedItem}">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="Navigation: " />
+          <ComboBox x:Name="KeyboardNavigation" SelectedIndex="0">
+            <ComboBox.ItemsSource>
+              <generic:List x:TypeArguments="XYFocusNavigationModes">
+                <XYFocusNavigationModes>Enabled</XYFocusNavigationModes>
+                <XYFocusNavigationModes>Disabled</XYFocusNavigationModes>
+              </generic:List>
+            </ComboBox.ItemsSource>
+          </ComboBox>
+          <ComboBox x:Name="NavigationStrategy" SelectedIndex="0">
+            <ComboBox.ItemsSource>
+              <generic:List x:TypeArguments="XYFocusNavigationStrategy">
+                <XYFocusNavigationStrategy>Projection</XYFocusNavigationStrategy>
+                <XYFocusNavigationStrategy>NavigationDirectionDistance</XYFocusNavigationStrategy>
+                <XYFocusNavigationStrategy>RectilinearDistance</XYFocusNavigationStrategy>
+              </generic:List>
+            </ComboBox.ItemsSource>
+          </ComboBox>
+        </StackPanel>
+
+        <Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="500">
+          <Canvas.Styles>
+            <Style Selector="Button">
+              <Setter Property="XYFocus.UpNavigationStrategy" Value="{Binding #NavigationStrategy.SelectedItem}" />
+              <Setter Property="XYFocus.DownNavigationStrategy" Value="{Binding #NavigationStrategy.SelectedItem}" />
+              <Setter Property="XYFocus.LeftNavigationStrategy" Value="{Binding #NavigationStrategy.SelectedItem}" />
+              <Setter Property="XYFocus.RightNavigationStrategy" Value="{Binding #NavigationStrategy.SelectedItem}" />
+            </Style>
+          </Canvas.Styles>
+
+          <Button Canvas.Top="0" Canvas.Left="50" Width="150" Height="150">A</Button>
+          <Button Canvas.Top="150" Canvas.Left="400" Width="50" Height="50">C</Button>
+          <Button Canvas.Top="200" Canvas.Left="0" Width="50" Height="50">B</Button>
+          <Button Canvas.Top="300" Canvas.Left="100" Width="50" Height="50">D</Button>
+        </Canvas>
+      </StackPanel>
+    </TabItem>
+  </TabControl>
+</UserControl>

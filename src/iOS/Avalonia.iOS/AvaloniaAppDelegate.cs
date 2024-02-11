@@ -15,7 +15,7 @@ namespace Avalonia.iOS
     public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate
         where TApp : Application, new()
     {
-        private EventHandler<ActivatedEventArgs> _onActivated, _onDeactivated;
+        private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
 
         public AvaloniaAppDelegate()
         {
@@ -37,7 +37,7 @@ namespace Avalonia.iOS
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
         
         [Export("window")]
-        public UIWindow Window { get; set; }
+        public UIWindow? Window { get; set; }
 
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
@@ -64,7 +64,7 @@ namespace Avalonia.iOS
 
             builder.SetupWithLifetime(lifetime);
 
-            Window.MakeKeyAndVisible();
+            Window!.MakeKeyAndVisible();
 
             return true;
         }

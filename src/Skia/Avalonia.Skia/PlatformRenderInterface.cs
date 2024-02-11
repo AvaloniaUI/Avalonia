@@ -94,7 +94,7 @@ namespace Avalonia.Skia
                 var glyph = glyphRun.GlyphInfos[i].GlyphIndex;
                 var glyphPath = skFont.GetGlyphPath(glyph);
 
-                if (!glyphPath.IsEmpty)
+                if (glyphPath is not null && !glyphPath.IsEmpty)
                 {
                     path.AddPath(glyphPath, (float)currentX, (float)currentY);
                 }

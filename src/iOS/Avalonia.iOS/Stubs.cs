@@ -12,6 +12,7 @@ namespace Avalonia.iOS
 
         private class CursorImplStub : ICursorImpl
         {
+            public CursorImplStub(){}
             public void Dispose() { }
         }
     }
@@ -22,7 +23,7 @@ namespace Avalonia.iOS
 
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
-        public ITrayIconImpl CreateTrayIcon() => null;
+        public ITrayIconImpl? CreateTrayIcon() => null;
     }
     
     internal class PlatformIconLoaderStub : IPlatformIconLoader
