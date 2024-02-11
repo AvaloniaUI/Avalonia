@@ -32,7 +32,7 @@
           <NumericUpDown.InnerRightContent>
             <TextBlock Text="m"
               TextAlignment="Center"
-              VerticalAlignment="Center"/>            
+              VerticalAlignment="Center"/>
           </NumericUpDown.InnerRightContent>
         </NumericUpDown>
       </StackPanel>
