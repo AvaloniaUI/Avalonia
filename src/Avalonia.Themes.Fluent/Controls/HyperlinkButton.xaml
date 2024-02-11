@@ -78,6 +78,10 @@
       <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundVisitedPointerOver}" />
       </Style>
+
+      <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundVisitedPressed}" />
+      </Style>
     </Style>
 
   </ControlTheme>

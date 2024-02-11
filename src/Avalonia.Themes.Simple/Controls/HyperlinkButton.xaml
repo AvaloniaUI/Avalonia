@@ -14,7 +14,7 @@
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="Padding" Value="4" />
@@ -44,7 +44,7 @@
     </Style>
 
     <Style Selector="^:visited /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="#C58AF9" />
+      <Setter Property="Foreground" Value="{DynamicResource HyperlinkVisitedBrush}" />
     </Style>
 
   </ControlTheme>
