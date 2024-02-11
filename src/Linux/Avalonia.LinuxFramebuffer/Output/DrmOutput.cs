@@ -121,7 +121,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             // prepare for the new ioctl call
             var handles = new uint[] {handle, 0, 0, 0};
             var pitches = new uint[] {stride, 0, 0, 0};
-            var offsets = Array.Empty<uint>();
+            var offsets = new uint[4];
 
             var ret = drmModeAddFB2(_card.Fd, w, h, format, handles, pitches,
                                     offsets, out var fbHandle, 0);

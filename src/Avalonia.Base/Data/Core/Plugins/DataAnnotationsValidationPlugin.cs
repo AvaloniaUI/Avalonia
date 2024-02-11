@@ -10,10 +10,10 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties on that have <see cref="ValidationAttribute"/>s.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
     public class DataAnnotationsValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public bool Match(WeakReference<object?> reference, string memberName)
         {
             reference.TryGetTarget(out var target);
@@ -26,7 +26,6 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object?> reference, string name, IPropertyAccessor inner)
         {
             return new Accessor(reference, name, inner);

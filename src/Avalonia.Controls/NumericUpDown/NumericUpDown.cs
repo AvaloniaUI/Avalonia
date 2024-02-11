@@ -137,6 +137,7 @@ namespace Avalonia.Controls
         private bool _internalValueSet;
         private bool _isSyncingTextAndValueProperties;
         private bool _isTextChangedFromUI;
+        private bool _isFocused;
 
         /// <summary>
         /// Gets the Spinner template part.
@@ -344,6 +345,16 @@ namespace Avalonia.Controls
             TextProperty.Changed.Subscribe(OnTextChanged);
             TextConverterProperty.Changed.Subscribe(OnTextConverterChanged);
             ValueProperty.Changed.Subscribe(OnValueChanged);
+
+            FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
+            IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
+        }
+
+        /// <inheritdoc />
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+            FocusChanged(IsKeyboardFocusWithin);
         }
 
         /// <inheritdoc />
@@ -351,6 +362,7 @@ namespace Avalonia.Controls
         {
             CommitInput(true);
             base.OnLostFocus(e);
+            FocusChanged(IsKeyboardFocusWithin);
         }
 
         /// <inheritdoc />
@@ -1163,6 +1175,28 @@ namespace Avalonia.Controls
                 return !isText;
             }
             return false;
+        }
+
+        private void FocusChanged(bool hasFocus)
+        {
+            // The OnGotFocus & OnLostFocus are asynchronously and cannot
+            // reliably tell you that have the focus.  All they do is let you
+            // know that the focus changed sometime in the past.  To determine
+            // if you currently have the focus you need to do consult the
+            // FocusManager.
+
+            bool wasFocused = _isFocused;
+            _isFocused = hasFocus;
+
+            if (hasFocus)
+            {
+
+                if (!wasFocused && TextBox != null)
+                {
+                    TextBox.Focus();
+                    TextBox.SelectAll();
+                }
+            }
         }
     }
 }

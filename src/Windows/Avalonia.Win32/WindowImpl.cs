@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -26,6 +26,8 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
+using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Threading;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 using static Avalonia.Controls.Platform.Win32SpecificOptions;
 
@@ -343,10 +345,15 @@ namespace Avalonia.Win32
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
-            
+
             if (featureType == typeof(IInputPane))
             {
                 return _inputPane;
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;
@@ -529,7 +536,7 @@ namespace Avalonia.Win32
                     return PixelSize.Empty;
                 }
 
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf(typeof(RECT)));
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf<RECT>());
                 GetWindowRect(_hwnd, out var frameRect);
                 var borderWidth = GetSystemMetrics(SystemMetric.SM_CXBORDER);
 
@@ -667,8 +674,23 @@ namespace Avalonia.Win32
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             e.Pointer.Capture(null);
-            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int)HitTestValues.HTCAPTION), IntPtr.Zero);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (e.Pointer.IsPrimary)
+                {
+                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                    // message or not, so they are not interesting
+
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                }
+                else
+                {
+                    throw new InvalidOperationException("BeginMoveDrag Failed");
+                }
+            }, DispatcherPriority.Send);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)

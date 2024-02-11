@@ -209,6 +209,11 @@ namespace Avalonia.VisualTree
 
         public static TransformedBounds? GetTransformedBounds(this Visual visual)
         {
+            if (visual is null)
+            {
+                throw new ArgumentNullException(nameof(visual));
+            }
+
             Rect clip = default;
             var transform = Matrix.Identity;
 
