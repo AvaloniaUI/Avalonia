@@ -114,27 +114,21 @@
       </StackPanel>
     </WrapPanel>
 
-    <WrapPanel>
-      <StackPanel Margin="5">
-        <Label Content="Inner Right Content"
-               FontWeight="Bold"/>
-        <NumericUpDown ButtonSpinnerLocation="Left"
-                       MinWidth="200">
-          <NumericUpDown.InnerContent>
-            <Button Content="X"/>
-          </NumericUpDown.InnerContent>
-        </NumericUpDown>
-      </StackPanel>
-      <StackPanel Margin="5">
-        <Label Content="Inner Left Content"
-               FontWeight="Bold"/>
-        <NumericUpDown ButtonSpinnerLocation="Right"
-                       MinWidth="200">
-          <NumericUpDown.InnerContent>
-            <Button Content="X"/>
-          </NumericUpDown.InnerContent>
-        </NumericUpDown>
-      </StackPanel>
-    </WrapPanel>
+    <StackPanel Margin="10">
+      <Label FontSize="14" FontWeight="Bold" Target="InnerContent"
+             Content="Inner Contents"/>
+      <NumericUpDown ButtonSpinnerLocation="Left"
+                     TextAlignment="Right"
+                     x:Name="InnerContent">
+        <NumericUpDown.InnerLeftContent>
+          <TextBlock Text="m"
+            TextAlignment="Center"
+            VerticalAlignment="Center"/>
+        </NumericUpDown.InnerLeftContent>
+        <NumericUpDown.InnerRightContent>
+          <Button Content="X"/>
+        </NumericUpDown.InnerRightContent>
+      </NumericUpDown>
+    </StackPanel>
   </StackPanel>
 </UserControl>
