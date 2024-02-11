@@ -129,7 +129,7 @@ namespace Avalonia.Controls
            AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsEnabled), true);
 
         public static readonly StyledProperty<bool> IsVisibleProperty =
-           AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsVisible), true);
+           Visual.IsVisibleProperty.AddOwner<NativeMenuItem>();
 
         public bool IsEnabled
         {

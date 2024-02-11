@@ -247,7 +247,7 @@ namespace Avalonia.FreeDesktop
                     if (name == "visible") {
                         if (!item.IsVisible)
                             return new DBusVariantItem("b", new DBusBoolItem(false));
-                        return null;
+                        return new DBusVariantItem("b", new DBusBoolItem(true));
                     }
 
                     if (name == "shortcut")
