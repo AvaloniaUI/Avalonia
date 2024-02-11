@@ -650,8 +650,9 @@ public partial class Dispatcher
         }
         else
         {
-            InvokeAsyncImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true),
-                CancellationToken.None);
+            InvokeImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true),
+                CancellationToken.None,
+                default);
         }
     }
 
