@@ -13,6 +13,7 @@
   <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
   <sys:Double x:Key="IconElementThemeHeight">20</sys:Double>
   <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
+  <sys:Double x:Key="RefreshVisualizerIndicatorSize">24</sys:Double>
   <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
 
   <!-- Override system shape defaults -->

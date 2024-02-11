@@ -73,6 +73,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class Serializer
     {
         private static readonly IDictionary<Type, Types> _typeMap = new Dictionary<Type, Types>
@@ -615,6 +616,8 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class MagicProperty
     {
         private readonly PropertyInfo _property;
@@ -689,6 +692,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class TypeHelper
     {
         private static readonly IDictionary<Type, TypeHelper> _cachedTypeLookup = new Dictionary<Type, TypeHelper>();
@@ -791,6 +795,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class ListWrapper : BaseWrapper
     {
         private IList _list;
@@ -826,6 +831,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal static class ListHelper
     {
         public static Type GetListItemType(Type enumerableType)
@@ -871,6 +877,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class CollectionWrapper<T> : BaseWrapper
     {
         private ICollection<T> _list;
@@ -899,6 +906,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal abstract class BaseWrapper
     {
         public static BaseWrapper Create(Type type, Type itemType, object existingContainer)
@@ -956,6 +964,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class ArrayWrapper<T> : BaseWrapper
     {
         private readonly List<T> _list = new List<T>();
@@ -1008,6 +1017,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class Deserializer
     {
         internal class Options

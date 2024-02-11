@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.avalonia.control-catalog" version="1.0.0" api-version="7.0" xmlns="http://tizen.org/ns/packages">
+<manifest package="com.avalonia.control-catalog" version="1.0.0" api-version="8.0" xmlns="http://tizen.org/ns/packages">
     <profile name="common" />
     <ui-application appid="com.avalonia.control-catalog" exec="ControlCatalog.Tizen.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" hw-acceleration="on" launch_mode="single">
         <label>Avalonia</label>
