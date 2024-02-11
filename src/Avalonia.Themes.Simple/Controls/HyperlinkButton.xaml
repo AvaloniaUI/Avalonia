@@ -20,6 +20,7 @@
     <Setter Property="Padding" Value="4" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextBlock.TextDecorations" Value="Underline" />
 
     <Setter Property="Template">
       <ControlTemplate>

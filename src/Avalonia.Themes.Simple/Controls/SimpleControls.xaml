@@ -2,10 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:ClassModifier="internal">
 
-  <Style Selector="HyperlinkButton TextBlock">
-    <Setter Property="TextDecorations" Value="Underline"/>
-  </Style>
-
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
