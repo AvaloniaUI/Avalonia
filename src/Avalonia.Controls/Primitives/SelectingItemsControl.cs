@@ -1236,7 +1236,7 @@ namespace Avalonia.Controls.Primitives
 
         private void TryInitializeSelectionSource(ISelectionModel? selection, bool shouldSelectItemFromSelectedValue)
         {
-            if (selection is not null && ItemsView.TryGetInitializedSource() is { } source)
+            if (selection is not null)
             {
                 // InternalSelectionModel keeps the SelectedIndex and SelectedItem values before the ItemsSource is set.
                 // However, SelectedValue isn't part of that model, so we have to set the SelectedItem from
@@ -1256,7 +1256,7 @@ namespace Avalonia.Controls.Primitives
                         selection.SelectedItem = item;
                 }
 
-                selection.Source = source;
+                selection.Source = ItemsView;
             }
         }
 
