@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Metadata
         public Type Type { get; set; }
 
         /// <summary>
-        /// Gets or sets flag whether template part is mandatory to be present in the template.  
+        /// Gets or sets a value indicating whether the template part is mandatory to be present in the template.
         /// </summary>
         public bool IsRequired { get; set; }
     }
