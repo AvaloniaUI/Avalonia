@@ -133,10 +133,16 @@ namespace Avalonia.Controls
             TextBox.TextAlignmentProperty.AddOwner<NumericUpDown>();
 
         /// <summary>
-        /// Defines the <see cref="InnerContent"/> property
+        /// Defines the <see cref="InnerLeftContent"/> property
         /// </summary>
-        public static readonly StyledProperty<object?> InnerContentProperty =
-            AvaloniaProperty.Register<NumericUpDown, object?>(nameof(InnerContent));
+        public static readonly StyledProperty<object?> InnerLeftContentProperty =
+            TextBox.InnerLeftContentProperty.AddOwner<NumericUpDown>();
+
+        /// <summary>
+        /// Defines the <see cref="InnerRightContent"/> property
+        /// </summary>
+        public static readonly StyledProperty<object?> InnerRightContentProperty =
+            TextBox.InnerRightContentProperty.AddOwner<NumericUpDown>();
 
         private IDisposable? _textBoxTextChangedSubscription;
 
@@ -338,12 +344,22 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets custom content in inside layout box. It is positioned on the opposite side to <see cref="ButtonSpinnerLocation"/>
+        /// Gets or sets custom content that is positioned on the left side of the text layout box
         /// </summary>
-        public object? InnerContent
+        public object? InnerLeftContent
         {
-            get => GetValue(InnerContentProperty);
-            set => SetValue(InnerContentProperty, value);
+            get => GetValue(InnerLeftContentProperty);
+            set => SetValue(InnerLeftContentProperty, value);
+        }
+
+
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the right side of the text layout box
+        /// </summary>
+        public object? InnerRightContent
+        {
+            get => GetValue(InnerRightContentProperty);
+            set => SetValue(InnerRightContentProperty, value);
         }
 
         /// <summary>

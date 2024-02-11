@@ -16,14 +16,24 @@
                        ButtonSpinnerLocation="Left"
                        Watermark="Enter text" />
         <NumericUpDown ButtonSpinnerLocation="Left">
-          <NumericUpDown.InnerContent>
+          <NumericUpDown.InnerLeftContent>
+            <TextBlock Text="m"
+              TextAlignment="Center"
+              VerticalAlignment="Center"/>
+          </NumericUpDown.InnerLeftContent>
+          <NumericUpDown.InnerRightContent>
             <Button Content="X"/>
-          </NumericUpDown.InnerContent>
+          </NumericUpDown.InnerRightContent>
         </NumericUpDown>
         <NumericUpDown ButtonSpinnerLocation="Right">
-          <NumericUpDown.InnerContent>
+          <NumericUpDown.InnerLeftContent>
             <Button Content="X"/>
-          </NumericUpDown.InnerContent>
+          </NumericUpDown.InnerLeftContent>
+          <NumericUpDown.InnerRightContent>
+            <TextBlock Text="m"
+              TextAlignment="Center"
+              VerticalAlignment="Center"/>            
+          </NumericUpDown.InnerRightContent>
         </NumericUpDown>
       </StackPanel>
     </Border>
@@ -68,16 +78,12 @@
                    Text="{TemplateBinding Text}"
                    TextAlignment="{TemplateBinding TextAlignment}"
                    AcceptsReturn="False"
-                   TextWrapping="NoWrap" />
+                   TextWrapping="NoWrap"
+                   InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   />
         </ButtonSpinner>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^[ButtonSpinnerLocation=Left] /template/ TextBox#PART_TextBox">
-      <Setter Property="InnerRightContent" Value="{Binding InnerContent, RelativeSource={RelativeSource TemplatedParent}}"/>
-    </Style>
-
-    <Style Selector="^[ButtonSpinnerLocation=Right] /template/ TextBox#PART_TextBox">
-      <Setter Property="InnerLeftContent" Value="{Binding InnerContent, RelativeSource={RelativeSource TemplatedParent}}"/>
-    </Style>
   </ControlTheme>
 </ResourceDictionary>

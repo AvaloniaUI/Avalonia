@@ -34,16 +34,12 @@
                    Text="{TemplateBinding Text}"
                    TextAlignment="{TemplateBinding TextAlignment}"
                    TextWrapping="NoWrap"
-                   Watermark="{TemplateBinding Watermark}" />
+                   Watermark="{TemplateBinding Watermark}"
+                   InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   />
         </ButtonSpinner>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^[ButtonSpinnerLocation=Left] /template/ TextBox#PART_TextBox">
-      <Setter Property="InnerRightContent" Value="{Binding InnerContent, RelativeSource={RelativeSource TemplatedParent}}"/>
-    </Style>
-
-    <Style Selector="^[ButtonSpinnerLocation=Right] /template/ TextBox#PART_TextBox">
-      <Setter Property="InnerLeftContent" Value="{Binding InnerContent, RelativeSource={RelativeSource TemplatedParent}}"/>
-    </Style>
   </ControlTheme>
 </ResourceDictionary>
