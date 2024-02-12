@@ -16,11 +16,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
     public class RelativePointTestPrimitivesHelper : Control
     {
         private readonly IBrush? _brush;
+        private readonly bool _shadow;
         private readonly IPen _line;
 
-        public RelativePointTestPrimitivesHelper(IBrush? brush)
+        public RelativePointTestPrimitivesHelper(IBrush? brush, bool shadow = false)
         {
             _brush = brush;
+            _shadow = shadow;
             if (brush != null)
                 _line = new Pen(brush, 10);
             
@@ -29,6 +31,14 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         
         public override void Render(DrawingContext context)
         {
+            if (_shadow)
+            {
+                var full = new Rect(default, Bounds.Size);
+                context.DrawRectangle(Brushes.White, null, full);
+                using (context.PushOpacity(0.3))
+                    context.DrawRectangle(_brush, null, full);
+            }
+
             context.DrawRectangle(_brush, null, new Rect(20, 20, 200, 60));
             context.DrawEllipse(_brush, null, new Rect(40, 100, 200, 20));
             context.DrawLine(_line, new Point(60, 140), new Point(240, 160));

@@ -808,34 +808,47 @@ namespace Avalonia.Skia
                 }
                 case IRadialGradientBrush radialGradient:
                 {
-                    var center = radialGradient.Center.ToPixels(targetRect).ToSKPoint();
+                    var centerPoint = radialGradient.Center.ToPixels(targetRect);
+                    var center = centerPoint.ToSKPoint();
                     // TODO: maybe introduce RadiusUnit?
-                    var radius = (float)(radialGradient.Radius * targetRect.Width);
+                    var radiusX = (radialGradient.RadiusX.ToValue(targetRect.Width));
+                    var radiusY = (radialGradient.RadiusY.ToValue(targetRect.Height));
 
                     var origin = radialGradient.GradientOrigin.ToPixels(targetRect).ToSKPoint();
 
+
+                    Matrix? transform = null;
+
+                    
+                    var radius = radiusX;
+                    if (radius != radiusY)
+                    {
+                        transform =
+                            Matrix.CreateTranslation(-centerPoint)
+                            * Matrix.CreateScale(1, radiusY / radiusX)
+                            * Matrix.CreateTranslation(centerPoint);
+                    }
+                    
+                    
+                    if (radialGradient.Transform != null)
+                    {
+                        var transformOrigin = radialGradient.TransformOrigin.ToPixels(targetRect);
+                        var offset = Matrix.CreateTranslation(transformOrigin);
+                        var brushTransform = (-offset) * radialGradient.Transform.Value * (offset);
+                        transform = transform.HasValue ? transform * brushTransform : brushTransform;
+                    }
+                    
                     if (origin.Equals(center))
                     {
                         // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
-                        if (radialGradient.Transform is null)
+                        using (var shader =
+                               transform.HasValue
+                                   ? SKShader.CreateRadialGradient(center, (float)radius, stopColors, stopOffsets, tileMode,
+                                       transform.Value.ToSKMatrix())
+                                   : SKShader.CreateRadialGradient(center, (float)radius, stopColors, stopOffsets, tileMode)
+                              )
                         {
-                            using (var shader =
-                                SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
-                            {
-                                paintWrapper.Paint.Shader = shader;
-                            }
-                        }
-                        else
-                        {
-                            var transformOrigin = radialGradient.TransformOrigin.ToPixels(targetRect);
-                            var offset = Matrix.CreateTranslation(transformOrigin);
-                            var transform = (-offset) * radialGradient.Transform.Value * (offset);
-                        
-                            using (var shader =
-                                SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode, transform.ToSKMatrix()))
-                            {
-                                paintWrapper.Paint.Shader = shader;
-                            }
+                            paintWrapper.Paint.Shader = shader;
                         }
                     }
                     else
@@ -859,30 +872,18 @@ namespace Avalonia.Skia
                         }
                             
                         // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
-                        if (radialGradient.Transform is null)
+                        using (var shader = SKShader.CreateCompose(
+                                   SKShader.CreateColor(reversedColors[0]),
+                                   transform.HasValue
+                                       ? SKShader.CreateTwoPointConicalGradient(center, (float)radius, origin, 0,
+                                           reversedColors, reversedStops, tileMode, transform.Value.ToSKMatrix())
+                                       : SKShader.CreateTwoPointConicalGradient(center, (float)radius, origin, 0,
+                                           reversedColors, reversedStops, tileMode)
+
+                               )
+                              )
                         {
-                            using (var shader = SKShader.CreateCompose(
-                                SKShader.CreateColor(reversedColors[0]),
-                                SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode)
-                            ))
-                            {
-                                paintWrapper.Paint.Shader = shader;
-                            }
-                        }
-                        else
-                        {
-                                
-                            var transformOrigin = radialGradient.TransformOrigin.ToPixels(targetRect);
-                            var offset = Matrix.CreateTranslation(transformOrigin);
-                            var transform = (-offset) * radialGradient.Transform.Value * (offset);
-                           
-                            using (var shader = SKShader.CreateCompose(
-                                SKShader.CreateColor(reversedColors[0]),
-                                SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode, transform.ToSKMatrix())
-                            ))
-                            {
-                                paintWrapper.Paint.Shader = shader;
-                            } 
+                            paintWrapper.Paint.Shader = shader;
                         }
                     }
 

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -36,6 +37,20 @@ namespace Avalonia.Media
                 0.5);
         
         /// <summary>
+        /// Defines the <see cref="RadiusX"/> property.
+        /// </summary>
+        public static readonly StyledProperty<RelativeScalar> RadiusXProperty =
+            AvaloniaProperty.Register<RadialGradientBrush, RelativeScalar>(
+                nameof(RadiusX), RelativeScalar.Middle);
+        
+        /// <summary>
+        /// Defines the <see cref="RadiusX"/> property.
+        /// </summary>
+        public static readonly StyledProperty<RelativeScalar> RadiusYProperty =
+            AvaloniaProperty.Register<RadialGradientBrush, RelativeScalar>(
+                nameof(RadiusY), RelativeScalar.Middle);
+        
+        /// <summary>
         /// Gets or sets the start point for the gradient.
         /// </summary>
         public RelativePoint Center
@@ -55,10 +70,32 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets or sets the horizontal radius of the outermost circle of the radial
+        /// gradient.
+        /// </summary>
+        [DependsOn(nameof(Radius))]
+        public RelativeScalar RadiusX
+        {
+            get { return GetValue(RadiusXProperty); }
+            set { SetValue(RadiusXProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets or sets the vertical radius of the outermost circle of the radial
+        /// gradient.
+        /// </summary>
+        [DependsOn(nameof(Radius))]
+        public RelativeScalar RadiusY
+        {
+            get { return GetValue(RadiusYProperty); }
+            set { SetValue(RadiusYProperty, value); }
+        }
+        
+        /// <summary>
         /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial
         /// gradient.
         /// </summary>
-        // TODO: This appears to always be relative so should use a RelativeSize struct or something.
+        [Obsolete("Use RadiusX/RadiusY")]
         public double Radius
         {
             get { return GetValue(RadiusProperty); }
@@ -77,7 +114,18 @@ namespace Avalonia.Media
         private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
             base.SerializeChanges(c, writer);
-            ServerCompositionSimpleRadialGradientBrush.SerializeAllChanges(writer, Center, GradientOrigin, Radius);
+            ServerCompositionSimpleRadialGradientBrush.SerializeAllChanges(writer, Center, GradientOrigin, RadiusX, RadiusY);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            if (change.IsEffectiveValueChange && change.Property == RadiusProperty)
+            {
+                var compatibilityValue = new RelativeScalar(Radius, RelativeUnit.Relative);
+                SetCurrentValue(RadiusXProperty, compatibilityValue);
+                SetCurrentValue(RadiusYProperty, compatibilityValue);
+            }
+            base.OnPropertyChanged(change);
         }
     }
 }
