@@ -57,7 +57,7 @@ namespace Avalonia.Media.Immutable
             Center = center ?? RelativePoint.Center;
             GradientOrigin = gradientOrigin ?? RelativePoint.Center;
             RadiusX = radiusX ?? RelativeScalar.Middle;
-            RadiusX = radiusY ?? RelativeScalar.Middle;
+            RadiusY = radiusY ?? RelativeScalar.Middle;
         }
 
 
