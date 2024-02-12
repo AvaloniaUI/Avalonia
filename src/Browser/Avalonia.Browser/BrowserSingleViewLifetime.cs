@@ -49,5 +49,5 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, IActi
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
     public bool TryLeaveBackground() => false;
-    public bool TryEnterBackground() => true;
+    public bool TryEnterBackground() => false;
 }
