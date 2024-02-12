@@ -217,7 +217,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
         
         
-        [Theory,
+        [Theory(
+#if !AVALONIA_SKIA
+        Skip = "Direct2D doesn't support conic brushes, why do we even have this file included?"
+#endif
+        ),
          InlineData(false),
          InlineData(true)
         ]

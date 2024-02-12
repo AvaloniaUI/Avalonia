@@ -8,7 +8,7 @@ namespace Avalonia.Direct2D1.Media
         public RadialGradientBrushImpl(
             IRadialGradientBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
-            Size destinationSize)
+            Rect destinationRect)
         {
             if (brush.GradientStops.Count == 0)
             {
@@ -21,11 +21,11 @@ namespace Avalonia.Direct2D1.Media
                 Position = (float)s.Offset
             }).ToArray();
 
-            var centerPoint = brush.Center.ToPixels(destinationSize);
-            var gradientOrigin = brush.GradientOrigin.ToPixels(destinationSize) - centerPoint;
+            var centerPoint = brush.Center.ToPixels(destinationRect);
+            var gradientOrigin = brush.GradientOrigin.ToPixels(destinationRect) - centerPoint;
             
-            var radiusX = brush.RadiusX.ToValue(destinationSize.Width);
-            var radiusY = brush.RadiusY.ToValue(destinationSize.Height);
+            var radiusX = brush.RadiusX.ToValue(destinationRect.Width);
+            var radiusY = brush.RadiusY.ToValue(destinationRect.Height);
 
             using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
                 target,
