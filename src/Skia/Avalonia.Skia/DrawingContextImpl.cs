@@ -229,11 +229,11 @@ namespace Avalonia.Skia
         {
             CheckLease();
             var impl = (GeometryImpl) geometry;
-            var size = geometry.Bounds.Size;
+            var rect = geometry.Bounds;
 
             if (brush is not null && impl.FillPath != null)
             {
-                using (var fill = CreatePaint(_fillPaint, brush, new Rect(size)))
+                using (var fill = CreatePaint(_fillPaint, brush, rect))
                 {
                     Canvas.DrawPath(impl.FillPath, fill.Paint);
                 }
@@ -241,7 +241,7 @@ namespace Avalonia.Skia
 
             if (pen is not null
                 && impl.StrokePath != null
-                && TryCreatePaint(_strokePaint, pen, new Rect(size.Inflate(new Thickness(pen.Thickness / 2)))) is { } stroke)
+                && TryCreatePaint(_strokePaint, pen, rect.Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
             {
                 using (stroke)
                 {
