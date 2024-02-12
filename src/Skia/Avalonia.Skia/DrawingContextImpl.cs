@@ -810,23 +810,19 @@ namespace Avalonia.Skia
                 {
                     var centerPoint = radialGradient.Center.ToPixels(targetRect);
                     var center = centerPoint.ToSKPoint();
-                    // TODO: maybe introduce RadiusUnit?
+                    
                     var radiusX = (radialGradient.RadiusX.ToValue(targetRect.Width));
                     var radiusY = (radialGradient.RadiusY.ToValue(targetRect.Height));
 
                     var originPoint = radialGradient.GradientOrigin.ToPixels(targetRect);
                     
                     Matrix? transform = null;
-                    Matrix? radiusTransform = null;
                     
-                    var radius = radiusX;
-                    if (radius != radiusY)
-                    {
-                        transform = radiusTransform =
+                    if (radiusX != radiusY)
+                        transform =
                             Matrix.CreateTranslation(-centerPoint)
                             * Matrix.CreateScale(1, radiusY / radiusX)
                             * Matrix.CreateTranslation(centerPoint);
-                    }
                     
                     
                     if (radialGradient.Transform != null)
@@ -842,9 +838,9 @@ namespace Avalonia.Skia
                         // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
                         using (var shader =
                                transform.HasValue
-                                   ? SKShader.CreateRadialGradient(center, (float)radius, stopColors, stopOffsets, tileMode,
+                                   ? SKShader.CreateRadialGradient(center, (float)radiusX, stopColors, stopOffsets, tileMode,
                                        transform.Value.ToSKMatrix())
-                                   : SKShader.CreateRadialGradient(center, (float)radius, stopColors, stopOffsets, tileMode)
+                                   : SKShader.CreateRadialGradient(center, (float)radiusX, stopColors, stopOffsets, tileMode)
                               )
                         {
                             paintWrapper.Paint.Shader = shader;
@@ -881,9 +877,9 @@ namespace Avalonia.Skia
                         using (var shader = SKShader.CreateCompose(
                                    SKShader.CreateColor(reversedColors[0]),
                                    transform.HasValue
-                                       ? SKShader.CreateTwoPointConicalGradient(center, (float)radius, origin, 0,
+                                       ? SKShader.CreateTwoPointConicalGradient(center, (float)radiusX, origin, 0,
                                            reversedColors, reversedStops, tileMode, transform.Value.ToSKMatrix())
-                                       : SKShader.CreateTwoPointConicalGradient(center, (float)radius, origin, 0,
+                                       : SKShader.CreateTwoPointConicalGradient(center, (float)radiusX, origin, 0,
                                            reversedColors, reversedStops, tileMode)
 
                                )
