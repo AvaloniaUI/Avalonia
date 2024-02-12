@@ -232,12 +232,6 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var testName =
                 $"{nameof(RadialGradientBrush_Is_Properly_Mapped)}_{(relative ? "Relative" : "Absolute")}_{(moveOrigin ? "MovedOrigin" : "CenterOrigin")}";
             await RenderToFile(new RelativePointTestPrimitivesHelper(brush, !relative), testName);
-            /*await RenderToFile(new Border()
-            {
-                Background = brush,
-                Width = 256,
-                Height = 256
-            }, testName);*/
             CompareImages(testName);
         }
 

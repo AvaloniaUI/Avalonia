@@ -814,16 +814,15 @@ namespace Avalonia.Skia
                     var radiusX = (radialGradient.RadiusX.ToValue(targetRect.Width));
                     var radiusY = (radialGradient.RadiusY.ToValue(targetRect.Height));
 
-                    var origin = radialGradient.GradientOrigin.ToPixels(targetRect).ToSKPoint();
-
-
+                    var originPoint = radialGradient.GradientOrigin.ToPixels(targetRect);
+                    
                     Matrix? transform = null;
-
+                    Matrix? radiusTransform = null;
                     
                     var radius = radiusX;
                     if (radius != radiusY)
                     {
-                        transform =
+                        transform = radiusTransform =
                             Matrix.CreateTranslation(-centerPoint)
                             * Matrix.CreateScale(1, radiusY / radiusX)
                             * Matrix.CreateTranslation(centerPoint);
@@ -838,7 +837,7 @@ namespace Avalonia.Skia
                         transform = transform.HasValue ? transform * brushTransform : brushTransform;
                     }
                     
-                    if (origin.Equals(center))
+                    if (originPoint.Equals(centerPoint))
                     {
                         // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
                         using (var shader =
@@ -855,6 +854,13 @@ namespace Avalonia.Skia
                     {
                         // when the origin is different to the center use a two point ConicalGradient to match the behaviour of D2D
 
+                        if (radiusX != radiusY)
+                            // Adjust the origin point for radiusX/Y transformation by reversing it
+                            originPoint = originPoint.WithY(
+                                (originPoint.Y - centerPoint.Y) * radiusX / radiusY + centerPoint.Y);
+                        
+                        var origin = originPoint.ToSKPoint();
+                        
                         // reverse the order of the stops to match D2D
                         var reversedColors = new SKColor[stopColors.Length];
                         Array.Copy(stopColors, reversedColors, stopColors.Length);
