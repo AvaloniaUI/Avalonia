@@ -275,8 +275,8 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ValueProperty)
             {
-                var value = change.GetNewValue<double>();
-                _owner?.SetCurrentValue(ScrollViewer.OffsetProperty, Orientation == Orientation.Horizontal ? _owner.Offset.WithX(value) : _owner.Offset.WithY(value));
+               // var value = change.GetNewValue<double>();
+               // _owner?.SetCurrentValue(ScrollViewer.OffsetProperty, Orientation == Orientation.Horizontal ? _owner.Offset.WithX(value) : _owner.Offset.WithY(value));
             }
             else
             {

@@ -79,6 +79,39 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
+        public void Property_Priority_Is_Not_Animation_After_End()
+        {
+            var clock = new MockGlobalClock();
+            using var app = Start(clock);
+
+            var control = new Control
+            {
+                Transitions = new Transitions 
+                {
+                    new DoubleTransition()
+                    {
+                        Property = Control.OpacityProperty,
+                        Duration = TimeSpan.FromSeconds(1)
+                    }
+                }
+            };
+
+            var _ = new TestRoot(control);
+
+            control.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == Border.OpacityProperty)
+                {
+                }
+            };
+
+            control.SetCurrentValue(Border.OpacityProperty, 0);
+            clock.Pulse(TimeSpan.FromMilliseconds(500));
+            clock.Pulse(TimeSpan.FromMilliseconds(3001));
+            clock.Pulse(TimeSpan.FromMilliseconds(1001));
+        }
+
+        [Fact]
         public void Transition_Is_Not_Applied_When_Animated_Value_Changes()
         {
             var target = CreateTarget();
@@ -654,9 +687,9 @@ namespace Avalonia.Base.UnitTests.Animation
             }
         }
 
-        private static IDisposable Start()
+        private static IDisposable Start(MockGlobalClock? clock = null)
         {
-            var clock = new MockGlobalClock();
+            clock ??= new MockGlobalClock();
             var services = new TestServices(globalClock: clock);
             return UnitTestApplication.Start(services);
         }

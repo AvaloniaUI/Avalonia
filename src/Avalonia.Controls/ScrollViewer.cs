@@ -169,6 +169,8 @@ namespace Avalonia.Controls
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
         private IDisposable? _scrollBarExpandSubscription;
+        private IDisposable? _horizontalScrollBarValueSubscription;
+        private IDisposable? _verticalScrollBarValueSubscription;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScrollViewer"/> class.
@@ -808,7 +810,9 @@ namespace Avalonia.Controls
 
             _scrollBarExpandSubscription?.Dispose();
 
-            _scrollBarExpandSubscription = SubscribeToScrollBars(e);
+            _scrollBarExpandSubscription = SubscribeToScrollBarsIsExpanded(e);
+
+            SubscribeToScrollBarsValue(e);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -816,7 +820,7 @@ namespace Avalonia.Controls
             return new ScrollViewerAutomationPeer(this);
         }
 
-        private IDisposable? SubscribeToScrollBars(TemplateAppliedEventArgs e)
+        private IDisposable? SubscribeToScrollBarsIsExpanded(TemplateAppliedEventArgs e)
         {
             static IObservable<bool>? GetExpandedObservable(ScrollBar? scrollBar)
             {
@@ -850,9 +854,51 @@ namespace Avalonia.Controls
             return actualExpanded?.Subscribe(OnScrollBarExpandedChanged);
         }
 
+        private void SubscribeToScrollBarsValue(TemplateAppliedEventArgs e)
+        {
+            static IObservable<double>? GetValueObservable(ScrollBar? scrollBar)
+            {
+                return scrollBar?.GetObservable(ScrollBar.ValueProperty);
+            }
+
+            var horizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar");
+            var verticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
+
+            var horizontalValue = GetValueObservable(horizontalScrollBar);
+            var verticalValue = GetValueObservable(verticalScrollBar);
+
+            _horizontalScrollBarValueSubscription?.Dispose();
+            _verticalScrollBarValueSubscription?.Dispose();
+
+            if (horizontalValue != null)
+            {
+                _horizontalScrollBarValueSubscription = horizontalValue.Subscribe(OnHorizontalScrollBarValueChanged);
+            }
+            if (verticalValue != null)
+            {
+                _verticalScrollBarValueSubscription = verticalValue.Subscribe(OnVerticalScrollBarValueChanged);
+            }
+        }
+
         private void OnScrollBarExpandedChanged(bool isExpanded)
         {
             IsExpanded = isExpanded;
+        }
+
+        private void OnHorizontalScrollBarValueChanged(double value)
+        {
+            if (Offset.X != value)
+            {
+                SetCurrentValue(OffsetProperty, Offset.WithX(value));
+            }
+        }
+
+        private void OnVerticalScrollBarValueChanged(double value)
+        {
+            if (Offset.Y != value)
+            {
+                SetCurrentValue(OffsetProperty, Offset.WithY(value));
+            }
         }
 
         private void OnLayoutUpdated(object? sender, EventArgs e) => RaiseScrollChanged();

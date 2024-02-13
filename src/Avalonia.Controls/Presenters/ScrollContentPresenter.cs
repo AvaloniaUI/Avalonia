@@ -638,19 +638,20 @@ namespace Avalonia.Controls.Presenters
 
             _scrollGestureSnapPoints.Add(e.Id, SnapOffset(offset));
 
-            double GetDistance(double speed)
+            double GetDistance(double inertia)
             {
-                var time = Math.Log(ScrollGestureRecognizer.InertialScrollSpeedEnd / Math.Abs(speed)) / Math.Log(ScrollGestureRecognizer.InertialResistance);
-
                 double timeElapsed = 0, distance = 0, step = 0;
 
-                while (timeElapsed <= time)
+                while (true)
                 {
-                    double s = speed * Math.Pow(ScrollGestureRecognizer.InertialResistance, timeElapsed);
-                    distance += (s * step);
+                    double s = inertia * Math.Pow(ScrollGestureRecognizer.InertialResistance, timeElapsed);
 
+                    distance += (s * step);
                     timeElapsed += 0.016f;
                     step = 0.016f;
+
+                    if (Math.Abs(s) < ScrollGestureRecognizer.InertialScrollSpeedEnd)
+                        break;
                 }
 
                 return distance;
@@ -710,7 +711,7 @@ namespace Avalonia.Controls.Presenters
                     InvalidateArrange();
                 }
 
-                _owner?.SetCurrentValue(OffsetProperty, change.GetNewValue<Vector>());
+                //_owner?.SetCurrentValue(OffsetProperty, change.GetNewValue<Vector>());
             }
             else if (change.Property == ChildProperty)
             {
