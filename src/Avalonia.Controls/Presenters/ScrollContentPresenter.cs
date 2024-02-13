@@ -634,8 +634,6 @@ namespace Avalonia.Controls.Presenters
 
             offset = new Vector(offset.X + xDistance, offset.Y + yDistance);
 
-            System.Diagnostics.Debug.WriteLine($"{offset}");
-
             _scrollGestureSnapPoints.Add(e.Id, SnapOffset(offset));
 
             double GetDistance(double speed)
@@ -1026,7 +1024,7 @@ namespace Avalonia.Controls.Presenters
                 point = ~point;
 
                 previousSnapPoint = snapPoints[Math.Max(0, point - 1)];
-                nextSnapPoint = snapPoints[Math.Max(0, point)];
+                nextSnapPoint = point >= snapPoints.Count ? snapPoints.Last() : snapPoints[Math.Max(0, point)];
             }
             else
             {
