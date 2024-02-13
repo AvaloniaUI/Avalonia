@@ -11,6 +11,7 @@
       "samples\\IntegrationTestApp\\IntegrationTestApp.csproj",
       "samples\\MiniMvvm\\MiniMvvm.csproj",
       "samples\\ReactiveUIDemo\\ReactiveUIDemo.csproj",
+      "samples\\RenderDemo\\RenderDemo.csproj",
       "samples\\SampleControls\\ControlSamples.csproj",
       "samples\\Sandbox\\Sandbox.csproj",
       "src\\Avalonia.Base\\Avalonia.Base.csproj",
