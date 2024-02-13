@@ -10,10 +10,10 @@ static internal class Constants
         /// <summary>
         /// Clipboard data format for the selector. It is added for quick format recognition in IDEs
         /// </summary>
-        public const string DevTools_Selector = nameof(DevTools_Selector);
+        public const string Avalonia_DevTools_Selector = nameof(Avalonia_DevTools_Selector);
         /// <summary>
         /// Clipboard data format for selector. It is added for quicks IDE reqcongnize format
         /// </summary>
-        public const string DevTools_SelectorFromTemplate = nameof(DevTools_SelectorFromTemplate);
+        public const string Avalonia_DevTools_SelectorFromTemplate = nameof(Avalonia_DevTools_SelectorFromTemplate);
     }
 }

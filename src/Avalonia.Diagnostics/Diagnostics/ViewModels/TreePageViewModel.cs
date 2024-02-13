@@ -118,7 +118,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 var selector = GetVisualSelector(currentVisual);
 
-                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.DevTools_Selector, selector));
+                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.Avalonia_DevTools_Selector, selector));
             }
         }
 
@@ -139,7 +139,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 parts.Reverse();
                 var selector = string.Join(" /template/ ", parts);
 
-                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.DevTools_SelectorFromTemplate, selector));
+                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.Avalonia_DevTools_SelectorFromTemplate, selector));
             }
         }
 
