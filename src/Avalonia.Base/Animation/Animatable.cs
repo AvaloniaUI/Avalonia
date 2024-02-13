@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Data;
 
@@ -147,43 +148,49 @@ namespace Avalonia.Animation
                     RemoveTransitions(toRemove);
                 }
             }
-            else if (_transitionsEnabled &&
-                     Transitions is Transitions transitions &&
-                     _transitionState is object &&
-                     !change.Property.IsDirect &&
-                     change.Priority > BindingPriority.Animation)
+            else if (TryGetTransition(change.Property, out var transition, out var state))
             {
-                for (var i = transitions.Count - 1; i >= 0; --i)
+                if (change.Priority > BindingPriority.Animation)
                 {
-                    var transition = transitions[i];
+                    var oldBaseValue = state.BaseValue;
+                    var newBaseValue = GetAnimationBaseValue(transition.Property);
 
-                    if (transition.Property == change.Property &&
-                        _transitionState.TryGetValue(transition, out var state))
+                    // If we have a change in the base value, start a new transition or cancel and
+                    // restart the current one.
+                    if (!Equals(oldBaseValue, newBaseValue))
                     {
-                        var oldValue = state.BaseValue;
-                        var newValue = GetAnimationBaseValue(transition.Property);
+                        state.StartValue = oldBaseValue;
+                        state.BaseValue = newBaseValue;
 
-                        if (!Equals(oldValue, newValue))
+                        // We need to transition from the current animated value if present,
+                        // instead of the old base value.
+                        var animatedValue = GetValue(transition.Property);
+
+                        if (!Equals(newBaseValue, animatedValue))
                         {
-                            state.BaseValue = newValue;
-
-                            // We need to transition from the current animated value if present,
-                            // instead of the old base value.
-                            var animatedValue = GetValue(transition.Property);
-
-                            if (!Equals(newValue, animatedValue))
-                            {
-                                oldValue = animatedValue;
-                            }
-                            var clock = Clock ?? AvaloniaLocator.Current.GetRequiredService<IGlobalClock>();
-                            state.Instance?.Dispose();
-                            state.Instance = transition.Apply(
-                                this,
-                                clock,
-                                oldValue,
-                                newValue);
-                            return;
+                            oldBaseValue = animatedValue;
                         }
+                        var clock = Clock ?? AvaloniaLocator.Current.GetRequiredService<IGlobalClock>();
+                        state.Instance?.Dispose();
+                        state.Instance = transition.Apply(
+                            this,
+                            clock,
+                            oldBaseValue,
+                            newBaseValue);
+                        change.MakeNonEffectiveValueChange();
+                    }
+                }
+                else
+                {
+                    // We have an animated value change on a property with a transition. If the
+                    // change is due to the transition taking effect, the don't count it as an
+                    // effective value change.
+                    //
+                    // TODO: This is a bit of a hack. We can't tell whether the transition is
+                    // producing the value or not: it may have come from some other animation.
+                    if (Equals(state.BaseValue, change.OldValue) && Equals(state.StartValue, change.NewValue))
+                    {
+                        change.MakeNonEffectiveValueChange();
                     }
                 }
             }
@@ -266,10 +273,38 @@ namespace Avalonia.Animation
             return value;
         }
 
+        private bool TryGetTransition(
+            AvaloniaProperty property,
+            [NotNullWhen(true)] out ITransition? transition,
+            [NotNullWhen(true)] out TransitionState? state)
+        {
+            if (_transitionsEnabled && 
+                _transitionState is not null &&
+                !property.IsDirect && 
+                Transitions is { } transitions)
+            {
+                for (var i = transitions.Count - 1; i >= 0; --i)
+                {
+                    var t = transitions[i];
+
+                    if (t.Property == property && _transitionState.TryGetValue(t, out state))
+                    {
+                        transition = t;
+                        return true;
+                    }
+                }
+            }
+
+            transition = null;
+            state = null;
+            return false;
+        }
+
         private class TransitionState
         {
             public IDisposable? Instance { get; set; }
             public object? BaseValue { get; set; }
+            public object? StartValue { get; set; }
         }
     }
 }

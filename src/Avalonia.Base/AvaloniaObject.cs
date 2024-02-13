@@ -745,7 +745,7 @@ namespace Avalonia
 
             OnPropertyChangedCore(e);
 
-            if (isEffectiveValue)
+            if (e.IsEffectiveValueChange)
             {
                 property.NotifyChanged(e);
                 _propertyChanged?.Invoke(this, e);

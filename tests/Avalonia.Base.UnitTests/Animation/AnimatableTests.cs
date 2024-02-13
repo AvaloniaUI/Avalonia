@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -76,6 +78,61 @@ namespace Avalonia.Base.UnitTests.Animation
                 It.IsAny<IClock>(),
                 1.0,
                 0.5));
+        }
+
+        [Fact]
+        public void Transition_Raised_Correct_PropertyChanged_Events()
+        {
+            var clock = new MockGlobalClock();
+            using var app = Start(clock);
+
+            var control = new Control
+            {
+                Transitions = new Transitions
+                {
+                    new DoubleTransition()
+                    {
+                        Property = Control.OpacityProperty,
+                        Duration = TimeSpan.FromSeconds(1)
+                    }
+                }
+            };
+
+            var _ = new TestRoot(control);
+            var changes = new List<PropertyValue<double>>();
+
+            control.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == Border.OpacityProperty)
+                {
+                    changes.Add(PropertyValue<double>.From(e));
+                }
+            };
+
+            control.Opacity = 0;
+
+            // Setting the property should not immediately raise a PropertyChanged event because
+            // the transition has come into effect and kept the value at the start value. The
+            // priority however should have changed to Animation.
+            Assert.Empty(changes);
+            Assert.Equal(BindingPriority.Animation, GetPriority(control, Border.OpacityProperty));
+            changes.Clear();
+
+            // The first clock pulse shouldn't change anything.
+            clock.Pulse(TimeSpan.FromMilliseconds(0));
+            Assert.Empty(changes);
+
+            // We're halfway through the transition; the value should be 0.5.
+            clock.Pulse(TimeSpan.FromMilliseconds(500));
+            Assert.Equal(new[] { new PropertyValue<double>(1, 0.5, BindingPriority.Animation) }, changes);
+            changes.Clear();
+
+            // Finish the transition, the value should be set to 0, first with Animation priority,
+            // and then the priority should be reset to LocalValue - the LocalValue change doesn't
+            // result in a value change so no PropertyChanged is raised.
+            clock.Pulse(TimeSpan.FromMilliseconds(1001));
+            Assert.Equal(new[] { new PropertyValue<double>(0.5, 0, BindingPriority.Animation) }, changes);
+            Assert.Equal(BindingPriority.LocalValue, GetPriority(control, Border.OpacityProperty));
         }
 
         [Fact]
@@ -654,9 +711,9 @@ namespace Avalonia.Base.UnitTests.Animation
             }
         }
 
-        private static IDisposable Start()
+        private static IDisposable Start(MockGlobalClock? clock = null)
         {
-            var clock = new MockGlobalClock();
+            clock ??= new MockGlobalClock();
             var services = new TestServices(globalClock: clock);
             return UnitTestApplication.Start(services);
         }
@@ -727,6 +784,23 @@ namespace Avalonia.Base.UnitTests.Animation
                 It.IsAny<object>())).Returns(sub.Object);
 
             return target;
+        }
+
+        private static BindingPriority GetPriority(Animatable control, AvaloniaProperty property)
+        {
+            return control.GetDiagnostic(property).Priority;
+        }
+
+        private record PropertyValue<T>(
+            T OldValue,
+            T NewValue,
+            BindingPriority Priority)
+        {
+            public static PropertyValue<T> From(AvaloniaPropertyChangedEventArgs e)
+            {
+                var (o, n) = e.GetOldAndNewValue<T>();
+                return new PropertyValue<T>(o, n, e.Priority);
+            }
         }
     }
 }

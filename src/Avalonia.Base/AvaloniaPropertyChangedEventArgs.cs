@@ -64,5 +64,6 @@ namespace Avalonia
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();
         protected abstract object? GetNewValue();
+        internal void MakeNonEffectiveValueChange() => IsEffectiveValueChange = false;
     }
 }
