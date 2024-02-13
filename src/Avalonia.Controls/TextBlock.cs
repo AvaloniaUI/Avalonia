@@ -710,6 +710,8 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
+                VisualChildren.Clear();
+
                 var textRuns = new List<TextRun>();
 
                 foreach (var inline in inlines!)
