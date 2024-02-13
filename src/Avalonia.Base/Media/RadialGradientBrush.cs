@@ -95,7 +95,7 @@ namespace Avalonia.Media
         /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial
         /// gradient.
         /// </summary>
-        [Obsolete("Use RadiusX/RadiusY")]
+        [Obsolete("Use RadiusX/RadiusY, note that those properties use _relative_ values, so Radius=0.55 would become RadiusX=55% RadiusY=55%")]
         public double Radius
         {
             get { return GetValue(RadiusProperty); }
