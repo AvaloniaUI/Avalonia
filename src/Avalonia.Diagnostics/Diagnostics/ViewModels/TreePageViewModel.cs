@@ -24,8 +24,8 @@ namespace Avalonia.Diagnostics.ViewModels
             SettersFilter.RefreshFilter += (s, e) => Details?.UpdateStyleFilters();
         }
 
-        public event EventHandler<string>? ClipboardCopyRequested;
-        
+        public event EventHandler<(string Format, string Value)>? ClipboardCopyRequested;
+
         public MainViewModel MainView { get; }
 
         public FilterViewModel PropertiesFilter { get; }
@@ -117,11 +117,11 @@ namespace Avalonia.Diagnostics.ViewModels
             if (currentVisual is not null)
             {
                 var selector = GetVisualSelector(currentVisual);
-                
-                ClipboardCopyRequested?.Invoke(this, selector);
+
+                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.DevTools_Selector, selector));
             }
         }
-        
+
         public void CopySelectorFromTemplateParent()
         {
             var parts = new List<string>();
@@ -130,7 +130,7 @@ namespace Avalonia.Diagnostics.ViewModels
             while (currentVisual is not null)
             {
                 parts.Add(GetVisualSelector(currentVisual));
-                
+
                 currentVisual = currentVisual.TemplatedParent as Visual;
             }
 
@@ -139,7 +139,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 parts.Reverse();
                 var selector = string.Join(" /template/ ", parts);
 
-                ClipboardCopyRequested?.Invoke(this, selector);
+                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.DevTools_SelectorFromTemplate, selector));
             }
         }
 
@@ -148,7 +148,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (SelectedNode is { } selectedNode)
             {
                 ExpandNode(selectedNode);
-                
+
                 var stack = new Stack<TreeNode>();
                 stack.Push(selectedNode);
 
@@ -192,8 +192,8 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             (SelectedNode?.Visual as Control)?.BringIntoView();
         }
-        
-        
+
+
         public void Focus()
         {
             (SelectedNode?.Visual as Control)?.Focus();
@@ -208,7 +208,7 @@ namespace Avalonia.Diagnostics.ViewModels
             var typeName = StyledElement.GetStyleKey(visual);
 
             return $"{typeName}{name}{classes}";
-        } 
+        }
 
         private void ExpandNode(TreeNode? node)
         {
