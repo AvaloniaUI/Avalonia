@@ -26,13 +26,27 @@ namespace Avalonia.Controls.Documents
                 x =>
                 {
                     x.InlineHost = InlineHost;
+
                     LogicalChildren?.Add(x);
+
+                    if (x is InlineUIContainer container)
+                    {
+                        InlineHost?.VisualChildren.Add(container.Child);
+                    }
+
                     Invalidate();
                 },
                 x =>
                 {
                     LogicalChildren?.Remove(x);
-                    x.InlineHost = InlineHost;
+
+                    if(x is InlineUIContainer container)
+                    {
+                        InlineHost?.VisualChildren.Remove(container.Child);
+                    }
+
+                    x.InlineHost = null;
+
                     Invalidate();
                 },
                 () => throw new NotSupportedException());
