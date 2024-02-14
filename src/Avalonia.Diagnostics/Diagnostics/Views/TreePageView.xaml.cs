@@ -144,7 +144,9 @@ namespace Avalonia.Diagnostics.Views
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var @do = new DataObject();
-                @do.Set(DataFormats.Text, arg.Value);
+                @do.Set(DataFormats.Text, arg.Value
+                    .Replace("{",string.Empty)
+                    .Replace("}",string.Empty));
                 @do.Set(arg.Format, arg.Value);
                 clipboard.SetDataObjectAsync(@do);
             }

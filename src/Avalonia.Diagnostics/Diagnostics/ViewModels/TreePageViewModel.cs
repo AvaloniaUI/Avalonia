@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
@@ -205,9 +206,8 @@ namespace Avalonia.Diagnostics.ViewModels
             var classes = string.Concat(visual.Classes
                 .Where(c => !c.StartsWith(":"))
                 .Select(c => '.' + c));
-            var typeName = StyledElement.GetStyleKey(visual);
-
-            return $"{typeName}{name}{classes}";
+            var type = StyledElement.GetStyleKey(visual);
+            return $$"""{{{type.Namespace}}}.{{type.Name}}{{name}}{{classes}}""";
         }
 
         private void ExpandNode(TreeNode? node)
