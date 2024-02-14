@@ -144,8 +144,8 @@ namespace Avalonia.Win32
 
         private void OnRightClicked()
         {
-            var menuItems = _exporter.GetMenu();
-            if (null == menuItems || menuItems.Count == 0)
+            var menu = _exporter.GetNativeMenu();
+            if (menu == null || menu.Items.Count == 0)
             {
                 return;
             }
@@ -156,10 +156,7 @@ namespace Avalonia.Win32
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,
                 TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
-                Content = new TrayIconMenuFlyoutPresenter()
-                {
-                    ItemsSource = menuItems
-                }
+                Content = new TrayIconMenuFlyoutPresenter() { ItemsSource = menu.Items }
             };
 
             GetCursorPos(out POINT pt);
@@ -191,6 +188,12 @@ namespace Avalonia.Win32
                     SelectedIndex = -1;
                     host.Close();
                 }
+            }
+
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+            {
+                return NativeMenuBarPresenter.CreateContainerForNativeItem(item, index, recycleKey)
+                       ?? base.CreateContainerForItemOverride(item, index, recycleKey);
             }
         }
 
