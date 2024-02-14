@@ -1,5 +1,9 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Data;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -101,6 +105,34 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var border = Assert.IsType<Border>(child);
 
                 Assert.Equal(Brushes.Red, border.Background);
+            }
+        }
+        
+        [Fact]
+        public void Correctly_Resolve_TemplateBinding_In_Nested_Style()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<ControlTheme xmlns='https://github.com/avaloniaui'
+              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+              xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+              TargetType='u:TestTemplatedControl'>
+    <Setter Property='Template'>
+        <ControlTemplate>
+            <Border/>
+        </ControlTemplate>
+    </Setter>
+    <Style Selector='^ /template/ Border'>
+        <Setter Property='Tag' Value='{{TemplateBinding TestData}}'/>
+    </Style>
+</ControlTheme>";
+
+                var theme = (ControlTheme)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var style = Assert.IsType<Style>(Assert.Single(theme.Children));
+                var setter = Assert.IsType<Setter>(Assert.Single(style.Setters));
+                
+                Assert.Equal(TestTemplatedControl.TestDataProperty, (setter.Value as TemplateBinding)?.Property);
             }
         }
 
