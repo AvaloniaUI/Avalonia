@@ -182,7 +182,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         }
 
         public static bool CustomValueConverter(AstTransformationContext context,
-            IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
+            IXamlAstValueNode node, IReadOnlyList<IXamlCustomAttribute> customAttributes, IXamlType type,
+            out IXamlAstValueNode result)
         {
             if (node is AvaloniaXamlIlOptionMarkupExtensionTransformer.OptionsMarkupExtensionNode optionsNode)
             {

@@ -86,7 +86,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                             if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context,
                                 new XamlAstTextNode(node, property.Value, type: context.Configuration.WellKnownTypes.String),
-                                targetProperty.PropertyType, out var typedValue))
+                                targetProperty, out var typedValue))
                                 throw new XamlTransformException(
                                     $"Cannot convert '{property.Value}' to '{targetProperty.PropertyType.GetFqn()}",
                                     node);
