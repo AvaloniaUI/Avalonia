@@ -217,7 +217,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                     .FirstOrDefault(s => scopeKind.HasValue ? s.ScopeType == scopeKind : true);
                 if (scope == null)
-                    throw new XamlX.XamlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
+                {
+#if NET6_0_OR_GREATER
+                    var isScopeDefined = Enum.IsDefined<AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes>(scopeKind ?? default);
+#else
+                    var isScopeDefined = Enum.IsDefined(typeof(AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes), scopeKind ?? default);
+#endif
+                    var scopeKindStr = isScopeDefined ? scopeKind!.Value.ToString() : "parent"; 
+                    throw new XamlX.XamlLoadException($"Unable to find the {scopeKindStr} scope for AvaloniaProperty lookup", node);
+                }
 
                 result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text, scope.TargetType, node );
                 return true;

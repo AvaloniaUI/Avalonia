@@ -689,7 +689,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Style>";
 
                 var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
-                Assert.Contains("TestData", exception.Message);
+                Assert.Contains("ControlTemplate", exception.Message);
             }
         }
     }
