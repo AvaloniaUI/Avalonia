@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -61,6 +62,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             public PropertySetterBinderParameters BinderParameters { get; } =
                 new PropertySetterBinderParameters { AllowXNull = false };
             public IReadOnlyList<IXamlType> Parameters { get; }
+            public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
         }
 
         class ClassBindingSetter : IXamlEmitablePropertySetter<IXamlILEmitter>
@@ -92,6 +94,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             public PropertySetterBinderParameters BinderParameters { get; } =
                 new PropertySetterBinderParameters { AllowXNull = false };
             public IReadOnlyList<IXamlType> Parameters { get; }
+            public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
         }
     }
 }

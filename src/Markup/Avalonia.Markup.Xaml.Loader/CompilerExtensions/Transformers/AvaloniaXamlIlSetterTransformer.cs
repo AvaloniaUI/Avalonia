@@ -109,6 +109,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public IXamlType TargetType { get; }
                 public PropertySetterBinderParameters BinderParameters { get; }
                 public IReadOnlyList<IXamlType> Parameters { get; }
+                public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => _method.CustomAttributes;
+
                 public void Emit(IXamlILEmitter codegen)
                 {
                     if (_type.IsValueType)

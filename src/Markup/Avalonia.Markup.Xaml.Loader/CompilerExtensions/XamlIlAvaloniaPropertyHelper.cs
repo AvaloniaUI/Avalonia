@@ -228,6 +228,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             public PropertySetterBinderParameters BinderParameters { get; }
 
             public IReadOnlyList<IXamlType> Parameters { get; set; }
+            public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
 
             public abstract void Emit(IXamlILEmitter emitter);
 
