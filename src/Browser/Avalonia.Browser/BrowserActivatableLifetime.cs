@@ -32,5 +32,5 @@ internal class BrowserActivatableLifetime : IActivatableLifetime
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
     public bool TryLeaveBackground() => false;
-    public bool TryEnterBackground() => true;
+    public bool TryEnterBackground() => false;
 }
