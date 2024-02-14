@@ -139,15 +139,15 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void OnClipboardCopyRequested(object? sender, (string Format, string Value) arg)
+        private void OnClipboardCopyRequested(object? sender, string selector)
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var @do = new DataObject();
-                @do.Set(DataFormats.Text, arg.Value
+                @do.Set(DataFormats.Text, selector
                     .Replace("{",string.Empty)
                     .Replace("}",string.Empty));
-                @do.Set(arg.Format, arg.Value);
+                @do.Set(Constants.DataFormats.Avalonia_DevTools_Selector, selector);
                 clipboard.SetDataObjectAsync(@do);
             }
         }

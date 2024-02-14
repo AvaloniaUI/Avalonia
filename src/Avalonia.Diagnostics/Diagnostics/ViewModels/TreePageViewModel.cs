@@ -25,7 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
             SettersFilter.RefreshFilter += (s, e) => Details?.UpdateStyleFilters();
         }
 
-        public event EventHandler<(string Format, string Value)>? ClipboardCopyRequested;
+        public event EventHandler<string>? ClipboardCopyRequested;
 
         public MainViewModel MainView { get; }
 
@@ -119,7 +119,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 var selector = GetVisualSelector(currentVisual);
 
-                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.Avalonia_DevTools_Selector, selector));
+                ClipboardCopyRequested?.Invoke(this, selector);
             }
         }
 
@@ -140,7 +140,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 parts.Reverse();
                 var selector = string.Join(" /template/ ", parts);
 
-                ClipboardCopyRequested?.Invoke(this, (Constants.DataFormats.Avalonia_DevTools_SelectorFromTemplate, selector));
+                ClipboardCopyRequested?.Invoke(this, selector);
             }
         }
 
