@@ -8,6 +8,9 @@ namespace ControlCatalog
 {
     public class DecoratedWindow : Window
     {
+        private bool _isDragging;
+        private PointerPoint _currentPoint;
+
         public DecoratedWindow()
         {
             this.InitializeComponent();
@@ -28,7 +31,9 @@ namespace ControlCatalog
             AvaloniaXamlLoader.Load(this);
             this.Get<Control>("TitleBar").PointerPressed += (i, e) =>
             {
-                PlatformImpl?.BeginMoveDrag(e);
+                _currentPoint = e.GetCurrentPoint(this);
+                _isDragging = true;
+                //PlatformImpl?.BeginMoveDrag(e);
             };
             SetupSide("Left", StandardCursorType.LeftSide, WindowEdge.West);
             SetupSide("Right", StandardCursorType.RightSide, WindowEdge.East);
@@ -47,6 +52,20 @@ namespace ControlCatalog
             {
                 Close();
             };
+        }
+
+        protected override void OnPointerMoved(PointerEventArgs e)
+        {
+            base.OnPointerMoved(e);
+
+            if(_isDragging)
+            {
+                var c = e.GetCurrentPoint(this);
+                var dif = c.Position - _currentPoint.Position;
+                _currentPoint = c;
+
+                Position += new PixelPoint((int)dif.X, (int)dif.Y);
+            }
         }
     }
 }
