@@ -210,7 +210,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
-                var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
+                var scopeKind = (AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes?)(customAttributes?
+                    .FirstOrDefault(a => a.Type.Name == "InheritDataTypeFromAttribute")?.Parameters.FirstOrDefault()
+                    as int?);
+
+                var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
+                    .FirstOrDefault(s => scopeKind.HasValue ? s.ScopeType == scopeKind : true);
                 if (scope == null)
                     throw new XamlX.XamlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
 
