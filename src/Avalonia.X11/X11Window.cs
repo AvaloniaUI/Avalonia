@@ -33,7 +33,8 @@ using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.X11
 {
-    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client
+    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+        IX11SpecificOptionsToplevelImplFeature
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -183,9 +184,8 @@ namespace Avalonia.X11
                     _x11.Atoms.WM_DELETE_WINDOW
                 };
                 XSetWMProtocols(_x11.Display, _handle, protocols, protocols.Length);
-                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
-                    32, PropertyMode.Replace, new[] { _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL }, 1);
-
+                SetNetWmWindowType(X11NetWmWindowType.Normal);
+                
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
@@ -913,6 +913,9 @@ namespace Avalonia.X11
                 return new BclLauncher();
             }
 
+            if (featureType == typeof(IX11SpecificOptionsToplevelImplFeature))
+                return this;
+
             return null;
         }
 
@@ -1251,6 +1254,13 @@ namespace Avalonia.X11
 
             XFree(hint);
         }
+        
+        public void SetWmClass(string? className)
+        {
+            if (_handle == IntPtr.Zero)
+                return;
+            SetWmClass(_handle, className ?? _platform.Options.WmClass);
+        }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
@@ -1411,6 +1421,27 @@ namespace Avalonia.X11
 
             public IntPtr Handle => _owner._renderHandle;
             public string HandleDescriptor => "XID";
+        }
+
+        public void SetNetWmWindowType(X11NetWmWindowType type)
+        {
+            if(_handle == IntPtr.Zero)
+                return;
+
+            var atom = type switch
+            {
+                X11NetWmWindowType.Dialog => _x11.Atoms._NET_WM_WINDOW_TYPE_DIALOG,
+                X11NetWmWindowType.Utility => _x11.Atoms._NET_WM_WINDOW_TYPE_UTILITY,
+                X11NetWmWindowType.Toolbar => _x11.Atoms._NET_WM_WINDOW_TYPE_TOOLBAR,
+                X11NetWmWindowType.Splash => _x11.Atoms._NET_WM_WINDOW_TYPE_SPLASH,
+                X11NetWmWindowType.Dock => _x11.Atoms._NET_WM_WINDOW_TYPE_DOCK,
+                X11NetWmWindowType.Desktop => _x11.Atoms._NET_WM_WINDOW_TYPE_DESKTOP,
+                _ => _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL
+            };
+
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
+                32, PropertyMode.Replace, new[] { atom }, 1);
+
         }
     }
 }
