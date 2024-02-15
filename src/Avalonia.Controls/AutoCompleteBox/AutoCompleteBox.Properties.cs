@@ -170,13 +170,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="InnerLeftContent"/> property
         /// </summary>
-        public static readonly StyledProperty<object> InnerLeftContentProperty =
+        public static readonly StyledProperty<object?> InnerLeftContentProperty =
             TextBox.InnerLeftContentProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
         /// Defines the <see cref="InnerRightContent"/> property
         /// </summary>
-        public static readonly StyledProperty<object> InnerRightContentProperty =
+        public static readonly StyledProperty<object?> InnerRightContentProperty =
             TextBox.InnerRightContentProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
@@ -482,7 +482,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets custom content that is positioned on the left side of the text layout box
         /// </summary>
-        public object InnerLeftContent
+        public object? InnerLeftContent
         {
             get => GetValue(InnerLeftContentProperty);
             set => SetValue(InnerLeftContentProperty, value);
@@ -491,7 +491,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets custom content that is positioned on the right side of the text layout box
         /// </summary>
-        public object InnerRightContent
+        public object? InnerRightContent
         {
             get => GetValue(InnerRightContentProperty);
             set => SetValue(InnerRightContentProperty, value);
