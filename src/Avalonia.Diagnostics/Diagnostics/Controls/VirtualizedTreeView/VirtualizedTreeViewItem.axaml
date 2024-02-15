@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:treeView="clr-namespace:Avalonia.Diagnostics.Controls.VirtualizedTreeView"
+                    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
+                    xmlns:converters1="clr-namespace:Avalonia.Diagnostics.Converters"
+                    x:ClassModifier="internal">
+
+  <x:Double x:Key="TreeViewItemIndent">16</x:Double>
+  <converters:MarginMultiplierConverter Indent="{StaticResource TreeViewItemIndent}"
+                                        Left="True"
+                                        x:Key="TreeViewItemLeftMarginConverter" />
+  <converters1:BoolToOpacityConverter x:Key="TreeViewItemOpacityConverter" />
+  <Thickness x:Key="TreeViewItemExpandCollapseChevronMargin">12, 0, 12, 0</Thickness>
+
+  <ControlTheme x:Key="{x:Type treeView:VirtualizedTreeViewItem}"
+                TargetType="treeView:VirtualizedTreeViewItem">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="2 1" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <DockPanel Margin="{TemplateBinding IndentLevel, Converter={StaticResource TreeViewItemLeftMarginConverter}}"
+                     Name="PART_ChevronWithContentPresenter">
+            <ToggleButton Name="PART_ExpandCollapseChevron"
+                          Focusable="False"
+                          IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                          Theme="{DynamicResource SimpleTreeViewItemToggleButtonTheme}"
+                          Margin="{StaticResource TreeViewItemExpandCollapseChevronMargin}"
+                          Opacity="{TemplateBinding HasChildren, Converter={StaticResource TreeViewItemOpacityConverter}}"
+                          IsHitTestVisible="{TemplateBinding HasChildren}"/>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Padding="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
+    </Style>
+
+    <Style Selector="^:selected:focus /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
+    </Style>
+
+    <Style Selector="^:selected:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
+    </Style>
+
+    <Style Selector="^:selected:focus:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

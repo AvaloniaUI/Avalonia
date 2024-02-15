@@ -10,6 +10,15 @@
     <diag:ViewLocator/>
   </Window.DataTemplates>
 
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/VirtualizedTreeView/VirtualizedTreeViewItem.axaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/VirtualizedTreeView/VirtualizedTreeView.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+
   <Window.Styles>
     <SimpleTheme />
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
