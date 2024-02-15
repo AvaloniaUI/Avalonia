@@ -168,6 +168,12 @@ namespace Avalonia.Controls
                 nameof(AsyncPopulator));
 
         /// <summary>
+        /// Defines the <see cref="MaxLength"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> MaxLengthProperty =
+            TextBox.MaxLengthProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
         /// Gets or sets the caret index
         /// </summary>
         public int CaretIndex
@@ -465,6 +471,17 @@ namespace Avalonia.Controls
         {
             get => GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
+        }
+        
+
+        /// <summary>
+        /// Gets or sets the maximum number of characters that the <see cref="AutoCompleteBox"/> can accept.
+        /// This constraint only applies for manually entered (user-inputted) text.
+        /// </summary>
+        public int MaxLength
+        {
+            get => GetValue(MaxLengthProperty);
+            set => SetValue(MaxLengthProperty, value);
         }
     }
 }
