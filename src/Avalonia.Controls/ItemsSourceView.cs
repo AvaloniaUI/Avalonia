@@ -10,7 +10,10 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Utils;
+using Avalonia.Interactivity;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -27,14 +30,25 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets an empty <see cref="ItemsSourceView"/>
         /// </summary>
-        public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object?>());
+        public static ItemsSourceView Empty { get; } = new ItemsSourceView(null, Array.Empty<object?>());
 
         /// <summary>
         /// Gets an instance representing an uninitialized source.
         /// </summary>
         [SuppressMessage("Performance", "CA1825:Avoid zero-length array allocations", Justification = "This is a sentinel value and must be unique.")]
         [SuppressMessage("ReSharper", "UseCollectionExpression", Justification = "This is a sentinel value and must be unique.")]
+        [SuppressMessage("Style", "IDE0300:Simplify collection initialization", Justification = "This is a sentinel value and must be unique.")]
         internal static object?[] UninitializedSource { get; } = new object?[0];
+
+        internal AvaloniaObject? Owner => (AvaloniaObject?)_owner.Target;
+
+        private GCHandle _owner;
+        /// <summary>
+        /// If the owner is a control, we don't refresh until it has loaded. This avoids the critical scenario
+        /// of non-nullable references to named XAML objects being null because InitializeComponent is still executing.
+        /// </summary>
+        private bool _isOwnerUnloaded;
+        private TargetWeakEventSubscriber<ItemsSourceView, RoutedEventArgs>? _loadedWeakSubscriber;
 
         private IList _source;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
@@ -43,13 +57,48 @@ namespace Avalonia.Controls
         private PropertyChangedEventHandler? _propertyChanged;
         private bool _listening;
 
-        private IList InternalSource => _filterState?.items ?? _source;
+        private IList InternalSource => _layersState?.items ?? _source;
+
+        private static readonly WeakEvent<Control, RoutedEventArgs> s_loadedWeakEvent =
+            WeakEvent.Register<Control, RoutedEventArgs>((s, h) => s.Loaded += h, (s, h) => s.Loaded -= h);
 
         /// <summary>
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
+        /// <param name="owner">The <see cref="ItemsControl"/> for which this <see cref="ItemsSourceView"/> is being created.</param>
         /// <param name="source">The data source.</param>
-        private protected ItemsSourceView(IEnumerable source) => SetSource(source);
+        private protected ItemsSourceView(AvaloniaObject? owner, IEnumerable source)
+        {
+            _owner = GCHandle.Alloc(owner, GCHandleType.Weak);
+
+            Filters = new() { Validate = ValidateLayer };
+            Filters.CollectionChanged += OnLayersChanged;
+            Sorters = new() { Validate = ValidateLayer };
+            Sorters.CollectionChanged += OnLayersChanged;
+
+            SetSource(source);
+
+            if (owner is Control ownerControl)
+            {
+                _isOwnerUnloaded = true;
+                _loadedWeakSubscriber = new(this, static (view, sender, _, _) => view.OnOwnerLoaded((Control)sender!));
+                s_loadedWeakEvent.Subscribe(ownerControl, _loadedWeakSubscriber);
+            }
+        }
+
+        private void OnOwnerLoaded(Control owner)
+        {
+            _isOwnerUnloaded = false;
+            s_loadedWeakEvent.Unsubscribe(owner, _loadedWeakSubscriber!);
+            _loadedWeakSubscriber = null;
+            
+            Refresh();
+        }
+
+        ~ItemsSourceView()
+        {
+            _owner.Free();
+        }
 
         /// <summary>
         /// Gets the number of items in the collection.
@@ -184,7 +233,7 @@ namespace Avalonia.Controls
             {
                 ItemsSourceView isv => isv,
                 null => Empty,
-                _ => new ItemsSourceView(items)
+                _ => new ItemsSourceView(null, items)
             };
         }
 
@@ -205,7 +254,7 @@ namespace Avalonia.Controls
             {
                 ItemsSourceView<T> isvt => isvt,
                 null => ItemsSourceView<T>.Empty,
-                _ => new ItemsSourceView<T>(items)
+                _ => new ItemsSourceView<T>(null, items)
             };
         }
 
@@ -226,7 +275,7 @@ namespace Avalonia.Controls
             {
                 ItemsSourceView<T> isv => isv,
                 null => ItemsSourceView<T>.Empty,
-                _ => new ItemsSourceView<T>(items)
+                _ => new ItemsSourceView<T>(null, items)
             };
         }
 
@@ -251,16 +300,16 @@ namespace Avalonia.Controls
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
-            if (Filter is { } filter)
+            if (HasLayers)
             {
-                FilterCollectionChangedEvent(e, filter);
+                UpdateLayersForCollectionChangedEvent(e);
             }
 
             if (GetRewrittenEvent(e) is not { } rewritten)
             {
                 return;
             }
-            
+
             _preCollectionChanged?.Invoke(this, rewritten);
         }
 
@@ -323,6 +372,8 @@ namespace Avalonia.Controls
                 _ => new List<object>(source.Cast<object>())
             };
 
+            Refresh();
+
             if (_listening && _source is INotifyCollectionChanged inccNew)
                 CollectionChangedEventManager.Instance.AddListener(inccNew, this);
         }
@@ -339,12 +390,12 @@ namespace Avalonia.Controls
 
         private void RemoveListenerIfNecessary()
         {
-            if (_listening && _collectionChanged is null && _postCollectionChanged is null && Filter == null)
+            if (_listening && _collectionChanged is null && _postCollectionChanged is null && Filters.Count == 0)
             {
                 if (_source is INotifyCollectionChanged incc)
                     CollectionChangedEventManager.Instance.RemoveListener(incc, this);
                 _listening = false;
-        }
+            }
         }
 
         [DoesNotReturn]
@@ -356,19 +407,17 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceView"/>
         /// </summary>
-        public new static ItemsSourceView<T> Empty { get; } = new ItemsSourceView<T>(Array.Empty<T>());
+        public new static ItemsSourceView<T> Empty { get; } = new ItemsSourceView<T>(null, Array.Empty<T>());
 
-        /// <summary>
-        /// Initializes a new instance of the ItemsSourceView class for the specified data source.
-        /// </summary>
-        /// <param name="source">The data source.</param>
-        internal ItemsSourceView(IEnumerable<T> source)
-            : base(source)
+        /// <inheritdoc cref="ItemsSourceView(AvaloniaObject?, IEnumerable)"/>
+        internal ItemsSourceView(AvaloniaObject? owner, IEnumerable<T> source)
+            : base(owner, source)
         {
         }
 
-        internal ItemsSourceView(IEnumerable source)
-            : base(source)
+        /// <inheritdoc cref="ItemsSourceView(AvaloniaObject?, IEnumerable)"/>
+        internal ItemsSourceView(AvaloniaObject? owner, IEnumerable source)
+            : base(owner, source)
         {
         }
 

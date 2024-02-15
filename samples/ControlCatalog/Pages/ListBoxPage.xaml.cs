@@ -11,14 +11,17 @@ namespace ControlCatalog.Pages
             InitializeComponent();
         }
 
-        private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
+        private void FilterItem(object? sender, FunctionItemFilter.FilterEventArgs e)
         {
-            ListBox.Items.Filter = string.IsNullOrEmpty(SearchBox.Text) ? null : FilterItem;
-        }
-
-        private void FilterItem(object? sender, ItemSourceViewFilterEventArgs e)
-        {
-            e.Accept = ((ItemModel)e.Item!).ToString().Contains(SearchBox.Text!);
+            if (string.IsNullOrEmpty(SearchBox.Text))
+            {
+                e.Accept = true;
+            }
+            else
+            {
+                var item = (ItemModel)e.Item!;
+                e.Accept = item.IsFavorite || item.ID.ToString().Contains(SearchBox.Text!);
+            }
         }
     }
 }
