@@ -167,11 +167,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, Func<string?, CancellationToken, Task<IEnumerable<object>>>?>(
                 nameof(AsyncPopulator));
 
-        /// <summary> 
+        /// <summary>
         /// Defines the <see cref="MaxLength"/> property
         /// </summary>
         public static readonly StyledProperty<int> MaxLengthProperty =
-            TextBox.MaxLengthProperty.AddOwner<AutoCompleteBox>();      
+            TextBox.MaxLengthProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
         /// Defines the <see cref="InnerLeftContent"/> property
