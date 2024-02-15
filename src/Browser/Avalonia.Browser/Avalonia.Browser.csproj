@@ -36,10 +36,6 @@
       <Pack>true</Pack>
       <PackagePath>build/;buildTransitive/</PackagePath>
     </Content>
-    <Content Include="build\interop.js">
-      <Pack>true</Pack>
-      <PackagePath>build/interop.js;buildTransitive/interop.js</PackagePath>
-    </Content>
     <Content Include="staticwebassets/**/*.*">
       <Pack>true</Pack>
       <PackagePath>staticwebassets/</PackagePath>

@@ -10,6 +10,12 @@ type CanvasElement = {
     Canvas: Canvas | undefined;
 } & HTMLCanvasElement;
 
+function getGL(): any {
+    const self = globalThis as any;
+    const module = self.Module ?? self.getDotnetRuntime(0)?.Module;
+    return module?.GL ?? self.AvaloniaGL ?? self.SkiaSharpGL;
+}
+
 export class Canvas {
     static elements: Map<string, HTMLCanvasElement>;
 
@@ -60,7 +66,7 @@ export class Canvas {
                 return;
             }
 
-            const GL = (globalThis as any).AvaloniaGL;
+            const GL = getGL();
 
             // make current
             GL.makeContextCurrent(ctx);
@@ -179,7 +185,7 @@ export class Canvas {
             renderViaOffscreenBackBuffer: 1
         };
 
-        const GL = (globalThis as any).AvaloniaGL;
+        const GL = getGL();
 
         let ctx: WebGLRenderingContext = GL.createContext(htmlCanvas, contextAttributes);
 
