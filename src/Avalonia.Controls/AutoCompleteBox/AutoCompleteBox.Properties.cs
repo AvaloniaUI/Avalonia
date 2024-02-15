@@ -167,6 +167,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, Func<string?, CancellationToken, Task<IEnumerable<object>>>?>(
                 nameof(AsyncPopulator));
 
+        /// <summary> 
+        /// Defines the <see cref="MaxLength"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> MaxLengthProperty =
+            TextBox.MaxLengthProperty.AddOwner<AutoCompleteBox>();      
+
         /// <summary>
         /// Defines the <see cref="InnerLeftContent"/> property
         /// </summary>
@@ -478,7 +484,17 @@ namespace Avalonia.Controls
             get => GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
         }
-
+       
+        /// <summary>
+        /// Gets or sets the maximum number of characters that the <see cref="AutoCompleteBox"/> can accept.
+        /// This constraint only applies for manually entered (user-inputted) text.
+        /// </summary>
+        public int MaxLength
+        {
+            get => GetValue(MaxLengthProperty);
+            set => SetValue(MaxLengthProperty, value);
+        }
+      
         /// <summary>
         /// Gets or sets custom content that is positioned on the left side of the text layout box
         /// </summary>
@@ -495,6 +511,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(InnerRightContentProperty);
             set => SetValue(InnerRightContentProperty, value);
-        }
+        }      
     }
 }

@@ -32,7 +32,6 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Menu.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuFlyoutPresenter.xaml" />
-                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NumericUpDown.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml" />
