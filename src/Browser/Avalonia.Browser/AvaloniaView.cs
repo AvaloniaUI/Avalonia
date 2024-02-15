@@ -71,26 +71,18 @@ namespace Avalonia.Browser
             _splash = DomHelper.GetElementById("avalonia-splash");
 
             _topLevelImpl = new BrowserTopLevelImpl(this, _containerElement);
-
-            _topLevel = new WebEmbeddableControlRoot(_topLevelImpl, () =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (_splash != null)
-                    {
-                        DomHelper.AddCssClass(_splash, "splash-close");
-                    }
-                });
-            });
-
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
                 InputHelper.SetCursor(_containerElement, cursor);
             };
 
+            _topLevel = new EmbeddableControlRoot(_topLevelImpl);
             _topLevel.Prepare();
-
             _topLevel.Renderer.Start();
+            if (_splash != null)
+            {
+                _topLevel.RequestAnimationFrame(_ => DomHelper.AddCssClass(_splash, "splash-close"));
+            }
 
             InputHelper.InitializeBackgroundHandlers();
 
@@ -256,7 +248,7 @@ namespace Avalonia.Browser
 
         private bool OnWheel(JSObject args)
         {
-            return _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+            return _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY")),
                 new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)), GetModifiers(args));
         }
 

@@ -203,6 +203,7 @@ namespace Avalonia.Controls.Selection
         public void BeginBatchUpdate()
         {
             _operation ??= new Operation(this);
+            _operation.SkipLostSelection = false;
             ++_operation.UpdateCount;
         }
 

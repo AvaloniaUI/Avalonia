@@ -225,13 +225,13 @@ namespace Avalonia.Win32
         {
             using (var stream = File.OpenRead(fileName))
             {
-                return CreateIconImpl(stream);
+                return new IconImpl(stream);
             }
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
-            return CreateIconImpl(stream);
+            return new IconImpl(stream);
         }
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
@@ -239,38 +239,7 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
-
-                var iconData = memoryStream.ToArray();
-
-                return new IconImpl(new Win32Icon(iconData), iconData);
-            }
-        }
-
-        private static IconImpl CreateIconImpl(Stream stream)
-        {
-            if (stream.CanSeek)
-            {
-                stream.Position = 0;
-            }
-
-            if (stream is MemoryStream memoryStream)
-            {
-                var iconData = memoryStream.ToArray();
-
-                return new IconImpl(new Win32Icon(iconData), iconData);
-            }
-            else
-            {
-                using (var ms = new MemoryStream())
-                {
-                    stream.CopyTo(ms);
-
-                    ms.Position = 0;
-
-                    var iconData = ms.ToArray();
-
-                    return new IconImpl(new Win32Icon(iconData), iconData);
-                }
+                return new IconImpl(memoryStream);
             }
         }
 

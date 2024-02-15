@@ -31,34 +31,44 @@
                                 <Image Source="/Assets/github_icon.png"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Menu Item with _Checkbox">
-                            <MenuItem.Icon>
-                                <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
-                            </MenuItem.Icon>
-                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Checkbox" ToggleType="CheckBox" />
                     </MenuItem>
                     <MenuItem Header="_Second">
                         <MenuItem Header="Second _Menu Item"/>
+                        <MenuItem IsChecked="True" Header="Second _Menu toggle item" ToggleType="CheckBox" />
+                        <Separator/>
+                        <MenuItem GroupName="A" Header="Radio 1 - group" ToggleType="Radio" />
+                        <MenuItem IsChecked="True" GroupName="A" Header="Radio 2 - group" ToggleType="Radio" />
+                        <MenuItem GroupName="A" Header="Radio 3 - group" ToggleType="Radio">
+                          <MenuItem Header="Radio 4 - group" ToggleType="Radio" GroupName="A" />
+                          <MenuItem Header="Radio 5 - group" ToggleType="Radio" GroupName="A" />
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Radio 1" ToggleType="Radio" />
+                        <MenuItem IsChecked="True" Header="Radio 2" ToggleType="Radio" />
+                        <MenuItem Header="Radio 3" ToggleType="Radio">
+                          <MenuItem Header="Radio 4" ToggleType="Radio" />
+                          <MenuItem Header="Radio 5" ToggleType="Radio" />
+                        </MenuItem>
                     </MenuItem>
                 </Menu>
             </StackPanel>
 
             <StackPanel>
-                <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
-                <Menu ItemsSource="{Binding MenuItems}">
-                    <Menu.Styles>
-                        <Style Selector="MenuItem" x:DataType="viewModels:MenuItemViewModel">
-                            <Setter Property="Header" Value="{Binding Header}"/>
-                            <Setter Property="ItemsSource" Value="{Binding Items}"/>
-                            <Setter Property="Command" Value="{Binding Command}"/>
-                            <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
-                        </Style>
-                    </Menu.Styles>
-                </Menu>
+              <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
+              <Menu ItemsSource="{Binding MenuItems}">
+                <Menu.Styles>
+                  <Style Selector="MenuItem" x:DataType="viewModels:MenuItemViewModel">
+                    <Setter Property="Header" Value="{Binding Header}"/>
+                    <Setter Property="ItemsSource" Value="{Binding Items}"/>
+                    <Setter Property="Command" Value="{Binding Command}"/>
+                    <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+                  </Style>
+                </Menu.Styles>
+              </Menu>
             </StackPanel>
-        
 
-            <StackPanel>
+          <StackPanel>
                 <TextBlock Classes="h3" Margin="4 8">Mixed</TextBlock>
                 <Menu>
                     <MenuItem Header="_File">

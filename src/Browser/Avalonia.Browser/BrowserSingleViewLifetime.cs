@@ -18,18 +18,6 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, IActi
             initiallyVisible = null;
             (visible ? Activated : Deactivated)?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
         });
-
-        // Trigger Activated as an initial state, if web page is visible, and wasn't hidden during initialization.
-        if (initiallyVisible == true)
-        {
-            Dispatcher.UIThread.Invoke(() =>
-            {
-                if (initiallyVisible == true)
-                {
-                    Activated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
-                }
-            });
-        }
     }
     
     public AvaloniaView? View;
@@ -61,5 +49,5 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, IActi
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
     public bool TryLeaveBackground() => false;
-    public bool TryEnterBackground() => true;
+    public bool TryEnterBackground() => false;
 }

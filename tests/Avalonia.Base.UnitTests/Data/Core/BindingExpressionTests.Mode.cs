@@ -1,5 +1,6 @@
 using Avalonia.Data;
 using Xunit;
+using Xunit.Sdk;
 
 #nullable enable
 
@@ -66,5 +67,71 @@ public partial class BindingExpressionTests
 
         data2.DoubleValue = 0.2;
         Assert.Equal(0.5, target.Double);
+    }
+
+    [Fact]
+    public void OneWayToSource_Binding_Updates_Source_When_Target_Changes()
+    {
+        var data = new ViewModel();
+        var target = CreateTarget<ViewModel, string?>(
+            x => x.StringValue,
+            dataContext: data,
+            mode: BindingMode.OneWayToSource);
+
+        Assert.Null(data.StringValue);
+
+        target.String = "foo";
+
+        Assert.Equal("foo", data.StringValue);
+    }
+
+    [Fact]
+    public void OneWayToSource_Binding_Does_Not_Update_Target_When_Source_Changes()
+    {
+        var data = new ViewModel();
+        var target = CreateTarget<ViewModel, string?>(
+            x => x.StringValue,
+            dataContext: data,
+            mode: BindingMode.OneWayToSource);
+
+        target.String = "foo";
+        Assert.Equal("foo", data.StringValue);
+
+        data.StringValue = "bar";
+        Assert.Equal("foo", target.String);
+    }
+
+    [Fact]
+    public void OneWayToSource_Binding_Updates_Source_When_DataContext_Changes()
+    {
+        var data1 = new ViewModel();
+        var data2 = new ViewModel();
+        var target = CreateTarget<ViewModel, string?>(
+            x => x.StringValue,
+            dataContext: data1,
+            mode: BindingMode.OneWayToSource);
+
+        target.String = "foo";
+        Assert.Equal("foo", data1.StringValue);
+
+        target.DataContext = data2;
+        Assert.Equal("foo", data2.StringValue);
+    }
+
+    [Fact]
+    public void Can_Bind_Readonly_Property_OneWayToSource()
+    {
+        var data = new ViewModel();
+        var target = CreateTarget<ViewModel, string?>(
+            x => x.StringValue,
+            dataContext: data,
+            mode: BindingMode.OneWayToSource,
+            targetProperty: TargetClass.ReadOnlyStringProperty);
+
+        Assert.Equal("readonly", data.StringValue);
+
+        target.SetReadOnlyString("foo");
+
+        Assert.Equal("foo", data.StringValue);
     }
 }

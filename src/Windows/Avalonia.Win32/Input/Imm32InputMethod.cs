@@ -334,10 +334,22 @@ namespace Avalonia.Win32.Input
             IsComposing = true;
         }
 
-        public void HandleCompositionEnd()
+        public void HandleCompositionEnd(uint timestamp)
         {
             //Cleanup composition state.
             IsComposing = false;
+
+            if (_parent != null && !string.IsNullOrEmpty(Composition))
+            {
+                var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, Composition);
+
+                if (_parent.Input != null)
+                {
+                    _parent.Input(e);
+
+                    _parent._ignoreWmChar = true;
+                }
+            }
 
             Composition = null;
 

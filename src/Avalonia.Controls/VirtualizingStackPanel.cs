@@ -430,6 +430,12 @@ namespace Avalonia.Controls
                     root.LayoutManager.ExecuteLayoutPass();
                 }
 
+                // During the previous BringIntoView, the scroll width extent might have been out of date if
+                // elements have different widths. Because of that, the ScrollViewer might not scroll to the correct offset.
+                // After the previous BringIntoView, Y offset should be correct and an extra layout pass has been executed,
+                // hence the width extent should be correct now, and we can try to scroll again.
+                scrollToElement.BringIntoView();
+
                 _scrollToElement = null;
                 _scrollToIndex = -1;
                 return scrollToElement;
