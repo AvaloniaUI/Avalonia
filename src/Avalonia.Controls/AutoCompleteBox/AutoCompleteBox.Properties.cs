@@ -174,6 +174,18 @@ namespace Avalonia.Controls
             TextBox.MaxLengthProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
+        /// Defines the <see cref="InnerLeftContent"/> property
+        /// </summary>
+        public static readonly StyledProperty<object?> InnerLeftContentProperty =
+            TextBox.InnerLeftContentProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
+        /// Defines the <see cref="InnerRightContent"/> property
+        /// </summary>
+        public static readonly StyledProperty<object?> InnerRightContentProperty =
+            TextBox.InnerRightContentProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
         /// Gets or sets the caret index
         /// </summary>
         public int CaretIndex
@@ -472,8 +484,7 @@ namespace Avalonia.Controls
             get => GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
         }
-        
-
+       
         /// <summary>
         /// Gets or sets the maximum number of characters that the <see cref="AutoCompleteBox"/> can accept.
         /// This constraint only applies for manually entered (user-inputted) text.
@@ -483,5 +494,23 @@ namespace Avalonia.Controls
             get => GetValue(MaxLengthProperty);
             set => SetValue(MaxLengthProperty, value);
         }
+      
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the left side of the text layout box
+        /// </summary>
+        public object? InnerLeftContent
+        {
+            get => GetValue(InnerLeftContentProperty);
+            set => SetValue(InnerLeftContentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the right side of the text layout box
+        /// </summary>
+        public object? InnerRightContent
+        {
+            get => GetValue(InnerRightContentProperty);
+            set => SetValue(InnerRightContentProperty, value);
+        }      
     }
 }
