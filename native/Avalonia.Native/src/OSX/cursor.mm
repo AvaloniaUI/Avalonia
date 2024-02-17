@@ -9,7 +9,7 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
     Cursor* resizeDownCursor = new Cursor([NSCursor resizeDownCursor]);
     Cursor* resizeUpDownCursor = new Cursor([NSCursor resizeUpDownCursor]);
     Cursor* dragCopyCursor = new Cursor([NSCursor dragCopyCursor]);
-    Cursor* dragMoveCursor = new Cursor([NSCursor openHandCursor]);
+    Cursor* openHandCursor = new Cursor([NSCursor openHandCursor]);
     Cursor* dragLinkCursor = new Cursor([NSCursor dragLinkCursor]);
     Cursor* pointingHandCursor = new Cursor([NSCursor pointingHandCursor]);
     Cursor* contextualMenuCursor = new Cursor([NSCursor contextualMenuCursor]);
@@ -37,7 +37,7 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
         { CursorUpArrow, resizeUpCursor },
         { CursorBottomSize, resizeDownCursor },
         { CursorDragCopy, dragCopyCursor },
-        { CursorDragMove, dragMoveCursor },
+        { CursorDragMove, openHandCursor },
         { CursorDragLink, dragLinkCursor },
         { CursorHand, pointingHandCursor },
         { CursorHelp, contextualMenuCursor },
