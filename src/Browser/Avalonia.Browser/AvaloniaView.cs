@@ -105,8 +105,6 @@ namespace Avalonia.Browser
             
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
-            _dpi = DomHelper.ObserveDpi(OnDpiChanged);
-
             _useGL = AvaloniaLocator.Current.GetService<IPlatformGraphics>() != null;
 
             if (_useGL)
@@ -139,7 +137,7 @@ namespace Avalonia.Browser
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            DomHelper.ObserveSize(host, null, OnSizeChanged);
+            DomHelper.ObserveSizeAndDpi(host, OnSizeOrDpiChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
 
@@ -464,26 +462,14 @@ namespace Avalonia.Browser
             }
         }
 
-        private void OnDpiChanged(double oldDpi, double newDpi)
-        {
-            if (Math.Abs(_dpi - newDpi) > 0.0001)
-            {
-                _dpi = newDpi;
-
-                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
-
-                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
-
-                ForceBlit();
-            }
-        }
-
-        private void OnSizeChanged(int height, int width)
+        private void OnSizeOrDpiChanged(int height, int width, double devicePixelRatio)
         {
             var newSize = new Size(height, width);
 
-            if (_canvasSize != newSize)
+            if (_canvasSize != newSize || _dpi != devicePixelRatio)
             {
+                _dpi = devicePixelRatio;
+
                 _canvasSize = newSize;
 
                 CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
