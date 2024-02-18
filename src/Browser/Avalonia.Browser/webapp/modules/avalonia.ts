@@ -1,4 +1,4 @@
-import { SizeWatcher, DpiWatcher, Canvas } from "./avalonia/canvas";
+import { SizeAndDpiWatcher, Canvas } from "./avalonia/canvas";
 import { InputHelper } from "./avalonia/input";
 import { AvaloniaDOM } from "./avalonia/dom";
 import { Caniuse } from "./avalonia/caniuse";
@@ -17,8 +17,7 @@ export {
     Caniuse,
     Canvas,
     InputHelper,
-    SizeWatcher,
-    DpiWatcher,
+    SizeAndDpiWatcher,
     AvaloniaDOM,
     StreamHelper,
     NativeControlHost,
