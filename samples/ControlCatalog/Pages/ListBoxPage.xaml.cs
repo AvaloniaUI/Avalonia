@@ -20,8 +20,11 @@ namespace ControlCatalog.Pages
             else
             {
                 var item = (ItemModel)e.Item!;
-                e.Accept = item.IsFavorite || item.ID.ToString().Contains(SearchBox.Text!);
+                e.Accept = item.IsFavorite || item.ID.ToString().Contains(SearchBox.Text);
             }
         }
+
+        private void SelectItemId(object? sender, ComparableSorter.ComparableSelectEventArgs e) => e.Comparable = ((ItemModel)e.Item!).ID;
+        private void SelectItemIsFavorite(object? sender, ComparableSorter.ComparableSelectEventArgs e) => e.Comparable = ((ItemModel)e.Item!).IsFavorite;
     }
 }
