@@ -41,7 +41,7 @@ namespace Avalonia.Skia
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
-                font.Shape(buffer);
+                font.Shape(buffer, GetFeatures(options));
 
                 if (buffer.Direction == Direction.RightToLeft)
                 {
@@ -175,6 +175,29 @@ namespace Avalonia.Skia
 
             // should never happen
             throw new InvalidOperationException("Memory not backed by string, array or manager");
+        }
+
+        private static Feature[] GetFeatures(TextShaperOptions options)
+        {
+            if (options.FontFeatures is null || options.FontFeatures.Count == 0)
+            {
+                return Array.Empty<Feature>();
+            }
+
+            var features = new Feature[options.FontFeatures.Count];
+            
+            for (var i = 0; i < options.FontFeatures.Count; i++)
+            {
+                var fontFeature = options.FontFeatures[i];
+
+                features[i] = new Feature(
+                    Tag.Parse(fontFeature.Tag), 
+                    (uint)fontFeature.Value,
+                    (uint)fontFeature.Start,
+                    (uint)fontFeature.End);
+            }
+            
+            return features;
         }
     }
 }

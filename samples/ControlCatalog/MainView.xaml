@@ -96,6 +96,9 @@
       <TabItem Header="Flyouts">
         <pages:FlyoutsPage />
       </TabItem>
+      <TabItem Header="Focus">
+        <pages:FocusPage />
+      </TabItem>
       <TabItem Header="Gestures">
         <pages:GesturePage />
       </TabItem>

@@ -473,6 +473,301 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(items[0].Children, children[0].ItemsSource);
         }
 
+        [Fact]
+        public void Radio_MenuItem_In_Same_Group_Is_Unchecked()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+            
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+
+            menuItem3.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+        }
+        
+        [Fact]
+        public void Radio_Menu_Group_Can_Be_Changed_In_Runtime()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+            
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+
+            menuItem3.GroupName = "A";
+            menuItem3.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+
+            menuItem3.GroupName = null;
+            menuItem1.IsChecked = true;
+            
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+        }
+        
+        [Fact]
+        public void Radio_MenuItem_In_Same_Group_But_Submenu_Is_Unchecked()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = "A",
+                        IsChecked = true,
+                        ToggleType = MenuItemToggleType.Radio,
+                        Items =
+                        {
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = "A",
+                                IsChecked = true,
+                                ToggleType = MenuItemToggleType.Radio
+                            })
+                        }
+                    }),
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+            
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.True(menuItem4.IsChecked);
+
+            menuItem2.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_MenuItem_In_Same_Group_But_Submenu_Is_Checked()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = "A",
+                        IsChecked = false,
+                        ToggleType = MenuItemToggleType.Radio,
+                        Items =
+                        {
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = "A",
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            })
+                        }
+                    }),
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+
+            menuItem4.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.True(menuItem4.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_MenuItem_Empty_GroupName_Not_Influence_Other_Groups()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem4 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.True(menuItem4.IsChecked);
+
+            menuItem3.IsChecked = true;
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_Menus_With_Empty_Group_On_Different_Levels_Can_Be_Checked_Simultaneously()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = null,
+                        IsChecked = false,
+                        ToggleType = MenuItemToggleType.Radio,
+                        Items =
+                        {
+                            (menuItem3 = new MenuItem
+                            {
+                                GroupName = null,
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            }),
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = null,
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            }),
+                        }
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+
+            menuItem3.IsChecked = true;
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+        }
+
         private IDisposable Application()
         {
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));

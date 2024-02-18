@@ -113,14 +113,20 @@
         <ListBox ItemsSource="{Binding SelectedEvent.EventChain}">
           <ListBox.ItemTemplate>
             <DataTemplate>
-              <ListBoxItem Classes.handled="{Binding Handled}">
+              <ListBoxItem Classes.handled="{Binding Handled}"
+                           PointerEntered="ListBoxItem_PointerEntered"
+                           PointerExited="ListBoxItem_PointerExited"
+                           >
                 <StackPanel Orientation="Vertical">
 
                   <Rectangle IsVisible="{Binding BeginsNewRoute}" StrokeDashArray="2,2" StrokeThickness="1" Stroke="Gray" />
 
                   <StackPanel Orientation="Horizontal" Spacing="2">
                     <TextBlock Text="{Binding Route}" FontWeight="Bold" />
-                    <TextBlock Tag="{Binding}" DoubleTapped="NavigateTo" Text="{Binding HandlerName}" Classes="nav" />
+                    <TextBlock Tag="{Binding}"
+                               DoubleTapped="NavigateTo"
+                               Text="{Binding HandlerName}"
+                               Classes="nav" />
                   </StackPanel>
 
                 </StackPanel>

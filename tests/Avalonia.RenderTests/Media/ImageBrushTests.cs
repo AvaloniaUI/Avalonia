@@ -438,5 +438,27 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Theory,
+         InlineData(false),
+         InlineData(true)
+        ]
+        public async Task ImageBrush_Is_Properly_Mapped(bool relative)
+        {
+            var brush = new ImageBrush
+            {
+                Stretch = Stretch.Fill,
+                TileMode = TileMode.Tile,
+                DestinationRect = relative
+                    ? new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative)
+                    : new RelativeRect(0, 0, 256, 256, RelativeUnit.Absolute),
+                Source = new Bitmap(BitmapPath),
+            };
+
+            var testName =
+                $"{nameof(ImageBrush_Is_Properly_Mapped)}_{brush.DestinationRect.Unit}";
+            await RenderToFile(new RelativePointTestPrimitivesHelper(brush), testName);
+            CompareImages(testName);
+        }
     }
 }
