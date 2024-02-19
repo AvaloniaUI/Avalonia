@@ -19,9 +19,10 @@ internal class InitializeComponentCodeGenerator: ICodeGenerator
         = @"        /// <param name=""attachDevTools"">Should the dev tools be attached.</param>
 ";
 
-    public InitializeComponentCodeGenerator(IXamlTypeSystem types)
+
+    public InitializeComponentCodeGenerator(IXamlTypeSystem types, bool avaloniaNameGeneratorAttachDevTools)
     {
-        _diagnosticsAreConnected = types.FindAssembly("Avalonia.Diagnostics") != null;
+        _diagnosticsAreConnected = avaloniaNameGeneratorAttachDevTools && types.FindAssembly("Avalonia.Diagnostics") != null;
     }
 
     public string GenerateCode(string className, string nameSpace, IXamlType xamlType, IEnumerable<ResolvedName> names)

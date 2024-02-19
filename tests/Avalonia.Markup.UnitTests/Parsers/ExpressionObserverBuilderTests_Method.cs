@@ -1,6 +1,8 @@
 ﻿using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Markup.Parsers;
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +30,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Get_Method()
         {
             var data = new TestObject();
-            var observer = ExpressionObserverBuilder.Build(data, nameof(TestObject.MethodWithoutReturn));
+            var observer = Build(data, nameof(TestObject.MethodWithoutReturn));
             var result = await observer.Take(1);
 
             Assert.NotNull(result);
@@ -44,7 +46,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Get_Method_WithCorrectDelegateType(string methodName, Type expectedType)
         {
             var data = new TestObject();
-            var observer = ExpressionObserverBuilder.Build(data, methodName);
+            var observer = Build(data, methodName);
             var result = await observer.Take(1);
 
             Assert.IsType(expectedType, result);
@@ -56,7 +58,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Can_Call_Method_Returned_From_Observer()
         {
             var data = new TestObject();
-            var observer = ExpressionObserverBuilder.Build(data, nameof(TestObject.MethodWithReturnAndParameter));
+            var observer = Build(data, nameof(TestObject.MethodWithReturnAndParameter));
             var result = await observer.Take(1);
 
             var callback = (Func<object, int>)result;
@@ -64,6 +66,15 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Equal(1, callback(1));
 
             GC.KeepAlive(data);
+        }
+
+
+        private static IObservable<object> Build(object source, string path)
+        {
+            var r = new CharacterReader(path);
+            var grammar = BindingExpressionGrammar.Parse(ref r).Nodes;
+            var nodes = ExpressionNodeFactory.CreateFromAst(grammar, null, null, out _);
+            return new BindingExpression(source, nodes, AvaloniaProperty.UnsetValue).ToObservable();
         }
     }
 }

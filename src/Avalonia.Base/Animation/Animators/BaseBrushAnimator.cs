@@ -86,14 +86,18 @@ namespace Avalonia.Animation.Animators
                 {
                     gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), () => new GradientBrushAnimator(), keyframe.Cue, keyframe.KeySpline)
                     {
-                        Value = GradientBrushAnimator.ConvertSolidColorBrushToGradient(firstGradient, solidColorBrush)
+                        Value = GradientBrushAnimator.ConvertSolidColorBrushToGradient(firstGradient, solidColorBrush),
+                        FillBefore = keyframe.FillBefore,
+                        FillAfter = keyframe.FillAfter
                     });
                 }
                 else if (keyframe.Value is IGradientBrush)
                 {
                     gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), () => new GradientBrushAnimator(), keyframe.Cue, keyframe.KeySpline)
                     {
-                        Value = keyframe.Value
+                        Value = keyframe.Value,
+                        FillBefore = keyframe.FillBefore,
+                        FillAfter = keyframe.FillAfter
                     });
                 }
                 else
@@ -118,7 +122,9 @@ namespace Avalonia.Animation.Animators
                 {
                     solidColorBrushAnimator.Add(new AnimatorKeyFrame(typeof(ISolidColorBrushAnimator), () => new ISolidColorBrushAnimator(), keyframe.Cue, keyframe.KeySpline)
                     {
-                        Value = keyframe.Value
+                        Value = keyframe.Value,
+                        FillBefore = keyframe.FillBefore,
+                        FillAfter = keyframe.FillAfter
                     });
                 }
                 else
@@ -149,7 +155,9 @@ namespace Avalonia.Animation.Animators
                         {
                             animator.Add(new AnimatorKeyFrame(animatorType, animatorFactory, keyframe.Cue, keyframe.KeySpline)
                             {
-                                Value = keyframe.Value
+                                Value = keyframe.Value,
+                                FillBefore = keyframe.FillBefore,
+                                FillAfter = keyframe.FillAfter
                             });
                         }
 

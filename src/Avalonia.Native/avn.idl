@@ -1085,13 +1085,18 @@ interface IAvnNativeControlHostTopLevelAttachment : IUnknown
 [uuid(6575b5af-f27a-4609-866c-f1f014c20f79)]
 interface IAvnApplicationEvents : IUnknown
 {
-     void FilesOpened (IAvnStringArray* urls);
+     void FilesOpened (IAvnStringArray* args);
+     void UrlsOpened (IAvnStringArray* urls);
      bool TryShutdown();
+     void OnReopen ();
+     void OnHide ();
+     void OnUnhide ();
 }
 
 [uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]
 interface IAvnApplicationCommands : IUnknown
 {
+    HRESULT UnhideApp();
     HRESULT HideApp();
     HRESULT ShowAll();
     HRESULT HideOthers();

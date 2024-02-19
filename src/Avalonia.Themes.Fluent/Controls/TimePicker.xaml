@@ -71,7 +71,6 @@
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type TimePicker}" TargetType="TimePicker">
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
@@ -94,7 +93,7 @@
                     MinWidth="{DynamicResource TimePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top">
+                    VerticalAlignment="Stretch">
 
               <Grid Name="PART_FlyoutButtonContentGrid">
                 <!--Ignore col defs here, set in code-->
@@ -104,10 +103,7 @@
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_HourTextBlock"
                       HorizontalAlignment="Center"
-                      Padding="{DynamicResource TimePickerHostPadding}"
-                      FontFamily="{TemplateBinding FontFamily}"
-                      FontWeight="{TemplateBinding FontWeight}"
-                      FontSize="{TemplateBinding FontSize}" />
+                      Padding="{DynamicResource TimePickerHostPadding}" />
                 </Border>
 
                 <Rectangle Name="PART_FirstColumnDivider"
@@ -122,10 +118,7 @@
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_MinuteTextBlock"
                              HorizontalAlignment="Center"
-                             Padding="{DynamicResource TimePickerHostPadding}"
-                             FontFamily="{TemplateBinding FontFamily}"
-                             FontWeight="{TemplateBinding FontWeight}"
-                             FontSize="{TemplateBinding FontSize}"/>
+                             Padding="{DynamicResource TimePickerHostPadding}"/>
                 </Border>
 
                 <Rectangle Name="PART_SecondColumnDivider"
@@ -140,10 +133,7 @@
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_PeriodTextBlock"
                              HorizontalAlignment="Center"
-                             Padding="{DynamicResource TimePickerHostPadding}"
-                             FontFamily="{TemplateBinding FontFamily}"
-                             FontWeight="{TemplateBinding FontWeight}"
-                             FontSize="{TemplateBinding FontSize}" />
+                             Padding="{DynamicResource TimePickerHostPadding}" />
                 </Border>
               </Grid>
             </Button>
@@ -178,7 +168,6 @@
     <Setter Property="Width" Value="242" />
     <Setter Property="MinWidth" Value="242" />
     <Setter Property="MaxHeight" Value="398" />
-    <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Background" Value="{DynamicResource TimePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerFlyoutPresenterBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource DateTimeFlyoutBorderThickness}" />

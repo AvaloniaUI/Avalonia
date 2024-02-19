@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Versioning;
 using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.OS;
 using Android.Runtime;
 using Android.Text;
 using Android.Views;
@@ -27,10 +25,8 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
-using static System.Net.Mime.MediaTypeNames;
 using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -45,9 +41,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
         private readonly AndroidInsetsManager _insetsManager;
         private readonly ClipboardImpl _clipboard;
+        private readonly AndroidLauncher _launcher;
         private ViewImpl _view;
         private WindowTransparencyLevel _transparencyLevel;
 
@@ -74,8 +71,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
             _transparencyLevel = WindowTransparencyLevel.None;
+            _launcher = new AndroidLauncher((Activity)avaloniaView.Context);
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
+
+            Surfaces = new object[] { _gl, _framebuffer, Handle };
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -107,7 +107,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
+        public IEnumerable<object> Surfaces { get; }
 
         public Compositor Compositor => AndroidPlatform.Compositor;
         
@@ -155,6 +155,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         
         public virtual void Dispose()
         {
+            _systemNavigationManager.Dispose();
             _view.Dispose();
             _view = null;
         }
@@ -395,7 +396,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _nativeControlHost;
             }
 
-            if (featureType == typeof(IInsetsManager))
+            if (featureType == typeof(IInsetsManager) || featureType == typeof(IInputPane))
             {
                 return _insetsManager;
             }
@@ -403,6 +404,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if(featureType == typeof(IClipboard))
             {
                 return _clipboard;
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return _launcher;
             }
 
             return null;

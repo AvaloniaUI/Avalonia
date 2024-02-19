@@ -1,7 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <ShouldIncludeAvaloniaJavaScript Condition=" '$(ShouldIncludeAvaloniaJavaScript)' == '' ">True</ShouldIncludeAvaloniaJavaScript>
-    <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">True</ShouldIncludeNativeSkiaSharp>
-    <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">True</ShouldIncludeNativeHarfBuzzSharp>
-  </PropertyGroup>
-</Project>

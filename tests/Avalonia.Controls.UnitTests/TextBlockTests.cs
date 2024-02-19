@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
@@ -47,6 +48,55 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(Size.Infinity);
 
                 Assert.True(target.IsMeasureValid);
+            }
+        }
+
+        [Fact]
+        public void Can_Call_Measure_Without_InvalidateTextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                target.Inlines.Add(new TextBox { Text = "Hello"});
+
+                target.Measure(Size.Infinity);
+
+                target.InvalidateMeasure();
+
+                target.Measure(Size.Infinity);
+            }
+        }
+
+        [Fact]
+        public void Embedded_Control_Should_Keep_Focus()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new TextBlock();
+
+                var root = new TestRoot
+                {
+                    Child = target
+                };
+
+                var textBox = new TextBox { Text = "Hello", Template = TextBoxTests.CreateTemplate() };
+
+                target.Inlines.Add(textBox);
+
+                target.Measure(Size.Infinity);
+
+                textBox.Focus();
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
+
+                target.InvalidateMeasure();
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
+
+                target.Measure(Size.Infinity);
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -112,6 +162,25 @@ namespace Avalonia.Controls.UnitTests
                 target.Inlines = new InlineCollection { run };
 
                 Assert.Equal(target, run.Parent);
+            }
+        }
+
+        [Fact]
+        public void Changing_Inlines_Should_Reset_VisualChildren()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                target.Inlines.Add(new Border());
+
+                target.Measure(Size.Infinity);
+
+                Assert.NotEmpty(target.VisualChildren);
+
+                target.Inlines = null;
+
+                Assert.Empty(target.VisualChildren);
             }
         }
 
@@ -222,6 +291,22 @@ namespace Avalonia.Controls.UnitTests
                 target.TextDecorations = underline;
 
                 Assert.Equal(underline, target.Inlines[0].TextDecorations);
+            }
+        }
+        
+        [Fact]
+        public void TextBlock_TextLines_Should_Be_Empty()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var textblock = new TextBlock();
+                textblock.Inlines?.Add(new Run("123"));
+                textblock.Measure(new Size(200, 200));
+                int count = textblock.TextLayout.TextLines[0].TextRuns.Count;
+                textblock.Inlines?.Clear();
+                textblock.Measure(new Size(200, 200));
+                int count1 = textblock.TextLayout.TextLines[0].TextRuns.Count;
+                Assert.NotEqual(count, count1);
             }
         }
     }

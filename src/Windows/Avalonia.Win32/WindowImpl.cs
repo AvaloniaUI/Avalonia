@@ -1,31 +1,31 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Collections.Pooled;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.Input;
-using Avalonia.Metadata;
 using Avalonia.OpenGL.Egl;
-using Avalonia.Platform.Storage;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
-using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.OpenGl;
-using Avalonia.Win32.WinRT.Composition;
+using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.WinRT;
+using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using Avalonia.Input.Platform;
 using System.Diagnostics;
+using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Threading;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 using static Avalonia.Controls.Platform.Win32SpecificOptions;
 
@@ -77,14 +77,18 @@ namespace Avalonia.Win32
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
+        private readonly WindowsInputPane? _inputPane;
         private WndProc _wndProcDelegate;
         private string? _className;
         private IntPtr _hwnd;
         private IInputRoot? _owner;
-        private WindowProperties _windowProperties;
+        protected WindowProperties _windowProperties;
+        private IconImpl? _iconImpl;
+        private readonly Dictionary<(Icons type, uint dpi), Win32Icon> _iconCache = new();
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
+        private uint _dpi = 96;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
         private OleDropTarget? _dropTarget;
@@ -141,7 +145,7 @@ namespace Avalonia.Win32
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-            
+
             if (this is not PopupImpl)
             {
                 UpdateInputMethod(GetKeyboardLayout(0));
@@ -164,7 +168,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
             _storageProvider = new Win32StorageProvider(this);
-
+            _inputPane = WindowsInputPane.TryCreate(this);
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
@@ -244,7 +248,9 @@ namespace Avalonia.Win32
             }
         }
 
-        public Size? FrameSize
+        Size? ITopLevelImpl.FrameSize => FrameSize;
+
+        public Size FrameSize
         {
             get
             {
@@ -332,7 +338,7 @@ namespace Avalonia.Win32
             {
                 return _nativeControlHost;
             }
-            
+
             if (featureType == typeof(IStorageProvider))
             {
                 return _storageProvider;
@@ -341,6 +347,16 @@ namespace Avalonia.Win32
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(IInputPane))
+            {
+                return _inputPane;
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;
@@ -523,7 +539,7 @@ namespace Avalonia.Win32
                     return PixelSize.Empty;
                 }
 
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf(typeof(RECT)));
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf<RECT>());
                 GetWindowRect(_hwnd, out var frameRect);
                 var borderWidth = GetSystemMetrics(SystemMetric.SM_CXBORDER);
 
@@ -589,6 +605,8 @@ namespace Avalonia.Win32
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
+
+            ClearIconCache();
         }
 
         public void Invalidate(Rect rect)
@@ -661,8 +679,23 @@ namespace Avalonia.Win32
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             e.Pointer.Capture(null);
-            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int)HitTestValues.HTCAPTION), IntPtr.Zero);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (e.Pointer.IsPrimary)
+                {
+                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                    // message or not, so they are not interesting
+
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                }
+                else
+                {
+                    throw new InvalidOperationException("BeginMoveDrag Failed");
+                }
+            }, DispatcherPriority.Send);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -699,11 +732,53 @@ namespace Avalonia.Win32
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            var impl = icon as IconImpl;
+            _iconImpl = (IconImpl?)icon;
+            ClearIconCache();
+            RefreshIcon();
+        }
 
-            var hIcon = impl?.HIcon ?? IntPtr.Zero;
-            PostMessage(_hwnd, (int)WindowsMessage.WM_SETICON,
-                new IntPtr((int)Icons.ICON_BIG), hIcon);
+        private void ClearIconCache()
+        {
+            foreach (var icon in _iconCache.Values)
+            {
+                icon.Dispose();
+            }
+            _iconCache.Clear();
+        }
+
+        private Win32Icon? LoadIcon(Icons type, uint dpi)
+        {
+            if (_iconImpl == null)
+            {
+                return null;
+            }
+
+            if (type == Icons.ICON_SMALL2)
+            {
+                type = Icons.ICON_SMALL;
+            }
+
+            var iconKey = (type, dpi);
+            if (!_iconCache.TryGetValue(iconKey, out var icon))
+            {
+                var scale = dpi / 96.0;
+                _iconCache[iconKey] = icon = type switch
+                {
+                    Icons.ICON_SMALL => _iconImpl.LoadSmallIcon(scale),
+                    Icons.ICON_BIG => _iconImpl.LoadBigIcon(scale),
+                    _ => throw new NotImplementedException(),
+                };
+            }
+
+            return icon;
+        }
+
+        private void RefreshIcon()
+        {
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_SMALL, LoadIcon(Icons.ICON_SMALL, _dpi)?.Handle ?? default);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_BIG, LoadIcon(Icons.ICON_BIG, _dpi)?.Handle ?? default);
+
+            TaskBarList.SetOverlayIcon(_hwnd, default, null); // This will prompt the taskbar to redraw the icon
         }
 
         public void ShowTaskbarIcon(bool value)
@@ -758,15 +833,15 @@ namespace Avalonia.Win32
                 DwmSetWindowAttribute(
                     _hwnd,
                     (int)DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
-                    &pvUseBackdropBrush,
-                    sizeof(int));
+                        &pvUseBackdropBrush,
+                        sizeof(int));
                 if (TransparencyLevel == WindowTransparencyLevel.Mica)
                 {
                     SetTransparencyMica();
                 }
             }
         }
-        
+
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
@@ -835,10 +910,10 @@ namespace Avalonia.Win32
                 if (GetDpiForMonitor(
                     monitor,
                     MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
-                    out var dpix,
+                    out _dpi,
                     out _) == 0)
                 {
-                    _scaling = dpix / 96.0;
+                    _scaling = _dpi / 96.0;
                 }
             }
         }
@@ -1342,7 +1417,7 @@ namespace Avalonia.Win32
             else
                 SetFullScreen(newProperties.IsFullScreen);
 
-            if (!_isFullScreenActive)
+            if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
             {
                 var style = GetStyle();
 
@@ -1483,7 +1558,7 @@ namespace Avalonia.Win32
             public RECT WindowRect { get; set; }
         };
 
-        private struct WindowProperties
+        protected struct WindowProperties
         {
             public bool ShowInTaskbar;
             public bool IsResizable;

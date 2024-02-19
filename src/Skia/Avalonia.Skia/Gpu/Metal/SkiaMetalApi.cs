@@ -21,12 +21,18 @@ internal unsafe class SkiaMetalApi
     [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(GRContext))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(GRBackendRenderTarget))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(GRContextOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, "SkiaSharp.GRContextOptionsNative", "SkiaSharp")]
     public SkiaMetalApi()
     {
         // Make sure that skia is loaded
         GC.KeepAlive(new SKPaint());
 
-        var dll = NativeLibraryEx.Load("libSkiaSharp", typeof(SKPaint).Assembly);
+        // https://github.com/mono/SkiaSharp/blob/25e70a390e2128e5a54d28795365bf9fdaa7161c/binding/SkiaSharp/SkiaApi.cs#L9-L13
+        // Note, IsIOS also returns true on MacCatalyst.
+        var libSkiaSharpPath = OperatingSystemEx.IsIOS() || OperatingSystemEx.IsTvOS() ?
+            "@rpath/libSkiaSharp.framework/libSkiaSharp" :
+            "libSkiaSharp";
+        var dll = NativeLibraryEx.Load(libSkiaSharpPath, typeof(SKPaint).Assembly);
 
         IntPtr address;
 
@@ -66,6 +72,7 @@ internal unsafe class SkiaMetalApi
                                   ?? throw new MissingMemberException("GRContextOptions.ToNative()");
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "We have DynamicDependency above.")]
     public GRContext CreateContext(IntPtr device, IntPtr queue, GRContextOptions? options)
     {
         options ??= new();
@@ -75,7 +82,7 @@ internal unsafe class SkiaMetalApi
         var context = _gr_direct_context_make_metal_with_options(device, queue, pOptions);
         Marshal.FreeHGlobal(pOptions);
         if (context == IntPtr.Zero)
-            throw new ArgumentException();
+            throw new InvalidOperationException("Unable to create GRContext from Metal device.");
         return (GRContext)_contextCtor.Invoke(new object[] { context, true });
     }
 

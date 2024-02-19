@@ -1,0 +1,35 @@
+<Project>
+  <PropertyGroup>
+    <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)/interop.js"</EmccExtraLDFlags>
+    <EmccFlags>$(EmccFlags) -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
+    <EmccFlags Condition="'$(AvaloniaAllowWebGl2)' == 'true'">$(EmccFlags) -sUSE_WEBGL2=1 -sMAX_WEBGL_VERSION=2 -lGL </EmccFlags>
+  </PropertyGroup>
+
+  <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->
+  <ItemGroup Condition="'$(ShouldIncludeAvaloniaLegacyAssets)' == 'True'">
+    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' == ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" />
+    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' != ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" TargetPath="$(WasmRuntimeAssetsLocation)/%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(ShouldIncludeNativeSkiaSharp)' == 'True' or '$(ShouldIncludeNativeHarfBuzzSharp)' == 'True'">
+    <WasmBuildNative Condition="'$(WasmBuildNative)' == ''">true</WasmBuildNative>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkVersion)' != '' and '$(ShouldIncludeNativeSkiaSharp)' == 'True'">
+    <!-- net7.0 -->
+    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)/3.1.12/mt/*.a" Condition="!$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' == 'True'" />
+    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)/3.1.12/st/*.a" Condition="!$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' != 'True'" />
+    <!-- net8.0 -->
+    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)/3.1.34/mt/*.a" Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' == 'True'" />
+    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)/3.1.34/st/*.a" Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' != 'True'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkVersion)' != '' and '$(ShouldIncludeNativeHarfBuzzSharp)' == 'True'">
+    <!-- net7.0 -->
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)/3.1.12/st/*.a" Condition="!$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' != 'True'" />
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)/3.1.12/mt/*.a" Condition="!$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' == 'True'" />
+    <!-- net8.0 -->
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)/3.1.34/st/*.a" Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' != 'True'" />
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)/3.1.34/mt/*.a" Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(WasmEnableThreads)' == 'True'" />
+  </ItemGroup>
+</Project>

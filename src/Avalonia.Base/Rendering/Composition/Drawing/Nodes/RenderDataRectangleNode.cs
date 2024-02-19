@@ -1,5 +1,4 @@
 using Avalonia.Media;
-using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
@@ -7,20 +6,37 @@ class RenderDataRectangleNode : RenderDataBrushAndPenNode
 {
     public RoundedRect Rect { get; set; }
     public BoxShadows BoxShadows { get; set; }
-    
+
     public override bool HitTest(Point p)
     {
-        if (ServerBrush != null) // it's safe to check for null
+        var strokeThicknessAdjustment = (ClientPen?.Thickness / 2) ?? 0;
+
+        if (Rect.IsRounded)
         {
-            var rect = Rect.Rect.Inflate((ClientPen?.Thickness / 2) ?? 0);
-            return rect.ContainsExclusive(p);
+            var outerRoundedRect = Rect.Inflate(strokeThicknessAdjustment, strokeThicknessAdjustment);
+            if (outerRoundedRect.ContainsExclusive(p))
+            {
+                if (ServerBrush != null) // it's safe to check for null
+                    return true;
+
+                var innerRoundedRect = Rect.Deflate(strokeThicknessAdjustment, strokeThicknessAdjustment);
+                return !innerRoundedRect.ContainsExclusive(p);
+            } 
         }
         else
         {
-            var borderRect = Rect.Rect.Inflate((ClientPen?.Thickness / 2) ?? 0);
-            var emptyRect = Rect.Rect.Deflate((ClientPen?.Thickness / 2) ?? 0);
-            return borderRect.ContainsExclusive(p) && !emptyRect.ContainsExclusive(p);
+            var outerRect = Rect.Rect.Inflate(strokeThicknessAdjustment);
+            if (outerRect.ContainsExclusive(p))
+            {
+                if (ServerBrush != null) // it's safe to check for null
+                    return true;
+
+                var innerRect = Rect.Rect.Deflate(strokeThicknessAdjustment);
+                return !innerRect.ContainsExclusive(p);
+            }
         }
+
+        return false;
     }
 
     public override void Invoke(ref RenderDataNodeRenderContext context) =>

@@ -8,7 +8,7 @@
 
 ## 📖 About 
 
-[Avalonia](https://avaloniaui.net) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [Github](https://avaloniaui.net/showcase#github).
+[Avalonia](https://avaloniaui.net) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [GitHub](https://avaloniaui.net/showcase#github).
 
 Considered by many to be the spiritual successor to WPF, Avalonia UI provides a familiar, modern development experience for XAML developers creating cross-platform applications. While Avalonia UI is [similar to WPF](https://docs.avaloniaui.net/docs/next/get-started/wpf/), it isn't a 1:1 copy, and you'll find plenty of improvements. 
 
@@ -105,18 +105,6 @@ Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com
 ### Sponsors
 
 Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/Avalonia#sponsor)]
-
-<a href="https://opencollective.com/Avalonia/sponsor/0/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/1/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/2/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/3/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/4/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/5/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/6/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
-<a href="https://baseheadinc.com/" target="_blank"><img height="50" src="https://baseheadinc.com/wp-content/uploads/2020/09/BH-Logo-for-Site-Header-New.png"></a>
 
 <a href="https://aws.amazon.com/developer/language/net/" target="_blank"><img src="https://github.com/AvaloniaUI/Avalonia/assets/552074/7771d8b9-ef84-4503-9889-033a87d2c852"></a>
 

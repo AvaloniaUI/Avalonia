@@ -253,6 +253,8 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
                     break;
                 case NotifyCollectionChangedAction.Replace:
+                    _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    break;
                 case NotifyCollectionChangedAction.Move:
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
@@ -261,6 +263,16 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
                     break;
             }
+        }
+
+        protected override void OnItemsControlChanged(ItemsControl? oldValue)
+        {
+            base.OnItemsControlChanged(oldValue);
+
+            if (oldValue is not null)
+                oldValue.PropertyChanged -= OnItemsControlPropertyChanged;
+            if (ItemsControl is not null)
+                ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
         }
 
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
@@ -376,7 +388,7 @@ namespace Avalonia.Controls
                 var scrollToElement = GetOrCreateElement(items, index);
                 scrollToElement.Measure(Size.Infinity);
 
-                // Get the expected position of the elment and put it in place.
+                // Get the expected position of the element and put it in place.
                 var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
                 var rect = Orientation == Orientation.Horizontal ?
                     new Rect(anchorU, 0, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height) :
@@ -417,6 +429,12 @@ namespace Avalonia.Controls
                     InvalidateMeasure();
                     root.LayoutManager.ExecuteLayoutPass();
                 }
+
+                // During the previous BringIntoView, the scroll width extent might have been out of date if
+                // elements have different widths. Because of that, the ScrollViewer might not scroll to the correct offset.
+                // After the previous BringIntoView, Y offset should be correct and an extra layout pass has been executed,
+                // hence the width extent should be correct now, and we can try to scroll again.
+                scrollToElement.BringIntoView();
 
                 _scrollToElement = null;
                 _scrollToIndex = -1;
@@ -617,7 +635,7 @@ namespace Avalonia.Controls
                 generator.ItemContainerPrepared(controlItem, item, index);
             }
 
-            controlItem.IsVisible = true;
+            controlItem.SetCurrentValue(Visual.IsVisibleProperty, true);
             return controlItem;
         }
 
@@ -633,7 +651,7 @@ namespace Avalonia.Controls
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
                 var recycled = recyclePool.Pop();
-                recycled.IsVisible = true;
+                recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
                 return recycled;
@@ -659,6 +677,7 @@ namespace Avalonia.Controls
 
         private void RecycleElement(Control element, int index)
         {
+            Debug.Assert(ItemsControl is not null);
             Debug.Assert(ItemContainerGenerator is not null);
             
             _scrollAnchorProvider?.UnregisterAnchorCandidate(element);
@@ -671,19 +690,18 @@ namespace Avalonia.Controls
             }
             else if (recycleKey == s_itemIsItsOwnContainer)
             {
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
-            else if (element.IsKeyboardFocusWithin)
+            else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
                 _focusedElement = element;
                 _focusedIndex = index;
-                _focusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
             }
             else
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
         }
 
@@ -701,7 +719,7 @@ namespace Avalonia.Controls
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
         }
 
@@ -744,15 +762,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
+        private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (_focusedElement is null || sender != _focusedElement)
-                return;
-
-            _focusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-            RecycleElement(_focusedElement, _focusedIndex);
-            _focusedElement = null;
-            _focusedIndex = -1;
+            if (_focusedElement is not null &&
+                e.Property == KeyboardNavigation.TabOnceActiveElementProperty && 
+                e.GetOldValue<IInputElement?>() == _focusedElement)
+            {
+                // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
+                RecycleElement(_focusedElement, _focusedIndex);
+                _focusedElement = null;
+                _focusedIndex = -1;
+            }
         }
 
         /// <inheritdoc/>

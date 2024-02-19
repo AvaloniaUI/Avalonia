@@ -171,5 +171,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 return node.IsVisible;
             }
         }
+
+        public MainViewModel MainView => _mainViewModel;
     }
 }
