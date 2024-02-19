@@ -90,6 +90,7 @@ namespace Avalonia.Android
             }
 
             Compositor = new Compositor(graphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
         
         private static IPlatformGraphics InitializeGraphics(AndroidPlatformOptions opts)
