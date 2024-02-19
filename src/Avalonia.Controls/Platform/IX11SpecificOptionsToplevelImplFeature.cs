@@ -1,0 +1,19 @@
+namespace Avalonia.Controls.Platform;
+
+public enum X11NetWmWindowType
+{
+    Normal,
+    Dialog,
+    Utility,
+    Menu,
+    Toolbar,
+    Splash,
+    Dock,
+    Desktop
+}
+
+public interface IX11SpecificOptionsToplevelImplFeature
+{
+    void SetNetWmWindowType(X11NetWmWindowType type);
+    void SetWmClass(string? className);
+}
