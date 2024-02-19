@@ -10,7 +10,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.OpenGl
 {
-    internal class WglContext : IGlContext
+    internal class WglContext : IGlContext, IGlContextWithIsCurrentCheck
     {
         private readonly object _lock = new();
         private readonly WglContext? _sharedWith;
@@ -57,7 +57,7 @@ namespace Avalonia.Win32.OpenGl
         public int SampleCount => 0;
         public int StencilSize { get; }
 
-        private bool IsCurrent => wglGetCurrentContext() == _context && wglGetCurrentDC() == _dc;
+        public bool IsCurrent => wglGetCurrentContext() == _context && wglGetCurrentDC() == _dc;
         public IDisposable MakeCurrent()
         {
             if (IsLost)

@@ -1,67 +1,25 @@
-using System;
 using System.Threading.Tasks;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
-namespace Avalonia.OpenGL.Controls;
+namespace Avalonia.OpenGL.Composition;
 
-internal class CompositionOpenGlSwapchain : SwapchainBase<IGlSwapchainImage>
-{
-    private readonly IGlContext _context;
-    private readonly IGlContextExternalObjectsFeature? _externalObjectsFeature;
-    private readonly IOpenGlTextureSharingRenderInterfaceContextFeature? _sharingFeature;
-
-    public CompositionOpenGlSwapchain(IGlContext context, ICompositionGpuInterop interop, CompositionDrawingSurface target,
-        IOpenGlTextureSharingRenderInterfaceContextFeature sharingFeature
-        ) : base(interop, target)
-    {
-        _context = context;
-        _sharingFeature = sharingFeature;
-    }
-    
-    public CompositionOpenGlSwapchain(IGlContext context, ICompositionGpuInterop interop, CompositionDrawingSurface target,
-        IGlContextExternalObjectsFeature? externalObjectsFeature) : base(interop, target)
-    {
-        _context = context;
-        _externalObjectsFeature = externalObjectsFeature;
-    }
-    
-    
-
-    protected override IGlSwapchainImage CreateImage(PixelSize size)
-    {
-        if (_sharingFeature != null)
-            return new CompositionOpenGlSwapChainImage(_context, _sharingFeature, size, Interop, Target);
-        return new DxgiMutexOpenGlSwapChainImage(Interop, Target, _externalObjectsFeature!, size);
-    }
-
-    public IDisposable BeginDraw(PixelSize size, out IGlTexture texture)
-    {
-        var rv = BeginDrawCore(size, out var tex);
-        texture = tex;
-        return rv;
-    }
-}
-
-internal interface IGlTexture
+interface IGlSwapchainImage
 {
     int TextureId { get; }
     int InternalFormat { get; }
     PixelSize Size { get; }
+    ValueTask DisposeImportedAsync();
+    void DisposeTexture();
+    void BeginDraw();
+    Task Present();
 }
 
-
-interface IGlSwapchainImage : ISwapchainImage, IGlTexture
-{
-    
-}
 internal class DxgiMutexOpenGlSwapChainImage : IGlSwapchainImage
 {
     private readonly ICompositionGpuInterop _interop;
     private readonly CompositionDrawingSurface _surface;
     private readonly IGlExportableExternalImageTexture _texture;
-    private Task? _lastPresent;
     private ICompositionImportedGpuImage? _imported;
 
     public DxgiMutexOpenGlSwapChainImage(ICompositionGpuInterop interop, CompositionDrawingSurface surface,
@@ -72,7 +30,8 @@ internal class DxgiMutexOpenGlSwapChainImage : IGlSwapchainImage
         _texture = externalObjects.CreateImage(KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle,
             size, PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm);
     }
-    public async ValueTask DisposeAsync()
+    
+    public async ValueTask DisposeImportedAsync()
     {
         // The texture is already sent to the compositor, so we need to wait for its attempts to use the texture
         // before destroying it
@@ -88,20 +47,20 @@ internal class DxgiMutexOpenGlSwapChainImage : IGlSwapchainImage
                 // Ignore
             }
         }
-        _texture.Dispose();
     }
+
+    public void DisposeTexture() => _texture.Dispose();
 
     public int TextureId => _texture.TextureId;
     public int InternalFormat => _texture.InternalFormat;
     public PixelSize Size => new(_texture.Properties.Width, _texture.Properties.Height);
-    public Task? LastPresent => _lastPresent;
     public void BeginDraw() => _texture.AcquireKeyedMutex(0);
 
-    public void Present()
+    public Task Present()
     {
         _texture.ReleaseKeyedMutex(1);
         _imported ??= _interop.ImportImage(_texture.GetHandle(), _texture.Properties);
-        _lastPresent = _surface.UpdateWithKeyedMutexAsync(_imported, 1, 0);
+        return _surface.UpdateWithKeyedMutexAsync(_imported, 1, 0);
     }
 }
 
@@ -123,9 +82,8 @@ internal class CompositionOpenGlSwapChainImage : IGlSwapchainImage
         _target = target;
         _texture = sharingFeature.CreateSharedTextureForComposition(context, size);
     }
-
     
-    public async ValueTask DisposeAsync()
+    public async ValueTask DisposeImportedAsync()
     {
         // The texture is already sent to the compositor, so we need to wait for its attempts to use the texture
         // before destroying it
@@ -141,22 +99,21 @@ internal class CompositionOpenGlSwapChainImage : IGlSwapchainImage
                 // Ignore
             }
         }
-
-        _texture.Dispose();
     }
+
+    public void DisposeTexture() => _texture.Dispose();
 
     public int TextureId => _texture.TextureId;
     public int InternalFormat => _texture.InternalFormat;
     public PixelSize Size => _texture.Size;
-    public Task? LastPresent { get; private set; }
     public void BeginDraw()
     {
         // No-op for texture sharing
     }
 
-    public void Present()
+    public Task Present()
     {
         _imported ??= _interop.ImportImage(_texture);
-        LastPresent = _target.UpdateAsync(_imported);
+        return _target.UpdateAsync(_imported);
     }
 }
