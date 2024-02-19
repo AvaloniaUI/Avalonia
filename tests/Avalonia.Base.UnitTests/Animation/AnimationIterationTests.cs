@@ -42,8 +42,7 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.FromSeconds(1));
             Assert.Equal(border.Width, 100d);
         }
-
-
+        
         [Fact]
         public void Check_Initial_Inter_and_Trailing_Delay_Values()
         {
@@ -91,7 +90,121 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
             Assert.Equal(border.Width, 100d);
         }
+        
+        [Fact]
+        public void Dont_Set_Properties_When_IsEffectivelyVisible_Is_False()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 150d), }, Cue = new Cue(0.5d)
+            };
 
+            var keyframe3 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                Delay = TimeSpan.FromSeconds(3),
+                DelayBetweenIterations = TimeSpan.FromSeconds(3),
+                IterationCount = new IterationCount(2),
+                Children = { keyframe1, keyframe2, keyframe3 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 100d };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock);
+
+            border.Measure(Size.Infinity);
+            border.Arrange(new Rect(border.DesiredSize));
+            
+            clock.Step(TimeSpan.Zero);
+
+            clock.Step(TimeSpan.FromSeconds(0));
+            Assert.Equal(100d, border.Width);
+
+            border.IsVisible = false;
+            
+            clock.Step(TimeSpan.FromSeconds(3+1.5));
+            
+            // There shouldn't be any change on properties.
+            Assert.Equal(100d, border.Width);
+
+            border.IsVisible = true;
+            
+            clock.Step(TimeSpan.FromSeconds(3+3));
+            Assert.Equal(border.Width, 200d);
+
+            clock.Step(TimeSpan.FromSeconds(14));
+            Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
+            Assert.Equal(border.Width, 100d);
+        }
+        
+        [Fact]
+        public void Dont_Set_Properties_When_IsEffectivelyVisible_Is_False_Nested()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 150d), }, Cue = new Cue(0.5d)
+            };
+
+            var keyframe3 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                Delay = TimeSpan.FromSeconds(3),
+                DelayBetweenIterations = TimeSpan.FromSeconds(3),
+                IterationCount = new IterationCount(2),
+                Children = { keyframe1, keyframe2, keyframe3 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 100d };
+
+            var borderParent = new Border { Child = border };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock);
+
+            border.Measure(Size.Infinity);
+            border.Arrange(new Rect(border.DesiredSize));
+            
+            clock.Step(TimeSpan.Zero);
+
+            clock.Step(TimeSpan.FromSeconds(0));
+            Assert.Equal(100d, border.Width);
+
+            borderParent.IsVisible = false;
+            
+            clock.Step(TimeSpan.FromSeconds(3+1.5));
+
+            // There shouldn't be any change on properties.
+            Assert.Equal(100d, border.Width);
+            
+            borderParent.IsVisible = true;
+            
+            clock.Step(TimeSpan.FromSeconds(3+3));
+            Assert.Equal(border.Width, 200d);
+
+            clock.Step(TimeSpan.FromSeconds(14));
+            Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
+            Assert.Equal(border.Width, 100d);
+        }
+        
         [Fact]
         public void Check_FillModes_Start_and_End_Values_if_Retained()
         {
