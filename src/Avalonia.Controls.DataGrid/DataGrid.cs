@@ -716,6 +716,16 @@ namespace Avalonia.Controls
             set { SetValue(RowDetailsVisibilityModeProperty, value); }
         }
 
+        public static readonly RoutedEvent<RoutedEventArgs> DisplayRegionChangedEvent = RoutedEvent.Register<DataGrid, RoutedEventArgs>(
+            nameof(DisplayRegionChanged),
+            RoutingStrategies.Bubble);
+
+        public event EventHandler<RoutedEventArgs> DisplayRegionChanged
+        {
+            add => AddHandler(DisplayRegionChangedEvent, value);
+            remove => RemoveHandler(DisplayRegionChangedEvent, value);
+        }
+
         static DataGrid()
         {
             AffectsMeasure<DataGrid>(
@@ -2428,6 +2438,11 @@ namespace Avalonia.Controls
             }
         }
 
+        protected virtual void OnDisplayRegionChanged()
+        {
+            RaiseEvent(new RoutedEventArgs(DisplayRegionChangedEvent));
+        }
+
         /// <summary>
         /// Comparator class so we can sort list by the display index
         /// </summary>
@@ -3879,6 +3894,7 @@ namespace Avalonia.Controls
             {
                 EnsureColumnHeadersVisibility();
                 _columnHeadersPresenter.InvalidateMeasure();
+                OnDisplayRegionChanged();
             }
         }
 
@@ -3903,6 +3919,8 @@ namespace Avalonia.Controls
                         element.InvalidateMeasure();
                     }
                 }
+
+                OnDisplayRegionChanged();
             }
         }
 
@@ -6210,6 +6228,31 @@ namespace Avalonia.Controls
         protected virtual void OnAutoGeneratingColumn(DataGridAutoGeneratingColumnEventArgs e)
         {
             AutoGeneratingColumn?.Invoke(this, e);
+        }
+
+        public Vector GetDisplayOffset()
+        {
+            // Has bug when using arrow keys via keyboard.
+            // return new Vector(_horizontalOffset, _verticalOffset);
+
+            double startX = 0;
+            double startY = 0;
+
+            foreach (var child in _rowsPresenter.Children)
+            {
+                var row = child as DataGridRow;
+                if (row.Slot >= 0 && row.Bounds.Top <= 0 && row.Bounds.Top > -RowHeight)
+                {
+                    var testY = RowHeight * row.Index - row.Bounds.Top;
+                    if (startY < testY)
+                    {
+                        startY = testY;
+                        startX = row.Bounds.Left;
+                    }
+                }
+            }
+
+            return new Vector(startX, startY);
         }
     }
 }
