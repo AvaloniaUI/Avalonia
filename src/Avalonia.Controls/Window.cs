@@ -63,6 +63,25 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
+    /// Describes how the <see cref="Window.Closing"/> event behaves in the presence of child windows.
+    /// </summary>
+    public enum WindowClosingBehavior
+    {
+        /// <summary>
+        /// When the owner window is closed, the child windows' <see cref="Window.Closing"/> event
+        /// will be raised, followed by the owner window's <see cref="Window.Closing"/> events. A child
+        /// canceling the close will result in the owner Window's close being cancelled.
+        /// </summary>
+        OwnerAndChildWindows,
+
+        /// <summary>
+        /// When the owner window is closed, only the owner window's <see cref="Window.Closing"/> event
+        /// will be raised. This behavior is the same as WPF's.
+        /// </summary>
+        OwnerWindowOnly,
+    }
+
+    /// <summary>
     /// A top-level window.
     /// </summary>
     public class Window : WindowBase, IFocusScope, ILayoutRoot
@@ -126,6 +145,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> ShowInTaskbarProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
+
+        /// <summary>
+        /// Defines the <see cref="ClosingBehavior"/> property.
+        /// </summary>
+        public static readonly StyledProperty<WindowClosingBehavior> ClosingBehaviorProperty =
+            AvaloniaProperty.Register<Window, WindowClosingBehavior>(nameof(ClosingBehavior));
 
         /// <summary>
         /// Represents the current window state (normal, minimized, maximized)
@@ -348,6 +373,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating how the <see cref="Closing"/> event behaves in the presence
+        /// of child windows.
+        /// </summary>
+        public WindowClosingBehavior ClosingBehavior
+        {
+            get => GetValue(ClosingBehaviorProperty);
+            set => SetValue(ClosingBehaviorProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>
         public WindowState WindowState
@@ -487,31 +522,41 @@ namespace Avalonia.Controls
 
         private bool ShouldCancelClose(WindowClosingEventArgs args)
         {
-            bool canClose = true;
-
-            if (_children.Count > 0)
+            switch (ClosingBehavior)
             {
-                var childArgs = args.CloseReason == WindowCloseReason.WindowClosing ?
-                    new WindowClosingEventArgs(WindowCloseReason.OwnerWindowClosing, args.IsProgrammatic) :
-                    args;
+                case WindowClosingBehavior.OwnerAndChildWindows:
+                    bool canClose = true;
 
-                foreach (var (child, _) in _children.ToArray())
-                {
-                    if (child.ShouldCancelClose(childArgs))
+                    if (_children.Count > 0)
                     {
-                        canClose = false;
+                        var childArgs = args.CloseReason == WindowCloseReason.WindowClosing ?
+                            new WindowClosingEventArgs(WindowCloseReason.OwnerWindowClosing, args.IsProgrammatic) :
+                            args;
+
+                        foreach (var (child, _) in _children.ToArray())
+                        {
+                            if (child.ShouldCancelClose(childArgs))
+                            {
+                                canClose = false;
+                            }
+                        }
                     }
-                }
+
+                    if (canClose)
+                    {
+                        OnClosing(args);
+
+                        return args.Cancel;
+                    }
+
+                    return true;
+                case WindowClosingBehavior.OwnerWindowOnly:
+                    OnClosing(args);
+
+                    return args.Cancel;
             }
 
-            if (canClose)
-            {
-                OnClosing(args);
-
-                return args.Cancel;
-            }
-
-            return true;
+            return false;
         }
 
         private void HandleWindowStateChanged(WindowState state)
