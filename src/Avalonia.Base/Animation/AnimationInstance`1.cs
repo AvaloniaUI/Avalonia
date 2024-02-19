@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Reactive;
 using Avalonia.Animation.Animators;
@@ -101,7 +102,10 @@ namespace Avalonia.Animation
         {
             try
             {
-                InternalStep(frameTick);
+                if (_targetControl is Visual { IsEffectivelyVisible: false })
+                    return;
+                
+                InternalStep(frameTick); 
             }
             catch (Exception e)
             {
