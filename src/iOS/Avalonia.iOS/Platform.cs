@@ -78,6 +78,7 @@ namespace Avalonia.iOS
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 
             Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
 
         private static IPlatformGraphics InitializeGraphics(iOSPlatformOptions opts)
