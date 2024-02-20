@@ -1026,6 +1026,7 @@ interface IAvnMenuItem : IUnknown
      HRESULT SetGesture(AvnKey key, AvnInputModifiers modifiers);
      HRESULT SetAction(IAvnPredicateCallback* predicate, IAvnActionCallback* callback);
      HRESULT SetIsChecked(bool isChecked);
+     HRESULT SetIsVisible(bool isVisible);
      HRESULT SetToggleType(AvnMenuItemToggleType toggleType);
      HRESULT SetIcon(void* data, size_t length);
 }
