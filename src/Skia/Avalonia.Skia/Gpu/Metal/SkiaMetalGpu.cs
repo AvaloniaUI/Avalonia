@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Metal;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Metal;
 
-internal class SkiaMetalGpu : ISkiaGpu
+internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
 {
     private SkiaMetalApi _api = new();
     private GRContext? _context;
@@ -31,6 +32,7 @@ internal class SkiaMetalGpu : ISkiaGpu
 
     public bool IsLost => false;
     public IDisposable EnsureCurrent() => _device.EnsureCurrent();
+    public IPlatformGraphicsContext? PlatformGraphicsContext => _device;
 
     public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
     {

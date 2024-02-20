@@ -99,6 +99,7 @@ namespace Avalonia.Skia
                 private readonly DrawingContextImpl _context;
                 private readonly SKMatrix _revertTransform;
                 private bool _isDisposed;
+                private bool _leased;
 
                 public ApiLease(DrawingContextImpl context)
                 {
@@ -107,11 +108,26 @@ namespace Avalonia.Skia
                     _context._leased = true;
                 }
 
-                public SKCanvas SkCanvas => _context.Canvas;
+                void CheckLease()
+                {
+                    if (_leased)
+                        throw new InvalidOperationException("The underlying graphics API is currently leased");
+                }
+
+                T CheckLease<T>(T rv)
+                {
+                    CheckLease();
+                    return rv;
+                }
+
+                public SKCanvas SkCanvas => CheckLease(_context.Canvas);
+                // GrContext is accessible during the lease since one might want to wrap native resources
+                // Into Skia ones
                 public GRContext? GrContext => _context.GrContext;
-                public SKSurface? SkSurface => _context.Surface;
-                public double CurrentOpacity => _context._currentOpacity;
-                
+                public SKSurface? SkSurface => CheckLease(_context.Surface);
+                public double CurrentOpacity => CheckLease(_context._currentOpacity);
+
+
                 public void Dispose()
                 {
                     if (!_isDisposed)
@@ -120,6 +136,36 @@ namespace Avalonia.Skia
                         _context._leased = false;
                         _isDisposed = true;
                     }
+                }
+
+                class PlatformApiLease : ISkiaSharpPlatformGraphicsApiLease
+                {
+                    private readonly ApiLease _parent;
+
+                    public PlatformApiLease(ApiLease parent, IPlatformGraphicsContext context)
+                    {
+                        _parent = parent;
+                        _parent.GrContext?.Flush();
+                        Context = context;
+                        _parent._leased = true;
+                    }
+                    
+                    public void Dispose()
+                    {
+                        _parent._leased = false;
+                        _parent.GrContext?.ResetContext();
+                    }
+
+                    public IPlatformGraphicsContext Context { get; }
+                }
+                
+                public ISkiaSharpPlatformGraphicsApiLease? TryLeasePlatformGraphicsApi()
+                {
+                    CheckLease();
+                    if (_context._gpu is ISkiaGpuWithPlatformGraphicsContext gpu &&
+                        gpu.PlatformGraphicsContext is { } context)
+                        return new PlatformApiLease(this, context);
+                    return null;
                 }
             }
         }
