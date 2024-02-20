@@ -3,9 +3,9 @@
 /// <summary>
 /// Set of MacOS specific attached properties that allow deeper customization of the application per platform.
 /// </summary>
-public class MacOS
+public class MacOSProperties
 {
-    static MacOS()
+    static MacOSProperties()
     {
         IsTemplateIconProperty.Changed.AddClassHandler<TrayIcon>(TrayIconIsTemplateIconChanged);
     }
@@ -14,7 +14,7 @@ public class MacOS
     /// Defines the IsTemplateIcon attached property.
     /// </summary>
     public static readonly AttachedProperty<bool> IsTemplateIconProperty =
-        AvaloniaProperty.RegisterAttached<MacOS, TrayIcon, bool>("IsTemplateIcon");
+        AvaloniaProperty.RegisterAttached<MacOSProperties, TrayIcon, bool>("IsTemplateIcon");
 
     /// <summary>
     /// A Boolean value that determines whether the TrayIcon image represents a template image.
