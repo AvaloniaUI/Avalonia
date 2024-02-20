@@ -1,12 +1,14 @@
 <Project>
   <PropertyGroup>
     <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)/interop.js"</EmccExtraLDFlags>
-    <EmccFlags>$(EmccExtraLDFlags) -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
+    <EmccFlags>$(EmccFlags) -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
+    <EmccFlags Condition="'$(AvaloniaAllowWebGl2)' == 'true'">$(EmccFlags) -sUSE_WEBGL2=1 -sMAX_WEBGL_VERSION=2 -lGL </EmccFlags>
   </PropertyGroup>
 
-  <ItemGroup>
-    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' == ''" Include="$(MSBuildThisFileDirectory)/wwwroot/**/*.*" />
-    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' != ''" Include="$(MSBuildThisFileDirectory)/wwwroot/**/*.*" TargetPath="$(WasmRuntimeAssetsLocation)/%(FileName)%(Extension)" />
+  <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->
+  <ItemGroup Condition="'$(ShouldIncludeAvaloniaLegacyAssets)' == 'True'">
+    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' == ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" />
+    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' != ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" TargetPath="$(WasmRuntimeAssetsLocation)/%(FileName)%(Extension)" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(ShouldIncludeNativeSkiaSharp)' == 'True' or '$(ShouldIncludeNativeHarfBuzzSharp)' == 'True'">

@@ -72,8 +72,8 @@ public static class ApiDiffHelper
 
             await Task.WhenAll(pairs.Select(p => Task.Run(() =>
             {
-                var baselineApi = p.baseline + ".api.cs";
-                var targetApi = p.target + ".api.cs";
+                var baselineApi = p.baseline + Random.Shared.Next() + ".api.cs";
+                var targetApi = p.target + Random.Shared.Next() + ".api.cs";
                 var resultDiff = p.target + ".api.diff.cs";
                 
                 GenerateApiListing(apiDiffTool, p.baseline, baselineApi, tempFolder);

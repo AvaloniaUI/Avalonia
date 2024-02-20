@@ -27,7 +27,7 @@
     <TextBlock Canvas.Left="20" Canvas.Top="70" FontSize="30" Text="scale(0.5) on gradient" />
     <Rectangle Canvas.Left="20" Canvas.Top="110" Width="440" Height="50">
       <Rectangle.Fill>
-        <RadialGradientBrush Center="0.0,0.0" GradientOrigin="0.0,0.0" Radius="0.13636364">
+        <RadialGradientBrush Center="0.0,0.0" GradientOrigin="0.0,0.0" RadiusX="13%" RadiusY="13%">
           <RadialGradientBrush.Transform>
             <TransformGroup>
               <ScaleTransform />

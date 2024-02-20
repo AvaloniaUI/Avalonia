@@ -25,9 +25,11 @@ internal class Win32Icon : IDisposable
         Handle = CreateIcon(bmp, hotSpot);
     }
 
-    public Win32Icon(byte[] iconData)
+    public Win32Icon(byte[] iconData, PixelSize size = default)
     {
-        Handle = LoadIconFromData(iconData);
+        _bytes = iconData;
+
+        (Handle, Size) = LoadIconFromData(iconData, ReplaceZeroesWithSystemMetrics(size));
         if (Handle == IntPtr.Zero)
         {
             using var bmp = new Bitmap(new MemoryStream(iconData));
@@ -35,7 +37,22 @@ internal class Win32Icon : IDisposable
         }
     }
 
+    public Win32Icon(Win32Icon original, PixelSize size = default)
+    {
+        _bytes = original._bytes ?? throw new ArgumentException("Original icon was created from a bitmap and cannot be copied.", nameof(original));
+        
+        (Handle, Size) = LoadIconFromData(_bytes, ReplaceZeroesWithSystemMetrics(size));
+        if (Handle == IntPtr.Zero)
+        {
+            using var bmp = new Bitmap(new MemoryStream(_bytes));
+            Handle = CreateIcon(bmp);
+        }
+    }
+
     public IntPtr Handle { get; private set; }
+    public PixelSize Size { get; }
+    
+    private readonly byte[]? _bytes;
     
     IntPtr CreateIcon(Bitmap bitmap, PixelPoint hotSpot = default)
     {
@@ -160,19 +177,15 @@ internal class Win32Icon : IDisposable
 
     private static int s_bitDepth;
 
-    static unsafe IntPtr LoadIconFromData(byte[] iconData, int width = 0, int height = 0)
+    private static PixelSize ReplaceZeroesWithSystemMetrics(PixelSize pixelSize) => new(
+        pixelSize.Width == 0 ? UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXICON) : pixelSize.Width,
+        pixelSize.Height == 0 ? UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYICON) : pixelSize.Height
+        );
+
+    private static unsafe (IntPtr, PixelSize) LoadIconFromData(byte[] iconData, PixelSize size)
     {
         if (iconData.Length < sizeof(ICONDIR))
-            return IntPtr.Zero;
-
-        // Get the correct width and height.
-        if (width == 0)
-            width = UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXICON);
-
-        if (height == 0)
-            height = UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYICON);
-
-
+            return default;
 
         if (s_bitDepth == 0)
         {
@@ -196,14 +209,14 @@ internal class Win32Icon : IDisposable
 
             if (dir->idReserved != 0 || dir->idType != 1 || dir->idCount == 0)
             {
-                return IntPtr.Zero;
+                return default;
             }
 
             byte bestWidth = 0;
             byte bestHeight = 0;
 
             if (sizeof(ICONDIRENTRY) * (dir->idCount - 1) + sizeof(ICONDIR) > iconData.Length)
-                return IntPtr.Zero;
+                return default;
 
             var entries = new ReadOnlySpan<ICONDIRENTRY>(&dir->idEntries, dir->idCount);
             var _bestBytesInRes = 0u;
@@ -247,8 +260,8 @@ internal class Win32Icon : IDisposable
                 }
                 else
                 {
-                    int bestDelta = Math.Abs(bestWidth - width) + Math.Abs(bestHeight - height);
-                    int thisDelta = Math.Abs(entry.bWidth - width) + Math.Abs(entry.bHeight - height);
+                    int bestDelta = Math.Abs(bestWidth - size.Width) + Math.Abs(bestHeight - size.Height);
+                    int thisDelta = Math.Abs(entry.bWidth - size.Width) + Math.Abs(entry.bHeight - size.Height);
 
                     if ((thisDelta < bestDelta) ||
                         (thisDelta == bestDelta && (iconBitDepth <= s_bitDepth && iconBitDepth > _bestBitDepth ||
@@ -268,14 +281,9 @@ internal class Win32Icon : IDisposable
                 }
             }
 
-            if (_bestImageOffset > int.MaxValue)
+            if (_bestImageOffset > int.MaxValue || _bestBytesInRes > int.MaxValue)
             {
-                return IntPtr.Zero;
-            }
-
-            if (_bestBytesInRes > int.MaxValue)
-            {
-                return IntPtr.Zero;
+                return default;
             }
 
             uint endOffset;
@@ -285,13 +293,15 @@ internal class Win32Icon : IDisposable
             }
             catch (OverflowException)
             {
-                return IntPtr.Zero;
+                return default;
             }
 
             if (endOffset > iconData.Length)
             {
-                return IntPtr.Zero;
+                return default;
             }
+
+            var bestSize = new PixelSize(bestWidth, bestHeight);
 
             // Copy the bytes into an aligned buffer if needed.
             if ((_bestImageOffset % IntPtr.Size) != 0)
@@ -304,8 +314,8 @@ internal class Win32Icon : IDisposable
                 {
                     fixed (byte* pbAlignedBuffer = alignedBuffer)
                     {
-                        return UnmanagedMethods.CreateIconFromResourceEx(pbAlignedBuffer, _bestBytesInRes, 1,
-                            0x00030000, 0, 0, 0);
+                        return (UnmanagedMethods.CreateIconFromResourceEx(pbAlignedBuffer, _bestBytesInRes, 1,
+                            0x00030000, 0, 0, 0), bestSize);
                     }
                 }
                 finally
@@ -318,15 +328,20 @@ internal class Win32Icon : IDisposable
             {
                 try
                 {
-                    return UnmanagedMethods.CreateIconFromResourceEx(checked(b + _bestImageOffset), _bestBytesInRes,
-                        1, 0x00030000, 0, 0, 0);
+                    return (UnmanagedMethods.CreateIconFromResourceEx(checked(b + _bestImageOffset), _bestBytesInRes,
+                        1, 0x00030000, 0, 0, 0), bestSize);
                 }
                 catch (OverflowException)
                 {
-                    return IntPtr.Zero;
+                    return default;
                 }
             }
         }
+    }
+
+    public void CopyTo(Stream stream)
+    {
+        stream.Write(_bytes ?? throw new InvalidOperationException("Icon was created from a bitmap, not Win32 icon data"), 0, _bytes.Length);
     }
 
     public void Dispose()

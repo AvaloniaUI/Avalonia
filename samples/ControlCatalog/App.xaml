@@ -69,12 +69,13 @@
           <NativeMenu>
             <NativeMenuItem Header="Settings">
               <NativeMenu>
-                <NativeMenuItem Header="Option 1" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
-                <NativeMenuItem Header="Option 2" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
+                <NativeMenuItem Header="Option 1" ToggleType="Radio" IsChecked="True" />
+                <NativeMenuItem Header="Option 2" ToggleType="Radio" />
                 <NativeMenuItemSeparator />
-                <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" Command="{Binding ToggleCommand}" />
-                <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Restore Defaults" Command="{Binding ToggleCommand}" />
+                <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" />
+                <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Restore Defaults" Command="{Binding RestoreDefault}" />
                 <NativeMenuItem Header="Disabled option" IsEnabled="False" />
+                <NativeMenuItem Header="Hidden option" IsVisible="False" />
               </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />

@@ -194,14 +194,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="InnerLeftContent"/> property
         /// </summary>
-        public static readonly StyledProperty<object> InnerLeftContentProperty =
-            AvaloniaProperty.Register<TextBox, object>(nameof(InnerLeftContent));
+        public static readonly StyledProperty<object?> InnerLeftContentProperty =
+            AvaloniaProperty.Register<TextBox, object?>(nameof(InnerLeftContent));
 
         /// <summary>
         /// Defines the <see cref="InnerRightContent"/> property
         /// </summary>
-        public static readonly StyledProperty<object> InnerRightContentProperty =
-            AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
+        public static readonly StyledProperty<object?> InnerRightContentProperty =
+            AvaloniaProperty.Register<TextBox, object?>(nameof(InnerRightContent));
 
         /// <summary>
         /// Defines the <see cref="RevealPassword"/> property
@@ -653,7 +653,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets custom content that is positioned on the left side of the text layout box
         /// </summary>
-        public object InnerLeftContent
+        public object? InnerLeftContent
         {
             get => GetValue(InnerLeftContentProperty);
             set => SetValue(InnerLeftContentProperty, value);
@@ -662,7 +662,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets custom content that is positioned on the right side of the text layout box
         /// </summary>
-        public object InnerRightContent
+        public object? InnerRightContent
         {
             get => GetValue(InnerRightContentProperty);
             set => SetValue(InnerRightContentProperty, value);
@@ -923,6 +923,8 @@ namespace Avalonia.Controls
             }
             else if (change.Property == SelectionEndProperty)
             {
+                _presenter?.MoveCaretToTextPosition(CaretIndex);
+
                 OnSelectionEndChanged(change);
             }
             else if (change.Property == MaxLinesProperty)

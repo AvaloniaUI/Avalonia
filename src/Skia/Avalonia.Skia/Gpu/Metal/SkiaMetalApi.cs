@@ -21,6 +21,7 @@ internal unsafe class SkiaMetalApi
     [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(GRContext))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(GRBackendRenderTarget))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(GRContextOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, "SkiaSharp.GRContextOptionsNative", "SkiaSharp")]
     public SkiaMetalApi()
     {
         // Make sure that skia is loaded
@@ -71,6 +72,7 @@ internal unsafe class SkiaMetalApi
                                   ?? throw new MissingMemberException("GRContextOptions.ToNative()");
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "We have DynamicDependency above.")]
     public GRContext CreateContext(IntPtr device, IntPtr queue, GRContextOptions? options)
     {
         options ??= new();
