@@ -19,6 +19,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_Popup", typeof(Popup))]
     [PseudoClasses(pcDropdownOpen, pcPressed)]
+    [Avalonia.Metadata.ItemType(typeof(ComboBoxItem))]
     public class ComboBox : SelectingItemsControl
     {
         internal const string pcDropdownOpen = ":dropdownopen";
