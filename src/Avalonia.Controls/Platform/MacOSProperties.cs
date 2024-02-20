@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Controls;
+﻿using Avalonia.Platform;
+
+namespace Avalonia.Controls;
 
 /// <summary>
 /// Set of MacOS specific attached properties that allow deeper customization of the application per platform.
@@ -28,6 +30,6 @@ public class MacOSProperties
 
     private static void TrayIconIsTemplateIconChanged(TrayIcon trayIcon, AvaloniaPropertyChangedEventArgs args)
     {
-        trayIcon.SetIsTemplateIcon(args.GetNewValue<bool>());
+        (trayIcon.Impl as ITrayIconWithIsTemplateImpl)?.SetIsTemplateIcon(args.GetNewValue<bool>());
     }
 }

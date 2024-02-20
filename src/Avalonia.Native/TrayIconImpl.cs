@@ -8,7 +8,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    internal class TrayIconImpl : ITrayIconImpl
+    internal class TrayIconImpl : ITrayIconWithIsTemplateImpl
     {
         private readonly IAvnTrayIcon _native;
 

@@ -23,11 +23,6 @@ namespace Avalonia.Platform
         void SetIsVisible(bool visible);
 
         /// <summary>
-        /// Sets if the tray icon has a template/monochrome icon or not.
-        /// </summary>
-        void SetIsTemplateIcon(bool isTemplateIcon);
-
-        /// <summary>
         /// Gets the MenuExporter to allow native menus to be exported to the TrayIcon.
         /// </summary>
         INativeMenuExporter? MenuExporter { get; }
@@ -36,5 +31,14 @@ namespace Avalonia.Platform
         /// Gets or Sets the Action that is called when the TrayIcon is clicked.
         /// </summary>
         Action? OnClicked { get; set; }
+    }
+
+    [Unstable]
+    public interface ITrayIconWithIsTemplateImpl : ITrayIconImpl
+    {
+        /// <summary>
+        /// Sets if the tray icon has a template/monochrome icon or not.
+        /// </summary>
+        void SetIsTemplateIcon(bool isTemplateIcon);
     }
 }
