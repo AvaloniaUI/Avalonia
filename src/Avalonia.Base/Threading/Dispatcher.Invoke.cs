@@ -631,16 +631,20 @@ public partial class Dispatcher
     /// </summary>
     /// <param name="action">The method.</param>
     /// <param name="arg">The argument of method to call.</param>
-    /// <param name="priority">The priority with which to invoke the method.</param>
-    internal void Send(SendOrPostCallback action, object? arg, DispatcherPriority priority)
+    /// <param name="priority">The priority with which to invoke the method. If null, Send is default.</param>
+    /// <remarks>
+    /// When on the same thread with Send priority, callback is executed immediately, without changing synchronization context.
+    /// </remarks>
+    internal void Send(SendOrPostCallback action, object? arg, DispatcherPriority? priority = null)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
+        priority ??= DispatcherPriority.Send;
+
         if (priority == DispatcherPriority.Send && CheckAccess())
         {
             try
             {
-                using (AvaloniaSynchronizationContext.Ensure(this, priority))
-                    action(arg);
+                action(arg);
             }
             catch (Exception ex) when (ExceptionFilter(ex))
             {
@@ -650,7 +654,7 @@ public partial class Dispatcher
         }
         else
         {
-            InvokeImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true),
+            InvokeImpl(new SendOrPostCallbackDispatcherOperation(this, priority.Value, action, arg, true),
                 CancellationToken.None,
                 default);
         }

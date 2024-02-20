@@ -73,7 +73,7 @@ namespace Avalonia.Threading
             else
                 _dispatcher.Send(d, state, Priority);
         }
-        
+
 #if !NET6_0_OR_GREATER
         [PrePrepareMethod]
 #endif

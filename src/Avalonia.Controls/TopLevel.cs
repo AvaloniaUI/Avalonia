@@ -834,7 +834,7 @@ namespace Avalonia.Controls
                     }
 
                     topLevel._inputManager?.ProcessInput(e);
-                }, (this, e), DispatcherPriority.Send);
+                }, (this, e));
             }
             else
             {
