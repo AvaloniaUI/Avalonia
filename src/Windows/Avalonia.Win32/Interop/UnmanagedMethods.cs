@@ -2451,7 +2451,7 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal struct APPBARDATA
         {
-            private static readonly int s_size = Marshal.SizeOf(typeof(APPBARDATA));
+            private static readonly int s_size = Marshal.SizeOf<APPBARDATA>();
 
             public int cbSize;
             public nint hWnd;
