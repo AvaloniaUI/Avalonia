@@ -27,7 +27,7 @@ using System.Diagnostics;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Threading;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
-using static Avalonia.Controls.Platform.Win32SpecificOptions;
+using static Avalonia.Controls.Win32Properties;
 
 namespace Avalonia.Win32
 {
