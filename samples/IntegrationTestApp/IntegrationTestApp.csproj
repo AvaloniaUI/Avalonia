@@ -12,6 +12,10 @@
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
     <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\*" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
