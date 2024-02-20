@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
@@ -19,6 +21,11 @@ namespace Avalonia.Controls.UnitTests
 {
     public class TabControlTests
     {
+        static TabControlTests()
+        {
+            RuntimeHelpers.RunClassConstructor(typeof(RelativeSource).TypeHandle);
+        }
+
         [Fact]
         public void First_Tab_Should_Be_Selected_By_Default()
         {
@@ -434,6 +441,29 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(0, tabControl.ItemsSource.Count());
             }
+        }
+
+        [Fact]
+        public void Should_Have_Initial_SelectedValue()
+        {
+            var xaml = @"
+        <TabControl
+            xmlns='https://github.com/avaloniaui'
+            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+            xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
+            x:DataType='TabItem'
+            x:Name='tabs'
+            Tag='World' 
+            SelectedValue='{Binding $self.Tag}' 
+            SelectedValueBinding='{Binding Header}'>
+            <TabItem Header='Hello'/>
+            <TabItem Header='World'/>
+        </TabControl>";
+
+            var tabControl = (TabControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal("World", tabControl.SelectedValue);
+            Assert.Equal(1, tabControl.SelectedIndex);
         }
 
         [Fact]
