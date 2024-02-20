@@ -11,6 +11,9 @@ using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Set of Win32 specific properties and events that allow deeper customization of the application per platform.
+    /// </summary>
     public static class Win32Properties
     {
         public delegate (uint style, uint exStyle) CustomWindowStylesCallback(uint style, uint exStyle);
