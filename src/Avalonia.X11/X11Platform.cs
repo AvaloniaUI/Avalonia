@@ -98,6 +98,7 @@ namespace Avalonia.X11
             }
 
             Compositor = new Compositor(graphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
 
         public IntPtr DeferredDisplay { get; set; }

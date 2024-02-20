@@ -6,6 +6,7 @@
     <AvaloniaNameGeneratorFilterByPath Condition="'$(AvaloniaNameGeneratorFilterByPath)' == ''">*</AvaloniaNameGeneratorFilterByPath>
     <AvaloniaNameGeneratorFilterByNamespace Condition="'$(AvaloniaNameGeneratorFilterByNamespace)' == ''">*</AvaloniaNameGeneratorFilterByNamespace>
     <AvaloniaNameGeneratorViewFileNamingStrategy Condition="'$(AvaloniaNameGeneratorViewFileNamingStrategy)' == ''">NamespaceAndClassName</AvaloniaNameGeneratorViewFileNamingStrategy>
+    <AvaloniaNameGeneratorAttachDevTools Condition="'$(AvaloniaNameGeneratorAttachDevTools)' == ''">true</AvaloniaNameGeneratorAttachDevTools>
   </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup"/>
@@ -15,6 +16,7 @@
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorFilterByPath" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorFilterByNamespace" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorViewFileNamingStrategy" />
+    <CompilerVisibleProperty Include="AvaloniaNameGeneratorAttachDevTools"/>
   </ItemGroup>
   <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
     <ItemGroup>

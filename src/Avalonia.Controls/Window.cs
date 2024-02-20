@@ -63,6 +63,25 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
+    /// Describes how the <see cref="Window.Closing"/> event behaves in the presence of child windows.
+    /// </summary>
+    public enum WindowClosingBehavior
+    {
+        /// <summary>
+        /// When the owner window is closed, the child windows' <see cref="Window.Closing"/> event
+        /// will be raised, followed by the owner window's <see cref="Window.Closing"/> events. A child
+        /// canceling the close will result in the owner Window's close being cancelled.
+        /// </summary>
+        OwnerAndChildWindows,
+
+        /// <summary>
+        /// When the owner window is closed, only the owner window's <see cref="Window.Closing"/> event
+        /// will be raised. This behavior is the same as WPF's.
+        /// </summary>
+        OwnerWindowOnly,
+    }
+
+    /// <summary>
     /// A top-level window.
     /// </summary>
     public class Window : WindowBase, IFocusScope, ILayoutRoot
@@ -126,6 +145,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> ShowInTaskbarProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
+
+        /// <summary>
+        /// Defines the <see cref="ClosingBehavior"/> property.
+        /// </summary>
+        public static readonly StyledProperty<WindowClosingBehavior> ClosingBehaviorProperty =
+            AvaloniaProperty.Register<Window, WindowClosingBehavior>(nameof(ClosingBehavior));
 
         /// <summary>
         /// Represents the current window state (normal, minimized, maximized)
@@ -348,6 +373,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating how the <see cref="Closing"/> event behaves in the presence
+        /// of child windows.
+        /// </summary>
+        public WindowClosingBehavior ClosingBehavior
+        {
+            get => GetValue(ClosingBehaviorProperty);
+            set => SetValue(ClosingBehaviorProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>
         public WindowState WindowState
@@ -478,45 +513,50 @@ namespace Avalonia.Controls
                 child.CloseInternal();
             }
 
-            if (Owner is Window owner)
-            {
-                owner.RemoveChild(this);
-            }
-
-            Owner = null;
-
             PlatformImpl?.Dispose();
 
             _showingAsDialog = false;
+
+            Owner = null;
         }
 
         private bool ShouldCancelClose(WindowClosingEventArgs args)
         {
-            bool canClose = true;
-
-            if (_children.Count > 0)
+            switch (ClosingBehavior)
             {
-                var childArgs = args.CloseReason == WindowCloseReason.WindowClosing ?
-                    new WindowClosingEventArgs(WindowCloseReason.OwnerWindowClosing, args.IsProgrammatic) :
-                    args;
+                case WindowClosingBehavior.OwnerAndChildWindows:
+                    bool canClose = true;
 
-                foreach (var (child, _) in _children.ToArray())
-                {
-                    if (child.ShouldCancelClose(childArgs))
+                    if (_children.Count > 0)
                     {
-                        canClose = false;
+                        var childArgs = args.CloseReason == WindowCloseReason.WindowClosing ?
+                            new WindowClosingEventArgs(WindowCloseReason.OwnerWindowClosing, args.IsProgrammatic) :
+                            args;
+
+                        foreach (var (child, _) in _children.ToArray())
+                        {
+                            if (child.ShouldCancelClose(childArgs))
+                            {
+                                canClose = false;
+                            }
+                        }
                     }
-                }
+
+                    if (canClose)
+                    {
+                        OnClosing(args);
+
+                        return args.Cancel;
+                    }
+
+                    return true;
+                case WindowClosingBehavior.OwnerWindowOnly:
+                    OnClosing(args);
+
+                    return args.Cancel;
             }
 
-            if (canClose)
-            {
-                OnClosing(args);
-
-                return args.Cancel;
-            }
-
-            return true;
+            return false;
         }
 
         private void HandleWindowStateChanged(WindowState state)
@@ -554,11 +594,6 @@ namespace Avalonia.Controls
 
                 StopRendering();
 
-                if (Owner is Window owner)
-                {
-                    owner.RemoveChild(this);
-                }
-
                 if (_children.Count > 0)
                 {
                     foreach (var child in _children.ToArray())
@@ -567,10 +602,11 @@ namespace Avalonia.Controls
                     }
                 }
 
-                Owner = null;
                 PlatformImpl?.Hide();
                 IsVisible = false;
                 _shown = false;
+
+                Owner = null;
             }
         }
 
@@ -689,13 +725,7 @@ namespace Avalonia.Controls
 
                 LayoutManager.ExecuteInitialLayoutPass();
 
-                if (PlatformImpl != null && owner?.PlatformImpl is not null)
-                {
-                    PlatformImpl.SetParent(owner.PlatformImpl);
-                }
-
                 Owner = owner;
-                owner?.AddChild(this, false);
 
                 SetWindowStartupLocation(owner);
 
@@ -770,9 +800,7 @@ namespace Avalonia.Controls
 
                 var result = new TaskCompletionSource<TResult>();
 
-                PlatformImpl?.SetParent(owner.PlatformImpl!);
                 Owner = owner;
-                owner.AddChild(this, true);
 
                 SetWindowStartupLocation(owner);
 
@@ -974,11 +1002,6 @@ namespace Avalonia.Controls
 
             base.HandleClosed();
 
-            if (Owner is Window owner)
-            {
-                owner.RemoveChild(this);
-            }
-
             Owner = null;
         }
 
@@ -1030,6 +1053,20 @@ namespace Avalonia.Controls
                 var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
+            }
+
+            if (change.Property == OwnerProperty)
+            {
+                var oldParent = change.OldValue as Window;
+                var newParent = change.NewValue as Window;
+
+                oldParent?.RemoveChild(this);
+                newParent?.AddChild(this, _showingAsDialog);
+
+                if (PlatformImpl is IWindowImpl impl)
+                {
+                    impl.SetParent(_showingAsDialog ? newParent?.PlatformImpl! : (newParent?.PlatformImpl ?? null));
+                }
             }
         }
 

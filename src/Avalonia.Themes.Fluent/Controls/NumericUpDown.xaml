@@ -15,6 +15,26 @@
                        HorizontalContentAlignment="Center"
                        ButtonSpinnerLocation="Left"
                        Watermark="Enter text" />
+        <NumericUpDown ButtonSpinnerLocation="Left">
+          <NumericUpDown.InnerLeftContent>
+            <TextBlock Text="m"
+              TextAlignment="Center"
+              VerticalAlignment="Center"/>
+          </NumericUpDown.InnerLeftContent>
+          <NumericUpDown.InnerRightContent>
+            <Button Content="X"/>
+          </NumericUpDown.InnerRightContent>
+        </NumericUpDown>
+        <NumericUpDown ButtonSpinnerLocation="Right">
+          <NumericUpDown.InnerLeftContent>
+            <Button Content="X"/>
+          </NumericUpDown.InnerLeftContent>
+          <NumericUpDown.InnerRightContent>
+            <TextBlock Text="m"
+              TextAlignment="Center"
+              VerticalAlignment="Center"/>
+          </NumericUpDown.InnerRightContent>
+        </NumericUpDown>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
@@ -35,6 +55,7 @@
                        BorderThickness="{TemplateBinding BorderThickness}"
                        BorderBrush="{TemplateBinding BorderBrush}"
                        CornerRadius="{TemplateBinding CornerRadius}"
+                       IsTabStop="False"
                        Padding="0"
                        MinWidth="0"
                        HorizontalContentAlignment="Stretch"
@@ -57,7 +78,10 @@
                    Text="{TemplateBinding Text}"
                    TextAlignment="{TemplateBinding TextAlignment}"
                    AcceptsReturn="False"
-                   TextWrapping="NoWrap" />
+                   TextWrapping="NoWrap"
+                   InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   />
         </ButtonSpinner>
       </ControlTemplate>
     </Setter>
