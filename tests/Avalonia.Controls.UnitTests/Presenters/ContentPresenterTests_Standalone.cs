@@ -333,5 +333,76 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.NotNull(target.Child);
         }
+
+        [Fact]
+        public void Can_Bind_Content_To_DataContext()
+        {
+            var target = new ContentPresenter 
+            { 
+                [!ContentPresenter.ContentProperty] = new Binding("Foo"),
+            };
+
+            var root = new TestRoot 
+            {
+                DataContext = new { Foo = "foo" },
+                Child = target,
+            };
+
+            target.UpdateChild();
+
+            Assert.Equal("foo", target.DataContext);
+            Assert.Equal("foo", target.Content);
+
+            var textBlock = Assert.IsType<TextBlock>(target.Child);
+            Assert.Equal("foo", textBlock.Text);
+        }
+
+        [Fact]
+        public void Can_Use_In_ItemsControl_ItemTemplate()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new ItemsControl
+            {
+                Template = CreateItemsControlTemplate(),
+                ItemTemplate = new FuncDataTemplate<object>((x, _) => new ContentPresenter
+                {
+                    [!ContentPresenter.ContentProperty] = new Binding("Value"),
+                }),
+                [!ItemsControl.ItemsSourceProperty] = new Binding(),
+            };
+
+            var root = new TestRoot
+            {
+                DataContext = Enumerable.Range(0, 10).Select(x => new { Value = $"Item {x}" }),
+                Child = target,
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(10, target.GetRealizedContainers().Count());
+            Assert.All(target.GetRealizedContainers(), (x, i) =>
+            {
+                var container = (ContentPresenter)x;
+                var itemPresenter = (ContentPresenter)container.Child;
+                var textBlock = (TextBlock)itemPresenter.Child;
+                Assert.Equal($"Item {i}", textBlock.Text);
+            });
+        }
+
+        private static FuncControlTemplate CreateItemsControlTemplate()
+        {
+            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
+            {
+                return new Border
+                {
+                    Child = new ItemsPresenter
+                    {
+                        Name = "PART_ItemsPresenter",
+                        [~ItemsPresenter.ItemsPanelProperty] = parent[~ItemsControl.ItemsPanelProperty],
+                    }.RegisterInNameScope(scope)
+                };
+            });
+        }
     }
 }
