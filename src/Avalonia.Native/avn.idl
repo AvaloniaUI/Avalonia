@@ -999,6 +999,7 @@ interface IAvnTrayIcon : IUnknown
     HRESULT SetMenu(IAvnMenu* menu);
     HRESULT SetIsVisible(bool isVisible);
     HRESULT SetToolTipText(char* text);
+    HRESULT SetIsTemplateIcon(bool text);
 }
 
 [uuid(a7724dc1-cf6b-4fa8-9d23-228bf2593edc)]
