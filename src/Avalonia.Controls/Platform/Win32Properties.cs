@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 
-namespace Avalonia.Controls.Platform
+namespace Avalonia.Controls
 {
-    public static class Win32SpecificOptions
+    public static class Win32Properties
     {
         public delegate (uint style, uint exStyle) CustomWindowStylesCallback(uint style, uint exStyle);
         public delegate IntPtr CustomWndProcHookCallback(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled);
