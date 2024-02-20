@@ -125,6 +125,7 @@ namespace Avalonia.Win32
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
             
             s_compositor = new Compositor( platformGraphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(s_compositor);
         }
         
         public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
