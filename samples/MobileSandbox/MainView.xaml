@@ -10,5 +10,6 @@
     <TextBox Watermark="Password" PasswordChar="*" TextInputOptions.ContentType="Password" />
     <TextBox Watermark="Pin" PasswordChar="*" TextInputOptions.ContentType="Digits" TextInputOptions.ReturnKeyType="Next" />
     <Button Content="Login" Command="{Binding ButtonCommand}" />
+    <Button Content="Hide" Command="{Binding HideCommand}" />
   </StackPanel>
 </UserControl>

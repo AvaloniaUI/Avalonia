@@ -17,6 +17,23 @@ namespace MobileSandbox
         public void ButtonCommand()
         {
             Console.WriteLine("Button pressed");
+            var parent = TopLevel.GetTopLevel(this) as Window;
+
+            if(parent != null)
+            {
+                new MainWindow().Show(parent);
+
+            }
+
+        }
+
+        public void HideCommand()
+        {
+            Console.WriteLine("Button pressed");
+            var parent = TopLevel.GetTopLevel(this) as Window;
+
+           parent?.Hide();
+
         }
     }
 }
