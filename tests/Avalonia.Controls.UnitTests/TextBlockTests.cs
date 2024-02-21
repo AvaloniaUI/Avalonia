@@ -52,6 +52,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_Inlines_Should_Attach_Embedded_Controls_To_Parents()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var control = new Border();
+
+                var inlineUIContainer = new InlineUIContainer { Child = control };
+
+                target.Inlines = new InlineCollection { inlineUIContainer };
+
+                Assert.Equal(inlineUIContainer, control.Parent);
+
+                Assert.Equal(target, control.VisualParent);
+            }
+        }
+
+        [Fact]
         public void Can_Call_Measure_Without_InvalidateTextLayout()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
