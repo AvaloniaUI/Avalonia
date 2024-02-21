@@ -150,7 +150,9 @@ namespace Avalonia.Data
             // #elementName etc.) then we need to add a source node. The type of source node will
             // depend on the ElementName and RelativeSource properties of the binding and if
             // neither of those are set will default to a data context node.
-            if (Source == AvaloniaProperty.UnsetValue && !isRooted && CreateSourceNode(targetProperty) is { } sourceNode)
+            if (Source == AvaloniaProperty.UnsetValue && 
+                !isRooted && 
+                CreateSourceNode(target, targetProperty) is { } sourceNode)
             {
                 nodes ??= new();
                 nodes.Insert(0, sourceNode);
@@ -187,7 +189,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        private ExpressionNode? CreateSourceNode(AvaloniaProperty? targetProperty)
+        private ExpressionNode? CreateSourceNode(AvaloniaObject target, AvaloniaProperty? targetProperty)
         {
             if (!string.IsNullOrEmpty(ElementName))
             {
@@ -199,7 +201,7 @@ namespace Avalonia.Data
             if (RelativeSource is not null)
                 return ExpressionNodeFactory.CreateRelativeSource(RelativeSource);
 
-            return ExpressionNodeFactory.CreateDataContext(targetProperty);
+            return ExpressionNodeFactory.CreateDataContext(target, targetProperty);
         }
     }
 }

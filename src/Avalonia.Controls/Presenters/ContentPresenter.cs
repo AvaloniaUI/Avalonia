@@ -467,7 +467,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             // Set the DataContext if the data isn't a control.
-            if (contentTemplate is { } || !(content is Control))
+            if (contentTemplate is not null || content is not Control)
             {
                 DataContext = content;
             }

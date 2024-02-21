@@ -111,7 +111,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // If the binding isn't rooted (i.e. doesn't have a Source or start with $parent, $self,
             // #elementName etc.) then we need to add a data context source node.
             if (Source == AvaloniaProperty.UnsetValue && !isRooted)
-                nodes.Insert(0, ExpressionNodeFactory.CreateDataContext(targetProperty));
+                nodes.Insert(0, ExpressionNodeFactory.CreateDataContext(target, targetProperty));
 
             // If the first node is an ISourceNode then allow it to select the source; otherwise
             // use the binding source if specified, falling back to the target.

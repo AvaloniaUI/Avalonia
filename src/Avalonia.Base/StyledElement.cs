@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -49,7 +48,8 @@ namespace Avalonia
                 validate: null,
                 coerce: null,
                 enableDataValidation: false,
-                notifying: DataContextNotifying);
+                notifying: DataContextNotifying,
+                shouldBindToParentDataContext: _ => true);
 
         /// <summary>
         /// Defines the <see cref="Name"/> property.

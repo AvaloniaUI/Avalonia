@@ -25,6 +25,10 @@ namespace Avalonia
         /// <para>This method is not part of the property's metadata and so cannot be changed after registration.</para>
         /// </param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
+        /// <param name="shouldBindToParentDataContext">
+        /// A method that customizes whether the property should bind to its own DataContext or
+        /// its parent's DataContext.
+        /// </param>
         internal StyledProperty(
             string name,
             Type ownerType,
@@ -32,8 +36,9 @@ namespace Avalonia
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
             Func<TValue, bool>? validate = null,
-            Action<AvaloniaObject, bool>? notifying = null)
-                : base(name, ownerType, hostType, metadata, notifying)
+            Action<AvaloniaObject, bool>? notifying = null,
+            Func<AvaloniaObject, bool>? shouldBindToParentDataContext = null)
+                : base(name, ownerType, hostType, metadata, notifying, shouldBindToParentDataContext)
         {
             Inherits = inherits;
             ValidateValue = validate;

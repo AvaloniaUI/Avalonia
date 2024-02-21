@@ -42,13 +42,18 @@ namespace Avalonia
         /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="notifying">A <see cref="Notifying"/> callback.</param>
+        /// <param name="shouldBindToParentDataContext">
+        /// A method that customizes whether the property should bind to its own DataContext or
+        /// its parent's DataContext.
+        /// </param>
         private protected AvaloniaProperty(
             string name,
             Type valueType,
             Type ownerType,
             Type hostType,
             AvaloniaPropertyMetadata metadata,
-            Action<AvaloniaObject, bool>? notifying = null)
+            Action<AvaloniaObject, bool>? notifying = null,
+            Func<AvaloniaObject, bool>? shouldBindToParentDataContext = null)
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -63,6 +68,7 @@ namespace Avalonia
             PropertyType = valueType ?? throw new ArgumentNullException(nameof(valueType));
             OwnerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
             Notifying = notifying;
+            ShouldBindToParentDataContext = shouldBindToParentDataContext;
             Id = s_nextId++;
 
             _metadata.Add(hostType, metadata ?? throw new ArgumentNullException(nameof(metadata)));
@@ -154,6 +160,12 @@ namespace Avalonia
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
         internal Action<AvaloniaObject, bool>? Notifying { get; }
+
+        /// <summary>
+        /// Gets a method that customizes whether the property should bind to its own DataContext or
+        /// its parent's DataContext.
+        /// </summary>
+        internal Func<AvaloniaObject, bool>? ShouldBindToParentDataContext { get; }
 
         /// <summary>
         /// Gets the integer ID that represents this property.
@@ -266,7 +278,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Registers an attached <see cref="AvaloniaProperty"/>.
+        /// Registers a special <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
         /// <typeparam name="TValue">The type of the property's value.</typeparam>
@@ -282,6 +294,10 @@ namespace Avalonia
         /// object; the bool argument will be true before and false afterwards. This callback is
         /// intended to support IsDataContextChanging.
         /// </param>
+        /// <param name="shouldBindToParentDataContext">
+        /// A method that customizes whether the property should bind to its own DataContext or
+        /// its parent's DataContext.
+        /// </param>
         internal static StyledProperty<TValue> Register<TOwner, TValue>(
             string name,
             TValue defaultValue,
@@ -290,7 +306,8 @@ namespace Avalonia
             Func<TValue, bool>? validate,
             Func<AvaloniaObject, TValue, TValue>? coerce,
             bool enableDataValidation,
-            Action<AvaloniaObject, bool>? notifying)
+            Action<AvaloniaObject, bool>? notifying,
+            Func<AvaloniaObject, bool>? shouldBindToParentDataContext)
                 where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -308,7 +325,8 @@ namespace Avalonia
                 metadata,
                 inherits,
                 validate,
-                notifying);
+                notifying,
+                shouldBindToParentDataContext);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }

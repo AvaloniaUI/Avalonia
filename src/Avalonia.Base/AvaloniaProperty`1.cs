@@ -22,13 +22,18 @@ namespace Avalonia
         /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
+        /// <param name="shouldBindToParentDataContext">
+        /// A method that customizes whether the property should bind to its own DataContext or
+        /// its parent's DataContext.
+        /// </param>
         private protected AvaloniaProperty(
             string name,
             Type ownerType,
             Type hostType,
             AvaloniaPropertyMetadata metadata,
-            Action<AvaloniaObject, bool>? notifying = null)
-            : base(name, typeof(TValue), ownerType, hostType, metadata, notifying)
+            Action<AvaloniaObject, bool>? notifying = null,
+            Func<AvaloniaObject, bool>? shouldBindToParentDataContext = null)
+            : base(name, typeof(TValue), ownerType, hostType, metadata, notifying, shouldBindToParentDataContext)
         {
             _changed = new LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>>();
         }

@@ -223,7 +223,8 @@ namespace Avalonia.Base.UnitTests
                     validate: null,
                     coerce: null,
                     enableDataValidation: false,
-                    notifying: FooNotifying);
+                    notifying: FooNotifying,
+                    shouldBindToParentDataContext: null);
 
             public int NotifyCount { get; private set; }
 

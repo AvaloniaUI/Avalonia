@@ -1,6 +1,5 @@
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -21,7 +20,16 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Content"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> ContentProperty =
-            AvaloniaProperty.Register<ContentControl, object?>(nameof(Content));
+            AvaloniaProperty.Register<ContentControl, object?>(
+                nameof(Content),
+                defaultValue: null,
+                inherits: false,
+                defaultBindingMode: BindingMode.OneWay,
+                validate: null,
+                coerce : null,
+                enableDataValidation: false,
+                notifying: null,
+                shouldBindToParentDataContext: x => x is ContentPresenter);
 
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.

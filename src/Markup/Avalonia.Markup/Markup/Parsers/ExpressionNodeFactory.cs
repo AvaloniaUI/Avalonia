@@ -100,9 +100,9 @@ namespace Avalonia.Markup.Parsers
             };
         }
 
-        public static ExpressionNode CreateDataContext(AvaloniaProperty? targetProperty)
+        public static ExpressionNode CreateDataContext(AvaloniaObject target, AvaloniaProperty? targetProperty)
         {
-            return targetProperty == StyledElement.DataContextProperty ? 
+            return targetProperty?.ShouldBindToParentDataContext?.Invoke(target) == true ? 
                 new ParentDataContextNode() :
                 new DataContextNode();
         }
