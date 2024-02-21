@@ -298,16 +298,16 @@ namespace Avalonia
         /// A method that customizes whether the property should bind to its own DataContext or
         /// its parent's DataContext.
         /// </param>
-        internal static StyledProperty<TValue> Register<TOwner, TValue>(
+        internal static StyledProperty<TValue> RegisterSpecial<TOwner, TValue>(
             string name,
-            TValue defaultValue,
-            bool inherits,
-            BindingMode defaultBindingMode,
-            Func<TValue, bool>? validate,
-            Func<AvaloniaObject, TValue, TValue>? coerce,
-            bool enableDataValidation,
-            Action<AvaloniaObject, bool>? notifying,
-            Func<AvaloniaObject, bool>? shouldBindToParentDataContext)
+            TValue defaultValue = default!,
+            bool inherits = false,
+            BindingMode defaultBindingMode = BindingMode.OneWay,
+            Func<TValue, bool>? validate = null,
+            Func<AvaloniaObject, TValue, TValue>? coerce = null,
+            bool enableDataValidation = false,
+            Action<AvaloniaObject, bool>? notifying = null,
+            Func<AvaloniaObject, bool>? shouldBindToParentDataContext = null)
                 where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));

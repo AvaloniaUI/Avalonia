@@ -20,15 +20,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Content"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> ContentProperty =
-            AvaloniaProperty.Register<ContentControl, object?>(
+            AvaloniaProperty.RegisterSpecial<ContentControl, object?>(
                 nameof(Content),
-                defaultValue: null,
-                inherits: false,
-                defaultBindingMode: BindingMode.OneWay,
-                validate: null,
-                coerce : null,
-                enableDataValidation: false,
-                notifying: null,
                 shouldBindToParentDataContext: x => x is ContentPresenter);
 
         /// <summary>

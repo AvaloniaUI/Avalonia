@@ -40,14 +40,9 @@ namespace Avalonia
         /// Defines the <see cref="DataContext"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> DataContextProperty =
-            AvaloniaProperty.Register<StyledElement, object?>(
+            AvaloniaProperty.RegisterSpecial<StyledElement, object?>(
                 nameof(DataContext),
-                defaultValue: null,
                 inherits: true,
-                defaultBindingMode: BindingMode.OneWay,
-                validate: null,
-                coerce: null,
-                enableDataValidation: false,
                 notifying: DataContextNotifying,
                 shouldBindToParentDataContext: _ => true);
 

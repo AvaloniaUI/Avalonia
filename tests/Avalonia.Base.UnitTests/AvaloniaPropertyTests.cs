@@ -217,14 +217,9 @@ namespace Avalonia.Base.UnitTests
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>("Foo", "default",
+                AvaloniaProperty.RegisterSpecial<Class1, string>("Foo", "default",
                     inherits: true,
-                    defaultBindingMode: BindingMode.OneWay,
-                    validate: null,
-                    coerce: null,
-                    enableDataValidation: false,
-                    notifying: FooNotifying,
-                    shouldBindToParentDataContext: null);
+                    notifying: FooNotifying);
 
             public int NotifyCount { get; private set; }
 
