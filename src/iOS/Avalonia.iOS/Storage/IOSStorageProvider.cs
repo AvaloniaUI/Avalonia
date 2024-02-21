@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
 using UIKit;
@@ -128,11 +126,16 @@ internal class IOSStorageProvider : IStorageProvider
             WellKnownFolder.Videos => NSSearchPathDirectory.MoviesDirectory,
             _ => throw new ArgumentOutOfRangeException(nameof(wellKnownFolder), wellKnownFolder, null)
         };
-        
-        var uri = NSFileManager.DefaultManager.GetUrl(directoryType, NSSearchPathDomain.Local, null, true, out var error);
+
+        var uri = NSFileManager.DefaultManager.GetUrl(directoryType, NSSearchPathDomain.User, null, true, out var error);
         if (error != null)
         {
             throw new NSErrorException(error);
+        }
+
+        if (uri is null)
+        {
+            return Task.FromResult<IStorageFolder?>(null);
         }
 
         return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(uri));
