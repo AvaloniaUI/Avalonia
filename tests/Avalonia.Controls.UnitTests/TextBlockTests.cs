@@ -52,6 +52,21 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_Inlines_Should_Attach_Embedded_Controls_To_VisualTree()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var control = new Border(); 
+
+                target.Inlines = new InlineCollection { new InlineUIContainer{ Child = control } };
+
+                Assert.True(control.IsAttachedToVisualTree);
+            }
+        }
+
+        [Fact]
         public void Can_Call_Measure_Without_InvalidateTextLayout()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
