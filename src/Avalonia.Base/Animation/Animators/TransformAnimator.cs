@@ -12,10 +12,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     internal class TransformAnimator : Animator<double>
     {
-        private Transform? _targetTransform;
-        private AvaloniaProperty? _targetProperty;
         private LightweightSubject<double>? _subject2;
-        private DisposeAnimationInstanceSubject<double>? _subject1;
 
         /// <inheritdoc/>
         public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
@@ -54,9 +51,11 @@ namespace Avalonia.Animation.Animators
 
                 var renderTransformType = ctrl.RenderTransform.GetType();
 
-                _targetProperty = Property;
+                var _targetProperty = Property;
 
                 // It's a transform object so let's target that.
+                Transform? _targetTransform = null;
+                
                 if (renderTransformType == Property.OwnerType)
                 {
                     _targetTransform = (Transform)ctrl.RenderTransform;
@@ -77,7 +76,7 @@ namespace Avalonia.Animation.Animators
 
                 if (_targetTransform is not null)
                 {
-                    _subject1 = new DisposeAnimationInstanceSubject<double>(this, animation,
+                    var _subject1 = new DisposeAnimationInstanceSubject<double>(this, animation,
                         control, clock, onComplete);
                     
                     _subject2 = new LightweightSubject<double>();
@@ -107,6 +106,5 @@ namespace Avalonia.Animation.Animators
             _subject2?.OnNext(((newValue - oldValue) * progress) + oldValue);
             return default;
         }
-
     }
 }
