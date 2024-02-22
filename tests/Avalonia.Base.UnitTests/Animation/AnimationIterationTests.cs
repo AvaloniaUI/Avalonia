@@ -42,7 +42,8 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.FromSeconds(1));
             Assert.Equal(border.Width, 100d);
         }
-        
+
+
         [Fact]
         public void Check_Initial_Inter_and_Trailing_Delay_Values()
         {

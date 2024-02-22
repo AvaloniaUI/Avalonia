@@ -21,12 +21,12 @@ namespace Avalonia.Animation.Animators
         public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var ctrl = (Visual)control;
-        
+
             if (Property is null)
             {
                 throw new InvalidOperationException("Animator has no property specified.");
             }
-        
+
             // Check if the Target Property is Transform derived.
             if (typeof(Transform).IsAssignableFrom(Property.OwnerType))
             {
@@ -35,33 +35,33 @@ namespace Avalonia.Animation.Animators
                     // HACK: This animator cannot reasonably animate CSS transforms at the moment.
                     return Disposable.Empty;
                 }
-        
+
                 if (ctrl.RenderTransform == null)
                 {
                     var normalTransform = new TransformGroup();
-        
+
                     // Add the transforms according to MS Expression Blend's 
                     // default RenderTransform order.
-        
+
                     normalTransform.Children.Add(new ScaleTransform());
                     normalTransform.Children.Add(new SkewTransform());
                     normalTransform.Children.Add(new RotateTransform());
                     normalTransform.Children.Add(new TranslateTransform());
                     normalTransform.Children.Add(new Rotate3DTransform());
-        
+
                     ctrl.RenderTransform = normalTransform;
                 }
-        
+
                 var renderTransformType = ctrl.RenderTransform.GetType();
-        
+
                 _targetProperty = Property;
-                
+
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
                     _targetTransform = (Transform)ctrl.RenderTransform;
                 }
-                
+
                 // It's a TransformGroup and try finding the target there.
                 if (renderTransformType == typeof(TransformGroup))
                 {
