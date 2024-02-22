@@ -131,7 +131,7 @@ namespace Avalonia.Win32
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
-                        _scaling = _dpi / 96.0;
+                        _scaling = _dpi / StandardDpi;
                         RefreshIcon();
                         ScalingChanged?.Invoke(_scaling);
 
@@ -613,14 +613,6 @@ namespace Avalonia.Win32
                     {
                         var size = (SizeCommand)wParam;
 
-                        if (Resized != null &&
-                            (size == SizeCommand.Restored ||
-                             size == SizeCommand.Maximized))
-                        {
-                            var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
-                            Resized(clientSize / RenderScaling, _resizeReason);
-                        }
-
                         var windowState = size switch
                         {
                             SizeCommand.Maximized => WindowState.Maximized,
@@ -629,10 +621,20 @@ namespace Avalonia.Win32
                             _ => WindowState.Normal,
                         };
 
-                        if (windowState != _lastWindowState)
-                        {
-                            _lastWindowState = windowState;
+                        var stateChanged = windowState != _lastWindowState;
+                        _lastWindowState = windowState;
 
+                        if (Resized != null &&
+                            (size == SizeCommand.Restored ||
+                             size == SizeCommand.Maximized))
+                        {
+                            var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
+                            Resized(clientSize / RenderScaling, _resizeReason);
+                        }
+
+
+                        if (stateChanged)
+                        {
                             var newWindowProperties = _windowProperties;
 
                             newWindowProperties.WindowState = windowState;
