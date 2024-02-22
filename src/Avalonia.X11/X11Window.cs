@@ -567,7 +567,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
+                        if (!_disabled && Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -1298,6 +1298,8 @@ namespace Avalonia.X11
             {
                 XFree(wmHintsPtr);
             }
+
+            UpdateNetAllowedActions();
         }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
@@ -1367,6 +1369,34 @@ namespace Avalonia.X11
                 atoms.Length > 2 ? atoms[2] : IntPtr.Zero,
                 atoms.Length > 3 ? atoms[3] : IntPtr.Zero
             );
+        }
+
+        private void UpdateNetAllowedActions()
+        {
+            var allowedActions = new HashSet<IntPtr>()
+            {
+                _x11.Atoms._NET_WM_ACTION_MOVE,
+                _x11.Atoms._NET_WM_ACTION_RESIZE,
+                _x11.Atoms._NET_WM_ACTION_MINIMIZE,
+                _x11.Atoms._NET_WM_ACTION_SHADE,
+                _x11.Atoms._NET_WM_ACTION_STICK,
+                _x11.Atoms._NET_WM_ACTION_MAXIMIZE_HORZ,
+                _x11.Atoms._NET_WM_ACTION_MAXIMIZE_VERT,
+                _x11.Atoms._NET_WM_ACTION_FULLSCREEN,
+                _x11.Atoms._NET_WM_ACTION_CHANGE_DESKTOP,
+                _x11.Atoms._NET_WM_ACTION_CLOSE,
+            };
+
+            if(_disabled)
+            {
+                allowedActions.Remove(_x11.Atoms._NET_WM_ACTION_MINIMIZE);
+                allowedActions.Remove(_x11.Atoms._NET_WM_ACTION_MAXIMIZE_HORZ);
+                allowedActions.Remove(_x11.Atoms._NET_WM_ACTION_MAXIMIZE_VERT);
+                allowedActions.Remove(_x11.Atoms._NET_WM_ACTION_CLOSE);
+            }
+
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ALLOWED_ACTIONS, (IntPtr)Atom.XA_ATOM, 32,
+                PropertyMode.Replace, allowedActions.ToArray(), allowedActions.Count);
         }
 
         public IPopupPositioner? PopupPositioner { get; }

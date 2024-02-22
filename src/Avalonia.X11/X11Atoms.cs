@@ -179,6 +179,16 @@ namespace Avalonia.X11
         public IntPtr _NET_WM_WINDOW_TYPE_SPLASH;
         public IntPtr _NET_WM_WINDOW_TYPE_DIALOG;
         public IntPtr _NET_WM_WINDOW_TYPE_NORMAL;
+        public IntPtr _NET_WM_ACTION_MOVE;
+        public IntPtr _NET_WM_ACTION_RESIZE;
+        public IntPtr _NET_WM_ACTION_MINIMIZE;
+        public IntPtr _NET_WM_ACTION_SHADE;
+        public IntPtr _NET_WM_ACTION_STICK;
+        public IntPtr _NET_WM_ACTION_MAXIMIZE_HORZ;
+        public IntPtr _NET_WM_ACTION_MAXIMIZE_VERT;
+        public IntPtr _NET_WM_ACTION_FULLSCREEN;
+        public IntPtr _NET_WM_ACTION_CHANGE_DESKTOP;
+        public IntPtr _NET_WM_ACTION_CLOSE;
         public IntPtr CLIPBOARD;
         public IntPtr CLIPBOARD_MANAGER;
         public IntPtr SAVE_TARGETS;
