@@ -14,6 +14,8 @@ namespace Avalonia.Animation.Animators
     {
         private Transform? _targetTransform;
         private AvaloniaProperty? _targetProperty;
+        private LightweightSubject<double>? _subject2;
+        private DisposeAnimationInstanceSubject<double>? _subject1;
 
         /// <inheritdoc/>
         public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
@@ -58,7 +60,6 @@ namespace Avalonia.Animation.Animators
                 if (renderTransformType == Property.OwnerType)
                 {
                     _targetTransform = (Transform)ctrl.RenderTransform;
-                    return base.Apply(animation, control, clock, match, onComplete);
                 }
                 
                 // It's a TransformGroup and try finding the target there.
@@ -69,9 +70,22 @@ namespace Avalonia.Animation.Animators
                         if (transform.GetType() == Property.OwnerType)
                         {                    
                             _targetTransform = transform;
-                            return base.Apply(animation, control, clock, match, onComplete);
+                            break;
                         }
                     }
+                }
+
+                if (_targetTransform is not null)
+                {
+                    _subject1 = new DisposeAnimationInstanceSubject<double>(this, animation,
+                        control, clock, onComplete);
+                    
+                    _subject2 = new LightweightSubject<double>();
+                    
+                    var sideBinding = _targetTransform.Bind((AvaloniaProperty<double>)_targetProperty,
+                        _subject2, BindingPriority.Animation);
+                    
+                    return new CompositeDisposable(match.Subscribe(_subject1), _subject1, sideBinding);
                 }
         
                 Logger.TryGet(LogEventLevel.Warning, LogArea.Animations)?.Log(
@@ -90,14 +104,7 @@ namespace Avalonia.Animation.Animators
         /// <inheritdoc/>  
         public override double Interpolate(double progress, double oldValue, double newValue)
         {
-            // INFO: To be honest, I'm not sure if this is a correct way of doing things.
-            // Right now we just send off a SetValue call as a side-effect of the "actual"
-            // double animation.
-            
-            if (_targetProperty is null || _targetTransform is null) return default;
-            
-            var animatedValue = ((newValue - oldValue) * progress) + oldValue;
-            _targetTransform.SetValue(_targetProperty, animatedValue, BindingPriority.Animation);
+            _subject2?.OnNext(((newValue - oldValue) * progress) + oldValue);
             return default;
         }
 
