@@ -81,7 +81,7 @@ namespace Avalonia.Win32
         private string? _className;
         private IntPtr _hwnd;
         private IInputRoot? _owner;
-        private WindowProperties _windowProperties;
+        protected WindowProperties _windowProperties;
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
@@ -1481,7 +1481,7 @@ namespace Avalonia.Win32
             public RECT WindowRect { get; set; }
         };
 
-        private struct WindowProperties
+        protected struct WindowProperties
         {
             public bool ShowInTaskbar;
             public bool IsResizable;
