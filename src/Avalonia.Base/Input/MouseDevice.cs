@@ -74,9 +74,6 @@ namespace Avalonia.Input
                 case RawPointerEventType.MiddleButtonDown:
                 case RawPointerEventType.XButton1Down:
                 case RawPointerEventType.XButton2Down:
-                    if (ButtonCount(props) > 1)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult);
-                    else
                         e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
                     break;
                 case RawPointerEventType.LeftButtonUp:
@@ -84,9 +81,6 @@ namespace Avalonia.Input
                 case RawPointerEventType.MiddleButtonUp:
                 case RawPointerEventType.XButton1Up:
                 case RawPointerEventType.XButton2Up:
-                    if (ButtonCount(props) != 0)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult);
-                    else
                         e.Handled = MouseUp(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
                     break;
                 case RawPointerEventType.Move:
