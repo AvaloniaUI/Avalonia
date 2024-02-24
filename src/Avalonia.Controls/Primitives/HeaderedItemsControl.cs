@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -10,6 +11,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Represents an <see cref="ItemsControl"/> with a related header.
     /// </summary>
+    [TemplatePart("PART_HeaderPresenter", typeof(ContentPresenter))]
     public class HeaderedItemsControl : ItemsControl, IContentPresenterHost
     {
         private IDisposable? _itemsBinding;

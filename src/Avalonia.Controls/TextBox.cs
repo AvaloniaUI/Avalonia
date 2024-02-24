@@ -24,7 +24,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a control that can be used to display or edit unformatted text.
     /// </summary>
-    [TemplatePart("PART_TextPresenter", typeof(TextPresenter))]
+    [TemplatePart("PART_TextPresenter", typeof(TextPresenter), IsRequired = true)]
     [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer))]
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost

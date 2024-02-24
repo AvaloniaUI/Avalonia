@@ -99,19 +99,28 @@ namespace Avalonia.Controls.Chrome
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
+            
+            if (e.NameScope.Find<Button>(PART_CloseButton) is { } closeButton)
+            {
+                closeButton.Click += (sender, e) => OnClose();
+            }
 
-            var closeButton = e.NameScope.Get<Button>(PART_CloseButton);
-            var restoreButton = e.NameScope.Get<Button>(PART_RestoreButton);
-            var minimizeButton = e.NameScope.Get<Button>(PART_MinimizeButton);
-            var fullScreenButton = e.NameScope.Get<Button>(PART_FullScreenButton);
-
-            closeButton.Click += (sender, e) => OnClose();
-            restoreButton.Click += (sender, e) => OnRestore();
-            minimizeButton.Click += (sender, e) => OnMinimize();
-            fullScreenButton.Click += (sender, e) => OnToggleFullScreen();
-
-            restoreButton.IsEnabled = HostWindow?.CanResize ?? true;
-            _restoreButton = restoreButton;
+            if (e.NameScope.Find<Button>(PART_RestoreButton) is { } restoreButton)
+            {
+                restoreButton.Click += (sender, e) => OnRestore();
+                restoreButton.IsEnabled = HostWindow?.CanResize ?? true;
+                _restoreButton = restoreButton;
+            }
+            
+            if (e.NameScope.Find<Button>(PART_MinimizeButton) is { } minimizeButton)
+            {
+                minimizeButton.Click += (sender, e) => OnMinimize();
+            }
+            
+            if (e.NameScope.Find<Button>(PART_FullScreenButton) is { } fullScreenButton)
+            {
+                fullScreenButton.Click += (sender, e) => OnToggleFullScreen();
+            }
         }
     }
 }

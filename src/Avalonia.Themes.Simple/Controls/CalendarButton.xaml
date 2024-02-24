@@ -33,7 +33,7 @@
                      Opacity="0.5" />
 
           <!--  Focusable="False"  -->
-          <ContentPresenter Name="Content"
+          <ContentPresenter x:Name="PART_ContentPresenter"
                             Margin="1,0,1,1"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
