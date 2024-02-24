@@ -635,7 +635,7 @@ public partial class Dispatcher
     /// <remarks>
     /// When on the same thread with Send priority, callback is executed immediately, without changing synchronization context.
     /// </remarks>
-    internal void Send(SendOrPostCallback action, object? arg, DispatcherPriority? priority = null)
+    internal void Send(SendOrPostCallback action, object? arg = null, DispatcherPriority? priority = null)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         priority ??= DispatcherPriority.Send;
