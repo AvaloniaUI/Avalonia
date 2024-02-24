@@ -15,7 +15,8 @@ class AvnTrayIcon : public ComSingleObject<IAvnTrayIcon, &IID_IAvnTrayIcon>
 {
 private:
     NSStatusItem* _native;
-    
+    bool _isTemplateIcon;
+
 public:
     FORWARD_IUNKNOWN()
     
@@ -28,8 +29,10 @@ public:
     virtual HRESULT SetMenu (IAvnMenu* menu) override;
     
     virtual HRESULT SetIsVisible (bool isVisible) override;
-    
+
     virtual HRESULT SetToolTipText (char* text) override;
+
+    virtual HRESULT SetIsTemplateIcon (bool isTemplateIcon) override;
 };
 
 #endif /* trayicon_h */

@@ -289,10 +289,14 @@ namespace Avalonia.X11
                 || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize)
+            if (!_canResize || !IsEnabled)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
+            }
+            if (!IsEnabled)
+            {
+                functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
             }
 
             var hints = new MotifWmHints
@@ -567,7 +571,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
+                        if (IsEnabled && Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -1274,6 +1278,7 @@ namespace Avalonia.X11
             _disabled = !enable;
 
             UpdateWMHints();
+            UpdateMotifHints();
         }
 
         private void UpdateWMHints()

@@ -181,6 +181,7 @@ namespace Avalonia.Direct2D1
 
             public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => _platform.CreateRenderTarget(surfaces);
             public bool IsLost => false;
+            public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) =>

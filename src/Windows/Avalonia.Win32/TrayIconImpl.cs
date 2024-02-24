@@ -104,7 +104,7 @@ namespace Avalonia.Win32
         {
             UpdateIcon(!visible);
         }
-
+        
         /// <inheritdoc />
         public void SetToolTipText(string? text)
         {

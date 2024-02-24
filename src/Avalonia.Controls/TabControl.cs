@@ -18,6 +18,7 @@ namespace Avalonia.Controls
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
     [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
+    [TemplatePart("PART_SelectedContentHost", typeof(ContentPresenter))]
     public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         private object? _selectedContent;

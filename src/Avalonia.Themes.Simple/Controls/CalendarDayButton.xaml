@@ -36,15 +36,15 @@
                      IsVisible="False"
                      Opacity="0.5" />
 
-          <ContentControl Name="Content"
-                          Margin="5,1,5,1"
-                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                          Content="{TemplateBinding Content}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          FontSize="{TemplateBinding FontSize}"
-                          Foreground="{TemplateBinding Foreground}"
-                          Opacity="1" />
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Margin="5,1,5,1"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            FontSize="{TemplateBinding FontSize}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Opacity="1" />
 
           <Path Name="BlackoutVisual"
                 Margin="3"

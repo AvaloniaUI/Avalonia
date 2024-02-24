@@ -447,6 +447,12 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnItemsViewCollectionChanged(sender!, e);
 
+            //Do not change SelectedIndex during initialization
+            if (_updateState is not null)
+            {
+                return;
+            }
+
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
                 SelectedIndex = 0;
@@ -1217,7 +1223,7 @@ namespace Avalonia.Controls.Primitives
             _oldSelectedIndex = model.SelectedIndex;
             _oldSelectedItem = model.SelectedItem;
 
-            if (AlwaysSelected && model.Count == 0)
+            if (_updateState is null && AlwaysSelected && model.Count == 0)
             {
                 model.SelectedIndex = 0;
             }
@@ -1296,6 +1302,11 @@ namespace Avalonia.Controls.Primitives
                 else if (state.SelectedItem.HasValue)
                 {
                     SelectedItem = state.SelectedItem.Value;
+                }
+
+                if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
+                {
+                    SelectedIndex = 0;
                 }
             }
         }
