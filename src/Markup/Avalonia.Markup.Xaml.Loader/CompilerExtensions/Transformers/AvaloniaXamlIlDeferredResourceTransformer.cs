@@ -51,7 +51,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             // Do not defer resources, if it has any x:Name registration, as it cannot be delayed.
-            var nameRegistrationsVisitor = new NameScopeRegistrationVisitor(initialMetadataScopeLevel: 1);
+            // This visitor will count x:Name registrations, ignoring nested NestedScopeMetadataNode scopes.
+            // We set initial scope level to 1, assuming that this resource node is a scope of itself.
+            var nameRegistrationsVisitor = new NameScopeRegistrationVisitor(
+                initialMetadataScopeLevel: 1);
             node.Visit(nameRegistrationsVisitor);
             if (nameRegistrationsVisitor.Count > 0)
             {

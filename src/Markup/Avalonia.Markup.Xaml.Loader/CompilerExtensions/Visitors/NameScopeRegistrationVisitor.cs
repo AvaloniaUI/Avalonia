@@ -7,17 +7,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Visitors;
 
 internal class NameScopeRegistrationVisitor : Dictionary<string, (IXamlType type, IXamlLineInfo line)>, IXamlAstVisitor
 {
+    private readonly int _targetMetadataScopeLevel;
+    private readonly Stack<IXamlAstNode> _parents = new();
     private int _metadataScopeLevel;
-    private Stack<IXamlAstNode> _parents = new();
 
-    public NameScopeRegistrationVisitor(int initialMetadataScopeLevel = 0)
+    public NameScopeRegistrationVisitor(
+        int initialMetadataScopeLevel = 0,
+        int targetMetadataScopeLevel = 1)
     {
         _metadataScopeLevel = initialMetadataScopeLevel;
+        _targetMetadataScopeLevel = targetMetadataScopeLevel;
     }
     
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
     {
-        if (_metadataScopeLevel == 1
+        if (_metadataScopeLevel == _targetMetadataScopeLevel
             && node is AvaloniaNameScopeRegistrationXamlIlNode nameScopeRegistration
             && nameScopeRegistration.Name is XamlAstTextNode textNode)
         {
