@@ -161,6 +161,7 @@ namespace Avalonia.Native
             
 
             Compositor = new Compositor(_platformGraphics, true);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
 
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         }

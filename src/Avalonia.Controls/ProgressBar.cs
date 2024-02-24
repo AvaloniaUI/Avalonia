@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control used to indicate the progress of an operation.
     /// </summary>
-    [TemplatePart("PART_Indicator", typeof(Border))]
+    [TemplatePart("PART_Indicator", typeof(Border), IsRequired = true)]
     [PseudoClasses(":vertical", ":horizontal", ":indeterminate")]
     public class ProgressBar : RangeBase
     {

@@ -23,10 +23,12 @@
                                 <ColumnDefinition Width="Auto" SharedSizeGroup="HeaderCol" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <ContentPresenter Content="{TemplateBinding Header}" 
+                            <ContentPresenter x:Name="PART_HeaderPresenter"
+                                              Content="{TemplateBinding Header}" 
                                               Grid.Column="0" 
                                               VerticalAlignment="Center" />
-                            <ContentPresenter Content="{TemplateBinding Content}" 
+                            <ContentPresenter x:Name="PART_ContentPresenter"
+                                              Content="{TemplateBinding Content}" 
                                               Grid.Column="1" 
                                               VerticalAlignment="Center" />
                         </Grid>

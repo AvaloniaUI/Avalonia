@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
       <TargetFrameworks>netstandard2.0</TargetFrameworks>
-      <OutputType>exe</OutputType>
       <GenerateDocumentationFile>false</GenerateDocumentationFile>
       <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
       <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>

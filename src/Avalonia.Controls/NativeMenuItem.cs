@@ -144,6 +144,21 @@ namespace Avalonia.Controls
             set => SetValue(IsEnabledProperty, value);
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsVisibleProperty =
+           Visual.IsVisibleProperty.AddOwner<NativeMenuItem>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this menu item is visible.
+        /// </summary>
+        public bool IsVisible
+        {
+            get => GetValue(IsVisibleProperty);
+            set => SetValue(IsVisibleProperty, value);
+        }
+
         void CanExecuteChanged()
         {
             SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
