@@ -2,8 +2,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
-    <TargetFramework>net8.0-ios</TargetFramework>
-<!--    <TargetFramework>net8.0-tvos</TargetFramework>-->
+    <TargetFramework>$(AvsCurrentIOSTargetFramework)</TargetFramework>
+<!--    <TargetFramework>$(AvsCurrentTvOSTargetFramework)</TargetFramework>-->
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
