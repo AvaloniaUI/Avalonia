@@ -301,13 +301,8 @@ namespace Avalonia.Diagnostics.Views
 
         }
 
-        //HACK: ValueConverter that skips first target update
-        //TODO: Would be nice to have some kind of "InitialBindingValue" option on TwoWay bindings to control
-        //if the first value comes from the source or target
         private class ValueConverter : IValueConverter
         {
-            private bool _firstUpdate = true;
-
             object? IValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 return Convert(value, targetType, parameter, culture);
@@ -315,13 +310,6 @@ namespace Avalonia.Diagnostics.Views
 
             object? IValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
-                if (_firstUpdate)
-                {
-                    _firstUpdate = false;
-
-                    return BindingOperations.DoNothing;
-                }
-
                 //Note: targetType provided by Converter is simply "object"
                 return ConvertBack(value, (Type)parameter!, parameter, culture);
             }
