@@ -739,7 +739,7 @@ namespace Avalonia.Controls
         private void HandleScalingChanged(double scaling)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
-            ScalingChanged?.Invoke(this, EventArgs.Empty);
+            Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
         }
 
         private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
@@ -786,14 +786,17 @@ namespace Avalonia.Controls
         protected virtual void OnOpened(EventArgs e)
         {
             FrameSize = PlatformImpl?.FrameSize;
-            Opened?.Invoke(this, e);  
-        } 
+            Dispatcher.UIThread.Send(_ => Opened?.Invoke(this, e));
+        }
 
         /// <summary>
         /// Raises the <see cref="Closed"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+        protected virtual void OnClosed(EventArgs e)
+        {
+            Dispatcher.UIThread.Send(_ => Closed?.Invoke(this, e));
+        }
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
