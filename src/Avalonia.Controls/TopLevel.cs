@@ -272,7 +272,7 @@ namespace Avalonia.Controls
                 systemNavigationManager.BackRequested += (_, e) =>
                 {
                     e.RoutedEvent = BackRequestedEvent;
-                    RaiseEvent(e);
+                    Dispatcher.UIThread.Send(_ => RaiseEvent(e));
                 };
             }
 
@@ -306,7 +306,7 @@ namespace Avalonia.Controls
                 if (backRequested)
                 {
                     var backRequestedEventArgs = new RoutedEventArgs(BackRequestedEvent);
-                    RaiseEvent(backRequestedEventArgs);
+                    Dispatcher.UIThread.Send(_ => RaiseEvent(backRequestedEventArgs));
 
                     e.Handled = backRequestedEventArgs.Handled;
                 }
