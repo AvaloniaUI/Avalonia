@@ -152,7 +152,7 @@ namespace Avalonia.Controls.Primitives
 
         public SelectingItemsControl()
         {
-            ((ItemCollection)ItemsView).SourceChanged += OnItemsViewSourceChanged;
+            ItemsView.PropertyChanged += OnItemsViewPropertyChanged;
         }
 
         /// <summary>
@@ -891,9 +891,9 @@ namespace Avalonia.Controls.Primitives
             return _selection;
         }
 
-        private void OnItemsViewSourceChanged(object? sender, EventArgs e)
+        private void OnItemsViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (_updateState is null)
+            if (e.PropertyName == nameof(ItemsView.Source) && _updateState is null)
                 TryInitializeSelectionSource(_selection, true);
         }
 

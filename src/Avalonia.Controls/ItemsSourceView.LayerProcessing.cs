@@ -172,10 +172,10 @@ public partial class ItemsSourceView : IWeakEventSubscriber<PropertyChangedEvent
             return;
         }
 
-        Refresh(applyingDeferredUpdates: false);
+        Refresh(applyingDeferredUpdates: false, raiseEvents: true);
     }
 
-    private void Refresh(bool applyingDeferredUpdates)
+    private void Refresh(bool applyingDeferredUpdates, bool raiseEvents)
     {
         BlockUpdateFromBackgroundThreads();
 
@@ -188,7 +188,7 @@ public partial class ItemsSourceView : IWeakEventSubscriber<PropertyChangedEvent
         {
             if (_layersState == null)
             {
-                if (_source is not INotifyCollectionChanged || applyingDeferredUpdates)
+                if (raiseEvents && (_source is not INotifyCollectionChanged || applyingDeferredUpdates))
                     RaiseCollectionChanged(CollectionUtils.ResetEventArgs);
                 return;
             }
@@ -202,7 +202,8 @@ public partial class ItemsSourceView : IWeakEventSubscriber<PropertyChangedEvent
             _layersState = EvaluateLayers();
         }
 
-        RaiseCollectionChanged(CollectionUtils.ResetEventArgs);
+        if (raiseEvents)
+            RaiseCollectionChanged(CollectionUtils.ResetEventArgs);
     }
 
     private (List<object?> items, List<int> indexMap, HashSet<string> invalidationProperties) EvaluateLayers()
@@ -742,7 +743,7 @@ public partial class ItemsSourceView : IWeakEventSubscriber<PropertyChangedEvent
             }
         }
 
-        private static void ApplyDeferredUpdates(ItemsSourceView owner) => owner.Refresh(applyingDeferredUpdates: true);
+        private static void ApplyDeferredUpdates(ItemsSourceView owner) => owner.Refresh(applyingDeferredUpdates: true, raiseEvents: true);
     }
 
     /// <summary>
