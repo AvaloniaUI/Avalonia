@@ -123,7 +123,7 @@ namespace Avalonia.Browser
                 _topLevelImpl.Surfaces = new[]
                 {
                     new BrowserSkiaSurface(_context, _jsGlInfo, ColorType,
-                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi,
+                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _canvasSize,_dpi,
                         GRSurfaceOrigin.BottomLeft)
                 };
             }
@@ -133,11 +133,7 @@ namespace Avalonia.Browser
                     .Log(this, "[Avalonia]: Unable to initialize Canvas surface.");
             }
 
-            CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
-
-            _topLevelImpl.SetClientSize(_canvasSize, _dpi);
-
-            DomHelper.ObserveSizeAndDpi(host, OnSizeOrDpiChanged);
+            DomHelper.ObserveSize(host, OnSizeOrDpiChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
 
@@ -462,19 +458,19 @@ namespace Avalonia.Browser
             }
         }
 
-        private void OnSizeOrDpiChanged(int height, int width, double devicePixelRatio)
+        private void OnSizeOrDpiChanged(double displayWidth, double displayHeight, double dpi)
         {
-            var newSize = new Size(height, width);
+            var newSize = new Size(displayWidth, displayHeight);
 
-            if (_canvasSize != newSize || _dpi != devicePixelRatio)
+            if (_canvasSize != newSize || _dpi != dpi)
             {
-                _dpi = devicePixelRatio;
+                _dpi = dpi;
 
                 _canvasSize = newSize;
 
-                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                CanvasHelper.SetCanvasSize(_canvas, (int)_canvasSize.Width, (int)_canvasSize.Height);
 
-                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+                _topLevelImpl.SetClientSize(new(displayWidth / dpi, displayHeight / dpi), dpi);
 
                 ForceBlit();
             }

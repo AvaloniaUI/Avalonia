@@ -194,96 +194,64 @@ export class Canvas {
     }
 }
 
-type SizeAndDpiWatcherCallback = (width: number, height: number, devicePixelRatio: number) => void;
-interface SizeAndDpiWatcherItem { element: HTMLElement; callback: SizeAndDpiWatcherCallback; width: number; height: number }
+type ResizeHandlerCallback = (displayWidth: number, displayHeight: number, dpi: number) => void;
 
-export class SizeAndDpiWatcher {
-    private static lastDpi: number;
-    private static items: SizeAndDpiWatcherItem[] = [];
-    private static updateTimeoutId?: number;
-    private static isRunning = false;
-    private static lastMove = 0;
+type ResizeObserverWithCallbacks = {
+    callbacks: Map<Element, ResizeHandlerCallback>;
+} & ResizeObserver;
 
-    public static observe(element: HTMLElement, callback: SizeAndDpiWatcherCallback): void {
-        if (!element || !callback) {
-            return;
+export class ResizeHandler {
+    private static resizeObserver?: ResizeObserverWithCallbacks;
+
+    public static observeSize(element: HTMLElement, callback: ResizeHandlerCallback): (() => void) {
+        if (!this.resizeObserver) {
+            this.resizeObserver = new ResizeObserver(this.onResize) as ResizeObserverWithCallbacks;
+            this.resizeObserver.callbacks = new Map<Element, ResizeHandlerCallback>();
         }
 
-        SizeAndDpiWatcher.start();
+        this.resizeObserver.callbacks.set(element, callback);
+        this.resizeObserver.observe(element, { box: "content-box" });
 
-        callback(element.clientWidth, element.clientHeight, window.devicePixelRatio);
-
-        SizeAndDpiWatcher.items.push({ element, callback, width: element.clientWidth, height: element.clientHeight });
+        return () => {
+            this.resizeObserver?.callbacks.delete(element);
+            this.resizeObserver?.unobserve(element);
+        };
     }
 
-    public static unobserve(element: HTMLElement): void {
-        if (!element) {
-            return;
-        }
-
-        SizeAndDpiWatcher.items = SizeAndDpiWatcher.items.filter(x => x.element !== element);
-    }
-
-    public static start(): void {
-        if (SizeAndDpiWatcher.isRunning) {
-            return;
-        }
-        SizeAndDpiWatcher.isRunning = true;
-
-        SizeAndDpiWatcher.lastDpi = window.devicePixelRatio;
-        window.setInterval(SizeAndDpiWatcher.update, 500);
-        window.addEventListener("resize", SizeAndDpiWatcher.update);
-    }
-
-    private static update() {
-        const currentDpi = window.devicePixelRatio;
-
-        if (Math.abs(SizeAndDpiWatcher.lastDpi - currentDpi) > 0.001) {
-            if (SizeAndDpiWatcher.updateTimeoutId !== undefined) {
-                clearTimeout(SizeAndDpiWatcher.updateTimeoutId);
-                SizeAndDpiWatcher.updateTimeoutId = undefined;
+    private static onResize(entries: ResizeObserverEntry[], observer: ResizeObserver) {
+        for (const entry of entries) {
+            const callback = (observer as ResizeObserverWithCallbacks).callbacks.get(entry.target);
+            if (!callback) {
+                continue;
             }
 
-            SizeAndDpiWatcher.updateDpi(currentDpi);
-        } else {
-            if (SizeAndDpiWatcher.updateTimeoutId !== undefined) {
-                clearTimeout(SizeAndDpiWatcher.updateTimeoutId);
-            }
-
-            if (Date.now() - SizeAndDpiWatcher.lastMove > 33) {
-                SizeAndDpiWatcher.updateSize();
-            }
-
-            SizeAndDpiWatcher.updateTimeoutId = setTimeout(SizeAndDpiWatcher.updateSize, 100);
-        }
-    }
-
-    private static updateSize() {
-        SizeAndDpiWatcher.lastMove = Date.now();
-        SizeAndDpiWatcher.updateTimeoutId = undefined;
-        const currentDpi = window.devicePixelRatio;
-
-        if (Math.abs(SizeAndDpiWatcher.lastDpi - currentDpi) > 0.001) {
-            SizeAndDpiWatcher.updateDpi(currentDpi);
-        } else {
-            SizeAndDpiWatcher.items.forEach(item => {
-                const newWidth = item.element.clientWidth;
-                const newHeight = item.element.clientHeight;
-                if (item.width !== newWidth || item.height !== newHeight) {
-                    item.width = newWidth;
-                    item.height = newHeight;
-                    item.callback(item.width, item.height, SizeAndDpiWatcher.lastDpi);
+            const trueDpr = window.devicePixelRatio;
+            let width;
+            let height;
+            let dpr = trueDpr;
+            if (entry.devicePixelContentBoxSize) {
+                // NOTE: Only this path gives the correct answer
+                // The other paths are imperfect fallbacks
+                // for browsers that don't provide anyway to do this
+                width = entry.devicePixelContentBoxSize[0].inlineSize;
+                height = entry.devicePixelContentBoxSize[0].blockSize;
+                dpr = 1; // it's already in width and height
+            } else if (entry.contentBoxSize) {
+                if (entry.contentBoxSize[0]) {
+                    width = entry.contentBoxSize[0].inlineSize;
+                    height = entry.contentBoxSize[0].blockSize;
+                } else {
+                    width = (entry.contentBoxSize as any).inlineSize;
+                    height = (entry.contentBoxSize as any).blockSize;
                 }
-            });
-        }
-    }
+            } else {
+                width = entry.contentRect.width;
+                height = entry.contentRect.height;
+            }
+            const displayWidth = Math.round(width * dpr);
+            const displayHeight = Math.round(height * dpr);
 
-    private static updateDpi(dpi: number): void {
-        SizeAndDpiWatcher.items.forEach(item => {
-            item.width = item.element.clientWidth;
-            item.height = item.element.clientHeight;
-            item.callback(item.width, item.height, dpi);
-        });
-        SizeAndDpiWatcher.lastDpi = dpi;
+            callback(displayWidth, displayHeight, trueDpr);
+        }
     }
 }
