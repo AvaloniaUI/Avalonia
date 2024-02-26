@@ -51,7 +51,6 @@ namespace Avalonia.Android
 
             _host.Focusable = true;
             _host.FocusableInTouchMode = true;
-            _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListener(_host));
         }
 
         public View View => _host;
