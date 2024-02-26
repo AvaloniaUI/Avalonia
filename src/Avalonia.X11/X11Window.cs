@@ -24,6 +24,8 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Platform.Storage.FileIO;
+
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -142,9 +144,7 @@ namespace Avalonia.X11
             defaultWidth = Math.Max(defaultWidth, 300);
             defaultHeight = Math.Max(defaultHeight, 200);
 
-            var parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
-
-            _handle = XCreateWindow(_x11.Display, parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
+            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
@@ -289,10 +289,14 @@ namespace Avalonia.X11
                 || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize)
+            if (!_canResize || !IsEnabled)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
+            }
+            if (!IsEnabled)
+            {
+                functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
             }
 
             var hints = new MotifWmHints
@@ -567,7 +571,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
+                        if (IsEnabled && Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -902,6 +906,11 @@ namespace Avalonia.X11
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;
@@ -1269,6 +1278,7 @@ namespace Avalonia.X11
             _disabled = !enable;
 
             UpdateWMHints();
+            UpdateMotifHints();
         }
 
         private void UpdateWMHints()

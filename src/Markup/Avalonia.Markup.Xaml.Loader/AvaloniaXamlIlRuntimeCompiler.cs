@@ -215,14 +215,27 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 HandleDiagnostic = (diagnostic) =>
                 {
                     var runtimeDiagnostic = new RuntimeXamlDiagnostic(diagnostic.Code.ToString(),
-                        (RuntimeXamlDiagnosticSeverity)diagnostic.Severity,
+                        diagnostic.Severity switch
+                        {
+                            XamlDiagnosticSeverity.None => RuntimeXamlDiagnosticSeverity.Info,
+                            XamlDiagnosticSeverity.Warning => RuntimeXamlDiagnosticSeverity.Warning,
+                            XamlDiagnosticSeverity.Error => RuntimeXamlDiagnosticSeverity.Error,
+                            XamlDiagnosticSeverity.Fatal => RuntimeXamlDiagnosticSeverity.Fatal,
+                            _ => throw new ArgumentOutOfRangeException()
+                        },
                         diagnostic.Title, diagnostic.LineNumber, diagnostic.LinePosition)
                     {
                         Document = diagnostic.Document
                     };
                     var newSeverity =
-                        (XamlDiagnosticSeverity?)configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) ??
-                        diagnostic.Severity;
+                        configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) switch
+                        {
+                            RuntimeXamlDiagnosticSeverity.Info => XamlDiagnosticSeverity.None,
+                            RuntimeXamlDiagnosticSeverity.Warning => XamlDiagnosticSeverity.Warning,
+                            RuntimeXamlDiagnosticSeverity.Error => XamlDiagnosticSeverity.Error,
+                            RuntimeXamlDiagnosticSeverity.Fatal => XamlDiagnosticSeverity.Fatal,
+                            _ => (XamlDiagnosticSeverity?)null
+                        } ?? diagnostic.Severity;
                     diagnostic = diagnostic with { Severity = newSeverity };
                     diagnostics.Add(diagnostic);
                     return newSeverity;

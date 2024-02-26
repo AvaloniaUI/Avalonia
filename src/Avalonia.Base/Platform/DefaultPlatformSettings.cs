@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Platform
@@ -50,7 +51,8 @@ namespace Avalonia.Platform
 
         protected void OnColorValuesChanged(PlatformColorValues colorValues)
         {
-            ColorValuesChanged?.Invoke(this, colorValues);
+            Dispatcher.UIThread.Send(
+                _ => ColorValuesChanged?.Invoke(this, colorValues));
         }
     }
 }

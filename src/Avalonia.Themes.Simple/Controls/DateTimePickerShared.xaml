@@ -64,7 +64,7 @@
           but source isn't MIT yet, so this is my solution
         -->
         <Border Background="{TemplateBinding Background}">
-          <ContentPresenter x:Name="ContentPresenter"
+          <ContentPresenter x:Name="PART_ContentPresenter"
                             Padding="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

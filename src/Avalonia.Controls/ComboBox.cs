@@ -17,7 +17,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A drop-down list control.
     /// </summary>
-    [TemplatePart("PART_Popup", typeof(Popup))]
+    [TemplatePart("PART_Popup", typeof(Popup), IsRequired = true)]
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
@@ -211,17 +211,17 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
-            else if (!IsDropDownOpen)
+            // Ignore key buttons, if they are used for XY focus.
+            else if (!IsDropDownOpen
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 if (e.Key == Key.Down)
                 {
-                    SelectNext();
-                    e.Handled = true;
+                    e.Handled = SelectNext();
                 }
                 else if (e.Key == Key.Up)
                 {
-                    SelectPrevious();
-                    e.Handled = true;
+                    e.Handled = SelectPrevious();
                 }
             }
             // This part of code is needed just to acquire initial focus, subsequent focus navigation will be done by ItemsControl.
@@ -247,12 +247,7 @@ namespace Avalonia.Controls
                 {
                     if (IsFocused)
                     {
-                        if (e.Delta.Y < 0)
-                            SelectNext();
-                        else
-                            SelectPrevious();
-
-                        e.Handled = true;
+                        e.Handled = e.Delta.Y < 0 ? SelectNext() : SelectPrevious();
                     }
                 }
                 else
@@ -481,10 +476,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
-        private void SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
+        private bool SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
+        private bool SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
 
-        private void MoveSelection(int startIndex, int step, bool wrap)
+        private bool MoveSelection(int startIndex, int step, bool wrap)
         {
             static bool IsSelectable(object? o) => (o as AvaloniaObject)?.GetValue(IsEnabledProperty) ?? true;
 
@@ -503,7 +498,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        return;
+                        return false;
                     }
                 }
 
@@ -513,9 +508,11 @@ namespace Avalonia.Controls
                 if (IsSelectable(item) && IsSelectable(container))
                 {
                     SelectedIndex = i;
-                    break;
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>

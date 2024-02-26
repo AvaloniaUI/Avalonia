@@ -44,6 +44,8 @@ namespace Avalonia.Rendering.Composition.Server
         {
             _renderLoop = renderLoop;
             RenderInterface = new PlatformRenderInterfaceContextManager(platformGraphics);
+            RenderInterface.ContextDisposed += RT_OnContextDisposed;
+            RenderInterface.ContextCreated += RT_OnContextCreated;
             BatchObjectPool = batchObjectPool;
             BatchMemoryPool = batchMemoryPool;
             _renderLoop.Add(this);
@@ -186,6 +188,10 @@ namespace Avalonia.Rendering.Composition.Server
                     {
                         _safeThread = Thread.CurrentThread;
                         RenderCore();
+                    }
+                    catch (Exception e) when (RT_OnContextLostExceptionFilterObserver(e) && false)
+                    // Will never get here, only using exception filter side effect
+                    {
                     }
                     finally
                     {

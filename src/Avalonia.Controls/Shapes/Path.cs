@@ -5,8 +5,8 @@ namespace Avalonia.Controls.Shapes
 {
     public class Path : Shape
     {
-        public static readonly StyledProperty<Geometry> DataProperty =
-            AvaloniaProperty.Register<Path, Geometry>(nameof(Data));
+        public static readonly StyledProperty<Geometry?> DataProperty =
+            AvaloniaProperty.Register<Path, Geometry?>(nameof(Data));
 
         private EventHandler? _geometryChangedHandler;
 
@@ -16,15 +16,15 @@ namespace Avalonia.Controls.Shapes
             DataProperty.Changed.AddClassHandler<Path>((o, e) => o.DataChanged(e));
         }
 
-        public Geometry Data
+        public Geometry? Data
         {
             get => GetValue(DataProperty);
             set => SetValue(DataProperty, value);
         }
 
-        private EventHandler? GeometryChangedHandler => _geometryChangedHandler ??= GeometryChanged;
+        private EventHandler GeometryChangedHandler => _geometryChangedHandler ??= GeometryChanged;
 
-        protected override Geometry CreateDefiningGeometry() => Data;
+        protected override Geometry? CreateDefiningGeometry() => Data;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {

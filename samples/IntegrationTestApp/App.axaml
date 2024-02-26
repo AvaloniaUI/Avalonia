@@ -4,4 +4,10 @@
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+  <TrayIcon.Icons>
+    <TrayIcons>
+      <TrayIcon Icon="/Assets/icon.ico">
+      </TrayIcon>
+    </TrayIcons>
+  </TrayIcon.Icons>
 </Application>
