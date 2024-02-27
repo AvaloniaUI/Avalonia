@@ -55,12 +55,8 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        var hasPerms = await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
-        if (!hasPerms)
-        {
-            throw new SecurityException("Application doesn't have ReadExternalStorage permission. Make sure android manifest has this permission defined and user allowed it.");
-        }
-        
+        await EnsureUriReadPermission(androidUri);
+
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsFile)
         {
@@ -88,11 +84,7 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        var hasPerms = await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
-        if (!hasPerms)
-        {
-            throw new SecurityException("Application doesn't have ReadExternalStorage permission. Make sure android manifest has this permission defined and user allowed it.");
-        }
+        await EnsureUriReadPermission(androidUri);
 
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsDirectory)
@@ -282,5 +274,31 @@ internal class AndroidStorageProvider : IStorageProvider
         }
 
         return null;
+    }
+
+    private async Task EnsureUriReadPermission(AndroidUri androidUri)
+    {
+        bool hasPerms = false;
+        Exception? innerEx = null;
+        try
+        {
+            hasPerms = _activity.CheckUriPermission(androidUri,
+                global::Android.OS.Process.MyPid(),
+                global::Android.OS.Process.MyUid(),
+                ActivityFlags.GrantReadUriPermission)
+                == global::Android.Content.PM.Permission.Granted;
+
+            // TODO: call RequestPermission or add proper permissions API, something like in Browser File API.
+            hasPerms = hasPerms || await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
+        }
+        catch (Exception ex)
+        {
+            innerEx = ex;
+        }
+
+        if (!hasPerms)
+        {
+            throw new InvalidOperationException("Application doesn't have READ_EXTERNAL_STORAGE permission. Make sure android manifest has this permission defined and user allowed it.", innerEx);
+        }
     }
 }
