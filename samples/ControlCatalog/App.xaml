@@ -64,7 +64,7 @@
   </Application.Styles>
   <TrayIcon.Icons>
     <TrayIcons>
-      <TrayIcon Icon="/Assets/test_icon.ico" ToolTipText="Avalonia Tray Icon ToolTip">
+      <TrayIcon Icon="/Assets/test_icon.ico" MacOSProperties.IsTemplateIcon="true" ToolTipText="Avalonia Tray Icon ToolTip">
         <TrayIcon.Menu>
           <NativeMenu>
             <NativeMenuItem Header="Settings">
@@ -75,6 +75,7 @@
                 <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" />
                 <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Restore Defaults" Command="{Binding RestoreDefault}" />
                 <NativeMenuItem Header="Disabled option" IsEnabled="False" />
+                <NativeMenuItem Header="Hidden option" IsVisible="False" />
               </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />

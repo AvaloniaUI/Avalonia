@@ -19,7 +19,7 @@ namespace Avalonia.Controls
     /// Control that represents a TextBox with button spinners that allow incrementing and decrementing numeric values.
     /// </summary>
     [TemplatePart("PART_Spinner", typeof(Spinner))]
-    [TemplatePart("PART_TextBox", typeof(TextBox))]
+    [TemplatePart("PART_TextBox", typeof(TextBox), IsRequired = true)]
     public class NumericUpDown : TemplatedControl
     {
         /// <summary>

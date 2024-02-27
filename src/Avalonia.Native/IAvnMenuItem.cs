@@ -40,6 +40,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private void UpdateToolTip(string toolTip) => SetToolTip(toolTip ?? "");
 
+        private void UpdateIsVisible(bool isVisible) => SetIsVisible(isVisible.AsComBool());
         private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
         private void UpdateToggleType(NativeMenuItemToggleType toggleType)
@@ -121,6 +122,8 @@ namespace Avalonia.Native.Interop.Impl
 
                 UpdateIsChecked(item.IsChecked);
 
+                UpdateIsVisible(item.IsVisible);
+
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
                     .Subscribe(x => UpdateTitle(x)));
 
@@ -138,6 +141,9 @@ namespace Avalonia.Native.Interop.Impl
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
                     .Subscribe(x => UpdateIsChecked(x)));
+
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IsVisibleProperty)
+                    .Subscribe(x => UpdateIsVisible(x)));
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IconProperty)
                     .Subscribe(x => UpdateIcon(x)));
