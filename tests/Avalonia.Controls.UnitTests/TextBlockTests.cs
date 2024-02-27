@@ -31,6 +31,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Calling_Measure_Should_Update_Constraint_And_TextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var textBlock = new TestTextBlock { Text = "Hello World" };
+
+                textBlock.Measure(new Size(100, 100));
+
+                var textLayout = textBlock.TextLayout;
+
+                Assert.Equal(new Size(100,100), textBlock.Constraint);
+
+                textBlock.Measure(new Size(50, 100));
+
+                Assert.Equal(new Size(50, 100), textBlock.Constraint);
+
+                Assert.NotEqual(textLayout, textBlock.TextLayout);
+            }
+        }
+
+        [Fact]
         public void Changing_InlinesCollection_Should_Invalidate_Measure()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -327,6 +348,11 @@ namespace Avalonia.Controls.UnitTests
                 int count1 = textblock.TextLayout.TextLines[0].TextRuns.Count;
                 Assert.NotEqual(count, count1);
             }
+        }
+
+        private class TestTextBlock : TextBlock
+        {
+            public Size Constraint => _constraint;
         }
     }
 }

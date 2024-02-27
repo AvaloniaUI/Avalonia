@@ -77,6 +77,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             // After everything else
             InsertBefore<NewObjectTransformer>(
                 new AddNameScopeRegistration(),
+                new AvaloniaXamlIlControlTemplatePartsChecker(),
                 new AvaloniaXamlIlDataContextTypeTransformer(),
                 new AvaloniaXamlIlBindingPathTransformer(),
                 new AvaloniaXamlIlCompiledBindingsMetadataRemover()
