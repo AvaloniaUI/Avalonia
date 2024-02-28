@@ -882,7 +882,7 @@ namespace Avalonia.Controls
                 {
                     setDefaultSelection = true;
                 }
-                else 
+                else
                 {
                     newCollectionView =  newItemsSource is not null
                         ? DataGridDataConnection.CreateView(newItemsSource)
