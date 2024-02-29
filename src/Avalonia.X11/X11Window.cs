@@ -34,7 +34,7 @@ using Avalonia.Platform.Storage.FileIO;
 namespace Avalonia.X11
 {
     internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
-        IX11SpecificOptionsToplevelImplFeature
+        IX11OptionsToplevelImplFeature
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -909,7 +909,7 @@ namespace Avalonia.X11
                 return new BclLauncher();
             }
 
-            if (featureType == typeof(IX11SpecificOptionsToplevelImplFeature))
+            if (featureType == typeof(IX11OptionsToplevelImplFeature))
                 return this;
 
             return null;

@@ -24,8 +24,8 @@ public class X11Properties
         WmClassProperty.Changed.Subscribe(OnWmClassChanged);
     }
 
-    private static IX11SpecificOptionsToplevelImplFeature? TryGetFeature(AvaloniaPropertyChangedEventArgs e)
-        => (e.Sender as TopLevel)?.PlatformImpl?.TryGetFeature<IX11SpecificOptionsToplevelImplFeature>();
+    private static IX11OptionsToplevelImplFeature? TryGetFeature(AvaloniaPropertyChangedEventArgs e)
+        => (e.Sender as TopLevel)?.PlatformImpl?.TryGetFeature<IX11OptionsToplevelImplFeature>();
     
     private static void OnWmClassChanged(AvaloniaPropertyChangedEventArgs<string?> e) => 
         TryGetFeature(e)?.SetWmClass(e.NewValue.GetValueOrDefault(null));
