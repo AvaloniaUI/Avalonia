@@ -24,6 +24,7 @@ using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 using Avalonia.UnitTests;
 using Xunit;
@@ -2019,6 +2020,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var brush = Assert.IsType<SolidColorBrush>(textBlock.Background);
                 Assert.Equal(Colors.Green, brush.Color);
+            }
+        }
+
+        [Fact]
+        public void Can_Bind_Brush_To_Hex_String()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestData'
+        x:CompileBindings='True'>
+    <TextBlock Name='textBlock' Background='{{Binding StringProperty}}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new TestData { StringProperty = "#ff0000" };
+                window.DataContext = dataContext;
+
+                var brush = Assert.IsType<ImmutableSolidColorBrush>(textBlock!.Background);
+                Assert.Equal(Colors.Red, brush.Color);
             }
         }
 
