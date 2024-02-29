@@ -187,14 +187,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string baseUri, IFileSource fileSource)
         {
-            var tb = typeBuilderProvider.TypeBuilder;
-
-            Compile(document, _contextType, typeBuilderProvider.PopulateMethod, typeBuilderProvider.BuildMethod,
+            Compile(
+                document,
+                _contextType,
+                typeBuilderProvider.PopulateMethod,
+                typeBuilderProvider.PopulateDeclaringType,
+                typeBuilderProvider.BuildMethod,
+                typeBuilderProvider.BuildDeclaringType,
                 _configuration.TypeMappings.XmlNamespaceInfoProvider == null ?
                     null :
-                    tb.DefineSubType(_configuration.WellKnownTypes.Object,
-                        "__AvaloniaXamlIlNsInfo", XamlVisibility.Private), (name, bt) => tb.DefineSubType(bt, name, XamlVisibility.Private),
-                (s, returnType, parameters) => tb.DefineDelegateSubType(s, XamlVisibility.Private, returnType, parameters), baseUri,
+                    typeBuilderProvider.PopulateDeclaringType.DefineSubType(_configuration.WellKnownTypes.Object, "__AvaloniaXamlIlNsInfo", XamlVisibility.Private),
+                baseUri,
                 fileSource);
         }
 

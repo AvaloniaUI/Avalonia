@@ -128,6 +128,13 @@ internal class RoslynType : IXamlType
 
     public IXamlAssembly Assembly => _assembly;
 
+    public bool IsPublic => _symbol.DeclaredAccessibility == Accessibility.Public;
+
+    public bool IsNestedPrivate => _symbol.DeclaredAccessibility == Accessibility.Private;
+
+    public IXamlType DeclaringType =>
+        _symbol.ContainingType is { } containingType ? new RoslynType(containingType, _assembly) : null;
+
     public IReadOnlyList<IXamlProperty> Properties =>
         _symbol.GetMembers()
             .Where(member => member.Kind == SymbolKind.Property)
@@ -259,7 +266,11 @@ internal class RoslynMethod : IXamlMethod
 
     public string Name => _symbol.Name;
 
-    public bool IsPublic => true;
+    public bool IsPublic => _symbol.DeclaredAccessibility == Accessibility.Public;
+
+    public bool IsPrivate => _symbol.DeclaredAccessibility == Accessibility.Private;
+
+    public bool IsFamily => _symbol.DeclaredAccessibility == Accessibility.Protected;
 
     public bool IsStatic => false;
 
