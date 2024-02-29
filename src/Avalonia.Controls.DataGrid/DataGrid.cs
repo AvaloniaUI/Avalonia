@@ -716,6 +716,17 @@ namespace Avalonia.Controls
             set { SetValue(RowDetailsVisibilityModeProperty, value); }
         }
 
+
+        public static readonly DirectProperty<DataGrid, IDataGridCollectionView> CollectionViewProperty =
+            AvaloniaProperty.RegisterDirect<DataGrid, IDataGridCollectionView>(nameof(CollectionView),
+                o => o.CollectionView);
+
+        /// <summary>
+        /// Gets current <see cref="IDataGridCollectionView"/>.
+        /// </summary>
+        public IDataGridCollectionView CollectionView =>
+            DataConnection.CollectionView;
+
         static DataGrid()
         {
             AffectsMeasure<DataGrid>(
@@ -837,6 +848,8 @@ namespace Avalonia.Controls
             {
                 Debug.Assert(DataConnection != null);
 
+                var oldCollectionView = DataConnection.CollectionView;
+
                 var oldValue = (IEnumerable)e.OldValue;
                 var newItemsSource = (IEnumerable)e.NewValue;
 
@@ -865,14 +878,24 @@ namespace Avalonia.Controls
 
                 // Wrap an IEnumerable in an ICollectionView if it's not already one
                 bool setDefaultSelection = false;
-                if (newItemsSource != null && !(newItemsSource is IDataGridCollectionView))
+                if (newItemsSource is IDataGridCollectionView newCollectionView)
                 {
-                    DataConnection.DataSource = DataGridDataConnection.CreateView(newItemsSource);
+                    setDefaultSelection = true;
                 }
                 else
                 {
-                    DataConnection.DataSource = newItemsSource;
-                    setDefaultSelection = true;
+                    newCollectionView =  newItemsSource is not null
+                        ? DataGridDataConnection.CreateView(newItemsSource)
+                        : default;
+                }
+
+                DataConnection.DataSource = newCollectionView;
+
+                if (oldCollectionView != DataConnection.CollectionView)
+                {
+                    RaisePropertyChanged(CollectionViewProperty, 
+                        oldCollectionView, 
+                        newCollectionView);
                 }
 
                 if (DataConnection.DataSource != null)
