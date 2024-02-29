@@ -1,3 +1,4 @@
+using Avalonia.Metadata;
 namespace Avalonia.Controls.Platform;
 
 public enum X11NetWmWindowType
@@ -12,6 +13,7 @@ public enum X11NetWmWindowType
     Desktop
 }
 
+[PrivateApi]
 public interface IX11SpecificOptionsToplevelImplFeature
 {
     void SetNetWmWindowType(X11NetWmWindowType type);
