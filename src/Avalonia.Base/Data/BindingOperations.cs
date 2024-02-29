@@ -105,7 +105,7 @@ namespace Avalonia.Data
         /// Returns a value that indicates whether the specified property is currently data-bound.
         /// </summary>
         /// <param name="target">The target object.</param>
-        /// <param name="property">The property to bind.</param>
+        /// <param name="property">The property to check is bound.</param>
         /// <returns></returns>
         public static bool IsDataBound(this AvaloniaObject target, AvaloniaProperty property) => 
             target.GetValueStore().IsDataBound(property);
