@@ -2830,7 +2830,6 @@ namespace Avalonia.Controls
                         if (SelectionMode == DataGridSelectionMode.Extended && AnchorSlot != -1)
                         {
                             int anchorSlot = AnchorSlot;
-                            ClearRowSelection(slot, setAnchorSlot: false);
                             if (slot <= anchorSlot)
                             {
                                 SetRowsSelection(slot, anchorSlot);
