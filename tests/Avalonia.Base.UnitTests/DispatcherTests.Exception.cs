@@ -265,7 +265,7 @@ public partial class DispatcherTests
             dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
             dispatcher.RunJobs();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             // should be no exception here.
             caughtCorrectException = false;
