@@ -1004,7 +1004,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.Tag = new GridLength(5, GridUnitType.Star);
 
@@ -1984,7 +1984,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' Tag='{{Binding !BoolProperty}}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext { BoolProperty = value };
                 window.DataContext = dataContext;
@@ -2012,7 +2012,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </TextBlock>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new ImplicitConvertible("Green");
                 window.DataContext = dataContext;
