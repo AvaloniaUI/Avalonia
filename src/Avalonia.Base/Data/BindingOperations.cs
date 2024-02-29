@@ -101,6 +101,15 @@ namespace Avalonia.Data
             return Apply(target, property, binding);
         }
 
+        /// <summary>
+        /// Returns a value that indicates whether the specified property is currently data-bound.
+        /// </summary>
+        /// <param name="target">The target object.</param>
+        /// <param name="property">The property to bind.</param>
+        /// <returns></returns>
+        public static bool IsDataBound(this AvaloniaObject target, AvaloniaProperty property) => 
+            target.GetValueStore().IsDataBound(property);
+
         private sealed class TwoWayBindingDisposable : IDisposable
         {
             private readonly IDisposable _toTargetSubscription;

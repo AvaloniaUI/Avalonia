@@ -43,6 +43,27 @@ namespace Avalonia.PropertyStore
             ReevaluateEffectiveValues();
         }
 
+        public bool IsDataBound(AvaloniaProperty property)
+        {
+            if (_localValueBindings?.TryGetValue(property.Id, out var value) == true
+                    && value is BindingExpressionBase or IValueBindingObserver)
+            {
+                return true;
+            }
+            else
+            {
+                if (_effectiveValues.TryGetValue(property, out var effectiveValue))
+                {
+                    var priority = effectiveValue.Priority;
+                    var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
+                    // Try to get an entry from the frame for the property we're reevaluating.
+                    var foundEntry = frame.TryGetEntryIfActive(property, out var entry, out var activeChanged);
+                    return foundEntry && entry is BindingExpression or IValueBindingObserver;
+                }
+            }
+            return false;
+        }
+
         public BindingExpressionBase AddBinding(
             AvaloniaProperty property,
             UntypedBindingExpressionBase source)
