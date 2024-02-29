@@ -67,7 +67,7 @@ public partial class BindingExpressionTests
         {
             new TargetClass()
             {
-                [~TargetClass.StringProperty] = (new  BehaviorSubject<string>("foo")) .ToBinding(),
+                [~TargetClass.StringProperty] = (new  BehaviorSubject<string>("foo")).ToBinding(),
             },
             TargetClass.StringProperty,
             true,
@@ -82,5 +82,4 @@ public partial class BindingExpressionTests
            true,
         };
     }
-
 }
