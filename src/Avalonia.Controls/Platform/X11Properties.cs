@@ -4,6 +4,9 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Controls;
 
+/// <summary>
+/// Set of X11 specific properties and events that allow deeper customization of the application per platform.
+/// </summary>
 public class X11Properties
 {
     public static readonly AttachedProperty<X11NetWmWindowType> NetWmWindowTypeProperty =
