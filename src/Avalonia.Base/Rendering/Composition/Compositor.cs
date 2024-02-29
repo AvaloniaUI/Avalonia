@@ -294,7 +294,7 @@ namespace Avalonia.Rendering.Composition
             _objectSerializationHashSet.Contains(serializable);
 
         /// <summary>
-        /// Attempts to get the Compositor instance that will be used by default for new <see cref="Avalonia.Controls.TopLevel"/>s
+        /// Attempts to get the Compositor instance that will be used by default for new TopLevels
         /// created by the current platform backend.
         ///
         /// This won't work for every single platform backend and backend settings, e. g. with web we'll need to have
