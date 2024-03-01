@@ -3,8 +3,8 @@
     <!-- Build Avalonia.Build.Tasks first because everything depends on it -->
     <ProjectReference Include="src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
     <ProjectReference Include="src/**/*.*proj" />
-    <ProjectReference Include="samples/**/*.*proj" />
-    <ProjectReference Include="tests/**/*.*proj" />
+    <ProjectReference Condition="'$(SkipBuildingSamples)' != 'True'" Include="samples/**/*.*proj" />
+    <ProjectReference Condition="'$(SkipBuildingTests)' != 'True'" Include="tests/**/*.*proj" />
     <ProjectReference Include="packages/**/*.*proj" />
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
@@ -25,6 +25,10 @@
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
     <ProjectReference Remove="src/Android/**/*.*proj" />
     <ProjectReference Remove="src/iOS/**/*.*proj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipObscurePlatforms)' == 'True'">
+    <ProjectReference Remove="**/*Tizen/**/*.*proj" />
   </ItemGroup>
 
   <ItemGroup>
