@@ -108,3 +108,12 @@ nuke --target BuildToNuGetCache --configuration Release
 This command will generate nuget packages and push them into a local NuGet automatically.
 To use these packages use `9999.0.0-localbuild` package version. 
 Each time local changes are made to Avalonia, running this command again will replace old packages and reset cache for the same version.
+
+## Browser
+
+To build and run browser/wasm projects, it's necessary to install NodeJS.
+You can find latest LTS on https://nodejs.org/.
+
+## Windows
+
+It is possible to run some .NET Framework samples and tests using .NET Framework SDK. You need to install at least 4.7 SDK.
