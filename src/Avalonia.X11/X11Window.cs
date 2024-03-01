@@ -24,6 +24,8 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Platform.Storage.FileIO;
+
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -31,7 +33,8 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.X11
 {
-    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client
+    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+        IX11OptionsToplevelImplFeature
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -142,9 +145,7 @@ namespace Avalonia.X11
             defaultWidth = Math.Max(defaultWidth, 300);
             defaultHeight = Math.Max(defaultHeight, 200);
 
-            var parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
-
-            _handle = XCreateWindow(_x11.Display, parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
+            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
@@ -183,9 +184,8 @@ namespace Avalonia.X11
                     _x11.Atoms.WM_DELETE_WINDOW
                 };
                 XSetWMProtocols(_x11.Display, _handle, protocols, protocols.Length);
-                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
-                    32, PropertyMode.Replace, new[] { _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL }, 1);
-
+                SetNetWmWindowType(X11NetWmWindowType.Normal);
+                
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
@@ -289,10 +289,14 @@ namespace Avalonia.X11
                 || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize)
+            if (!_canResize || !IsEnabled)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
+            }
+            if (!IsEnabled)
+            {
+                functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
             }
 
             var hints = new MotifWmHints
@@ -567,7 +571,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
+                        if (IsEnabled && Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -593,6 +597,9 @@ namespace Avalonia.X11
 
         private Thickness? GetFrameExtents()
         {
+            if (_systemDecorations != SystemDecorations.Full)
+                return new Thickness(0);
+
             XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_FRAME_EXTENTS, IntPtr.Zero,
                 new IntPtr(4), false, (IntPtr)Atom.AnyPropertyType, out var _,
                 out var _, out var nitems, out var _, out var prop);
@@ -900,6 +907,14 @@ namespace Avalonia.X11
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
+            }
+
+            if (featureType == typeof(IX11OptionsToplevelImplFeature))
+                return this;
 
             return null;
         }
@@ -1239,6 +1254,13 @@ namespace Avalonia.X11
 
             XFree(hint);
         }
+        
+        public void SetWmClass(string? className)
+        {
+            if (_handle == IntPtr.Zero)
+                return;
+            SetWmClass(_handle, className ?? _platform.Options.WmClass);
+        }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
@@ -1266,6 +1288,7 @@ namespace Avalonia.X11
             _disabled = !enable;
 
             UpdateWMHints();
+            UpdateMotifHints();
         }
 
         private void UpdateWMHints()
@@ -1398,6 +1421,27 @@ namespace Avalonia.X11
 
             public IntPtr Handle => _owner._renderHandle;
             public string HandleDescriptor => "XID";
+        }
+
+        public void SetNetWmWindowType(X11NetWmWindowType type)
+        {
+            if(_handle == IntPtr.Zero)
+                return;
+
+            var atom = type switch
+            {
+                X11NetWmWindowType.Dialog => _x11.Atoms._NET_WM_WINDOW_TYPE_DIALOG,
+                X11NetWmWindowType.Utility => _x11.Atoms._NET_WM_WINDOW_TYPE_UTILITY,
+                X11NetWmWindowType.Toolbar => _x11.Atoms._NET_WM_WINDOW_TYPE_TOOLBAR,
+                X11NetWmWindowType.Splash => _x11.Atoms._NET_WM_WINDOW_TYPE_SPLASH,
+                X11NetWmWindowType.Dock => _x11.Atoms._NET_WM_WINDOW_TYPE_DOCK,
+                X11NetWmWindowType.Desktop => _x11.Atoms._NET_WM_WINDOW_TYPE_DESKTOP,
+                _ => _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL
+            };
+
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
+                32, PropertyMode.Replace, new[] { atom }, 1);
+
         }
     }
 }

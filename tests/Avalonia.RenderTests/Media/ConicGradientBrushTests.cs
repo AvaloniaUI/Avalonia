@@ -215,5 +215,37 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             public DrawnControl(Action<DrawingContext> render) => _render = render;
             public override void Render(DrawingContext context) => _render(context);
         }
+        
+        
+        [Theory(
+#if !AVALONIA_SKIA
+        Skip = "Direct2D doesn't support conic brushes, why do we even have this file included?"
+#endif
+        ),
+         InlineData(false),
+         InlineData(true)
+        ]
+        public async Task ConicGradientBrushIsProperlyMapped(bool relative)
+        {
+            var brush = new ConicGradientBrush
+            {
+                Center = relative ? RelativePoint.Center : new RelativePoint(128,128, RelativeUnit.Absolute),
+                GradientStops =
+                {
+                    new GradientStop { Color = Colors.Red, Offset = 0 },
+                    new GradientStop { Color = Colors.GreenYellow, Offset = 0.2 },
+                    new GradientStop { Color = Colors.Magenta, Offset = 0.5 },
+                    new GradientStop { Color = Colors.Blue, Offset = 0.8 },
+                    new GradientStop { Color = Colors.Red, Offset = 1 },
+                },
+                SpreadMethod = GradientSpreadMethod.Repeat,
+                Angle = 270
+            };
+            
+            var testName =
+                $"{nameof(ConicGradientBrushIsProperlyMapped)}_{brush.Center.Unit}";
+            await RenderToFile(new RelativePointTestPrimitivesHelper(brush, !relative), testName);
+            CompareImages(testName);
+        }
     }
 }

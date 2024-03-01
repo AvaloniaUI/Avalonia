@@ -32,7 +32,17 @@ class DesignXamlLoader : AvaloniaXamlLoader.IRuntimeXamlLoader
         var depsJsonFile = Path.ChangeExtension(assemblyLocation, ".deps.json");
         if (!File.Exists(depsJsonFile))
         {
-            return;
+            var sameDir = Path.GetDirectoryName(depsJsonFile);
+            var fallbackDepsFiles = Directory.GetFiles(sameDir, "*.deps.json");
+            if (fallbackDepsFiles.Length == 1)
+            {
+                depsJsonFile = fallbackDepsFiles[0];
+            }
+            else
+            {
+                Console.WriteLine($".deps.json file \"{depsJsonFile}\" doesn't exist, it might affect previewer stability.");
+                return;   
+            }
         }
 
         using var stream = File.OpenRead(depsJsonFile);

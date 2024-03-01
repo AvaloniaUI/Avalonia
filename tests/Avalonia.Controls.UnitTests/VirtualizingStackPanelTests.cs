@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -1113,6 +1114,44 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             Assert.True(container.IsVisible);
+        }
+
+        [Fact]
+        public void ScrollIntoView_With_TargetRect_Outside_Viewport_Should_Scroll_To_Item()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 101).Select(x => new ItemWithHeight(x, x * 100 + 1));
+            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
+                new Border
+                {
+                    Height = 10,
+                    [!Layoutable.WidthProperty] = new Binding("Height"),
+                });
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: itemTemplate,
+                styles: new[]
+                {
+                    new Style(x => x.OfType<ScrollViewer>())
+                    {
+                        Setters =
+                        {
+                            new Setter(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Visible),
+                        }
+                    }
+                });
+            itemsControl.ContainerPrepared += (_, ev) =>
+            {
+                ev.Container.AddHandler(Control.RequestBringIntoViewEvent, (_, e) =>
+                {
+                    var dataContext = (ItemWithHeight)e.TargetObject!.DataContext!;
+                    e.TargetRect = new Rect(dataContext.Height - 50, 0, 50, 10);
+                });
+            };
+
+            target.ScrollIntoView(100);
+
+            Assert.Equal(9901, scroll.Offset.X);
         }
 
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)

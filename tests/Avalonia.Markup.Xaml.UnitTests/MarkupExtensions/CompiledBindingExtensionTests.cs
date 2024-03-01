@@ -24,6 +24,7 @@ using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 using Avalonia.UnitTests;
 using Xunit;
@@ -850,6 +851,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void ResolvesElementNameBindingFromLongFormWithoutPath()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <StackPanel>
+        <TextBlock Text='{CompiledBinding StringProperty}' x:Name='text' />
+        <TextBlock Text='{CompiledBinding ElementName=text}' x:Name='text2' />
+    </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("text2");
+
+                Assert.Equal("Avalonia.Controls.TextBlock", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void ResolvesRelativeSourceBindingLongForm()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -982,7 +1005,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.Tag = new GridLength(5, GridUnitType.Star);
 
@@ -1574,6 +1597,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void Binds_To_Self()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Name='textBlock' Text='{CompiledBinding $self}' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
+
+                Assert.Equal("Avalonia.Controls.TextBlock", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void Binds_To_Self_Without_DataType()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -1622,6 +1667,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 button.IsEnabled = false;
 
                 Assert.False(button.IsVisible);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_RelativeSource_Self()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Name='textBlock' Text='{CompiledBinding RelativeSource={RelativeSource Self}}' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
+
+                Assert.Equal("Avalonia.Controls.TextBlock", textBlock.Text);
             }
         }
 
@@ -1918,7 +1985,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' Tag='{{Binding !BoolProperty}}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext { BoolProperty = value };
                 window.DataContext = dataContext;
@@ -1946,13 +2013,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </TextBlock>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new ImplicitConvertible("Green");
                 window.DataContext = dataContext;
 
                 var brush = Assert.IsType<SolidColorBrush>(textBlock.Background);
                 Assert.Equal(Colors.Green, brush.Color);
+            }
+        }
+
+        [Fact]
+        public void Can_Bind_Brush_To_Hex_String()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestData'
+        x:CompileBindings='True'>
+    <TextBlock Name='textBlock' Background='{{Binding StringProperty}}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new TestData { StringProperty = "#ff0000" };
+                window.DataContext = dataContext;
+
+                var brush = Assert.IsType<ImmutableSolidColorBrush>(textBlock!.Background);
+                Assert.Equal(Colors.Red, brush.Color);
             }
         }
 

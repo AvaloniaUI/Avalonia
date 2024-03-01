@@ -5,6 +5,7 @@ using Avalonia.Data.Converters;
 using System.Windows.Input;
 using Avalonia.Utilities;
 using static Avalonia.Utilities.TypeUtilities;
+using System.ComponentModel;
 
 namespace Avalonia.Data.Core;
 
@@ -65,6 +66,40 @@ internal abstract class TargetTypeConverter
                 return true;
             }
 
+#pragma warning disable IL2026
+#pragma warning disable IL2067
+            // TODO: TypeConverters are not trimming friendly in some edge cases, we probably need
+            // to make compiled bindings emit conversion code at compile-time.
+            var toTypeConverter = TypeDescriptor.GetConverter(t);
+            var from = value.GetType();
+
+            if (toTypeConverter.CanConvertFrom(from))
+            {
+                result = toTypeConverter.ConvertFrom(null, culture, value);
+                return true;
+            }
+
+            var fromTypeConverter = TypeDescriptor.GetConverter(from);
+
+            if (fromTypeConverter.CanConvertTo(t))
+            {
+                result = fromTypeConverter.ConvertTo(null, culture, value, t);
+                return true;
+            }
+
+            // TODO: This requires reflection: we probably need to make compiled bindings emit
+            // conversion code at compile-time.
+            if (FindTypeConversionOperatorMethod(
+                value.GetType(),
+                t,
+                OperatorType.Implicit | OperatorType.Explicit) is { } cast)
+            {
+                result = cast.Invoke(null, new[] { value });
+                return true;
+            }
+#pragma warning restore IL2067
+#pragma warning restore IL2026
+
             if (value is IConvertible convertible)
             {
                 try
@@ -77,17 +112,6 @@ internal abstract class TargetTypeConverter
                     result = null;
                     return false;
                 }
-            }
-
-            // TODO: This requires reflection: we probably need to make compiled bindings emit
-            // conversion code at compile-time.
-            if (FindTypeConversionOperatorMethod(
-                value.GetType(), 
-                t, 
-                OperatorType.Implicit | OperatorType.Explicit) is { } cast)
-            {
-                result = cast.Invoke(null, new[] { value });
-                return true;
             }
 
             result = null;

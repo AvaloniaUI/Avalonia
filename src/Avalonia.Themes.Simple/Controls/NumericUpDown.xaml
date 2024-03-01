@@ -12,6 +12,7 @@
         <ButtonSpinner Name="PART_Spinner"
                        HorizontalContentAlignment="Stretch"
                        VerticalContentAlignment="Stretch"
+                       IsTabStop="False"
                        AllowSpin="{TemplateBinding AllowSpin}"
                        Background="{TemplateBinding Background}"
                        BorderBrush="{TemplateBinding BorderBrush}"
@@ -33,7 +34,10 @@
                    Text="{TemplateBinding Text}"
                    TextAlignment="{TemplateBinding TextAlignment}"
                    TextWrapping="NoWrap"
-                   Watermark="{TemplateBinding Watermark}" />
+                   Watermark="{TemplateBinding Watermark}"
+                   InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   />
         </ButtonSpinner>
       </ControlTemplate>
     </Setter>

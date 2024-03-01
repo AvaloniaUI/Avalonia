@@ -140,8 +140,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     }
 
     /// <summary>
-    /// Starts the binding expression following a call to 
-    /// <see cref="AttachCore(IBindingExpressionSink, AvaloniaObject, AvaloniaProperty, BindingPriority)"/>.
+    /// Starts the binding expression following a call to <see cref="AttachCore"/>.
     /// </summary>
     public void Start() => Start(produceValue: true);
 
