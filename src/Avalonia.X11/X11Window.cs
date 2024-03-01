@@ -53,7 +53,6 @@ namespace Avalonia.X11
         private PixelSize _realSize;
         private bool _cleaningUp;
         private IntPtr _handle;
-        private IntPtr _parentHandle;
         private IntPtr _xic;
         private IntPtr _renderHandle;
         private IntPtr _xSyncCounter;
@@ -85,7 +84,6 @@ namespace Avalonia.X11
             _mouse = new MouseDevice();
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
-            _parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
 
             var glfeature = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
@@ -123,7 +121,7 @@ namespace Avalonia.X11
             {
                 visual = visualInfo.Value.visual;
                 depth = (int)visualInfo.Value.depth;
-                attr.colormap = XCreateColormap(_x11.Display, _parentHandle, visualInfo.Value.visual, 0);
+                attr.colormap = XCreateColormap(_x11.Display, _x11.RootWindow, visualInfo.Value.visual, 0);
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
@@ -146,7 +144,7 @@ namespace Avalonia.X11
             defaultWidth = Math.Max(defaultWidth, 300);
             defaultHeight = Math.Max(defaultHeight, 200);
 
-            _handle = XCreateWindow(_x11.Display, _parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
+            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
@@ -291,10 +289,14 @@ namespace Avalonia.X11
                 || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize)
+            if (!_canResize || !IsEnabled)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
+            }
+            if (!IsEnabled)
+            {
+                functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
             }
 
             var hints = new MotifWmHints
@@ -517,7 +519,7 @@ namespace Avalonia.X11
                     _configurePoint = new PixelPoint(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
                 else
                 {
-                    XTranslateCoordinates(_x11.Display, _handle, _parentHandle,
+                    XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
                         0, 0,
                         out var tx, out var ty, out _);
                     _configurePoint = new PixelPoint(tx, ty);
@@ -569,7 +571,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
+                        if (IsEnabled && Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -1100,12 +1102,10 @@ namespace Avalonia.X11
                     UpdateSizeHints(null);
                 }
 
-                XTranslateCoordinates(_x11.Display, _parentHandle, _x11.RootWindow, 0, 0, out var wx, out var wy, out _);
-
                 var changes = new XWindowChanges
                 {
-                    x = value.X - wx,
-                    y = (int)value.Y - wy
+                    x = value.X,
+                    y = (int)value.Y
                 };
 
                 XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWX | ChangeWindowFlags.CWY,
@@ -1168,7 +1168,7 @@ namespace Avalonia.X11
                 }
             };
             xev.ClientMessageEvent.ptr4 = l4 ?? IntPtr.Zero;
-            XSendEvent(_x11.Display, _parentHandle, false,
+            XSendEvent(_x11.Display, _x11.RootWindow, false,
                 new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
 
         }
@@ -1278,6 +1278,7 @@ namespace Avalonia.X11
             _disabled = !enable;
 
             UpdateWMHints();
+            UpdateMotifHints();
         }
 
         private void UpdateWMHints()

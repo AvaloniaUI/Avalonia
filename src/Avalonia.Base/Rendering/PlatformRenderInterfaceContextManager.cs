@@ -11,6 +11,8 @@ internal class PlatformRenderInterfaceContextManager
     private readonly IPlatformGraphics? _graphics;
     private IPlatformRenderInterfaceContext? _backend;
     private OwnedDisposable<IPlatformGraphicsContext>? _gpuContext;
+    public event Action? ContextDisposed;
+    public event Action<IPlatformRenderInterfaceContext>? ContextCreated;
 
     public PlatformRenderInterfaceContextManager(IPlatformGraphics? graphics)
     {
@@ -23,8 +25,12 @@ internal class PlatformRenderInterfaceContextManager
         {
             _backend?.Dispose();
             _backend = null;
-            _gpuContext?.Dispose();
-            _gpuContext = null;
+            if (_gpuContext != null)
+            {
+                _gpuContext?.Dispose();
+                _gpuContext = null;
+                ContextDisposed?.Invoke();
+            }
 
             if (_graphics != null)
             {
@@ -36,6 +42,7 @@ internal class PlatformRenderInterfaceContextManager
 
             _backend = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>()
                 .CreateBackendContext(_gpuContext?.Value);
+            ContextCreated?.Invoke(_backend);
         }
     }
 

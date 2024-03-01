@@ -58,6 +58,7 @@ partial class Animation
         RegisterAnimator<Point, PointAnimator>();
         RegisterAnimator<Rect, RectAnimator>();
         RegisterAnimator<RelativePoint, RelativePointAnimator>();
+        RegisterAnimator<RelativeScalar, RelativeScalarAnimator>();
         RegisterAnimator<Size, SizeAnimator>();
         RegisterAnimator<Thickness, ThicknessAnimator>();
     }

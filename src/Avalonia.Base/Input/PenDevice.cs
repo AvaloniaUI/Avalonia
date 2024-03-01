@@ -143,13 +143,20 @@ namespace Avalonia.Input
                 var e = new PointerReleasedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
                     _lastMouseDownButton);
 
-                if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
-                    gestureRecognizer.PointerReleasedInternal(e);
-                else
-                    source.RaiseEvent(e);
-                pointer.Capture(null);
-                pointer.CaptureGestureRecognizer(null);
-                _lastMouseDownButton = default;
+                try
+                {
+                    if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+                        gestureRecognizer.PointerReleasedInternal(e);
+                    else
+                        source.RaiseEvent(e);
+                }
+                finally
+                {
+                    pointer.Capture(null);
+                    pointer.CaptureGestureRecognizer(null);
+                    _lastMouseDownButton = default;
+                }
+
                 return e.Handled;
             }
 

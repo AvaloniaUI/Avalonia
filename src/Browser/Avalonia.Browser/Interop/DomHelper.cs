@@ -23,18 +23,12 @@ internal static partial class DomHelper
     [JSImport("AvaloniaDOM.addClass", AvaloniaModule.MainModuleName)]
     public static partial void AddCssClass(JSObject element, string className);
 
-    [JSImport("SizeWatcher.observe", AvaloniaModule.MainModuleName)]
-    public static partial JSObject ObserveSize(
+    [JSImport("ResizeHandler.observeSize", AvaloniaModule.MainModuleName)]
+    public static partial void ObserveSize(
         JSObject canvas,
-        string? canvasId,
-        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>]
-        Action<int, int> onSizeChanged);
+        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number, JSType.Number>>]
+        Action<double, double, double> onSizeOrDpiChanged);
 
-    [JSImport("DpiWatcher.start", AvaloniaModule.MainModuleName)]
-    public static partial double ObserveDpi(
-       [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>]
-        Action<double, double> onDpiChanged);
-    
     [JSImport("AvaloniaDOM.observeDarkMode", AvaloniaModule.MainModuleName)]
     public static partial JSObject ObserveDarkMode(
         [JSMarshalAs<JSType.Function<JSType.Boolean, JSType.Boolean>>]

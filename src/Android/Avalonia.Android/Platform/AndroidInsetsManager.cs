@@ -8,6 +8,7 @@ using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
+using Avalonia.Threading;
 using AndroidWindow = Android.Views.Window;
 
 namespace Avalonia.Android.Platform
@@ -40,7 +41,7 @@ namespace Avalonia.Android.Platform
                 if (oldState != value && Build.VERSION.SdkInt <= BuildVersionCodes.Q)
                 {
                     var currentRect = OccludedRect;
-                    StateChanged?.Invoke(this, new InputPaneStateEventArgs(value, _previousRect, currentRect, TimeSpan.Zero, null));
+                    NotifyStateChanged(value, _previousRect, currentRect, TimeSpan.Zero, null);
                     _previousRect = currentRect;
                 }
             }
@@ -151,7 +152,12 @@ namespace Avalonia.Android.Platform
 
         private void NotifySafeAreaChanged(Thickness safeAreaPadding)
         {
-            SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding));
+            Dispatcher.UIThread.Send(_ => SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding)));
+        }
+        
+        private void NotifyStateChanged(InputPaneState newState, Rect? startRect, Rect endRect, TimeSpan animationDuration, IEasing easing)
+        {
+            Dispatcher.UIThread.Send(_ => StateChanged?.Invoke(this, new InputPaneStateEventArgs(newState, startRect, endRect, animationDuration, easing)));
         }
 
         public void OnGlobalLayout()
@@ -294,7 +300,7 @@ namespace Avalonia.Android.Platform
                     var duration = TimeSpan.FromMilliseconds(animation.DurationMillis);
 
                     bool isOpening = State == InputPaneState.Open;
-                    StateChanged?.Invoke(this, new InputPaneStateEventArgs(State, isOpening ? upperRect : lowerRect, isOpening ? lowerRect : upperRect, duration, new AnimationEasing(animation.Interpolator)));
+                    NotifyStateChanged(State, isOpening ? upperRect : lowerRect, isOpening ? lowerRect : upperRect, duration, new AnimationEasing(animation.Interpolator));
                 }
             }
 

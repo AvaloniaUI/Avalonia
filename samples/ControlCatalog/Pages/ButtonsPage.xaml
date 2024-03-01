@@ -148,6 +148,38 @@
       </StackPanel>
     </Border>
 
+    <!-- HyperlinkButton -->
+    <Border Classes="header-border">
+      <StackPanel Orientation="Vertical"
+                  Spacing="4">
+        <TextBlock Text="HyperlinkButton"
+                   Classes="header" />
+        <TextBlock TextWrapping="Wrap">A button control that functions as a navigateable hyperlink.</TextBlock>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="thin"
+            Padding="15">
+      <StackPanel Orientation="Vertical"
+                  Spacing="8">
+        <StackPanel Orientation="Horizontal">
+          <HyperlinkButton x:Name="EnabledHyperlinkButton"
+                           VerticalAlignment="Center"
+                           NavigateUri="https://docs.avaloniaui.net/docs/welcome">
+            <TextBlock Text="Avalonia Docs" />
+          </HyperlinkButton>
+          <CheckBox IsChecked="{Binding #EnabledHyperlinkButton.IsVisited}"
+                    Content="IsVisited"
+                    VerticalAlignment="Center"
+                    Margin="10,0,0,0" />
+        </StackPanel>
+        <HyperlinkButton IsEnabled="False"
+                         NavigateUri="https://docs.avaloniaui.net/docs/welcome">
+          <TextBlock Text="Avalonia Docs" />
+        </HyperlinkButton>
+      </StackPanel>
+    </Border>
+
     <!-- DropDownButton -->
     <Border Classes="header-border">
       <StackPanel Orientation="Vertical"
