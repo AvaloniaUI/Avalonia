@@ -242,7 +242,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 },
                 CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia
             };
-            
+
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                     _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
                     new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
@@ -292,6 +292,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     () => new XamlDocumentTypeBuilderProvider(
                         builder,
                         compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, XamlVisibility.Public),
+                        document.RootInstance is null ? builder : null,
                         document.RootInstance is null ?
                             compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, XamlVisibility.Public) :
                             null)));
@@ -305,7 +306,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var createdTypes = parsedDocuments.Select(document =>
             {
                 compiler.Compile(document.XamlDocument, document.TypeBuilderProvider, document.Uri, document.FileSource);
-                return _sreTypeSystem.GetType(document.TypeBuilderProvider.TypeBuilder.CreateType());
+                return _sreTypeSystem.GetType(document.TypeBuilderProvider.PopulateDeclaringType.CreateType());
             }).ToArray();
             
             clrPropertyBuilder.CreateTypeInfo();

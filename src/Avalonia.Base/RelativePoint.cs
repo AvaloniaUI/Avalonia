@@ -142,7 +142,6 @@ namespace Avalonia
         /// </summary>
         /// <param name="size">The size of the visual.</param>
         /// <returns>The origin point in pixels.</returns>
-        [Obsolete("Use ToPixels(Rect) overload to properly map relative points")]
         public Point ToPixels(Size size)
         {
             return _unit == RelativeUnit.Absolute ?

@@ -3,8 +3,7 @@ using System;
 namespace Avalonia.Data.Core
 {
     /// <summary>
-    /// Exception thrown when <see cref="ExpressionObserver"/> could not parse the provided
-    /// expression string.
+    /// Exception thrown when the provided binding expression string could not be parsed.
     /// </summary>
 #if !BUILDTASK
     public
