@@ -10,6 +10,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
     <AvsLegacyTargetFrameworks>net6.0</AvsLegacyTargetFrameworks>
-    <AvsLegacyWindowsTargetFrameworks>net6.0</AvsLegacyWindowsTargetFrameworks>
+    <AvsLegacyWindowsTargetFrameworks>net6.0-windows</AvsLegacyWindowsTargetFrameworks>
   </PropertyGroup>
 </Project>
