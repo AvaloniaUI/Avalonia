@@ -1103,7 +1103,9 @@ namespace Avalonia.X11
             else
             {
                 XRaiseWindow(_x11.Display, _handle);
-                XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
+
+                if (_focusProxy is not null)
+                    XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
             }
         }
 
