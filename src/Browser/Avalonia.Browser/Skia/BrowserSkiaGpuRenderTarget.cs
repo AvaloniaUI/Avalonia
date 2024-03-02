@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Skia;
 using SkiaSharp;
 
@@ -16,8 +17,8 @@ namespace Avalonia.Browser.Skia
             var glFbInfo = new GRGlFramebufferInfo(browserSkiaSurface.GlInfo.FboId, browserSkiaSurface.ColorType.ToGlSizedFormat());
             _browserSkiaSurface = browserSkiaSurface;
             _renderTarget = new GRBackendRenderTarget(
-                (int)(browserSkiaSurface.Size.Width * browserSkiaSurface.Scaling),
-                (int)(browserSkiaSurface.Size.Height * browserSkiaSurface.Scaling),
+                (int)Math.Round(browserSkiaSurface.DisplaySize.Width * browserSkiaSurface.Scaling),
+                (int)Math.Round(browserSkiaSurface.DisplaySize.Height * browserSkiaSurface.Scaling),
                 browserSkiaSurface.GlInfo.Samples,
                 browserSkiaSurface.GlInfo.Stencils, glFbInfo);
         }

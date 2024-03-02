@@ -125,7 +125,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         },
                         GradientOrigin = new RelativePoint(0.25, 0.25, RelativeUnit.Relative),
                         Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                        Radius = 0.5                        
+                        RadiusX = RelativeScalar.Middle,
+                        RadiusY = RelativeScalar.Middle
                     }
                 }
             };
@@ -157,7 +158,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         },
                         GradientOrigin = new RelativePoint(0.1, 0.1, RelativeUnit.Relative),
                         Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                        Radius = 0.5
+                        RadiusX = RelativeScalar.Middle,
+                        RadiusY = RelativeScalar.Middle
                     }
                 }
             };

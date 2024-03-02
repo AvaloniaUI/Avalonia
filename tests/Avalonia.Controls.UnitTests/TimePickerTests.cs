@@ -93,12 +93,12 @@ namespace Avalonia.Controls.UnitTests
 
                 TimeSpan ts = TimeSpan.FromHours(10);
                 timePicker.SelectedTime = ts;
-                Assert.False(hourText.Text == "hour");
-                Assert.False(minuteText.Text == "minute");
+                Assert.NotNull(hourText.Text);
+                Assert.NotNull(minuteText.Text);
 
                 timePicker.SelectedTime = null;
-                Assert.True(hourText.Text == "hour");
-                Assert.True(minuteText.Text == "minute");
+                Assert.Null(hourText.Text);
+                Assert.Null(minuteText.Text);
             }
         }
         

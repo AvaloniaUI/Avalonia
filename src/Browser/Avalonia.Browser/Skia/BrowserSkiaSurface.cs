@@ -5,12 +5,13 @@ namespace Avalonia.Browser.Skia
 {
     internal class BrowserSkiaSurface : IBrowserSkiaSurface
     {
-        public BrowserSkiaSurface(GRContext context, GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling, GRSurfaceOrigin origin)
+        public BrowserSkiaSurface(GRContext context, GLInfo glInfo, SKColorType colorType, PixelSize size, Size displaySize, double scaling, GRSurfaceOrigin origin)
         {
             Context = context;
             GlInfo = glInfo;
             ColorType = colorType;
             Size = size;
+            DisplaySize = displaySize;
             Scaling = scaling;
             Origin = origin;
         }
@@ -18,6 +19,8 @@ namespace Avalonia.Browser.Skia
         public SKColorType ColorType { get; set; }
 
         public PixelSize Size { get; set; }
+
+        public Size DisplaySize { get; set; }
 
         public GRContext Context { get; set; }
 
