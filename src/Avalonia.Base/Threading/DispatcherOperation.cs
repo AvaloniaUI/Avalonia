@@ -283,13 +283,17 @@ public class DispatcherOperation
         {
             lock (Dispatcher.InstanceLock)
             {
+                // Ensure TaskSource created.
+                _ = GetTaskCore();
                 Status = DispatcherOperationStatus.Completed;
                 if (TaskSource is TaskCompletionSource<object?> tcs)
                     tcs.SetException(e);
             }
 
-            if (ThrowOnUiThread)
+            if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
+            {
                 throw;
+            }
         }
     }
 
@@ -312,10 +316,11 @@ public class DispatcherOperation
         {
             if (Status == DispatcherOperationStatus.Aborted)
                 return s_abortedTask;
+            if (TaskSource is TaskCompletionSource<object?> tcs)
+                return tcs.Task;
             if (Status == DispatcherOperationStatus.Completed)
                 return Task.CompletedTask;
-            if (TaskSource is not TaskCompletionSource<object?> tcs)
-                TaskSource = tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskSource = tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
             return tcs.Task;
         }
     }
@@ -401,13 +406,17 @@ internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperatio
         {
             lock (Dispatcher.InstanceLock)
             {
+                // Ensure TaskSource created.
+                _ = GetTaskCore();
                 Status = DispatcherOperationStatus.Completed;
                 if (TaskSource is TaskCompletionSource<object?> tcs)
                     tcs.SetException(e);
             }
 
-            if (ThrowOnUiThread)
+            if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
+            {
                 throw;
+            }
         }
     }
 }

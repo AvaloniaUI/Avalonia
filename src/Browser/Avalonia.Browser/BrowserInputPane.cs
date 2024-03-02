@@ -5,17 +5,13 @@ using Avalonia.Controls.Platform;
 
 namespace Avalonia.Browser;
 
-internal class BrowserInputPane : IInputPane
+internal class BrowserInputPane : InputPaneBase
 {
     public BrowserInputPane(JSObject container)
     {
         InputHelper.SubscribeKeyboardGeometryChange(container, OnGeometryChange);
     }
 
-    public InputPaneState State { get; private set; }
-    public Rect OccludedRect { get; private set; }
-    public event EventHandler<InputPaneStateEventArgs>? StateChanged;
-    
     private bool OnGeometryChange(JSObject args)
     {
         var oldState = (OccludedRect, State);
@@ -29,7 +25,7 @@ internal class BrowserInputPane : IInputPane
 
         if (oldState != (OccludedRect, State))
         {
-            StateChanged?.Invoke(this, new InputPaneStateEventArgs(State, null, OccludedRect));
+            OnStateChanged(new InputPaneStateEventArgs(State, null, OccludedRect));
         }
 
         return true;

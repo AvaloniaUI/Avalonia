@@ -32,4 +32,13 @@ namespace Avalonia.Platform
         /// </summary>
         Action? OnClicked { get; set; }
     }
+
+    [Unstable]
+    public interface ITrayIconWithIsTemplateImpl : ITrayIconImpl
+    {
+        /// <summary>
+        /// Sets if the tray icon has a template/monochrome icon or not.
+        /// </summary>
+        void SetIsTemplateIcon(bool isTemplateIcon);
+    }
 }

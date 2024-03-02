@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using Android.Content.PM;
 using Android.Content;
 using Avalonia.Platform;
@@ -27,7 +29,7 @@ namespace Avalonia
 
     internal class AndroidRuntimePlatform : StandardRuntimePlatform
     {
-        private static readonly Lazy<RuntimePlatformInfo> Info = new(() =>
+        private static readonly Lazy<RuntimePlatformInfo> s_info = new(() =>
         {
             var isDesktop = IsRunningOnDesktop(App.Context);
             var isTv = IsRunningOnTv(App.Context);
@@ -41,12 +43,13 @@ namespace Avalonia
         });
 
         private static bool IsRunningOnDesktop(Context context) =>
-            context.PackageManager.HasSystemFeature("org.chromium.arc") ||
-            context.PackageManager.HasSystemFeature("org.chromium.arc.device_management");
+            context.PackageManager is { } packageManager &&
+            (packageManager.HasSystemFeature("org.chromium.arc") ||
+             packageManager.HasSystemFeature("org.chromium.arc.device_management"));
 
         private static bool IsRunningOnTv(Context context) => 
-            context.PackageManager.HasSystemFeature(PackageManager.FeatureLeanback);
+            context.PackageManager?.HasSystemFeature(PackageManager.FeatureLeanback) == true;
 
-        public override RuntimePlatformInfo GetRuntimeInfo() => Info.Value;
+        public override RuntimePlatformInfo GetRuntimeInfo() => s_info.Value;
     }
 }

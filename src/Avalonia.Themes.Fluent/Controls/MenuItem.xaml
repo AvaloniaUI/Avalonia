@@ -72,6 +72,8 @@
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"
+                                  SharedSizeGroup="ToggleIcon" />
+                <ColumnDefinition Width="Auto"
                                   SharedSizeGroup="MenuItemIcon" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto"
@@ -80,10 +82,17 @@
                                   SharedSizeGroup="MenuItemChevron" />
               </Grid.ColumnDefinitions>
 
-              <ContentControl x:Name="PART_IconPresenter"
+              <ContentControl Grid.Column="0"
+                              x:Name="PART_ToggleIconPresenter"
+                              IsVisible="False"
+                              Theme="{StaticResource FluentMenuItemIconTheme}"
+                              Margin="{DynamicResource MenuIconPresenterMargin}" />
+
+              <ContentControl Grid.Column="1"
+                              x:Name="PART_IconPresenter"
+                              IsVisible="False"
                               Theme="{StaticResource FluentMenuItemIconTheme}"
                               Content="{TemplateBinding Icon}"
-                              IsVisible="False"
                               Margin="{DynamicResource MenuIconPresenterMargin}" />
 
               <ContentPresenter Name="PART_HeaderPresenter"
@@ -92,10 +101,9 @@
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 RecognizesAccessKey="True"
-                                Grid.Column="1"/>
+                                Grid.Column="2"/>
               <TextBlock x:Name="PART_InputGestureText"
-                         Grid.Column="2"
-                         Classes="CaptionTextBlockStyle"
+                         Grid.Column="3"
                          Margin="{DynamicResource MenuInputGestureTextMargin}"
                          Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
                          HorizontalAlignment="Right"
@@ -200,11 +208,36 @@
         </ControlTemplate>
       </Setter>
     </Style>
+    
+    <Style Selector="^ /template/ Image#PART_ToggleIconImage">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:checked:toggle /template/ ContentControl#PART_ToggleIconPresenter">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="Content">
+        <Template>
+          <Path Fill="{Binding $parent[MenuItem].Foreground}"
+                Width="16"
+                Data="{StaticResource CheckMarkPathData}" />
+        </Template>
+      </Setter>
+    </Style>
+    <Style Selector="^:checked:radio /template/ ContentControl#PART_ToggleIconPresenter">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="Content">
+        <Template>
+          <Ellipse Fill="{Binding $parent[MenuItem].Foreground}"
+                   Margin="4" Width="8" Height="8" />
+        </Template>
+      </Setter>
+    </Style>
   </ControlTheme>
   <ControlTheme x:Key="HorizontalMenuItem" TargetType="MenuItem" BasedOn="{StaticResource FluentTopLevelMenuItem}">
     <Setter Property="Padding" Value="{DynamicResource HorizontalMenuFlyoutItemThemePaddingNarrow}" />
     <Setter Property="Margin" Value="{DynamicResource HorizontalMenuFlyoutItemMargin}" />
   </ControlTheme>
+
   <ControlTheme x:Key="FluentMenuItemIconTheme"
                 TargetType="ContentControl">
     <Setter Property="Width"

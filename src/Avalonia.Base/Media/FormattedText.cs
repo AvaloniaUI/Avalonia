@@ -51,7 +51,6 @@ namespace Avalonia.Media
         /// <param name="typeface">Type face used to display text.</param>
         /// <param name="emSize">Font em size in visual units (1/96 of an inch).</param>
         /// <param name="foreground">Foreground brush used to render text.</param>
-        /// <param name="features">Optional list of turned on/off features.</param>
         public FormattedText(
             string textToFormat,
             CultureInfo culture,

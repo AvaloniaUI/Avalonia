@@ -53,7 +53,10 @@ public partial class Build
         public bool IsMyGetRelease { get; }
         public bool IsNuGetRelease { get; }
         public bool PublishTestResults { get; }
-        public string Version { get; }
+        public string Version { get; set; }
+        public const string LocalBuildVersion = "9999.0.0-localbuild";
+        public bool IsPackingToLocalCache { get; private set; }
+
         public AbsolutePath ArtifactsDir { get; }
         public AbsolutePath NugetIntermediateRoot { get; }
         public AbsolutePath NugetRoot { get; }
@@ -68,7 +71,7 @@ public partial class Build
         public bool UpdateApiValidationSuppression { get; }
         public AbsolutePath ApiValidationSuppressionFiles { get; }
 
-        public BuildParameters(Build b)
+        public BuildParameters(Build b, bool isPackingToLocalCache)
         {
             // ARGUMENTS
             Configuration = b.Configuration ?? "Release";
@@ -123,6 +126,12 @@ public partial class Build
                 }
 
                 PublishTestResults = true;
+            }
+            
+            if (isPackingToLocalCache)
+            {
+                IsPackingToLocalCache = true;
+                Version = LocalBuildVersion;
             }
 
             // DIRECTORIES

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Visitors;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
@@ -16,12 +17,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (!(node is XamlPropertyAssignmentNode pa) || pa.Values.Count != 2)
                 return node;
 
-            if (!ShouldBeDeferred(pa.Values[1]))
-                return node;
-
             var types = context.GetAvaloniaTypes();
 
-            if (pa.Property.DeclaringType == types.ResourceDictionary && pa.Property.Name == "Content")
+            if (pa.Property.DeclaringType == types.ResourceDictionary && pa.Property.Name == "Content"
+                && ShouldBeDeferred(pa.Values[1]))
             {
                 pa.Values[1] = new XamlDeferredContentNode(pa.Values[1], types.XamlIlTypes.Object, context.Configuration);
                 pa.PossibleSetters = new List<IXamlPropertySetter>
@@ -29,7 +28,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     new XamlDirectCallPropertySetter(types.ResourceDictionaryDeferredAdd),
                 };
             }
-            else if (pa.Property.Name == "Resources" && pa.Property.Getter.ReturnType.Equals(types.IResourceDictionary))
+            else if (pa.Property.Name == "Resources" && pa.Property.Getter.ReturnType.Equals(types.IResourceDictionary)
+                && ShouldBeDeferred(pa.Values[1]))
             {
                 pa.Values[1] = new XamlDeferredContentNode(pa.Values[1], types.XamlIlTypes.Object, context.Configuration);
                 pa.PossibleSetters = new List<IXamlPropertySetter>
@@ -45,7 +45,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             // XAML compiler is currently strict about value types, allowing them to be created only through converters.
             // At the moment it should be safe to not defer structs.
-            return !node.Type.GetClrType().IsValueType;
+            if (node.Type.GetClrType().IsValueType)
+            {
+                return false;
+            }
+
+            // Do not defer resources, if it has any x:Name registration, as it cannot be delayed.
+            // This visitor will count x:Name registrations, ignoring nested NestedScopeMetadataNode scopes.
+            // We set target scope level to 0, assuming that this resource node is a scope of itself.
+            var nameRegistrationsVisitor = new NameScopeRegistrationVisitor(
+                targetMetadataScopeLevel: 0);
+            node.Visit(nameRegistrationsVisitor);
+            if (nameRegistrationsVisitor.Count > 0)
+            {
+                return false;
+            }
+
+            return true;
         }
         
         class AdderSetter : IXamlILOptimizedEmitablePropertySetter, IEquatable<AdderSetter>

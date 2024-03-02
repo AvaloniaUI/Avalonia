@@ -35,7 +35,7 @@
           <!-- To mimic WinUI SystemFocusVisual, Focus visual is drawn outside the bounds of the item -->
           <Border Name="Root" Background="{TemplateBinding Background}"
                   BorderThickness="0" ClipToBounds="True">
-            <ContentPresenter Name="Content"
+            <ContentPresenter Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
