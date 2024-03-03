@@ -713,7 +713,14 @@ namespace Avalonia.Controls
             decimal result;
             if (Value.HasValue)
             {
-                result = Value.Value + Increment;
+                if (this.ParsingNumberStyle == NumberStyles.None || this.ParsingNumberStyle == NumberStyles.Integer)
+                {
+                    result = Value.Value + (int)Increment;
+                }
+                else
+                {
+                    result = Value.Value + Increment;
+                }
             }
             else
             {
@@ -734,7 +741,15 @@ namespace Avalonia.Controls
 
             if (Value.HasValue)
             {
-                result = Value.Value - Increment;
+                if (this.ParsingNumberStyle == NumberStyles.None || this.ParsingNumberStyle == NumberStyles.Integer)
+                {
+                    result = Value.Value - (int)Increment;
+                }
+                else
+                {
+                    result = Value.Value - Increment;
+                }
+                
             }
             else
             {
