@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Platform;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -18,6 +19,11 @@ namespace Avalonia.Controls
         private bool _queuedForMoveResize;
         private readonly List<Visual> _propertyChangedSubscriptions = new();
 
+        static NativeControlHost()
+        {
+            FlowDirectionProperty.Changed.AddClassHandler<NativeControlHost>(OnFlowDirectionChanged);
+        }
+
         /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -32,6 +38,12 @@ namespace Avalonia.Controls
             }
 
             UpdateHost();
+        }
+        
+        private static void OnFlowDirectionChanged(NativeControlHost nativeControlHost,
+            AvaloniaPropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            nativeControlHost.TryUpdateNativeControlPosition();
         }
 
         private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -118,7 +130,11 @@ namespace Avalonia.Controls
             Debug.Assert(_currentRoot is not null);
 
             var bounds = Bounds;
-            var position = this.TranslatePoint(default, _currentRoot);
+            // Native window is not rendered by Avalonia
+            var position =
+                this.TranslatePoint(
+                    FlowDirection == FlowDirection.RightToLeft ? new Point(Bounds.Width, 0) : default,
+                    _currentRoot);
             if (position == null)
                 return null;
             return new Rect(position.Value, bounds.Size);
