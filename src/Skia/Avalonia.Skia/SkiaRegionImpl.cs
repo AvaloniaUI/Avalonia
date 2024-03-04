@@ -49,4 +49,5 @@ internal class SkiaRegionImpl : IPlatformRenderInterfaceRegion
     }
 
     public bool Intersects(Rect rect) => Region.Intersects(PixelRect.FromRect(rect, 1).ToSKRectI());
+    public bool Contains(Point pt) => Region.Contains((int)pt.X, (int)pt.Y);
 }

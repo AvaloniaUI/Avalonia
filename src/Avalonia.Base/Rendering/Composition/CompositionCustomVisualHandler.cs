@@ -10,8 +10,8 @@ namespace Avalonia.Rendering.Composition;
 public abstract class CompositionCustomVisualHandler
 {
     private ServerCompositionCustomVisual? _host;
-    private PooledList<Rect>? _dirtyRects;
     private bool _inRender;
+    private Rect _currentTransformedClip;
 
     public virtual void OnMessage(object message)
     {
@@ -23,9 +23,10 @@ public abstract class CompositionCustomVisualHandler
         
     }
 
-    internal void Render(ImmediateDrawingContext drawingContext)
+    internal void Render(ImmediateDrawingContext drawingContext, Rect currentTransformedClip)
     {
         _inRender = true;
+        _currentTransformedClip = currentTransformedClip;
         try
         {
             OnRender(drawingContext);
@@ -34,11 +35,8 @@ public abstract class CompositionCustomVisualHandler
         {
             _inRender = false;
         }
-
-        _dirtyRects?.Dispose();
-        _dirtyRects = null;
     }
-    
+
     public abstract void OnRender(ImmediateDrawingContext drawingContext);
 
     void VerifyAccess()
@@ -96,26 +94,17 @@ public abstract class CompositionCustomVisualHandler
         _host!.HandlerRegisterForNextAnimationFrameUpdate();
     }
 
-    protected IList<Rect> DirtyRects
+    protected bool RenderClipContains(Point pt)
     {
-        get
-        {
-            VerifyInRender();
-            
-            if (_host?.Root == null)
-                return Array.Empty<Rect>();
-            if (_dirtyRects == null)
-            {
-                if (!_host.GlobalTransformMatrix.TryInvert(out var inverted))
-                    return Array.Empty<Rect>();
-                
-                _dirtyRects = new();
-                foreach (var r in _host.Root.ThisFrameDirtyRects)
-                {
-                    _dirtyRects.Add(r.ToRectWithDpi(1).TransformToAABB(inverted));
-                }
-            }
-            return _dirtyRects;
-        }
+        VerifyInRender();
+        pt *= _host.GlobalTransformMatrix;
+        return _currentTransformedClip.Contains(pt) && _host.Root.DirtyRects.Contains(pt);
+    }
+
+    protected bool RenderClipIntersectes(Rect rc)
+    {
+        VerifyInRender();
+        rc = rc.TransformToAABB(_host.GlobalTransformMatrix);
+        return _currentTransformedClip.Intersects(rc) && _host.Root.DirtyRects.Intersects(rc);
     }
 }

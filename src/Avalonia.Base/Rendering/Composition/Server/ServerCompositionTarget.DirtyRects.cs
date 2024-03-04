@@ -6,7 +6,7 @@ namespace Avalonia.Rendering.Composition.Server;
 
 internal partial class ServerCompositionTarget
 {
-    private readonly IDirtyRectTracker _dirtyRect;
+    public readonly IDirtyRectTracker DirtyRects;
     
     public void AddDirtyRect(Rect rect)
     {
@@ -14,7 +14,7 @@ internal partial class ServerCompositionTarget
             return;
         var snapped = PixelRect.FromRect(SnapToDevicePixels(rect, Scaling), 1);
         DebugEvents?.RectInvalidated(rect);
-        _dirtyRect.AddRect(snapped);
+        DirtyRects.AddRect(snapped);
         _redrawRequested = true;
     }
     
@@ -30,6 +30,6 @@ internal partial class ServerCompositionTarget
                 Math.Ceiling(rect.Right * scale) / scale,
                 Math.Ceiling(rect.Bottom * scale) / scale));
     }
-
-    public IList<PixelRect> ThisFrameDirtyRects => _dirtyRect.Rects;
+    
+    
 }

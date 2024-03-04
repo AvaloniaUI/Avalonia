@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Logging;
 using Avalonia.Media;
@@ -16,15 +17,13 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
         _handler.Attach(this);
     }
 
-    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
+    public void DispatchMessages(List<object> messages)
     {
-        base.DeserializeChangesCore(reader, committedAt);
-        var count = reader.Read<int>();
-        for (var c = 0; c < count; c++)
+        foreach(var message in messages)
         {
             try
             {
-                _handler.OnMessage(reader.ReadObject()!);
+                _handler.OnMessage(message);
             }
             catch (Exception e)
             {
@@ -33,7 +32,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
             }
         }
     }
-
+    
     public void OnTick()
     {
         _wantsNextAnimationFrameAfterTick = false;
@@ -77,7 +76,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
         using var context = new ImmediateDrawingContext(canvas, false);
         try
         {
-            _handler.Render(context);
+            _handler.Render(context, currentTransformedClip);
         }
         catch (Exception e)
         {

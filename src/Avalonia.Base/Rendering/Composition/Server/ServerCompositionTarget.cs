@@ -57,7 +57,7 @@ namespace Avalonia.Rendering.Composition.Server
             _surfaces = surfaces;
             _diagnosticTextRenderer = diagnosticTextRenderer;
             var platformRender = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            _dirtyRect = compositor.Options.UseRegionDirtyRectClipping == true &&
+            DirtyRects = compositor.Options.UseRegionDirtyRectClipping == true &&
                          platformRender?.SupportsRegions == true
                 ? new RegionDirtyRectTracker(platformRender)
                 : new DirtyRectTracker();
@@ -151,7 +151,7 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
             }
 
-            if (_dirtyRect.IsEmpty && !_redrawRequested && !_updateRequested)
+            if (DirtyRects.IsEmpty && !_redrawRequested && !_updateRequested)
                 return;
 
             Revision++;
@@ -183,23 +183,23 @@ namespace Avalonia.Rendering.Composition.Server
                     _layer = null;
                     _layer = targetContext.CreateLayer(PixelSize);
                     _layerSize = PixelSize;
-                    _dirtyRect.AddRect(new PixelRect(_layerSize));
+                    DirtyRects.AddRect(new PixelRect(_layerSize));
                 }
 
-                if (!_dirtyRect.IsEmpty)
+                if (!DirtyRects.IsEmpty)
                 {
                     var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
                                        Compositor.RenderInterface.GpuContext != null;
                     using (var context = _layer.CreateDrawingContext(false))
                     {
-                        using (_dirtyRect.BeginDraw(context))
+                        using (DirtyRects.BeginDraw(context))
                         {
                             context.Clear(Colors.Transparent);
                             if (useLayerClip) 
-                                context.PushLayer(_dirtyRect.CombinedRect.ToRect(1));
+                                context.PushLayer(DirtyRects.CombinedRect.ToRect(1));
                                 
                             
-                            Root.Render(new CompositorDrawingContextProxy(context), null, _dirtyRect);
+                            Root.Render(new CompositorDrawingContextProxy(context), null, DirtyRects);
 
                             if (useLayerClip)
                                 context.PopLayer();
@@ -230,14 +230,14 @@ namespace Avalonia.Rendering.Composition.Server
 
                 RenderedVisuals = 0;
 
-                _dirtyRect.Reset();
+                DirtyRects.Reset();
             }
         }
 
         private void DrawOverlays(IDrawingContextImpl targetContext, Size logicalSize)
         {
             if ((DebugOverlays & RendererDebugOverlays.DirtyRects) != 0) 
-                _dirtyRect.Visualize(targetContext);
+                DirtyRects.Visualize(targetContext);
 
             
             targetContext.Transform = Matrix.CreateScale(Scaling, Scaling);

@@ -14,6 +14,7 @@ internal interface IDirtyRectTracker
     IDisposable BeginDraw(IDrawingContextImpl ctx);
     bool IsEmpty { get; }
     bool Intersects(Rect rect);
+    bool Contains(Point pt);
     void Reset();
     void Visualize(IDrawingContextImpl context);
     PixelRect CombinedRect { get; }
@@ -40,6 +41,8 @@ internal class DirtyRectTracker : IDirtyRectTracker
 
     public bool IsEmpty => _rect.Width == 0 | _rect.Height == 0;
     public bool Intersects(Rect rect) => _doubleRect.Intersects(rect);
+    public bool Contains(Point pt) => _rect.Contains(PixelPoint.FromPoint(pt, 1));
+
     public void Reset() => _rect = default;
     public void Visualize(IDrawingContextImpl context)
     {
@@ -83,6 +86,7 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
 
     public bool IsEmpty => _region.IsEmpty;
     public bool Intersects(Rect rect) => _region.Intersects(rect);
+    public bool Contains(Point pt) => _region.Contains(pt);
 
     public void Reset() => _region.Reset();
 

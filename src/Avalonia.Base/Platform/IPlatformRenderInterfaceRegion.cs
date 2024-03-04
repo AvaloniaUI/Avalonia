@@ -13,4 +13,5 @@ public interface IPlatformRenderInterfaceRegion : IDisposable
     PixelRect Bounds { get; }
     IList<PixelRect> Rects { get; }
     bool Intersects(Rect rect);
+    bool Contains(Point pt);
 }
