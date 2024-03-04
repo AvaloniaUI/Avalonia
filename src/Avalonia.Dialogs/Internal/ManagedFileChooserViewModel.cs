@@ -236,6 +236,7 @@ namespace Avalonia.Dialogs.Internal
 						    }
                         }
                     }
+                    RaisePropertyChanged(nameof(SelectedItems));
                 }
                 finally
                 {
@@ -365,6 +366,14 @@ namespace Avalonia.Dialogs.Internal
                 CancelRequested?.Invoke();
             }
         }
+
+        [Metadata.DependsOn(nameof(FileName))]
+        [Metadata.DependsOn(nameof(Location))]
+        [Metadata.DependsOn(nameof(SelectedItems))]
+        public bool CanOk(object _) =>
+            (_selectingDirectory && !string.IsNullOrWhiteSpace(Location))
+                || (_savingFile && !string.IsNullOrWhiteSpace(FileName))
+                || SelectedItems.Count > 0 && SelectedItems.Where(static s => !string.IsNullOrWhiteSpace(s.Path)).Any();
 
         public void Ok()
         {
