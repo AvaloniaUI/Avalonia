@@ -211,14 +211,15 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     }
 
     /// <inheritdoc />
-    public void Paint(Rect rect)
+    public void Paint(Rect rect) => Paint(rect, true);
+    public void Paint(Rect rect, bool catchExceptions)
     {
         if (_isDisposed)
             return;
 
         QueueUpdate();
         CompositionTarget.RequestRedraw();
-        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget);
+        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget, catchExceptions);
     }
 
     /// <inheritdoc />
