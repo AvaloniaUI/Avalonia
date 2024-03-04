@@ -55,11 +55,11 @@ namespace ControlCatalog.ViewModels
                     {
                         var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
 
-                        if (e.PropertyName == nameof(SystemTitleBarEnabled))
+                        if (SystemTitleBarEnabled)
                         {
                             hints |= ExtendClientAreaChromeHints.SystemChrome;
                         }
-                        if (e.PropertyName == nameof(PreferSystemChromeEnabled))
+                        if (PreferSystemChromeEnabled)
                         {
                             hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
                         }
