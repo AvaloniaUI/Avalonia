@@ -468,8 +468,8 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         private IStorageProvider GetStorageProvider()
         {
             var forceManaged = this.Get<CheckBox>("ForceManaged").IsChecked ?? false;
-            return forceManaged
-                ? new ManagedStorageProvider(GetWindow())
+            return forceManaged 
+                ? new ManagedStorageProvider(GetWindow()) // NOTE: In your production App use 'AppBuilder.UseManagedSystemDialogs()'
                 : GetTopLevel().StorageProvider;
         }
 
