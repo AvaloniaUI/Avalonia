@@ -21,7 +21,9 @@ namespace Avalonia.Skia
         IDrawingContextImplWithEffects
     {
         private IDisposable?[]? _disposables;
-        private readonly Vector _dpi;
+        // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
+        // but does so ignoring the current transform
+        private readonly Vector _intermediateSurfaceDpi;
         private readonly Stack<PaintWrapper> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
@@ -57,7 +59,12 @@ namespace Avalonia.Skia
             public SKSurface? Surface;
 
             /// <summary>
-            /// Dpi of drawings.
+            /// Makes DPI to be applied as a hidden matrix transform
+            /// </summary>
+            public bool ScaleDrawingToDpi;
+            
+            /// <summary>
+            /// Dpi for intermediate surfaces
             /// </summary>
             public Vector Dpi;
 
@@ -180,7 +187,7 @@ namespace Avalonia.Skia
             Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas
                 ?? throw new ArgumentException("Invalid create info - no Canvas provided", nameof(createInfo));
 
-            _dpi = createInfo.Dpi;
+            _intermediateSurfaceDpi = createInfo.Dpi;
             _disposables = disposables;
             _disableSubpixelTextRendering = createInfo.DisableSubpixelTextRendering;
             _grContext = createInfo.GrContext;
@@ -191,10 +198,12 @@ namespace Avalonia.Skia
 
             _session = createInfo.CurrentSession;
 
-            if (!_dpi.NearlyEquals(SkiaPlatform.DefaultDpi))
+            
+            if (createInfo.ScaleDrawingToDpi && !createInfo.Dpi.NearlyEquals(SkiaPlatform.DefaultDpi))
             {
                 _postTransform =
-                    Matrix.CreateScale(_dpi.X / SkiaPlatform.DefaultDpi.X, _dpi.Y / SkiaPlatform.DefaultDpi.Y);
+                    Matrix.CreateScale(createInfo.Dpi.X / SkiaPlatform.DefaultDpi.X,
+                        createInfo.Dpi.Y / SkiaPlatform.DefaultDpi.Y);
             }
 
             Transform = Matrix.Identity;
@@ -527,6 +536,32 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
+        public void DrawRegion(IBrush? brush, IPen? pen, IPlatformRenderInterfaceRegion region)
+        {
+            var r = (SkiaRegionImpl)region;
+            if(r.IsEmpty)
+                return;
+            CheckLease();
+            
+            if (brush != null)
+            {
+                using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRect(1)))
+                {
+                    Canvas.DrawRegion(r.Region, fill.Paint);
+                }
+            }
+
+            if (pen is not null
+                && TryCreatePaint(_strokePaint, pen, r.Bounds.ToRect(1).Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
+            {
+                using (stroke)
+                {
+                    Canvas.DrawRegion(r.Region, stroke.Paint);
+                }
+            }
+        }
+
+        /// <inheritdoc />
         public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
         {
             if (rect.Height <= 0 || rect.Width <= 0)
@@ -591,7 +626,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IDrawingContextLayerImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(PixelSize size)
         {
             CheckLease();
             return CreateRenderTarget(size, true);
@@ -629,8 +664,28 @@ namespace Avalonia.Skia
             SKRoundRectCache.Shared.Return(roundRect);
         }
 
+        public void PushClip(IPlatformRenderInterfaceRegion region)
+        {
+            var r = ((SkiaRegionImpl)region).Region;
+            CheckLease();
+            Canvas.Save();
+            Canvas.ClipRegion(r);
+        }
+
         /// <inheritdoc />
         public void PopClip()
+        {
+            CheckLease();
+            Canvas.Restore();
+        }
+
+        public void PushLayer(Rect bounds)
+        {
+            CheckLease();
+            Canvas.SaveLayer(bounds.ToSKRect(), null!);
+        }
+
+        public void PopLayer()
         {
             CheckLease();
             Canvas.Restore();
@@ -976,15 +1031,16 @@ namespace Avalonia.Skia
         /// <param name="tileBrushImage">Tile brush image.</param>
         private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Rect targetBox, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
-            var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_dpi), targetBox.Size);
-            var intermediate = CreateRenderTarget(calc.IntermediateSize, false);
+            var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi), targetBox.Size);
+            var intermediate = CreateRenderTarget(
+                PixelSize.FromSizeWithDpi(calc.IntermediateSize, _intermediateSurfaceDpi), false);
 
             paintWrapper.AddDisposable(intermediate);
 
-            using (var context = intermediate.CreateDrawingContext())
+            using (var context = intermediate.CreateDrawingContext(true))
             {
                 var sourceRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(96));
-                var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_dpi));
+                var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi));
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
@@ -1028,7 +1084,7 @@ namespace Avalonia.Skia
             SKMatrix.Concat(
                 ref paintTransform,
                 tileTransform,
-                SKMatrix.CreateScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
+                SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
 
             if (tileBrush.Transform is { })
             {
@@ -1066,9 +1122,10 @@ namespace Avalonia.Skia
 
             if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
             {
-                using var intermediate = CreateRenderTarget(intermediateSize, false);
+                using var intermediate = CreateRenderTarget(
+                    PixelSize.FromSizeWithDpi(intermediateSize, _intermediateSurfaceDpi), false);
 
-                using (var ctx = intermediate.CreateDrawingContext())
+                using (var ctx = intermediate.CreateDrawingContext(true))
                 {
                     ctx.RenderOptions = RenderOptions;
                     ctx.Clear(Colors.Transparent);
@@ -1096,7 +1153,7 @@ namespace Avalonia.Skia
             var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
             transform *= calc.IntermediateTransform;
             
-            using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _dpi);
+            using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
             using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
             {
                 ctx.RenderOptions = RenderOptions;
@@ -1127,7 +1184,7 @@ namespace Avalonia.Skia
                         : SKShaderTileMode.Repeat;
 
             paintTransform = SKMatrix.Concat(paintTransform,
-                SKMatrix.CreateScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
+                SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
             
             if (tileBrush.Transform is { })
             {
@@ -1339,18 +1396,18 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create new render target compatible with this drawing context.
         /// </summary>
-        /// <param name="size">The size of the render target in DIPs.</param>
+        /// <param name="pixelSize">The size of the render target.</param>
+        /// <param name="dpi">The DPI of the render target.</param>
         /// <param name="isLayer">Whether the render target is being created for a layer.</param>
         /// <param name="format">Pixel format.</param>
         /// <returns></returns>
-        private SurfaceRenderTarget CreateRenderTarget(Size size, bool isLayer, PixelFormat? format = null)
+        private SurfaceRenderTarget CreateRenderTarget(PixelSize pixelSize, bool isLayer, PixelFormat? format = null)
         {
-            var pixelSize = PixelSize.FromSizeWithDpi(size, _dpi);
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
                 Width = pixelSize.Width,
                 Height = pixelSize.Height,
-                Dpi = _dpi,
+                Dpi = _intermediateSurfaceDpi,
                 Format = format,
                 DisableTextLcdRendering = isLayer ? _disableSubpixelTextRendering : true,
                 GrContext = _grContext,

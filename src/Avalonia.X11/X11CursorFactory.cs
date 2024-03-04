@@ -115,7 +115,7 @@ namespace Avalonia.X11
                
                 using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
                 using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
-                using (var ctx = renderTarget.CreateDrawingContext())
+                using (var ctx = renderTarget.CreateDrawingContext(true))
                 {
                     var r = new Rect(_pixelSize.ToSize(1)); 
                     ctx.DrawBitmap(bitmap, 1, r, r);

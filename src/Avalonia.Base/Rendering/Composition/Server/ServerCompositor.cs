@@ -38,6 +38,7 @@ namespace Avalonia.Rendering.Composition.Server
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
+        public CompositionOptions Options { get; } = AvaloniaLocator.Current.GetService<CompositionOptions>() ?? new();
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
             BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)

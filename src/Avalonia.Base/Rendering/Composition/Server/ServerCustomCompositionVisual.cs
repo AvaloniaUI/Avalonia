@@ -58,6 +58,11 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
     }
 
     internal void HandlerInvalidate() => ValuesInvalidated();
+
+    internal void HandlerInvalidate(Rect rc)
+    {
+        Root?.AddDirtyRect(rc.TransformToAABB(GlobalTransformMatrix));
+    }
     
     internal void HandlerRegisterForNextAnimationFrameUpdate()
     {
@@ -66,12 +71,13 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
             Compositor.AddToClock(this);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+        IDirtyRectTracker dirtyRects)
     {
         using var context = new ImmediateDrawingContext(canvas, false);
         try
         {
-            _handler.OnRender(context);
+            _handler.Render(context);
         }
         catch (Exception e)
         {
