@@ -19,14 +19,12 @@ internal static unsafe class PixelFormatTranscoder
     {
         var pixelCount = srcSize.Width * srcSize.Height;
         var bufferSize = pixelCount * Marshal.SizeOf<Rgba8888Pixel>();
-        var blob = new UnmanagedBlob(bufferSize);
+        using var blob = new UnmanagedBlob(bufferSize);
       
         var pixels = new Span<Rgba8888Pixel>((void*)blob.Address, pixelCount);
 
         PixelFormatReader.Read(pixels, source, srcSize, sourceStride, srcFormat);
 
         PixelFormatWriter.Write(pixels, dest, srcSize, destStride, destFormat, destAlphaFormat, srcAlphaFormat);
-
-        blob.Dispose();
     }
 }
