@@ -296,5 +296,8 @@ namespace Avalonia.Direct2D1
         public bool IsSupportedBitmapPixelFormat(PixelFormat format) =>
             format == PixelFormats.Bgra8888 
             || format == PixelFormats.Rgba8888;
+
+        public bool SupportsRegions => false;
+        public IPlatformRenderInterfaceRegion CreateRegion() => throw new NotSupportedException();
     }
 }
