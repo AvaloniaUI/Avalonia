@@ -9,18 +9,18 @@ namespace Avalonia.Native
     internal class AvaloniaNativeApplicationPlatform : NativeCallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
     {
         public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
-        
+
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
-            ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
+            ((IApplicationPlatformEvents)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
         }
-        
+    
         void IAvnApplicationEvents.UrlsOpened(IAvnStringArray urls)
         {
             // Raise the urls opened event to be compatible with legacy behavior.
-            ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
+            ((IApplicationPlatformEvents)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
 
-            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
             {
                 foreach (var url in urls.ToStringArray())
                 {
@@ -34,7 +34,7 @@ namespace Avalonia.Native
 
         void IAvnApplicationEvents.OnReopen()
         {
-            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
             {
                 lifetime.RaiseActivated(ActivationKind.Reopen);    
             }
@@ -42,7 +42,7 @@ namespace Avalonia.Native
 
         void IAvnApplicationEvents.OnHide()
         {
-            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
             {
                 lifetime.RaiseDeactivated(ActivationKind.Background);    
             }
@@ -50,7 +50,7 @@ namespace Avalonia.Native
 
         void IAvnApplicationEvents.OnUnhide()
         {
-            if (Application.Current?.ApplicationLifetime is MacOSClassicDesktopStyleApplicationLifetime lifetime)
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
             {
                 lifetime.RaiseActivated(ActivationKind.Background);    
             }
