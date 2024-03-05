@@ -190,14 +190,21 @@ namespace Avalonia.Rendering.Composition.Server
                     }
                 }
 
+                targetContext.PushClip(_dirtyRect);
                 targetContext.Clear(Colors.Transparent);
                 targetContext.Transform = Matrix.Identity;
                 if (_layer.CanBlit)
+                {
                     _layer.Blit(targetContext);
+                }
                 else
+                {
                     targetContext.DrawBitmap(_layer, 1,
                         new Rect(_layerSize),
                         new Rect(size));
+                }
+
+                targetContext.PopClip();
 
                 if (DebugOverlays != RendererDebugOverlays.None)
                 {
