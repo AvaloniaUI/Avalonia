@@ -131,13 +131,11 @@ namespace Avalonia.Controls
 
             var bounds = Bounds;
             // Native window is not rendered by Avalonia
-            var position =
-                this.TranslatePoint(
-                    FlowDirection == FlowDirection.RightToLeft ? new Point(Bounds.Width, 0) : default,
-                    _currentRoot);
-            if (position == null)
+            var transformToVisual = this.TransformToVisual(_currentRoot);
+            if (transformToVisual == null)
                 return null;
-            return new Rect(position.Value, bounds.Size);
+            var position = new Rect(default, bounds.Size).TransformToAABB(transformToVisual.Value).Position;
+            return new Rect(position, bounds.Size);
         }
 
         private void EnqueueForMoveResize()
