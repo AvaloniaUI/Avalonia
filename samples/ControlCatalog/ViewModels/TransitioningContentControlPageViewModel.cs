@@ -19,8 +19,6 @@ namespace ControlCatalog.ViewModels
     {
         public TransitioningContentControlPageViewModel()
         {
-            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-
             var images = new string[] 
             { 
                 "delicate-arch-896885_640.jpg", 
@@ -31,7 +29,7 @@ namespace ControlCatalog.ViewModels
             foreach (var image in images)
             {
                 var path = $"avares://ControlCatalog/Assets/{image}";
-                Images.Add(new Bitmap(assetLoader.Open(new Uri(path))));
+                Images.Add(new Bitmap(AssetLoader.Open(new Uri(path))));
             }
 
             SetupTransitions();
@@ -250,7 +248,7 @@ namespace ControlCatalog.ViewModels
                     },
                     Duration = Duration
                 };
-                tasks.Add(animation.RunAsync(from, null, cancellationToken));
+                tasks.Add(animation.RunAsync(from, cancellationToken));
             }
 
             if (to != null)
@@ -280,7 +278,7 @@ namespace ControlCatalog.ViewModels
                     },
                     Duration = Duration
                 };
-                tasks.Add(animation.RunAsync(to, null, cancellationToken));
+                tasks.Add(animation.RunAsync(to, cancellationToken));
             }
 
             await Task.WhenAll(tasks);
