@@ -30,9 +30,10 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new D2DRenderTargetBitmapImpl(bitmapRenderTarget);
         }
 
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
         {
-            return new DrawingContextImpl( this, _renderTarget, null, () => Version++);
+            return new DrawingContextImpl( this, _renderTarget, useScaledDrawing, 
+                null, () => Version++);
         }
 
         public bool IsCorrupted => false;
@@ -60,7 +61,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
         {
             using (var wic = new WicRenderTargetBitmapImpl(PixelSize, Dpi))
             {
-                using (var dc = wic.CreateDrawingContext(null))
+                using (var dc = wic.CreateDrawingContext(true, null))
                 {
                     dc.DrawBitmap(
                         this,

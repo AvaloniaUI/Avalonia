@@ -97,7 +97,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
         {
             _canvas.RestoreToCount(-1);
             _canvas.ResetMatrix();
@@ -106,6 +106,7 @@ namespace Avalonia.Skia
             {
                 Surface = _surface.Surface,
                 Dpi = Dpi,
+                ScaleDrawingToDpi = useScaledDrawing,
                 DisableSubpixelTextRendering = _disableLcdRendering,
                 GrContext = _grContext,
                 Gpu = _gpu,

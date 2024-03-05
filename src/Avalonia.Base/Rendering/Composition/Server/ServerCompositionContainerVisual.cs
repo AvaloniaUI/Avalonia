@@ -16,26 +16,27 @@ namespace Avalonia.Rendering.Composition.Server
         private Rect? _transformedContentBounds;
         private IImmutableEffect? _oldEffect;
         
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+        protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+            IDirtyRectTracker dirtyRects)
         {
-            base.RenderCore(canvas, currentTransformedClip);
+            base.RenderCore(canvas, currentTransformedClip, dirtyRects);
 
             foreach (var ch in Children)
             {
-                ch.Render(canvas, currentTransformedClip);
+                ch.Render(canvas, currentTransformedClip, dirtyRects);
             }
         }
 
-        public override UpdateResult Update(ServerCompositionTarget root)
+        public override UpdateResult Update(ServerCompositionTarget root, Matrix parentCombinedTransform)
         {
-            var (combinedBounds, oldInvalidated, newInvalidated) = base.Update(root);
+            var (combinedBounds, oldInvalidated, newInvalidated) = base.Update(root, parentCombinedTransform);
             foreach (var child in Children)
             {
                 if (child.AdornedVisual != null)
                     root.EnqueueAdornerUpdate(child);
                 else
                 {
-                    var res = child.Update(root);
+                    var res = child.Update(root, GlobalTransformMatrix);
                     oldInvalidated |= res.InvalidatedOld;
                     newInvalidated |= res.InvalidatedNew;
                     combinedBounds = Rect.Union(combinedBounds, res.Bounds);
