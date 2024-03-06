@@ -68,7 +68,12 @@ namespace Avalonia.Rendering.Composition.Server
             if (Clip != null) 
                 canvas.PushGeometryClip(Clip);
             if (OpacityMaskBrush != null)
-                canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
+            {
+                var opacityMaskBounds =
+                    OpacityMaskBounds == default ? new Rect(0, 0, Size.X, Size.Y) : OpacityMaskBounds;
+
+                canvas.PushOpacityMask(OpacityMaskBrush, opacityMaskBounds);
+            }
 
             canvas.RenderOptions = RenderOptions;
 

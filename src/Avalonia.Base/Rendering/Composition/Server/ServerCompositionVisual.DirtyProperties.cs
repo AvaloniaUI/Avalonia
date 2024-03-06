@@ -5,7 +5,7 @@ partial class ServerCompositionVisual
     protected bool IsDirtyComposition;
     private bool _combinedTransformDirty;
     private bool _clipSizeDirty;
-    
+
     private const CompositionVisualChangedFields CompositionFieldsMask
         = CompositionVisualChangedFields.Opacity
           | CompositionVisualChangedFields.OpacityAnimated
@@ -14,7 +14,8 @@ partial class ServerCompositionVisual
           | CompositionVisualChangedFields.ClipToBounds
           | CompositionVisualChangedFields.ClipToBoundsAnimated
           | CompositionVisualChangedFields.Size
-          | CompositionVisualChangedFields.SizeAnimated;
+          | CompositionVisualChangedFields.SizeAnimated
+          | CompositionVisualChangedFields.OpacityMaskBounds;
 
     private const CompositionVisualChangedFields CombinedTransformFieldsMask =
         CompositionVisualChangedFields.Size
