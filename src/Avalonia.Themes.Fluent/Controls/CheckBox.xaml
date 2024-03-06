@@ -12,6 +12,8 @@
     </Border>
   </Design.PreviewWith>
 
+  <StreamGeometry x:Key="CheckMarkPathData">M5.5 10.586 1.707 6.793A1 1 0 0 0 .293 8.207l4.5 4.5a1 1 0 0 0 1.414 0l11-11A1 1 0 0 0 15.793.293L5.5 10.586Z</StreamGeometry>
+  
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
     <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
@@ -55,7 +57,7 @@
               </Panel>
             </Viewbox>
           </Grid>
-          <ContentPresenter x:Name="ContentPresenter"
+          <ContentPresenter x:Name="PART_ContentPresenter"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
                           Margin="{TemplateBinding Padding}"
@@ -144,7 +146,7 @@
 
       <Style Selector="^ /template/ Path#CheckGlyph">
         <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundChecked}" />
-        <Setter Property="Data" Value="M1507 31L438 1101L-119 543L-29 453L438 919L1417 -59L1507 31Z" />
+        <Setter Property="Data" Value="{StaticResource CheckMarkPathData}" />
         <Setter Property="Width" Value="9" />
         <Setter Property="Opacity" Value="1" />
       </Style>

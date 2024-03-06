@@ -6,7 +6,9 @@
     <IsPackable>False</IsPackable>
     <NoWarn>$(NoWarn);CS0649;CS0169;SYSLIB0011</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <!-- See https://github.com/nuke-build/nuke/issues/818 -->
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
     <!-- Necessary for Microsoft.DotNet.GenAPI.Tool -->
     <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8-transport/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
@@ -25,8 +27,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[7.0.305]" />
-    <PackageDownload Include="Microsoft.DotNet.GenAPI.Tool" Version="[8.0.101-servicing.23580.12]" />
+    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[8.0.200]" />
+    <PackageDownload Include="Microsoft.DotNet.GenAPI.Tool" Version="[8.0.300-preview.24115.44]" />
   </ItemGroup>
 
   <ItemGroup>

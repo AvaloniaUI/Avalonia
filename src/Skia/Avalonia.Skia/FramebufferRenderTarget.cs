@@ -37,7 +37,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool scaleDrawingToDpi)
         {
             if (_renderTarget == null)
                 throw new ObjectDisposedException(nameof(FramebufferRenderTarget));
@@ -58,7 +58,8 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi
+                Dpi = framebuffer.Dpi,
+                ScaleDrawingToDpi = scaleDrawingToDpi
             };
 
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);

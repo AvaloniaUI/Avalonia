@@ -1,7 +1,8 @@
 namespace Avalonia
 {
     /// <summary>
-    /// Interface for named elements.
+    /// Objects implementing this interface and providing a value for <see cref="Name"/> will be registered in the 
+    /// relevant namescope when constructed in XAML.
     /// </summary>
     public interface INamed
     {

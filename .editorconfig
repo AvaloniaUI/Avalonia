@@ -212,6 +212,12 @@ indent_size = 2
 avalonia_xaml_diagnostic.AVLN2203.severity = error
 # StyleInMergedDictionaries
 avalonia_xaml_diagnostic.AVLN2204.severity = error
+# RequiredTemplatePartMissing
+avalonia_xaml_diagnostic.AVLN2205.severity = error
+# OptionalTemplatePartMissing
+avalonia_xaml_diagnostic.AVLN2206.severity = info
+# TemplatePartWrongType
+avalonia_xaml_diagnostic.AVLN2207.severity = error
 # Obsolete
 avalonia_xaml_diagnostic.AVLN5001.severity = error
 

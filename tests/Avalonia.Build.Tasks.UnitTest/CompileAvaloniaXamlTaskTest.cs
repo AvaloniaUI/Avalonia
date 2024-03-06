@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using Microsoft.Build.Utilities;
 using Xunit;
 
 namespace Avalonia.Build.Tasks.UnitTest;
@@ -13,19 +15,16 @@ public class CompileAvaloniaXamlTaskTest
     {
         using var engine = UnitTestBuildEngine.Start();
         var basePath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath), "Assets");
-        var originalAssemblyPath = Path.Combine(basePath,
-            "PInvoke.dll");
-        var referencesPath = Path.Combine(basePath,
-                "PInvoke.dll.refs");
-        var compiledAssemblyPath = "PInvoke.dll";
+        var assembly = new TaskItem(Path.Combine(basePath, "PInvoke.dll"));
+        assembly.SetMetadata(CompileAvaloniaXamlTask.AvaloniaCompileOutputMetadataName, Path.Combine(basePath, "Avalonia", Path.GetFileName(assembly.ItemSpec)));
+        var references = File.ReadAllLines(Path.Combine(basePath, "PInvoke.dll.refs")).Select(p => new TaskItem(p)).ToArray();
 
-        Assert.True(File.Exists(originalAssemblyPath), $"The original {originalAssemblyPath} don't exists.");
+        Assert.True(File.Exists(assembly.ItemSpec), $"The original {assembly.ItemSpec} don't exist.");
 
         new CompileAvaloniaXamlTask()
         {
-            AssemblyFile = originalAssemblyPath,
-            ReferencesFilePath = referencesPath,
-            OutputPath = compiledAssemblyPath,
+            AssemblyFile = assembly,
+            References = references,
             RefAssemblyFile = null,
             BuildEngine = engine,
             ProjectDirectory = Directory.GetCurrentDirectory(),

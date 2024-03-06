@@ -127,7 +127,10 @@ namespace Avalonia.Win32.Input
 
                 if (himc != IntPtr.Zero)
                 {
-                    _ignoreComposition = true;
+                    if (IsComposing)
+                    {
+                        _ignoreComposition = true;
+                    }
 
                     if (_parent != null)
                     {

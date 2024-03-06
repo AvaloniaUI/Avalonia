@@ -181,6 +181,7 @@ namespace Avalonia.Direct2D1
 
             public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => _platform.CreateRenderTarget(surfaces);
             public bool IsLost => false;
+            public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) =>
@@ -295,5 +296,8 @@ namespace Avalonia.Direct2D1
         public bool IsSupportedBitmapPixelFormat(PixelFormat format) =>
             format == PixelFormats.Bgra8888 
             || format == PixelFormats.Rgba8888;
+
+        public bool SupportsRegions => false;
+        public IPlatformRenderInterfaceRegion CreateRegion() => throw new NotSupportedException();
     }
 }

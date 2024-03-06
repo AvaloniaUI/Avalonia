@@ -51,8 +51,7 @@ namespace ControlCatalog.Pages
 
         private static Bitmap LoadBitmap(string uri)
         {
-            var assets = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-            return new Bitmap(assets.Open(new Uri(uri)));
+            return new Bitmap(AssetLoader.Open(new Uri(uri)));
         }
     }
 }

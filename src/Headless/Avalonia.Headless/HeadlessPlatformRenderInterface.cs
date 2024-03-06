@@ -33,6 +33,8 @@ namespace Avalonia.Headless
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
         public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
+        public bool SupportsRegions => false;
+        public IPlatformRenderInterfaceRegion CreateRegion() => throw new NotSupportedException();
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -60,6 +62,7 @@ namespace Avalonia.Headless
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
         public bool IsLost => false;
+        public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
         public object? TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
@@ -397,7 +400,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext()
+            public IDrawingContextImpl CreateDrawingContext(bool _)
             {
                 return new HeadlessDrawingContextStub();
             }
@@ -453,7 +456,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextLayerImpl CreateLayer(Size size)
+            public IDrawingContextLayerImpl CreateLayer(PixelSize size)
             {
                 return new HeadlessBitmapStub(size, new Vector(96, 96));
             }
@@ -463,9 +466,22 @@ namespace Avalonia.Headless
 
             }
 
+            public void PushClip(IPlatformRenderInterfaceRegion region)
+            {
+                
+            }
+
             public void PopClip()
             {
 
+            }
+
+            public void PushLayer(Rect bounds)
+            {
+            }
+
+            public void PopLayer()
+            {
             }
 
             public void PushOpacity(double opacity, Rect? rect)
@@ -540,6 +556,11 @@ namespace Avalonia.Headless
                 
             }
 
+            public void DrawRegion(IBrush? brush, IPen? pen, IPlatformRenderInterfaceRegion region)
+            {
+                
+            }
+
             public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
             {
             }
@@ -572,7 +593,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext()
+            public IDrawingContextImpl CreateDrawingContext(bool _)
             {
                 return new HeadlessDrawingContextStub();
             }
