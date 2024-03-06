@@ -134,20 +134,13 @@ namespace Avalonia.Animation
             var tasks = new List<Task>();
             using (var disposables = new CompositeDisposable(1))
             {
-                if (to != null)
-                {
-                    disposables.Add(to.SetValue(Visual.OpacityProperty, 0, Data.BindingPriority.Animation)!);
-                }
-
                 if (from != null)
                 {
-                    from.Opacity = 0f;
                     tasks.Add(_fadeOutAnimation.RunAsync(from, null, cancellationToken));
                 }
 
                 if (to != null)
                 {
-                    to.Opacity = 1f;
                     to.IsVisible = true;
                     tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
                 }
