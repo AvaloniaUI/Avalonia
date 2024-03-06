@@ -6,8 +6,7 @@ namespace Avalonia.Native;
 
 #nullable enable
 
-internal class MacOSClassicDesktopStyleApplicationLifetime : ClassicDesktopStyleApplicationLifetime,
-    IActivatableApplicationLifetime
+internal class MacOSActivatableLifetime : IActivatableLifetime
 {
     /// <inheritdoc />
     public event EventHandler<ActivatedEventArgs>? Activated;

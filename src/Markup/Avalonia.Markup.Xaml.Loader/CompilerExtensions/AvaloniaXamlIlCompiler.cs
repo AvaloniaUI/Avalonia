@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -29,6 +30,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             void InsertBefore<T>(params IXamlAstTransformer[] t)
                 => Transformers.InsertRange(Transformers.FindIndex(x => x is T), t);
 
+            void InsertBeforeMany(Type[] types, params IXamlAstTransformer[] t)
+                => Transformers.InsertRange(types
+                    .Select(type => Transformers.FindIndex(x => x.GetType() == type))
+                    .Min(), t);
 
             // Before everything else
 
@@ -69,10 +74,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertAfter<TypeReferenceResolver>(
                 new XDataTypeTransformer());
 
-            InsertBefore<DeferredContentTransformer>(
-                new AvaloniaXamlIlDeferredResourceTransformer()
-            );
-
             // After everything else
             InsertBefore<NewObjectTransformer>(
                 new AddNameScopeRegistration(),
@@ -81,6 +82,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlBindingPathTransformer(),
                 new AvaloniaXamlIlCompiledBindingsMetadataRemover()
                 );
+
+            InsertBeforeMany(new [] { typeof(DeferredContentTransformer), typeof(AvaloniaXamlIlCompiledBindingsMetadataRemover) },
+                new AvaloniaXamlIlDeferredResourceTransformer());
 
             Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());

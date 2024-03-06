@@ -217,8 +217,7 @@ namespace Avalonia
         private static ClassicDesktopStyleApplicationLifetime PrepareLifetime(AppBuilder builder, string[] args,
             Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder)
         {
-            var lifetime = builder.LifetimeOverride?.Invoke(typeof(ClassicDesktopStyleApplicationLifetime)) as ClassicDesktopStyleApplicationLifetime 
-                ?? new ClassicDesktopStyleApplicationLifetime();
+            var lifetime = new ClassicDesktopStyleApplicationLifetime();
             lifetime.SubscribeGlobalEvents();
 
             lifetime.Args = args;

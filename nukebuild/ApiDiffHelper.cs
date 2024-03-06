@@ -52,7 +52,7 @@ public static class ApiDiffHelper
                     e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
                 if (targetDll is null)
                 {
-                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
+                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm) && (t.package is null || packageId == t.package)).newTfm is {} newTfm)
                     {
                         targetTfm = newTfm;
                         targetDll = targetDlls.FirstOrDefault(e =>
@@ -107,13 +107,17 @@ public static class ApiDiffHelper
         }
     }
 
-    private static readonly (string oldTfm, string newTfm)[] s_tfmRedirects = new[]
+    private static readonly (string package, string oldTfm, string newTfm)[] s_tfmRedirects = new[]
     {
-        // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1)
-        ("net6.0-android", "net7.0-android"),
-        ("net6.0-ios", "net7.0-ios"),
-        // Designer was moved from netcoreapp to netstandard 
-        ("netcoreapp2.0", "netstandard2.0")
+        // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1).
+        ("Avalonia.Android", "net6.0-android", "net8.0-android"),
+        ("Avalonia.iOS", "net6.0-ios", "net8.0-ios"),
+        // Browser was changed from net7.0 to net8.0-browser. 
+        ("Avalonia.Browser", "net7.0", "net8.0-browser"),
+        ("Avalonia.Browser.Blazor", "net7.0", "net8.0-browser"),
+        // Designer was moved from netcoreapp to netstandard.
+        ("Avalonia", "netcoreapp2.0", "netstandard2.0"),
+        ("Avalonia", "net461", "netstandard2.0")
     };
 
     public static async Task ValidatePackage(
@@ -154,7 +158,7 @@ public static class ApiDiffHelper
                     e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
                 if (targetDll?.entry is null)
                 {
-                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm)).newTfm is {} newTfm)
+                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm) && (t.package is null || packageId == t.package)).newTfm is {} newTfm)
                     {
                         targetTfm = newTfm;
                         targetDll = targetDlls.FirstOrDefault(e =>
@@ -171,8 +175,15 @@ public static class ApiDiffHelper
 
                 if (targetDll?.entry is null)
                 {
+                    if (packageId == "Avalonia"
+                        && baselineDll.target is "net461" or "netcoreapp2.0")
+                    {
+                        // In 11.1 we have removed net461 and netcoreapp2.0 targets from Avalonia package.
+                        continue;
+                    }
+                    
                     var actualTargets = string.Join(", ",
-                        targetDlls.Select(d => $"{d.target} ({baselineDll.entry.Name})"));
+                        targetDlls.Select(d => $"{d.target} ({d.entry.Name})"));
                     throw new InvalidOperationException(
                         $"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}."
                         + $"\r\nActual targets: {actualTargets}.");

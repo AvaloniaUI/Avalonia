@@ -38,6 +38,7 @@ internal class PictureRenderTarget : IDisposable
         var createInfo = new DrawingContextImpl.CreateInfo
         {
             Canvas = canvas,
+            ScaleDrawingToDpi = true,
             Dpi = _dpi,
             DisableSubpixelTextRendering = true,
             GrContext = _grContext,

@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0-android33</TargetFramework>
+    <TargetFramework>$(AvsCurrentAndroidTargetFramework)</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <DebugType>portable</DebugType>
     <AndroidResgenNamespace>Avalonia.Android.Internal</AndroidResgenNamespace>
   </PropertyGroup>

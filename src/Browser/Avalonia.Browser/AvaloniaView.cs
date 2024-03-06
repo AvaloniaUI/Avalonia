@@ -454,7 +454,7 @@ namespace Avalonia.Browser
 
             if (_topLevel.Renderer is CompositingRenderer dr)
             {
-                MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget);
+                MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget, true);
             }
         }
 
