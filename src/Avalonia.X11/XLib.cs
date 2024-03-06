@@ -604,7 +604,7 @@ namespace Avalonia.X11
         public static extern IntPtr XcursorImageLoadCursor(IntPtr display, IntPtr image);
 
         [DllImport(libXCursor)]
-        public static extern IntPtr XcursorImageDestroy(IntPtr image);
+        public static extern void XcursorImageDestroy(IntPtr image);
 
         public static void XISetMask(ref int mask, XiEventType ev)
         {
