@@ -2,7 +2,6 @@
   "solution": {
     "path": "Avalonia.sln",
     "projects": [
-      "external\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator.csproj",
       "packages\\Avalonia\\Avalonia.csproj",
       "samples\\AppWithoutLifetime\\AppWithoutLifetime.csproj",
       "samples\\ControlCatalog.NetCore\\ControlCatalog.NetCore.csproj",
