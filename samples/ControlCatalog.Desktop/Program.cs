@@ -33,9 +33,7 @@ namespace ControlCatalog
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {
-            AvaloniaLocator.CurrentMutable
-                .GetRequiredService<IAssetLoader>()
-                .SetDefaultAssembly(typeof(App).Assembly);
+            AssetLoader.SetDefaultAssembly(typeof(App).Assembly);
         }
     }
 }

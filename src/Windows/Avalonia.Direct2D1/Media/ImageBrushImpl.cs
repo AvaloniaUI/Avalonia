@@ -98,7 +98,7 @@ namespace Avalonia.Direct2D1.Media
                 CompatibleRenderTargetOptions.None,
                 calc.IntermediateSize.ToSharpDX());
 
-            using (var context = new RenderTarget(result).CreateDrawingContext())
+            using (var context = new RenderTarget(result).CreateDrawingContext(true))
             {
                 var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
                 var rect = new Rect(bitmap.PixelSize.ToSizeWithDpi(dpi));

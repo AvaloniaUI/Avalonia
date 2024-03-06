@@ -120,7 +120,7 @@ namespace Avalonia.Direct2D1.RenderTests
                     root.Initialize(renderer, target);
                     renderer.Start();
                     Dispatcher.UIThread.RunJobs();
-                    timer.TriggerTick();
+                    renderer.Paint(new Rect(root.Bounds.Size), false);
                 }
                 writableBitmap.Save(compositedPath);
             }

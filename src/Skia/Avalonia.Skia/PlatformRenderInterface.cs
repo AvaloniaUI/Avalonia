@@ -50,6 +50,9 @@ namespace Avalonia.Skia
             || format == PixelFormats.Bgra8888
             || format == PixelFormats.Rgba8888;
 
+        public bool SupportsRegions => true;
+        public IPlatformRenderInterfaceRegion CreateRegion() => new SkiaRegionImpl();
+
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);

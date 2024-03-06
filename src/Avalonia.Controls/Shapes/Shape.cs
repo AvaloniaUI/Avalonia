@@ -254,7 +254,7 @@ namespace Avalonia.Controls.Shapes
                     InvalidateMeasure();
                 }
                 
-                if (!Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin))
+                if (Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin))
                 {
                     InvalidateVisual();
                 }

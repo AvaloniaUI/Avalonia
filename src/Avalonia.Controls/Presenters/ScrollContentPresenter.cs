@@ -634,8 +634,6 @@ namespace Avalonia.Controls.Presenters
 
             offset = new Vector(offset.X + xDistance, offset.Y + yDistance);
 
-            System.Diagnostics.Debug.WriteLine($"{offset}");
-
             _scrollGestureSnapPoints.Add(e.Id, SnapOffset(offset));
 
             double GetDistance(double speed)
@@ -692,7 +690,7 @@ namespace Avalonia.Controls.Presenters
                     x = Math.Min(x, Extent.Width - Viewport.Width);
                 }
 
-                Vector newOffset = SnapOffset(new Vector(x, y));
+                Vector newOffset = SnapOffset(new Vector(x, y), delta, true);
 
                 bool offsetChanged = newOffset != Offset;
                 SetCurrentValue(OffsetProperty, newOffset);
@@ -930,67 +928,64 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private Vector SnapOffset(Vector offset)
+        private Vector SnapOffset(Vector offset, Vector direction = default, bool snapToNext = false)
         {
             var scrollable = GetScrollSnapPointsInfo(Content);
 
-            if(scrollable is null)
+            if (scrollable is null || (VerticalSnapPointsType == SnapPointsType.None && HorizontalSnapPointsType == SnapPointsType.None))
                 return offset;
 
-            var diff = GetAlignedDiff();
+            var diff = GetAlignmentDiff();
 
-            if (VerticalSnapPointsType != SnapPointsType.None)
+            if (VerticalSnapPointsType != SnapPointsType.None && (_areVerticalSnapPointsRegular || _verticalSnapPoints?.Count > 0) && (!snapToNext || snapToNext && direction.Y != 0))
             {
-                offset = new Vector(offset.X, offset.Y + diff.Y);
-                double nearestSnapPoint = offset.Y;
+                var estimatedOffset = new Vector(offset.X, offset.Y + diff.Y);
+                double previousSnapPoint = 0, nextSnapPoint = 0, midPoint = 0;
 
                 if (_areVerticalSnapPointsRegular)
                 {
-                    var minSnapPoint = (int)(offset.Y / _verticalSnapPoint) * _verticalSnapPoint + _verticalSnapPointOffset;
-                    var maxSnapPoint = minSnapPoint + _verticalSnapPoint;
-                    var midPoint = (minSnapPoint + maxSnapPoint) / 2;
-
-                    nearestSnapPoint = offset.Y < midPoint ? minSnapPoint : maxSnapPoint;
+                    previousSnapPoint = (int)(estimatedOffset.Y / _verticalSnapPoint) * _verticalSnapPoint + _verticalSnapPointOffset;
+                    nextSnapPoint = previousSnapPoint + _verticalSnapPoint;
+                    midPoint = (previousSnapPoint + nextSnapPoint) / 2;
                 }
-                else if (_verticalSnapPoints != null && _verticalSnapPoints.Count > 0)
+                else if (_verticalSnapPoints?.Count > 0)
                 {
-                    var higherSnapPoint = FindNearestSnapPoint(_verticalSnapPoints, offset.Y, out var lowerSnapPoint);
-                    var midPoint = (lowerSnapPoint + higherSnapPoint) / 2;
-
-                    nearestSnapPoint = offset.Y < midPoint ? lowerSnapPoint : higherSnapPoint;
+                    (previousSnapPoint, nextSnapPoint) = FindNearestSnapPoint(_verticalSnapPoints, estimatedOffset.Y);
+                    midPoint = (previousSnapPoint + nextSnapPoint) / 2;
                 }
+
+                var nearestSnapPoint = snapToNext ? (direction.Y > 0 ? previousSnapPoint : nextSnapPoint ) :
+                    estimatedOffset.Y < midPoint ? previousSnapPoint : nextSnapPoint;
 
                 offset = new Vector(offset.X, nearestSnapPoint - diff.Y);
             }
 
-            if (HorizontalSnapPointsType != SnapPointsType.None)
+            if (HorizontalSnapPointsType != SnapPointsType.None && (_areHorizontalSnapPointsRegular || _horizontalSnapPoints?.Count > 0) && (!snapToNext || snapToNext && direction.X != 0))
             {
-                offset = new Vector(offset.X + diff.X, offset.Y);
-                double nearestSnapPoint = offset.X;
+                var estimatedOffset = new Vector(offset.X + diff.X, offset.Y);
+                double previousSnapPoint = 0, nextSnapPoint = 0, midPoint = 0;
 
                 if (_areHorizontalSnapPointsRegular)
                 {
-                    var minSnapPoint = (int)(offset.X / _horizontalSnapPoint) * _horizontalSnapPoint + _horizontalSnapPointOffset;
-                    var maxSnapPoint = minSnapPoint + _horizontalSnapPoint;
-                    var midPoint = (minSnapPoint + maxSnapPoint) / 2;
-
-                    nearestSnapPoint = offset.X < midPoint ? minSnapPoint : maxSnapPoint;
+                    previousSnapPoint = (int)(estimatedOffset.X / _horizontalSnapPoint) * _horizontalSnapPoint + _horizontalSnapPointOffset;
+                    nextSnapPoint = previousSnapPoint + _horizontalSnapPoint;
+                    midPoint = (previousSnapPoint + nextSnapPoint) / 2;
                 }
-                else if (_horizontalSnapPoints != null && _horizontalSnapPoints.Count > 0)
+                else if (_horizontalSnapPoints?.Count > 0)
                 {
-                    var higherSnapPoint = FindNearestSnapPoint(_horizontalSnapPoints, offset.X, out var lowerSnapPoint);
-                    var midPoint = (lowerSnapPoint + higherSnapPoint) / 2;
-
-                    nearestSnapPoint = offset.X < midPoint ? lowerSnapPoint : higherSnapPoint;
+                    (previousSnapPoint, nextSnapPoint) = FindNearestSnapPoint(_horizontalSnapPoints, estimatedOffset.X);
+                    midPoint = (previousSnapPoint + nextSnapPoint) / 2;
                 }
+
+                var nearestSnapPoint = snapToNext ? (direction.X > 0 ? previousSnapPoint : nextSnapPoint) : 
+                    estimatedOffset.X < midPoint ? previousSnapPoint : nextSnapPoint;
 
                 offset = new Vector(nearestSnapPoint - diff.X, offset.Y);
-
             }
 
-            Vector GetAlignedDiff()
+            Vector GetAlignmentDiff()
             {
-                var vector = offset;
+                var vector = default(Vector);
 
                 switch (VerticalSnapPointsAlignment)
                 {
@@ -1010,31 +1005,33 @@ namespace Avalonia.Controls.Presenters
                     case SnapPointsAlignment.Far:
                         vector += new Vector(Viewport.Width, 0);
                         break;
-                }                
+                }
 
-                return vector - offset;
+                return vector;
             }
 
             return offset;
         }
 
-        private static double FindNearestSnapPoint(IReadOnlyList<double> snapPoints, double value, out double lowerSnapPoint)
+        private static (double previous, double next) FindNearestSnapPoint(IReadOnlyList<double> snapPoints, double value)
         {
             var point = snapPoints.BinarySearch(value, Comparer<double>.Default);
+
+            double previousSnapPoint, nextSnapPoint;
 
             if (point < 0)
             {
                 point = ~point;
 
-                lowerSnapPoint = snapPoints[Math.Max(0, point - 1)];
+                previousSnapPoint = snapPoints[Math.Max(0, point - 1)];
+                nextSnapPoint = point >= snapPoints.Count ? snapPoints.Last() : snapPoints[Math.Max(0, point)];
             }
             else
             {
-                lowerSnapPoint = snapPoints[point];
-
-                point += 1;
+                previousSnapPoint = nextSnapPoint = snapPoints[Math.Max(0, point)];
             }
-            return snapPoints[Math.Min(point, snapPoints.Count - 1)];
+
+            return (previousSnapPoint, nextSnapPoint);
         }
 
         private IScrollSnapPointsInfo? GetScrollSnapPointsInfo(object? content)

@@ -16,7 +16,8 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        IDrawingContextImpl CreateDrawingContext();
+        /// <param name="useScaledDrawing">Apply DPI reported by the render target as a hidden transform matrix</param>
+        IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing);
         
         /// <summary>
         /// Indicates if the render target is no longer usable and needs to be recreated
