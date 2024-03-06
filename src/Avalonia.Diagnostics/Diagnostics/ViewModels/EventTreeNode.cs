@@ -66,7 +66,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
-            if (sender is Visual v && v.IsBelongsToDevTool())
+            if (sender is Visual v && v.DoesBelongToDevTool())
                 return;
 
             var s = sender!;
@@ -101,7 +101,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
-            if (e.Source is Visual v && v.IsBelongsToDevTool())
+            if (e.Source is Visual v && v.DoesBelongToDevTool())
                 return;
 
             var s = e.Source;

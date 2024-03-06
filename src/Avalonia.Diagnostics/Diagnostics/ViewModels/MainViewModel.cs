@@ -267,10 +267,9 @@ namespace Avalonia.Diagnostics.ViewModels
             _currentFocusHighlightAdorner?.Dispose();
             if (FocusHighlighter is IBrush brush
                 && element is InputElement input
-                && !input.IsBelongsToDevTool()
+                && !input.DoesBelongToDevTool()
                 )
             {
-
                 _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(input, brush);
             }
         }

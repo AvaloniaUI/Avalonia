@@ -145,7 +145,7 @@ namespace Avalonia.Diagnostics
             s_open.Remove((IDevToolsTopLevelGroup)window.Tag!);
         }
 
-        public static bool IsBelongsToDevTool(this Visual v)
+        internal static bool DoesBelongToDevTool(this Visual v)
         {
             var topLevel = TopLevel.GetTopLevel(v);
 
