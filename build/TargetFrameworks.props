@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <AvsCurrentTargetFramework>net8.0</AvsCurrentTargetFramework>
+    <AvsCurrentWindowsTargetFramework>$(AvsCurrentTargetFramework)-windows</AvsCurrentWindowsTargetFramework>
+    <AvsCurrentAndroidTargetFramework>$(AvsCurrentTargetFramework)-android34</AvsCurrentAndroidTargetFramework>
+    <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios17.0</AvsCurrentIOSTargetFramework>
+    <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos17</AvsCurrentTvOSTargetFramework>
+    <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
+    <AvsCurrentTizenTargetFramework>$(AvsCurrentTargetFramework)-tizen</AvsCurrentTizenTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
+    <AvsLegacyTargetFrameworks>net6.0</AvsLegacyTargetFrameworks>
+    <AvsLegacyWindowsTargetFrameworks>net6.0-windows</AvsLegacyWindowsTargetFrameworks>
+  </PropertyGroup>
+</Project>

@@ -42,9 +42,9 @@ namespace Avalonia.iOS
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
-            var builder = AppBuilder.Configure<TApp>().UseiOS();
+            var builder = AppBuilder.Configure<TApp>().UseiOS(this);
 
-            var lifetime = new SingleViewLifetime(this);
+            var lifetime = new SingleViewLifetime();
 
             builder.AfterSetup(_ =>
             {

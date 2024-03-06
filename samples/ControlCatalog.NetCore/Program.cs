@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
 using ControlCatalog.Pages;
@@ -129,6 +130,10 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true
+                })
+                .With(new CompositionOptions()
+                {
+                    UseRegionDirtyRectClipping = true
                 })
                 .UseSkia()
                 .WithInterFont()

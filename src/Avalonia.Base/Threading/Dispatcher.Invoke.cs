@@ -656,7 +656,7 @@ public partial class Dispatcher
         {
             InvokeImpl(new SendOrPostCallbackDispatcherOperation(this, priority.Value, action, arg, true),
                 CancellationToken.None,
-                default);
+                TimeSpan.FromMilliseconds(-1));
         }
     }
 

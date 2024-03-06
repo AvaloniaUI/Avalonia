@@ -60,9 +60,13 @@ namespace Avalonia.LinuxFramebuffer
 
             var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
 
+            var timer = opts.ShouldRenderOnUIThread
+                ? new UiThreadRenderTimer(opts.Fps)
+                : new DefaultRenderTimer(opts.Fps);
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
+                .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()

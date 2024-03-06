@@ -110,8 +110,8 @@ public static class ApiDiffHelper
     private static readonly (string oldTfm, string newTfm)[] s_tfmRedirects = new[]
     {
         // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1)
-        ("net6.0-android", "net7.0-android"),
-        ("net6.0-ios", "net7.0-ios"),
+        ("net6.0-android", "net8.0-android"),
+        ("net6.0-ios", "net8.0-ios"),
         // Designer was moved from netcoreapp to netstandard 
         ("netcoreapp2.0", "netstandard2.0")
     };
@@ -171,8 +171,15 @@ public static class ApiDiffHelper
 
                 if (targetDll?.entry is null)
                 {
+                    if (packageId == "Avalonia"
+                        && baselineDll.target is "net461" or "netcoreapp2.0")
+                    {
+                        // In 11.1 we have removed net461 and netcoreapp2.0 targets from Avalonia package.
+                        continue;
+                    }
+                    
                     var actualTargets = string.Join(", ",
-                        targetDlls.Select(d => $"{d.target} ({baselineDll.entry.Name})"));
+                        targetDlls.Select(d => $"{d.target} ({d.entry.Name})"));
                     throw new InvalidOperationException(
                         $"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}."
                         + $"\r\nActual targets: {actualTargets}.");

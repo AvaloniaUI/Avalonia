@@ -3,7 +3,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
-using Avalonia.Reactive;
 using System;
 using System.ComponentModel.DataAnnotations;
 using Avalonia;
@@ -50,28 +49,28 @@ namespace ControlCatalog.ViewModels
                 WindowState.FullScreen,
             };
 
-            this.WhenAnyValue(x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeEnabled)
-                .Subscribe(x =>
+            this.PropertyChanged += (s, e) =>
                 {
-                    var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
-
-                    if(x.Item1)
+                    if (e.PropertyName is nameof(SystemTitleBarEnabled) or nameof(PreferSystemChromeEnabled))
                     {
-                        hints |= ExtendClientAreaChromeHints.SystemChrome;
-                    }
+                        var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
 
-                    if(x.Item2)
-                    {
-                        hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
+                        if (SystemTitleBarEnabled)
+                        {
+                            hints |= ExtendClientAreaChromeHints.SystemChrome;
+                        }
+                        if (PreferSystemChromeEnabled)
+                        {
+                            hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
+                        }
+                        ChromeHints = hints;
                     }
-
-                    ChromeHints = hints;
-                });
+                };
 
             SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
         }        
-
+        
         public ExtendClientAreaChromeHints ChromeHints
         {
             get { return _chromeHints; }

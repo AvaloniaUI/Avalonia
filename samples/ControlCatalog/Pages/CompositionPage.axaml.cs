@@ -24,7 +24,7 @@ public partial class CompositionPage : UserControl
 
     public CompositionPage()
     {
-        AvaloniaXamlLoader.Load(this);
+        InitializeComponent();
         AttachAnimatedSolidVisual(this.FindControl<Control>("SolidVisualHost")!);
         AttachCustomVisual(this.FindControl<Control>("CustomVisualHost")!);
     }
@@ -206,6 +206,7 @@ public partial class CompositionPage : UserControl
             _customVisual = compositor.CreateCustomVisual(new CustomVisualHandler());
             ElementComposition.SetElementChildVisual(v, _customVisual);
             _customVisual.SendHandlerMessage(CustomVisualHandler.StartMessage);
+            PreciseDirtyRectsCheckboxCustomVisualChanged(this, new());
             Update();
         };
         
@@ -221,16 +222,24 @@ public partial class CompositionPage : UserControl
         private TimeSpan _animationElapsed;
         private TimeSpan? _lastServerTime;
         private bool _running;
+        private bool _preciseDirtyRects;
 
-        public static readonly object StopMessage = new(), StartMessage = new();
-        
-        public override void OnRender(ImmediateDrawingContext drawingContext)
+        public static readonly object StopMessage = new(),
+            StartMessage = new(),
+            UsePreciseDirtyRects = new(),
+            UseNonPreciseDirtyRects = new();
+
+        private List<(Point center, double size, ImmutableSolidColorBrush brush)> _ellipses = new();
+
+        void UpdateRects()
         {
             if (_running)
             {
                 if (_lastServerTime.HasValue) _animationElapsed += (CompositionNow - _lastServerTime.Value);
                 _lastServerTime = CompositionNow;
             }
+            
+            _ellipses.Clear();
             
             const int cnt = 20;
             var maxPointSizeX = EffectiveSize.X / (cnt * 1.6);
@@ -250,16 +259,22 @@ public partial class CompositionPage : UserControl
                 var posY = (EffectiveSize.Y - pointSize) * (1 + Math.Sin(stage * 3.14 * 3 + sinOffset)) / 2 + pointSize / 2;
                 var opacity = Math.Sin(stage * 3.14);
 
-
-                drawingContext.DrawEllipse(new ImmutableSolidColorBrush(Color.FromArgb(
-                        255, 
-                        (byte)(255 - 255 * colorStage),
-                        (byte)(255 * Math.Abs(0.5 - colorStage) * 2), 
-                        (byte)(255 * colorStage)
-                    ), opacity), null,
-                    new Point(posX, posY), pointSize / 2, pointSize / 2);
+                _ellipses.Add((new Point(posX, posY), pointSize / 2, new ImmutableSolidColorBrush(Color.FromArgb(
+                    255,
+                    (byte)(255 - 255 * colorStage),
+                    (byte)(255 * Math.Abs(0.5 - colorStage) * 2),
+                    (byte)(255 * colorStage)
+                ), opacity)));
             }
+        }
+        
+        public override void OnRender(ImmediateDrawingContext drawingContext)
+        {
+            if (_ellipses.Count == 0)
+                UpdateRects();
             
+            foreach(var e in _ellipses)
+                drawingContext.DrawEllipse(e.brush, null, e.center, e.size, e.size);
         }
 
         public override void OnMessage(object message)
@@ -272,13 +287,29 @@ public partial class CompositionPage : UserControl
             }
             else if (message == StopMessage)
                 _running = false;
+            else if (message == UsePreciseDirtyRects)
+                _preciseDirtyRects = true;
+            else if (message == UseNonPreciseDirtyRects)
+                _preciseDirtyRects = false;
         }
 
+        void InvalidateCurrentEllipseRects()
+        {
+            foreach (var e in _ellipses)
+                Invalidate(new Rect(e.center.X - e.size, e.center.Y - e.size, e.size * 2, e.size * 2));
+        }
+        
         public override void OnAnimationFrameUpdate()
         {
             if (_running)
             {
-                Invalidate();
+                if (_preciseDirtyRects)
+                    InvalidateCurrentEllipseRects();
+                else
+                    Invalidate();
+                UpdateRects();
+                if(_preciseDirtyRects)
+                    InvalidateCurrentEllipseRects();
                 RegisterForNextAnimationFrameUpdate();
             }
         }
@@ -297,6 +328,13 @@ public partial class CompositionPage : UserControl
     private void ButtonStopCustomVisual(object? sender, RoutedEventArgs e)
     {
         _customVisual?.SendHandlerMessage(CustomVisualHandler.StopMessage);
+    }
+
+    private void PreciseDirtyRectsCheckboxCustomVisualChanged(object sender, RoutedEventArgs e)
+    {
+        _customVisual?.SendHandlerMessage(PreciseDirtyRectsCheckboxCustomVisual?.IsChecked == true
+            ? CustomVisualHandler.UsePreciseDirtyRects
+            : CustomVisualHandler.UseNonPreciseDirtyRects);
     }
 }
 
