@@ -19,7 +19,7 @@ namespace ControlCatalog
             ctl.Cursor = new Cursor(cursor);
             ctl.PointerPressed += (i, e) =>
             {
-                PlatformImpl?.BeginResizeDrag(edge, e);
+                BeginResizeDrag(edge, e);
             };
         }
 
@@ -28,7 +28,7 @@ namespace ControlCatalog
             AvaloniaXamlLoader.Load(this);
             this.Get<Control>("TitleBar").PointerPressed += (i, e) =>
             {
-                PlatformImpl?.BeginMoveDrag(e);
+                BeginMoveDrag(e);
             };
             SetupSide("Left", StandardCursorType.LeftSide, WindowEdge.West);
             SetupSide("Right", StandardCursorType.RightSide, WindowEdge.East);
