@@ -132,25 +132,23 @@ namespace Avalonia.Animation
             }
 
             var tasks = new List<Task>();
-            using (var disposables = new CompositeDisposable(1))
+
+            if (from != null)
             {
-                if (from != null)
-                {
-                    tasks.Add(_fadeOutAnimation.RunAsync(from, null, cancellationToken));
-                }
+                tasks.Add(_fadeOutAnimation.RunAsync(from, null, cancellationToken));
+            }
 
-                if (to != null)
-                {
-                    to.IsVisible = true;
-                    tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
-                }
+            if (to != null)
+            {
+                to.IsVisible = true;
+                tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
+            }
 
-                await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks);
 
-                if (from != null && !cancellationToken.IsCancellationRequested)
-                {
-                    from.IsVisible = false;
-                }
+            if (from != null && !cancellationToken.IsCancellationRequested)
+            {
+                from.IsVisible = false;
             }
         }
 
