@@ -76,9 +76,13 @@ namespace Avalonia.Native
                 var dialog = new AboutAvaloniaDialog();
 
                 if (Application.Current is
-                    { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { MainWindow: { } mainWindow } })
+                    { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { MainWindow: { IsVisible: true } mainWindow } })
                 {
                     await dialog.ShowDialog(mainWindow);   
+                }
+                else
+                {
+                    dialog.Show();
                 }
             };
             
