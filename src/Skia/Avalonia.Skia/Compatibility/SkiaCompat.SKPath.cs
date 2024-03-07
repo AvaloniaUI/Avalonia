@@ -1,29 +1,24 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using SkiaSharp;
 
 namespace Avalonia.Skia;
 
-internal static unsafe partial class SkiaCompat
+internal static partial class SkiaCompat
 {
-    private static readonly delegate* managed<SKPath, in SKMatrix, void> s_pathTransform;
-
-    public static void CTransform(this SKPath path, in SKMatrix matrix) => s_pathTransform(path, matrix);
-
-    private static delegate* managed<SKPath, in SKMatrix, void> GetPathTransform(bool isSkiaSharp3)
+    public static void Transform(SKPath path, in SKMatrix matrix)
     {
-        if (isSkiaSharp3)
+        if (s_isSkiaSharp3)
         {
 #if NET8_0_OR_GREATER
-            return &NewPathTransform;
+            NewPathTransform(path, matrix);
 #else
             throw UnsupportedException();
 #endif
         }
         else
         {
-            return &LegacyCall;
+            LegacyCall(path, matrix);
 
             static void LegacyCall(SKPath path, in SKMatrix matrix) =>
                 path.Transform(matrix);

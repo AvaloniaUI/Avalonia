@@ -20,7 +20,8 @@ namespace Avalonia.Skia
             var matrix = transform.ToSKMatrix();
 
             var transformedPath = StrokePath =  source.StrokePath.Clone();
-            transformedPath?.CTransform(in matrix);
+            if (transformedPath is not null)
+                SkiaCompat.Transform(transformedPath, matrix);
 
             Bounds = transformedPath?.TightBounds.ToAvaloniaRect() ?? default;
             
@@ -29,7 +30,7 @@ namespace Avalonia.Skia
             else if (source.FillPath != null)
             {
                 FillPath = transformedPath = source.FillPath.Clone();
-                transformedPath.CTransform(in matrix);
+                SkiaCompat.Transform(transformedPath, matrix);
             }
         }
 

@@ -1,19 +1,11 @@
 using System;
-using System.Runtime.CompilerServices;
 using SkiaSharp;
 
 namespace Avalonia.Skia;
 
-internal static unsafe partial class SkiaCompat
+internal static partial class SkiaCompat
 {
-    static SkiaCompat()
-    {
-        var isSkiaSharp3 = typeof(SKPath).Assembly.GetName().Version?.Major == 3;
-        s_canvasSetMatrix = GetCanvasSetMatrix(isSkiaSharp3);
-        s_pathTransform = GetPathTransform(isSkiaSharp3);
-        s_sk3FilterBlur = GetSKImageFilterCreateBlur(isSkiaSharp3);
-        s_sk3FilterDropShadow = GetSKImageFilterCreateDropShadow(isSkiaSharp3);
-    }
+    private static readonly bool s_isSkiaSharp3 = typeof(SKPaint).Assembly.GetName().Version?.Major == 3;
 
 #if !NET8_0_OR_GREATER
     private static Exception UnsupportedException()

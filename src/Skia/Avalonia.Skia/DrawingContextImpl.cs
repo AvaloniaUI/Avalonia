@@ -139,7 +139,7 @@ namespace Avalonia.Skia
                 {
                     if (!_isDisposed)
                     {
-                        _context.Canvas.CSetMatrix(_revertTransform);
+                        SkiaCompat.SetMatrix(_context.Canvas, _revertTransform);
                         _context._leased = false;
                         _isDisposed = true;
                     }
@@ -853,7 +853,7 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                Canvas.CSetMatrix(transform.ToSKMatrix());
+                SkiaCompat.SetMatrix(Canvas, transform.ToSKMatrix());
             }
         }
 
