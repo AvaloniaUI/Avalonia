@@ -82,19 +82,17 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
         }
     }
-    
-    
-    
+
     public unsafe class DrmResources
     {
-        public List<DrmConnector> Connectors { get; }= new List<DrmConnector>();
+        public List<DrmConnector> Connectors { get; } = new List<DrmConnector>();
         internal Dictionary<uint, DrmEncoder> Encoders { get; } = new Dictionary<uint, DrmEncoder>();
         public DrmResources(int fd, bool connectorsForceProbe = false)
         {
             var res = drmModeGetResources(fd);
             if (res == null)
                 throw new Win32Exception("drmModeGetResources failed");
-            
+
             var crtcs = new drmModeCrtc[res->count_crtcs];
             for (var c = 0; c < res->count_crtcs; c++)
             {
@@ -102,22 +100,20 @@ namespace Avalonia.LinuxFramebuffer.Output
                 crtcs[c] = *crtc;
                 drmModeFreeCrtc(crtc);
             }
-            
+
             for (var c = 0; c < res->count_encoders; c++)
             {
                 var enc = drmModeGetEncoder(fd, res->encoders[c]);
                 Encoders[res->encoders[c]] = new DrmEncoder(*enc, crtcs);
                 drmModeFreeEncoder(enc);
             }
-            
+
             for (var c = 0; c < res->count_connectors; c++)
             {
                 var conn = connectorsForceProbe ? drmModeGetConnector(fd, res->connectors[c]) : drmModeGetConnectorCurrent(fd, res->connectors[c]);
                 Connectors.Add(new DrmConnector(conn));
                 drmModeFreeConnector(conn);
             }
-
-
         }
 
         internal void Dump()
@@ -138,38 +134,39 @@ namespace Avalonia.LinuxFramebuffer.Output
                 Print(2, "Modes");
                 foreach (var m in conn.Modes)
                     Print(3, $"{m.Name} {(m.IsPreferred ? "PREFERRED" : "")}");
-
-
             }
         }
     }
-    
+
     public unsafe class DrmCard : IDisposable
     {
         public int Fd { get; private set; }
         public DrmCard(string path = null)
         {
-            if(path == null)
+            if (path == null)
             {
                 var files = Directory.GetFiles("/dev/dri/");
 
-                foreach(var file in files) 
+                foreach (var file in files)
                 {
                     var match = Regex.Match(file, "card[0-9]+");
 
-                    if(match.Success)
+                    if (match.Success)
                     {
                         Fd = open(file, 2, 0);
-                        if(Fd != -1) break; 
-                    }    
+                        if (Fd != -1)
+                            break;
+                    }
                 }
 
-                if(Fd == -1) throw new Win32Exception("Couldn't open /dev/dri/card[0-9]+");
+                if (Fd == -1)
+                    throw new Win32Exception("Couldn't open /dev/dri/card[0-9]+");
             }
-            else 
+            else
             {
                 Fd = open(path, 2, 0);
-                if(Fd == -1) throw new Win32Exception($"Couldn't open {path}");
+                if (Fd == -1)
+                    throw new Win32Exception($"Couldn't open {path}");
             }
         }
 
