@@ -10,9 +10,9 @@ internal static unsafe partial class SkiaCompat
     private static readonly delegate* managed<SKCanvas, in SKMatrix, void> s_canvasSetMatrix;
     public static void CSetMatrix(this SKCanvas canvas, in SKMatrix matrix) => s_canvasSetMatrix(canvas, matrix);
 
-    private static delegate* managed<SKCanvas, in SKMatrix, void> GetCanvasSetMatrix()
+    private static delegate* managed<SKCanvas, in SKMatrix, void> GetCanvasSetMatrix(bool isSkiaSharp3)
     {
-        if (IsSkiaSharp3)
+        if (isSkiaSharp3)
         {
 #if NET8_0_OR_GREATER
             return &NewCanvasSetMatrix;

@@ -15,9 +15,9 @@ internal static unsafe partial class SkiaCompat
     public static SKImageFilter CreateDropShadow(float dropOffsetX, float dropOffsetY, float sigma, float f, SKColor color)
         => s_sk3FilterDropShadow(dropOffsetX, dropOffsetY, sigma, f, color);
 
-    private static delegate* managed<float, float, SKImageFilter> GetSKImageFilterCreateBlur()
+    private static delegate* managed<float, float, SKImageFilter> GetSKImageFilterCreateBlur(bool isSkiaSharp3)
     {
-        if (IsSkiaSharp3)
+        if (isSkiaSharp3)
         {
 #if NET8_0_OR_GREATER
             return &NewSKImageFilterCreateBlur;
@@ -34,9 +34,9 @@ internal static unsafe partial class SkiaCompat
         }
     }
 
-    private static delegate* managed<float, float, float, float, SKColor, SKImageFilter> GetSKImageFilterCreateDropShadow()
+    private static delegate* managed<float, float, float, float, SKColor, SKImageFilter> GetSKImageFilterCreateDropShadow(bool isSkiaSharp3)
     {
-        if (IsSkiaSharp3)
+        if (isSkiaSharp3)
         {
 #if NET8_0_OR_GREATER
             return &NewSKImageFilterCreateDropShadow;

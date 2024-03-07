@@ -6,14 +6,13 @@ namespace Avalonia.Skia;
 
 internal static unsafe partial class SkiaCompat
 {
-    private static bool IsSkiaSharp3 { get; } = typeof(SKPath).Assembly.GetName().Version?.Major == 3;
-
     static SkiaCompat()
     {
-        s_canvasSetMatrix = GetCanvasSetMatrix();
-        s_pathTransform = GetPathTransform();
-        s_sk3FilterBlur = GetSKImageFilterCreateBlur();
-        s_sk3FilterDropShadow = GetSKImageFilterCreateDropShadow();
+        var isSkiaSharp3 = typeof(SKPath).Assembly.GetName().Version?.Major == 3;
+        s_canvasSetMatrix = GetCanvasSetMatrix(isSkiaSharp3);
+        s_pathTransform = GetPathTransform(isSkiaSharp3);
+        s_sk3FilterBlur = GetSKImageFilterCreateBlur(isSkiaSharp3);
+        s_sk3FilterDropShadow = GetSKImageFilterCreateDropShadow(isSkiaSharp3);
     }
 
 #if !NET8_0_OR_GREATER

@@ -11,9 +11,9 @@ internal static unsafe partial class SkiaCompat
 
     public static void CTransform(this SKPath path, in SKMatrix matrix) => s_pathTransform(path, matrix);
 
-    private static delegate* managed<SKPath, in SKMatrix, void> GetPathTransform()
+    private static delegate* managed<SKPath, in SKMatrix, void> GetPathTransform(bool isSkiaSharp3)
     {
-        if (IsSkiaSharp3)
+        if (isSkiaSharp3)
         {
 #if NET8_0_OR_GREATER
             return &NewPathTransform;
