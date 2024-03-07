@@ -248,7 +248,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         /// <remarks>
         /// Resize the surface vertically so that it is completely unconstrained.
         /// </remarks>
-        ResizeY = 16,
+        ResizeY = 32,
 
         All = SlideX|SlideY|FlipX|FlipY|ResizeX|ResizeY
     }
