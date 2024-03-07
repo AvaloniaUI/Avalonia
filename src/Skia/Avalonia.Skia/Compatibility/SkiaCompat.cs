@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using SkiaSharp;
 
@@ -14,4 +15,11 @@ internal static unsafe partial class SkiaCompat
         s_sk3FilterBlur = GetSKImageFilterCreateBlur();
         s_sk3FilterDropShadow = GetSKImageFilterCreateDropShadow();
     }
+
+#if !NET8_0_OR_GREATER
+    private static Exception UnsupportedException()
+    {
+        return new InvalidOperationException("Avalonia doesn't support SkiaSharp 3.0 on .NET 7 and older. Please upgrade to .NET 8.");
+    }
+#endif
 }

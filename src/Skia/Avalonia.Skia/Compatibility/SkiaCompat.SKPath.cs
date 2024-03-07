@@ -11,9 +11,6 @@ internal static unsafe partial class SkiaCompat
 
     public static void CTransform(this SKPath path, in SKMatrix matrix) => s_pathTransform(path, matrix);
 
-#if !NET8_0_OR_GREATER
-    [DynamicDependency("Transform(SkiaSharp.SKMatrix)", typeof(SKPath))]
-#endif
     private static delegate* managed<SKPath, in SKMatrix, void> GetPathTransform()
     {
         if (IsSkiaSharp3)
@@ -21,8 +18,7 @@ internal static unsafe partial class SkiaCompat
 #if NET8_0_OR_GREATER
             return &NewPathTransform;
 #else
-            var method = typeof(SKPath).GetMethod("Transform", new[] { typeof(SKMatrix).MakeByRefType() })!;
-            return (delegate* managed<SKPath, in SKMatrix, void>)method.MethodHandle.GetFunctionPointer();
+            throw UnsupportedException();
 #endif
         }
         else

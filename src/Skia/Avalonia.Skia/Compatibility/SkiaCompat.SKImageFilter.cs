@@ -15,9 +15,6 @@ internal static unsafe partial class SkiaCompat
     public static SKImageFilter CreateDropShadow(float dropOffsetX, float dropOffsetY, float sigma, float f, SKColor color)
         => s_sk3FilterDropShadow(dropOffsetX, dropOffsetY, sigma, f, color);
 
-#if !NET8_0_OR_GREATER
-    [DynamicDependency("CreateBlur(System.Single,System.Single)", typeof(SKImageFilter))]
-#endif
     private static delegate* managed<float, float, SKImageFilter> GetSKImageFilterCreateBlur()
     {
         if (IsSkiaSharp3)
@@ -25,8 +22,7 @@ internal static unsafe partial class SkiaCompat
 #if NET8_0_OR_GREATER
             return &NewSKImageFilterCreateBlur;
 #else
-            var method = typeof(SKImageFilter).GetMethod("CreateBlur", new[] { typeof(float), typeof(float) })!;
-            return (delegate* managed<float, float, SKImageFilter>)method.MethodHandle.GetFunctionPointer();
+            throw UnsupportedException();
 #endif
         }
         else
@@ -37,10 +33,7 @@ internal static unsafe partial class SkiaCompat
                 SKImageFilter.CreateBlur(sigmaX, sigmaY);
         }
     }
-    
-#if !NET8_0_OR_GREATER
-    [DynamicDependency("CreateDropShadow(System.Single,System.Single,System.Single,System.Single,SkiaSharp.SKColor)", typeof(SKImageFilter))]
-#endif
+
     private static delegate* managed<float, float, float, float, SKColor, SKImageFilter> GetSKImageFilterCreateDropShadow()
     {
         if (IsSkiaSharp3)
@@ -48,10 +41,7 @@ internal static unsafe partial class SkiaCompat
 #if NET8_0_OR_GREATER
             return &NewSKImageFilterCreateDropShadow;
 #else
-            var method = typeof(SKImageFilter).GetMethod("CreateDropShadow",
-                new[] { typeof(float), typeof(float), typeof(float), typeof(float), typeof(SKColor) })!;
-            return (delegate* managed<float, float, float, float, SKColor, SKImageFilter>)method
-                .MethodHandle.GetFunctionPointer();
+            throw UnsupportedException();
 #endif
         }
         else
