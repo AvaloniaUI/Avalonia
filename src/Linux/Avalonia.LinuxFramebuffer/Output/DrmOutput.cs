@@ -52,16 +52,29 @@ namespace Avalonia.LinuxFramebuffer.Output
         
         public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions options = null)
         {
-            if(options != null) 
+            if (options != null)
                 _outputOptions = options;
-            
+
             var card = new DrmCard(path);
 
             var resources = card.GetResources(connectorsForceProbe);
 
+            IEnumerable<DrmConnector> connectors = resources.Connectors;
+
+            if (options?.ConnectorType is { } connectorType)
+            {
+                connectors = connectors.Where(static (c, a) => c.ConnectorType == a, connectorType);
+            }
+
+            if (options?.ConnectorType_Id is { } connectorType_Id)
+            {
+                connectors = connectors.Where(static (c, a) => c.ConnectorType_Id == a, connectorType_Id);
+            }
+
             var connector =
-                resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
-            if(connector == null)
+                connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
+
+            if (connector == null)
                 throw new InvalidOperationException("Unable to find connected DRM connector");
 
             DrmModeInfo mode = null;

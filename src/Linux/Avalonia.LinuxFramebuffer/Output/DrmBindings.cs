@@ -1,7 +1,8 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
@@ -9,6 +10,7 @@ using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
 namespace Avalonia.LinuxFramebuffer.Output
 {
+    [DebuggerDisplay("{Name}")]
     public unsafe class DrmConnector
     {
         private static string[] KnownConnectorTypes =
@@ -25,18 +27,21 @@ namespace Avalonia.LinuxFramebuffer.Output
         internal uint EncoderId { get; }
         internal List<uint> EncoderIds { get; } = new List<uint>();
         public List<DrmModeInfo> Modes { get; } = new List<DrmModeInfo>();
+        public DrmConnectorType ConnectorType { get; }
+        public uint ConnectorType_Id { get; }
         internal DrmConnector(drmModeConnector* conn)
         {
             Connection = conn->connection;
             Id = conn->connector_id;
             SizeMm = new Size(conn->mmWidth, conn->mmHeight);
             SubPixel = conn->subpixel;
-            for (var c = 0; c < conn->count_encoders;c++) 
+            for (var c = 0; c < conn->count_encoders; c++)
                 EncoderIds.Add(conn->encoders[c]);
             EncoderId = conn->encoder_id;
-            for(var c=0; c<conn->count_modes; c++)
+            for (var c = 0; c < conn->count_modes; c++)
                 Modes.Add(new DrmModeInfo(ref conn->modes[c]));
-
+            ConnectorType = (DrmConnectorType)conn->connector_type;
+            ConnectorType_Id = conn->connector_type_id;
             if (conn->connector_type > KnownConnectorTypes.Length - 1)
                 Name = $"Unknown({conn->connector_type})-{conn->connector_type_id}";
             else
