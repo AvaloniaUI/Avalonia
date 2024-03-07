@@ -912,7 +912,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(oldValue != newValue);
             Debug.Assert(oldValue is not null || newValue is not null);
 
-            // If the value is set locally, propagaton ends here.
+            // If the value is set locally, propagation ends here.
             if (_effectiveValues.ContainsKey(property) == true)
                 return;
 
