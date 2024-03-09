@@ -13,14 +13,14 @@ namespace ControlCatalog.Pages
 
         private void FilterItem(object? sender, FunctionItemFilter.FilterEventArgs e)
         {
-            if (string.IsNullOrEmpty(SearchBox.Text))
+            if (e.FilterState is not string { Length: > 0 } searchText)
             {
                 e.Accept = true;
             }
             else
             {
                 var item = (ItemModel)e.Item!;
-                e.Accept = item.IsFavorite || item.ID.ToString().Contains(SearchBox.Text);
+                e.Accept = item.IsFavorite || item.ID.ToString().Contains(searchText);
             }
         }
 
