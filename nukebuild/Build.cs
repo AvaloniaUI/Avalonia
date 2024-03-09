@@ -160,9 +160,9 @@ partial class Build : NukeBuild
             File.WriteAllText(versionFile, currentBuildVersion);
 
             var prIdFile = Path.Combine(Parameters.VersionOutputDir, "prId.txt");
-            var prId = Environment.GetEnvironmentVariable("System_PullRequest_PullRequestNumber");
+            var prId = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
             Console.WriteLine("PR Number  is: " + prId);
-            File.WriteAllText(versionFile, prIdFile);
+            File.WriteAllText(prIdFile, prId);
         });
 
     void RunCoreTest(string projectName)
