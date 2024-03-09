@@ -150,6 +150,14 @@ partial class Build : NukeBuild
             );
         });
 
+    Target OutputVersion => _ => _
+        .Requires(() => VersionOutput)
+        .Executes(() =>
+        {
+            var currentBuildVersion = Parameters.Version;
+            File.WriteAllText(Parameters.VersionOutput, currentBuildVersion);
+        });
+
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");

@@ -25,9 +25,12 @@ public partial class Build
 
     [Parameter(Name = "api-baseline")]
     public string ApiValidationBaseline { get; set; }
-    
+
     [Parameter(Name = "update-api-suppression")]
     public bool? UpdateApiValidationSuppression { get; set; }
+
+    [Parameter(Name = "version-output")]
+    public AbsolutePath VersionOutput { get; set; }
 
     public class BuildParameters
     {
@@ -70,6 +73,7 @@ public partial class Build
         public string ApiValidationBaseline { get; }
         public bool UpdateApiValidationSuppression { get; }
         public AbsolutePath ApiValidationSuppressionFiles { get; }
+        public AbsolutePath VersionOutput { get; }
 
         public BuildParameters(Build b, bool isPackingToLocalCache)
         {
@@ -146,6 +150,7 @@ public partial class Build
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
             ApiValidationSuppressionFiles = RootDirectory / "api";
+            VersionOutput = b.VersionOutput;
         }
 
         string GetVersion()
