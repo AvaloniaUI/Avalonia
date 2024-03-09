@@ -11,12 +11,20 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
+        $Namespace = @{ msbuild = "http://schemas.microsoft.com/developer/msbuild/2003" }
+        $versionBase = Select-Xml -Path build\SharedVersion.props  -XPath /msbuild:Project/msbuild:PropertyGroup/msbuild:Version -Namespace $Namespace |ForEach-Object {$_.Node.Innerxml}
+        Write-Host "Base Version Number  is:-" $versionBase
+
         $prId = $env:System_PullRequest_PullRequestNumber
         Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
 
         if (!([string]::IsNullOrWhiteSpace($prId)))
         {
           Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
+        }
+        if (!([string]::IsNullOrWhiteSpace($versionBase)))
+        {
+          Set-Content -Path $env:Build_ArtifactStagingDirectory\versionBase.txt -Value $versionBase
         }
       
   - task: PublishBuildArtifacts@1
