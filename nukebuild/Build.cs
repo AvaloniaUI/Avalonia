@@ -150,6 +150,21 @@ partial class Build : NukeBuild
             );
         });
 
+    Target OutputVersion => _ => _
+        .Requires(() => VersionOutputDir)
+        .Executes(() =>
+        {
+            var versionFile = Path.Combine(Parameters.VersionOutputDir, "version.txt");
+            var currentBuildVersion = Parameters.Version;
+            Console.WriteLine("Version is: " + currentBuildVersion);
+            File.WriteAllText(versionFile, currentBuildVersion);
+
+            var prIdFile = Path.Combine(Parameters.VersionOutputDir, "prId.txt");
+            var prId = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
+            Console.WriteLine("PR Number  is: " + prId);
+            File.WriteAllText(prIdFile, prId);
+        });
+
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
