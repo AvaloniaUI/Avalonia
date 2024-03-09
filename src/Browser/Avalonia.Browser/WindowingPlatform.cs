@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
@@ -43,7 +44,8 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
-            .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+            .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+            .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
 
         if (AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() is { } options
             && options.RegisterAvaloniaServiceWorker)

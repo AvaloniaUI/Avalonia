@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.iOS;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -45,13 +47,15 @@ namespace Avalonia
 
     public static class IOSApplicationExtensions
     {
-        public static AppBuilder UseiOS(this AppBuilder builder)
+        public static AppBuilder UseiOS(this AppBuilder builder, IAvaloniaAppDelegate appDelegate)
         {
             return builder
                 .UseStandardRuntimePlatformSubsystem()
-                .UseWindowingSubsystem(iOS.Platform.Register, "iOS")
+                .UseWindowingSubsystem(() => iOS.Platform.Register(appDelegate), "iOS")
                 .UseSkia();
         }
+
+        public static AppBuilder UseiOS(this AppBuilder builder) => UseiOS(builder, null!);
     }
 }
 
@@ -64,7 +68,7 @@ namespace Avalonia.iOS
         public static DisplayLinkTimer? Timer;
         internal static Compositor? Compositor { get; private set; }
 
-        public static void Register()
+        public static void Register(IAvaloniaAppDelegate? appDelegate)
         {
             Options = AvaloniaLocator.Current.GetService<iOSPlatformOptions>() ?? new iOSPlatformOptions();
 
@@ -82,6 +86,12 @@ namespace Avalonia.iOS
                 .Bind<IRenderTimer>().ToConstant(Timer)
                 .Bind<IDispatcherImpl>().ToConstant(DispatcherImpl.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
+
+            if (appDelegate is not null)
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IActivatableLifetime>().ToConstant(new ActivatableLifetime(appDelegate));
+            }
 
             Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);

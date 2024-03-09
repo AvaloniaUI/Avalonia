@@ -8,14 +8,8 @@ internal record GLInfo(int ContextId, uint FboId, int Stencils, int Samples, int
 
 internal static partial class CanvasHelper
 {
-
-    [DllImport("libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    static extern JSObject InterceptGLObject();
-
     public static GLInfo InitialiseGL(JSObject canvas, Action renderFrameCallback)
     {
-        InterceptGLObject();
-
         var info = InitGL(canvas, canvas.GetPropertyAsString("id")!, renderFrameCallback);
 
         var glInfo = new GLInfo(

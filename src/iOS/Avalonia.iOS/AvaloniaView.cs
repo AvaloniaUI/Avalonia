@@ -98,6 +98,7 @@ namespace Avalonia.iOS
 #endif
             if (l is CAMetalLayer metalLayer)
             {
+                metalLayer.Opaque = false;
                 _topLevelImpl.Surfaces = new[] { new Metal.MetalPlatformSurface(metalLayer, this) };
             }
         }

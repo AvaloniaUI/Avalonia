@@ -1269,7 +1269,7 @@ namespace Avalonia.Win32
                     var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
                     var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                    if (!style.HasFlag(WindowStyles.WS_SIZEFRAME))
+                    if (!style.HasFlag(WindowStyles.WS_THICKFRAME))
                     {
                         // When calling SetWindowPos on a maximized window it automatically adjusts
                         // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
@@ -1406,16 +1406,16 @@ namespace Avalonia.Win32
 
                 if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
                 {
-                    style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_THICKFRAME;
                     style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
                 else
                 {
-                    style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_THICKFRAME;
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1423,7 +1423,7 @@ namespace Avalonia.Win32
                 }
                 else
                 {
-                    style &= ~fullDecorationFlags;
+                    style &= ~(fullDecorationFlags | WindowStyles.WS_THICKFRAME);
 
                     if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
                     {

@@ -126,6 +126,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Named_Item_Is_Added_To_Resources_Should_Not_Be_Deferred()
+        {
+            // Since Named items can be accessed through the NameScope, we cannot delay their initialization.
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <Panel x:Name='MyPanel' x:Key='MyPanel' />
+    </Window.Resources>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var resources = (ResourceDictionary)window.Resources;
+
+                Assert.False(resources.ContainsDeferredKey("MyPanel"));
+                Assert.True(resources.ContainsKey("MyPanel"));
+                Assert.IsType<Panel>(window.Find<Panel>("MyPanel"));
+            }
+        }
+
+        [Fact]
         public void Item_Is_Added_To_Window_MergedDictionaries_As_Deferred()
         {
             using (StyledWindow())

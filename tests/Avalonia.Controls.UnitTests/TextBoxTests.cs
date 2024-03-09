@@ -1406,7 +1406,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager()
+        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Measure()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -1425,6 +1425,29 @@ namespace Avalonia.Controls.UnitTests
                 AdornerLayer.SetAdornedElement(adorner, button);
 
                 root.Measure(Size.Infinity);
+            }
+        }
+
+        [Fact]
+        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Arrange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var button = new Button();
+                var visualLayerManager = new VisualLayerManager() { Child = button };
+                var root = new TestRoot()
+                {
+                    Child = visualLayerManager
+                };
+                var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
+                var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+
+                root.Measure(new Size(10, 10));
+
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, button);
+
+                root.Arrange(new Rect(0, 0, 10, 10));
             }
         }
 
