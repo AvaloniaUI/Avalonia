@@ -1397,7 +1397,6 @@ namespace Avalonia.Skia
         /// Create new render target compatible with this drawing context.
         /// </summary>
         /// <param name="pixelSize">The size of the render target.</param>
-        /// <param name="dpi">The DPI of the render target.</param>
         /// <param name="isLayer">Whether the render target is being created for a layer.</param>
         /// <param name="format">Pixel format.</param>
         /// <returns></returns>
