@@ -12,6 +12,9 @@ using Avalonia.Threading;
 
 namespace Avalonia
 {
+    /// <summary>
+    /// Represents the rendering mode for platform graphics.
+    /// </summary>
     public enum iOSRenderingMode
     {
         /// <summary>
@@ -25,6 +28,9 @@ namespace Avalonia
         Metal
     }
 
+    /// <summary>
+    /// iOS backend options.
+    /// </summary>
     public class iOSPlatformOptions
     {
         /// <summary>
@@ -35,7 +41,7 @@ namespace Avalonia
         /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
         public IReadOnlyList<iOSRenderingMode> RenderingMode { get; set; } = new[]
         {
-            iOSRenderingMode.OpenGl, iOSRenderingMode.Metal
+            iOSRenderingMode.Metal, iOSRenderingMode.OpenGl
         };
     }
 
