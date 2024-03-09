@@ -14,7 +14,7 @@ jobs:
   - task: CmdLine@2
     displayName: 'Run Build'
     inputs:
-        script: ./build.sh --target OutputVersion --version-output=$(Build.ArtifactStagingDirectory)
+        script: ./build.sh --target OutputVersion --version-output-dir $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
