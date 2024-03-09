@@ -7,13 +7,11 @@ internal static class EnumerableExtesions
 {
     public static IEnumerable<TSource> Where<TSource, TArg>(this IEnumerable<TSource> source, Func<TSource, TArg, bool> predicate, TArg arg)
     {
-        var enumerator = source.GetEnumerator();
-        while (enumerator.MoveNext())
+        foreach (var item in source)
         {
-            var current = enumerator.Current;
-            if (predicate(current, arg))
+            if (predicate(item, arg))
             {
-                yield return current;
+                yield return item;
             }
         }
     }
