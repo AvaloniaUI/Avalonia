@@ -409,7 +409,10 @@ namespace Avalonia
                 {
                     if (e.Sender is T sender)
                     {
-                        sender.InvalidateVisual();
+                        if (sender.IsVisible || e.Property == IsVisibleProperty)
+                        {
+                            sender.InvalidateVisual();
+                        }
                     }
                 });
             
@@ -655,7 +658,10 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         private void RenderTransformChanged(object? sender, EventArgs e)
         {
-            InvalidateVisual();
+            if (ClipToBounds && IsEffectivelyVisible)
+            {
+                InvalidateVisual();
+            }
         }
 
         /// <summary>
