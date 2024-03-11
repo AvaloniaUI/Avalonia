@@ -32,8 +32,8 @@ internal class AndroidActivatableLifetime : IActivatableLifetime
     public event EventHandler<ActivatedEventArgs> Activated;
     public event EventHandler<ActivatedEventArgs> Deactivated;
 
-    public bool TryLeaveBackground() => (_activity as Activity)?.MoveTaskToBack(true) == true;
-    public bool TryEnterBackground() => false;
+    public bool TryLeaveBackground() => false;
+    public bool TryEnterBackground() => (_activity as Activity)?.MoveTaskToBack(true) == true;
 
     private void ActivityOnDeactivated(object sender, ActivatedEventArgs e)
     {
