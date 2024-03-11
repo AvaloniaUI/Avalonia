@@ -63,12 +63,12 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             if (options?.ConnectorType is { } connectorType)
             {
-                connectors = connectors.Where(static (c, a) => c.ConnectorType == a, connectorType);
+                connectors = connectors.Where(c => c.ConnectorType == connectorType);
             }
 
             if (options?.ConnectorType_Id is { } connectorType_Id)
             {
-                connectors = connectors.Where(static (c, a) => c.ConnectorType_Id == a, connectorType_Id);
+                connectors = connectors.Where(c => c.ConnectorType_Id == connectorType_Id);
             }
 
             var connector =
