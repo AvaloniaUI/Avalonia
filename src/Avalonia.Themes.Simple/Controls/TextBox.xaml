@@ -136,12 +136,17 @@
                     <TextBlock Name="watermark"
                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"   
-                               IsVisible="{TemplateBinding Text,
-                                                           Converter={x:Static StringConverters.IsNullOrEmpty}}"
                                Opacity="0.5"
                                Text="{TemplateBinding Watermark}"
                                TextAlignment="{TemplateBinding TextAlignment}"
-                               TextWrapping="{TemplateBinding TextWrapping}" />
+                               TextWrapping="{TemplateBinding TextWrapping}">
+                      <TextBlock.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                          <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                          <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                        </MultiBinding>
+                      </TextBlock.IsVisible>
+                    </TextBlock>
                     <TextPresenter Name="PART_TextPresenter"
                                    CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
                                    CaretBrush="{TemplateBinding CaretBrush}"

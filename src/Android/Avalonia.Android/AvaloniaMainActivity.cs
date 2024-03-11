@@ -31,6 +31,7 @@ namespace Avalonia.Android
             remove { _onDeactivated -= value; }
         }
 
+        [ObsoletedOSPlatform("android33.0")]
         public override void OnBackPressed()
         {
             var eventArgs = new AndroidBackRequestedEventArgs();

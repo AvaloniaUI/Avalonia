@@ -1423,7 +1423,7 @@ namespace Avalonia.Win32
                 }
                 else
                 {
-                    style &= ~fullDecorationFlags;
+                    style &= ~(fullDecorationFlags | WindowStyles.WS_THICKFRAME);
 
                     if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
                     {
