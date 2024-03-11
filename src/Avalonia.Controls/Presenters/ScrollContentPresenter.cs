@@ -285,8 +285,12 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
+            var oldOffset = Offset;
             SetCurrentValue(OffsetProperty, offset);
-            return true;
+
+            // It's possible that the Offset coercion has changed the offset back to its previous value,
+            // this is common for floating point rounding errors.
+            return !Offset.NearlyEquals(oldOffset);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
