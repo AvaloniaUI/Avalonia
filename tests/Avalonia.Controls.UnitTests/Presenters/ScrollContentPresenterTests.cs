@@ -439,6 +439,56 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(new Vector(0, 0), innerPresenter.Offset);
         }
 
+        [Fact]
+        public void Nested_Presenters_Should_Scroll_Outer_When_Viewports_Are_Close()
+        {
+            ScrollContentPresenter innerPresenter;
+            Border border;
+
+            var outerPresenter = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 100,
+                Height = 170.0568181818182,
+                UseLayoutRounding = false,
+                Content = innerPresenter = new ScrollContentPresenter
+                {
+                    CanHorizontallyScroll = true,
+                    CanVerticallyScroll = true,
+                    Width = 100,
+                    Height = 493.2613636363636,
+                    UseLayoutRounding = false,
+                    Content = new StackPanel
+                    {
+                        Children =
+                        {
+                            new Border
+                            {
+                                Height = 455.31818181818187,
+                                UseLayoutRounding = false
+                            },
+                            (border = new Border {
+                                Width = 100,
+                                Height = 37.94318181818182,
+                                UseLayoutRounding = false
+                            })
+                        }
+                    }
+                }
+            };
+
+            innerPresenter.UpdateChild();
+            outerPresenter.UpdateChild();
+            outerPresenter.Measure(new Size(100, 170.0568181818182));
+            outerPresenter.Arrange(new Rect(0, 0, 100, 170.0568181818182));
+
+            border.BringIntoView();
+
+            Assert.Equal(new Vector(0, 323.20454545454544), outerPresenter.Offset);
+            Assert.Equal(new Vector(0, 0), innerPresenter.Offset);
+        }
+
         private class TestControl : Control
         {
             public Size AvailableSize { get; private set; }
