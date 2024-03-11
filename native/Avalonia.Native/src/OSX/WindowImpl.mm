@@ -373,7 +373,9 @@ HRESULT WindowImpl::GetWindowZOrder(long* zOrder) {
             return E_POINTER;
         }
 
-        *zOrder = [Window orderedIndex];
+        // negate the value to match expected z-order in Avalonia
+        // (top-most window should have the highest z-order value)
+        *zOrder = -[Window orderedIndex];
         return S_OK;
     }
 }

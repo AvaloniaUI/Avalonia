@@ -103,14 +103,7 @@ namespace Avalonia.Native
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
-        public IntPtr? ZOrder
-        {
-            get
-            {
-                // macOS returns z-order in reverse order - the topmost window has the lowest z-order
-                return new IntPtr(-_native.WindowZOrder.ToInt64());
-            }
-        }
+        public IntPtr? ZOrder => _native.WindowZOrder;
 
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;

@@ -52,7 +52,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
 
-                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(-1, secondaryWindowIndex);
             }
         }
 
@@ -75,7 +75,7 @@ namespace Avalonia.IntegrationTests.Appium
                     .Release()
                     .Perform();
 
-                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(-1, secondaryWindowIndex);
             }
         }
 
@@ -94,7 +94,7 @@ namespace Avalonia.IntegrationTests.Appium
                 using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
                 {
                     var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
-                    Assert.Equal(1, secondaryWindowIndex);
+                    Assert.Equal(-1, secondaryWindowIndex);
                 }
             }
             finally
@@ -112,7 +112,7 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 mainWindow.SendClick();
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
-                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(-1, secondaryWindowIndex);
             }
         }
         
@@ -136,7 +136,7 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 mainWindow.SendClick();
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
-                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(-1, secondaryWindowIndex);
             }
 
             // Exit fullscreen by menu shortcut Command+R
@@ -159,7 +159,7 @@ namespace Avalonia.IntegrationTests.Appium
                 OpenWindow(null, ShowWindowMode.Modal, WindowStartupLocation.Manual).Dispose();
                 
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
-                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(-1, secondaryWindowIndex);
             }
         }
 
@@ -212,7 +212,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
 
-                Assert.Equal(2, secondaryWindowIndex);
+                Assert.Equal(-2, secondaryWindowIndex);
 
                 var sendToBack = _session.FindElementByAccessibilityId("SendToBack");
                 sendToBack.Click();
@@ -231,7 +231,7 @@ namespace Avalonia.IntegrationTests.Appium
         
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
         
-                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(-1, secondaryWindowIndex);
             }
         }
 
