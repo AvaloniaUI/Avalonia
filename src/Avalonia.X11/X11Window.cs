@@ -1133,6 +1133,46 @@ namespace Avalonia.X11
             }
         }
 
+        public IntPtr? ZOrder
+        {
+            get
+            {
+                var stack = new Stack<IntPtr>();
+                var zOrder = 0;
+                stack.Push(_x11.RootWindow);
+
+                while (stack.Count > 0)
+                {
+                    var currentWindow = stack.Pop();
+
+                    if (currentWindow == _handle)
+                    {
+                        return new IntPtr(zOrder);
+                    }
+
+                    zOrder++;
+
+                    if (XQueryTree(_x11.Display, currentWindow, out _, out _,
+                            out var childrenPtr, out var childrenCount) != 0)
+                    {
+                        if (childrenPtr == IntPtr.Zero)
+                            continue;
+
+                        var children = (IntPtr*)childrenPtr;
+
+                        // Children are returned bottom to top, so we need to push them in reverse order
+                        // In order to traverse bottom children first
+                        for (int i = childrenCount - 1; i >= 0; i--)
+                            stack.Push(children[i]);
+
+                        XFree(childrenPtr);
+                    }
+                }
+
+                return null;
+            }
+        }
+
         public IMouseDevice MouseDevice => _mouse;
         public TouchDevice TouchDevice => _touch;
 

@@ -711,6 +711,29 @@ namespace Avalonia.Win32
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
 
+        public IntPtr? ZOrder
+        {
+            get
+            {
+                var lowestHwnd = GetWindow(_hwnd, GetWindowCommand.GW_HWNDLAST);
+
+                var zOrder = 0;
+                var hwnd = lowestHwnd;
+                while (hwnd != IntPtr.Zero)
+                {
+                    if (_hwnd == hwnd)
+                    {
+                        return new IntPtr(zOrder);
+                    }
+
+                    hwnd = GetWindow(hwnd, GetWindowCommand.GW_HWNDPREV);
+                    zOrder++;
+                }
+
+                return null;
+            }
+        }
+
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             e.Pointer.Capture(null);

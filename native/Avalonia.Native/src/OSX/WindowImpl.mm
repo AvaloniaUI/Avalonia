@@ -366,6 +366,18 @@ HRESULT WindowImpl::GetWindowState(AvnWindowState *ret) {
     }
 }
 
+HRESULT WindowImpl::GetWindowZOrder(long* zOrder) {
+    START_COM_CALL;
+    @autoreleasepool {
+        if (zOrder == nullptr) {
+            return E_POINTER;
+        }
+
+        *zOrder = [Window orderedIndex];
+        return S_OK;
+    }
+}
+
 HRESULT WindowImpl::TakeFocusFromChildren() {
     START_COM_CALL;
 

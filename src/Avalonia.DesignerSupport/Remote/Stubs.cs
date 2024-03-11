@@ -41,6 +41,7 @@ namespace Avalonia.DesignerSupport.Remote
         public IPopupImpl CreatePopup() => new WindowStub(this);
 
         public PixelPoint Position { get; set; }
+        public IntPtr? ZOrder => null;
         public Action<PixelPoint> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
