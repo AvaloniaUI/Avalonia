@@ -30,6 +30,7 @@ namespace Avalonia.Rendering.Composition.Server
         private IDrawingContextLayerImpl? _layer;
         private bool _updateRequested;
         private bool _redrawRequested;
+        private bool _fullRedrawRequested;
         private bool _disposed;
         private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
         private readonly Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
@@ -116,6 +117,7 @@ namespace Avalonia.Rendering.Composition.Server
         partial void DeserializeChangesExtra(BatchStreamReader c)
         {
             _redrawRequested = true;
+            _fullRedrawRequested = true;
         }
 
         public void Render()
@@ -175,46 +177,56 @@ namespace Avalonia.Rendering.Composition.Server
             if (!_redrawRequested)
                 return;
             _redrawRequested = false;
-            using (var targetContext = _renderTarget.CreateDrawingContext(false))
+
+            var renderTargetWithProperties = _renderTarget as IRenderTargetWithProperties;
+
+            
+            var needLayer = DebugOverlays != RendererDebugOverlays.None // Check if we don't need overlays
+                            // Check if render target can be rendered to directly and preserves the previous frame
+                            || !(renderTargetWithProperties?.Properties.RetainsPreviousFrameContents == true
+                                && renderTargetWithProperties?.Properties.IsSuitableForDirectRendering == true);
+            
+            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(false, out var properties))
             {
-                if (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted)
+                if(needLayer && (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted))
                 {
                     _layer?.Dispose();
                     _layer = null;
-                    _layer = targetContext.CreateLayer(PixelSize);
+                    _layer = renderTargetContext.CreateLayer(PixelSize);
                     _layerSize = PixelSize;
                     DirtyRects.AddRect(new PixelRect(_layerSize));
+                }
+                else if (!needLayer)
+                {
+                    _layer?.Dispose();
+                    _layer = null;
+                }
+
+                if (_fullRedrawRequested || !properties.PreviousFrameIsRetained)
+                {
+                    DirtyRects.AddRect(new PixelRect(_layerSize));
+                    _fullRedrawRequested = false;
                 }
 
                 if (!DirtyRects.IsEmpty)
                 {
-                    var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
-                                       Compositor.RenderInterface.GpuContext != null;
-                    using (var context = _layer.CreateDrawingContext(false))
+                    if (_layer != null)
                     {
-                        using (DirtyRects.BeginDraw(context))
-                        {
-                            context.Clear(Colors.Transparent);
-                            if (useLayerClip) 
-                                context.PushLayer(DirtyRects.CombinedRect.ToRect(1));
-                                
-                            
-                            Root.Render(new CompositorDrawingContextProxy(context), null, DirtyRects);
+                        using (var context = _layer.CreateDrawingContext(false))
+                            RenderRootToContextWithClip(context, Root);
 
-                            if (useLayerClip)
-                                context.PopLayer();
+                        renderTargetContext.Clear(Colors.Transparent);
+                        renderTargetContext.Transform = Matrix.Identity;
+                        if (_layer.CanBlit)
+                            _layer.Blit(renderTargetContext);
+                        else
+                        {
+                            var rect = new PixelRect(default, PixelSize).ToRect(1);
+                            renderTargetContext.DrawBitmap(_layer, 1, rect, rect);
                         }
                     }
-                }
-
-                targetContext.Clear(Colors.Transparent);
-                targetContext.Transform = Matrix.Identity;
-                if (_layer.CanBlit)
-                    _layer.Blit(targetContext);
-                else
-                {
-                    var rect = new PixelRect(default, PixelSize).ToRect(1);
-                    targetContext.DrawBitmap(_layer, 1, rect, rect);
+                    else
+                        RenderRootToContextWithClip(renderTargetContext, Root);
                 }
 
                 if (DebugOverlays != RendererDebugOverlays.None)
@@ -225,7 +237,7 @@ namespace Avalonia.Rendering.Composition.Server
                         RenderTimeGraph?.AddFrameValue(elapsed.TotalMilliseconds);
                     }
                     
-                    DrawOverlays(targetContext, PixelSize.ToSize(Scaling));
+                    DrawOverlays(renderTargetContext, PixelSize.ToSize(Scaling));
                 }
 
                 RenderedVisuals = 0;
@@ -233,6 +245,26 @@ namespace Avalonia.Rendering.Composition.Server
                 DirtyRects.Reset();
             }
         }
+
+        void RenderRootToContextWithClip(IDrawingContextImpl context, ServerCompositionVisual root)
+        {
+            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
+                               Compositor.RenderInterface.GpuContext != null;
+            
+            using (DirtyRects.BeginDraw(context))
+            {
+                context.Clear(Colors.Transparent);
+                if (useLayerClip)
+                    context.PushLayer(DirtyRects.CombinedRect.ToRect(1));
+
+
+                root.Render(new CompositorDrawingContextProxy(context), null, DirtyRects);
+
+                if (useLayerClip)
+                    context.PopLayer();
+            }
+        }
+        
 
         private void DrawOverlays(IDrawingContextImpl targetContext, Size logicalSize)
         {

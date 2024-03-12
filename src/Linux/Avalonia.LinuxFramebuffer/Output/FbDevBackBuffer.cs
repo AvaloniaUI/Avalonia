@@ -32,17 +32,23 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
         }
 
+        public static LockedFramebuffer LockFb(IntPtr address, fb_var_screeninfo varInfo,
+            fb_fix_screeninfo fixedInfo, Vector dpi, Action? dispose)
+        {
+            return new LockedFramebuffer(address,
+                new PixelSize((int)varInfo.xres, (int)varInfo.yres),
+                (int)fixedInfo.line_length, dpi,
+                varInfo.bits_per_pixel == 16 ? PixelFormat.Rgb565
+                : varInfo.blue.offset == 16 ? PixelFormat.Rgba8888
+                : PixelFormat.Bgra8888, dispose);
+        }
+
         public ILockedFramebuffer Lock(Vector dpi)
         {
             Monitor.Enter(_lock);
             try
             {
-                return new LockedFramebuffer(Address,
-                    new PixelSize((int)_varInfo.xres, (int)_varInfo.yres),
-                    (int)_fixedInfo.line_length, dpi,
-                    _varInfo.bits_per_pixel == 16 ? PixelFormat.Rgb565
-                    : _varInfo.blue.offset == 16 ? PixelFormat.Rgba8888
-                    : PixelFormat.Bgra8888,
+                return LockFb(Address, _varInfo, _fixedInfo, dpi,
                     () =>
                     {
                         try
