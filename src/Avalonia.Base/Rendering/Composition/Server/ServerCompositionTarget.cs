@@ -202,7 +202,7 @@ namespace Avalonia.Rendering.Composition.Server
                     _layer = null;
                 }
 
-                if (_fullRedrawRequested || !properties.PreviousFrameIsRetained)
+                if (_fullRedrawRequested || (!needLayer && !properties.PreviousFrameIsRetained))
                 {
                     DirtyRects.AddRect(new PixelRect(_layerSize));
                     _fullRedrawRequested = false;
