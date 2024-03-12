@@ -1,3 +1,4 @@
+#if AVALONIA_SKIA
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -16,7 +17,6 @@ using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
 
 public class DirectFbCompositionTests : TestBase
