@@ -214,7 +214,7 @@ namespace Avalonia.Controls
             }
             if (OwningGrid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(keyModifiers, forcedDirection));
+                ProcessSort(keyModifiers, forcedDirection);
             }
         }
 
