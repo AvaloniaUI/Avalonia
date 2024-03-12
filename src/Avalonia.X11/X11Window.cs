@@ -192,7 +192,7 @@ namespace Avalonia.X11
             var surfaces = new List<object>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
-                   depth, () => RenderScaling)
+                   depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
             
             if (egl != null)

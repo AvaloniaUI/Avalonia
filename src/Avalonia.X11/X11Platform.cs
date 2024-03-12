@@ -344,6 +344,14 @@ namespace Avalonia
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
 
+        /// <summary>
+        /// Retain window framebuffer contents if using CPU rendering mode.
+        /// This will keep an offscreen bitmap for each window with contents of the previous frame
+        /// While improving performance by saving a blit, it will increase memory consumption
+        /// if you have many windows 
+        /// </summary>
+        public bool? UseRetainedFramebuffer { get; set; }
+
         public X11PlatformOptions()
         {
             try
