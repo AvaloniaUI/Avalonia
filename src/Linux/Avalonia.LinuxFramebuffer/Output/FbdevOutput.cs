@@ -160,7 +160,9 @@ namespace Avalonia.LinuxFramebuffer
             }
         }
 
-        public ILockedFramebuffer Lock(out FramebufferLockProperties properties)
+        public ILockedFramebuffer Lock() => Lock(out _);
+
+        private ILockedFramebuffer Lock(out FramebufferLockProperties properties)
         {
             if (_fd <= 0)
                 throw new ObjectDisposedException("LinuxFramebuffer");
