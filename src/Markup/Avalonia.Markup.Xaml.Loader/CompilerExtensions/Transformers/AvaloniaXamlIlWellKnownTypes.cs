@@ -21,6 +21,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod AvaloniaObjectSetStyledPropertyValue { get; }
         public IXamlType AvaloniaAttachedPropertyT { get; }
         public IXamlType IBinding { get; }
+        public IXamlType MultiBinding { get; }
         public IXamlMethod AvaloniaObjectBindMethod { get; }
         public IXamlMethod AvaloniaObjectSetValueMethod { get; }
         public IXamlType IDisposable { get; }
@@ -140,6 +141,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                  && m.Parameters[0].Name == "StyledProperty`1"
                                  && m.Parameters[2].Equals(BindingPriority));
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
+            MultiBinding = cfg.TypeSystem.GetType("Avalonia.Data.MultiBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
             ICommand = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");
             Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");
