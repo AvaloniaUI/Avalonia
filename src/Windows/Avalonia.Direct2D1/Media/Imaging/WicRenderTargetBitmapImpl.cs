@@ -2,6 +2,7 @@ using System;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
+using RenderTargetProperties = SharpDX.Direct2D1.RenderTargetProperties;
 
 namespace Avalonia.Direct2D1.Media
 {
