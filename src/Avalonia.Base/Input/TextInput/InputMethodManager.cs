@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Interactivity;
 using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input.TextInput
 {
@@ -132,7 +133,15 @@ namespace Avalonia.Input.TextInput
                 InputMethod.AddTextInputMethodClientRequeryRequestedHandler(_visualRoot,
                     TextInputMethodClientRequeryRequested);
             
-            var inputMethod = ((element as Visual)?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+            var visualRoot = (element as Visual)?.VisualRoot as Visual;
+
+            // take Popup parent
+            if (visualRoot is IHostedVisualTreeRoot visualTreeRoot)
+            {
+                visualRoot = visualTreeRoot.Host?.VisualRoot as Visual;
+            }
+            
+            var inputMethod = (visualRoot as ITextInputMethodRoot)?.InputMethod;
 
             if (_im != inputMethod)
             {
