@@ -2,23 +2,19 @@ jobs:
 
 - job: GetPRNumber
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'ubuntu-20.04'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-  - task: PowerShell@2
-    displayName: Get PR Number
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
-      targetType: 'inline'
-      script: |
-        $prId = $env:System_PullRequest_PullRequestNumber
-        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
-
-        if (!([string]::IsNullOrWhiteSpace($prId)))
-        {
-          Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
-        }
-      
+      packageType: sdk
+      useGlobalJson: true
+  - task: CmdLine@2
+    displayName: 'Run Build'
+    inputs:
+        script: ./build.sh --target OutputVersion --version-output-dir $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'

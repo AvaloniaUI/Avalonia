@@ -148,9 +148,15 @@
                               Text="{TemplateBinding Watermark}"
                               TextAlignment="{TemplateBinding TextAlignment}"
                               TextWrapping="{TemplateBinding TextWrapping}"
-                              IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                        <TextBlock.IsVisible>
+                          <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                          </MultiBinding>
+                        </TextBlock.IsVisible>
+                      </TextBlock>
                       <TextPresenter Name="PART_TextPresenter"
                                     Text="{TemplateBinding Text, Mode=TwoWay}"
                                     CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"

@@ -166,6 +166,10 @@ public static class LinuxFramebufferPlatformExtensions
     public static int StartLinuxFbDev(this AppBuilder builder, string[] args, string fbdev, PixelFormat? format, double scaling, IInputBackend? inputBackend = default)
         => StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling }, inputBackend);
 
+    public static int StartLinuxFbDev(this AppBuilder builder, string[] args, FbDevOutputOptions options,
+        IInputBackend? inputBackend = default)
+        => StartLinuxDirect(builder, args, new FbdevOutput(options), inputBackend);
+
     public static int StartLinuxDrm(this AppBuilder builder, string[] args, string? card = null, double scaling = 1, IInputBackend? inputBackend = default)
         => StartLinuxDirect(builder, args, new DrmOutput(card) { Scaling = scaling }, inputBackend);
     public static int StartLinuxDrm(this AppBuilder builder, string[] args, string? card = null, bool connectorsForceProbe = false, DrmOutputOptions? options = null, IInputBackend? inputBackend = default)

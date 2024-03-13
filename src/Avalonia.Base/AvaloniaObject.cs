@@ -834,7 +834,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a description of an observable that van be used in logs.
+        /// Gets a description of an observable that can be used in logs.
         /// </summary>
         /// <param name="o">The observable.</param>
         /// <returns>The description.</returns>
