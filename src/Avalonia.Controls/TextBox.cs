@@ -923,8 +923,6 @@ namespace Avalonia.Controls
             }
             else if (change.Property == SelectionEndProperty)
             {
-                _presenter?.MoveCaretToTextPosition(CaretIndex);
-
                 OnSelectionEndChanged(change);
             }
             else if (change.Property == MaxLinesProperty)
@@ -1064,6 +1062,14 @@ namespace Avalonia.Controls
                 {
                     _undoRedoHelper.DiscardRedo();
                 }
+
+                //Make sure updated text is in sync
+                _presenter?.SetCurrentValue(TextPresenter.TextProperty, text);
+
+                caretIndex += input.Length;
+
+                //Make sure caret is in sync
+                _presenter?.MoveCaretToTextPosition(caretIndex);
 
                 SetCurrentValue(CaretIndexProperty, caretIndex + input.Length);
             }
