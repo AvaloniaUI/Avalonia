@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Utilities;
 
@@ -74,6 +75,27 @@ namespace Avalonia
                 return new PixelSize(
                     tokenizer.ReadInt32(),
                     tokenizer.ReadInt32());
+            }
+        }
+
+        /// <summary>
+        /// Try parsing <paramref name="source"/> as <see cref="PixelSize"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="string"/> to parse.</param>
+        /// <param name="result">The result of parsing.</param>
+        /// <param name="separator">Optional parameter, identifies the separator the width and height, the default value is ','</param>
+        /// <returns><c>true</c> if <paramref name="source"/> is valid <see cref="PixelSize"/>, otherwise <c>false</c>.</returns>
+        public static bool TryParse(string source, [MaybeNullWhen(false)] out PixelSize? result, char separator = ',')
+        {
+            result = null;
+            using (var tokenizer = new StringTokenizer(source, separator, exceptionMessage: "Invalid PixelSize."))
+            {
+                if (tokenizer.TryReadInt32(out var w) && tokenizer.TryReadInt32(out var h))
+                {
+                    result = new(w, h);
+                    return true;
+                }
+                return false;
             }
         }
 
