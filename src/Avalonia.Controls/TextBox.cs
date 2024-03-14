@@ -1071,7 +1071,7 @@ namespace Avalonia.Controls
                 //Make sure caret is in sync
                 _presenter?.MoveCaretToTextPosition(caretIndex);
 
-                SetCurrentValue(CaretIndexProperty, caretIndex + input.Length);
+                SetCurrentValue(CaretIndexProperty, caretIndex);
             }
         }
 
