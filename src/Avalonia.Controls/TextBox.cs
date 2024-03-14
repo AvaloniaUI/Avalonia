@@ -923,8 +923,6 @@ namespace Avalonia.Controls
             }
             else if (change.Property == SelectionEndProperty)
             {
-                _presenter?.MoveCaretToTextPosition(CaretIndex);
-
                 OnSelectionEndChanged(change);
             }
             else if (change.Property == MaxLinesProperty)

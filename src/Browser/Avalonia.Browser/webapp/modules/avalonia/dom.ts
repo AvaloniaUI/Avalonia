@@ -39,6 +39,7 @@ export class AvaloniaDOM {
         canvas.id = `canvas${randomIdPart}`;
         canvas.classList.add("avalonia-canvas");
         canvas.style.width = "100%";
+        canvas.style.height = "100%";
         canvas.style.position = "absolute";
 
         // Native controls host

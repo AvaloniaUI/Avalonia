@@ -34,6 +34,7 @@ namespace Avalonia.Direct2D1.Media
         /// An object to use to create layers. May be null, in which case a
         /// <see cref="WicRenderTargetBitmapImpl"/> will created when a new layer is requested.
         /// </param>
+        /// <param name="useScaledDrawing">Whether to scale drawings according to the DPI of <paramref name="renderTarget"/>.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
