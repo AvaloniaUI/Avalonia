@@ -29,7 +29,7 @@ public class PixelSizeTests
     public void TryParse(string source, PixelSize? expected, char? separator, Exception exception)
     {
         Exception error = null;
-        PixelSize? result = default;
+        PixelSize result = PixelSize.Empty;
         try
         {
             if (separator is char c)
@@ -77,7 +77,7 @@ public class PixelSizeTests
         yield return new object[]
         {
             "1024x768",
-            default(PixelSize?),
+            PixelSize.Empty,
             null,
             null,
         };
