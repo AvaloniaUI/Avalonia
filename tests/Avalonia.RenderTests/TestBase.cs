@@ -151,20 +151,25 @@ namespace Avalonia.Direct2D1.RenderTests
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
 
             using (var expected = Image.Load<Rgba32>(expectedPath))
-            using (var immediate = Image.Load<Rgba32>(immediatePath))
-            using (var composited = Image.Load<Rgba32>(compositedPath))
+            using (var immediate = skipImmediate ? null: Image.Load<Rgba32>(immediatePath))
+            using (var composited = skipCompositor ? null : Image.Load<Rgba32>(compositedPath))
             {
-                var immediateError = CompareImages(immediate, expected);
-                var compositedError = CompareImages(composited, expected);
-
-                if (immediateError > 0.022 && !skipImmediate)
+                if (!skipImmediate)
                 {
-                    Assert.True(false, immediatePath + ": Error = " + immediateError);
+                    var immediateError = CompareImages(immediate!, expected);
+                    if (immediateError > 0.022)
+                    {
+                        Assert.True(false, immediatePath + ": Error = " + immediateError);
+                    }
                 }
 
-                if (compositedError > 0.022 && !skipCompositor)
+                if (!skipCompositor)
                 {
-                    Assert.True(false, compositedPath + ": Error = " + compositedError);
+                    var compositedError = CompareImages(composited!, expected);
+                    if (compositedError > 0.022)
+                    {
+                        Assert.True(false, compositedPath + ": Error = " + compositedError);
+                    }
                 }
             }
         }

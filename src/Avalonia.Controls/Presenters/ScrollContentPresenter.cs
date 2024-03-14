@@ -259,38 +259,38 @@ namespace Avalonia.Controls.Presenters
 
             var rect = targetRect.TransformToAABB(transform.Value);
             var offset = Offset;
-            var result = false;
 
             if (rect.Bottom > offset.Y + Viewport.Height)
             {
                 offset = offset.WithY((rect.Bottom - Viewport.Height) + Child.Margin.Top);
-                result = true;
             }
 
             if (rect.Y < offset.Y)
             {
                 offset = offset.WithY(rect.Y);
-                result = true;
             }
 
             if (rect.Right > offset.X + Viewport.Width)
             {
                 offset = offset.WithX((rect.Right - Viewport.Width) + Child.Margin.Left);
-                result = true;
             }
 
             if (rect.X < offset.X)
             {
                 offset = offset.WithX(rect.X);
-                result = true;
             }
 
-            if (result)
+            if (Offset.NearlyEquals(offset))
             {
-                SetCurrentValue(OffsetProperty, offset);
+                return false;
             }
 
-            return result;
+            var oldOffset = Offset;
+            SetCurrentValue(OffsetProperty, offset);
+
+            // It's possible that the Offset coercion has changed the offset back to its previous value,
+            // this is common for floating point rounding errors.
+            return !Offset.NearlyEquals(oldOffset);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

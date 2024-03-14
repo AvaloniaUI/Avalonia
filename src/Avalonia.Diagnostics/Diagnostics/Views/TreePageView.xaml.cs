@@ -51,6 +51,12 @@ namespace Avalonia.Diagnostics.Views
             _adorner = Controls.ControlHighlightAdorner.Add(visual, visualizeMarginPadding: shouldVisualizeMarginPadding == true);
         }
 
+        private void RemoveAdorner(object? sender, PointerEventArgs e)
+        {
+            _adorner?.Dispose();
+            _adorner = null;
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
