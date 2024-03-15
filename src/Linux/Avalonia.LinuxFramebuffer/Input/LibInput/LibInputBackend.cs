@@ -25,7 +25,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             _options = options;
         }
 
-
         private unsafe void InputThread(object? state)
         {
             var options = (LibInputBackendOptions)state!;
