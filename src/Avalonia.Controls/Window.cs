@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Styling;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -943,7 +944,20 @@ namespace Avalonia.Controls
                 var ownerRect = new PixelRect(
                     owner.Position,
                     PixelSize.FromSize(ownerSize, scaling));
-                Position = ownerRect.CenterRect(rect).Position;
+                var childRect = ownerRect.CenterRect(rect);
+
+                if (Screens.ScreenFromWindow(this)?.WorkingArea is { } constraint)
+                {
+                    var maxX = constraint.Right - rect.Width;
+                    var maxY = constraint.Bottom - rect.Height;
+
+                    if (constraint.X <= maxX)
+                        childRect = childRect.WithX(MathUtilities.Clamp(childRect.X, constraint.X, maxX));
+                    if (constraint.Y <= maxY)
+                        childRect = childRect.WithY(MathUtilities.Clamp(childRect.Y, constraint.Y, maxY));
+                }
+
+                Position = childRect.Position;
             }
         }
 
