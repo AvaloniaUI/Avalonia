@@ -948,9 +948,13 @@ namespace Avalonia.Controls
 
                 if (Screens.ScreenFromWindow(this)?.WorkingArea is { } constraint)
                 {
-                    childRect = childRect
-                        .WithX(MathUtilities.Clamp(childRect.X, constraint.X, constraint.Right - rect.Width))
-                        .WithY(MathUtilities.Clamp(childRect.Y, constraint.Y, constraint.Bottom - rect.Height));
+                    var maxX = constraint.Right - rect.Width;
+                    var maxY = constraint.Bottom - rect.Height;
+
+                    if (constraint.X <= maxX)
+                        childRect = childRect.WithX(MathUtilities.Clamp(childRect.X, constraint.X, maxX));
+                    if (constraint.Y <= maxY)
+                        childRect = childRect.WithY(MathUtilities.Clamp(childRect.Y, constraint.Y, maxY));
                 }
 
                 Position = childRect.Position;
