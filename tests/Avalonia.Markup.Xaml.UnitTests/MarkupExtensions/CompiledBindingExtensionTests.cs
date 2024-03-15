@@ -1692,6 +1692,74 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Binds_To_RelativeSource_Self_In_MultiBinding(bool compileBindings)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        x:CompileBindings='{compileBindings}'>
+  <StackPanel>
+    <TextBlock Name='textBlock'>
+      <TextBlock.Text>
+        <MultiBinding StringFormat=""{{}} $self = {{0}}, $parent = {{1}}"">
+          <Binding Path=""$self.FontStyle""/>
+          <Binding Path=""$parent.Orientation""/>
+        </MultiBinding>
+      </TextBlock.Text>
+    </TextBlock>
+  </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext();
+                window.DataContext = dataContext;
+
+                Assert.Equal(" $self = Normal, $parent = Vertical"
+                    , textBlock.GetValue(TextBlock.TextProperty));
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Binds_To_RelativeSource_Self_In_MultiBinding_In_Style(bool compileBindings)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        x:CompileBindings='{compileBindings}'>
+  <Window.Styles>
+    <Style Selector='TextBlock'>
+        <Setter Property='Text'>
+          <MultiBinding StringFormat=""{{}} $self = {{0}}"">
+            <Binding Path=""$self.FontStyle""/>
+          </MultiBinding>
+        </Setter>
+    </Style>
+  </Window.Styles>
+  <StackPanel>
+    <TextBlock Name='textBlock'/>
+  </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext();
+                window.DataContext = dataContext;
+
+                Assert.Equal(" $self = Normal"
+                    , textBlock.GetValue(TextBlock.TextProperty));
+            }
+        }
+
         [Fact]
         public void SupportsMethodBindingAsDelegate()
         {
