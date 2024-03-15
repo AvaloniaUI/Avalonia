@@ -1150,6 +1150,11 @@ namespace Avalonia.Skia
             var tileBrush = content.Brush;
             var transform = rect.TopLeft == default ? Matrix.Identity : Matrix.CreateTranslation(-rect.X, -rect.Y);
 
+            if (content.Transform is not null)
+            {
+                transform = content.Transform.Value * transform;
+            }
+
             var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
             transform *= calc.IntermediateTransform;
             
@@ -1186,15 +1191,6 @@ namespace Avalonia.Skia
             paintTransform = SKMatrix.Concat(paintTransform,
                 SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
             
-            if (tileBrush.Transform is { })
-            {
-                var origin = tileBrush.TransformOrigin.ToPixels(targetRect);
-                var offset = Matrix.CreateTranslation(origin);
-                var brushTransform = (-offset) * tileBrush.Transform.Value * (offset);
-
-                paintTransform = paintTransform.PreConcat(brushTransform.ToSKMatrix());
-            }
-
             if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
                 paintTransform =
                     paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetRect.X, (float)targetRect.Y));
