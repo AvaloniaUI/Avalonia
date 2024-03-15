@@ -69,14 +69,8 @@ namespace Avalonia
         /// <param name="s">The string.</param>
         /// <returns>The <see cref="PixelSize"/>.</returns>
         /// <exception cref="FormatException"/>
-        public static PixelSize Parse(string s)
-        {
-            if (TryParse(s, out var result) )
-            {
-                return result;
-            }
-            throw new FormatException("Invalid PixelSize.");
-        }
+        public static PixelSize Parse(string s) =>
+            Parse(s, ',');
 
         /// <summary>
         /// Parses a <see cref="PixelSize"/> string.
@@ -101,7 +95,7 @@ namespace Avalonia
         /// <param name="result">The result of parsing. if <paramref name="source"/> is not valid <paramref name="result"/> is <see cref="PixelSize.Empty"/> </param>
         /// <param name="separator">Optional parameter, identifies the separator the width and height, the default value is ','</param>
         /// <returns><c>true</c> if <paramref name="source"/> is valid <see cref="PixelSize"/>, otherwise <c>false</c>.</returns>
-        public static bool TryParse([NotNullWhen(true)] string? source, 
+        public static bool TryParse([NotNullWhen(true)] string? source,
             [MaybeNullWhen(false)] out PixelSize result,
             char separator = ',')
         {
