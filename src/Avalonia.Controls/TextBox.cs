@@ -1578,6 +1578,13 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
+                        if (IsPasswordBox && !RevealPassword)
+                        {
+                            // double-clicking in a cloaked single-line password box selects all text
+                            // see https://github.com/AvaloniaUI/Avalonia/issues/14956
+                            goto case 3;
+                        }
+
                         if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
                             selectionStart = StringUtils.PreviousWord(text, caretIndex);
