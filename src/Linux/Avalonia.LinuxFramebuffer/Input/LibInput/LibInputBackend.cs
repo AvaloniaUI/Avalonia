@@ -1,5 +1,5 @@
+#nullable enable
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Avalonia.Input;
@@ -9,25 +9,30 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
     public partial class LibInputBackend : IInputBackend
     {
-        private IScreenInfoProvider _screen;
-        private IInputRoot _inputRoot;
+        private IScreenInfoProvider? _screen;
+        private IInputRoot? _inputRoot;
         private const string LibInput = nameof(Avalonia.LinuxFramebuffer) + "/" + nameof(Avalonia.LinuxFramebuffer.Input) + "/" + nameof(LibInput);
-        private Action<RawInputEventArgs> _onInput;
+        private Action<RawInputEventArgs>? _onInput;
+        private readonly LibInputBackendOptions? _options;
 
         public LibInputBackend()
         {
-            var ctx = libinput_path_create_context();
-            new Thread(() => InputThread(ctx))
-            {
-                IsBackground = true
-            }.Start();
+            _options = default;
         }
 
-        private unsafe void InputThread(IntPtr ctx)
+        public LibInputBackend(LibInputBackendOptions options)
         {
+            _options = options;
+        }
+
+
+        private unsafe void InputThread(object? state)
+        {
+            var options = (LibInputBackendOptions)state!;
+            var ctx = options.LibInputContext;
             var fd = libinput_get_fd(ctx);
 
-            foreach (var f in Directory.GetFiles("/dev/input", "event*"))
+            foreach (var f in options.Events)
                 libinput_path_add_device(ctx, f);
             while (true)
             {
@@ -35,8 +40,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 libinput_dispatch(ctx);
                 while ((ev = libinput_get_event(ctx)) != IntPtr.Zero)
                 {
-
                     var type = libinput_event_get_type(ev);
+
                     if (type >= LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN &&
                         type <= LibInputEventType.LIBINPUT_EVENT_TOUCH_CANCEL)
                         HandleTouch(ev, type);
@@ -54,12 +59,25 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
         }
 
-        private void ScheduleInput(RawInputEventArgs ev) => _onInput.Invoke(ev);
+        private void ScheduleInput(RawInputEventArgs ev) => _onInput?.Invoke(ev);
 
         public void Initialize(IScreenInfoProvider screen, Action<RawInputEventArgs> onInput)
         {
             _screen = screen;
             _onInput = onInput;
+            var ctx = libinput_path_create_context();
+            var options = new LibInputBackendOptions()
+            {
+                LibInputContext = ctx,
+                Events = _options is null
+                    ? Directory.GetFiles("/dev/input", "event*")
+                    : _options.Events,
+            };
+            new Thread(InputThread)
+            {
+                Name = "Input Manager Worker",
+                IsBackground = true
+            }.Start(options);
         }
 
         public void SetInputRoot(IInputRoot root)
