@@ -10,10 +10,13 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -226,7 +229,7 @@ namespace Avalonia.Controls.UnitTests
                 Child = (target = new TabControl
                 {
                     Template = TabControlTemplate(),
-                    Items = 
+                    Items =
                     {
                         new TabItem
                         {
@@ -639,7 +642,7 @@ namespace Avalonia.Controls.UnitTests
                 x => Assert.Equal(Dock.Right, x.TabStripPlacement)
             );
         }
-        
+
         [Fact]
         public void TabItem_TabStripPlacement_Should_Be_Correctly_Set_For_New_Items()
         {
@@ -658,7 +661,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
 
             target.ItemsSource = items;
-            
+
             var result = target.GetLogicalChildren()
                 .OfType<TabItem>()
                 .ToList();
@@ -685,28 +688,64 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(Key.D, 0)]
         public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
         {
-
-            var root = new TestRoot();
-            var tabControl = new TabControl()
+            var ah = new AccessKeyHandler();
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah)))
             {
-                Template = TabControlTemplate(),
-                Items =
+                var impl = CreateMockTopLevelImpl();
+
+                var tabControl = new TabControl()
                 {
-                    new TabItem { Header = "General" },
-                    new TabItem { Header = "_Arch" },
-                    new TabItem { Header = "_Leaf" },
-                    new TabItem { Header = "_Disabled", IsEnabled = false },
-                }
-            };
+                    Template = TabControlTemplate(),
+                    Items =
+                    {
+                        new TabItem
+                        {
+                            Header = "General",
+                        },
+                        new TabItem { Header = "_Arch" },
+                        new TabItem { Header = "_Leaf"},
+                        new TabItem { Header = "_Disabled", IsEnabled = false },
+                    }
+                };
 
-            root.Child = tabControl;
+                var root = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTemplate(),
+                    Content = tabControl,
+                };
 
-            KeyDown(root, Key.LeftAlt);
-            KeyDown(root, accessKey, KeyModifiers.Alt);
-            KeyUp(root, accessKey, KeyModifiers.Alt);
-            KeyUp(root, Key.LeftAlt);
+                root.ApplyTemplate();
+                root.Presenter.UpdateChild();
+                ApplyTemplate(tabControl);
 
-            Assert.Equal(selectedTabIndex, tabControl.SelectedIndex);
+                KeyDown(root, Key.LeftAlt);
+                KeyDown(root, accessKey, KeyModifiers.Alt);
+                KeyUp(root, accessKey, KeyModifiers.Alt);
+                KeyUp(root, Key.LeftAlt);
+
+                Assert.Equal(selectedTabIndex, tabControl.SelectedIndex);
+            }
+
+            static FuncControlTemplate<TestTopLevel> CreateTemplate()
+            {
+                return new FuncControlTemplate<TestTopLevel>((x, scope) =>
+                    new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [~ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty),
+                        [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(ContentControl.ContentTemplateProperty)
+                    }.RegisterInNameScope(scope));
+            }
+
+            static Mock<ITopLevelImpl> CreateMockTopLevelImpl(bool setupProperties = false)
+            {
+                var topLevel = new Mock<ITopLevelImpl>();
+                if (setupProperties)
+                    topLevel.SetupAllProperties();
+                topLevel.Setup(x => x.RenderScaling).Returns(1);
+                topLevel.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+                return topLevel;
+            }
 
             static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
             {
@@ -743,8 +782,8 @@ namespace Avalonia.Controls.UnitTests
                         new ContentPresenter
                         {
                             Name = "PART_SelectedContentHost",
-                            [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
-                            [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabControl.SelectedContentProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabControl.SelectedContentTemplateProperty),
                         }.RegisterInNameScope(scope)
                     }
                 });
@@ -756,10 +795,24 @@ namespace Avalonia.Controls.UnitTests
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.HeaderProperty),
+                    [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
                     RecognizesAccessKey = true,
-                    [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
-                    [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]                    
                 }.RegisterInNameScope(scope));
+        }
+
+        private class TestTopLevel : TopLevel
+        {
+            private readonly ILayoutManager _layoutManager;
+            public bool IsClosed { get; private set; }
+
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+                : base(impl)
+            {
+                _layoutManager = layoutManager ?? new LayoutManager(this);
+            }
+
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static void Prepare(TabControl target)
