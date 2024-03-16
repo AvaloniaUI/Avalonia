@@ -678,7 +678,57 @@ namespace Avalonia.Controls.UnitTests
                 x => Assert.Equal(Dock.Right, x.TabStripPlacement)
             );
         }
-        
+
+        [Theory]
+        [InlineData(Key.A, 1)]
+        [InlineData(Key.L, 2)]
+        [InlineData(Key.D, 0)]
+        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
+        {
+
+            var root = new TestRoot();
+            var tabControl = new TabControl()
+            {
+                Template = TabControlTemplate(),
+                Items =
+                {
+                    new TabItem { Header = "General" },
+                    new TabItem { Header = "_Arch" },
+                    new TabItem { Header = "_Leaf" },
+                    new TabItem { Header = "_Disabled", IsEnabled = false },
+                }
+            };
+
+            root.Child = tabControl;
+
+            KeyDown(root, Key.LeftAlt);
+            KeyDown(root, accessKey, KeyModifiers.Alt);
+            KeyUp(root, accessKey, KeyModifiers.Alt);
+            KeyUp(root, Key.LeftAlt);
+
+            Assert.Equal(selectedTabIndex, tabControl.SelectedIndex);
+
+            static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            {
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = key,
+                    KeyModifiers = modifiers,
+                });
+            }
+
+            static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            {
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyUpEvent,
+                    Key = key,
+                    KeyModifiers = modifiers,
+                });
+            }
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
@@ -706,8 +756,9 @@ namespace Avalonia.Controls.UnitTests
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
+                    RecognizesAccessKey = true,
                     [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
-                    [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]
+                    [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]                    
                 }.RegisterInNameScope(scope));
         }
 
