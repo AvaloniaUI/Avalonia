@@ -18,13 +18,52 @@ namespace Avalonia.Markup.Xaml
         public static Uri? GetContextBaseUri(this IServiceProvider ctx) => ctx.GetService<IUriContext>()?.BaseUri;
 
         public static T? GetFirstParent<T>(this IServiceProvider ctx) where T : class
-            => ctx.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents.OfType<T>().FirstOrDefault();
+            => ctx.GetService<IAvaloniaXamlIlParentStackProvider>() switch
+            {
+                null => null,
+                IAvaloniaXamlIlEagerParentStackProvider eager => new EagerParentStackEnumerator(eager).TryGetNextOfType<T>(),
+                { } provider => provider.Parents.OfType<T>().FirstOrDefault()
+            };
 
         public static T? GetLastParent<T>(this IServiceProvider ctx) where T : class
-            => ctx.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents.OfType<T>().LastOrDefault();
+        {
+            switch (ctx.GetService<IAvaloniaXamlIlParentStackProvider>())
+            {
+                case null:
+                    return null;
 
-        public static IEnumerable<T> GetParents<T>(this IServiceProvider sp)
-            => sp.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents.OfType<T>() ?? Enumerable.Empty<T>();
+                case IAvaloniaXamlIlEagerParentStackProvider eager:
+                    var enumerator = new EagerParentStackEnumerator(eager);
+                    T? lastTypedParent = null;
+
+                    while (enumerator.TryGetNextOfType<T>() is { } typedParent)
+                        lastTypedParent = typedParent;
+
+                    return lastTypedParent;
+
+                case { } provider:
+                    return provider.Parents.OfType<T>().LastOrDefault();
+            }
+        }
+
+        public static IEnumerable<T> GetParents<T>(this IServiceProvider sp) where T : class
+        {
+            return sp.GetService<IAvaloniaXamlIlParentStackProvider>() switch
+            {
+                null => Enumerable.Empty<T>(),
+                IAvaloniaXamlIlEagerParentStackProvider eager => EnumerateEagerProvider(eager),
+                { } provider => provider.Parents.OfType<T>()
+            };
+
+            // allocates the final iterator, but still avoids the intermediate ones
+            static IEnumerable<T> EnumerateEagerProvider(IAvaloniaXamlIlEagerParentStackProvider eagerProvider)
+            {
+                var enumerator = new EagerParentStackEnumerator(eagerProvider);
+
+                while (enumerator.TryGetNextOfType<T>() is { } typedParent)
+                    yield return typedParent;
+            }
+        }
 
         public static bool IsInControlTemplate(this IServiceProvider sp) => sp.GetService<IAvaloniaXamlIlControlTemplateProvider>() != null;
 

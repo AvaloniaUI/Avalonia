@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -26,7 +28,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
-            var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>().Parents);
+            var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
             var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
             return sp =>
@@ -35,21 +37,28 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
                 scope.Complete();
 
-                if(typeof(T) == typeof(Control))
-                    return new TemplateResult<Control>((Control)obj, scope);
-
                 return new TemplateResult<T>((T)obj, scope);
             };
         }
 
-        private static IResourceNode[] AsResourceNodes(IEnumerable<object> items)
+        private static IResourceNode[] AsResourceNodes(IAvaloniaXamlIlParentStackProvider provider)
         {
             var buffer = s_resourceNodeBuffer ??= new List<IResourceNode>(8);
 
-            foreach (var item in items)
+            if (provider is IAvaloniaXamlIlEagerParentStackProvider eagerProvider)
             {
-                if (item is IResourceNode node)
+                var enumerator = new EagerParentStackEnumerator(eagerProvider);
+
+                while (enumerator.TryGetNextOfType<IResourceNode>() is { } node)
                     buffer.Add(node);
+            }
+            else
+            {
+                foreach (var item in provider.Parents)
+                {
+                    if (item is IResourceNode node)
+                        buffer.Add(node);
+                }
             }
 
             var result = buffer.ToArray();
@@ -58,7 +67,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         }
 
         private sealed class DeferredParentServiceProvider :
-            IAvaloniaXamlIlParentStackProvider,
+            IAvaloniaXamlIlEagerParentStackProvider,
             IServiceProvider,
             IRootObjectProvider,
             IAvaloniaXamlIlControlTemplateProvider
@@ -67,9 +76,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             private readonly IResourceNode[] _parentResourceNodes;
             private readonly INameScope _nameScope;
             private IRuntimePlatform? _runtimePlatform;
+            private Optional<IAvaloniaXamlIlEagerParentStackProvider?> _parentStackProvider;
 
-            public DeferredParentServiceProvider(IServiceProvider? parentProvider, IResourceNode[] parentResourceNodes,
-                object rootObject, INameScope nameScope)
+            public DeferredParentServiceProvider(
+                IServiceProvider? parentProvider,
+                IResourceNode[] parentResourceNodes,
+                object rootObject,
+                INameScope nameScope)
             {
                 _parentProvider = parentProvider;
                 _parentResourceNodes = parentResourceNodes;
@@ -77,7 +90,34 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 RootObject = rootObject;
             }
 
-            public IEnumerable<object> Parents => _parentResourceNodes;
+            public object RootObject { get; }
+
+            public object IntermediateRootObject
+                => RootObject;
+
+            public IEnumerable<object> Parents
+                => _parentResourceNodes;
+
+            public IReadOnlyList<object> DirectParents
+                => _parentResourceNodes;
+
+            public IAvaloniaXamlIlEagerParentStackProvider? ParentProvider
+            {
+                get
+                {
+                    if (!_parentStackProvider.HasValue)
+                    {
+                        _parentStackProvider =
+                            new Optional<IAvaloniaXamlIlEagerParentStackProvider?>(GetParentStackProviderFromServices());
+                    }
+
+                    return _parentStackProvider.GetValueOrDefault();
+                }
+            }
+
+            private IAvaloniaXamlIlEagerParentStackProvider? GetParentStackProviderFromServices()
+                => _parentProvider?.GetService<IAvaloniaXamlIlParentStackProvider>()
+                    as IAvaloniaXamlIlEagerParentStackProvider;
 
             public object? GetService(Type serviceType)
             {
@@ -93,11 +133,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return _runtimePlatform ??= AvaloniaLocator.Current.GetService<IRuntimePlatform>();
                 return _parentProvider?.GetService(serviceType);
             }
-
-            public object RootObject { get; }
-            public object IntermediateRootObject => RootObject;
         }
-
 
         public static void ApplyNonMatchingMarkupExtensionV1(object target, object property, IServiceProvider prov,
             object value)
@@ -214,39 +250,89 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
 
             private IAvaloniaXamlIlParentStackProvider CreateParentStackProvider()
                 => _parentServiceProvider?.GetService<IAvaloniaXamlIlParentStackProvider>()
-                   ?? DefaultAvaloniaXamlIlParentStackProvider.GetForApplication(Application.Current);
+                   ?? GetParentStackProviderForApplication(Application.Current);
 
-            private sealed class DefaultAvaloniaXamlIlParentStackProvider : IAvaloniaXamlIlParentStackProvider
+            private static IAvaloniaXamlIlEagerParentStackProvider GetParentStackProviderForApplication(Application? application)
+                => application is null ?
+                    EmptyAvaloniaXamlIlParentStackProvider.Instance :
+                    ApplicationAvaloniaXamlIlParentStackProvider.GetForApplication(application);
+
+            private sealed class ApplicationAvaloniaXamlIlParentStackProvider :
+                IAvaloniaXamlIlEagerParentStackProvider,
+                IReadOnlyList<object>
             {
-                private static readonly DefaultAvaloniaXamlIlParentStackProvider s_empty = new(Enumerable.Empty<object>());
-                private static DefaultAvaloniaXamlIlParentStackProvider s_lastProvider = s_empty;
+                private static ApplicationAvaloniaXamlIlParentStackProvider? s_lastProvider;
                 private static Application? s_lastApplication;
 
-                public static DefaultAvaloniaXamlIlParentStackProvider GetForApplication(Application? application)
+                public static ApplicationAvaloniaXamlIlParentStackProvider GetForApplication(Application application)
                 {
                     if (application != s_lastApplication)
-                        SetLastProvider(application);
-
-                    return s_lastProvider;
-
-                    static void SetLastProvider(Application? application)
                     {
-                        if (application is null)
-                        {
-                            s_lastProvider = s_empty;
-                        }
-                        else
-                        {
-                            s_lastProvider = new DefaultAvaloniaXamlIlParentStackProvider(new object[] { application });
-                            s_lastApplication = application;
-                        }
+                        s_lastProvider = new ApplicationAvaloniaXamlIlParentStackProvider(application);
+                        s_lastApplication = application;
+                    }
+
+                    return s_lastProvider!;
+                }
+
+                private readonly Application _application;
+                private IEnumerable<object>? _parents;
+
+                public ApplicationAvaloniaXamlIlParentStackProvider(Application application)
+                    => _application = application;
+
+                public IEnumerable<object> Parents
+                    => _parents ??= new object[] { _application };
+
+                public IReadOnlyList<object> DirectParents
+                    => this;
+
+                public int Count
+                    => 1;
+
+                public IEnumerator<object> GetEnumerator()
+                    => Parents.GetEnumerator();
+
+                IEnumerator IEnumerable.GetEnumerator()
+                    => GetEnumerator();
+
+                public object this[int index]
+                {
+                    get
+                    {
+                        if (index != 0)
+                            ThrowArgumentOutOfRangeException();
+
+                        return _application;
                     }
                 }
 
-                public DefaultAvaloniaXamlIlParentStackProvider(IEnumerable<object> parents)
-                    => Parents = parents;
+                [DoesNotReturn]
+                [MethodImpl(MethodImplOptions.NoInlining)]
+                [SuppressMessage("ReSharper", "NotResolvedInText")]
+                private static void ThrowArgumentOutOfRangeException()
+                    => throw new ArgumentOutOfRangeException("index");
 
-                public IEnumerable<object> Parents { get; }
+                public IAvaloniaXamlIlEagerParentStackProvider? ParentProvider
+                    => null;
+            }
+
+            private sealed class EmptyAvaloniaXamlIlParentStackProvider : IAvaloniaXamlIlEagerParentStackProvider
+            {
+                public static EmptyAvaloniaXamlIlParentStackProvider Instance { get; } = new();
+
+                private EmptyAvaloniaXamlIlParentStackProvider()
+                {
+                }
+
+                public IEnumerable<object> Parents
+                    => Array.Empty<object>();
+
+                public IReadOnlyList<object> DirectParents
+                    => Array.Empty<object>();
+
+                public IAvaloniaXamlIlEagerParentStackProvider? ParentProvider
+                    => null;
             }
         }
     }

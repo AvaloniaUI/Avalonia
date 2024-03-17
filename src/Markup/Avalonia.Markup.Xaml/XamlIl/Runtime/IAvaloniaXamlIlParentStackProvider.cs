@@ -6,4 +6,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
     {
         IEnumerable<object> Parents { get; }
     }
+
+    public interface IAvaloniaXamlIlEagerParentStackProvider : IAvaloniaXamlIlParentStackProvider
+    {
+        IReadOnlyList<object> DirectParents { get; }
+
+        IAvaloniaXamlIlEagerParentStackProvider? ParentProvider { get; }
+    }
 }

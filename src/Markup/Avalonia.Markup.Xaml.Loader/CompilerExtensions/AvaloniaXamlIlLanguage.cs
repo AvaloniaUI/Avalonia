@@ -79,22 +79,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             var emit = new XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>
             {
                 ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.EmitProvideValueTarget,
-                ContextTypeBuilderCallback = (b, c) => EmitNameScopeField(rv, typeSystem, b, c)
+                ContextTypeBuilderCallback = definition =>
+                {
+                    EmitNameScopeField(rv, typeSystem, definition);
+                    EmitEagerParentStackProvider(rv, typeSystem, definition);
+                }
             };
             return (rv, emit);
         }
 
         public const string ContextNameScopeFieldName = "AvaloniaNameScope";
 
-        private static void EmitNameScopeField(XamlLanguageTypeMappings mappings,
+        private static void EmitNameScopeField(
+            XamlLanguageTypeMappings mappings,
             IXamlTypeSystem typeSystem,
-            IXamlTypeBuilder<IXamlILEmitter> typebuilder, IXamlILEmitter constructor)
+            IXamlILContextDefinition<IXamlILEmitter> definition)
         {
-
             var nameScopeType = typeSystem.FindType("Avalonia.Controls.INameScope");
-            var field = typebuilder.DefineField(nameScopeType, 
+            var field = definition.TypeBuilder.DefineField(nameScopeType,
                 ContextNameScopeFieldName, XamlVisibility.Public, false);
-            constructor
+            definition.ConstructorBuilder.Generator
                 .Ldarg_0()
                 .Ldarg(1)
                 .Ldtype(nameScopeType)
@@ -102,7 +106,56 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     typeSystem.FindType("System.Object"), typeSystem.FindType("System.Type"))))
                 .Stfld(field);
         }
-        
+
+        private static void EmitEagerParentStackProvider(
+            XamlLanguageTypeMappings mappings,
+            IXamlTypeSystem typeSystem,
+            IXamlILContextDefinition<IXamlILEmitter> definition)
+        {
+            var interfaceType = typeSystem.FindType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlEagerParentStackProvider");
+
+            definition.TypeBuilder.AddInterfaceImplementation(interfaceType);
+
+            // IReadOnlyList<object> DirectParents => (IReadOnlyList<object>)ParentsStack;
+            var directParentsGetter = ImplementInterfacePropertyGetter("DirectParents");
+            directParentsGetter.Generator
+                .LdThisFld(definition.ParentListField)
+                .Castclass(directParentsGetter.ReturnType)
+                .Ret();
+
+            var serviceProviderGetServiceMethod = mappings.ServiceProvider.GetMethod(new FindMethodMethodSignature(
+                "GetService",
+                typeSystem.FindType("System.Object"),
+                typeSystem.FindType("System.Type")));
+
+            // IAvaloniaXamlIlEagerParentStackProvider? ParentProvider
+            // => (IAvaloniaXamlIlEagerParentStackProvider)_serviceProvider.GetService(typeof(IAvaloniaXamlIlParentStackProvider))
+            var parentProviderGetter = ImplementInterfacePropertyGetter("ParentProvider");
+            parentProviderGetter.Generator
+                .LdThisFld(definition.ParentServiceProviderField)
+                .Ldtype(mappings.ParentStackProvider)
+                .EmitCall(serviceProviderGetServiceMethod)
+                .Castclass(interfaceType)
+                .Ret();
+
+            IXamlMethodBuilder<IXamlILEmitter> ImplementInterfacePropertyGetter(string propertyName)
+            {
+                var interfaceGetter = interfaceType.FindMethod(m => m.Name == "get_" + propertyName);
+
+                var getter = definition.TypeBuilder.DefineMethod(
+                    interfaceGetter.ReturnType,
+                    Array.Empty<IXamlType>(),
+                    "get_" + propertyName,
+                    XamlVisibility.Private,
+                    false,
+                    true,
+                    interfaceGetter);
+
+                definition.TypeBuilder.DefineProperty(interfaceGetter.ReturnType, propertyName, null, getter);
+
+                return getter;
+            }
+        }
 
         class AttributeResolver : IXamlCustomAttributeResolver
         {

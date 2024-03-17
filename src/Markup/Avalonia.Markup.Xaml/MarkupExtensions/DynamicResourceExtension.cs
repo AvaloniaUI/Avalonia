@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
@@ -37,7 +38,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                     (object?)serviceProvider.GetFirstParent<IResourceHost>();
             }
 
-            _themeVariant = StaticResourceExtension.GetDictionaryVariant(serviceProvider);
+            _themeVariant = StaticResourceExtension.GetDictionaryVariant(
+                serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>());
 
             return this;
         }
