@@ -259,9 +259,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.IResourceDictionary");
             ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
             ResourceDictionaryDeferredAdd = ResourceDictionary.FindMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
-                cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
-                    cfg.TypeSystem.GetType("System.IServiceProvider"),
-                    XamlIlTypes.Object));
+                cfg.TypeSystem.GetType("Avalonia.Controls.IDeferredContent"));
             IThemeVariantProvider = cfg.TypeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
