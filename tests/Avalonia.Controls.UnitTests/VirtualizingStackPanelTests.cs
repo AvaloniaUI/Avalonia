@@ -1144,7 +1144,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 ev.Container.AddHandler(Control.RequestBringIntoViewEvent, (_, e) =>
                 {
-                    var dataContext = e.TargetObject.DataContext as ItemWithHeight;
+                    var dataContext = (ItemWithHeight)e.TargetObject!.DataContext!;
                     e.TargetRect = new Rect(dataContext.Height - 50, 0, 50, 10);
                 });
             };

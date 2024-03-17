@@ -1061,7 +1061,7 @@ namespace Avalonia.Controls
             _settingWidthInternally = true;
             try
             {
-                Width = width;
+                SetCurrentValue(WidthProperty, width);
             }
             finally
             {
@@ -1079,7 +1079,7 @@ namespace Avalonia.Controls
             _setWidthInternalNoCallback = true;
             try
             {
-                Width = width;
+                SetCurrentValue(WidthProperty, width);
             }
             finally
             {

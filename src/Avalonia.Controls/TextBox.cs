@@ -24,7 +24,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a control that can be used to display or edit unformatted text.
     /// </summary>
-    [TemplatePart("PART_TextPresenter", typeof(TextPresenter))]
+    [TemplatePart("PART_TextPresenter", typeof(TextPresenter), IsRequired = true)]
     [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer))]
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
@@ -1063,7 +1063,15 @@ namespace Avalonia.Controls
                     _undoRedoHelper.DiscardRedo();
                 }
 
-                SetCurrentValue(CaretIndexProperty, caretIndex + input.Length);
+                //Make sure updated text is in sync
+                _presenter?.SetCurrentValue(TextPresenter.TextProperty, text);
+
+                caretIndex += input.Length;
+
+                //Make sure caret is in sync
+                _presenter?.MoveCaretToTextPosition(caretIndex);
+
+                SetCurrentValue(CaretIndexProperty, caretIndex);
             }
         }
 
@@ -1578,6 +1586,13 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
+                        if (IsPasswordBox && !RevealPassword)
+                        {
+                            // double-clicking in a cloaked single-line password box selects all text
+                            // see https://github.com/AvaloniaUI/Avalonia/issues/14956
+                            goto case 3;
+                        }
+
                         if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
                             selectionStart = StringUtils.PreviousWord(text, caretIndex);

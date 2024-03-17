@@ -16,7 +16,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PrimaryButton",   typeof(Button))]
     [TemplatePart("PART_SecondaryButton", typeof(Button))]
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
-    public class SplitButton : ContentControl, ICommandSource
+    public class SplitButton : ContentControl, ICommandSource, IClickableControl
     {
         internal const string pcChecked    = ":checked";
         internal const string pcPressed    = ":pressed";
@@ -57,8 +57,15 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
             Button.FlyoutProperty.AddOwner<SplitButton>();
 
+        /// <summary>
+        /// Defines the <see cref="HotKey"/> property.
+        /// </summary>
+        public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
+            Button.HotKeyProperty.AddOwner<SplitButton>();
+
         private Button? _primaryButton   = null;
         private Button? _secondaryButton = null;
+        private KeyGesture? _hotkey = default;
 
         private bool _commandCanExecute       = true;
         private bool _isAttachedToLogicalTree = false;
@@ -99,6 +106,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(FlyoutProperty);
             set => SetValue(FlyoutProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets an <see cref="KeyGesture"/> associated with this control
+        /// </summary>
+        public KeyGesture? HotKey
+        {
+            get => GetValue(HotKeyProperty);
+            set => SetValue(HotKeyProperty, value);
         }
 
         /// <summary>
@@ -232,6 +248,9 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToLogicalTree(e);
 
+            // Control attached again, set Hotkey to create a hotkey manager for this control
+            SetCurrentValue(HotKeyProperty, _hotkey);
+            
             if (Command != null)
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
@@ -245,6 +264,10 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
+
+            // This will cause the hotkey manager to dispose the observer and the reference to this control
+            _hotkey = HotKey;
+            SetCurrentValue(HotKeyProperty, null);
 
             if (Command != null)
             {
@@ -472,5 +495,8 @@ namespace Avalonia.Controls
                 OnFlyoutClosed();
             }
         }
+
+        void IClickableControl.RaiseClick() => 
+            (_primaryButton as IClickableControl)?.RaiseClick();    
     }
 }

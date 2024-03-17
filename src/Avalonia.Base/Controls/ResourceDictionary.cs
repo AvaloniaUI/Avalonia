@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Templates;
@@ -13,11 +14,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : IResourceDictionary, IThemeVariantProvider
+    public class ResourceDictionary : ResourceProvider, IResourceDictionary, IThemeVariantProvider
     {
         private object? lastDeferredItemKey;
         private Dictionary<object, object?>? _inner;
-        private IResourceHost? _owner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
         private AvaloniaDictionary<ThemeVariant, IThemeVariantProvider>? _themeDictionary;
 
@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
         /// </summary>
-        public ResourceDictionary(IResourceHost owner) => Owner = owner;
+        public ResourceDictionary(IResourceHost owner) : base(owner) { }
 
         public int Count => _inner?.Count ?? 0;
 
@@ -49,19 +49,6 @@ namespace Avalonia.Controls
 
         public ICollection<object> Keys => (ICollection<object>?)_inner?.Keys ?? Array.Empty<object>();
         public ICollection<object?> Values => (ICollection<object?>?)_inner?.Values ?? Array.Empty<object?>();
-
-        public IResourceHost? Owner
-        {
-            get => _owner;
-            private set
-            {
-                if (_owner != value)
-                {
-                    _owner = value;
-                    OwnerChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
 
         public IList<IResourceProvider> MergedDictionaries
         {
@@ -123,7 +110,7 @@ namespace Avalonia.Controls
         
         ThemeVariant? IThemeVariantProvider.Key { get; set; }
 
-        bool IResourceNode.HasResources
+        public sealed override bool HasResources
         {
             get
             {
@@ -150,9 +137,7 @@ namespace Avalonia.Controls
         bool ICollection<KeyValuePair<object, object?>>.IsReadOnly => false;
 
         private Dictionary<object, object?> Inner => _inner ??= new();
-
-        public event EventHandler? OwnerChanged;
-
+        
         public void Add(object key, object? value)
         {
             Inner.Add(key, value);
@@ -187,7 +172,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
+        public sealed override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             if (TryGetValue(key, out value))
                 return true;
@@ -316,17 +301,8 @@ namespace Avalonia.Controls
             return false;
         }
 
-        void IResourceProvider.AddOwner(IResourceHost owner)
+        protected sealed override void OnAddOwner(IResourceHost owner)
         {
-            owner = owner ?? throw new ArgumentNullException(nameof(owner));
-
-            if (Owner != null)
-            {
-                throw new InvalidOperationException("The ResourceDictionary already has a parent.");
-            }
-            
-            Owner = owner;
-
             var hasResources = _inner?.Count > 0;
             
             if (_mergedDictionaries is not null)
@@ -352,37 +328,30 @@ namespace Avalonia.Controls
             }
         }
 
-        void IResourceProvider.RemoveOwner(IResourceHost owner)
+        protected sealed override void OnRemoveOwner(IResourceHost owner)
         {
-            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            var hasResources = _inner?.Count > 0;
 
-            if (Owner == owner)
+            if (_mergedDictionaries is not null)
             {
-                Owner = null;
-
-                var hasResources = _inner?.Count > 0;
-
-                if (_mergedDictionaries is not null)
+                foreach (var i in _mergedDictionaries)
                 {
-                    foreach (var i in _mergedDictionaries)
-                    {
-                        i.RemoveOwner(owner);
-                        hasResources |= i.HasResources;
-                    }
+                    i.RemoveOwner(owner);
+                    hasResources |= i.HasResources;
                 }
-                if (_themeDictionary is not null)
+            }
+            if (_themeDictionary is not null)
+            {
+                foreach (var i in _themeDictionary.Values)
                 {
-                    foreach (var i in _themeDictionary.Values)
-                    {
-                        i.RemoveOwner(owner);
-                        hasResources |= i.HasResources;
-                    }
+                    i.RemoveOwner(owner);
+                    hasResources |= i.HasResources;
                 }
+            }
 
-                if (hasResources)
-                {
-                    owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
-                }
+            if (hasResources)
+            {
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
             }
         }
 

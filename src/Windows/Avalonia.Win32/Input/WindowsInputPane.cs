@@ -8,7 +8,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.Input;
 
-internal unsafe class WindowsInputPane : IInputPane, IDisposable
+internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
 {
     private static readonly Lazy<bool> s_inputPaneSupported = new(() =>
         WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.InputPane")); 
@@ -48,12 +48,6 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
 
         return null;
     }
-    
-    public InputPaneState State { get; private set; }
-
-    public Rect OccludedRect { get; private set; }
-
-    public event EventHandler<InputPaneStateEventArgs>? StateChanged;
 
     private void OnStateChanged(bool showing, UnmanagedMethods.RECT? prcInputPaneScreenLocation)
     {
@@ -65,7 +59,7 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
 
         if (oldState != (OccludedRect, State))
         {
-            StateChanged?.Invoke(this, new InputPaneStateEventArgs(State, null, OccludedRect));
+            OnStateChanged(new InputPaneStateEventArgs(State, null, OccludedRect));
         }
     }
 

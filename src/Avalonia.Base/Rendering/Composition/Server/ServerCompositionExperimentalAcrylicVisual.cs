@@ -5,7 +5,8 @@ namespace Avalonia.Rendering.Composition.Server;
 
 internal partial class ServerCompositionExperimentalAcrylicVisual
 {
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+        IDirtyRectTracker dirtyRects)
     {
         var cornerRadius = CornerRadius;
         canvas.DrawRectangle(
@@ -15,7 +16,7 @@ internal partial class ServerCompositionExperimentalAcrylicVisual
                 cornerRadius.TopLeft, cornerRadius.TopRight,
                 cornerRadius.BottomRight, cornerRadius.BottomLeft));
 
-        base.RenderCore(canvas, currentTransformedClip);
+        base.RenderCore(canvas, currentTransformedClip, dirtyRects);
     }
 
     public override Rect OwnContentBounds => new(0, 0, Size.X, Size.Y);
