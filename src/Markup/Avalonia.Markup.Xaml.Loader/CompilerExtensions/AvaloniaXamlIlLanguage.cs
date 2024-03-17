@@ -58,7 +58,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     "TemplateResultType"
                 },
                 DeferredContentExecutorCustomization =
-                    runtimeHelpers.FindMethod(m => m.Name == "DeferredTransformationFactoryV2"),
+                    runtimeHelpers.FindMethod(m => m.Name == "DeferredTransformationFactoryV3"),
                 UsableDuringInitializationAttributes =
                 {
                     typeSystem.GetType("Avalonia.Metadata.UsableDuringInitializationAttribute"),

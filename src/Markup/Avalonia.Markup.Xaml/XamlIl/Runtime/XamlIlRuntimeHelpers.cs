@@ -28,17 +28,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
+            return DeferredTransformationFactoryV3<T>(builder, provider).Build!;
+        }
+
+        public static IDeferredContent DeferredTransformationFactoryV3<T>(
+            Func<IServiceProvider, object> builder,
+            IServiceProvider provider)
+        {
             var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
             var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
-            return sp =>
-            {
-                var scope = parentScope != null ? new ChildNameScope(parentScope) : (INameScope)new NameScope();
-                var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
-                scope.Complete();
 
-                return new TemplateResult<T>((T)obj, scope);
-            };
+            return new DeferredContent<T>(builder, parentScope, resourceNodes, rootObject);
         }
 
         private static IResourceNode[] AsResourceNodes(IAvaloniaXamlIlParentStackProvider provider)
@@ -64,6 +65,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             var result = buffer.ToArray();
             buffer.Clear();
             return result;
+        }
+
+        private sealed class DeferredContent<T> : IDeferredContent
+        {
+            private readonly INameScope? _parentNameScope;
+            private readonly Func<IServiceProvider, object> _builder;
+            private readonly object _rootObject;
+            private readonly IResourceNode[] _parentResourceNodes;
+
+            public DeferredContent(
+                Func<IServiceProvider, object> builder,
+                INameScope? parentNameScope,
+                IResourceNode[] parentResourceNodes,
+                object rootObject)
+            {
+                _builder = builder;
+                _parentNameScope = parentNameScope;
+                _parentResourceNodes = parentResourceNodes;
+                _rootObject = rootObject;
+            }
+
+            public object Build(IServiceProvider? serviceProvider)
+            {
+                INameScope scope = _parentNameScope is null ? new NameScope() : new ChildNameScope(_parentNameScope);
+                var obj = _builder(new DeferredParentServiceProvider(serviceProvider, _parentResourceNodes, _rootObject, scope));
+                scope.Complete();
+
+                return new TemplateResult<T>((T)obj, scope);
+            }
         }
 
         private sealed class DeferredParentServiceProvider :
