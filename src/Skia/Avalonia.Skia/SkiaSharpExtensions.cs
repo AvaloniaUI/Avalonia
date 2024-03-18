@@ -124,6 +124,11 @@ namespace Avalonia.Skia
             return sm;
         }
 
+        internal static Matrix ToAvaloniaMatrix(this SKMatrix m) => new(
+            m.ScaleX, m.SkewY, m.Persp0,
+            m.SkewX, m.ScaleY, m.Persp1,
+            m.TransX, m.TransY, m.Persp2);
+
         public static SKColor ToSKColor(this Color c)
         {
             return new SKColor(c.R, c.G, c.B, c.A);
