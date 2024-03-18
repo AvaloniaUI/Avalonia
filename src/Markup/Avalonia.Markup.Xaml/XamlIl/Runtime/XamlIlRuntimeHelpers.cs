@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -18,6 +19,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
     public static class XamlIlRuntimeHelpers
     {
         [ThreadStatic] private static List<IResourceNode>? s_resourceNodeBuffer;
+        [ThreadStatic] private static LastParentStack? s_lastParentStack;
 
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV1(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
@@ -49,6 +51,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         private static IResourceNode[] AsResourceNodes(IAvaloniaXamlIlParentStackProvider provider)
         {
             var buffer = s_resourceNodeBuffer ??= new List<IResourceNode>(8);
+            buffer.Clear();
 
             if (provider is IAvaloniaXamlIlEagerParentStackProvider eagerProvider)
             {
@@ -66,9 +69,72 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 }
             }
 
-            var result = buffer.ToArray();
+            var lastParentStack = s_lastParentStack;
+
+            if (lastParentStack is null
+                || !lastParentStack.IsEquivalentTo(provider, buffer, out var resourceNodes))
+            {
+                resourceNodes = buffer.ToArray();
+
+                if (lastParentStack is null)
+                {
+                    lastParentStack = new LastParentStack();
+                    s_lastParentStack = lastParentStack;
+                }
+
+                lastParentStack.Set(provider, resourceNodes);
+            }
+
             buffer.Clear();
-            return result;
+            return resourceNodes;
+        }
+
+        // Parent resource nodes are often the same (e.g. most values in a ResourceDictionary), cache the last ones.
+        private sealed class LastParentStack
+        {
+            private readonly WeakReference<IAvaloniaXamlIlParentStackProvider?> _parentStackProvider = new(null);
+            private readonly WeakReference<IResourceNode[]?> _resourceNodes = new(null);
+
+            public void Set(IAvaloniaXamlIlParentStackProvider parentStackProvider, IResourceNode[] resourceNodes)
+            {
+                _parentStackProvider.SetTarget(parentStackProvider);
+                _resourceNodes.SetTarget(resourceNodes);
+            }
+
+            public bool IsEquivalentTo(
+                IAvaloniaXamlIlParentStackProvider parentStackProvider,
+                List<IResourceNode> resourceNodes,
+                [NotNullWhen(true)] out IResourceNode[]? cachedResourceNodes)
+            {
+                if (!_parentStackProvider.TryGetTarget(out var lastParentStackProvider)
+                    || !_resourceNodes.TryGetTarget(out var lastResourceNodes)
+                    || parentStackProvider != lastParentStackProvider
+                    || resourceNodes.Count != lastResourceNodes.Length)
+                {
+                    cachedResourceNodes = null;
+                    return false;
+                }
+
+#if NET6_0_OR_GREATER
+                if (!CollectionsMarshal.AsSpan(resourceNodes).SequenceEqual(lastResourceNodes))
+                {
+                    cachedResourceNodes = null;
+                    return false;
+                }
+#else
+                for (var i = 0; i < lastResourceNodes.Length; ++i)
+                {
+                    if (lastResourceNodes[i] != resourceNodes[i])
+                    {
+                        cachedResourceNodes = null;
+                        return false;
+                    }
+                }
+#endif
+
+                cachedResourceNodes = lastResourceNodes;
+                return true;
+            }
         }
 
         private abstract class DeferredContent<T> : IDeferredContent
