@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -219,40 +218,6 @@ namespace Avalonia.Controls.Shapes
                     }
                 });
             }
-        }
-        
-        /// <summary>
-        /// Marks a property as a collection whose elements affecting the shape's geometry.
-        /// </summary>
-        /// <param name="properties">The properties.</param>
-        /// <remarks>
-        /// After a call to this method in a control's static constructor, any change to the
-        /// property will cause <see cref="InvalidateGeometry"/> to be called on the element.
-        /// </remarks>
-        protected static void CollectionAffectsGeometry<TShape>(params AvaloniaProperty[] properties)
-            where TShape : Shape
-        {
-            foreach (var property in properties)
-            {
-                property.Changed.Subscribe(e =>
-                {
-                    if (e.Sender is not TShape shape) return;
-                    if (e.OldValue is INotifyCollectionChanged oldCollection)
-                    {
-                        oldCollection.CollectionChanged -= shape.OnCollectionThatAffectsGeometryChanged;
-                    }
-                    
-                    if (e.NewValue is INotifyCollectionChanged newCollection)
-                    {
-                        newCollection.CollectionChanged += shape.OnCollectionThatAffectsGeometryChanged;
-                    }
-                });
-            }
-        }
-        
-        private void OnCollectionThatAffectsGeometryChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            InvalidateGeometry();
         }
 
         /// <summary>

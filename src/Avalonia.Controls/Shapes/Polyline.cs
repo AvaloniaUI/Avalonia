@@ -13,7 +13,6 @@ namespace Avalonia.Controls.Shapes
         {
             StrokeThicknessProperty.OverrideDefaultValue<Polyline>(1);
             AffectsGeometry<Polyline>(PointsProperty);
-            CollectionAffectsGeometry<Polyline>(PointsProperty);
         }
 
         public Polyline()
