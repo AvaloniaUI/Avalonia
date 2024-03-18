@@ -12,6 +12,7 @@ namespace Avalonia.Controls.Shapes
         static Polygon()
         {
             AffectsGeometry<Polygon>(PointsProperty);
+            CollectionAffectsGeometry<Polygon>(PointsProperty);
         }
 
         public Polygon()
