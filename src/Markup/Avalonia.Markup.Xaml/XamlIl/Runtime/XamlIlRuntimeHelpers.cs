@@ -28,18 +28,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
-            return DeferredTransformationFactoryV3<T>(builder, provider).Build!;
+            var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
+            var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
+            var parentScope = provider.GetService<INameScope>();
+
+            return new DelegateDeferredContent<T>(resourceNodes, rootObject, parentScope, builder).Build;
         }
 
-        public static IDeferredContent DeferredTransformationFactoryV3<T>(
-            Func<IServiceProvider, object> builder,
+        public static unsafe IDeferredContent DeferredTransformationFactoryV3<T>(
+            delegate*<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
             var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
             var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
 
-            return new DeferredContent<T>(builder, parentScope, resourceNodes, rootObject);
+            return new PointerDeferredContent<T>(resourceNodes, rootObject, parentScope, builder);
         }
 
         private static IResourceNode[] AsResourceNodes(IAvaloniaXamlIlParentStackProvider provider)
@@ -67,20 +71,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             return result;
         }
 
-        private sealed class DeferredContent<T> : IDeferredContent
+        private abstract class DeferredContent<T> : IDeferredContent
         {
             private readonly INameScope? _parentNameScope;
-            private readonly Func<IServiceProvider, object> _builder;
             private readonly object _rootObject;
             private readonly IResourceNode[] _parentResourceNodes;
 
-            public DeferredContent(
-                Func<IServiceProvider, object> builder,
-                INameScope? parentNameScope,
+            protected DeferredContent(
                 IResourceNode[] parentResourceNodes,
-                object rootObject)
+                object rootObject,
+                INameScope? parentNameScope)
             {
-                _builder = builder;
                 _parentNameScope = parentNameScope;
                 _parentResourceNodes = parentResourceNodes;
                 _rootObject = rootObject;
@@ -89,11 +90,45 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             public object Build(IServiceProvider? serviceProvider)
             {
                 INameScope scope = _parentNameScope is null ? new NameScope() : new ChildNameScope(_parentNameScope);
-                var obj = _builder(new DeferredParentServiceProvider(serviceProvider, _parentResourceNodes, _rootObject, scope));
+                var obj = InvokeBuilder(new DeferredParentServiceProvider(serviceProvider, _parentResourceNodes, _rootObject, scope));
                 scope.Complete();
 
                 return new TemplateResult<T>((T)obj, scope);
             }
+
+            protected abstract object InvokeBuilder(IServiceProvider serviceProvider);
+        }
+
+        private sealed unsafe class PointerDeferredContent<T> : DeferredContent<T>
+        {
+            private readonly delegate*<IServiceProvider, object> _builder;
+
+            public PointerDeferredContent(
+                IResourceNode[] parentResourceNodes,
+                object rootObject,
+                INameScope? parentNameScope,
+                delegate*<IServiceProvider, object> builder)
+                : base(parentResourceNodes, rootObject, parentNameScope)
+                => _builder = builder;
+
+            protected override object InvokeBuilder(IServiceProvider serviceProvider)
+                => _builder(serviceProvider);
+        }
+
+        private sealed class DelegateDeferredContent<T> : DeferredContent<T>
+        {
+            private readonly Func<IServiceProvider, object> _builder;
+
+            public DelegateDeferredContent(
+                IResourceNode[] parentResourceNodes,
+                object rootObject,
+                INameScope? parentNameScope,
+                Func<IServiceProvider, object> builder)
+                : base(parentResourceNodes, rootObject, parentNameScope)
+                => _builder = builder;
+
+            protected override object InvokeBuilder(IServiceProvider serviceProvider)
+                => _builder(serviceProvider);
         }
 
         private sealed class DeferredParentServiceProvider :
