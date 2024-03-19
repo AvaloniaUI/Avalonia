@@ -87,6 +87,7 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private bool _isDragging;
+        private bool _isFocusEngaged;
         private Track? _track;
         private Button? _decreaseButton;
         private Button? _increaseButton;
@@ -202,25 +203,26 @@ namespace Avalonia.Controls
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
 
-            _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
-            _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
             if (_track != null)
             {
                 _track.IgnoreThumbDrag = true;
-            }
 
-            if (_decreaseButton != null)
-            {
-                _decreaseButtonPressDispose = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _decreaseButtonReleaseDispose = _decreaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
-            }
+                _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
+                _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
-            if (_increaseButton != null)
-            {
-                _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                if (_decreaseButton != null)
+                {
+                    _decreaseButtonPressDispose = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                    _decreaseButtonReleaseDispose = _decreaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                }
+
+                if (_increaseButton != null)
+                {
+                    _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                    _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                }
             }
 
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
@@ -233,17 +235,29 @@ namespace Avalonia.Controls
 
             if (e.Handled || e.KeyModifiers != KeyModifiers.None) return;
 
+            var usingXyNavigation = this.IsAllowedXYNavigationMode(e.KeyDeviceType);
+            var allowArrowKeys = _isFocusEngaged || !usingXyNavigation; 
+
             var handled = true;
 
             switch (e.Key)
             {
-                case Key.Down:
-                case Key.Left:
+                case Key.Enter when usingXyNavigation:
+                    _isFocusEngaged = !_isFocusEngaged;
+                    handled = true;
+                    break;
+                case Key.Escape when usingXyNavigation:
+                    _isFocusEngaged = false;
+                    handled = true;
+                    break;
+                
+                case Key.Down when allowArrowKeys:
+                case Key.Left when allowArrowKeys:
                     MoveToNextTick(IsDirectionReversed ? SmallChange : -SmallChange);
                     break;
 
-                case Key.Up:
-                case Key.Right:
+                case Key.Up when allowArrowKeys:
+                case Key.Right when allowArrowKeys:
                     MoveToNextTick(IsDirectionReversed ? -SmallChange : SmallChange);
                     break;
 

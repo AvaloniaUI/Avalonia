@@ -343,6 +343,12 @@ public abstract partial class BindingExpressionTests
             AvaloniaProperty.Register<TargetClass, object?>("Object");
         public static readonly StyledProperty<string?> StringProperty =
             AvaloniaProperty.Register<TargetClass, string?>("String");
+        public static readonly DirectProperty<TargetClass, string?> ReadOnlyStringProperty =
+            AvaloniaProperty.RegisterDirect<TargetClass, string?>(
+                nameof(ReadOnlyString),
+                o => o.ReadOnlyString);
+
+        private string? _readOnlyString = "readonly";
 
         static TargetClass()
         {
@@ -379,9 +385,17 @@ public abstract partial class BindingExpressionTests
             set => SetValue(StringProperty, value);
         }
 
+        public string? ReadOnlyString
+        {
+            get => _readOnlyString;
+            private set => SetAndRaise(ReadOnlyStringProperty, ref _readOnlyString, value);
+        }
+
         public Dictionary<AvaloniaProperty, BindingNotification> BindingNotifications { get; } = new();
 
         public override string ToString() => nameof(TargetClass);
+
+        public void SetReadOnlyString(string? value) => ReadOnlyString = value;
 
         protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {

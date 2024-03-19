@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -30,10 +31,25 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Radius"/> property.
         /// </summary>
+        [Obsolete("Use RadiusX/RadiusY, note that those properties use _relative_ values, so Radius=0.55 would become RadiusX=55% RadiusY=55%. Radius property is always relative even if the rest of the brush uses absolute values.")]
         public static readonly StyledProperty<double> RadiusProperty =
             AvaloniaProperty.Register<RadialGradientBrush, double>(
                 nameof(Radius),
                 0.5);
+        
+        /// <summary>
+        /// Defines the <see cref="RadiusX"/> property.
+        /// </summary>
+        public static readonly StyledProperty<RelativeScalar> RadiusXProperty =
+            AvaloniaProperty.Register<RadialGradientBrush, RelativeScalar>(
+                nameof(RadiusX), RelativeScalar.Middle);
+        
+        /// <summary>
+        /// Defines the <see cref="RadiusX"/> property.
+        /// </summary>
+        public static readonly StyledProperty<RelativeScalar> RadiusYProperty =
+            AvaloniaProperty.Register<RadialGradientBrush, RelativeScalar>(
+                nameof(RadiusY), RelativeScalar.Middle);
         
         /// <summary>
         /// Gets or sets the start point for the gradient.
@@ -55,10 +71,36 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets or sets the horizontal radius of the outermost circle of the radial
+        /// gradient.
+        /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
+        [DependsOn(nameof(Radius))]
+#pragma warning restore CS0618 // Type or member is obsolete
+        public RelativeScalar RadiusX
+        {
+            get { return GetValue(RadiusXProperty); }
+            set { SetValue(RadiusXProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets or sets the vertical radius of the outermost circle of the radial
+        /// gradient.
+        /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
+        [DependsOn(nameof(Radius))]
+#pragma warning restore CS0618 // Type or member is obsolete
+        public RelativeScalar RadiusY
+        {
+            get { return GetValue(RadiusYProperty); }
+            set { SetValue(RadiusYProperty, value); }
+        }
+        
+        /// <summary>
         /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial
         /// gradient.
         /// </summary>
-        // TODO: This appears to always be relative so should use a RelativeSize struct or something.
+        [Obsolete("Use RadiusX/RadiusY, note that those properties use _relative_ values, so Radius=0.55 would become RadiusX=55% RadiusY=55%. Radius property is always relative even if the rest of the brush uses absolute values.")]
         public double Radius
         {
             get { return GetValue(RadiusProperty); }
@@ -77,7 +119,21 @@ namespace Avalonia.Media
         private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
             base.SerializeChanges(c, writer);
-            ServerCompositionSimpleRadialGradientBrush.SerializeAllChanges(writer, Center, GradientOrigin, Radius);
+            ServerCompositionSimpleRadialGradientBrush.SerializeAllChanges(writer, Center, GradientOrigin, RadiusX, RadiusY);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete: compatibility code for Radius
+            if (change.IsEffectiveValueChange && change.Property == RadiusProperty)
+            {
+                var compatibilityValue = new RelativeScalar(Radius, RelativeUnit.Relative);
+                SetCurrentValue(RadiusXProperty, compatibilityValue);
+                SetCurrentValue(RadiusYProperty, compatibilityValue);
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            base.OnPropertyChanged(change);
         }
     }
 }

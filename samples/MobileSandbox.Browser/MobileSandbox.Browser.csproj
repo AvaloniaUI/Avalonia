@@ -1,31 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <WasmMainJSPath>main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <WasmBuildNative>true</WasmBuildNative>
-    <EmccFlags>-sVERBOSE -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <RunAOTCompilation>true</RunAOTCompilation>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>full</TrimMode>
-    <WasmBuildNative>true</WasmBuildNative>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <EmccCompileOptimizationFlag>-O2</EmccCompileOptimizationFlag>
-    <EmccLinkOptimizationFlag>-O2</EmccLinkOptimizationFlag>
+    <WasmRuntimeAssetsLocation>./</WasmRuntimeAssetsLocation>
   </PropertyGroup>
 
   <ItemGroup>
-    <TrimmerRootDescriptor Include="Roots.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.csproj" />
     <ProjectReference Include="..\MobileSandbox\MobileSandbox.csproj" />
   </ItemGroup>
@@ -38,6 +22,6 @@
     <WasmExtraFilesToDeploy Include="app.css" />
   </ItemGroup>
 
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.props" />
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.targets" />
+  <Import Project="..\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.props" />
+  <Import Project="..\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.targets" />
 </Project>

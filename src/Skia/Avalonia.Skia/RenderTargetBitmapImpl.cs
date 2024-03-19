@@ -19,7 +19,8 @@ internal class RenderTargetBitmapImpl : WriteableBitmapImpl,
         _renderTarget = new FramebufferRenderTarget(this);
     }
 
-    public IDrawingContextImpl CreateDrawingContext() => _renderTarget.CreateDrawingContext();
+    IDrawingContextImpl IRenderTarget.CreateDrawingContext(bool useScaledDrawing) =>
+        _renderTarget.CreateDrawingContext(useScaledDrawing);
 
     public bool IsCorrupted => false;
     

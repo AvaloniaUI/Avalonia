@@ -71,26 +71,18 @@ namespace Avalonia.Browser
             _splash = DomHelper.GetElementById("avalonia-splash");
 
             _topLevelImpl = new BrowserTopLevelImpl(this, _containerElement);
-
-            _topLevel = new WebEmbeddableControlRoot(_topLevelImpl, () =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (_splash != null)
-                    {
-                        DomHelper.AddCssClass(_splash, "splash-close");
-                    }
-                });
-            });
-
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
                 InputHelper.SetCursor(_containerElement, cursor);
             };
 
+            _topLevel = new EmbeddableControlRoot(_topLevelImpl);
             _topLevel.Prepare();
-
             _topLevel.Renderer.Start();
+            if (_splash != null)
+            {
+                _topLevel.RequestAnimationFrame(_ => DomHelper.AddCssClass(_splash, "splash-close"));
+            }
 
             InputHelper.InitializeBackgroundHandlers();
 
@@ -113,8 +105,6 @@ namespace Avalonia.Browser
             
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
-            _dpi = DomHelper.ObserveDpi(OnDpiChanged);
-
             _useGL = AvaloniaLocator.Current.GetService<IPlatformGraphics>() != null;
 
             if (_useGL)
@@ -133,7 +123,7 @@ namespace Avalonia.Browser
                 _topLevelImpl.Surfaces = new[]
                 {
                     new BrowserSkiaSurface(_context, _jsGlInfo, ColorType,
-                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi,
+                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _canvasSize,_dpi,
                         GRSurfaceOrigin.BottomLeft)
                 };
             }
@@ -143,11 +133,7 @@ namespace Avalonia.Browser
                     .Log(this, "[Avalonia]: Unable to initialize Canvas surface.");
             }
 
-            CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
-
-            _topLevelImpl.SetClientSize(_canvasSize, _dpi);
-
-            DomHelper.ObserveSize(host, null, OnSizeChanged);
+            DomHelper.ObserveSize(host, OnSizeOrDpiChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
 
@@ -256,7 +242,7 @@ namespace Avalonia.Browser
 
         private bool OnWheel(JSObject args)
         {
-            return _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+            return _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY")),
                 new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)), GetModifiers(args));
         }
 
@@ -468,35 +454,23 @@ namespace Avalonia.Browser
 
             if (_topLevel.Renderer is CompositingRenderer dr)
             {
-                MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget);
+                MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget, true);
             }
         }
 
-        private void OnDpiChanged(double oldDpi, double newDpi)
+        private void OnSizeOrDpiChanged(double displayWidth, double displayHeight, double dpi)
         {
-            if (Math.Abs(_dpi - newDpi) > 0.0001)
+            var newSize = new Size(displayWidth, displayHeight);
+
+            if (_canvasSize != newSize || _dpi != dpi)
             {
-                _dpi = newDpi;
+                _dpi = dpi;
 
-                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
-
-                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
-
-                ForceBlit();
-            }
-        }
-
-        private void OnSizeChanged(int height, int width)
-        {
-            var newSize = new Size(height, width);
-
-            if (_canvasSize != newSize)
-            {
                 _canvasSize = newSize;
 
-                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                CanvasHelper.SetCanvasSize(_canvas, (int)_canvasSize.Width, (int)_canvasSize.Height);
 
-                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+                _topLevelImpl.SetClientSize(new(displayWidth / dpi, displayHeight / dpi), dpi);
 
                 ForceBlit();
             }

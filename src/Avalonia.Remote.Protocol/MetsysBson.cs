@@ -73,6 +73,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class Serializer
     {
         private static readonly IDictionary<Type, Types> _typeMap = new Dictionary<Type, Types>
@@ -615,6 +616,8 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class MagicProperty
     {
         private readonly PropertyInfo _property;
@@ -689,6 +692,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class TypeHelper
     {
         private static readonly IDictionary<Type, TypeHelper> _cachedTypeLookup = new Dictionary<Type, TypeHelper>();
@@ -791,6 +795,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class ListWrapper : BaseWrapper
     {
         private IList _list;
@@ -826,6 +831,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal static class ListHelper
     {
         public static Type GetListItemType(Type enumerableType)
@@ -871,6 +877,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class CollectionWrapper<T> : BaseWrapper
     {
         private ICollection<T> _list;
@@ -899,6 +906,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal abstract class BaseWrapper
     {
         public static BaseWrapper Create(Type type, Type itemType, object existingContainer)
@@ -956,6 +964,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class ArrayWrapper<T> : BaseWrapper
     {
         private readonly List<T> _list = new List<T>();
@@ -1008,6 +1017,7 @@ namespace Metsys.Bson
 namespace Metsys.Bson
 {
     [RequiresUnreferencedCode("Bson uses reflection")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class Deserializer
     {
         internal class Options
@@ -1578,11 +1588,12 @@ namespace Metsys.Bson.Configuration
         internal void AddMap<T>(string property, string alias)
         {
             var type = typeof(T);
-            if (!_aliasMap.ContainsKey(type))
+            if (!_aliasMap.TryGetValue(type, out var aliases))
             {
-                _aliasMap[type] = new Dictionary<string, string>();
+                aliases = new Dictionary<string, string>();
+                _aliasMap[type] = aliases;
             }
-            _aliasMap[type][property] = alias;
+            aliases[property] = alias;
         }
         internal string AliasFor(Type type, string property)
         {
@@ -1597,11 +1608,12 @@ namespace Metsys.Bson.Configuration
         public void AddIgnore<T>(string name)
         {
             var type = typeof(T);
-            if (!_ignored.ContainsKey(type))
+            if (!_ignored.TryGetValue(type, out var names))
             {
-                _ignored[type] = new HashSet<string>();
+                names = new HashSet<string>();
+                _ignored[type] = names;
             }
-            _ignored[type].Add(name);
+            names.Add(name);
         }
         public bool IsIgnored(Type type, string name)
         {
@@ -1612,11 +1624,12 @@ namespace Metsys.Bson.Configuration
         public void AddIgnoreIfNull<T>(string name)
         {
             var type = typeof(T);
-            if (!_ignoredIfNull.ContainsKey(type))
+            if (!_ignoredIfNull.TryGetValue(type, out var names))
             {
-                _ignoredIfNull[type] = new HashSet<string>();
+                names = new HashSet<string>();
+                _ignoredIfNull[type] = names;
             }
-            _ignoredIfNull[type].Add(name);
+            names.Add(name);
         }
         public bool IsIgnoredIfNull(Type type, string name)
         {
@@ -1633,6 +1646,5 @@ namespace Metsys.Bson
         public BsonException() { }
         public BsonException(string message) : base(message) { }
         public BsonException(string message, Exception innerException) : base(message, innerException) { }
-        protected BsonException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

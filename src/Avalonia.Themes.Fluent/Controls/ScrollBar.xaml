@@ -63,7 +63,8 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ScrollBarButtonArrowForeground}"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentPresenter Background="{DynamicResource ScrollBarButtonBackground}"
+        <ContentPresenter x:Name="PART_ContentPresenter"
+                          Background="{DynamicResource ScrollBarButtonBackground}"
                           BorderBrush="{DynamicResource ScrollBarButtonBorderBrush}"
                           Content="{TemplateBinding Content}"/>
       </ControlTemplate>

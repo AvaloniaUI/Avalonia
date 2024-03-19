@@ -129,9 +129,10 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DPICHANGED:
                     {
-                        var dpi = ToInt32(wParam) & 0xffff;
+                        _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
-                        _scaling = dpi / 96.0;
+                        _scaling = _dpi / StandardDpi;
+                        RefreshIcon();
                         ScalingChanged?.Invoke(_scaling);
 
                         using (SetResizeReason(WindowResizeReason.DpiChange))
@@ -148,6 +149,22 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+
+                case WindowsMessage.WM_GETICON:
+                    if (_iconImpl == null)
+                    {
+                        break;
+                    }
+
+                    var requestIcon = (Icons)wParam;
+                    var requestDpi = (uint) lParam;
+
+                    if (requestDpi == 0)
+                    {
+                        requestDpi = _dpi;
+                    }
+                                        
+                    return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
@@ -596,14 +613,6 @@ namespace Avalonia.Win32
                     {
                         var size = (SizeCommand)wParam;
 
-                        if (Resized != null &&
-                            (size == SizeCommand.Restored ||
-                             size == SizeCommand.Maximized))
-                        {
-                            var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
-                            Resized(clientSize / RenderScaling, _resizeReason);
-                        }
-
                         var windowState = size switch
                         {
                             SizeCommand.Maximized => WindowState.Maximized,
@@ -612,10 +621,20 @@ namespace Avalonia.Win32
                             _ => WindowState.Normal,
                         };
 
-                        if (windowState != _lastWindowState)
-                        {
-                            _lastWindowState = windowState;
+                        var stateChanged = windowState != _lastWindowState;
+                        _lastWindowState = windowState;
 
+                        if (Resized != null &&
+                            (size == SizeCommand.Restored ||
+                             size == SizeCommand.Maximized))
+                        {
+                            var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
+                            Resized(clientSize / RenderScaling, _resizeReason);
+                        }
+
+
+                        if (stateChanged)
+                        {
                             var newWindowProperties = _windowProperties;
 
                             newWindowProperties.WindowState = windowState;
@@ -730,7 +749,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
-                        Imm32InputMethod.Current.HandleCompositionEnd();
+                        Imm32InputMethod.Current.HandleCompositionEnd(timestamp);
 
                         return IntPtr.Zero;
                     }

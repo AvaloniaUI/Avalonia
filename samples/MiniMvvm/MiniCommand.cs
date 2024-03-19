@@ -6,10 +6,10 @@ namespace MiniMvvm
 {
     public sealed class MiniCommand<T> : MiniCommand, ICommand
     {
-        private readonly Action<T> _cb;
+        private readonly Action<T>? _cb;
+        private readonly Func<T, Task>? _acb;
         private bool _busy;
-        private Func<T, Task> _acb;
-        
+
         public MiniCommand(Action<T> cb)
         {
             _cb = cb;
@@ -31,10 +31,11 @@ namespace MiniMvvm
         }
 
         
-        public override event EventHandler CanExecuteChanged;
-        public override bool CanExecute(object parameter) => !_busy;
+        public override event EventHandler? CanExecuteChanged;
 
-        public override async void Execute(object parameter)
+        public override bool CanExecute(object? parameter) => !_busy;
+
+        public override async void Execute(object? parameter)
         {
             if(Busy)
                 return;
@@ -42,9 +43,9 @@ namespace MiniMvvm
             {
                 Busy = true;
                 if (_cb != null)
-                    _cb((T)parameter);
+                    _cb((T)parameter!);
                 else
-                    await _acb((T)parameter);
+                    await _acb!((T)parameter!);
             }
             finally
             {

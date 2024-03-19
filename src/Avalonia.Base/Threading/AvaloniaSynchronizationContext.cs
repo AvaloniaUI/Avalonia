@@ -13,25 +13,33 @@ namespace Avalonia.Threading
         internal readonly DispatcherPriority Priority;
         private readonly NonPumpingLockHelper.IHelperImpl? _nonPumpingHelper =
             AvaloniaLocator.Current.GetService<NonPumpingLockHelper.IHelperImpl>();
-        
-        public AvaloniaSynchronizationContext():  this(Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
-        {
-            
-        }
-        
+        private readonly Dispatcher _dispatcher;
+
         // This constructor is here to enforce STA behavior for unit tests
-        internal AvaloniaSynchronizationContext(bool isStaThread)
+        internal AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority, bool isStaThread = false)
         {
+            _dispatcher = dispatcher;
+            Priority = priority;
             if (_nonPumpingHelper != null 
                 && isStaThread)
                 SetWaitNotificationRequired();
         }
 
-        public AvaloniaSynchronizationContext(DispatcherPriority priority)
+        public AvaloniaSynchronizationContext()
+            : this(Dispatcher.UIThread, DispatcherPriority.Default, Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
         {
-            Priority = priority;
         }
-        
+
+        public AvaloniaSynchronizationContext(DispatcherPriority priority)
+            : this(Dispatcher.UIThread, priority, false)
+        {
+        }
+
+        public AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority)
+            : this(dispatcher, priority, false)
+        {
+        }
+
         /// <summary>
         /// Controls if SynchronizationContext should be installed in InstallIfNeeded. Used by Designer.
         /// </summary>
@@ -53,18 +61,19 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public override void Post(SendOrPostCallback d, object? state)
         {
-            Dispatcher.UIThread.Post(d, state, Priority);
+            _dispatcher.Post(d, state, Priority);
         }
 
         /// <inheritdoc/>
         public override void Send(SendOrPostCallback d, object? state)
         {
-            if (Dispatcher.UIThread.CheckAccess())
-                d(state);
+            if (_dispatcher.CheckAccess())
+                // Same-thread, use send priority to avoid any reentrancy.
+                _dispatcher.Send(d, state, DispatcherPriority.Send);
             else
-                Dispatcher.UIThread.InvokeAsync(() => d(state), DispatcherPriority.Send).GetAwaiter().GetResult();
+                _dispatcher.Send(d, state, Priority);
         }
-        
+
 #if !NET6_0_OR_GREATER
         [PrePrepareMethod]
 #endif
@@ -72,8 +81,8 @@ namespace Avalonia.Threading
         {
             if (
                 _nonPumpingHelper != null
-                && Dispatcher.UIThread.CheckAccess() 
-                && Dispatcher.UIThread.DisabledProcessingCount > 0)
+                && _dispatcher.CheckAccess() 
+                && _dispatcher.DisabledProcessingCount > 0)
                 return _nonPumpingHelper.Wait(waitHandles, waitAll, millisecondsTimeout);
             return base.Wait(waitHandles, waitAll, millisecondsTimeout);
         }

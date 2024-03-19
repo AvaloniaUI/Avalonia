@@ -15,6 +15,7 @@ namespace Avalonia.Diagnostics.Views
     internal class EventsPageView : UserControl
     {
         private readonly ListBox _events;
+        private IDisposable? _adorner;
 
         public EventsPageView()
         {
@@ -71,6 +72,22 @@ namespace Avalonia.Diagnostics.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void ListBoxItem_PointerEntered(object? sender, PointerEventArgs e)
+        {
+            if (DataContext is EventsPageViewModel vm 
+                && sender is ListBoxItem control 
+                && control.DataContext is EventChainLink chainLink
+                && chainLink.Handler is Visual visual)
+            {
+                _adorner = Controls.ControlHighlightAdorner.Add(visual, vm.MainView.ShouldVisualizeMarginPadding);
+            }
+        }
+
+        private void ListBoxItem_PointerExited(object? sender, PointerEventArgs e)
+        {
+            _adorner?.Dispose();
         }
     }
 }

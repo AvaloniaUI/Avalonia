@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Linq;
@@ -58,6 +59,8 @@ namespace Avalonia
         /// <summary>
         /// Gets a method to override a lifetime factory.
         /// </summary>
+        [Obsolete("This property has no effect", true)]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public Func<Type, IApplicationLifetime?>? LifetimeOverride { get; private set; }
 
         /// <summary>
@@ -241,13 +244,6 @@ namespace Avalonia
         {
             RuntimePlatformServicesInitializer = () => StandardRuntimePlatformServices.Register(ApplicationType?.Assembly);
             RuntimePlatformServicesName = nameof(StandardRuntimePlatform);
-            return Self;
-        }
-
-        [PrivateApi]
-        public AppBuilder UseLifetimeOverride(Func<Type, IApplicationLifetime?> func)
-        {
-            LifetimeOverride = func;
             return Self;
         }
 

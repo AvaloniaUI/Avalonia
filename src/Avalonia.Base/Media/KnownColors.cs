@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using Avalonia.SourceGenerator;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Media
 {
@@ -65,6 +66,9 @@ namespace Avalonia.Media
         {
             return _knownColors.TryGetValue(rgb, out var name) ? name : null;
         }
+
+        internal static bool TryGetKnownColorName(uint rgb, [NotNullWhen(true)] out string? name)
+            => _knownColors.TryGetValue(rgb, out name);
 
         public static Color ToColor(this KnownColor color)
         {

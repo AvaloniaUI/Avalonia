@@ -129,6 +129,13 @@ namespace Avalonia.Win32
 
         private PopupImpl(IWindowBaseImpl parent, bool dummy)
         {
+            _windowProperties = new WindowProperties
+            {
+                ShowInTaskbar = false,
+                IsResizable = false,
+                Decorations = SystemDecorations.None,
+            };
+
             _parent = parent;
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
