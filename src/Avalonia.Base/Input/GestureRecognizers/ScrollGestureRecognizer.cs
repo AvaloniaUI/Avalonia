@@ -1,4 +1,4 @@
-fusing System;
+using System;
 using System.Diagnostics;
 using Avalonia.Threading;
 
