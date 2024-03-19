@@ -1199,7 +1199,7 @@ namespace Avalonia.Win32
 
             newWindowProperties.WindowState = state;
 
-            UpdateWindowProperties(newWindowProperties);
+            UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != SystemDecorations.Full);
 
             if (command.HasValue)
             {
@@ -1468,21 +1468,25 @@ namespace Avalonia.Win32
 
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-                GetClientRect(_hwnd, out var oldClientRect);
-                var oldClientRectOrigin = new POINT();
-                ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                oldClientRect.Offset(oldClientRectOrigin);
 
-                var newRect = oldClientRect;
-
-                if (newProperties.Decorations == SystemDecorations.Full)
+                if (_shown || forceChanges)
                 {
-                    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
-                }
+                    GetClientRect(_hwnd, out var oldClientRect);
+                    var oldClientRectOrigin = new POINT();
+                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
+                    oldClientRect.Offset(oldClientRectOrigin);
 
-                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
-                    SetWindowPosFlags.SWP_FRAMECHANGED);
+                    var newRect = oldClientRect;
+
+                    if (newProperties.Decorations == SystemDecorations.Full)
+                    {
+                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                    }
+
+                    SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                        SetWindowPosFlags.SWP_FRAMECHANGED);
+                }
             }
 
             // Ensure window state if decorations change
