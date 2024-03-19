@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {
@@ -100,10 +102,8 @@ namespace Avalonia.Media
         private void OnPointsChanged(IList<Point>? newValue)
         {
             _pointsObserver?.Dispose();
-            _pointsObserver = (newValue as IAvaloniaList<Point>)?.ForEachItem(
-                _ => InvalidateGeometry(),
-                _ => InvalidateGeometry(),
-                InvalidateGeometry);
+            _pointsObserver = (newValue as INotifyCollectionChanged)?.GetWeakCollectionChangedObservable()
+                .Subscribe(_ => InvalidateGeometry());
         }
     }
 }
