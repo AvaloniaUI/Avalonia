@@ -490,5 +490,36 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             
             CompareImages();
         }
+
+        [Fact]
+        public async Task ImageBrush_Should_Render_With_TransformOrigin()
+        {
+            var image = new Image
+            {
+                Width = 200,
+                Height = 200,
+                Source = new DrawingImage
+                {
+                    Drawing = new GeometryDrawing
+                    {
+                        Brush = new DrawingBrush
+                        {
+                            Transform = new RotateTransform(45),
+                            TransformOrigin = new RelativePoint(.5,.5, RelativeUnit.Relative),
+                            Drawing = new GeometryDrawing
+                            {
+                                Brush = Brushes.MediumBlue,
+                                Geometry = new RectangleGeometry { Rect = new Rect(0, 0, 48, 48) }
+                            }
+                        },
+                        Geometry = new RectangleGeometry { Rect = new Rect(0, 0, 48, 48) }
+                    }
+                }
+            };
+
+            await RenderToFile(image);
+
+            CompareImages();
+        }
     }
 }
