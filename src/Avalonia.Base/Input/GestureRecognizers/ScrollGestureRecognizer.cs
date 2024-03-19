@@ -66,7 +66,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// Gets or sets a value indicating whether the content can be scrolled vertically.
         /// </summary>
         public bool CanVerticallyScroll
         {
