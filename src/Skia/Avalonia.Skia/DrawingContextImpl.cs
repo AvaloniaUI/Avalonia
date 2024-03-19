@@ -1158,7 +1158,10 @@ namespace Avalonia.Skia
 
             if (content.Transform is not null)
             {
-                transform = content.Transform.Value * transform;
+                var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
+                var offset = Matrix.CreateTranslation(transformOrigin);
+
+                transform *= -offset * content.Transform.Value * offset;
             }
 
             var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
