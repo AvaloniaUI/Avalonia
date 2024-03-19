@@ -62,6 +62,13 @@ namespace Avalonia
         }
         private void Unregister( Dictionary<Type, List<AvaloniaProperty>> dictionary,Type type)
         {
+            foreach (var keyValuePair in dictionary)
+            {
+                foreach (var avaloniaProperty in keyValuePair.Value)
+                {
+                    avaloniaProperty.UnRegister(type);
+                }
+            }
             dictionary.Remove(type);
         }
         private void Unregister( Dictionary<Type, Dictionary<int, AvaloniaProperty>> dictionary,Type type)
