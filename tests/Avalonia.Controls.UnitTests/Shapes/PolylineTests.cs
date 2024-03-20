@@ -16,10 +16,13 @@ public class PolylineTests
         var target = new Polyline { Points = points };
         target.Measure(new Size());
         Assert.True(target.IsMeasureValid);
-
+        
+        var root = new TestRoot(target);
 
         points.Add(new Point());
 
         Assert.False(target.IsMeasureValid);
+
+        root.Child = null;
     }
 }

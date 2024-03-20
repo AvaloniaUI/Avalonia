@@ -17,9 +17,12 @@ public class PolygonTests
         target.Measure(new Size());
         Assert.True(target.IsMeasureValid);
 
+        var root = new TestRoot(target);
 
         points.Add(new Point());
 
         Assert.False(target.IsMeasureValid);
+
+        root.Child = null;
     }
 }
