@@ -76,7 +76,7 @@ namespace Avalonia.Controls.Shapes
                 if (_definingGeometry == null)
                 {
                     _definingGeometry = CreateDefiningGeometry();
-                    if (_definingGeometry is not null)
+                    if (_definingGeometry is not null && VisualRoot is not null)
                     {
                         _definingGeometry.Changed += GeometryChangedHandler;
                     }
@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Shapes
         {
             if (_definingGeometry is not null)
             {
-                _definingGeometry.Changed += GeometryChangedHandler;
+                _definingGeometry.Changed -= GeometryChangedHandler;
             }
 
             _renderedGeometry = null;
