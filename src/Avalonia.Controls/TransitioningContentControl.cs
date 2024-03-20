@@ -39,12 +39,10 @@ public class TransitioningContentControl : ContentControl
   /// <summary>
   /// Defines the <see cref="OldContent"/> property that exposes the no-longer-needed Content back to the ViewModel where it can be taken care of if need-be (e.g. disposed of).
   /// </summary>
-  public static readonly StyledProperty<object?> OldContentProperty =
-      AvaloniaProperty.Register<TransitioningContentControl, object?>(
+  public static readonly DirectProperty<TransitioningContentControl, object?> OldContentProperty =
+      AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(
           nameof(OldContent),
-          defaultValue: null,
-          defaultBindingMode: Avalonia.Data.BindingMode.OneWayToSource
-          );
+          static o => o.OldContent);
 
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
@@ -69,9 +67,10 @@ public class TransitioningContentControl : ContentControl
   /// Contains the previously assigned <see cref="ContentControl.Content"/>'s property value after it has been replaced (transitioned to) the new content, and so that this "old" content is no longer needed. This property can be bound to by the ViewModel to safely dispose of or otherwise deal with the old content.
   /// </summary>
   public object? OldContent {
-    get => GetValue(OldContentProperty);
-    set => SetValue(OldContentProperty, value);
+    get => _OldContent;
+    private set => SetAndRaise(OldContentProperty, ref _OldContent, value);
   }
+  object? _OldContent;
 
     protected override Size ArrangeOverride(Size finalSize)
     {
