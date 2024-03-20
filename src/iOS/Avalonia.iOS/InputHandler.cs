@@ -292,7 +292,8 @@ internal sealed class InputHandler
         [UIKeyboardHidUsage.Keyboard0] = PhysicalKey.Digit0,
         [UIKeyboardHidUsage.KeyboardReturnOrEnter] = PhysicalKey.Enter,
         [UIKeyboardHidUsage.KeyboardEscape] = PhysicalKey.Escape,
-        [UIKeyboardHidUsage.KeyboardDeleteOrBackspace] = PhysicalKey.Delete,
+        // See KeyboardDeleteForward for an actual Delete.
+        [UIKeyboardHidUsage.KeyboardDeleteOrBackspace] = PhysicalKey.Backspace,
         [UIKeyboardHidUsage.KeyboardTab] = PhysicalKey.Tab,
         [UIKeyboardHidUsage.KeyboardSpacebar] = PhysicalKey.Space,
         [UIKeyboardHidUsage.KeyboardHyphen] = PhysicalKey.NumPadSubtract,
