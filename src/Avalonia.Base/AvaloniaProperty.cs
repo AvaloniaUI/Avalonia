@@ -30,7 +30,7 @@ namespace Avalonia
         /// </summary>
         private KeyValuePair<Type, AvaloniaPropertyMetadata>? _singleMetadata;
 
-        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata;
+        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
         private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadataCache = new Dictionary<Type, AvaloniaPropertyMetadata>();
 
         /// <summary>
@@ -57,8 +57,6 @@ namespace Avalonia
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
-
             Name = name;
             PropertyType = valueType ?? throw new ArgumentNullException(nameof(valueType));
             OwnerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
@@ -81,8 +79,6 @@ namespace Avalonia
             Type ownerType,
             AvaloniaPropertyMetadata? metadata)
         {
-            _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
-
             Name = source?.Name ?? throw new ArgumentNullException(nameof(source));
             PropertyType = source.PropertyType;
             OwnerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
