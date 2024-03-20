@@ -26,20 +26,14 @@ public class PixelSizeTests
 
     [Theory]
     [MemberData(nameof(TryParseArguments))]
-    public void TryParse(string source, PixelSize? expected, char? separator, Exception exception)
+    public void TryParse(string source, PixelSize? expected, Exception exception)
     {
         Exception error = null;
         PixelSize result = PixelSize.Empty;
         try
         {
-            if (separator is char c)
-            {
-                PixelSize.TryParse(source, out result, c);
-            }
-            else
-            {
-                PixelSize.TryParse(source, out result);
-            }
+
+            PixelSize.TryParse(source, out result);
         }
         catch (Exception ex)
         {
@@ -72,20 +66,11 @@ public class PixelSizeTests
             "1024,768",
             new PixelSize(1024, 768),
             null,
-            null,
         };
         yield return new object[]
         {
             "1024x768",
             PixelSize.Empty,
-            null,
-            null,
-        };
-        yield return new object[]
-        {
-            "1024x768",
-            new PixelSize(1024, 768),
-            'x',
             null,
         };
     }
