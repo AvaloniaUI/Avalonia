@@ -36,6 +36,14 @@ public class TransitioningContentControl : ContentControl
             nameof(IsTransitionReversed),
             defaultValue: false);
 
+  /// <summary>
+  /// Defines the <see cref="DisposeOfOldContent"/> property.
+  /// </summary>
+  public static readonly StyledProperty<bool> DisposeOfOldContentProperty =
+      AvaloniaProperty.Register<TransitioningContentControl, bool>(
+          nameof(IsTransitionReversed),
+          defaultValue: false);
+
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
     /// </summary>
@@ -54,6 +62,14 @@ public class TransitioningContentControl : ContentControl
         get => GetValue(IsTransitionReversedProperty);
         set => SetValue(IsTransitionReversedProperty, value);
     }
+
+  /// <summary>
+  /// Gets or sets a value indicating whether the control should call <see cref="IDisposable.Dispose"/> on old <see cref="IDisposable"/> content once the transition has finished.
+  /// </summary>
+  public bool DisposeOfOldContent {
+    get => GetValue(DisposeOfOldContentProperty);
+    set => SetValue(DisposeOfOldContentProperty, value);
+  }    
 
     protected override Size ArrangeOverride(Size finalSize)
     {
@@ -137,9 +153,12 @@ public class TransitioningContentControl : ContentControl
 
         if (_lastPresenter != null &&
             _lastPresenter != currentPresenter &&
-            _lastPresenter.Content == Content)
+            _lastPresenter.Content == Content) {
+            var oldcontent = _lastPresenter.Content;
             _lastPresenter.Content = null;
-
+            if (oldcontent is IDisposable disposablecontent && DisposeOfOldContent) disposablecontent.Dispose();
+        }
+        
         currentPresenter.Content = Content;
         currentPresenter.IsVisible = true;
         _lastPresenter = currentPresenter;
@@ -162,8 +181,10 @@ public class TransitioningContentControl : ContentControl
         var oldPresenter = _isFirstFull ? _presenter2 : Presenter;
         if (oldPresenter is not null)
         {
-            oldPresenter.Content = null;
-            oldPresenter.IsVisible = false;
+          var oldcontent = oldPresenter.Content;
+          oldPresenter.Content = null;
+          oldPresenter.IsVisible = false;
+          if (oldcontent is IDisposable disposablecontent && DisposeOfOldContent) disposablecontent.Dispose();
         }
     }
 
