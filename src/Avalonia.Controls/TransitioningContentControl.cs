@@ -41,7 +41,7 @@ public class TransitioningContentControl : ContentControl
   /// </summary>
   public static readonly StyledProperty<bool> DisposeOfOldContentProperty =
       AvaloniaProperty.Register<TransitioningContentControl, bool>(
-          nameof(IsTransitionReversed),
+          nameof(DisposeOfOldContent),
           defaultValue: false);
 
     /// <summary>
