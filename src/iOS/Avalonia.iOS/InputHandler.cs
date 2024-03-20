@@ -17,7 +17,7 @@ internal sealed class InputHandler
     private readonly ITopLevelImpl _tl;
     private readonly TouchDevice _touchDevice = new();
     private readonly MouseDevice _mouseDevice = new();
-    private readonly PenDevice _penDevice = new();
+    private readonly PenDevice _penDevice = new(releasePointerOnPenUp: true);
     private static long _nextTouchPointId = 1;
     private readonly Dictionary<UITouch, long> _knownTouches = new();
 
@@ -71,9 +71,10 @@ internal sealed class InputHandler
                     (_, UITouchPhase.Began) => IsRightClick()
                         ? RawPointerEventType.RightButtonDown
                         : RawPointerEventType.LeftButtonDown,
-                    (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick()
+                    (_, UITouchPhase.Ended) => IsRightClick()
                         ? RawPointerEventType.RightButtonUp
                         : RawPointerEventType.LeftButtonUp,
+                    (_, UITouchPhase.Cancelled) => RawPointerEventType.LeaveWindow,
                     (_, _) => RawPointerEventType.Move,
                 }, ToPointerPoint(t), modifiers, id)
             {
