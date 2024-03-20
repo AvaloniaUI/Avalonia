@@ -64,7 +64,7 @@ public class TransitioningContentControl : ContentControl
     }
 
   /// <summary>
-  /// Gets or sets a value indicating whether the control should call <see cref="IDisposable.Dispose"/> on old <see cref="IDisposable"/> content once the transition has finished.
+  /// Gets or sets a value indicating whether the control should call <see cref="IDisposable.Dispose"/> on old (no longer needed) <see cref="IDisposable"/> content once the transition has finished.
   /// </summary>
   public bool DisposeOfOldContent {
     get => GetValue(DisposeOfOldContentProperty);
