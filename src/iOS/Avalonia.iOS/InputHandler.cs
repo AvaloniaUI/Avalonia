@@ -68,8 +68,12 @@ internal sealed class InputHandler
                     (TouchDevice, UITouchPhase.Cancelled) => RawPointerEventType.TouchCancel,
                     (TouchDevice, _) => RawPointerEventType.TouchUpdate,
                     
-                    (_, UITouchPhase.Began) => IsRightClick() ? RawPointerEventType.RightButtonDown : RawPointerEventType.LeftButtonDown,
-                    (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick() ? RawPointerEventType.RightButtonUp : RawPointerEventType.RightButtonDown,
+                    (_, UITouchPhase.Began) => IsRightClick()
+                        ? RawPointerEventType.RightButtonDown
+                        : RawPointerEventType.LeftButtonDown,
+                    (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick()
+                        ? RawPointerEventType.RightButtonUp
+                        : RawPointerEventType.LeftButtonUp,
                     (_, _) => RawPointerEventType.Move,
                 }, ToPointerPoint(t), modifiers, id)
             {
