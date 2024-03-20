@@ -37,12 +37,14 @@ public class TransitioningContentControl : ContentControl
             defaultValue: false);
 
   /// <summary>
-  /// Defines the <see cref="DisposeOfOldContent"/> property.
+  /// Defines the <see cref="OldContent"/> property that exposes the no-longer-needed Content back to the ViewModel where it can be taken care of if need-be (e.g. disposed of).
   /// </summary>
-  public static readonly StyledProperty<bool> DisposeOfOldContentProperty =
-      AvaloniaProperty.Register<TransitioningContentControl, bool>(
-          nameof(DisposeOfOldContent),
-          defaultValue: false);
+  public static readonly StyledProperty<object?> OldContentProperty =
+      AvaloniaProperty.Register<TransitioningContentControl, object?>(
+          nameof(OldContent),
+          defaultValue: null,
+          defaultBindingMode: Avalonia.Data.BindingMode.OneWayToSource
+          );
 
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
@@ -64,12 +66,12 @@ public class TransitioningContentControl : ContentControl
     }
 
   /// <summary>
-  /// Gets or sets a value indicating whether the control should call <see cref="IDisposable.Dispose"/> on old (no longer needed) <see cref="IDisposable"/> content once the transition has finished.
+  /// Contains the previously assigned <see cref="ContentControl.Content"/>'s property value after it has been replaced (transitioned to) the new content, and so that this "old" content is no longer needed. This property can be bound to by the ViewModel to safely dispose of or otherwise deal with the old content.
   /// </summary>
-  public bool DisposeOfOldContent {
-    get => GetValue(DisposeOfOldContentProperty);
-    set => SetValue(DisposeOfOldContentProperty, value);
-  }    
+  public object? OldContent {
+    get => GetValue(OldContentProperty);
+    set => SetValue(OldContentProperty, value);
+  }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
@@ -156,7 +158,7 @@ public class TransitioningContentControl : ContentControl
             _lastPresenter.Content == Content) {
             var oldcontent = _lastPresenter.Content;
             _lastPresenter.Content = null;
-            if (oldcontent is IDisposable disposablecontent && DisposeOfOldContent) disposablecontent.Dispose();
+            OldContent = oldcontent;
         }
         
         currentPresenter.Content = Content;
@@ -184,7 +186,7 @@ public class TransitioningContentControl : ContentControl
           var oldcontent = oldPresenter.Content;
           oldPresenter.Content = null;
           oldPresenter.IsVisible = false;
-          if (oldcontent is IDisposable disposablecontent && DisposeOfOldContent) disposablecontent.Dispose();
+          OldContent = oldcontent;
         }
     }
 
