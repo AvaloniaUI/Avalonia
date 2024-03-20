@@ -1,6 +1,6 @@
 ﻿
 
-namespace AvaloniaPlug;
+namespace UnloadableAssemblyLoadContextPlug;
 
 public partial class Window1ViewModel 
 {

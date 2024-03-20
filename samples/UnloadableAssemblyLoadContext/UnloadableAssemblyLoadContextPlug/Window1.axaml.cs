@@ -1,4 +1,6 @@
-﻿using Avalonia.Controls;
+﻿using System.Diagnostics;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using AvaloniaPlug;
 
@@ -14,5 +16,10 @@ public partial class Window1 : Window
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+        if (Debugger.IsAttached)
+        {
+            this.AttachDevTools();
+        }
+        
     }
 }
