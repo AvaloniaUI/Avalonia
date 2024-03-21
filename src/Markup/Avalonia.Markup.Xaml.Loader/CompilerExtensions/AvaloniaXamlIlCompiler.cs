@@ -88,6 +88,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
+            Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
             Emitters.Add(new AvaloniaNameScopeRegistrationXamlIlNodeEmitter());

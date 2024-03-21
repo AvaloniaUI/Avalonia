@@ -162,14 +162,25 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                         && ThemeVariantNodeEquals(context, key, sameKeyPrevAssignmentNode.Values[0]))
                     {
                         sameKeyPrevValueGroup.Children.AddRange(valueGroup.Children);
+                        FixEnsureCapacityNodes(context, sameKeyPrevValueGroup);
                         children.RemoveAt(i);
                         break;
                     }
                 }
             }
         }
-        
+
+        FixEnsureCapacityNodes(context, resourceDictionaryManipulation);
+
         return node;
+    }
+
+    // // Removes all existing EnsureCapacityNode (from the merged dictionaries) and adds a new one.
+    private static void FixEnsureCapacityNodes(AstGroupTransformationContext context, XamlManipulationGroupNode manipulation)
+    {
+        var children = manipulation.Children;
+        children.RemoveAll(c => c is AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer.EnsureCapacityNode);
+        new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer().Apply(context, manipulation);
     }
 
     public static bool ThemeVariantNodeEquals(AstGroupTransformationContext context, IXamlAstValueNode left, IXamlAstValueNode right)
