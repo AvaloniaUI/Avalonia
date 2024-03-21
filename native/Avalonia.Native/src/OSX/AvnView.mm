@@ -677,13 +677,24 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    if(actualRange){
-        range = *actualRange;
+    NSAttributedString* subString;
+    @try
+    {
+        if(actualRange){
+            range = *actualRange;
+        }
+        if(!range.location)
+        {
+            return subString;
+        }
+        subString = [_text attributedSubstringFromRange:range];
     }
-    
-    NSAttributedString* subString = [_text attributedSubstringFromRange:range];
-    
-    return subString;
+    @catch(NSException *exception)
+    {
+        NSLog( @"Name: %@", exception.name);
+        NSLog( @"Reason: %@", exception.reason );
+    }
+    return subString;       
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
