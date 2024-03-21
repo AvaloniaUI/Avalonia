@@ -37,15 +37,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             return new DelegateDeferredContent<T>(resourceNodes, rootObject, parentScope, builder).Build;
         }
 
+        // The builder is typed as IntPtr instead of delegate*<IServiceProvider, object> because Reflection.Emit has
+        // trouble with generic methods containing function pointers. See https://github.com/dotnet/runtime/issues/100020
         public static unsafe IDeferredContent DeferredTransformationFactoryV3<T>(
-            delegate*<IServiceProvider, object> builder,
+            /*delegate*<IServiceProvider, object>*/ IntPtr builder,
             IServiceProvider provider)
         {
             var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
             var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
+            var typedBuilder = (delegate*<IServiceProvider, object>)builder;
 
-            return new PointerDeferredContent<T>(resourceNodes, rootObject, parentScope, builder);
+            return new PointerDeferredContent<T>(resourceNodes, rootObject, parentScope, typedBuilder);
         }
 
         private static IResourceNode[] AsResourceNodes(IAvaloniaXamlIlParentStackProvider provider)
