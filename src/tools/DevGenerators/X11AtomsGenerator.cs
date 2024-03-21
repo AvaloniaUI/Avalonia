@@ -1,9 +1,8 @@
-using System.IO;
+using System;
 using System.Linq;
 using System.Text;
 using Generator;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DevGenerators;
@@ -42,7 +41,13 @@ public class X11AtomsGenerator : IIncrementalGenerator
 
                 var fields = cl.GetMembers().OfType<IFieldSymbol>()
                     .Where(f => f.Type.Name == "IntPtr"
-                                && f.DeclaredAccessibility == Accessibility.Public).ToList();
+                                && f.DeclaredAccessibility == Accessibility.Public)
+                    .Select(f =>
+                    new {
+                        Name = f.Name,
+                        AtomName = GetAtomName(f)
+                    })
+                    .ToList();
                 
                 classBuilder.Pad(1).AppendLine("private void PopulateAtoms(IntPtr display)").Pad(1).AppendLine("{");
                 classBuilder.Pad(2).Append("var atoms = new IntPtr[").Append(fields.Count).AppendLine("];");
@@ -50,7 +55,7 @@ public class X11AtomsGenerator : IIncrementalGenerator
 
 
                 for (int c = 0; c < fields.Count; c++)
-                    classBuilder.Pad(3).Append("\"").Append(fields[c].Name).AppendLine("\",");
+                    classBuilder.Pad(3).Append("\"").Append(fields[c].AtomName).AppendLine("\",");
                 classBuilder.Pad(2).AppendLine("};");
                 
                 classBuilder.Pad(2).AppendLine("XInternAtoms(display, atomNames, atomNames.Length, true, atoms);");
@@ -66,8 +71,19 @@ public class X11AtomsGenerator : IIncrementalGenerator
                 context.AddSource(cl.GetFullyQualifiedName().Replace(":", ""), classBuilder.ToString());
             }
         });
-
-        
     }
 
+    private const string AlternativeAtomName = "global::Avalonia.SourceGenerator.AtomAlternativeNameAttribute";
+
+    private static string? GetAtomName(IFieldSymbol field)
+    {
+        foreach (var attr in field.GetAttributes())
+        {
+            if (attr.AttributeClass?.HasFullyQualifiedName(AlternativeAtomName) == true)
+            {
+                return attr.ConstructorArguments[0].Value as string;
+            }
+        }
+        return field.Name;
+    }
 }

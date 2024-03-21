@@ -51,4 +51,12 @@ namespace Avalonia.SourceGenerator
     internal sealed class GenerateEnumValueListAttribute : Attribute
     {
     }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    internal sealed class AtomAlternativeNameAttribute : Attribute
+    {
+        public AtomAlternativeNameAttribute(string name)
+        {
+        }
+    }
 }

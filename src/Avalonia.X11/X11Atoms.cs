@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.SourceGenerator;
 using static Avalonia.X11.XLib;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
@@ -193,6 +194,24 @@ namespace Avalonia.X11
         public IntPtr MANAGER;
         public IntPtr _KDE_NET_WM_BLUR_BEHIND_REGION;
         public IntPtr INCR;
+
+        public IntPtr XdndAware;
+        public IntPtr XdndSelection;
+        public IntPtr XdndTypeList;
+        public IntPtr XdndActionCopy;
+        public IntPtr XdndEnter;
+        public IntPtr XdndPosition;
+        public IntPtr XdndStatus;
+        public IntPtr XdndLeave;
+        public IntPtr XdndDrop;
+        public IntPtr XdndFinished;
+
+        [AtomAlternativeName("text/uri-list")]
+        public IntPtr MimeTextUriList;
+        [AtomAlternativeName("text/plain")]
+        public IntPtr MimeText;
+        [AtomAlternativeName("text/plain;charset=utf-8")]
+        public IntPtr MimeTextUtf8;
 
         private readonly Dictionary<string, IntPtr> _namesToAtoms  = new Dictionary<string, IntPtr>();
         private readonly Dictionary<IntPtr, string> _atomsToNames = new Dictionary<IntPtr, string>();
