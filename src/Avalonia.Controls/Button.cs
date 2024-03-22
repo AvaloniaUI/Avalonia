@@ -255,6 +255,8 @@ namespace Avalonia.Controls
                 Command.CanExecuteChanged += CanExecuteChanged;
                 CanExecuteChanged(this, EventArgs.Empty);
             }
+
+            RegisterFlyoutEvents(Flyout);
         }
 
         /// <inheritdoc/>
@@ -273,6 +275,8 @@ namespace Avalonia.Controls
             {
                 Command.CanExecuteChanged -= CanExecuteChanged;
             }
+ 
+            UnregisterFlyoutEvents(Flyout);
         }
 
         protected virtual void OnAccessKey(RoutedEventArgs e) => OnClick();
@@ -439,8 +443,6 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            UnregisterFlyoutEvents(Flyout);
-            RegisterFlyoutEvents(Flyout);
             UpdatePseudoClasses();
         }
 
