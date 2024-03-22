@@ -2,39 +2,5 @@
   <PropertyGroup>
     <AvaloniaSingleProjectVersion>$(AvaloniaMainPackageVersion)</AvaloniaSingleProjectVersion>
     <AvaloniaSingleProjectIncludeDefaultPlatformReferences Condition="'$(AvaloniaSingleProjectIncludeDefaultPlatformReferences)' == ''" >true</AvaloniaSingleProjectIncludeDefaultPlatformReferences>
-    <!-- "net8.0" target without specific platform should be treated as a desktop target by default for executable projects.  -->
-    <AvaloniaSingleProjectSharedDesktop Condition="'$(AvaloniaSingleProjectSharedDesktop)' == '' AND ('$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe')">true</AvaloniaSingleProjectSharedDesktop>
-  </PropertyGroup>
-
-  <!-- Include targets into AvaloniaSingleProjectTargets -->
-  <PropertyGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
-    <_AvaloniaWindowsTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</_AvaloniaWindowsTarget>
-    <_AvaloniaMacOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">true</_AvaloniaMacOSTarget>
-    <_AvaloniaAndroidTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</_AvaloniaAndroidTarget>
-    <_AvaloniaIOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">true</_AvaloniaIOSTarget>
-    <_AvaloniaBrowserTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">true</_AvaloniaBrowserTarget>
-    <_AvaloniaTizenTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">true</_AvaloniaTizenTarget>
-    <!-- This target isn't yet supported by .NET -->
-    <_AvaloniaLinuxTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'linux'" >true</_AvaloniaLinuxTarget>
-  </PropertyGroup>
-
-  <!-- If project targst  -->
-  <PropertyGroup Condition="'$(AvaloniaSingleProject)' == 'true' AND '$(AvaloniaSingleProjectSharedDesktop)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == ''">
-    <_AvaloniaDesktopTarget>true</_AvaloniaDesktopTarget>
-    <_AvaloniaWindowsTarget>true</_AvaloniaWindowsTarget>
-    <_AvaloniaMacOSTarget>true</_AvaloniaMacOSTarget>
-    <_AvaloniaLinuxTarget>true</_AvaloniaLinuxTarget>
-
-    <RuntimeIdentifiers>win;osx;linux</RuntimeIdentifiers>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(_AvaloniaWindowsTarget)' == 'true' ">
-    <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(_AvaloniaBrowserTarget)' == 'true' ">
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
   </PropertyGroup>
 </Project>
