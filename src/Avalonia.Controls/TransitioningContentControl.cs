@@ -99,9 +99,7 @@ public class TransitioningContentControl : ContentControl
                         HideOldPresenter();
                     } else if ((_isFirstFull ? _presenter2 : Presenter) is ContentPresenter oldPresenter) {
                         //Even though we are not hiding old presenter yet, we still need to notify that its Content (OldContent) is no longer needed and can be disposed of if need be:
-                        var oldcontent = oldPresenter.Content;
-                        oldPresenter.Content = null;
-                        OldContent = oldcontent;
+                        NotifyOfOldContent(oldPresenter);
                     }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
             }
@@ -159,12 +157,8 @@ public class TransitioningContentControl : ContentControl
 
         if (_lastPresenter != null &&
             _lastPresenter != currentPresenter &&
-            _lastPresenter.Content == Content) {
-            var oldcontent = _lastPresenter.Content;
-            _lastPresenter.Content = null;
-            OldContent = oldcontent;
-        }
-        
+            _lastPresenter.Content == Content) NotifyOfOldContent(_lastPresenter);
+
         currentPresenter.Content = Content;
         currentPresenter.IsVisible = true;
         _lastPresenter = currentPresenter;
@@ -187,12 +181,20 @@ public class TransitioningContentControl : ContentControl
         var oldPresenter = _isFirstFull ? _presenter2 : Presenter;
         if (oldPresenter is not null)
         {
-          var oldcontent = oldPresenter.Content;
-          oldPresenter.Content = null;
+          NotifyOfOldContent(oldPresenter);
           oldPresenter.IsVisible = false;
-          OldContent = oldcontent;
         }
     }
+  
+    /// <summary>
+    /// Notifies that we no longer need the old content, so that any <see cref="OldContent"/>-observing ViewModel can deal with it as it needs.
+    /// </summary>
+    private void NotifyOfOldContent(ContentPresenter oldPresenter) {
+      var oldcontent = oldPresenter.Content;
+      oldPresenter.Content = null;
+      OldContent = oldcontent;
+      _OldContent = null; //We have signaled to any bound ViewModel that the old content was no longer needed when we set it in the above line, so we can now set it to null altogether - it should have already been taken care of by whatever logic the ViewModel has for observing the OldContent property.
+    }    
 
     private class ImmutableCrossFade : IPageTransition
     {
