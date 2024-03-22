@@ -32,7 +32,6 @@ namespace Avalonia
         {
             Getter = getter ?? throw new ArgumentNullException(nameof(getter));
             Setter = setter;
-            IsDirect = true;
             IsReadOnly = setter is null;
         }
 
@@ -52,7 +51,6 @@ namespace Avalonia
         {
             Getter = getter ?? throw new ArgumentNullException(nameof(getter));
             Setter = setter;
-            IsDirect = true;
             IsReadOnly = setter is null;
         }
 
