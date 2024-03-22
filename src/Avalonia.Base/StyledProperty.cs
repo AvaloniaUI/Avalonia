@@ -147,15 +147,6 @@ namespace Avalonia
             base.OverrideMetadata(type, metadata);
         }
 
-        /// <summary>
-        /// Gets the string representation of the property.
-        /// </summary>
-        /// <returns>The property's string representation.</returns>
-        public override string ToString()
-        {
-            return Name;
-        }
-
         /// <inheritdoc/>
         object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
 
