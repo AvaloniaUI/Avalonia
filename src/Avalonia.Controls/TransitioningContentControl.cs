@@ -157,7 +157,8 @@ public class TransitioningContentControl : ContentControl
 
         if (_lastPresenter != null &&
             _lastPresenter != currentPresenter &&
-            _lastPresenter.Content == Content) NotifyOfOldContent(_lastPresenter);
+            _lastPresenter.Content == Content)
+            NotifyOfOldContent(_lastPresenter);
 
         currentPresenter.Content = Content;
         currentPresenter.IsVisible = true;
