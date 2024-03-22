@@ -27,6 +27,7 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(name, ownerType, ownerType, metadata)
         {
+            IsDirect = true;
             Owner = ownerType;
         }
 
@@ -42,6 +43,7 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
+            IsDirect = true;
             Owner = ownerType;
         }
 
