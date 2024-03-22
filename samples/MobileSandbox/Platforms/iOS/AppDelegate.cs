@@ -3,8 +3,6 @@ using UIKit;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.iOS;
-using Avalonia.Logging;
-using Avalonia.Media;
 
 namespace MobileSandbox
 {
@@ -14,9 +12,5 @@ namespace MobileSandbox
     [Register("AppDelegate")]
     public partial class AppDelegate : AvaloniaAppDelegate<App>
     {
-        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-        {
-            return builder.LogToTrace(LogEventLevel.Debug, "IOSIME");
-        }
     }
 }

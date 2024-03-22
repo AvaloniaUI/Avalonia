@@ -6,8 +6,6 @@
     <IsPackable>False</IsPackable>
     <NoWarn>$(NoWarn);CS0649;CS0169;SYSLIB0011</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
-    <TargetFramework>net8.0</TargetFramework>
-    <!-- Remove after https://github.com/nuke-build/nuke/issues/818 fixed -->
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <!-- See https://github.com/nuke-build/nuke/issues/818 -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>

@@ -98,8 +98,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_AvaloniaBrowserTarget)' == 'true' ">
-    <WasmMainJSPath Condition=" Exists('$(BrowserProjectFolder)main.js') ">$(BrowserProjectFolder)main.js</WasmMainJSPath>
-    <WasmMainHtmlPath Condition=" Exists('$(BrowserProjectFolder)main.js') ">$(BrowserProjectFolder)main.js</WasmMainHtmlPath>
+    <WasmMainJSPath Condition=" Exists('$(BrowserProjectFolder)/wwwroot/main.js') ">$(BrowserProjectFolder)/wwwroot/main.js</WasmMainJSPath>
+    <WasmMainHtmlPath Condition=" Exists('$(BrowserProjectFolder)/wwwroot/index.html') ">$(BrowserProjectFolder)wwwroot/index.html</WasmMainHtmlPath>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
@@ -217,11 +217,7 @@
 
   <!-- Browser -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaBrowserTarget)' == 'true' and '$(BrowserProjectFolder)' != '' ">
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.js" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.css" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.html" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.svg" />
-    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/**/*.ico" />
+    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/wwwroot/**/*.*" />
   </ItemGroup>
 
   <!-- Tizen -->
