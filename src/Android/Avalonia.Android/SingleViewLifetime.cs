@@ -6,7 +6,7 @@ namespace Avalonia.Android
     internal class SingleViewLifetime : ISingleViewApplicationLifetime
     {
         private AvaloniaView _view;
-
+        
         public AvaloniaView View
         {
             get => _view; internal set

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <TargetFrameworks>net6.0;netstandard2.0;net461;netcoreapp2.0</TargetFrameworks>
+      <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
       <PackageId>Avalonia</PackageId>
   </PropertyGroup>
 
@@ -27,11 +27,11 @@
   </PropertyGroup>
 
   <Target Name="AddDesignerHostAppsToPackage" BeforeTargets="GenerateNuspec">
-    <MSBuild Projects="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" Properties="Configuration=$(Configuration);&#xA;                         Platform=$(Platform)" />
+    <MSBuild Projects="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" Properties="Configuration=$(Configuration);&#xA;Platform=$(Platform)" />
 
     <ItemGroup>
-      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/netcoreapp2.0/Avalonia.Designer.HostApp.dll">
-        <PackagePath>tools/netcoreapp2.0/designer</PackagePath>
+      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/netstandard2.0/Avalonia.Designer.HostApp.dll">
+        <PackagePath>tools/netstandard2.0/designer</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>

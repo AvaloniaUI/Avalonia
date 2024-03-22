@@ -6,22 +6,21 @@
     <Setter Property="Background" Value="{DynamicResource NotificationCardBackgroundBrush}" />
     <Setter Property="UseLayoutRounding" Value="True" />
     <Setter Property="Width" Value="350" />
-    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="RenderTransformOrigin" Value="50%,75%" />
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl Name="PART_LayoutTransformControl"
                                 UseRenderTransform="True">
-          <Border Margin="8,8,0,0"
-                  Background="{TemplateBinding Background}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{TemplateBinding CornerRadius}">
-            <ContentControl Name="PART_Content"
+          <ContentPresenter Name="PART_ContentPresenter"
                             MinHeight="150"
+                            Padding="8,8,0,0"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
                             Content="{TemplateBinding Content}" />
-          </Border>
         </LayoutTransformControl>
       </ControlTemplate>
     </Setter>

@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using System.Runtime.Versioning;
 using Avalonia.Browser;
 
 namespace Avalonia;

@@ -22,19 +22,24 @@ namespace Avalonia.Rendering.Composition.Server
         private Rect? _transformedClipBounds;
         private Rect _combinedTransformedClipBounds;
 
-        protected virtual void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+        protected virtual void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+            IDirtyRectTracker dirtyRects)
         {
         }
 
-        public void Render(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+        public void Render(CompositorDrawingContextProxy canvas, Rect? parentTransformedClip, IDirtyRectTracker dirtyRects)
         {
             if (Visible == false || IsVisibleInFrame == false)
                 return;
             if (Opacity == 0)
                 return;
 
-            currentTransformedClip = currentTransformedClip.Intersect(_combinedTransformedClipBounds);
+            var currentTransformedClip = parentTransformedClip.HasValue
+                ? parentTransformedClip.Value.Intersect(_combinedTransformedClipBounds)
+                : _combinedTransformedClipBounds;
             if (currentTransformedClip.Width == 0 && currentTransformedClip.Height == 0)
+                return;
+            if(!dirtyRects.Intersects(currentTransformedClip))
                 return;
 
             Root!.RenderedVisuals++;
@@ -67,7 +72,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             canvas.RenderOptions = RenderOptions;
 
-            RenderCore(canvas, currentTransformedClip);
+            RenderCore(canvas, currentTransformedClip, dirtyRects);
             
             // Hack to force invalidation of SKMatrix
             canvas.PostTransform = transform;
@@ -116,7 +121,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
         
-        public virtual UpdateResult Update(ServerCompositionTarget root)
+        public virtual UpdateResult Update(ServerCompositionTarget root, Matrix parentVisualTransform)
         {
             if (Parent == null && Root == null)
                 return default;
@@ -138,7 +143,7 @@ namespace Avalonia.Rendering.Composition.Server
                 _combinedTransformDirty = false;
             }
 
-            var parentTransform = (AdornedVisual ?? Parent)?.GlobalTransformMatrix ?? Matrix.Identity;
+            var parentTransform = AdornedVisual?.GlobalTransformMatrix ?? parentVisualTransform;
 
             var newTransform = CombinedTransformMatrix * parentTransform;
 
@@ -205,9 +210,9 @@ namespace Avalonia.Rendering.Composition.Server
             }
 
             _combinedTransformedClipBounds =
-                AdornedVisual?._combinedTransformedClipBounds
+                (AdornerIsClipped ? AdornedVisual?._combinedTransformedClipBounds : null)
                 ?? (Parent?.Effect == null ? Parent?._combinedTransformedClipBounds : null)
-                ?? new Rect(Root!.Size);
+                ?? new Rect(Root!.PixelSize.ToSize(1));
 
             if (_transformedClipBounds != null)
                 _combinedTransformedClipBounds = _combinedTransformedClipBounds.Intersect(_transformedClipBounds.Value);
@@ -301,7 +306,7 @@ namespace Avalonia.Rendering.Composition.Server
         protected override void ValuesInvalidated()
         {
             _isDirtyForUpdate = true;
-            Root?.Invalidate();
+            Root?.RequestUpdate();
         }
 
         public bool IsVisibleInFrame { get; set; }

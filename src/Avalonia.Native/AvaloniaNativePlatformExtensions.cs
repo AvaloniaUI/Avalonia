@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Native;
 
 namespace Avalonia
@@ -12,22 +13,25 @@ namespace Avalonia
             builder
                 .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() =>
-            {
-                var platform = AvaloniaNativePlatform.Initialize(
-                    AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
-                    new AvaloniaNativePlatformOptions());
+                {
+                    var platform = AvaloniaNativePlatform.Initialize(
+                        AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
+                        new AvaloniaNativePlatformOptions());
 
-                    builder.AfterSetup (x=>
-                    {
-                        platform.SetupApplicationName();
-                        platform.SetupApplicationMenuExporter();
-                    });
-            });
+                        builder.AfterSetup (x=>
+                        {
+                            platform.SetupApplicationName();
+                            platform.SetupApplicationMenuExporter();
+                        });
+                });
 
             return builder;
         }
     }
 
+    /// <summary>
+    /// Represents the rendering mode for platform graphics.
+    /// </summary>
     public enum AvaloniaNativeRenderingMode
     {
         /// <summary>
@@ -41,7 +45,6 @@ namespace Avalonia
         /// <summary>
         /// Avalonia would try to use Metal with GPU rendering.
         /// </summary>
-        [Obsolete("Experimental, unstable, not for production usage")]
         Metal = 3
     }
     
@@ -62,10 +65,11 @@ namespace Avalonia
         /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
         public IReadOnlyList<AvaloniaNativeRenderingMode> RenderingMode { get; set; } = new[]
         {
+            AvaloniaNativeRenderingMode.Metal,
             AvaloniaNativeRenderingMode.OpenGl,
             AvaloniaNativeRenderingMode.Software
         };
-        
+
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
         /// </summary>
@@ -99,7 +103,10 @@ namespace Avalonia
         /// Gets or sets a value indicating whether the native macOS menu bar will be enabled for the application.
         /// </summary>
         public bool DisableNativeMenus { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the native macOS should set [NSProcessInfo setProcessName] in runtime.
+        /// </summary>
         public bool DisableSetProcessName { get; set; }
         
         /// <summary>

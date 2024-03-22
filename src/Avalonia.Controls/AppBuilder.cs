@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Linq;
@@ -6,6 +7,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Media.Fonts;
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia
 {
@@ -53,6 +55,13 @@ namespace Avalonia
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
         public Action? RenderingSubsystemInitializer { get; private set; }
+
+        /// <summary>
+        /// Gets a method to override a lifetime factory.
+        /// </summary>
+        [Obsolete("This property has no effect", true)]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public Func<Type, IApplicationLifetime?>? LifetimeOverride { get; private set; }
 
         /// <summary>
         /// Gets the name of the currently selected rendering subsystem.

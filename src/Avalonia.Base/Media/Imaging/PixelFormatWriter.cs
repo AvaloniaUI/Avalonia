@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Platform;
 namespace Avalonia.Media.Imaging;
 
 internal interface IPixelFormatWriter
@@ -7,7 +8,7 @@ internal interface IPixelFormatWriter
     void Reset(IntPtr address);
 }
 
-internal static class PixelFormatWriter
+internal static unsafe class PixelFormatWriter
 {
     public unsafe struct Rgb24PixelFormatWriter : IPixelFormatWriter
     {
@@ -318,6 +319,133 @@ internal static class PixelFormatWriter
         }
 
         public void Reset(IntPtr address) => _address = (ushort*)address;
+    }
+
+    private static void Write<T>(
+        ReadOnlySpan<Rgba8888Pixel> pixels,
+        IntPtr dest,
+        PixelSize size,
+        int stride,
+        AlphaFormat alphaFormat,
+        AlphaFormat srcAlphaFormat) where T : struct, IPixelFormatWriter
+    {
+        var writer = new T();
+
+        var w = size.Width;
+        var h = size.Height;
+        var count = 0;
+
+        for (var y = 0; y < h; y++)
+        {
+            writer.Reset(dest + stride * y);
+
+            for (var x = 0; x < w; x++)
+            {
+                writer.WriteNext(GetConvertedPixel(pixels[count++], srcAlphaFormat, alphaFormat));
+            }
+        }
+    }
+
+    private static Rgba8888Pixel GetConvertedPixel(Rgba8888Pixel pixel, AlphaFormat sourceAlpha, AlphaFormat destAlpha)
+    {
+        if (sourceAlpha != destAlpha)
+        {
+            if (sourceAlpha == AlphaFormat.Premul && destAlpha != AlphaFormat.Premul)
+            {
+                return ConvertFromPremultiplied(pixel);
+            }
+
+            if (sourceAlpha != AlphaFormat.Premul && destAlpha == AlphaFormat.Premul)
+            {
+                return ConvertToPremultiplied(pixel);
+            }
+        }
+
+        return pixel;
+    }
+
+    private static Rgba8888Pixel ConvertToPremultiplied(Rgba8888Pixel pixel)
+    {
+        var factor = pixel.A / 255F;
+
+        return new Rgba8888Pixel
+        {
+            R = (byte)(pixel.R * factor),
+            G = (byte)(pixel.G * factor),
+            B = (byte)(pixel.B * factor),
+            A = pixel.A
+        };
+    }
+
+    private static Rgba8888Pixel ConvertFromPremultiplied(Rgba8888Pixel pixel)
+    {
+        var factor = 1F / (pixel.A / 255F);
+
+        return new Rgba8888Pixel
+        {
+            R = (byte)(pixel.R * factor),
+            G = (byte)(pixel.G * factor),
+            B = (byte)(pixel.B * factor),
+            A = pixel.A
+        };
+    }
+
+    public static void Write(
+        ReadOnlySpan<Rgba8888Pixel> pixels,
+        IntPtr dest,
+        PixelSize size,
+        int stride,
+        PixelFormat format,
+        AlphaFormat alphaFormat,
+        AlphaFormat srcAlphaFormat)
+    {
+        switch (format.FormatEnum)
+        {
+            case PixelFormatEnum.Rgb565:
+                Write<Bgr565PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Rgba8888:
+                Write<Rgba8888PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Bgra8888:
+                Write<Bgra8888PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.BlackWhite:
+                Write<BlackWhitePixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Gray2:
+                Write<Gray2PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Gray4:
+                Write<Gray4PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Gray8:
+                Write<Gray8PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Gray16:
+                Write<Gray16PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Gray32Float:
+                Write<Gray32FloatPixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Rgba64:
+                Write<Rgba64PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Rgb24:
+                Write<Rgb24PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Bgr24:
+                Write<Bgr24PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Bgr555:
+                Write<Bgr555PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Bgr565:
+                Write<Bgr565PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            default:
+                throw new NotSupportedException($"Pixel format {format} is not supported");
+        }
     }
 }
 

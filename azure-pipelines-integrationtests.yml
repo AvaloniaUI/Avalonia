@@ -33,7 +33,7 @@ jobs:
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
-      open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-$arch/publish/IntegrationTestApp.app
+      open -n ./samples/IntegrationTestApp/bin/Debug/net8.0/osx-$arch/publish/IntegrationTestApp.app
       pkill IntegrationTestApp
     displayName: 'Build IntegrationTestApp'
 

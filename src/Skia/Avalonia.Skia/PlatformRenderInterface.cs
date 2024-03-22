@@ -50,6 +50,9 @@ namespace Avalonia.Skia
             || format == PixelFormats.Bgra8888
             || format == PixelFormats.Rgba8888;
 
+        public bool SupportsRegions => true;
+        public IPlatformRenderInterfaceRegion CreateRegion() => new SkiaRegionImpl();
+
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
@@ -94,7 +97,7 @@ namespace Avalonia.Skia
                 var glyph = glyphRun.GlyphInfos[i].GlyphIndex;
                 var glyphPath = skFont.GetGlyphPath(glyph);
 
-                if (!glyphPath.IsEmpty)
+                if (glyphPath is not null && !glyphPath.IsEmpty)
                 {
                     path.AddPath(glyphPath, (float)currentX, (float)currentY);
                 }

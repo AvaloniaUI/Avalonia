@@ -3,6 +3,7 @@
     <TargetFrameworks>net8.0;net8.0-android;net8.0-browser;net8.0-tizen</TargetFrameworks>
     <TargetFrameworks Condition="!$([MSBuild]::IsOsPlatform('Linux'))">$(TargetFrameworks);net8.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <TargetFrameworks>netstandard2.0;$(AvsCurrentTargetFramework)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>    
     <AvaloniaSingleProject>true</AvaloniaSingleProject>

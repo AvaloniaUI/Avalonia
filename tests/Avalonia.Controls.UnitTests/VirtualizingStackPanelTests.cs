@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -1047,6 +1048,112 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new(0, 200), scroll.Offset);
         }
 
+        [Fact]
+        public void Can_Bind_Item_IsVisible()
+        {
+            using var app = App();
+            var style = CreateIsVisibleBindingStyle();            
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithIsVisible(x)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, styles: new[] { style });
+            var container = target.ContainerFromIndex(2)!;
+
+            Assert.True(container.IsVisible);
+            Assert.Equal(20, container.Bounds.Top);
+
+            items[2].IsVisible = false;
+            Layout(target);
+
+            Assert.False(container.IsVisible);
+
+            // Next container should be in correct position.
+            Assert.Equal(20, target.ContainerFromIndex(3)!.Bounds.Top);
+        }
+
+        [Fact]
+        public void IsVisible_Binding_Persists_After_Scrolling()
+        {
+            using var app = App();
+            var style = CreateIsVisibleBindingStyle();
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithIsVisible(x)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, styles: new[] { style });
+            var container = target.ContainerFromIndex(2)!;
+
+            Assert.True(container.IsVisible);
+            Assert.Equal(20, container.Bounds.Top);
+
+            items[2].IsVisible = false;
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            container = target.ContainerFromIndex(2)!;
+            Assert.False(container.IsVisible);
+        }
+
+        [Fact]
+        public void Recycling_A_Hidden_Control_Shows_It()
+        {
+            using var app = App();
+            var style = CreateIsVisibleBindingStyle();
+            var items = Enumerable.Range(0, 3).Select(x => new ItemWithIsVisible(x)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, styles: new[] { style });
+            var container = target.ContainerFromIndex(2)!;
+
+            Assert.True(container.IsVisible);
+            Assert.Equal(20, container.Bounds.Top);
+
+            items[2].IsVisible = false;
+            Layout(target);
+
+            Assert.False(container.IsVisible);
+
+            items.RemoveAt(2);
+            items.Add(new ItemWithIsVisible(3));
+            Layout(target);
+
+            Assert.True(container.IsVisible);
+        }
+
+        [Fact]
+        public void ScrollIntoView_With_TargetRect_Outside_Viewport_Should_Scroll_To_Item()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 101).Select(x => new ItemWithHeight(x, x * 100 + 1));
+            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
+                new Border
+                {
+                    Height = 10,
+                    [!Layoutable.WidthProperty] = new Binding("Height"),
+                });
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: itemTemplate,
+                styles: new[]
+                {
+                    new Style(x => x.OfType<ScrollViewer>())
+                    {
+                        Setters =
+                        {
+                            new Setter(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Visible),
+                        }
+                    }
+                });
+            itemsControl.ContainerPrepared += (_, ev) =>
+            {
+                ev.Container.AddHandler(Control.RequestBringIntoViewEvent, (_, e) =>
+                {
+                    var dataContext = (ItemWithHeight)e.TargetObject!.DataContext!;
+                    e.TargetRect = new Rect(dataContext.Height - 50, 0, 50, 10);
+                });
+            };
+
+            target.ScrollIntoView(100);
+
+            Assert.Equal(9901, scroll.Offset.X);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -1160,6 +1267,17 @@ namespace Avalonia.Controls.UnitTests
             return root;
         }
 
+        private static Style CreateIsVisibleBindingStyle()
+        {
+            return new Style(x => x.OfType<ContentPresenter>())
+            {
+                Setters =
+                {
+                    new Setter(Visual.IsVisibleProperty, new Binding("IsVisible")),
+                }
+            };
+        }
+
         private static IDataTemplate DefaultItemTemplate()
         {
             return new FuncDataTemplate<object>((x, _) => new Canvas { Width = 100, Height = 10 });
@@ -1203,6 +1321,24 @@ namespace Avalonia.Controls.UnitTests
             
             public string Caption { get; set; }
             public double Height { get; set; }
+        }
+
+        private class ItemWithIsVisible : NotifyingBase
+        {
+            private bool _isVisible = true;
+
+            public ItemWithIsVisible(int index)
+            {
+                Caption = $"Item {index}";
+            }
+
+            public string Caption { get; set; }
+
+            public bool IsVisible
+            {
+                get => _isVisible;
+                set => SetField(ref _isVisible, value);
+            }
         }
 
         private class ResettingCollection : List<string>, INotifyCollectionChanged

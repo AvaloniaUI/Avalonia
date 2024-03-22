@@ -4,13 +4,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.PropertyStore
 {
-    internal class ValueStore
+    internal class ValueStore : IBindingExpressionSink
     {
         private readonly List<ValueFrame> _frames = new();
         private Dictionary<int, IDisposable>? _localValueBindings;
@@ -39,6 +41,34 @@ namespace Avalonia.PropertyStore
         {
             InsertFrame(style);
             ReevaluateEffectiveValues();
+        }
+
+        public BindingExpressionBase AddBinding(
+            AvaloniaProperty property,
+            UntypedBindingExpressionBase source)
+        {
+            var priority = source.Priority;
+            if (priority == BindingPriority.LocalValue || property.IsDirect)
+            {
+                DisposeExistingLocalValueBinding(property);
+                _localValueBindings ??= new();
+                _localValueBindings[property.Id] = source;
+                source.AttachAndStart(this, Owner, property, BindingPriority.LocalValue);
+                return source;
+            }
+            else
+            {
+                var effective = GetEffectiveValue(property);
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
+
+                source.Attach(this, frame, Owner, property, priority);
+                frame.AddBinding(source);
+
+                if (effective is null || priority <= effective.Priority)
+                    source.Start();
+
+                return source;
+            }
         }
 
         public IDisposable AddBinding<T>(
@@ -209,6 +239,20 @@ namespace Avalonia.PropertyStore
                 var effectiveValue = CreateEffectiveValue(property);
                 AddEffectiveValue(property, effectiveValue);
                 effectiveValue.SetCurrentValueAndRaise(this, property, value);
+            }
+        }
+
+        public void SetLocalValue(AvaloniaProperty property, object? value)
+        {
+            if (TryGetEffectiveValue(property, out var existing))
+            {
+                existing.SetLocalValueAndRaise(this, property, value);
+            }
+            else
+            {
+                var effectiveValue = property.CreateEffectiveValue(Owner);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetLocalValueAndRaise(this, property, value);
             }
         }
 
@@ -405,6 +449,7 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="entry">The binding entry.</param>
         /// <param name="priority">The priority of binding which produced a new value.</param>
+        [Obsolete("TODO: Remove?")]
         public void OnBindingValueChanged(
             IValueEntry entry,
             BindingPriority priority)
@@ -528,6 +573,7 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
+        [Obsolete("TODO: Remove?")]
         public void OnLocalValueBindingCompleted(AvaloniaProperty property, IDisposable observer)
         {
             if (_localValueBindings is not null &&
@@ -549,7 +595,7 @@ namespace Avalonia.PropertyStore
         /// <param name="oldValue">The old value of the property.</param>
         /// <param name="newValue">The new value of the property.</param>
         public void OnAncestorInheritedValueChanged<T>(
-            StyledProperty<T> property, 
+            StyledProperty<T> property,
             T oldValue,
             T newValue)
         {
@@ -689,6 +735,88 @@ namespace Avalonia.PropertyStore
                 overridden);
         }
 
+        void IBindingExpressionSink.OnChanged(
+            UntypedBindingExpressionBase instance,
+            bool hasValueChanged,
+            bool hasErrorChanged,
+            object? value,
+            BindingError? error)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            Debug.Assert(instance.TargetProperty is not null);
+
+            var property = instance.TargetProperty;
+
+            if (property.IsDirect)
+            {
+                if (hasValueChanged)
+                    property.RouteSetDirectValueUnchecked(Owner, value);
+            }
+            else
+            {
+                var priority = instance.Priority;
+
+                if (hasValueChanged)
+                {
+                    if (priority == BindingPriority.LocalValue)
+                    {
+                        if (value != AvaloniaProperty.UnsetValue)
+                            SetLocalValue(property, value);
+                        else if (property == StyledElement.DataContextProperty)
+                            SetLocalValue(property, null);
+                        else
+                            ClearValue(property);
+                    }
+                    else
+                    {
+                        if (TryGetEffectiveValue(property, out var existing))
+                        {
+                            if (priority <= existing.BasePriority)
+                                ReevaluateEffectiveValue(property, existing, changedValueEntry: instance);
+                        }
+                        else
+                        {
+                            AddEffectiveValueAndRaise(property, instance, priority);
+                        }
+                    }
+                }
+            }
+
+            if (hasErrorChanged && instance.IsDataValidationEnabled)
+            {
+                var e = error?.ErrorType.ToBindingValueType() ?? BindingValueType.Value;
+                Owner.OnUpdateDataValidation(property, e, error?.Exception);
+            }
+        }
+
+        /// <summary>
+        /// Called by a binding expression when the binding produces completes.
+        /// </summary>
+        /// <param name="instance">The binding expression.</param>
+        void IBindingExpressionSink.OnCompleted(UntypedBindingExpressionBase instance)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            Debug.Assert(instance.TargetProperty is not null);
+
+            var property = instance.TargetProperty;
+
+            if (instance.IsDataValidationEnabled)
+                Owner.OnUpdateDataValidation(property, BindingValueType.UnsetValue, null);
+
+            if (instance.Priority == BindingPriority.LocalValue)
+            {
+                if (_localValueBindings is not null &&
+                    _localValueBindings.TryGetValue(property.Id, out var existing))
+                {
+                    if (existing == instance)
+                    {
+                        _localValueBindings?.Remove(property.Id);
+                        ClearValue(property);
+                    }
+                }
+            }
+        }
+
         private int InsertFrame(ValueFrame frame)
         {
             Debug.Assert(!_frames.Contains(frame));
@@ -701,7 +829,7 @@ namespace Avalonia.PropertyStore
         }
 
         private ImmediateValueFrame GetOrCreateImmediateValueFrame(
-            AvaloniaProperty property, 
+            AvaloniaProperty property,
             BindingPriority priority,
             out int frameIndex)
         {
@@ -772,7 +900,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(oldValue != newValue);
             Debug.Assert(oldValue is not null || newValue is not null);
 
-            // If the value is set locally, propagaton ends here.
+            // If the value is set locally, propagation ends here.
             if (_effectiveValues.ContainsKey(property) == true)
                 return;
 
@@ -827,7 +955,7 @@ namespace Avalonia.PropertyStore
 
                     // Try to get an entry from the frame for the property we're reevaluating.
                     var foundEntry = frame.TryGetEntryIfActive(property, out var entry, out var activeChanged);
-                    
+
                     // If the active state of the frame has changed since the last read, and
                     // the frame holds multiple values then we need to re-evaluate the
                     // effective values of all properties.
@@ -842,7 +970,7 @@ namespace Avalonia.PropertyStore
                     // value for the property. Note that the check for entry.HasValue must be 
                     // evaluated last as it can cause bindings to be subscribed.
                     if (foundEntry &&
-                        HasHigherPriority(entry!, priority, current, changedValueEntry) && 
+                        HasHigherPriority(entry!, priority, current, changedValueEntry) &&
                         entry!.HasValue())
                     {
                         if (current is not null)
@@ -923,7 +1051,7 @@ namespace Avalonia.PropertyStore
                         var entry = frame.GetEntry(j);
                         var property = entry.Property;
                         _effectiveValues.TryGetValue(property, out var effectiveValue);
-                        
+
                         if (!HasHigherPriority(entry, priority, effectiveValue, changedValueEntry))
                             continue;
 
@@ -979,7 +1107,7 @@ namespace Avalonia.PropertyStore
         {
             // Set the value if: there is no current effective value; or
             if (current is null)
-                return true; 
+                return true;
 
             // The value's priority is higher than the current effective value's priority; or
             if (entryPriority < current.Priority && entryPriority < current.BasePriority)
@@ -1003,7 +1131,7 @@ namespace Avalonia.PropertyStore
         }
 
         private bool TryGetEffectiveValue(
-            AvaloniaProperty property, 
+            AvaloniaProperty property,
             [NotNullWhen(true)] out EffectiveValue? value)
         {
             if (_effectiveValues.TryGetValue(property, out value))

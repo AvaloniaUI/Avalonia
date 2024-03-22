@@ -89,7 +89,7 @@ namespace Avalonia.PropertyStore
         /// Gets a value indicating whether the effective value represents the default value of the
         /// property and can be removed.
         /// </summary>
-        /// <returns>True if the effective value van be removed; otherwise false.</returns>
+        /// <returns>True if the effective value can be removed; otherwise false.</returns>
         public bool CanRemove()
         {
             return Priority == BindingPriority.Unset &&
@@ -126,6 +126,18 @@ namespace Avalonia.PropertyStore
             ValueStore owner,
             IValueEntry value,
             BindingPriority priority);
+
+        /// <summary>
+        /// Sets the value and base value for a LocalValue priority, raising 
+        /// <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
+        /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being changed.</param>
+        /// <param name="value">The new value of the property.</param>
+        public abstract void SetLocalValueAndRaise(
+            ValueStore owner,
+            AvaloniaProperty property,
+            object? value);
 
         /// <summary>
         /// Raises <see cref="AvaloniaObject.PropertyChanged"/> in response to an inherited value

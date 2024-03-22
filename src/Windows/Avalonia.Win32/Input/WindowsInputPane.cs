@@ -3,24 +3,33 @@ using Avalonia.Controls.Platform;
 using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.Win32Com;
+using Avalonia.Win32.WinRT;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.Input;
 
-internal unsafe class WindowsInputPane : IInputPane, IDisposable
+internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
 {
+    private static readonly Lazy<bool> s_inputPaneSupported = new(() =>
+        WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.InputPane")); 
+
     // GUID: D5120AA3-46BA-44C5-822D-CA8092C1FC72
     private static readonly Guid CLSID_FrameworkInputPane = new(0xD5120AA3, 0x46BA, 0x44C5, 0x82, 0x2D, 0xCA, 0x80, 0x92, 0xC1, 0xFC, 0x72);
     // GUID: 5752238B-24F0-495A-82F1-2FD593056796
     private static readonly Guid SID_IFrameworkInputPane  = new(0x5752238B, 0x24F0, 0x495A, 0x82, 0xF1, 0x2F, 0xD5, 0x93, 0x05, 0x67, 0x96);
 
     private readonly WindowImpl _windowImpl;
-    private readonly IFrameworkInputPane _inputPane;
+    private IFrameworkInputPane? _inputPane;
     private readonly uint _cookie;
 
-    public WindowsInputPane(WindowImpl windowImpl)
+    private WindowsInputPane(WindowImpl windowImpl)
     {
         _windowImpl = windowImpl;
-        _inputPane = UnmanagedMethods.CreateInstance<IFrameworkInputPane>(in CLSID_FrameworkInputPane, in SID_IFrameworkInputPane);
+        using (var inputPane =
+               UnmanagedMethods.CreateInstance<IFrameworkInputPane>(in CLSID_FrameworkInputPane, in SID_IFrameworkInputPane))
+        {
+            _inputPane = inputPane.CloneReference();
+        }
 
         using (var handler = new Handler(this))
         {
@@ -29,11 +38,16 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
             _cookie = cookie;
         }
     }
-    public InputPaneState State { get; private set; }
 
-    public Rect OccludedRect { get; private set; }
+    public static WindowsInputPane? TryCreate(WindowImpl windowImpl)
+    {
+        if (s_inputPaneSupported.Value)
+        {
+            return new WindowsInputPane(windowImpl);
+        }
 
-    public event EventHandler<InputPaneStateEventArgs>? StateChanged;
+        return null;
+    }
 
     private void OnStateChanged(bool showing, UnmanagedMethods.RECT? prcInputPaneScreenLocation)
     {
@@ -45,7 +59,7 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
 
         if (oldState != (OccludedRect, State))
         {
-            StateChanged?.Invoke(this, new InputPaneStateEventArgs(State, null, OccludedRect));
+            OnStateChanged(new InputPaneStateEventArgs(State, null, OccludedRect));
         }
     }
 
@@ -58,12 +72,16 @@ internal unsafe class WindowsInputPane : IInputPane, IDisposable
 
     public void Dispose()
     {
-        if (_cookie != 0)
+        if (_inputPane is not null)
         {
-            _inputPane.Unadvise(_cookie);
-        }
+            if (_cookie != 0)
+            {
+                _inputPane.Unadvise(_cookie);
+            }
 
-        _inputPane.Dispose();
+            _inputPane.Dispose();
+            _inputPane = null;
+        }
     }
 
     private class Handler : CallbackBase, IFrameworkInputPaneHandler

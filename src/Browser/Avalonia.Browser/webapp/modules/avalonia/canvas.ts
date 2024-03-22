@@ -10,6 +10,12 @@ type CanvasElement = {
     Canvas: Canvas | undefined;
 } & HTMLCanvasElement;
 
+function getGL(): any {
+    const self = globalThis as any;
+    const module = self.Module ?? self.getDotnetRuntime(0)?.Module;
+    return module?.GL ?? self.AvaloniaGL ?? self.SkiaSharpGL;
+}
+
 export class Canvas {
     static elements: Map<string, HTMLCanvasElement>;
 
@@ -60,7 +66,7 @@ export class Canvas {
                 return;
             }
 
-            const GL = (globalThis as any).AvaloniaGL;
+            const GL = getGL();
 
             // make current
             GL.makeContextCurrent(ctx);
@@ -179,7 +185,7 @@ export class Canvas {
             renderViaOffscreenBackBuffer: 1
         };
 
-        const GL = (globalThis as any).AvaloniaGL;
+        const GL = getGL();
 
         let ctx: WebGLRenderingContext = GL.createContext(htmlCanvas, contextAttributes);
 
@@ -194,107 +200,64 @@ export class Canvas {
     }
 }
 
-type SizeWatcherElement = {
-    SizeWatcher: SizeWatcherInstance;
-} & HTMLElement;
+type ResizeHandlerCallback = (displayWidth: number, displayHeight: number, dpi: number) => void;
 
-interface SizeWatcherInstance {
-    callback: (width: number, height: number) => void;
-}
+type ResizeObserverWithCallbacks = {
+    callbacks: Map<Element, ResizeHandlerCallback>;
+} & ResizeObserver;
 
-export class SizeWatcher {
-    static observer: ResizeObserver;
-    static elements: Map<string, HTMLElement>;
-    private static lastMove: number;
+export class ResizeHandler {
+    private static resizeObserver?: ResizeObserverWithCallbacks;
 
-    public static observe(element: HTMLElement, elementId: string | undefined, callback: (width: number, height: number) => void): void {
-        if (!element || !callback) {
-            return;
+    public static observeSize(element: HTMLElement, callback: ResizeHandlerCallback): (() => void) {
+        if (!this.resizeObserver) {
+            this.resizeObserver = new ResizeObserver(this.onResize) as ResizeObserverWithCallbacks;
+            this.resizeObserver.callbacks = new Map<Element, ResizeHandlerCallback>();
         }
 
-        SizeWatcher.lastMove = Date.now();
+        this.resizeObserver.callbacks.set(element, callback);
+        this.resizeObserver.observe(element, { box: "content-box" });
 
-        callback(element.clientWidth, element.clientHeight);
-
-        const handleResize = (args: UIEvent) => {
-            if (Date.now() - SizeWatcher.lastMove > 33) {
-                callback(element.clientWidth, element.clientHeight);
-                SizeWatcher.lastMove = Date.now();
-            }
+        return () => {
+            this.resizeObserver?.callbacks.delete(element);
+            this.resizeObserver?.unobserve(element);
         };
-
-        window.addEventListener("resize", handleResize);
     }
 
-    public static unobserve(elementId: string): void {
-        if (!elementId || !SizeWatcher.observer) {
-            return;
-        }
-
-        const element = SizeWatcher.elements.get(elementId);
-        if (element) {
-            SizeWatcher.elements.delete(elementId);
-            SizeWatcher.observer.unobserve(element);
-        }
-    }
-
-    static init(): void {
-        if (SizeWatcher.observer) {
-            return;
-        }
-
-        SizeWatcher.elements = new Map<string, HTMLElement>();
-        SizeWatcher.observer = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                SizeWatcher.invoke(entry.target);
+    private static onResize(entries: ResizeObserverEntry[], observer: ResizeObserver) {
+        for (const entry of entries) {
+            const callback = (observer as ResizeObserverWithCallbacks).callbacks.get(entry.target);
+            if (!callback) {
+                continue;
             }
-        });
-    }
 
-    static invoke(element: Element): void {
-        const watcherElement = element as SizeWatcherElement;
-        const instance = watcherElement.SizeWatcher;
+            const trueDpr = window.devicePixelRatio;
+            let width;
+            let height;
+            let dpr = trueDpr;
+            if (entry.devicePixelContentBoxSize) {
+                // NOTE: Only this path gives the correct answer
+                // The other paths are imperfect fallbacks
+                // for browsers that don't provide anyway to do this
+                width = entry.devicePixelContentBoxSize[0].inlineSize;
+                height = entry.devicePixelContentBoxSize[0].blockSize;
+                dpr = 1; // it's already in width and height
+            } else if (entry.contentBoxSize) {
+                if (entry.contentBoxSize[0]) {
+                    width = entry.contentBoxSize[0].inlineSize;
+                    height = entry.contentBoxSize[0].blockSize;
+                } else {
+                    width = (entry.contentBoxSize as any).inlineSize;
+                    height = (entry.contentBoxSize as any).blockSize;
+                }
+            } else {
+                width = entry.contentRect.width;
+                height = entry.contentRect.height;
+            }
+            const displayWidth = Math.round(width * dpr);
+            const displayHeight = Math.round(height * dpr);
 
-        if (!instance || !instance.callback) {
-            return;
-        }
-
-        return instance.callback(element.clientWidth, element.clientHeight);
-    }
-}
-
-export class DpiWatcher {
-    static lastDpi: number;
-    static timerId: number;
-    static callback: (old: number, newdpi: number) => void;
-
-    public static getDpi(): number {
-        return window.devicePixelRatio;
-    }
-
-    public static start(callback: (old: number, newdpi: number) => void): number {
-        DpiWatcher.lastDpi = window.devicePixelRatio;
-        DpiWatcher.timerId = window.setInterval(DpiWatcher.update, 1000);
-        DpiWatcher.callback = callback;
-
-        return DpiWatcher.lastDpi;
-    }
-
-    public static stop(): void {
-        window.clearInterval(DpiWatcher.timerId);
-    }
-
-    static update(): void {
-        if (!DpiWatcher.callback) {
-            return;
-        }
-
-        const currentDpi = window.devicePixelRatio;
-        const lastDpi = DpiWatcher.lastDpi;
-        DpiWatcher.lastDpi = currentDpi;
-
-        if (Math.abs(lastDpi - currentDpi) > 0.001) {
-            DpiWatcher.callback(lastDpi, currentDpi);
+            callback(displayWidth, displayHeight, trueDpr);
         }
     }
 }

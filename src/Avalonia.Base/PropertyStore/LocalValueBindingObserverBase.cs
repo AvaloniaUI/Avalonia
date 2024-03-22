@@ -88,8 +88,6 @@ namespace Avalonia.PropertyStore
                 var property = instance.Property;
                 var originalType = value.Type;
 
-                LoggingUtils.LogIfNecessary(owner.Owner, property, value);
-
                 // Revert to the default value if the binding value fails validation, or if
                 // there was no value (though not if there was a data validation error).
                 if ((value.HasValue && property.ValidateValue?.Invoke(value.Value) == false) ||

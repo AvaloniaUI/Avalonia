@@ -49,13 +49,28 @@ namespace Avalonia.UnitTests
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
-            keyboardNavigation: new KeyboardNavigationHandler(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
             textShaperImpl: new HeadlessTextShaperStub());
 
+        public static readonly TestServices FocusableWindow = new TestServices(
+            focusManager: new FocusManager(),
+            keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
+            inputManager: new InputManager(),
+            assetLoader: new StandardAssetLoader(),
+            platform: new StandardRuntimePlatform(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            standardCursorFactory: new HeadlessCursorFactoryStub(),
+            theme: () => CreateSimpleTheme(),
+            dispatcherImpl: new NullDispatcherImpl(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            textShaperImpl: new HeadlessTextShaperStub(),
+            windowingPlatform: new MockWindowingPlatform());
+        
         public static readonly TestServices TextServices = new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
@@ -67,7 +82,7 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
-            IKeyboardNavigationHandler keyboardNavigation = null,
+            Func<IKeyboardNavigationHandler> keyboardNavigation = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
@@ -103,7 +118,7 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
-            IKeyboardNavigationHandler keyboardNavigation = null,
+            Func<IKeyboardNavigationHandler> keyboardNavigation = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
@@ -127,7 +142,7 @@ namespace Avalonia.UnitTests
         public IFocusManager FocusManager { get; }
         internal IGlobalClock GlobalClock { get; set; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
-        public IKeyboardNavigationHandler KeyboardNavigation { get; }
+        public Func<IKeyboardNavigationHandler> KeyboardNavigation { get; }
         public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
         public IPlatformRenderInterface RenderInterface { get; }
@@ -144,7 +159,7 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
-            IKeyboardNavigationHandler keyboardNavigation = null,
+            Func<IKeyboardNavigationHandler> keyboardNavigation = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,

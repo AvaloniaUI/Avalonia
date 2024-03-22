@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL.Egl;
@@ -20,7 +21,7 @@ namespace Avalonia
         public static AppBuilder UseAndroid(this AppBuilder builder)
         {
             return builder
-                .UseStandardRuntimePlatformSubsystem()
+                .UseAndroidRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
                 .UseSkia();
         }
@@ -81,7 +82,8 @@ namespace Avalonia.Android
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());
 
             var graphics = InitializeGraphics(Options);
             if (graphics is not null)
@@ -90,6 +92,7 @@ namespace Avalonia.Android
             }
 
             Compositor = new Compositor(graphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
         
         private static IPlatformGraphics InitializeGraphics(AndroidPlatformOptions opts)

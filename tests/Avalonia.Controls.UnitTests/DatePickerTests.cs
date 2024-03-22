@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -189,18 +192,56 @@ namespace Avalonia.Controls.UnitTests
                 DateTimeOffset value = new DateTimeOffset(2000, 10, 10, 0, 0, 0, TimeSpan.Zero);
                 datePicker.SelectedDate = value;
 
-                Assert.False(dayText.Text == "day");
-                Assert.False(monthText.Text == "month");
-                Assert.False(yearText.Text == "year");
+                Assert.NotNull(dayText.Text);
+                Assert.NotNull(monthText.Text);
+                Assert.NotNull(yearText.Text);
                 Assert.False(datePicker.Classes.Contains(":hasnodate"));
 
                 datePicker.SelectedDate = null;
 
-                Assert.True(dayText.Text == "day");
-                Assert.True(monthText.Text == "month");
-                Assert.True(yearText.Text == "year");
+                Assert.Null(dayText.Text);
+                Assert.Null(monthText.Text);
+                Assert.Null(yearText.Text);
                 Assert.True(datePicker.Classes.Contains(":hasnodate"));
             }
+        }
+
+        [Fact]
+        public void SelectedDate_EnableDataValidation()
+        {
+            var handled = false;
+            var datePicker = new DatePicker();
+
+            datePicker.SelectedDateChanged += (s, e) =>
+            {
+                var minDateTime = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
+                var maxDateTime = new DateTimeOffset(2010, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+                if (e.NewDate < minDateTime)
+                    throw new DataValidationException($"dateTime is less than {minDateTime}");
+                if (e.NewDate > maxDateTime)
+                    throw new DataValidationException($"dateTime is over {maxDateTime}");
+
+                handled = true;
+            };
+
+            // dateTime is less than
+            Assert.Throws<DataValidationException>(() => datePicker.SelectedDate = new DateTimeOffset(1999, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+            // dateTime is over
+            Assert.Throws<DataValidationException>(() => datePicker.SelectedDate = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+            var exception = new DataValidationException("failed validation");
+            var observable =
+                new BehaviorSubject<BindingNotification>(new BindingNotification(exception,
+                    BindingErrorType.DataValidationError));
+            datePicker.Bind(DatePicker.SelectedDateProperty, observable);
+
+            Assert.True(DataValidationErrors.GetHasErrors(datePicker));
+
+            Dispatcher.UIThread.RunJobs();
+            datePicker.SelectedDate = new DateTimeOffset(2005, 5, 10, 11, 12, 13, TimeSpan.Zero);
+            Assert.True(handled);
         }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(

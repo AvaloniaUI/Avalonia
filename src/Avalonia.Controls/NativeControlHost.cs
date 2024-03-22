@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Platform;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -18,6 +19,11 @@ namespace Avalonia.Controls
         private bool _queuedForMoveResize;
         private readonly List<Visual> _propertyChangedSubscriptions = new();
 
+        static NativeControlHost()
+        {
+            FlowDirectionProperty.Changed.AddClassHandler<NativeControlHost>(OnFlowDirectionChanged);
+        }
+
         /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -32,6 +38,12 @@ namespace Avalonia.Controls
             }
 
             UpdateHost();
+        }
+        
+        private static void OnFlowDirectionChanged(NativeControlHost nativeControlHost,
+            AvaloniaPropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            nativeControlHost.TryUpdateNativeControlPosition();
         }
 
         private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -118,10 +130,12 @@ namespace Avalonia.Controls
             Debug.Assert(_currentRoot is not null);
 
             var bounds = Bounds;
-            var position = this.TranslatePoint(default, _currentRoot);
-            if (position == null)
+            // Native window is not rendered by Avalonia
+            var transformToVisual = this.TransformToVisual(_currentRoot);
+            if (transformToVisual == null)
                 return null;
-            return new Rect(position.Value, bounds.Size);
+            var position = new Rect(default, bounds.Size).TransformToAABB(transformToVisual.Value).Position;
+            return new Rect(position, bounds.Size);
         }
 
         private void EnqueueForMoveResize()
@@ -178,7 +192,10 @@ namespace Avalonia.Controls
 
         protected virtual void DestroyNativeControlCore(IPlatformHandle control)
         {
-            ((INativeControlHostDestroyableControlHandle)control).Destroy();
+            if (control is INativeControlHostDestroyableControlHandle nativeControlHostDestroyableControlHandle)
+            {
+                nativeControlHostDestroyableControlHandle.Destroy();
+            }
         }
         
     }

@@ -175,11 +175,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static string GetTag(Script script)
         {
-            if(!s_scriptToTag.ContainsKey(script))
+            if (!s_scriptToTag.TryGetValue(script, out var value))
             {
                 return "Zzzz";
             }
-            return s_scriptToTag[script];
+            return value;
         }
 
         private static readonly Dictionary<string, Script> s_tagToScript = 
@@ -353,11 +353,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static Script GetScript(string tag)
         {
-            if(!s_tagToScript.ContainsKey(tag))
+            if (!s_tagToScript.TryGetValue(tag, out var value))
             {
                 return Script.Unknown;
             }
-            return s_tagToScript[tag];
+            return value;
         }
 
         private static readonly Dictionary<string, GeneralCategory> s_tagToGeneralCategory = 
@@ -404,11 +404,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static GeneralCategory GetGeneralCategory(string tag)
         {
-            if(!s_tagToGeneralCategory.ContainsKey(tag))
+            if (!s_tagToGeneralCategory.TryGetValue(tag, out var value))
             {
                 return GeneralCategory.Other;
             }
-            return s_tagToGeneralCategory[tag];
+            return value;
         }
 
         private static readonly Dictionary<string, LineBreakClass> s_tagToLineBreakClass = 
@@ -460,11 +460,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static LineBreakClass GetLineBreakClass(string tag)
         {
-            if(!s_tagToLineBreakClass.ContainsKey(tag))
+            if (!s_tagToLineBreakClass.TryGetValue(tag, out var value))
             {
                 return LineBreakClass.Unknown;
             }
-            return s_tagToLineBreakClass[tag];
+            return value;
         }
 
         private static readonly Dictionary<string, BidiPairedBracketType> s_tagToBidiPairedBracketType = 
@@ -476,11 +476,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static BidiPairedBracketType GetBidiPairedBracketType(string tag)
         {
-            if(!s_tagToBidiPairedBracketType.ContainsKey(tag))
+            if (!s_tagToBidiPairedBracketType.TryGetValue(tag, out var value))
             {
                 return BidiPairedBracketType.None;
             }
-            return s_tagToBidiPairedBracketType[tag];
+            return value;
         }
 
         private static readonly Dictionary<string, BidiClass> s_tagToBidiClass = 
@@ -512,11 +512,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static BidiClass GetBidiClass(string tag)
         {
-            if(!s_tagToBidiClass.ContainsKey(tag))
+            if (!s_tagToBidiClass.TryGetValue(tag, out var value))
             {
                 return BidiClass.LeftToRight;
             }
-            return s_tagToBidiClass[tag];
+            return value;
         }
 
     }

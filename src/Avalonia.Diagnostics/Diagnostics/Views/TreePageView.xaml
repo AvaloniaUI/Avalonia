@@ -7,13 +7,13 @@
     <TreeView Name="tree"
               BorderThickness="0"
               ItemsSource="{Binding Nodes}"
-              SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+              SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
+              PointerMoved="UpdateAdorner"
+              PointerExited="RemoveAdorner">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal" Spacing="8"
-                      PointerEntered="AddAdorner"
-                      PointerExited="RemoveAdorner">
+          <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="{Binding Type}" FontWeight="{Binding FontWeight}"/>
             <TextBlock Text="{Binding Classes}"/>
             <TextBlock Foreground="Gray" Text="{Binding ElementName}"/>

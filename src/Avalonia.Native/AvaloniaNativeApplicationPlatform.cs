@@ -9,10 +9,51 @@ namespace Avalonia.Native
     internal class AvaloniaNativeApplicationPlatform : NativeCallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
     {
         public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
-        
+
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
-            ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
+            ((IApplicationPlatformEvents)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
+        }
+    
+        void IAvnApplicationEvents.UrlsOpened(IAvnStringArray urls)
+        {
+            // Raise the urls opened event to be compatible with legacy behavior.
+            ((IApplicationPlatformEvents)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
+
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
+            {
+                foreach (var url in urls.ToStringArray())
+                {
+                    if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+                    {
+                        lifetime.RaiseUrl(uri);
+                    }
+                }
+            }
+        }
+
+        void IAvnApplicationEvents.OnReopen()
+        {
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
+            {
+                lifetime.RaiseActivated(ActivationKind.Reopen);    
+            }
+        }
+
+        void IAvnApplicationEvents.OnHide()
+        {
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
+            {
+                lifetime.RaiseDeactivated(ActivationKind.Background);    
+            }
+        }
+
+        void IAvnApplicationEvents.OnUnhide()
+        {
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is MacOSActivatableLifetime lifetime)
+            {
+                lifetime.RaiseActivated(ActivationKind.Background);    
+            }
         }
 
         public int TryShutdown()

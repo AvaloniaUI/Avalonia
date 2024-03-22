@@ -272,7 +272,7 @@ namespace Avalonia.Controls
                 systemNavigationManager.BackRequested += (_, e) =>
                 {
                     e.RoutedEvent = BackRequestedEvent;
-                    RaiseEvent(e);
+                    Dispatcher.UIThread.Send(_ => RaiseEvent(e));
                 };
             }
 
@@ -291,6 +291,7 @@ namespace Avalonia.Controls
                             KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
                             Key = rawKeyEventArgs.Key,
                             PhysicalKey = rawKeyEventArgs.PhysicalKey,
+                            KeyDeviceType= rawKeyEventArgs.KeyDeviceType,
                             KeySymbol = rawKeyEventArgs.KeySymbol
                         };
 
@@ -305,7 +306,7 @@ namespace Avalonia.Controls
                 if (backRequested)
                 {
                     var backRequestedEventArgs = new RoutedEventArgs(BackRequestedEvent);
-                    RaiseEvent(backRequestedEventArgs);
+                    Dispatcher.UIThread.Send(_ => RaiseEvent(backRequestedEventArgs));
 
                     e.Handled = backRequestedEventArgs.Handled;
                 }
@@ -548,6 +549,7 @@ namespace Avalonia.Controls
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
         public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();
+        public ILauncher Launcher => PlatformImpl?.TryGetFeature<ILauncher>() ?? new NoopLauncher();
 
         /// <summary>
         /// Gets the platform's clipboard implementation
@@ -559,7 +561,7 @@ namespace Avalonia.Controls
 
         /// <inheritdoc />
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
-        
+
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -737,7 +739,7 @@ namespace Avalonia.Controls
         private void HandleScalingChanged(double scaling)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
-            ScalingChanged?.Invoke(this, EventArgs.Empty);
+            Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
         }
 
         private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
@@ -784,14 +786,17 @@ namespace Avalonia.Controls
         protected virtual void OnOpened(EventArgs e)
         {
             FrameSize = PlatformImpl?.FrameSize;
-            Opened?.Invoke(this, e);  
-        } 
+            Dispatcher.UIThread.Send(_ => Opened?.Invoke(this, e));
+        }
 
         /// <summary>
         /// Raises the <see cref="Closed"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+        protected virtual void OnClosed(EventArgs e)
+        {
+            Dispatcher.UIThread.Send(_ => Closed?.Invoke(this, e));
+        }
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
@@ -823,12 +828,16 @@ namespace Avalonia.Controls
         {
             if (PlatformImpl != null)
             {
-                if (e is RawPointerEventArgs pointerArgs)
+                Dispatcher.UIThread.Send(static state =>
                 {
-                    pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
-                }
+                    var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
+                    if (e is RawPointerEventArgs pointerArgs)
+                    {
+                        pointerArgs.InputHitTestResult = topLevel.InputHitTest(pointerArgs.Position);
+                    }
 
-                _inputManager?.ProcessInput(e);
+                    topLevel._inputManager?.ProcessInput(e);
+                }, (this, e));
             }
             else
             {

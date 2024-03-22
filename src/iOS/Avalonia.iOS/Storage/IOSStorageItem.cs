@@ -9,8 +9,6 @@ using Foundation;
 
 using UIKit;
 
-#nullable enable
-
 namespace Avalonia.iOS.Storage;
 
 internal abstract class IOSStorageItem : IStorageBookmarkItem
@@ -56,7 +54,10 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
         var properties = attributes is null ?
             new StorageItemProperties() :
-            new StorageItemProperties(attributes.Size, (DateTime)attributes.CreationDate, (DateTime)attributes.ModificationDate);
+            new StorageItemProperties(
+                attributes.Size,
+                attributes.CreationDate is { } creationDate ? (DateTime)creationDate : null,
+                attributes.ModificationDate is { } modificationDate ? (DateTime)modificationDate : null);
 
         return Task.FromResult(properties);
     }
@@ -82,7 +83,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         }
     }
 
-    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    public Task<IStorageItem?> MoveAsync(IStorageFolder destination)
     {
         if (destination is not IOSStorageFolder folder)
         {
@@ -99,9 +100,9 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
             if (NSFileManager.DefaultManager.Move(Url, newPath, out var error))
             {
-                return isDir
+                return Task.FromResult<IStorageItem?>(isDir
                     ? new IOSStorageFolder(newPath)
-                    : new IOSStorageFile(newPath);
+                    : new IOSStorageFile(newPath));
             }
 
             if (error is not null)
@@ -109,7 +110,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 throw new NSErrorException(error);
             }
 
-            return null;
+            return Task.FromResult<IStorageItem?>(null);
         }
         finally
         {
@@ -177,6 +178,13 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
     public IOSStorageFolder(NSUrl url, NSUrl? securityScopedAncestorUrl = null) : base(url, securityScopedAncestorUrl)
     {
     }
+
+    public IOSStorageFolder(NSUrl url, WellKnownFolder wellKnownFolder) : base(url, null)
+    {
+        WellKnownFolder = wellKnownFolder;
+    }
+
+    public WellKnownFolder? WellKnownFolder { get; }
 
     public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {

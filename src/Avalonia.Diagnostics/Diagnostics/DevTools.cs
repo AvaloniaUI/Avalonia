@@ -104,7 +104,7 @@ namespace Avalonia.Diagnostics
             if (topLevelGroup.Items.Count == 1 && topLevelGroup.Items is not INotifyCollectionChanged)
             {
                 var singleTopLevel = topLevelGroup.Items.First();
-                
+
                 foreach (var group in s_open)
                 {
                     if (group.Key.Items.Contains(singleTopLevel))
@@ -115,7 +115,7 @@ namespace Avalonia.Diagnostics
                     }
                 }
             }
-            
+
             var window = new MainWindow
             {
                 Root = root,
@@ -143,6 +143,24 @@ namespace Avalonia.Diagnostics
             var window = (MainWindow)sender!;
             window.Closed -= DevToolsClosed;
             s_open.Remove((IDevToolsTopLevelGroup)window.Tag!);
+        }
+
+        internal static bool DoesBelongToDevTool(this Visual v)
+        {
+            var topLevel = TopLevel.GetTopLevel(v);
+
+            while (topLevel is not null && topLevel is not Views.MainWindow)
+            {
+                if (topLevel is Avalonia.Controls.Primitives.PopupRoot pr)
+                {
+                    topLevel = pr.ParentTopLevel;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

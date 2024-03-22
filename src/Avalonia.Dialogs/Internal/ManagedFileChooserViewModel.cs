@@ -2,12 +2,12 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia.Dialogs.Internal
@@ -129,15 +129,15 @@ namespace Avalonia.Dialogs.Internal
             CancelRequested += delegate { _disposables?.Dispose(); };
 
             RefreshQuickLinks(quickSources);
-            
+
             SelectedItems.CollectionChanged += OnSelectionChangedAsync;
         }
 
-        public ManagedFileChooserViewModel(FilePickerOpenOptions filePickerOpen,  ManagedFileDialogOptions options)
+        public ManagedFileChooserViewModel(FilePickerOpenOptions filePickerOpen, ManagedFileDialogOptions options)
             : this(options)
         {
             Title = filePickerOpen.Title ?? "Open file";
-            
+
             if (filePickerOpen.FileTypeFilter?.Count > 0)
             {
                 Filters.AddRange(filePickerOpen.FileTypeFilter.Select(f => new ManagedFileChooserFilterViewModel(f)));
@@ -152,28 +152,28 @@ namespace Avalonia.Dialogs.Internal
 
             Navigate(filePickerOpen.SuggestedStartLocation);
         }
-        
-        public ManagedFileChooserViewModel(FilePickerSaveOptions filePickerSave,  ManagedFileDialogOptions options)
+
+        public ManagedFileChooserViewModel(FilePickerSaveOptions filePickerSave, ManagedFileDialogOptions options)
             : this(options)
         {
             Title = filePickerSave.Title ?? "Save file";
-            
+
             if (filePickerSave.FileTypeChoices?.Count > 0)
             {
                 Filters.AddRange(filePickerSave.FileTypeChoices.Select(f => new ManagedFileChooserFilterViewModel(f)));
                 _selectedFilter = Filters[0];
                 ShowFilters = true;
             }
-            
+
             _savingFile = true;
             _defaultExtension = filePickerSave.DefaultExtension;
             _overwritePrompt = filePickerSave.ShowOverwritePrompt ?? true;
             FileName = filePickerSave.SuggestedFileName;
-            
+
             Navigate(filePickerSave.SuggestedStartLocation, FileName);
         }
-        
-        public ManagedFileChooserViewModel(FolderPickerOpenOptions folderPickerOpen,  ManagedFileDialogOptions options)
+
+        public ManagedFileChooserViewModel(FolderPickerOpenOptions folderPickerOpen, ManagedFileDialogOptions options)
             : this(options)
         {
             Title = folderPickerOpen.Title ?? "Select directory";
@@ -222,20 +222,21 @@ namespace Avalonia.Dialogs.Internal
                         {
                             var invalidItems = SelectedItems.Where(i => i.ItemType == ManagedFileChooserItemType.Folder)
                                 .ToList();
-                            foreach (var item in invalidItems) 
+                            foreach (var item in invalidItems)
                                 SelectedItems.Remove(item);
                         }
 
                         if (!_selectingDirectory)
                         {
                             var selectedItem = SelectedItems.FirstOrDefault();
-                            
-						    if (selectedItem != null)
-						    {
-						        FileName = selectedItem.DisplayName;
-						    }
+
+                            if (selectedItem != null)
+                            {
+                                FileName = selectedItem.DisplayName;
+                            }
                         }
                     }
+                    RaisePropertyChanged(nameof(SelectedItems));
                 }
                 finally
                 {
@@ -261,10 +262,10 @@ namespace Avalonia.Dialogs.Internal
         public void Navigate(IStorageFolder? path, string? initialSelectionName = null)
         {
             var fullDirectoryPath = path?.TryGetLocalPath() ?? Directory.GetCurrentDirectory();
-            
+
             Navigate(fullDirectoryPath, initialSelectionName);
         }
-        
+
         public void Navigate(string? path, string? initialSelectionName = null)
         {
             if (!Directory.Exists(path))
@@ -365,6 +366,14 @@ namespace Avalonia.Dialogs.Internal
                 CancelRequested?.Invoke();
             }
         }
+
+        [Metadata.DependsOn(nameof(FileName))]
+        [Metadata.DependsOn(nameof(Location))]
+        [Metadata.DependsOn(nameof(SelectedItems))]
+        public bool CanOk(object _) =>
+            (_selectingDirectory && !string.IsNullOrWhiteSpace(Location))
+                || (_savingFile && !string.IsNullOrWhiteSpace(FileName))
+                || SelectedItems.Count > 0 && SelectedItems.Where(static s => !string.IsNullOrWhiteSpace(s.Path)).Any();
 
         public void Ok()
         {

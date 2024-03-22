@@ -430,6 +430,12 @@ namespace Avalonia.Controls
                     root.LayoutManager.ExecuteLayoutPass();
                 }
 
+                // During the previous BringIntoView, the scroll width extent might have been out of date if
+                // elements have different widths. Because of that, the ScrollViewer might not scroll to the correct offset.
+                // After the previous BringIntoView, Y offset should be correct and an extra layout pass has been executed,
+                // hence the width extent should be correct now, and we can try to scroll again.
+                scrollToElement.BringIntoView();
+
                 _scrollToElement = null;
                 _scrollToIndex = -1;
                 return scrollToElement;
@@ -447,8 +453,6 @@ namespace Avalonia.Controls
         {
             Debug.Assert(_realizedElements is not null);
 
-            // If the control has not yet been laid out then the effective viewport won't have been set.
-            // Try to work it out from an ancestor control.
             var viewport = _viewport;
 
             // Get the viewport in the orientation direction.
@@ -629,7 +633,7 @@ namespace Avalonia.Controls
                 generator.ItemContainerPrepared(controlItem, item, index);
             }
 
-            controlItem.IsVisible = true;
+            controlItem.SetCurrentValue(Visual.IsVisibleProperty, true);
             return controlItem;
         }
 
@@ -645,7 +649,7 @@ namespace Avalonia.Controls
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
                 var recycled = recyclePool.Pop();
-                recycled.IsVisible = true;
+                recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
                 return recycled;
@@ -684,7 +688,7 @@ namespace Avalonia.Controls
             }
             else if (recycleKey == s_itemIsItsOwnContainer)
             {
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
             else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
@@ -695,7 +699,7 @@ namespace Avalonia.Controls
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
         }
 
@@ -713,7 +717,7 @@ namespace Avalonia.Controls
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
-                element.IsVisible = false;
+                element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
         }
 
