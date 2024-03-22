@@ -94,7 +94,6 @@ namespace Avalonia.Controls
         private bool _commandCanExecute = true;
         private KeyGesture? _hotkey;
         private bool _isFlyoutOpen = false;
-        private bool _isPressed = false;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -182,8 +181,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsPressed
         {
-            get => _isPressed;
-            private set => SetAndRaise(IsPressedProperty, ref _isPressed, value);
+            get; 
+            private set;
         }
 
         /// <summary>
@@ -197,6 +196,11 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
+
+        private void OnIsPressedChanged(bool oldIsPressed, bool newIsPressed)
+        {
+            RaisePropertyChanged(IsPressedProperty, oldIsPressed, newIsPressed);
+        }
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -299,6 +303,7 @@ namespace Avalonia.Controls
                         }
 
                         IsPressed = true;
+                        OnIsPressedChanged(false, true);
                         e.Handled = true;
                         break;
                     }
@@ -322,6 +327,7 @@ namespace Avalonia.Controls
                     OnClick();
                 }
                 IsPressed = false;
+                OnIsPressedChanged(true, false);
                 e.Handled = true;
             }
 
@@ -395,6 +401,7 @@ namespace Avalonia.Controls
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 IsPressed = true;
+                OnIsPressedChanged(false, true);
                 e.Handled = true;
 
                 if (ClickMode == ClickMode.Press)
@@ -412,6 +419,7 @@ namespace Avalonia.Controls
             if (IsPressed && e.InitialPressMouseButton == MouseButton.Left)
             {
                 IsPressed = false;
+                OnIsPressedChanged(false, true);
                 e.Handled = true;
 
                 if (ClickMode == ClickMode.Release &&
@@ -428,6 +436,7 @@ namespace Avalonia.Controls
             base.OnPointerCaptureLost(e);
 
             IsPressed = false;
+            OnIsPressedChanged(true, false);
         }
 
         /// <inheritdoc/>
@@ -436,6 +445,7 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
 
             IsPressed = false;
+            OnIsPressedChanged(true, false);
         }
 
         /// <inheritdoc/>
