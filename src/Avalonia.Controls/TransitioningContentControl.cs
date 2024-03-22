@@ -97,6 +97,11 @@ public class TransitioningContentControl : ContentControl
                     if (!cancel.IsCancellationRequested)
                     {
                         HideOldPresenter();
+                    } else if ((_isFirstFull ? _presenter2 : Presenter) is ContentPresenter oldPresenter) {
+                        //Even though we are not hiding old presenter yet, we still need to notify that its Content (OldContent) is no longer needed and can be disposed of if need be:
+                        var oldcontent = oldPresenter.Content;
+                        oldPresenter.Content = null;
+                        OldContent = oldcontent;
                     }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
             }
