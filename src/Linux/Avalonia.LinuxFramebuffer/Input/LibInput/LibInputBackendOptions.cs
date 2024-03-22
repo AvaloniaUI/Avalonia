@@ -16,5 +16,5 @@ public sealed record class LibInputBackendOptions
     /// <summary>
     /// List Events of events handler to monitoring eg: /dev/eventX.
     /// </summary>
-    public IReadOnlyList<string> Events { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Events { get; init; } = null;
 }

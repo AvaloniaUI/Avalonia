@@ -68,7 +68,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             var options = new LibInputBackendOptions()
             {
                 LibInputContext = ctx,
-                Events = _options is null
+                Events = _options?.Events is null
                     ? Directory.GetFiles("/dev/input", "event*")
                     : _options.Events,
             };
