@@ -140,10 +140,6 @@ namespace Avalonia
             Setter((TOwner)instance, (TValue)value!);
         }
 
-        object? IDirectPropertyAccessor.GetUnsetValue(Type type)
-        {
-            var metadata = GetMetadata(type);
-            return metadata.UnsetValue;
-        }
+        object? IDirectPropertyAccessor.GetUnsetValue(Type type) => GetUnsetValue(type);
     }
 }
