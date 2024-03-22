@@ -28,7 +28,6 @@ namespace Avalonia
             : base(name, ownerType, ownerType, metadata)
         {
             IsDirect = true;
-            Owner = ownerType;
         }
 
         /// <summary>
@@ -44,13 +43,7 @@ namespace Avalonia
             : base(source, ownerType, metadata)
         {
             IsDirect = true;
-            Owner = ownerType;
         }
-
-        /// <summary>
-        /// Gets the type that registered the property.
-        /// </summary>
-        public Type Owner { get; }
 
         /// <summary>
         /// Gets the value of the property on the instance.

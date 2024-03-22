@@ -331,7 +331,7 @@ namespace Avalonia
             AvaloniaObject o,
             DirectPropertyBase<T> property)
         {
-            if (property.Owner == o.GetType())
+            if (property.OwnerType == o.GetType())
             {
                 return property;
             }

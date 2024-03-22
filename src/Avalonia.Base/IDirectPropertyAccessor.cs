@@ -17,7 +17,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the class that registered the property.
         /// </summary>
-        Type Owner { get; }
+        Type OwnerType { get; }
 
         /// <summary>
         /// Gets the value of the property on the instance.
