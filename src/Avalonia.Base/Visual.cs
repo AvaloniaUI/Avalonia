@@ -213,14 +213,13 @@ namespace Avalonia
 
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.
-            
-            var children = VisualChildren;
+
+            var span = Arena<Visual>.Current.AcquireCopyOf(VisualChildren);
 
             // ReSharper disable once ForCanBeConvertedToForeach
-            for (int i = 0; i < children.Count; ++i)
+            for (var i = 0; i < span.Length; ++i)
             {
-                var child = children[i];
-                child.UpdateIsEffectivelyVisible(isEffectivelyVisible);
+                span[i].UpdateIsEffectivelyVisible(isEffectivelyVisible);
             }
         }
 
@@ -470,9 +469,10 @@ namespace Avalonia
             {
                 InvalidateMirrorTransform();
 
-                foreach (var child in VisualChildren)
+                var span = Arena<Visual>.Current.AcquireCopyOf(VisualChildren);
+                for (var i = 0; i < span.Length; i++)
                 {
-                    child.InvalidateMirrorTransform();
+                    span[i].InvalidateMirrorTransform();
                 }
             }
         }
@@ -514,15 +514,13 @@ namespace Avalonia
             
             if (ZIndex != 0 && _visualParent is { })
                 _visualParent.HasNonUniformZIndexChildren = true;
-            
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
 
-            for (var i = 0; i < visualChildrenCount; i++)
+            var span = Arena<Visual>.Current.AcquireCopyOf(VisualChildren);
+            for (var i = 0; i < span.Length; i++)
             {
-                if (visualChildren[i] is { } child && child._visualRoot != e.Root) // child may already have been attached within an event handler
+                if (span[i]._visualRoot != e.Root) // child may already have been attached within an event handler
                 {
-                    child.OnAttachedToVisualTreeCore(e);
+                    span[i].OnAttachedToVisualTreeCore(e);
                 }
             }
         }
@@ -551,15 +549,10 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root.Renderer.AddDirty(this);
 
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
-
-            for (var i = 0; i < visualChildrenCount; i++)
+            var span = Arena<Visual>.Current.AcquireCopyOf(VisualChildren);
+            for (var i = 0; i < span.Length; i++)
             {
-                if (visualChildren[i] is { } child)
-                {
-                    child.OnDetachedFromVisualTreeCore(e);
-                }
+                span[i].OnDetachedFromVisualTreeCore(e);
             }
         }
 
@@ -729,12 +722,12 @@ namespace Avalonia
         {
             base.OnTemplatedParentControlThemeChanged();
 
-            var count = VisualChildren.Count;
             var templatedParent = TemplatedParent;
 
-            for (var i = 0; i < count; ++i)
+            var span = Arena<Visual>.Current.AcquireCopyOf(VisualChildren);
+            for (var i = 0; i < span.Length; ++i)
             {
-                if (VisualChildren[i] is StyledElement child &&
+                if (span[i] is StyledElement child &&
                     child.TemplatedParent == templatedParent)
                 {
                     child.OnTemplatedParentControlThemeChanged();
