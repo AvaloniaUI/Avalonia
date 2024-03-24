@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -8,7 +7,9 @@ using Avalonia.Win32.Interop.Automation;
 
 namespace Avalonia.Win32.Automation
 {
-    [RequiresUnreferencedCode("Requires .NET COM interop")]
+#if !NET6_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Requires .NET COM interop")]
+#endif
     internal class RootAutomationNode : AutomationNode, IRawElementProviderFragmentRoot
     {
         public RootAutomationNode(AutomationPeer peer)
@@ -57,7 +58,9 @@ namespace Avalonia.Win32.Automation
                 var handle = WindowImpl?.Handle.Handle ?? IntPtr.Zero;
                 if (handle == IntPtr.Zero)
                     return null;
+#pragma warning disable IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
                 var hr = UiaCoreProviderApi.UiaHostProviderFromHwnd(handle, out var result);
+#pragma warning restore IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
                 Marshal.ThrowExceptionForHR(hr);
                 return result;
             }
@@ -68,4 +71,22 @@ namespace Avalonia.Win32.Automation
             RaiseFocusChanged(GetOrCreate(Peer.GetFocus()));
         }
     }
+
+#if NET6_0_OR_GREATER
+    internal unsafe partial class AutomationNodeWrapper :
+        IRawElementProviderFragmentRoot
+    {
+        public void* IRawElementProviderFragmentRootInst { get; init; }
+
+        IRawElementProviderFragment? IRawElementProviderFragmentRoot.ElementProviderFromPoint(double x, double y)
+        {
+            return IRawElementProviderFragmentRootNativeWrapper.ElementProviderFromPoint(IRawElementProviderFragmentInst, x, y);
+        }
+
+        IRawElementProviderFragment? IRawElementProviderFragmentRoot.GetFocus()
+        {
+            return IRawElementProviderFragmentRootNativeWrapper.GetFocus(IRawElementProviderFragmentInst);
+        }
+    }
+#endif
 }
