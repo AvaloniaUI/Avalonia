@@ -171,11 +171,13 @@ export class InputHelper {
         const pointerDownHandler = (args: PointerEvent) => {
             pointerDownCallback(args);
             args.preventDefault();
+            element.setPointerCapture(args.pointerId);
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
             pointerUpCallback(args);
             args.preventDefault();
+            element.releasePointerCapture(args.pointerId);
         };
 
         const pointerCancelHandler = (args: PointerEvent) => {
