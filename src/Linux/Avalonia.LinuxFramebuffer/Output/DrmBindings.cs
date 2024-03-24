@@ -170,6 +170,11 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
         }
 
+        public DrmCard(int fd)
+        {
+            Fd = fd;
+        }
+
         public DrmResources GetResources(bool connectorsForceProbe = false) => new DrmResources(Fd, connectorsForceProbe);
         public void Dispose()
         {
