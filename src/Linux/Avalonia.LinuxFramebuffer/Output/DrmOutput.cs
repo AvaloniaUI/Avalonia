@@ -7,10 +7,8 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Platform.Interop;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
-using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
 
 namespace Avalonia.LinuxFramebuffer.Output
 {
@@ -51,11 +49,14 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions options = null)
+            :this(new DrmCard(path), connectorsForceProbe, options)
+        {
+        }
+
+        public DrmOutput(DrmCard card, bool connectorsForceProbe = false, DrmOutputOptions options = null)
         {
             if (options != null)
                 _outputOptions = options;
-
-            var card = new DrmCard(path);
 
             var resources = card.GetResources(connectorsForceProbe);
 
