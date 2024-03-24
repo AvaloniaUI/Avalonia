@@ -1,0 +1,21 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Keep in sync with .editorconfig -->
+  <PropertyGroup Condition="'$(AvsEnableDevWarningsNotAsErrors)' == 'true'">
+    <!-- CS0649: Field 'field' is never assigned to, and will always have its default value 'value' -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0649</WarningsNotAsErrors>
+    <!-- CS0162: Remove unreachable code -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0162</WarningsNotAsErrors>
+    <!-- CA2211:Non-constant fields should not be visible -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CA2211</WarningsNotAsErrors>
+    <!-- CA1821: Remove empty finalizers -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CA1821</WarningsNotAsErrors>
+    <!-- CA1823: Avoid unused private fields -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CA1823</WarningsNotAsErrors>
+    <!-- AVLN2203: DuplicateSetterError -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);AVLN2203</WarningsNotAsErrors>
+    <!-- AVLN2205: RequiredTemplatePartMissing -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);AVLN2205</WarningsNotAsErrors>
+    <!-- AVLN2207: TemplatePartWrongType -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);AVLN2207</WarningsNotAsErrors>
+  </PropertyGroup>
+</Project>
