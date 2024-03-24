@@ -90,14 +90,26 @@ namespace Avalonia.Media
         
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (change.Property == TransformProperty) 
+            if (change.Property == TransformProperty)
+            {
+                var (oldValue, newValue) = change.GetOldAndNewValue<ITransform>();
+
+                if (oldValue is IMutableTransform oldMutableValue)
+                    oldMutableValue.Changed -= OnTransformChanged;
+                
+                if (newValue is IMutableTransform newMutableValue)
+                    newMutableValue.Changed += OnTransformChanged;
                 _resource.ProcessPropertyChangeNotification(change);
+            }
 
             RegisterForSerialization();
             
             base.OnPropertyChanged(change);
         }
-        
+
+        private void OnTransformChanged(object? sender, EventArgs e) 
+            => RegisterForSerialization();
+
         private protected void RegisterForSerialization() =>
             _resource.RegisterForInvalidationOnAllCompositors(this);
 
