@@ -5,7 +5,7 @@ namespace Avalonia.Rendering.Composition.Server;
 
 internal partial class ServerCompositionExperimentalAcrylicVisual
 {
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
         IDirtyRectTracker dirtyRects)
     {
         var cornerRadius = CornerRadius;
@@ -19,7 +19,7 @@ internal partial class ServerCompositionExperimentalAcrylicVisual
         base.RenderCore(canvas, currentTransformedClip, dirtyRects);
     }
 
-    public override Rect OwnContentBounds => new(0, 0, Size.X, Size.Y);
+    public override LtrbRect OwnContentBounds => new(0, 0, Size.X, Size.Y);
 
     public ServerCompositionExperimentalAcrylicVisual(ServerCompositor compositor, Visual v) : base(compositor, v)
     {
