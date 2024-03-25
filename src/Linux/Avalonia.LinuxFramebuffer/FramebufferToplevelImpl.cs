@@ -12,13 +12,11 @@ using Avalonia.Rendering.Composition;
 
  namespace Avalonia.LinuxFramebuffer
 {
-    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
+    internal class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
         private readonly RawEventGrouper _inputQueue;
-
-        public IInputRoot InputRoot { get; private set; }
 
         public FramebufferToplevelImpl(IOutputBackend outputBackend, IInputBackend inputBackend)
         {
@@ -41,7 +39,6 @@ using Avalonia.Rendering.Composition;
 
         public void SetInputRoot(IInputRoot inputRoot)
         {
-            InputRoot = inputRoot;
             _inputBackend.SetInputRoot(inputRoot);
         }
 
@@ -55,7 +52,6 @@ using Avalonia.Rendering.Composition;
 
         public Size ClientSize => ScaledSize;
         public Size? FrameSize => null;
-        public IMouseDevice MouseDevice => new MouseDevice();
         public IPopupImpl CreatePopup() => null;
 
         public double RenderScaling => _outputBackend.Scaling;

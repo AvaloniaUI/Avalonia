@@ -42,7 +42,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         }
 
         private const string LibInput = "libinput.so.10";
-        
+
         [DllImport(LibInput)]
         public extern static IntPtr libinput_path_create_context(IntPtr* iface, IntPtr userData);
 
@@ -57,10 +57,11 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         
         [DllImport(LibInput)]
         public extern static int libinput_get_fd(IntPtr ctx);
-        
+
+        // https://wayland.freedesktop.org/libinput/doc/latest/api/group__base.html#ga271f910ed17461830e48d4cd20483a00
         [DllImport(LibInput)]
-        public extern static void libinput_dispatch(IntPtr ctx);
-        
+        public extern static int libinput_dispatch(IntPtr ctx);
+
         [DllImport(LibInput)]
         public extern static IntPtr libinput_get_event(IntPtr ctx);
         
@@ -153,6 +154,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         [DllImport(LibInput)]
         public extern static IntPtr libinput_event_get_pointer_event(IntPtr ev);
 
+        [DllImport((LibInput))]
+        public extern static double libinput_event_pointer_get_axis_value_discrete(IntPtr ev, LibInputPointerAxis axis);
+
         [DllImport(LibInput)]
         public extern static ulong libinput_event_pointer_get_time_usec(IntPtr ev);
         
@@ -170,11 +174,32 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
         [DllImport(LibInput)]
         public extern static LibInputPointerAxisSource libinput_event_pointer_get_axis_source(IntPtr ev);
-
-        [DllImport((LibInput))]
-        public extern static double libinput_event_pointer_get_axis_value_discrete(IntPtr ev, LibInputPointerAxis axis);
+        [DllImport(LibInput)]
+        public extern static libinput_key libinput_event_keyboard_get_key(IntPtr ev);
 
         [DllImport(LibInput)]
         public extern static double libinput_event_pointer_get_scroll_value_v120(IntPtr ev, LibInputPointerAxis axis);
+        
+        [DllImport(LibInput)]
+        public extern static libinput_key_state libinput_event_keyboard_get_key_state(IntPtr ev);
+
+        [DllImport(LibInput)]
+        public extern static ulong libinput_event_keyboard_get_time(IntPtr ev);
+
+        //https://wayland.freedesktop.org/libinput/doc/latest/api/group__device.html#gaf21b51406529ee8d39a5b13a9ad428c0
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_device_ref(IntPtr device);
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_device_uref(IntPtr device);
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_event_get_device(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static double libinput_event_pointer_get_axis_value (IntPtr ev, LibInputPointerAxis axis); 
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_event_get_keyboard_event(IntPtr ev);
     }
 }
