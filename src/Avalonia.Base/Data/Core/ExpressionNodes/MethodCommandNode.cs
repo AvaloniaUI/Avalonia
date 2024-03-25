@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
 using Avalonia.Data.Converters;
-using Avalonia.Threading;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
@@ -86,8 +85,8 @@ internal sealed class MethodCommandNode : ExpressionNode
 
         public void RaiseCanExecuteChanged()
         {
-            Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
-               , DispatcherPriority.Input);
+            Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
+               , Threading.DispatcherPriority.Input);
         }
 
         public bool CanExecute(object? parameter)
