@@ -5,8 +5,6 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.Styles>
-        
-        <StyleInclude Source="Styles1.axaml"/>
         <FluentTheme />
     </Application.Styles>
 </Application>

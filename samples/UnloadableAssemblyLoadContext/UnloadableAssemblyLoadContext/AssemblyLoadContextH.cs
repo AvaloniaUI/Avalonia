@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using Avalonia;
+using Avalonia.Styling;
 
 #endregion
 
@@ -20,7 +21,8 @@ public class AssemblyLoadContextH : AssemblyLoadContext
         Unloading += (sender) =>
         {
             AvaloniaPropertyRegistry.Instance.UnregisterByModule(sender.Assemblies.First().DefinedTypes);
-            
+            AvaloniaLocator.CurrentMutable.GetService<IGlobalStyles>().StylesRemoved(MainWindow.Style.Children);
+           
         };
     }
 

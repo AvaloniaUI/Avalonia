@@ -1,15 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace UnloadableAssemblyLoadContext;
 
@@ -36,11 +41,38 @@ public partial class MainWindow : Window
 
 
     }
+    public  T? GetChildOfType<T>(Control control)
+        where T : Control
+    {
+        var queue = new Queue<Control>();
+        queue.Enqueue(control);
 
+        while (queue.Count > 0)
+        {
+            var currentControl = queue.Dequeue();
+            foreach (var child in currentControl.GetVisualChildren())
+            {
+                var childControl = child as Control;
+                if (childControl != null)
+                {
+                    var childControlStyles = childControl.Styles;
+                    if (childControlStyles.Count>1)
+                    {
+                        
+                    }
+                    queue.Enqueue(childControl);
+                }
+            }
+        }
+
+        return null;
+    }
     protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);
-       
+        GetChildOfType<Control>(this);
+        
+        
         Thread.CurrentThread.IsBackground = false;
         var weakReference = _plugTool.Unload();
         while (weakReference.IsAlive)
@@ -54,8 +86,8 @@ public partial class MainWindow : Window
        
         
     }
-    
 
+    public static IStyle Style;
     public  void test(){
         
         //Notice : 你可以删除UnloadableAssemblyLoadContextPlug.dll所在文件夹中有关Avalonia的所有Dll,但这不是必须的
@@ -67,6 +99,13 @@ public partial class MainWindow : Window
         
         _plugTool=new PlugTool();
         _plugTool.AssemblyLoadContextH = AssemblyLoadContextH;
+      
+        var styles = new Styles();
+        var styleInclude = new StyleInclude(new Uri("avares://UnloadableAssemblyLoadContextPlug", UriKind.Absolute));
+        styleInclude.Source=new Uri("ControlStyle.axaml", UriKind.Relative);
+        styles.Add(styleInclude);
+        Style = styles;
+        Application.Current.Styles.Add(styles);
         foreach (var type in assembly.GetTypes())
         {
             if (type.FullName=="AvaloniaPlug.Window1")
@@ -86,20 +125,6 @@ public partial class MainWindow : Window
                 //instance.Show();
             }
 
-            if (type.FullName=="CompiledAvaloniaXaml.!AvaloniaResources")
-            {
-                foreach (var methodInfo in type.GetMethods())
-                {
-                   if(methodInfo.Name.StartsWith("Build:"))
-                   {
-                       
-                       object rootServiceProviderV2 = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
-                       //TODO: load Style by reflection
-                       var style=methodInfo.Invoke(null, new object?[] { rootServiceProviderV2});
-                       Application.Current.Styles.Add((IStyle)style);
-                   }
-                }
-            }
         }
         
     }
