@@ -66,7 +66,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// Gets or sets a value indicating whether the content can be scrolled vertically.
         /// </summary>
         public bool CanVerticallyScroll
         {
@@ -94,8 +94,7 @@ namespace Avalonia.Input.GestureRecognizers
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (e.Pointer.IsPrimary && 
-                (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen)
             {
                 EndGesture();
                 _tracking = e.Pointer;
