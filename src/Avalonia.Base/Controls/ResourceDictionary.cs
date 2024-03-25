@@ -258,6 +258,24 @@ namespace Avalonia.Controls
             return false;
         }
 
+        /// <summary>
+        /// Ensures that the resource dictionary can hold up to <paramref name="capacity"/> entries without
+        /// any further expansion of its backing storage.
+        /// </summary>
+        /// <remarks>This method may have no effect when targeting .NET Standard 2.0.</remarks>
+        public void EnsureCapacity(int capacity)
+        {
+            if (_inner is null)
+            {
+                _inner = new(capacity);
+                return;
+            }
+
+#if !NETSTANDARD2_0
+            Inner.EnsureCapacity(capacity);
+#endif
+        }
+
         public IEnumerator<KeyValuePair<object, object?>> GetEnumerator()
         {
             return _inner?.GetEnumerator() ?? Enumerable.Empty<KeyValuePair<object, object?>>().GetEnumerator();
