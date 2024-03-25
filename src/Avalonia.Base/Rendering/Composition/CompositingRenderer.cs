@@ -113,7 +113,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 return true;
             };
 
-        var res = CompositionTarget.TryHitTest(p, rootVisual, f);
+        using var res = CompositionTarget.TryHitTest(p, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
