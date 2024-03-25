@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             Assert.True(presenter2.IsVisible);
-            Assert.Equal("foo", presenter1.Content);
+            Assert.Equal(null, presenter1.Content);  //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
             Assert.Equal("bar", presenter2.Content);
         }
 
@@ -180,8 +180,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, startedRaised);
             Assert.Equal("baz", target.Presenter!.Content);
-            //Assert.Equal("bar", presenter2.Content);
-            //The above line will no longer hold, because we explicitly nullify old, no-longer needed Content so that it can be safely disposed by any ViewModel observing OldContent property
+            Assert.Equal(null, presenter2.Content); //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
         }
 
         [Theory]
@@ -211,7 +210,7 @@ namespace Avalonia.Controls.UnitTests
             sync.ExecutePostedCallbacks();
 
             Assert.Equal(1, startedRaised);
-            Assert.Equal("foo", target.Presenter!.Content);
+            Assert.Equal(null, target.Presenter!.Content); //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
             Assert.Equal("bar", presenter2.Content);
         }
 
