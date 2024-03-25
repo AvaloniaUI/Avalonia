@@ -136,6 +136,8 @@ namespace Avalonia.Rendering.Composition.Server
             _updateRequested = false;
             Readback.CompleteWrite(Revision);
 
+            _overlays.MarkUpdateCallEnd();
+            
             if (!_redrawRequested)
                 return;
             _redrawRequested = false;
