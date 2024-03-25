@@ -33,7 +33,8 @@ using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.X11
 {
-    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client
+    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+        IX11OptionsToplevelImplFeature
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -53,7 +54,6 @@ namespace Avalonia.X11
         private PixelSize _realSize;
         private bool _cleaningUp;
         private IntPtr _handle;
-        private IntPtr _parentHandle;
         private IntPtr _xic;
         private IntPtr _renderHandle;
         private IntPtr _xSyncCounter;
@@ -85,7 +85,6 @@ namespace Avalonia.X11
             _mouse = new MouseDevice();
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
-            _parentHandle = popupParent != null ? ((X11Window)popupParent)._handle : _x11.RootWindow;
 
             var glfeature = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
@@ -123,7 +122,7 @@ namespace Avalonia.X11
             {
                 visual = visualInfo.Value.visual;
                 depth = (int)visualInfo.Value.depth;
-                attr.colormap = XCreateColormap(_x11.Display, _parentHandle, visualInfo.Value.visual, 0);
+                attr.colormap = XCreateColormap(_x11.Display, _x11.RootWindow, visualInfo.Value.visual, 0);
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
@@ -146,7 +145,7 @@ namespace Avalonia.X11
             defaultWidth = Math.Max(defaultWidth, 300);
             defaultHeight = Math.Max(defaultHeight, 200);
 
-            _handle = XCreateWindow(_x11.Display, _parentHandle, 10, 10, defaultWidth, defaultHeight, 0,
+            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
@@ -185,16 +184,15 @@ namespace Avalonia.X11
                     _x11.Atoms.WM_DELETE_WINDOW
                 };
                 XSetWMProtocols(_x11.Display, _handle, protocols, protocols.Length);
-                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
-                    32, PropertyMode.Replace, new[] { _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL }, 1);
-
+                SetNetWmWindowType(X11NetWmWindowType.Normal);
+                
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
             var surfaces = new List<object>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
-                   depth, () => RenderScaling)
+                   depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
             
             if (egl != null)
@@ -291,10 +289,20 @@ namespace Avalonia.X11
                 || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize)
+            if (!_canResize || !IsEnabled)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
+            }
+            if (!IsEnabled)
+            {
+                functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
+
+                UpdateSizeHints(null, true);
+            }
+            else
+            {
+                UpdateSizeHints(null);
             }
 
             var hints = new MotifWmHints
@@ -309,14 +317,14 @@ namespace Avalonia.X11
                 PropertyMode.Replace, ref hints, 5);
         }
 
-        private void UpdateSizeHints(PixelSize? preResize)
+        private void UpdateSizeHints(PixelSize? preResize, bool forceDisableResize = false)
         {
             if (_overrideRedirect)
                 return;
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
-            if (!_canResize)
+            if (!_canResize || forceDisableResize)
             {
                 if (preResize.HasValue)
                 {
@@ -517,7 +525,7 @@ namespace Avalonia.X11
                     _configurePoint = new PixelPoint(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
                 else
                 {
-                    XTranslateCoordinates(_x11.Display, _handle, _parentHandle,
+                    XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
                         0, 0,
                         out var tx, out var ty, out _);
                     _configurePoint = new PixelPoint(tx, ty);
@@ -569,7 +577,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
+                        if (IsEnabled && Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -911,6 +919,9 @@ namespace Avalonia.X11
                 return new BclLauncher();
             }
 
+            if (featureType == typeof(IX11OptionsToplevelImplFeature))
+                return this;
+
             return null;
         }
 
@@ -1021,7 +1032,11 @@ namespace Avalonia.X11
 
 
         public void Resize(Size clientSize, WindowResizeReason reason) => Resize(clientSize, false, reason);
-        public void Move(PixelPoint point) => Position = point;
+        public void Move(PixelPoint point)
+        {
+            Position = point;
+            UpdateScaling();
+        }
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
@@ -1100,12 +1115,10 @@ namespace Avalonia.X11
                     UpdateSizeHints(null);
                 }
 
-                XTranslateCoordinates(_x11.Display, _parentHandle, _x11.RootWindow, 0, 0, out var wx, out var wy, out _);
-
                 var changes = new XWindowChanges
                 {
-                    x = value.X - wx,
-                    y = (int)value.Y - wy
+                    x = value.X,
+                    y = (int)value.Y
                 };
 
                 XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWX | ChangeWindowFlags.CWY,
@@ -1168,7 +1181,7 @@ namespace Avalonia.X11
                 }
             };
             xev.ClientMessageEvent.ptr4 = l4 ?? IntPtr.Zero;
-            XSendEvent(_x11.Display, _parentHandle, false,
+            XSendEvent(_x11.Display, _x11.RootWindow, false,
                 new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
 
         }
@@ -1251,6 +1264,13 @@ namespace Avalonia.X11
 
             XFree(hint);
         }
+        
+        public void SetWmClass(string? className)
+        {
+            if (_handle == IntPtr.Zero)
+                return;
+            SetWmClass(_handle, className ?? _platform.Options.WmClass);
+        }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
@@ -1278,6 +1298,14 @@ namespace Avalonia.X11
             _disabled = !enable;
 
             UpdateWMHints();
+            UpdateMotifHints();
+
+            if (enable)
+            {
+                // Some window managers ignore Motif hints when switching from disabled to enabled on the first update
+                // so setting it again forces the update
+                UpdateMotifHints();
+            }
         }
 
         private void UpdateWMHints()
@@ -1410,6 +1438,27 @@ namespace Avalonia.X11
 
             public IntPtr Handle => _owner._renderHandle;
             public string HandleDescriptor => "XID";
+        }
+
+        public void SetNetWmWindowType(X11NetWmWindowType type)
+        {
+            if(_handle == IntPtr.Zero)
+                return;
+
+            var atom = type switch
+            {
+                X11NetWmWindowType.Dialog => _x11.Atoms._NET_WM_WINDOW_TYPE_DIALOG,
+                X11NetWmWindowType.Utility => _x11.Atoms._NET_WM_WINDOW_TYPE_UTILITY,
+                X11NetWmWindowType.Toolbar => _x11.Atoms._NET_WM_WINDOW_TYPE_TOOLBAR,
+                X11NetWmWindowType.Splash => _x11.Atoms._NET_WM_WINDOW_TYPE_SPLASH,
+                X11NetWmWindowType.Dock => _x11.Atoms._NET_WM_WINDOW_TYPE_DOCK,
+                X11NetWmWindowType.Desktop => _x11.Atoms._NET_WM_WINDOW_TYPE_DESKTOP,
+                _ => _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL
+            };
+
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
+                32, PropertyMode.Replace, new[] { atom }, 1);
+
         }
     }
 }

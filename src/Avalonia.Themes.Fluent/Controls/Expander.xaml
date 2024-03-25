@@ -69,10 +69,10 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ExpanderHeaderBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ExpanderHeaderBorderThickness}" />
     <Setter Property="Foreground" Value="{DynamicResource ExpanderHeaderForeground}" />
-    <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}" />
+    <Setter Property="Padding" Value="{DynamicResource ExpanderHeaderPadding}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="HorizontalContentAlignment" Value="{StaticResource ExpanderHeaderHorizontalContentAlignment}" />
-    <Setter Property="VerticalContentAlignment" Value="{StaticResource ExpanderHeaderVerticalContentAlignment}" />
+    <Setter Property="HorizontalContentAlignment" Value="{DynamicResource ExpanderHeaderHorizontalContentAlignment}" />
+    <Setter Property="VerticalContentAlignment" Value="{DynamicResource ExpanderHeaderVerticalContentAlignment}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border x:Name="ToggleButtonBackground"
@@ -215,11 +215,11 @@
   <ControlTheme x:Key="{x:Type Expander}" TargetType="Expander">
     <Setter Property="IsTabStop" Value="False"/>
     <Setter Property="MinWidth" Value="{DynamicResource FlyoutThemeMinWidth}" />
-    <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}" />
+    <Setter Property="MinHeight" Value="{DynamicResource ExpanderMinHeight}" />
     <Setter Property="Background" Value="{DynamicResource ExpanderContentBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ExpanderContentBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ExpanderContentDownBorderThickness}" />
-    <Setter Property="Padding" Value="{StaticResource ExpanderContentPadding}" />
+    <Setter Property="Padding" Value="{DynamicResource ExpanderContentPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -309,16 +309,16 @@
     </Style>
 
     <Style Selector="^:left /template/ ToggleButton#ExpanderHeader">
-      <Setter Property="Theme" Value="{StaticResource FluentExpanderToggleButtonLeftTheme}" />
+      <Setter Property="Theme" Value="{DynamicResource FluentExpanderToggleButtonLeftTheme}" />
     </Style>
     <Style Selector="^:up /template/ ToggleButton#ExpanderHeader">
-      <Setter Property="Theme" Value="{StaticResource FluentExpanderToggleButtonUpTheme}" />
+      <Setter Property="Theme" Value="{DynamicResource FluentExpanderToggleButtonUpTheme}" />
     </Style>
     <Style Selector="^:right /template/ ToggleButton#ExpanderHeader">
-      <Setter Property="Theme" Value="{StaticResource FluentExpanderToggleButtonRightTheme}" />
+      <Setter Property="Theme" Value="{DynamicResource FluentExpanderToggleButtonRightTheme}" />
     </Style>
     <Style Selector="^:down /template/ ToggleButton#ExpanderHeader">
-      <Setter Property="Theme" Value="{StaticResource FluentExpanderToggleButtonDownTheme}" />
+      <Setter Property="Theme" Value="{DynamicResource FluentExpanderToggleButtonDownTheme}" />
     </Style>
 
     <Style Selector="^:left /template/ Border#ExpanderContent">

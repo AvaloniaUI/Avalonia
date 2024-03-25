@@ -325,15 +325,15 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
 
                 const byte endOfMessageBit = (byte)1u << 7;
                 header.Mask = (byte) (endOfMessageBit | ((byte) type & 0xf));
-                unsafe
-                {
-                    Marshal.Copy(new IntPtr(&header), _sendHeaderBuffer, 0, headerLength);
-                }
+                CopyHeaderToBuffer(header, _sendHeaderBuffer, headerLength);
 
                 await _stream.WriteAsync(_sendHeaderBuffer, 0, headerLength);
                 await _stream.WriteAsync(data, offset, length);
             }
         }
+
+        private static unsafe void CopyHeaderToBuffer(WebSocketHeader source, byte[] destination, int headerLength)
+            => Marshal.Copy(new IntPtr(&source), destination, 0, headerLength);
 
         struct Frame
         {

@@ -17,9 +17,6 @@ public static class BlazorAppBuilder
     /// <param name="options">Browser backend specific options.</param>
     public static async Task StartBlazorAppAsync(this AppBuilder builder, BrowserPlatformOptions? options = null)
     {
-        options ??= new BrowserPlatformOptions();
-        options.FrameworkAssetPathResolver ??= filePath => $"/_content/Avalonia.Browser.Blazor/{filePath}";
-
         builder = await BrowserAppBuilder.PreSetupBrowser(builder, options);
 
         builder.SetupWithLifetime(new BlazorSingleViewLifetime());

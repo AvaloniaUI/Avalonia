@@ -203,25 +203,26 @@ namespace Avalonia.Controls
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
 
-            _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
-            _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
             if (_track != null)
             {
                 _track.IgnoreThumbDrag = true;
-            }
 
-            if (_decreaseButton != null)
-            {
-                _decreaseButtonPressDispose = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _decreaseButtonReleaseDispose = _decreaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
-            }
+                _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
+                _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
-            if (_increaseButton != null)
-            {
-                _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                if (_decreaseButton != null)
+                {
+                    _decreaseButtonPressDispose = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                    _decreaseButtonReleaseDispose = _decreaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                }
+
+                if (_increaseButton != null)
+                {
+                    _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                    _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                }
             }
 
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);

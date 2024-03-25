@@ -1143,6 +1143,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Popup_Attached_To_Adorner_Respects_Adorner_Position()
+        {
+            using (CreateServices())
+            {
+                var popupTarget = new Border() { Height = 30, Background = Brushes.Red, [DockPanel.DockProperty] = Dock.Top };
+                var popupContent = new Border() { Height = 30, Width = 50, Background = Brushes.Yellow };
+                var popup = new Popup
+                {
+                    Child = popupContent,
+                    Placement = PlacementMode.AnchorAndGravity,
+                    PlacementTarget = popupTarget,
+                    PlacementAnchor = PopupAnchor.BottomRight,
+                    PlacementGravity = PopupGravity.BottomRight
+                };
+                var adorner = new DockPanel() { Children = { popupTarget, popup },
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Width = 40,
+                    Margin = new Thickness(50, 5, 0, 0) };
+
+                var adorned = new Border() {
+                    Width = 100,
+                    Height = 100,
+                    Background = Brushes.Blue,
+                    [Canvas.LeftProperty] = 20,
+                    [Canvas.TopProperty] = 40
+                };
+                var windowContent = new Canvas();
+                windowContent.Children.Add(adorned);
+
+                var root = PreparedWindow(windowContent);
+
+                var adornerLayer = AdornerLayer.GetAdornerLayer(adorned);
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, adorned);
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                popup.Open();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+
+                // X: Adorned Canvas.Left + Adorner Margin Left + Adorner Width
+                // Y: Adorned Canvas.Top + Adorner Margin Top + Adorner Height
+                Assert.Equal(new PixelPoint(110, 75), popupContent.PointToScreen(new Point(0, 0)));
+            }
+        }
+
+
         private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
         {
             impl ??= popupParent.PlatformImpl.CreatePopup();

@@ -179,6 +179,13 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
     {
     }
 
+    public IOSStorageFolder(NSUrl url, WellKnownFolder wellKnownFolder) : base(url, null)
+    {
+        WellKnownFolder = wellKnownFolder;
+    }
+
+    public WellKnownFolder? WellKnownFolder { get; }
+
     public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
         try

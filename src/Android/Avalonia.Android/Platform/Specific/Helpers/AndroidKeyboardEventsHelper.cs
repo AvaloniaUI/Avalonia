@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Runtime.Versioning;
 using Android.Views;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -32,6 +33,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return DispatchKeyEventInternal(e, out callBase);
         }
 
+        [ObsoletedOSPlatform("android29.0")]
         static string? UnicodeTextInput(KeyEvent keyEvent)
         {
             return keyEvent.Action == KeyEventActions.Multiple
@@ -43,7 +45,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
         private bool? DispatchKeyEventInternal(KeyEvent e, out bool callBase)
         {
-            var unicodeTextInput = UnicodeTextInput(e);
+            var unicodeTextInput = OperatingSystem.IsAndroidVersionAtLeast(29) ? null : UnicodeTextInput(e);
 
             if (e.Action == KeyEventActions.Multiple && unicodeTextInput == null)
             {

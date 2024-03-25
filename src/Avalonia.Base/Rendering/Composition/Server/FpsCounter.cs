@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 
 
@@ -26,7 +27,7 @@ internal class FpsCounter
     public void FpsTick()
         => _framesThisSecond++;
 
-    public void RenderFps(IDrawingContextImpl context, string aux)
+    public Rect? RenderFps(ImmediateDrawingContext context, string aux, bool hasLayer, Rect? oldRect)
     {
         var now = _stopwatch.Elapsed;
         var elapsed = now - _lastFpsUpdate;
@@ -48,11 +49,18 @@ internal class FpsCounter
 #endif
 
         var size = _textRenderer.MeasureAsciiText(fpsLine.AsSpan());
+
+
+
         var rect = new Rect(0.0, 0.0, size.Width + 3.0, size.Height + 3.0);
+        if (hasLayer && oldRect.HasValue)
+            rect = rect.Union(oldRect.Value);
 
-        context.DrawRectangle(Brushes.Black, null, rect);
-
+        var layerBr = new ImmutableSolidColorBrush(Colors.Black, 0.5);
+        context.DrawRectangle(hasLayer ? layerBr : Brushes.Black, null, rect);
         _textRenderer.DrawAsciiText(context, fpsLine.AsSpan(), Brushes.White);
+        return rect;
+
     }
 
     public void Reset()

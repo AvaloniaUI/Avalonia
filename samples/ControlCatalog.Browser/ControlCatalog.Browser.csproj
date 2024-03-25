@@ -1,13 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../../src/Browser/Avalonia.Browser/Avalonia.Browser.props" />
-
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <WasmMainJSPath>AppBundle/main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <WasmRuntimeAssetsLocation>./</WasmRuntimeAssetsLocation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,5 +18,6 @@
     <WasmExtraFilesToDeploy Include="AppBundle/**" />
   </ItemGroup>
 
-  <Import Project="../../src/Browser/Avalonia.Browser/Avalonia.Browser.targets" />
+  <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.props" />
+  <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.targets" />
 </Project>
