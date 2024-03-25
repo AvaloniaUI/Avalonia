@@ -11,7 +11,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
     {
         private IScreenInfoProvider? _screen;
         private IInputRoot? _inputRoot;
-        private const string LibInput = nameof(Avalonia.LinuxFramebuffer) + "/" + nameof(Avalonia.LinuxFramebuffer.Input) + "/" + nameof(LibInput);
+        private const string LibInput = nameof(LinuxFramebuffer) + "/" + nameof(Input) + "/" + nameof(LibInput);
         private Action<RawInputEventArgs>? _onInput;
         private readonly LibInputBackendOptions? _options;
 
@@ -25,13 +25,11 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             _options = options;
         }
 
-        private unsafe void InputThread(object? state)
+        private unsafe void InputThread(IntPtr ctx, LibInputBackendOptions options)
         {
-            var options = (LibInputBackendOptions)state!;
-            var ctx = options.LibInputContext;
             var fd = libinput_get_fd(ctx);
 
-            foreach (var f in options.Events)
+            foreach (var f in options.Events!)
                 libinput_path_add_device(ctx, f);
             while (true)
             {
@@ -67,16 +65,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             var ctx = libinput_path_create_context();
             var options = new LibInputBackendOptions()
             {
-                LibInputContext = ctx,
                 Events = _options?.Events is null
                     ? Directory.GetFiles("/dev/input", "event*")
                     : _options.Events,
             };
-            new Thread(InputThread)
+            new Thread(() => InputThread(ctx, options))
             {
                 Name = "Input Manager Worker",
                 IsBackground = true
-            }.Start(options);
+            }.Start();
         }
 
         public void SetInputRoot(IInputRoot root)
