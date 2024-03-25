@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -379,6 +380,14 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Queues a calculation of the effective viewport.
+        /// </summary>
+        protected void InvalidateViewport()
+        {
+            (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateViewport(this);
+        }
+
+        /// <summary>
         /// Renders the visual to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The drawing context.</param>
@@ -612,6 +621,7 @@ namespace Avalonia
                 }
                 
                 sender.InvalidateVisual();
+                sender.InvalidateViewport();
             }
         }
 
@@ -656,6 +666,7 @@ namespace Avalonia
         private void RenderTransformChanged(object? sender, EventArgs e)
         {
             InvalidateVisual();
+            InvalidateViewport();
         }
 
         /// <summary>

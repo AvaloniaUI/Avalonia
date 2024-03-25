@@ -101,6 +101,39 @@ namespace Avalonia.Layout
             QueueLayoutPass();
         }
 
+        /// <inheritdoc/>
+        public virtual void InvalidateViewport(Visual control)
+        {
+            control = control ?? throw new ArgumentNullException(nameof(control));
+            Dispatcher.UIThread.VerifyAccess();
+
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (!control.IsAttachedToVisualTree)
+            {
+#if DEBUG
+                throw new AvaloniaInternalException(
+                    "LayoutManager.InvalidateViewport called on a control that is detached from the visual tree.");
+#else
+                return;
+#endif
+            }
+
+            if (control.VisualRoot != _owner)
+            {
+                throw new ArgumentException("Attempt to call InvalidateViewport on wrong LayoutManager.");
+            }
+
+            if (_effectiveViewportChangedListeners is object &&
+                _effectiveViewportChangedListeners.Count > 0)
+            {
+                QueueLayoutPass();
+            }
+        }
+
         internal void ExecuteQueuedLayoutPass()
         {
             if (!_queued)
