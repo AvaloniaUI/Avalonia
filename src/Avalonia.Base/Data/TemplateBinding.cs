@@ -5,6 +5,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Logging;
+using Avalonia.Metadata;
 using Avalonia.Styling;
 
 namespace Avalonia.Data
@@ -26,7 +27,7 @@ namespace Avalonia.Data
         {
         }
 
-        public TemplateBinding(AvaloniaProperty property)
+        public TemplateBinding([InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)] AvaloniaProperty property)
             : base(BindingPriority.Template)
         {
             Property = property;
@@ -64,6 +65,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.
         /// </summary>
+        [InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)]
         public AvaloniaProperty? Property { get; set; }
 
         /// <inheritdoc/>

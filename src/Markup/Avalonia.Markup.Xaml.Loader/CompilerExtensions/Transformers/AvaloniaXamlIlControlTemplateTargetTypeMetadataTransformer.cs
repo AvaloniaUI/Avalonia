@@ -49,7 +49,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public enum ScopeTypes
         {
-            Style,
+            Style = 1,
             ControlTemplate,
             Transitions
         }

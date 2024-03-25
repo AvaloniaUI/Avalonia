@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
@@ -601,6 +602,42 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                     inner => Assert.IsAssignableFrom<XmlException>(inner),
                     inner => Assert.IsAssignableFrom<XmlException>(inner),
                     inner => Assert.IsAssignableFrom<XmlException>(inner));
+            }
+        }
+
+        [Fact]
+        public void Correctly_Resolve_TemplateBinding_In_Style_With_Template_Selector()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+       xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+       Selector='u|TestTemplatedControl /template/ Border'>
+    <Setter Property='Tag' Value='{{TemplateBinding TestData}}'/>
+</Style>";
+
+                var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var setter = Assert.IsType<Setter>(Assert.Single(style.Setters));
+
+                Assert.Equal(TestTemplatedControl.TestDataProperty, (setter.Value as TemplateBinding)?.Property);
+            }
+        }
+
+        [Fact]
+        public void Fails_To_Resolve_TemplateBinding_In_Style_Without_Template_Metadata()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Style xmlns='https://github.com/avaloniaui'
+       Selector='Border'>
+    <Setter Property='Tag' Value='{{TemplateBinding TestData}}'/>
+</Style>";
+
+                var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Contains("ControlTemplate", exception.Message);
             }
         }
     }

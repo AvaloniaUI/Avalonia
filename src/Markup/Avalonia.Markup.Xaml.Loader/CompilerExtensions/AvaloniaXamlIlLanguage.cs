@@ -182,7 +182,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         }
 
         public static bool CustomValueConverter(AstTransformationContext context,
-            IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
+            IXamlAstValueNode node, IReadOnlyList<IXamlCustomAttribute> customAttributes, IXamlType type,
+            out IXamlAstValueNode result)
         {
             if (node is AvaloniaXamlIlOptionMarkupExtensionTransformer.OptionsMarkupExtensionNode optionsNode)
             {
@@ -209,9 +210,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
-                var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
+                var scopeKind = (AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes?)(customAttributes?
+                    .FirstOrDefault(a => a.Type.Name == "InheritDataTypeFromAttribute")?.Parameters.FirstOrDefault()
+                    as int?);
+
+                var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
+                    .FirstOrDefault(s => scopeKind.HasValue ? s.ScopeType == scopeKind : true);
                 if (scope == null)
-                    throw new XamlX.XamlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
+                {
+#if NET6_0_OR_GREATER
+                    var isScopeDefined = Enum.IsDefined<AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes>(scopeKind ?? default);
+#else
+                    var isScopeDefined = Enum.IsDefined(typeof(AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes), scopeKind ?? default);
+#endif
+                    var scopeKindStr = isScopeDefined ? scopeKind!.Value.ToString() : "parent"; 
+                    throw new XamlX.XamlLoadException($"Unable to find the {scopeKindStr} scope for AvaloniaProperty lookup", node);
+                }
 
                 result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text, scope.TargetType, node );
                 return true;
