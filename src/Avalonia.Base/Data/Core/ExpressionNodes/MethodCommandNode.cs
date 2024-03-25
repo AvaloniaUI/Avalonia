@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
+using Avalonia.Data.Converters;
+using Avalonia.Threading;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
@@ -17,6 +19,7 @@ internal sealed class MethodCommandNode : ExpressionNode
     private readonly Func<object, object?, bool>? _canExecute;
     private readonly ISet<string> _dependsOnProperties;
     private Command? _command;
+    private MethodToCommandConverter.WeakPropertyChangedProxy? _weakPropertyChanged;
 
     public MethodCommandNode(
         string methodName,
@@ -41,7 +44,9 @@ internal sealed class MethodCommandNode : ExpressionNode
     protected override void OnSourceChanged(object source, Exception? dataValidationError)
     {
         if (source is INotifyPropertyChanged newInpc)
-            newInpc.PropertyChanged += OnPropertyChanged;
+        {
+            _weakPropertyChanged = new MethodToCommandConverter.WeakPropertyChangedProxy(newInpc, OnPropertyChanged);
+        }
 
         _command = new Command(source, _execute, _canExecute);
         SetValue(_command);
@@ -49,8 +54,11 @@ internal sealed class MethodCommandNode : ExpressionNode
 
     protected override void Unsubscribe(object oldSource)
     {
-        if (oldSource is INotifyPropertyChanged oldInpc)
-            oldInpc.PropertyChanged -= OnPropertyChanged;
+        if (oldSource is INotifyPropertyChanged)
+        {
+            _weakPropertyChanged?.Unsubscribe();
+            _weakPropertyChanged = null;
+        }
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -78,8 +86,8 @@ internal sealed class MethodCommandNode : ExpressionNode
 
         public void RaiseCanExecuteChanged()
         {
-            Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
-               , Threading.DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
+               , DispatcherPriority.Input);
         }
 
         public bool CanExecute(object? parameter)
