@@ -167,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Same(presenter2, fromPresenter);
                 Assert.Same(target.Presenter, toPresenter);
-                Assert.Equal("bar", fromPresenter.Content);
+                Assert.Equal(null, fromPresenter.Content); //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
                 Assert.Equal("baz", toPresenter.Content);
                 Assert.True(forward);
                 Assert.Equal(1, transition.CancelCount);
