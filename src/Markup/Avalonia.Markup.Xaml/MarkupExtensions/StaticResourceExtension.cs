@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             };
 
             var themeVariant = (targetObject as IThemeVariantHost)?.ActualThemeVariant
-                ?? GetDictionaryVariant(serviceProvider);
+                ?? GetDictionaryVariant(stack);
 
             var targetType = targetProperty switch
             {
@@ -58,11 +58,26 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // which might be able to give us the resource.
             if (stack is not null)
             {
-                foreach (var parent in stack.Parents)
+                // avoid allocations iterating the parents when possible
+                if (stack is IAvaloniaXamlIlEagerParentStackProvider eagerStack)
                 {
-                    if (parent is IResourceNode node && node.TryGetResource(resourceKey, themeVariant, out var value))
+                    var enumerator = new EagerParentStackEnumerator(eagerStack);
+                    while (enumerator.TryGetNextOfType<IResourceNode>() is { } node)
                     {
-                        return ColorToBrushConverter.Convert(value, targetType);
+                        if (node.TryGetResource(resourceKey, themeVariant, out var value))
+                        {
+                            return ColorToBrushConverter.Convert(value, targetType);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var parent in stack.Parents)
+                    {
+                        if (parent is IResourceNode node && node.TryGetResource(resourceKey, themeVariant, out var value))
+                        {
+                            return ColorToBrushConverter.Convert(value, targetType);
+                        }
                     }
                 }
             }
@@ -86,23 +101,37 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return ColorToBrushConverter.Convert(control.FindResource(ResourceKey!), targetType);
         }
 
-        internal static ThemeVariant? GetDictionaryVariant(IServiceProvider serviceProvider)
+        internal static ThemeVariant? GetDictionaryVariant(IAvaloniaXamlIlParentStackProvider? stack)
         {
-            var parents = serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents;
-            if (parents is null)
+            switch (stack)
             {
-                return null;
-            }
+                case null:
+                    return null;
 
-            foreach (var parent in parents)
-            {
-                if (parent is IThemeVariantProvider { Key: { } setKey })
-                {
-                    return setKey;
-                }
-            }
+                case IAvaloniaXamlIlEagerParentStackProvider eager:
+                    var enumerator = new EagerParentStackEnumerator(eager);
 
-            return null;
+                    while (enumerator.TryGetNextOfType<IThemeVariantProvider>() is { } themeVariantProvider)
+                    {
+                        if (themeVariantProvider.Key is { } setKey)
+                        {
+                            return setKey;
+                        }
+                    }
+
+                    return null;
+
+                case { } provider:
+                    foreach (var parent in provider.Parents)
+                    {
+                        if (parent is IThemeVariantProvider { Key: { } setKey })
+                        {
+                            return setKey;
+                        }
+                    }
+
+                    return null;
+            }
         }
     }
 }
