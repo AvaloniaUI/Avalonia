@@ -413,6 +413,8 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             value = null;
         }
 
+        Start(produceValue: false);
+        
         var hasValueChanged = value != UnchangedValue && !TypeUtilities.IdentityEquals(value, GetValue(), TargetType);
         var hasErrorChanged = error is not null || _error is not null;
 
