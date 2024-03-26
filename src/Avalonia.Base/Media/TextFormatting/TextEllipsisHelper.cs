@@ -37,7 +37,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         case ShapedTextRun shapedRun:
                             {
-                                currentWidth += shapedRun.Size.Width;
+                                currentWidth = shapedRun.Size.Width;
 
                                 if (currentWidth > availableWidth)
                                 {
@@ -111,7 +111,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         case ShapedTextRun shapedRun:
                             {
-                                currentWidth += shapedRun.Size.Width;
+                                currentWidth = shapedRun.Size.Width;
 
                                 if (currentWidth > availableWidth)
                                 {
