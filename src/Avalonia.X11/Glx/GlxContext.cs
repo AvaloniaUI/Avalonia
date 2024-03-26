@@ -9,7 +9,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.X11.Glx
 {
-    internal class GlxContext : IGlContext
+    internal class GlxContext : IGlContext, IGlContextWithIsCurrentCheck
     {
         public IntPtr Handle { get; }
         public GlxInterface Glx { get; }

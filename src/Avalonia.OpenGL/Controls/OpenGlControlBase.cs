@@ -9,12 +9,15 @@ using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
 using Avalonia.Platform;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.ExceptionServices;
+using Avalonia.OpenGL.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.OpenGL.Controls
 {
     public abstract class OpenGlControlBase : Control
     {
-        private CompositionSurfaceVisual? _visual;
         private readonly Action _update;
         private bool _updateQueued;
         private Task<bool>? _initialization;
@@ -27,6 +30,36 @@ namespace Avalonia.OpenGL.Controls
             _update = Update;
         }
 
+        private bool ExecUserCode(Action cb)
+        {
+            try
+            {
+                cb();
+                return true;
+            }
+            catch (Exception e)
+            {
+                var info = ExceptionDispatchInfo.Capture(e);
+                Dispatcher.UIThread.Post(() => info.Throw());
+                return false;
+            }
+        }
+        
+        private bool ExecUserCode<T>(Action<T> cb, T arg)
+        {
+            try
+            {
+                cb(arg);
+                return true;
+            }
+            catch (Exception e)
+            {
+                var info = ExceptionDispatchInfo.Capture(e);
+                Dispatcher.UIThread.Post(() => info.Throw());
+                return false;
+            }
+        }
+        
         private void DoCleanup()
         {
             if (_initialization is { Status: TaskStatus.RanToCompletion } && _resources != null)
@@ -35,7 +68,7 @@ namespace Avalonia.OpenGL.Controls
                 {
                     using (_resources.Context.EnsureCurrent())
                     {
-                        OnOpenGlDeinit(_resources.Context.GlInterface);
+                        ExecUserCode(OnOpenGlDeinit, _resources.Context.GlInterface);
                     }
                 }
                 catch(Exception e)
@@ -45,10 +78,7 @@ namespace Avalonia.OpenGL.Controls
                 }
             }
 
-            ElementComposition.SetElementChildVisual(this, null);
-
             _updateQueued = false;
-            _visual = null;
             _resources?.DisposeAsync();
             _resources = null;
             _initialization = null;
@@ -66,72 +96,15 @@ namespace Avalonia.OpenGL.Controls
             _compositor = (this.GetVisualRoot()?.Renderer as IRendererWithCompositor)?.Compositor;
             RequestNextFrameRendering();
         }
-
-        [MemberNotNullWhen(true, nameof(_resources))]
-        private bool EnsureInitializedCore(
-            ICompositionGpuInterop interop,
-            IOpenGlTextureSharingRenderInterfaceContextFeature? contextSharingFeature)
-        {
-            var surface = _compositor!.CreateDrawingSurface();
-
-            IGlContext? ctx = null;
-            try
-            {
-                if (contextSharingFeature?.CanCreateSharedContext == true)
-                    _resources = OpenGlControlBaseResources.TryCreate(surface, interop, contextSharingFeature);
-
-                if(_resources == null)
-                {
-                    var contextFactory = AvaloniaLocator.Current.GetRequiredService<IPlatformGraphicsOpenGlContextFactory>();
-                    ctx = contextFactory.CreateContext(null);
-                    if (ctx.TryGetFeature<IGlContextExternalObjectsFeature>(out var externalObjects))
-                        _resources = OpenGlControlBaseResources.TryCreate(ctx, surface, interop, externalObjects);
-                    else
-                        ctx.Dispose();
-                }
-                
-                if(_resources == null)
-                {
-                    Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
-                        "Unable to initialize OpenGL: current platform does not support multithreaded context sharing and shared memory");
-                    return false;
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
-                    "Unable to initialize OpenGL: {exception}", e);
-                ctx?.Dispose();
-                return false;
-            }
-            
-            _visual = _compositor.CreateSurfaceVisual();
-            _visual.Size = new Vector(Bounds.Width, Bounds.Height);
-            _visual.Surface = _resources.Surface;
-            ElementComposition.SetElementChildVisual(this, _visual);
-            return true;
-
-        }
         
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            if (_visual != null && change.Property == BoundsProperty)
-            {
-                _visual.Size = new Vector(Bounds.Width, Bounds.Height);
-                RequestNextFrameRendering();
-            }
-
-            base.OnPropertyChanged(change);
-        }
-
         private void ContextLost()
         {
             _initialization = null;
             _resources?.DisposeAsync();
-            OnOpenGlLost();
+            _resources = null;
+            ExecUserCode(OnOpenGlLost);
         }
 
-        [MemberNotNullWhen(true, nameof(_resources))]
         private bool EnsureInitialized()
         {
             if (_initialization != null)
@@ -145,13 +118,20 @@ namespace Avalonia.OpenGL.Controls
                 if (_initialization is { IsCompleted: false })
                     return false;
 
-                if (_resources!.Context.IsLost)
-                    ContextLost();
-                else 
-                    return true;
-            }
 
+                if (_resources != null)
+                {
+                    if (_resources.Context.IsLost)
+                        ContextLost();
+                    else
+                        return true;
+                }
+            }
+            
             _initialization = InitializeAsync();
+
+            if (_initialization.Status == TaskStatus.RanToCompletion)
+                return true;
 
             async void ContinueOnInitialization()
             {
@@ -169,7 +149,6 @@ namespace Avalonia.OpenGL.Controls
             return false;
 
         }
-
         
         private void Update()
         {
@@ -178,44 +157,55 @@ namespace Avalonia.OpenGL.Controls
                 return;
             if(!EnsureInitialized())
                 return;
-            using (_resources.BeginDraw(GetPixelSize(visualRoot)))
-                OnOpenGlRender(_resources.Context.GlInterface, _resources.Fbo);
+            using (_resources!.BeginDraw(FramebufferPixelSize))
+                ExecUserCode(OpenGlRender);
         }
 
         private async Task<bool> InitializeAsync()
         {
+            _resources = null;
             if (_compositor == null)
             {
                 Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
                     "Unable to obtain Compositor instance");
                 return false;
             }
-            
-            var gpuInteropTask = _compositor.TryGetCompositionGpuInterop();
 
-            var contextSharingFeature =
-                (IOpenGlTextureSharingRenderInterfaceContextFeature?)
-                await _compositor.TryGetRenderInterfaceFeature(
-                    typeof(IOpenGlTextureSharingRenderInterfaceContextFeature));
-            var interop = await gpuInteropTask;
+            _resources = await OpenGlControlBaseResources.TryCreateAsync(_compositor, this, FramebufferPixelSize);
+            if (_resources == null)
+                return false;
 
-            if (interop == null)
+
+            var success = false;
+            try
+            {
+                using (_resources.Context.EnsureCurrent())
+                    return success = ExecUserCode(OnOpenGlInit, _resources.Context.GlInterface);
+            }
+            catch(Exception e)
             {
                 Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
-                    "Compositor backend doesn't support GPU interop");
+                    "EnsureCurrent failed: {Exception}", e);
+                
                 return false;
             }
-
-            if (!EnsureInitializedCore(interop, contextSharingFeature))
+            finally
             {
-                DoCleanup();
-                return false;
+                if(!success)
+                    await _resources.DisposeAsync();
             }
 
-            using (_resources.Context.MakeCurrent())
-                OnOpenGlInit(_resources.Context.GlInterface);
-            
-            return true;
+        }
+
+        protected PixelSize FramebufferPixelSize
+        {
+            get
+            {
+                if (VisualRoot == null)
+                    return new(1, 1);
+                var size = PixelSize.FromSize(Bounds.Size, VisualRoot.RenderScaling);
+                return new PixelSize(Math.Max(1, size.Width), Math.Max(1, size.Height));
+            }
         }
 
         [Obsolete("Use RequestNextFrameRendering()"), EditorBrowsable(EditorBrowsableState.Never)]
@@ -230,13 +220,6 @@ namespace Avalonia.OpenGL.Controls
                 _updateQueued = true;
                 _compositor.RequestCompositionUpdate(_update);
             }
-        }
-
-        private PixelSize GetPixelSize(IRenderRoot visualRoot)
-        {
-            var scaling = visualRoot.RenderScaling;
-            return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
-                Math.Max(1, (int)(Bounds.Height * scaling)));
         }
         
         protected virtual void OnOpenGlInit(GlInterface gl)
@@ -253,6 +236,8 @@ namespace Avalonia.OpenGL.Controls
         {
             
         }
+
+        private void OpenGlRender() => OnOpenGlRender(_resources!.Context.GlInterface, _resources.Fbo);
         
         protected abstract void OnOpenGlRender(GlInterface gl, int fb);
     }

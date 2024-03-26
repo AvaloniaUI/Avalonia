@@ -17,6 +17,12 @@ namespace Avalonia.OpenGL
         IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null);
     }
 
+    // TODO12: Merge with IGlContext
+    public interface IGlContextWithIsCurrentCheck : IGlContext
+    {
+        bool IsCurrent { get; }
+    }
+
     public interface IGlPlatformSurfaceRenderTargetFactory
     {
         bool CanRenderToSurface(IGlContext context, object surface);
