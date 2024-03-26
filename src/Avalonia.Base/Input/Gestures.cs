@@ -10,20 +10,7 @@ namespace Avalonia.Input
 {
     public static class Gestures
     {
-        private readonly struct GestureState
-        {
-            public GestureState(GestureStateType type, IPointer pointer, Point point)
-            {
-                Type = type;
-                Pointer = pointer;
-                Point = point;
-            }
-
-            public readonly GestureStateType Type { get; init; }
-            public readonly IPointer Pointer { get; init; }
-            public readonly Point Point { get; init; }
-        }
-
+        private record struct GestureState(GestureStateType Type, IPointer Pointer, Point Point);
         private enum GestureStateType
         {
             Pending,
