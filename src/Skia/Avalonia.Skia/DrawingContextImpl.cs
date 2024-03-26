@@ -1156,17 +1156,23 @@ namespace Avalonia.Skia
             var tileBrush = content.Brush;
             var transform = rect.TopLeft == default ? Matrix.Identity : Matrix.CreateTranslation(-rect.X, -rect.Y);
 
+            var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
+            transform *= calc.IntermediateTransform;
+
+            var brushTransform = Matrix.Identity;
+
             if (content.Transform is not null)
             {
                 var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
                 var offset = Matrix.CreateTranslation(transformOrigin);
-
-                transform *= -offset * content.Transform.Value * offset;
+                brushTransform = -offset * content.Transform.Value * offset;
             }
 
-            var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
-            transform *= calc.IntermediateTransform;
-            
+            if (tileBrush.TileMode == TileMode.None)
+            {
+                transform = brushTransform * transform;
+            }
+
             using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
             using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
             {
@@ -1203,6 +1209,11 @@ namespace Avalonia.Skia
             if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
                 paintTransform =
                     paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetRect.X, (float)targetRect.Y));
+
+            if(tileBrush.TileMode != TileMode.None)
+            {
+                paintTransform = paintTransform.PreConcat(brushTransform.ToSKMatrix());               
+            }
 
             using (var shader = picture.ToShader(tileX, tileY, paintTransform,
                        new SKRect(0, 0, picture.CullRect.Width, picture.CullRect.Height)))
