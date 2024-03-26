@@ -16,7 +16,7 @@ internal partial class MediaContext : ICompositorScheduler
     private TimeSpan _inputMarkerAddedAt;
     private bool _isRendering;
     private bool _animationsAreWaitingForComposition;
-    private const double MaxSecondsWithoutInput = 1;
+    private const double MaxSecondsWithoutInput = 0.2;
     private readonly Action _render;
     private readonly Action _inputMarkerHandler;
     private readonly HashSet<Compositor> _requestedCommits = new();
