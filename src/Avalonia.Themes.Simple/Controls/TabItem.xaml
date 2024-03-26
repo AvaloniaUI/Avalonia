@@ -19,7 +19,9 @@
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Header}"
                           ContentTemplate="{TemplateBinding HeaderTemplate}"
-                          CornerRadius="{TemplateBinding CornerRadius}" />
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          RecognizesAccessKey="True"
+                          />
       </ControlTemplate>
     </Setter>
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">

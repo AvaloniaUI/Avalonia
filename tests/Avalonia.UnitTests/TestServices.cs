@@ -1,17 +1,11 @@
 using System;
 using Moq;
 using Avalonia.Input;
-using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.Rendering;
 using System.Reactive.Concurrency;
-using System.Collections.Generic;
-using Avalonia.Controls;
-using System.Reflection;
 using Avalonia.Animation;
 using Avalonia.Headless;
 using Avalonia.Threading;
@@ -129,18 +123,22 @@ namespace Avalonia.UnitTests
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
-            IWindowingPlatform windowingPlatform = null) : this(assetLoader, focusManager, inputManager, keyboardDevice,
+            IWindowingPlatform windowingPlatform = null,
+            IAccessKeyHandler accessKeyHandler = null
+            ) : this(assetLoader, focusManager, inputManager, keyboardDevice,
             keyboardNavigation,
             mouseDevice, platform, renderInterface, renderLoop, standardCursorFactory, theme,
             dispatcherImpl, fontManagerImpl, textShaperImpl, windowImpl, windowingPlatform)
         {
             GlobalClock = globalClock;
+            AccessKeyHandler = accessKeyHandler;
         }
 
         public IAssetLoader AssetLoader { get; }
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
         internal IGlobalClock GlobalClock { get; set; }
+        internal IAccessKeyHandler AccessKeyHandler { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public Func<IKeyboardNavigationHandler> KeyboardNavigation { get; }
         public Func<IMouseDevice> MouseDevice { get; }
@@ -172,7 +170,8 @@ namespace Avalonia.UnitTests
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null,
-            IGlobalClock globalClock = null)
+            IGlobalClock globalClock = null,
+            IAccessKeyHandler accessKeyHandler = null)
         {
             return new TestServices(
                 globalClock ?? GlobalClock,
@@ -190,7 +189,9 @@ namespace Avalonia.UnitTests
                 theme: theme ?? Theme,
                 dispatcherImpl: dispatcherImpl ?? DispatcherImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform,
-                windowImpl: windowImpl ?? WindowImpl);
+                windowImpl: windowImpl ?? WindowImpl,
+                accessKeyHandler: accessKeyHandler ?? AccessKeyHandler
+                );
         }
 
         private static IStyle CreateSimpleTheme()
