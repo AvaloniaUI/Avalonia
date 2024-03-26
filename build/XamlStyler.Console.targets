@@ -1,0 +1,23 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AutoXamlFormat Condition="'$(AutoXamlFormat)' == ''">true</AutoXamlFormat>
+  </PropertyGroup>
+  <Target Name="XamlFormatter"
+          AfterTargets="Build"
+          Condition="'$(AutoXamlFormat)' == 'true'">
+    <Message Text="Xaml Formatter" Importance="normal" />
+    <Exec Command="git ls-files -mo --exclude-standard &quot;*.xaml&quot; &quot;*.axaml&quot;" 
+          ConsoleToMSBuild="true" 
+          EchoOff="false" 
+          IgnoreExitCode="false">
+      <Output TaskParameter="ConsoleOutput" ItemName="XamlFileToFormat" />
+    </Exec>
+    <Message Text="Number of (a)Xaml file to format: @(XamlFileToFormat->Count())" Importance="normal"/>
+    <Message Text="File: %(XamlFileToFormat.FullPath)" Importance="low" />    
+    <Exec Command="dotnet tool run xstyler --ignore -f &quot;%(XamlFileToFormat.FullPath)&quot;"
+          Condition="@(XamlFileToFormat->Count()) > 0"
+          EchoOff="false"
+          YieldDuringToolExecution="True"
+          IgnoreExitCode="true"/>
+  </Target>
+</Project>

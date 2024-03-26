@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "xamlstyler.console": {
+      "version": "3.2311.2",
+      "commands": [
+        "xstyler"
+      ]
+    }
+  }
+}

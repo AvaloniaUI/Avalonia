@@ -46,9 +46,14 @@ jobs:
   - task: CmdLine@2
     displayName: 'Install Tizen Workload'
     inputs:
-      targetType: 'inline'
       script: |
        curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash -s -- -d "/opt/hostedtoolcache/dotnet"
+
+  - task: CmdLine@2
+    displayName: 'Restore tools'
+    inputs:
+      script: |
+       dotnet tool restore
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -84,6 +89,12 @@ jobs:
       useGlobalJson: true
 
   - task: CmdLine@2
+    displayName: 'Restore tools'
+    inputs:
+      script: |
+       dotnet tool restore
+
+  - task: CmdLine@2
     displayName: 'Install Workloads'
     inputs:
       script: |
@@ -92,7 +103,6 @@ jobs:
   - task: CmdLine@2
     displayName: 'Install Tizen Workload'
     inputs:
-      targetType: 'inline'
       script: |
        curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
   
@@ -135,14 +145,14 @@ jobs:
   
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
-      artifactName: 'Avalonia.Native.OSX'
+      PathtoPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
+      ArtifactName: 'Avalonia.Native.OSX'
     condition: succeeded()
     
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
-      artifactName: 'NuGetOSX'
+      PathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
+      ArtifactName: 'NuGetOSX'
     condition: succeeded()
 
 - job: Windows
@@ -180,7 +190,13 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 6.2.1 
+       dotnet tool install --global Nuke.GlobalTool --version 6.2.1
+
+  - task: CmdLine@2
+    displayName: 'Restore tools'
+    inputs:
+      script: |
+       dotnet tool restore
 
   - task: CmdLine@2
     displayName: 'Run Nuke'
@@ -197,13 +213,13 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
-      artifactName: 'NuGet'
+      PathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
+      ArtifactName: 'NuGet'
     condition: succeeded()
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
-      artifactName: 'Samples'
+      PathtoPublish: '$(Build.SourcesDirectory)/artifacts/zip'
+      ArtifactName: 'Samples'
     condition: succeeded()
 
