@@ -26,6 +26,7 @@ private:
     PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
     {
         WindowEvents = events;
+        [GetWindowProtocol() setCanBecomeKeyWindow:true];
         [Window setLevel:NSPopUpMenuWindowLevel];
     }
 protected:
