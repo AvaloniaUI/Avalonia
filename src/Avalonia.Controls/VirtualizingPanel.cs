@@ -77,7 +77,7 @@ namespace Avalonia.Controls
         /// item is realized; otherwise, null.
         /// </returns>
         /// <remarks>
-        /// Note for implementors: if the item at the the specified index is an ItemIsOwnContainer
+        /// Note for implementors: if the item at the specified index is an ItemIsOwnContainer
         /// item that has previously been realized, then the item should be returned even if it
         /// currently falls outside the realized viewport.
         /// </remarks>
