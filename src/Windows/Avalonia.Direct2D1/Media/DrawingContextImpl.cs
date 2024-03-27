@@ -625,10 +625,7 @@ namespace Avalonia.Direct2D1.Media
 
                                 if (sceneBrush?.Transform is not null)
                                 {
-                                    var transformOrigin = sceneBrushContent.TransformOrigin.ToPixels(rect);
-                                    var offset = Matrix.CreateTranslation(transformOrigin);
-
-                                    ctx.Transform = -offset * sceneBrush.Transform.Value * offset;
+                                    ctx.Transform *= sceneBrush.Transform.Value;
                                 }
                                 
                                 sceneBrushContent.Render(ctx,
