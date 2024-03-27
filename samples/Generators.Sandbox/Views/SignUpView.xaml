@@ -1,9 +1,15 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Generators.Sandbox.Controls"
+        xmlns:sandbox="clr-namespace:Generators.Sandbox"
         x:Class="Generators.Sandbox.Views.SignUpView">
     <StackPanel Margin="10">
         <TextBlock Text="Sign Up" />
         <controls:SignUpView x:Name="SignUpControl" />
+        <sandbox:RecordList x:TypeArguments="sandbox:Customer">
+          <sandbox:RecordList.gridColumns>
+            <sandbox:Customer/>  
+          </sandbox:RecordList.gridColumns>
+        </sandbox:RecordList>
     </StackPanel>
 </Window>
