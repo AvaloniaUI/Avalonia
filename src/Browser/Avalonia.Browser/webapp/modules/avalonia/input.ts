@@ -171,13 +171,11 @@ export class InputHelper {
         const pointerDownHandler = (args: PointerEvent) => {
             pointerDownCallback(args);
             args.preventDefault();
-            element.setPointerCapture(args.pointerId);
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
             pointerUpCallback(args);
             args.preventDefault();
-            element.releasePointerCapture(args.pointerId);
         };
 
         const pointerCancelHandler = (args: PointerEvent) => {
@@ -327,5 +325,15 @@ export class InputHelper {
         if (args.metaKey) { modifiers |= RawInputModifiers.Meta; }
 
         return modifiers;
+    }
+
+    public static setPointerCapture(containerElement: HTMLInputElement, pointerId: number): void {
+        containerElement.setPointerCapture(pointerId);
+    }
+
+    public static releasePointerCapture(containerElement: HTMLInputElement, pointerId: number): void {
+        if (containerElement.hasPointerCapture(pointerId)) {
+            containerElement.releasePointerCapture(pointerId);
+        }
     }
 }
