@@ -16,7 +16,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is XamlPropertyAssignmentNode pa)
             {
                 if (pa.Property.Name == "Name"
-                    && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
+                    && pa.Property.DeclaringType.Interfaces.Any(t => t.FullName == "Avalonia.INamed"))
                 {
                     if (context.ParentNodes().FirstOrDefault() is XamlManipulationGroupNode mg
                         && mg.Children.OfType<AvaloniaNameScopeRegistrationXamlIlNode>().Any())

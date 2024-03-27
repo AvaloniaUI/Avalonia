@@ -10,5 +10,6 @@
 
   <Import Project="..\build\SharedVersion.props"/>
   <Import Project="..\build\DevAnalyzers.props"/>
+  <Import Project="$(MSBuildThisFileDirectory)\..\Directory.Build.props" />
 
 </Project>

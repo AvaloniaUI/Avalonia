@@ -19,6 +19,7 @@
       <Color x:Key="ThemeForegroundColor">#FF000000</Color>
       <Color x:Key="HighlightColor">#FF086F9E</Color>
       <Color x:Key="HighlightColor2">#FF096085</Color>
+      <Color x:Key="HyperlinkVisitedColor">#FF681DA8</Color>
 
       <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{StaticResource ThemeBackgroundColor}" />
       <SolidColorBrush x:Key="ThemeBorderLowBrush" Color="{StaticResource ThemeBorderLowColor}" />
@@ -33,9 +34,9 @@
       <SolidColorBrush x:Key="ThemeControlHighlightMidBrush" Color="{StaticResource ThemeControlHighlightMidColor}" />
       <SolidColorBrush x:Key="ThemeControlHighlightHighBrush" Color="{StaticResource ThemeControlHighlightHighColor}" />
       <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{StaticResource ThemeForegroundColor}" />
-
       <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />
       <SolidColorBrush x:Key="HighlightBrush2" Color="{StaticResource HighlightColor2}" />
+      <SolidColorBrush x:Key="HyperlinkVisitedBrush" Color="{StaticResource HyperlinkVisitedColor}" />
 
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
@@ -63,6 +64,7 @@
       <Color x:Key="ThemeForegroundColor">#FFDEDEDE</Color>
       <Color x:Key="HighlightColor">#FF119EDA</Color>
       <Color x:Key="HighlightColor2">#FF096085</Color>
+      <Color x:Key="HyperlinkVisitedColor">#FFC58AF9</Color>
 
       <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{StaticResource ThemeBackgroundColor}" />
       <SolidColorBrush x:Key="ThemeBorderLowBrush" Color="{StaticResource ThemeBorderLowColor}" />
@@ -79,6 +81,7 @@
       <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{StaticResource ThemeForegroundColor}" />
       <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />
       <SolidColorBrush x:Key="HighlightBrush2" Color="{StaticResource HighlightColor2}" />
+      <SolidColorBrush x:Key="HyperlinkVisitedBrush" Color="{StaticResource HyperlinkVisitedColor}" />
 
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />

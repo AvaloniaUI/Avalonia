@@ -5,8 +5,6 @@
 
 using System;
 
-#nullable enable
-
 namespace Avalonia.Controls.Metadata
 {
     /// <summary>
@@ -17,7 +15,7 @@ namespace Avalonia.Controls.Metadata
     /// Style authors should be able to identify the part type used for styling the specific control.
     /// The part is usually required in the style and should have a specific predefined name.
     /// </remarks>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public sealed class TemplatePartAttribute : Attribute
     {
         /// <summary>
@@ -51,5 +49,10 @@ namespace Avalonia.Controls.Metadata
         /// in <see cref="Name"/>.
         /// </summary>
         public Type Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the template part is mandatory to be present in the template.
+        /// </summary>
+        public bool IsRequired { get; set; }
     }
 }

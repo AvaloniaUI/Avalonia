@@ -145,7 +145,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }
-            if (buttonState.HasAnyFlag(MotionEventButtonState.StylusPrimary))
+            if (OperatingSystem.IsAndroidVersionAtLeast(23) && buttonState.HasAnyFlag(MotionEventButtonState.StylusPrimary))
             {
                 modifiers |= RawInputModifiers.PenBarrelButton;
             }

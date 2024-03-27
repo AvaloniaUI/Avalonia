@@ -1,10 +1,6 @@
-# Windows
-
-Avalonia requires at least Visual Studio 2022 and dotnet 7-rc2 SDK 7.0.100-rc.2 to build on all platforms.
-
 ##  Clone the Avalonia repository
 
-```
+```bash
 git clone https://github.com/AvaloniaUI/Avalonia.git
 cd Avalonia
 git submodule update --init
@@ -12,23 +8,31 @@ git submodule update --init
 
 ## Install the required version of the .NET Core SDK
 
-Go to https://dotnet.microsoft.com/download/visual-studio-sdks and install the latest version of the .NET Core SDK compatible with Avalonia UI. Make sure to download the SDK (not just the "runtime") package. The version compatible is indicated within the [global.json](https://github.com/AvaloniaUI/Avalonia/blob/master/global.json) file. Note that Avalonia UI does not always use the latest version and is hardcoded to use the last version known to be compatible (SDK releases may break the builds from time-to-time).
+Go to https://dotnet.microsoft.com/en-us/download/visual-studio-sdks and install the latest version of the .NET SDK compatible with Avalonia UI. Make sure to download the SDK (not just the "runtime") package. The version compatible is indicated within the [global.json](https://github.com/AvaloniaUI/Avalonia/blob/master/global.json) file. Note that Avalonia UI does not always use the latest version and is hardcoded to use the last version known to be compatible (SDK releases may break the builds from time-to-time).
 
 ### Installing necessary .NET Workloads
 
 .NET SDK requires developers to install workloads for each platform they are targeting.
 Since Avalonia targets pretty much every supported .NET platform, you need to install these workloads as well. 
 Running it from the command line:
-```
-dotnet workload install android ios wasm-tools wasm-experimental
+```bash
+dotnet workload install android ios wasm-tools
 ```
 
 macOS workloads are not required to build Avalonia.
 Note: on Unix OS you need to run this command from sudo.
+Tizen workload can be installed with PowerShell:
+```powershell
+(New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1') | Invoke-Expression
+```
+Or Bash:
+```bash
+curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
+```
 
 ##  Build and Run Avalonia
 
-```
+```bash
 cd samples\ControlCatalog.NetCore
 dotnet restore
 dotnet run
@@ -47,14 +51,6 @@ Build and run `ControlCatalog.NetCore` project to see the sample application.
 
 ### Visual Studio Troubleshooting
 
- * **Error CS0006: Avalonia.DesktopRuntime.dll could not be found**
-
-    It is common for the first build to fail with the errors below (also discussed in [#4257](https://github.com/AvaloniaUI/Avalonia/issues/4257)).
-    ```
-    >CSC : error CS0006: Metadata file 'C:\...\Avalonia\src\Avalonia.DesktopRuntime\bin\Debug\netcoreapp2.0\Avalonia.DesktopRuntime.dll' could not be found
-    >CSC : error CS0006: Metadata file 'C:\...\Avalonia\packages\Avalonia\bin\Debug\netcoreapp2.0\Avalonia.dll' could not be found
-    ```
-    To correct this, right click on the `Avalonia.DesktopRuntime` project then press `Build` to build the project manually. Afterwards the solution should build normally and the ControlCatalog can be run.
  * **Error MSB4062 GenerateAvaloniaResourcesTask**
 
     Same as previous one, you need to manually build `Avalonia.Build.Tasks` project at least once.
@@ -79,11 +75,7 @@ Or if you need to create nuget packages as well (it will compile and run tests a
 
 It's *not* possible to build the *whole* project on Linux/macOS. You can only build the subset targeting .NET Standard and .NET Core (which is, however, sufficient to get UI working on Linux/macOS). If you want to something that involves changing platform-specific APIs you'll need a Windows machine.
 
-MonoDevelop, Xamarin Studio and Visual Studio for Mac aren't capable of properly opening our solution. You can use Rider (at least 2017.2 EAP) or VSCode instead. They will fail to load most of platform specific projects, but you don't need them to run on .NET Core.
-
-##  Install the latest version of the .NET Core SDK
-
-Go to https://www.microsoft.com/net/core and follow the instructions for your OS. Make sure to download the SDK (not just the "runtime") package.
+MonoDevelop, Xamarin Studio and Visual Studio for Mac aren't capable of properly opening our solution. You can use Rider (at least 2017.2 EAP) or VS Code instead. They will fail to load most of platform specific projects, but you don't need them to run on .NET Core.
 
 ##  Additional requirements for macOS
 
@@ -105,10 +97,23 @@ On macOS it is necessary to build and manually install the respective native lib
 ./build.sh CompileNative
 ```
 
-##  Build and Run Avalonia
+# Building Avalonia into a local NuGet cache
 
+It is possible to build Avalonia locally and generate NuGet packages that can be used locally to test local changes.
+To do so you need to run:
+```bash
+nuke --target BuildToNuGetCache --configuration Release
 ```
-cd samples/ControlCatalog.NetCore
-dotnet restore
-dotnet run
-```
+
+This command will generate nuget packages and push them into a local NuGet automatically.
+To use these packages use `9999.0.0-localbuild` package version. 
+Each time local changes are made to Avalonia, running this command again will replace old packages and reset cache for the same version.
+
+## Browser
+
+To build and run browser/wasm projects, it's necessary to install NodeJS.
+You can find latest LTS on https://nodejs.org/.
+
+## Windows
+
+It is possible to run some .NET Framework samples and tests using .NET Framework SDK. You need to install at least 4.7 SDK.

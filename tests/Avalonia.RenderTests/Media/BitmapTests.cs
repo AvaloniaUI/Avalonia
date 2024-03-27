@@ -72,7 +72,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var r = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             using(var cpuContext = r.CreateBackendContext(null))
             using (var target = cpuContext.CreateRenderTarget(new object[] { fb }))
-            using (var ctx = target.CreateDrawingContext())
+            using (var ctx = target.CreateDrawingContext(false))
             {
                 ctx.Clear(Colors.Transparent);
                 ctx.PushOpacity(0.8, new Rect(0, 0, 80, 80));

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using XamlX;
 using XamlX.Compiler;
 using XamlX.Emit;
 using XamlX.Transform;
@@ -23,7 +21,7 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
             mappings.XmlnsAttributes.Add(typeSystem.GetType(additionalType));
 
         var diagnosticsHandler = new XamlDiagnosticsHandler();
-        
+
         var configuration = new TransformerConfiguration(
             typeSystem,
             typeSystem.Assemblies.First(),
@@ -45,10 +43,7 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
 
     protected override XamlEmitContext<object, IXamlEmitResult> InitCodeGen(
         IFileSource file,
-        Func<string, IXamlType,
-        IXamlTypeBuilder<object>> createSubType,
-        Func<string, IXamlType, IEnumerable<IXamlType>,
-        IXamlTypeBuilder<object>> createDelegateType,
+        IXamlTypeBuilder<object> declaringType,
         object codeGen,
         XamlRuntimeContext<object, IXamlEmitResult> context,
         bool needContextLocal) =>

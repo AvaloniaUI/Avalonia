@@ -2,7 +2,6 @@
   "solution": {
     "path": "Avalonia.sln",
     "projects": [
-      "external\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator.csproj",
       "packages\\Avalonia\\Avalonia.csproj",
       "samples\\AppWithoutLifetime\\AppWithoutLifetime.csproj",
       "samples\\ControlCatalog.NetCore\\ControlCatalog.NetCore.csproj",
@@ -11,13 +10,13 @@
       "samples\\IntegrationTestApp\\IntegrationTestApp.csproj",
       "samples\\MiniMvvm\\MiniMvvm.csproj",
       "samples\\ReactiveUIDemo\\ReactiveUIDemo.csproj",
+      "samples\\RenderDemo\\RenderDemo.csproj",
       "samples\\SampleControls\\ControlSamples.csproj",
       "samples\\Sandbox\\Sandbox.csproj",
       "src\\Avalonia.Base\\Avalonia.Base.csproj",
       "src\\Avalonia.Build.Tasks\\Avalonia.Build.Tasks.csproj",
       "src\\Avalonia.Controls.ColorPicker\\Avalonia.Controls.ColorPicker.csproj",
       "src\\Avalonia.Controls.DataGrid\\Avalonia.Controls.DataGrid.csproj",
-      "src\\Avalonia.Controls.ItemsRepeater\\Avalonia.Controls.ItemsRepeater.csproj",
       "src\\Avalonia.Controls\\Avalonia.Controls.csproj",
       "src\\Avalonia.DesignerSupport\\Avalonia.DesignerSupport.csproj",
       "src\\Avalonia.Desktop\\Avalonia.Desktop.csproj",
@@ -46,17 +45,18 @@
       "src\\tools\\DevAnalyzers\\DevAnalyzers.csproj",
       "src\\tools\\DevGenerators\\DevGenerators.csproj",
       "src\\Windows\\Avalonia.Direct2D1\\Avalonia.Direct2D1.csproj",
-      "src\\Windows\\Avalonia.Win32.Interop\\Avalonia.Win32.Interop.csproj",
+      "src\\Windows\\Avalonia.Win32.Interoperability\\Avalonia.Win32.Interoperability.csproj",
       "src\\Windows\\Avalonia.Win32\\Avalonia.Win32.csproj",
       "tests\\Avalonia.Base.UnitTests\\Avalonia.Base.UnitTests.csproj",
       "tests\\Avalonia.Benchmarks\\Avalonia.Benchmarks.csproj",
+      "tests\\Avalonia.Build.Tasks.UnitTest\\Avalonia.Build.Tasks.UnitTest.csproj",
       "tests\\Avalonia.Controls.DataGrid.UnitTests\\Avalonia.Controls.DataGrid.UnitTests.csproj",
-      "tests\\Avalonia.Controls.ItemsRepeater.UnitTests\\Avalonia.Controls.ItemsRepeater.UnitTests.csproj",
       "tests\\Avalonia.Controls.UnitTests\\Avalonia.Controls.UnitTests.csproj",
       "tests\\Avalonia.DesignerSupport.TestApp\\Avalonia.DesignerSupport.TestApp.csproj",
       "tests\\Avalonia.DesignerSupport.Tests\\Avalonia.DesignerSupport.Tests.csproj",
       "tests\\Avalonia.Direct2D1.RenderTests\\Avalonia.Direct2D1.RenderTests.csproj",
       "tests\\Avalonia.Direct2D1.UnitTests\\Avalonia.Direct2D1.UnitTests.csproj",
+      "tests\\Avalonia.Generators.Tests\\Avalonia.Generators.Tests.csproj",
       "tests\\Avalonia.IntegrationTests.Appium\\Avalonia.IntegrationTests.Appium.csproj",
       "tests\\Avalonia.LeakTests\\Avalonia.LeakTests.csproj",
       "tests\\Avalonia.Markup.UnitTests\\Avalonia.Markup.UnitTests.csproj",
@@ -64,7 +64,8 @@
       "tests\\Avalonia.ReactiveUI.UnitTests\\Avalonia.ReactiveUI.UnitTests.csproj",
       "tests\\Avalonia.Skia.RenderTests\\Avalonia.Skia.RenderTests.csproj",
       "tests\\Avalonia.Skia.UnitTests\\Avalonia.Skia.UnitTests.csproj",
-      "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj"
+      "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj",
+      "tests\\TestFiles\\BuildTasks\\PInvoke\\PInvoke.csproj"
     ]
   }
 }

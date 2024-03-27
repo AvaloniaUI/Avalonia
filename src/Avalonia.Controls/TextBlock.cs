@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Automation.Peers;
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -686,15 +687,16 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateTextLayout()
         {
+            InvalidateMeasure();
+        }
+
+        protected override void OnMeasureInvalidated()
+        {
             _textLayout?.Dispose();
             _textLayout = null;
-            
-            VisualChildren.Clear();
-
             _textRuns = null;
 
-            InvalidateVisual();
-            InvalidateMeasure();
+            base.OnMeasureInvalidated();
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -703,6 +705,8 @@ namespace Avalonia.Controls
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
             _constraint = availableSize.Deflate(padding);
+
+            //Reset TextLayout otherwise constraint might be outdated.
             _textLayout?.Dispose();
             _textLayout = null;
 
@@ -718,21 +722,6 @@ namespace Avalonia.Controls
                 }
 
                 _textRuns = textRuns;
-
-                foreach (var textLine in TextLayout.TextLines)
-                {
-                    foreach (var run in textLine.TextRuns)
-                    {
-                        if (run is DrawableTextRun drawable)
-                        {
-                            if (drawable is EmbeddedControlRun controlRun
-                                && controlRun.Control is Control control)
-                            {
-                                VisualChildren.Add(control);
-                            }
-                        }
-                    }
-                }
             }
 
             var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
@@ -845,25 +834,33 @@ namespace Avalonia.Controls
 
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
+            VisualChildren.Clear();
+
             if (oldValue is not null)
             {
                 oldValue.LogicalChildren = null;
                 oldValue.InlineHost = null;
-                oldValue.Invalidated -= (s, e) => InvalidateTextLayout();
+                oldValue.Invalidated -= Invalidated;
             }
 
             if (newValue is not null)
             {
                 newValue.LogicalChildren = LogicalChildren;
                 newValue.InlineHost = this;
-                newValue.Invalidated += (s, e) => InvalidateTextLayout();
+                newValue.Invalidated += Invalidated;
             }
+
+            return;
+
+            void Invalidated(object? sender, EventArgs e) => InvalidateMeasure();
         }
 
         void IInlineHost.Invalidate()
         {
-            InvalidateTextLayout();
+            InvalidateMeasure();
         }
+
+        IAvaloniaList<Visual> IInlineHost.VisualChildren => VisualChildren;
 
         protected readonly record struct SimpleTextSource : ITextSource
         {

@@ -106,11 +106,6 @@
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:ImagePage />
       </TabItem>
-      <TabItem Header="ItemsRepeater"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:ItemsRepeaterPage />
-      </TabItem>
       <TabItem Header="Label">
         <pages:LabelsPage />
       </TabItem>

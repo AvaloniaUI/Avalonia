@@ -350,11 +350,11 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
     }
     
     [Theory]
-    [InlineData(Key.Left, NavigationDirection.Left)]
-    [InlineData(Key.Right, NavigationDirection.Right)]
-    [InlineData(Key.Up, NavigationDirection.Up)]
-    [InlineData(Key.Down, NavigationDirection.Down)]
-    public void Arrow_Key_Should_Not_Be_Handled_If_No_Focus(Key key, NavigationDirection direction)
+    [InlineData(Key.Left)]
+    [InlineData(Key.Right)]
+    [InlineData(Key.Up)]
+    [InlineData(Key.Down)]
+    public void Arrow_Key_Should_Not_Be_Handled_If_No_Focus(Key key)
     {
         using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
         

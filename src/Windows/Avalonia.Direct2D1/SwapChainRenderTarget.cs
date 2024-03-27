@@ -19,7 +19,7 @@ namespace Avalonia.Direct2D1
         /// Creates a drawing context for a rendering session.
         /// </summary>
         /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
         {
             var size = GetWindowSize();
             var dpi = GetWindowDpi();
@@ -32,7 +32,7 @@ namespace Avalonia.Direct2D1
                 Resize();
             }
 
-            return new DrawingContextImpl(this, _deviceContext, _swapChain);
+            return new DrawingContextImpl(this, _deviceContext, useScaledDrawing, _swapChain);
         }
 
         public bool IsCorrupted => false;
