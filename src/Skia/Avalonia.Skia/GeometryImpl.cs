@@ -45,9 +45,12 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool StrokeContains(IPen? pen, Point point)
         {
-            _pathCache.UpdateIfNeeded(StrokePath, pen);
+            lock (this)
+            {
+                _pathCache.UpdateIfNeeded(StrokePath, pen);
 
-            return PathContainsCore(_pathCache.ExpandedPath, point);
+                return PathContainsCore(_pathCache.ExpandedPath, point);
+            }
         }
         
         /// <summary>
@@ -73,8 +76,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Rect GetRenderBounds(IPen? pen)
         {
-            _pathCache.UpdateIfNeeded(StrokePath, pen);
-            return _pathCache.RenderBounds;
+            lock (this)
+            {
+                _pathCache.UpdateIfNeeded(StrokePath, pen);
+                return _pathCache.RenderBounds;
+            }
         }
 
         public IGeometryImpl GetWidenedGeometry(IPen pen)
@@ -154,8 +160,11 @@ namespace Avalonia.Skia
         /// </summary>
         protected void InvalidateCaches()
         {
-            _pathCache.Dispose();
-            _pathCache = default;
+            lock (this)
+            {
+                _pathCache.Dispose();
+                _pathCache = default;
+            }
         }
 
         private struct PathCache : IDisposable
