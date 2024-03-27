@@ -70,10 +70,14 @@ namespace Avalonia.X11
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
 
+            IRenderTimer timer = options.ShouldRenderOnUIThread
+               ? new UiThreadRenderTimer(60)
+               : new SleepLoopRenderTimer(60);
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
-                .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
@@ -98,6 +102,7 @@ namespace Avalonia.X11
             }
 
             Compositor = new Compositor(graphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -302,7 +307,14 @@ namespace Avalonia
         /// </remarks>
         public bool EnableSessionManagement { get; set; } = 
             Environment.GetEnvironmentVariable("AVALONIA_X11_USE_SESSION_MANAGEMENT") != "0";
-        
+
+        /// <summary>
+        /// Render directly on the UI thread instead of using a dedicated render thread.
+        /// This can be usable if your device don't have multiple cores to begin with.
+        /// This setting is false by default.
+        /// </summary>
+        public bool ShouldRenderOnUIThread { get; set; }
+
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),
@@ -331,6 +343,14 @@ namespace Avalonia
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
+
+        /// <summary>
+        /// Retain window framebuffer contents if using CPU rendering mode.
+        /// This will keep an offscreen bitmap for each window with contents of the previous frame
+        /// While improving performance by saving a blit, it will increase memory consumption
+        /// if you have many windows 
+        /// </summary>
+        public bool? UseRetainedFramebuffer { get; set; }
 
         public X11PlatformOptions()
         {

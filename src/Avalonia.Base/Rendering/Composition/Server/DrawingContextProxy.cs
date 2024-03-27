@@ -77,6 +77,9 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.DrawRectangle(brush, pen, rect, boxShadows);
     }
 
+    public void DrawRegion(IBrush? brush, IPen? pen, IPlatformRenderInterfaceRegion region) =>
+        _impl.DrawRegion(brush, pen, region);
+
     public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
     {
         _impl.DrawEllipse(brush, pen, rect);
@@ -87,7 +90,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.DrawGlyphRun(foreground, glyphRun);
     }
 
-    public IDrawingContextLayerImpl CreateLayer(Size size)
+    public IDrawingContextLayerImpl CreateLayer(PixelSize size)
     {
         return _impl.CreateLayer(size);
     }
@@ -102,10 +105,16 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.PushClip(clip);
     }
 
+    public void PushClip(IPlatformRenderInterfaceRegion region) => _impl.PushClip(region);
+
     public void PopClip()
     {
         _impl.PopClip();
     }
+
+    public void PushLayer(Rect bounds) => _impl.PushLayer(bounds);
+
+    public void PopLayer() => _impl.PopLayer();
 
     public void PushOpacity(double opacity, Rect? bounds)
     {

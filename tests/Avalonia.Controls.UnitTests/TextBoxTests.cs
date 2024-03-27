@@ -950,6 +950,44 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Insert_Multiline_Text_Should_Accept_Extra_Lines_When_AcceptsReturn_Is_True()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = true
+                };
+
+                RaiseTextEvent(target, $"123 {Environment.NewLine}456");
+
+                Assert.Equal($"123 {Environment.NewLine}456", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Insert_Multiline_Text_Should_Discard_Extra_Lines_When_AcceptsReturn_Is_False()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = false
+                };
+
+                RaiseTextEvent(target, $"123 {"\r"}456");
+
+                Assert.Equal("123 ", target.Text);
+
+                target.Text = "";
+
+                RaiseTextEvent(target, $"123 {"\r\n"}456");
+
+                Assert.Equal("123 ", target.Text);
+            }
+        }
+
+        [Fact]
         public void Should_Fullfill_MaxLines_Contraint()
         {
             using (UnitTestApplication.Start(Services))
@@ -1367,6 +1405,52 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Measure()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var button = new Button();
+                var root = new TestRoot()
+                {
+                    Child = new VisualLayerManager()
+                    {
+                        Child = button
+                    }
+                };
+                var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
+
+                var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, button);
+
+                root.Measure(Size.Infinity);
+            }
+        }
+
+        [Fact]
+        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Arrange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var button = new Button();
+                var visualLayerManager = new VisualLayerManager() { Child = button };
+                var root = new TestRoot()
+                {
+                    Child = visualLayerManager
+                };
+                var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
+                var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+
+                root.Measure(new Size(10, 10));
+
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, button);
+
+                root.Arrange(new Rect(0, 0, 10, 10));
+            }
+        }
+
         [Theory]
         [InlineData("A\nBB\nCCC\nDDDD", 0, 0)]
         [InlineData("A\nBB\nCCC\nDDDD", 1, 2)]
@@ -1411,7 +1495,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
-            keyboardNavigation: new KeyboardNavigationHandler(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new HeadlessTextShaperStub(),
@@ -1423,7 +1507,7 @@ namespace Avalonia.Controls.UnitTests
             textShaperImpl: new HeadlessTextShaperStub(), 
             fontManagerImpl: new HeadlessFontManagerStub());
 
-        private IControlTemplate CreateTemplate()
+        internal static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<TextBox>((control, scope) =>
             new ScrollViewer

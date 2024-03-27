@@ -35,7 +35,7 @@
           <!-- To mimic WinUI SystemFocusVisual, Focus visual is drawn outside the bounds of the item -->
           <Border Name="Root" Background="{TemplateBinding Background}"
                   BorderThickness="0" ClipToBounds="True">
-            <ContentPresenter Name="Content"
+            <ContentPresenter Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -69,7 +69,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewSelectedBorderBrush}" />
       </Style>
 
-      <Style Selector="^ /template/ ContentPresenter#Content">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}" />
         <Setter Property="FontWeight" Value="{DynamicResource CalendarViewTodayFontWeight}" />
       </Style>
@@ -100,16 +100,16 @@
         <!-- These are probably set in code, but consistent -->
         <Setter Property="Background" Value="{DynamicResource CalendarViewOutOfScopeBackground}"/>
       </Style>
-      <Style Selector="^ /template/ ContentControl#Content">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewOutOfScopeForeground}"/>
       </Style>
     </Style>
 
-    <Style Selector="^:blackout /template/ ContentControl#Content">
+    <Style Selector="^:blackout /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewBlackoutForeground}" />
     </Style>
 
-    <Style Selector="^:disabled /template/ ContentControl#Content">
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}" />
     </Style>
   </ControlTheme>

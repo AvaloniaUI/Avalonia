@@ -60,9 +60,13 @@ namespace Avalonia.LinuxFramebuffer
 
             var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
 
+            var timer = opts.ShouldRenderOnUIThread
+                ? new UiThreadRenderTimer(opts.Fps)
+                : new DefaultRenderTimer(opts.Fps);
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
+                .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
@@ -161,6 +165,10 @@ public static class LinuxFramebufferPlatformExtensions
         => StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: null) { Scaling = scaling }, inputBackend);
     public static int StartLinuxFbDev(this AppBuilder builder, string[] args, string fbdev, PixelFormat? format, double scaling, IInputBackend? inputBackend = default)
         => StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling }, inputBackend);
+
+    public static int StartLinuxFbDev(this AppBuilder builder, string[] args, FbDevOutputOptions options,
+        IInputBackend? inputBackend = default)
+        => StartLinuxDirect(builder, args, new FbdevOutput(options), inputBackend);
 
     public static int StartLinuxDrm(this AppBuilder builder, string[] args, string? card = null, double scaling = 1, IInputBackend? inputBackend = default)
         => StartLinuxDirect(builder, args, new DrmOutput(card) { Scaling = scaling }, inputBackend);

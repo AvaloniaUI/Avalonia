@@ -3,7 +3,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
-using Avalonia.Reactive;
 using System;
 using System.ComponentModel.DataAnnotations;
 using Avalonia;
@@ -13,7 +12,6 @@ namespace ControlCatalog.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
-        private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
         private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
@@ -41,11 +39,6 @@ namespace ControlCatalog.ViewModels
                 (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
 
-            ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
-            {
-                IsMenuItemChecked = !IsMenuItemChecked;
-            });
-
             WindowState = WindowState.Normal;
 
             WindowStates = new WindowState[]
@@ -56,28 +49,28 @@ namespace ControlCatalog.ViewModels
                 WindowState.FullScreen,
             };
 
-            this.WhenAnyValue(x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeEnabled)
-                .Subscribe(x =>
+            this.PropertyChanged += (s, e) =>
                 {
-                    var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
-
-                    if(x.Item1)
+                    if (e.PropertyName is nameof(SystemTitleBarEnabled) or nameof(PreferSystemChromeEnabled))
                     {
-                        hints |= ExtendClientAreaChromeHints.SystemChrome;
-                    }
+                        var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
 
-                    if(x.Item2)
-                    {
-                        hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
+                        if (SystemTitleBarEnabled)
+                        {
+                            hints |= ExtendClientAreaChromeHints.SystemChrome;
+                        }
+                        if (PreferSystemChromeEnabled)
+                        {
+                            hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
+                        }
+                        ChromeHints = hints;
                     }
-
-                    ChromeHints = hints;
-                });
+                };
 
             SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
         }        
-
+        
         public ExtendClientAreaChromeHints ChromeHints
         {
             get { return _chromeHints; }
@@ -120,12 +113,6 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _windowStates, value); }
         }
 
-        public bool IsMenuItemChecked
-        {
-            get { return _isMenuItemChecked; }
-            set { this.RaiseAndSetIfChanged(ref _isMenuItemChecked, value); }
-        }
-
         public bool IsSystemBarVisible
         {
             get { return _isSystemBarVisible; }
@@ -147,8 +134,6 @@ namespace ControlCatalog.ViewModels
         public MiniCommand AboutCommand { get; }
 
         public MiniCommand ExitCommand { get; }
-
-        public MiniCommand ToggleMenuItemCheckedCommand { get; }
 
         private DateTime? _validatedDateExample;
 

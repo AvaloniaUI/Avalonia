@@ -73,6 +73,7 @@ namespace Avalonia.Browser
                 if (Surfaces.FirstOrDefault() is BrowserSkiaSurface surface)
                 {
                     surface.Size = new PixelSize((int)newSize.Width, (int)newSize.Height);
+                    surface.DisplaySize = newSize;
                 }
 
                 Resized?.Invoke(newSize, WindowResizeReason.User);

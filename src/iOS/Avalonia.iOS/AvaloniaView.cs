@@ -98,6 +98,7 @@ namespace Avalonia.iOS
 #endif
             if (l is CAMetalLayer metalLayer)
             {
+                metalLayer.Opaque = false;
                 _topLevelImpl.Surfaces = new[] { new Metal.MetalPlatformSurface(metalLayer, this) };
             }
         }
@@ -285,6 +286,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(IInputPane))
                 {
                     return _inputPane;
+                }
+
+                if (featureType == typeof(ILauncher))
+                {
+                    return new IOSLauncher();
                 }
 
                 return null;

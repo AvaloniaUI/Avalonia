@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that renders to a framebuffer surface. No gpu acceleration available.
     /// </summary>
-    internal class FramebufferRenderTarget : IRenderTarget
+    internal class FramebufferRenderTarget : IRenderTargetWithProperties
     {
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
@@ -18,6 +18,8 @@ namespace Avalonia.Skia
         private PixelFormatConversionShim? _conversionShim;
         private IDisposable? _preFramebufferCopyHandler;
         private IFramebufferRenderTarget? _renderTarget;
+        private IFramebufferRenderTargetWithProperties? _renderTargetWithProperties;
+        private bool _hadConversionShim;
 
         /// <summary>
         /// Create new framebuffer render target using a target surface.
@@ -26,6 +28,7 @@ namespace Avalonia.Skia
         public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface)
         {
             _renderTarget = platformSurface.CreateFramebufferRenderTarget();
+            _renderTargetWithProperties = _renderTarget as IFramebufferRenderTargetWithProperties;
         }
 
         /// <inheritdoc />
@@ -33,21 +36,36 @@ namespace Avalonia.Skia
         {
             _renderTarget?.Dispose();
             _renderTarget = null;
+            _renderTargetWithProperties = null;
             FreeSurface();
         }
 
+        public RenderTargetProperties Properties => new()
+        {
+            RetainsPreviousFrameContents = !_hadConversionShim
+                                           && _renderTargetWithProperties?.RetainsFrameContents == true,
+            IsSuitableForDirectRendering = true
+        };
+
+
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool scaleDrawingToDpi) =>
+            CreateDrawingContext(scaleDrawingToDpi, out _);
+
+        /// <inheritdoc />
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing, out RenderTargetDrawingContextProperties properties)
         {
             if (_renderTarget == null)
                 throw new ObjectDisposedException(nameof(FramebufferRenderTarget));
-            
-            var framebuffer = _renderTarget.Lock();
+
+            FramebufferLockProperties lockProperties = default;
+            var framebuffer = _renderTargetWithProperties?.Lock(out lockProperties) ?? _renderTarget.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(),
                 framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
 
             CreateSurface(framebufferImageInfo, framebuffer);
+            _hadConversionShim |= _conversionShim != null;
 
             var canvas = _framebufferSurface.Canvas;
 
@@ -58,9 +76,15 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi
+                Dpi = framebuffer.Dpi,
+                ScaleDrawingToDpi = useScaledDrawing
             };
 
+            properties = new()
+            {
+                PreviousFrameIsRetained = !_hadConversionShim && lockProperties.PreviousFrameIsRetained
+            };
+            
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
 

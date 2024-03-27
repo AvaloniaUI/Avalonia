@@ -58,21 +58,19 @@ namespace Avalonia.Rendering.Composition.Server
             return new Size(width, height);
         }
 
-        public void DrawAsciiText(IDrawingContextImpl context, ReadOnlySpan<char> text, IBrush foreground)
+        public void DrawAsciiText(ImmediateDrawingContext context, ReadOnlySpan<char> text, IImmutableBrush foreground)
         {
             var offset = 0.0;
-            var originalTransform = context.Transform;
 
             foreach (var c in text)
             {
                 var effectiveChar = c is >= FirstChar and <= LastChar ? c : ' ';
                 var run = _runs[effectiveChar - FirstChar];
-                context.Transform = originalTransform * Matrix.CreateTranslation(offset, 0.0);
-                context.DrawGlyphRun(foreground, run.PlatformImpl.Item);
+                using (context.PushPreTransform(Matrix.CreateTranslation(offset, 0.0)))
+                    context.PlatformImpl.DrawGlyphRun(foreground, run.PlatformImpl.Item);
                 offset += run.Bounds.Width;
             }
 
-            context.Transform = originalTransform;
         }
     }
 }

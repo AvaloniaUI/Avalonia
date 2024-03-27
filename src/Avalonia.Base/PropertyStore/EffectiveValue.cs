@@ -89,7 +89,7 @@ namespace Avalonia.PropertyStore
         /// Gets a value indicating whether the effective value represents the default value of the
         /// property and can be removed.
         /// </summary>
-        /// <returns>True if the effective value van be removed; otherwise false.</returns>
+        /// <returns>True if the effective value can be removed; otherwise false.</returns>
         public bool CanRemove()
         {
             return Priority == BindingPriority.Unset &&
