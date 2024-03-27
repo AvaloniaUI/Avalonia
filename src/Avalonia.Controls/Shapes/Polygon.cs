@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Shapes
 
         protected override Geometry CreateDefiningGeometry()
         {
-            return new PolylineGeometry(Points, true);
+            return new PolylineGeometry { Points = Points, IsFilled = true };
         }
     }
 }
