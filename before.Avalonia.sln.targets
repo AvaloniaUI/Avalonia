@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)/build/dotnet-format.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)/build/XamlStyler.Console.targets"/>
+</Project>

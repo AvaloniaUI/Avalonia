@@ -1,0 +1,30 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AutoCodeFormat Condition="'$(AutoCodeFormat)' == ''">true</AutoCodeFormat>
+  </PropertyGroup>
+  <Target Name="CodeFormatter"
+          AfterTargets="Build"
+          Condition="'$(AutoCodeFormat)' == 'true'">
+    <Message Text="Code Formatter" Importance="normal" />
+    <Exec Command="git ls-files -mo --exclude-standard &quot;*.cs&quot;" 
+          ConsoleToMSBuild="true" 
+          EchoOff="false" 
+          IgnoreExitCode="false">
+      <Output TaskParameter="ConsoleOutput" ItemName="CodeFileToFormat" />
+    </Exec>
+    <ItemGroup>
+      <CodeFileToFormatRelativePath Include="@(CodeFileToFormat)">
+          <RelativePath Condition="@(CodeFileToFormat->Count()) > 0">$([MSBuild]::MakeRelative($(SolutionDir), %(CodeFileToFormat.FullPath)))</RelativePath>
+      </CodeFileToFormatRelativePath>
+    </ItemGroup>
+    <Message Text="Number of file to format: @(CodeFileToFormat->Count())" Importance="normal"/>
+    <PropertyGroup>
+      <_Include>@(CodeFileToFormatRelativePath->'&quot;%(RelativePath)&quot;', ' ')</_Include>
+    </PropertyGroup>
+    <Exec Command="dotnet format &quot;$(SolutionPath)&quot; --no-restore -v diag --include $(_Include)"
+          Condition="@(CodeFileToFormat->Count()) > 0"
+          EchoOff="false"
+          YieldDuringToolExecution="True"
+          IgnoreExitCode="true"/>
+  </Target>
+</Project>
