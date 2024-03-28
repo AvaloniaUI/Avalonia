@@ -6,7 +6,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <AvaloniaSingleProject>true</AvaloniaSingleProject>
+    <ApplicationTitle>Mobile Sandbox</ApplicationTitle>
+    <ApplicationId>Avalonia.MobileSandbox</ApplicationId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,9 +1,4 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <AvaloniaSingleProjectIncludeDefaultPlatformReferences>false</AvaloniaSingleProjectIncludeDefaultPlatformReferences>
-  </PropertyGroup>
-
-  <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaSingleProject.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaSingleProject.targets"/>
 
   <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">

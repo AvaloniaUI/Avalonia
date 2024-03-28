@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <AvaloniaSingleProjectVersion>$(AvaloniaMainPackageVersion)</AvaloniaSingleProjectVersion>
-    <AvaloniaSingleProjectIncludeDefaultPlatformReferences Condition="'$(AvaloniaSingleProjectIncludeDefaultPlatformReferences)' == ''" >true</AvaloniaSingleProjectIncludeDefaultPlatformReferences>
-  </PropertyGroup>
-</Project>

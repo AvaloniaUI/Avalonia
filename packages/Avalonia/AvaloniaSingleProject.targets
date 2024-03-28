@@ -1,29 +1,37 @@
 <Project>
 
   <PropertyGroup>
+    <!-- For projects that need to include custom skia -->
+    <AvaloniaSingleProjectIncludeSkia Condition="'$(AvaloniaSingleProjectIncludeSkia)' == ''">true</AvaloniaSingleProjectIncludeSkia>
+    <!-- For projects that want to treat "netx.0-windows" as a "netx.0" -->
+    <AvaloniaSingleProjectTreatWindowsAsShared Condition="'$(AvaloniaSingleProjectTreatWindowsAsShared)' == ''">false</AvaloniaSingleProjectTreatWindowsAsShared>
     <!-- "net8.0" target without specific platform should be treated as a desktop target by default for executable projects.  -->
-    <AvaloniaSingleProjectSharedDesktop Condition="'$(AvaloniaSingleProjectSharedDesktop)' == '' AND ('$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe')">true</AvaloniaSingleProjectSharedDesktop>
+    <AvaloniaSingleProjectTreatSharedAsDesktop Condition="'$(AvaloniaSingleProjectTreatSharedAsDesktop)' == '' AND ('$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe')">true</AvaloniaSingleProjectTreatSharedAsDesktop>
+    <!-- Absolute path to Packages target file that can be included from the project. -->
+    <AvaloniaSingleProjectPackagesTargets>$(MSBuildThisFileDirectory)/AvaloniaSingleProject.Packages.targets</AvaloniaSingleProjectPackagesTargets>
   </PropertyGroup>
 
   <!-- Include targets into AvaloniaSingleProjectTargets -->
-  <PropertyGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
+  <PropertyGroup Condition="'$(AvaloniaSingleProject)' == 'true'">
     <_AvaloniaWindowsTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</_AvaloniaWindowsTarget>
     <_AvaloniaMacOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">true</_AvaloniaMacOSTarget>
     <_AvaloniaAndroidTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</_AvaloniaAndroidTarget>
     <_AvaloniaIOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">true</_AvaloniaIOSTarget>
+    <_AvaloniaTvOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">true</_AvaloniaTvOSTarget>
     <_AvaloniaBrowserTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">true</_AvaloniaBrowserTarget>
     <_AvaloniaTizenTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">true</_AvaloniaTizenTarget>
     <!-- This target isn't yet supported by .NET -->
     <_AvaloniaLinuxTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'linux'" >true</_AvaloniaLinuxTarget>
   </PropertyGroup>
 
-  <!-- If project targst  -->
-  <PropertyGroup Condition="'$(AvaloniaSingleProject)' == 'true' AND '$(AvaloniaSingleProjectSharedDesktop)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == ''">
+  <!-- See AvaloniaSingleProjectTreatWindowsAsShared and AvaloniaSingleProjectTreatSharedAsDesktop props comments -->
+  <PropertyGroup Condition="'$(AvaloniaSingleProject)' == 'true'
+      AND (('$(AvaloniaSingleProjectTreatSharedAsDesktop)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == '')
+      OR ('$(AvaloniaSingleProjectTreatWindowsAsShared)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'))">
     <_AvaloniaDesktopTarget>true</_AvaloniaDesktopTarget>
     <_AvaloniaWindowsTarget>true</_AvaloniaWindowsTarget>
     <_AvaloniaMacOSTarget>true</_AvaloniaMacOSTarget>
     <_AvaloniaLinuxTarget>true</_AvaloniaLinuxTarget>
-    <RuntimeIdentifiers>win;osx;linux</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_AvaloniaWindowsTarget)' == 'true' ">
@@ -36,18 +44,6 @@
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">browser-wasm</RuntimeIdentifier>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' AND '$(AvaloniaSingleProjectIncludeDefaultPlatformReferences)' == 'true' ">
-    <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaSingleProjectVersion)" />
-    <PackageReference Include="Avalonia.Win32" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaWindowsTarget)' == 'true'" />
-    <PackageReference Include="Avalonia.Native" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaMacOSTarget)' == 'true'" />
-    <PackageReference Include="Avalonia.X11" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaLinuxTarget)' == 'true'" />
-    <PackageReference Include="Avalonia.Android" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaAndroidTarget)' == 'true'" />
-    <PackageReference Include="Avalonia.iOS" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaIOSTarget)' == 'true'" />
-    <PackageReference Include="Avalonia.Browser" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaBrowserTarget)' == 'true'" />
-    <PackageReference Include="Avalonia.Tizen" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaTizenTarget)' == 'true'" />
-    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaSingleProjectVersion)" Condition="'$(_AvaloniaDesktopTarget)' == 'true'" />
-  </ItemGroup>
-
   <PropertyGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
     <PlatformsProjectFolder Condition=" '$(PlatformsProjectFolder)' == '' ">Platforms\</PlatformsProjectFolder>
     <PlatformsProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(PlatformsProjectFolder)'))</PlatformsProjectFolder>
@@ -57,9 +53,11 @@
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
     <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">$(PlatformsProjectFolder)Android\</AndroidProjectFolder>
     <AndroidProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(AndroidProjectFolder)'))</AndroidProjectFolder>
-    <!-- iOS -->
+    <!-- iOS/tvOS -->
     <EnableDefaultiOSItems>false</EnableDefaultiOSItems>
-    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">$(PlatformsProjectFolder)iOS\</iOSProjectFolder>
+    <EnableDefaulttvOSItems>false</EnableDefaulttvOSItems>
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' AND '$(_AvaloniaIOSTarget)' == 'true'">$(PlatformsProjectFolder)iOS\</iOSProjectFolder>
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' AND '$(_AvaloniaTvOSTarget)' == 'true'">$(PlatformsProjectFolder)tvOS\</iOSProjectFolder>
     <iOSProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(iOSProjectFolder)'))</iOSProjectFolder>
     <!-- MacCatalyst -->
     <EnableDefaultMacCatalystItems>false</EnableDefaultMacCatalystItems>
@@ -92,6 +90,7 @@
     <!-- Compatability with VS tooling -->
     <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
     <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
+    <MauiPlatformSpecificFolder Include="$(tvOSProjectFolder)" TargetPlatformIdentifier="tvos" />
     <MauiPlatformSpecificFolder Include="$(macOSProjectFolder)" TargetPlatformIdentifier="macos" />
     <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
     <MauiPlatformSpecificFolder Include="$(LinuxProjectFolder)" TargetPlatformIdentifier="linux" />
@@ -106,7 +105,7 @@
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(_AvaloniaIOSTarget)' == 'true' ">
+  <PropertyGroup Condition=" '$(_AvaloniaIOSTarget)' == 'true' OR '$(_AvaloniaTvOSTarget)' == 'true'">
     <IPhoneResourcePrefix>$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
     <CodesignEntitlements Condition=" Exists('$(iOSProjectFolder)Entitlements.plist') ">$(iOSProjectFolder)Entitlements.plist</CodesignEntitlements>
     <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
@@ -148,7 +147,10 @@
     <Compile Condition=" '$(_AvaloniaAndroidTarget)' == 'true' " Update="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
-    <Compile Condition=" '$(_AvaloniaIOSTarget)' == 'true' " Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+    <Compile Condition=" '$(_AvaloniaIOSTarget)' == 'true' OR '$(_AvaloniaTvOSTarget)' == 'true'" Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaTvOSTarget)' == 'true' " Update="$(tvOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
     <Compile Condition=" '$(_AvaloniaDesktopTarget)' == 'true' " Update="$(DesktopProjectFolder)**/*$(DefaultLanguageSourceExtension)">
@@ -207,7 +209,7 @@
   </ItemGroup>
 
   <!-- iOS -->
-  <ItemGroup Condition=" '$(EnableDefaulItems)' == 'true' and '$(_AvaloniaIOSTarget)' == 'true' and '$(iOSProjectFolder)' != ''">
+  <ItemGroup Condition=" '$(EnableDefaulItems)' == 'true' and ('$(_AvaloniaIOSTarget)' == 'true' OR '$(_AvaloniaTvOSTarget)' == 'true') and '$(iOSProjectFolder)' != ''">
     <None
       Include="$(iOSProjectFolder)Info.plist"
       Condition="Exists('$(iOSProjectFolder)Info.plist')"
