@@ -5,6 +5,7 @@ using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls;
 
@@ -55,6 +56,20 @@ public class TransitioningContentControl : ContentControl
         set => SetValue(IsTransitionReversedProperty, value);
     }
 
+    /// <summary>
+    /// Defines the <see cref="TransitionCompleted"/> event that exposes the no-longer-needed <see cref="TransitionCompletedEventArgs.OldContent"/> so it can be taken care of by any interested listeners like ViewModel to for example be disposed of.
+    /// </summary>
+    public static readonly RoutedEvent<TransitionCompletedEventArgs> TransitionCompletedEvent =
+    RoutedEvent.Register<TransitioningContentControl, TransitionCompletedEventArgs>(nameof(TransitionCompleted), RoutingStrategies.Direct);
+
+    /// <summary>
+    /// Defines the <see cref="TransitionCompleted"/> event that exposes the no-longer-needed <see cref="TransitionCompletedEventArgs.OldContent"/> so it can be taken care of by any interested listeners like ViewModel to for example be disposed of.
+    /// </summary>
+    public event EventHandler<TransitionCompletedEventArgs> TransitionCompleted {
+        add => AddHandler(TransitionCompletedEvent, value);
+        remove => RemoveHandler(TransitionCompletedEvent, value);
+    }
+
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);
@@ -80,6 +95,10 @@ public class TransitioningContentControl : ContentControl
                     if (!cancel.IsCancellationRequested)
                     {
                         HideOldPresenter();
+                    }
+                    else if ((_isFirstFull ? _presenter2 : Presenter) is ContentPresenter oldPresenter) {
+                        //Even though we are not hiding old presenter yet, we still need to notify that its Content (OldContent) is no longer needed and can be disposed of if need be:
+                        NotifyOfOldContent(oldPresenter);
                     }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
             }
@@ -138,7 +157,7 @@ public class TransitioningContentControl : ContentControl
         if (_lastPresenter != null &&
             _lastPresenter != currentPresenter &&
             _lastPresenter.Content == Content)
-            _lastPresenter.Content = null;
+            NotifyOfOldContent(_lastPresenter);
 
         currentPresenter.Content = Content;
         currentPresenter.IsVisible = true;
@@ -162,10 +181,20 @@ public class TransitioningContentControl : ContentControl
         var oldPresenter = _isFirstFull ? _presenter2 : Presenter;
         if (oldPresenter is not null)
         {
-            oldPresenter.Content = null;
-            oldPresenter.IsVisible = false;
+          NotifyOfOldContent(oldPresenter);
+          oldPresenter.IsVisible = false;
         }
     }
+  
+    /// <summary>
+    /// Notifies that we no longer need the old content, so that any <see cref="OldContent"/>-observing ViewModel can deal with it as it needs.
+    /// </summary>
+    private void NotifyOfOldContent(ContentPresenter oldPresenter) {
+      var oldContent = oldPresenter.Content;
+      oldPresenter.Content = null;
+      var args = new TransitionCompletedEventArgs(oldContent, this);
+      RaiseEvent(args);
+    }    
 
     private class ImmutableCrossFade : IPageTransition
     {
@@ -178,4 +207,15 @@ public class TransitioningContentControl : ContentControl
             return _inner.Start(from, to, cancellationToken);
         }
     }
+}
+
+/// <summary>
+/// Exposes <see cref="OldContent"/> no longer needed by the <see cref="TransitioningContentControl"/> once the transition has completed.
+/// </summary>
+public class TransitionCompletedEventArgs : RoutedEventArgs {
+
+    public TransitionCompletedEventArgs(object? oldContent, object source) : base(TransitioningContentControl.TransitionCompletedEvent, source) { OldContent = oldContent; }
+
+    public object? OldContent { get; }
+
 }

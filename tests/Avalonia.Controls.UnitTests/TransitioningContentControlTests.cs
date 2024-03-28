@@ -180,7 +180,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, startedRaised);
             Assert.Equal("baz", target.Presenter!.Content);
-            Assert.Equal("bar", presenter2.Content);
+            Assert.Equal(null, presenter2.Content); //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any event listener
         }
 
         [Theory]
