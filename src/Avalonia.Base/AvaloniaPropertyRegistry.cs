@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia
@@ -38,6 +40,40 @@ namespace Avalonia
         /// </summary>
         internal IReadOnlyCollection<AvaloniaProperty> Properties => _properties.Values;
 
+        /// <summary>
+        /// Unregister all<see cref="AvaloniaProperty"/>s registered on types
+        /// </summary>
+        /// <param name="types"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UnregisterByModule(IEnumerable<Type> types)
+        {
+            _ = types ?? throw new ArgumentNullException(nameof(types));
+            foreach (var type in types)
+            {
+                Unregister(_registered, type);
+                Unregister(_attached, type);
+                Unregister(_direct, type);
+                Unregister(_registeredCache,type);
+                Unregister(_attachedCache,type);
+                Unregister(_directCache,type);
+                Unregister(_inheritedCache,type);
+            }
+            
+        }
+        private void Unregister( Dictionary<Type, List<AvaloniaProperty>> dictionary,Type type)
+        {
+            dictionary.Remove(type);
+        }
+        private void Unregister( Dictionary<Type, Dictionary<int, AvaloniaProperty>> dictionary,Type type)
+        {
+            foreach (var keyValuePair in dictionary)
+            {
+                foreach (var key in keyValuePair.Value)
+                {
+                    key.Value.UnRegister(type);
+                }
+            }
+        }
         /// <summary>
         /// Gets all non-attached <see cref="AvaloniaProperty"/>s registered on a type.
         /// </summary>
@@ -211,7 +247,7 @@ namespace Avalonia
             DirectPropertyBase<T> property)
         {
             return FindRegisteredDirect(o, property) ??
-                throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
+                   throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
         }
 
         /// <summary>
