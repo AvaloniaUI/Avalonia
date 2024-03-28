@@ -27,7 +27,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         return null;
     }
 
-    public void SortWindowsByZOrder(Window[] windows)
+    public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
     {
         throw new NotSupportedException("Browser doesn't support windowing platform.");
     }
