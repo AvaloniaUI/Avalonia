@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Utilities;
 
@@ -67,13 +68,50 @@ namespace Avalonia
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>The <see cref="PixelSize"/>.</returns>
-        public static PixelSize Parse(string s)
+        /// <exception cref="FormatException"/>
+        public static PixelSize Parse(string s) =>
+            Parse(s, ',');
+
+        /// <summary>
+        /// Parses a <see cref="PixelSize"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="separator">Identifies the separator the width and height.</param>
+        /// <returns>The <see cref="PixelSize"/>.</returns>
+        /// <exception cref="FormatException"/>
+        public static PixelSize Parse(string s, char separator)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelSize."))
+            if (TryParse(s, out var result, separator))
             {
-                return new PixelSize(
-                    tokenizer.ReadInt32(),
-                    tokenizer.ReadInt32());
+                return result;
+            }
+            throw new FormatException("Invalid PixelSize.");
+        }
+
+        /// <summary>
+        /// Try parsing <paramref name="source"/> as <see cref="PixelSize"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="string"/> to parse.</param>
+        /// <param name="result">The result of parsing. if <paramref name="source"/> is not valid <paramref name="result"/> is <see cref="PixelSize.Empty"/> </param>
+        /// <param name="separator">Optional parameter, identifies the separator the width and height, the default value is ','</param>
+        /// <returns><c>true</c> if <paramref name="source"/> is valid <see cref="PixelSize"/>, otherwise <c>false</c>.</returns>
+        public static bool TryParse([NotNullWhen(true)] string? source,
+            [MaybeNullWhen(false)] out PixelSize result,
+            char separator = ',')
+        {
+            result = Empty;
+            if(string.IsNullOrEmpty(source))
+            {
+                return false;
+            }
+            using (var tokenizer = new StringTokenizer(source, separator, exceptionMessage: "Invalid PixelSize."))
+            {
+                if (tokenizer.TryReadInt32(out var w) && tokenizer.TryReadInt32(out var h))
+                {
+                    result = new(w, h);
+                    return true;
+                }
+                return false;
             }
         }
 
