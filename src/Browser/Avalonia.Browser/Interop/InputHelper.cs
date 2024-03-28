@@ -92,6 +92,12 @@ internal static partial class InputHelper
     [JSImport("InputHelper.readClipboardText", AvaloniaModule.MainModuleName)]
     public static partial Task<string> ReadClipboardTextAsync();
 
+    [JSImport("InputHelper.setPointerCapture", AvaloniaModule.MainModuleName)]
+    public static partial void SetPointerCapture(JSObject containerElement, [JSMarshalAs<JSType.Number>] long pointerId);
+
+    [JSImport("InputHelper.releasePointerCapture", AvaloniaModule.MainModuleName)]
+    public static partial void ReleasePointerCapture(JSObject containerElement, [JSMarshalAs<JSType.Number>] long pointerId);
+
     [JSImport("globalThis.navigator.clipboard.writeText")]
     public static partial Task WriteClipboardTextAsync(string text);
 }

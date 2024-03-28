@@ -35,6 +35,9 @@ namespace Avalonia.Browser
         private readonly ClipboardImpl _clipboard;
         private readonly IInsetsManager? _insetsManager;
         private readonly IInputPane _inputPane;
+        private readonly List<BrowserMouseDevice> _mouseDevices;
+        private readonly JSObject _container;
+
 
         public BrowserTopLevelImpl(AvaloniaView avaloniaView, JSObject container)
         {
@@ -50,6 +53,9 @@ namespace Avalonia.Browser
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
             _clipboard = new ClipboardImpl();
             _inputPane = new BrowserInputPane(container);
+
+            _mouseDevices = new();
+            _container = container;
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -90,7 +96,7 @@ namespace Avalonia.Browser
             if (_inputRoot is { }
                 && Input is { } input)
             {
-                var device = GetPointerDevice(pointerType);
+                var device = GetPointerDevice(pointerType, touchPointId);
                 var args = device is TouchDevice ?
                     new RawTouchEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers, touchPointId)
                     {
@@ -110,21 +116,28 @@ namespace Avalonia.Browser
             return false;
         }
 
-        private IPointerDevice GetPointerDevice(string pointerType)
+        private IPointerDevice GetPointerDevice(string pointerType, long pointerId)
         {
-            return pointerType switch
+            if (pointerType == "touch")
+                return _touchDevice;
+            else if (pointerType == "pen")
+                return _penDevice;
+
+            foreach (var mouseDevice in _mouseDevices)
             {
-                "touch" => _touchDevice,
-                "pen" => _penDevice,
-                _ => MouseDevice
-            };
+                if (mouseDevice.PointerId == pointerId)
+                    return mouseDevice;
+            }
+            var newMouseDevice = new BrowserMouseDevice(pointerId, _container);
+            _mouseDevices.Add(newMouseDevice);
+            return newMouseDevice;
         }
 
         public bool RawMouseWheelEvent(Point p, Vector v, RawInputModifiers modifiers)
         {
             if (_inputRoot is { })
             {
-                var args = new RawMouseWheelEventArgs(MouseDevice, Timestamp, _inputRoot, p, v, modifiers);
+                var args = new RawMouseWheelEventArgs(WheelMouseDevice, Timestamp, _inputRoot, p, v, modifiers);
                 
                 Input?.Invoke(args);
 
@@ -235,7 +248,7 @@ namespace Avalonia.Browser
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
         public Action? Closed { get; set; }
         public Action? LostFocus { get; set; }
-        public IMouseDevice MouseDevice { get; } = new MouseDevice();
+        public IMouseDevice WheelMouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;

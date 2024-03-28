@@ -326,4 +326,14 @@ export class InputHelper {
 
         return modifiers;
     }
+
+    public static setPointerCapture(containerElement: HTMLInputElement, pointerId: number): void {
+        containerElement.setPointerCapture(pointerId);
+    }
+
+    public static releasePointerCapture(containerElement: HTMLInputElement, pointerId: number): void {
+        if (containerElement.hasPointerCapture(pointerId)) {
+            containerElement.releasePointerCapture(pointerId);
+        }
+    }
 }
