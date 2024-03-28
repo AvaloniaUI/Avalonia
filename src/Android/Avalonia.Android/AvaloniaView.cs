@@ -35,6 +35,7 @@ namespace Avalonia.Android
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
+        internal TopLevel TopLevel => _root;
 
         public object Content
         {

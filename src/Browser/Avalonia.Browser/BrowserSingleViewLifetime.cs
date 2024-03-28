@@ -6,7 +6,7 @@ using Avalonia.Browser;
 
 namespace Avalonia;
 
-internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
+internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
 {
     public AvaloniaView? View;
 
@@ -32,4 +32,6 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
             throw new InvalidOperationException("Browser lifetime was not initialized. Make sure AppBuilder.StartBrowserApp was called.");
         }
     }
+
+    public TopLevel? TopLevel => View?.TopLevel;
 }

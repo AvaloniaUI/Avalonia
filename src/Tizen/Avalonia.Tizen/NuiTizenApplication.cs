@@ -13,7 +13,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
     private SingleViewLifetime? _lifetime;
 
-    private class SingleViewLifetime : ISingleViewApplicationLifetime
+    private class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
     {
         public NuiAvaloniaView View { get; }
 
@@ -27,6 +27,8 @@ public class NuiTizenApplication<TApp> : NUIApplication
             get => View.Content;
             set => View.Content = value;
         }
+
+        public TopLevel? TopLevel => View.TopLevel;
     }
 
     protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;

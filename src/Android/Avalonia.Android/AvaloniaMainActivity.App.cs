@@ -10,23 +10,6 @@ namespace Avalonia.Android
     {
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
 
-        private static AppBuilder? s_appBuilder;
-        internal static object? ViewContent;
-
-        public object? Content
-        {
-            get
-            {
-                return ViewContent;
-            }
-            set
-            {
-                ViewContent = value;
-                if (View != null)
-                    View.Content = value;
-            }
-        }
-
         protected AppBuilder CreateAppBuilder()
         {
             var builder = AppBuilder.Configure<TApp>();
@@ -36,30 +19,34 @@ namespace Avalonia.Android
 
         private void InitializeApp()
         {
-            if (s_appBuilder == null)
+            // Android can run OnCreate + InitializeApp multiple times per process lifetime.
+            // On each call we need to create new AvaloniaView, but we can't recreate Avalonia nor Avalonia controls.
+            // So, if lifetime was already created previously - recreate AvaloniaView.
+            // If not, initialize Avalonia, and create AvaloniaView inside of AfterSetup callback.
+            // We need this AfterSetup callback to match iOS/Browser behavior and ensure that view/toplevel is available in custom AfterSetup calls.
+            if (Lifetime is not null)
+            {
+                Lifetime.View = View = new AvaloniaView(this);
+            }
+            else
             {
                 var builder = CreateAppBuilder();
 
-                builder.SetupWithLifetime(new SingleViewLifetime());
+                var lifetime = new SingleViewLifetime();
+                builder
+                    .AfterSetup(_ =>
+                    {
+                        lifetime.View = View = new AvaloniaView(this);
+                    })
+                    .SetupWithLifetime(lifetime);
 
-                s_appBuilder = builder;
+                Lifetime = lifetime;
             }
 
             if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
                 is AndroidActivatableLifetime activatableLifetime)
             {
                 activatableLifetime.Activity = this;
-            }            
-
-            View = new AvaloniaView(this);
-            if (ViewContent != null)
-            {
-                View.Content = ViewContent;
-            }
-
-            if (Avalonia.Application.Current?.ApplicationLifetime is SingleViewLifetime lifetime)
-            {
-                lifetime.View = View;
             }
         }
     }
