@@ -3,44 +3,46 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
-namespace Avalonia.Android
+namespace Avalonia.Android;
+
+internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
 {
-    internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
+    private Control? _mainView;
+    private AvaloniaMainActivity? _activity;
+        
+    /// <summary>
+    /// Since Main Activity can be swapped, we should adjust litetime as well.  
+    /// </summary>
+    public AvaloniaMainActivity Activity
     {
-        private Control? _mainView;
-        private AvaloniaView? _view;
-
-        public AvaloniaView View
+        [return: MaybeNull] get => _activity!;
+        internal set
         {
-            [return: MaybeNull] get => _view!;
-            internal set
+            if (_activity != null)
             {
-                if (_view != null)
-                {
-                    _view.Content = null;
-                    _view.Dispose();
-                }
-                _view = value;
-                _view.Content = _mainView;
+                _activity.Content = null;
+                _activity.Dispose();
             }
+            _activity = value;
+            _activity.Content = _mainView;
         }
-
-        public Control? MainView
-        {
-            get => _mainView;
-            set
-            {
-                if (_mainView != value)
-                {
-                    _mainView = value;
-                    if (_view != null)
-                    {
-                        _view.Content = _mainView;
-                    }
-                }
-            }
-        }
-
-        public TopLevel? TopLevel => View?.TopLevel;
     }
+
+    public Control? MainView
+    {
+        get => _mainView;
+        set
+        {
+            if (_mainView != value)
+            {
+                _mainView = value;
+                if (_activity != null)
+                {
+                    _activity.Content = _mainView;
+                }
+            }
+        }
+    }
+
+    public TopLevel? TopLevel => _activity?._view?.TopLevel;
 }
