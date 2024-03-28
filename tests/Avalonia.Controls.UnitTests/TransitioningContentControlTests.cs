@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             Assert.True(presenter2.IsVisible);
-            Assert.Equal(null, presenter1.Content);  //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
+            Assert.Equal("foo", presenter1.Content);
             Assert.Equal("bar", presenter2.Content);
         }
 
