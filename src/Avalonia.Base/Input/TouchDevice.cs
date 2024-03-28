@@ -44,14 +44,14 @@ namespace Avalonia.Input
             {
                 if (args.Type == RawPointerEventType.TouchEnd)
                     return;
-                var hit = args.InputHitTestResult;
+                var hit = args.InputHitTestResult.firstEnabledAncestor;
 
                 _pointers[args.RawPointerId] = pointer = new Pointer(Pointer.GetNextFreeId(),
                     PointerType.Touch, _pointers.Count == 0);
                 pointer.Capture(hit);
             }
 
-            var target = pointer.Captured ?? args.InputHitTestResult ?? args.Root;
+            var target = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor ?? args.Root;
             var gestureTarget = pointer.CapturedGestureRecognizer?.Target;
             var updateKind = args.Type.ToUpdateKind();
             var keyModifier = args.InputModifiers.ToKeyModifiers();

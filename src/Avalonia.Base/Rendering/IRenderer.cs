@@ -87,7 +87,7 @@ namespace Avalonia.Rendering
         /// children will be excluded from the results.
         /// </param>
         /// <returns>The visuals at the specified point, topmost first.</returns>
-        IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter);
+        IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter);
 
         /// <summary>
         /// Hit tests a location to find first visual at the specified point.
@@ -99,6 +99,6 @@ namespace Avalonia.Rendering
         /// children will be excluded from the results.
         /// </param>
         /// <returns>The visual at the specified point, topmost first.</returns>
-        Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool> filter);
+        Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter);
     }
 }

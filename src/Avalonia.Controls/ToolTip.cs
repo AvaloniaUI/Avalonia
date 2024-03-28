@@ -56,6 +56,18 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("ShowDelay", 400);
 
         /// <summary>
+        /// Defines the ToolTip.ShowOnDisabled property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> ShowOnDisabledProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ShowOnDisabled", defaultValue: false, inherits: true);
+
+        /// <summary>
+        /// Defines the ToolTip.ServiceEnabled property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> ServiceEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ServiceEnabled", defaultValue: true, inherits: true);
+
+        /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
         internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
@@ -69,8 +81,6 @@ namespace Avalonia.Controls
         /// </summary>
         static ToolTip()
         {
-            TipProperty.Changed.Subscribe(ToolTipService.Instance.TipChanged);
-            IsOpenProperty.Changed.Subscribe(ToolTipService.Instance.TipOpenChanged);
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
 
             HorizontalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
@@ -212,6 +222,36 @@ namespace Avalonia.Controls
         {
             element.SetValue(ShowDelayProperty, value);
         }
+
+        /// <summary>
+        /// Gets whether a control will display a tooltip even if it disabled.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        public static bool GetShowOnDisabled(Control element) =>
+            element.GetValue(ShowOnDisabledProperty);
+
+        /// <summary>
+        /// Sets whether a control will display a tooltip even if it disabled.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">Whether the control is to display a tooltip even if it disabled.</param>
+        public static void SetShowOnDisabled(Control element, bool value) => 
+            element.SetValue(ShowOnDisabledProperty, value);
+
+        /// <summary>
+        /// Gets whether showing and hiding of a control's tooltip will be automatically controlled by Avalonia.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        public static bool GetServiceEnabled(Control element) =>
+            element.GetValue(ServiceEnabledProperty);
+
+        /// <summary>
+        /// Sets whether showing and hiding of a control's tooltip will be automatically controlled by Avalonia.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">Whether the control is to display a tooltip even if it disabled.</param>
+        public static void SetServiceEnabled(Control element, bool value) => 
+            element.SetValue(ServiceEnabledProperty, value);
 
         private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {

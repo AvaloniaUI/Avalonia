@@ -268,6 +268,7 @@ namespace Avalonia
                 .Bind<IThemeVariantHost>().ToConstant(this)
                 .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
+                .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
 

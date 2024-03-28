@@ -64,17 +64,17 @@ namespace Avalonia.Input
                         shouldReleasePointer = true;
                         break;
                     case RawPointerEventType.LeftButtonDown:
-                        e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
+                        e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                         break;
                     case RawPointerEventType.LeftButtonUp:
                         if (_releasePointerOnPenUp)
                         {
                             shouldReleasePointer = true;
                         }
-                        e.Handled = PenUp(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
+                        e.Handled = PenUp(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                         break;
                     case RawPointerEventType.Move:
-                        e.Handled = PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult, e.IntermediatePoints);
+                        e.Handled = PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor, e.IntermediatePoints);
                         break;
                 }
             }
