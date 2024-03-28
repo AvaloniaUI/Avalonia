@@ -4,7 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.iOS;
 
-internal class SingleViewLifetime : ISingleViewApplicationLifetime
+internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
 {       
     public AvaloniaView? View;
 
@@ -13,4 +13,6 @@ internal class SingleViewLifetime : ISingleViewApplicationLifetime
         get => View!.Content;
         set => View!.Content = value;
     }
+
+    public TopLevel? TopLevel => View?.TopLevel;
 }

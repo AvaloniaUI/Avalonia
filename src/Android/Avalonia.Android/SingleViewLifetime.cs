@@ -3,7 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android
 {
-    internal class SingleViewLifetime : ISingleViewApplicationLifetime
+    internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
     {
         private AvaloniaView _view;
         
@@ -22,5 +22,6 @@ namespace Avalonia.Android
         }
 
         public Control MainView { get; set; }
+        public TopLevel TopLevel => View?.TopLevel;
     }
 }
