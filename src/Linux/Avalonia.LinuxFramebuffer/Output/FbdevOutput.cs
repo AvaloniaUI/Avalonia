@@ -181,7 +181,7 @@ namespace Avalonia.LinuxFramebuffer
             _lockedAtLeastOnce = true;
             properties = new FramebufferLockProperties(retained);
             return (_backBuffer ??=
-                    new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress))
+                    new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, _options.UseAsyncFrontBufferBlit == true))
                 .Lock(new Vector(96, 96) * Scaling);
         }
         
