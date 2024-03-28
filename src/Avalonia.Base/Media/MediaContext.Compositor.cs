@@ -146,6 +146,6 @@ partial class MediaContext
             return;
 
         // TODO: maybe skip the full render here?
-        ScheduleRender(true);
+        ScheduleRender(false);
     }
 }
