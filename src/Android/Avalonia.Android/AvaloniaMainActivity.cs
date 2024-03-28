@@ -15,7 +15,7 @@ public abstract class AvaloniaMainActivity : AvaloniaActivity
 
     public override void OnCreate(Bundle? savedInstanceState, PersistableBundle? persistentState)
     {
-        // Global IActivatableLifetime expects a main activity, let them use it.
+        // Global IActivatableLifetime expects a main activity, so we need to replace it on each OnCreate.
         if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
             is AndroidActivatableLifetime activatableLifetime)
         {
@@ -27,9 +27,13 @@ public abstract class AvaloniaMainActivity : AvaloniaActivity
 
     private protected override AvaloniaView CreateAvaloniaView()
     {
+        // Android can run OnCreate + CreateAvaloniaView multiple times per process lifetime.
+        // On each call we need to create new AvaloniaView, but we can't recreate Avalonia nor Avalonia controls.
+        // So, if lifetime was already created previously - recreate AvaloniaView.
+        // If not, initialize Avalonia, and create AvaloniaView inside of AfterSetup callback.
+        // We need this AfterSetup callback to match iOS/Browser behavior and ensure that view/toplevel is available in custom AfterSetup calls.
         if (Lifetime is not null)
         {
-            Lifetime = new SingleViewLifetime();
             Lifetime.Activity = this;
             return new AvaloniaView(this);
         }

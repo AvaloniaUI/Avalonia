@@ -21,7 +21,6 @@ internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLe
             if (_activity != null)
             {
                 _activity.Content = null;
-                _activity.Dispose();
             }
             _activity = value;
             _activity.Content = _mainView;

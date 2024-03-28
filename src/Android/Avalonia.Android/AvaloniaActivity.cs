@@ -12,6 +12,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android;
 
+/// <summary>
+/// Common implementation of android activity that is integrated with Avalonia views.
+/// If you need a base class for main activity of Avalonia app, see <see cref="AvaloniaMainActivity"/> or <see cref="AvaloniaMainActivity{TApp}"/>.  
+/// </summary>
 public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 {
     private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
@@ -115,6 +119,8 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         {
             _view.Content = null;
             _view.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
+            _view.Dispose();
+            _view = null;
         }
 
         base.OnDestroy();
@@ -133,13 +139,6 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
         RequestPermissionsResult?.Invoke(requestCode, permissions, grantResults);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        _view?.Dispose();
-        _view = null;
-        base.Dispose(disposing);
     }
 
     private protected virtual AvaloniaView CreateAvaloniaView()
