@@ -5,6 +5,7 @@ using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls;
 
