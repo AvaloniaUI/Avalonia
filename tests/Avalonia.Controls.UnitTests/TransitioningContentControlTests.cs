@@ -167,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Same(presenter2, fromPresenter);
                 Assert.Same(target.Presenter, toPresenter);
-                Assert.Equal(null, fromPresenter.Content); //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
+                Assert.Equal("bar", fromPresenter.Content);
                 Assert.Equal("baz", toPresenter.Content);
                 Assert.True(forward);
                 Assert.Equal(1, transition.CancelCount);
@@ -180,7 +180,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, startedRaised);
             Assert.Equal("baz", target.Presenter!.Content);
-            Assert.Equal(null, presenter2.Content); //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
+            Assert.Equal("bar", presenter2.Content);
         }
 
         [Theory]
