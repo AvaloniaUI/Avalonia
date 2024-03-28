@@ -24,7 +24,7 @@ namespace Avalonia.Skia
         // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
         // but does so ignoring the current transform
         private readonly Vector _intermediateSurfaceDpi;
-        private readonly Stack<PaintWrapper> _maskStack = new();
+        private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Matrix? _postTransform;
@@ -813,7 +813,7 @@ namespace Avalonia.Skia
             var paint = SKPaintCache.Shared.Get();
 
             Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push(CreatePaint(paint, mask, bounds));
+            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
         }
 
         /// <inheritdoc />
@@ -826,9 +826,10 @@ namespace Avalonia.Skia
             
             Canvas.SaveLayer(paint);
             SKPaintCache.Shared.ReturnReset(paint);
-
-            PaintWrapper paintWrapper;
-            using (paintWrapper = _maskStack.Pop())
+            
+            var (transform, paintWrapper) = _maskStack.Pop();
+            Canvas.SetMatrix(transform);
+            using (paintWrapper)
             {
                 Canvas.DrawPaint(paintWrapper.Paint);
             }

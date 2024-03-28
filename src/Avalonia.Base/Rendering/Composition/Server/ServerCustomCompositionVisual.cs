@@ -73,7 +73,8 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
     protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
         IDirtyRectTracker dirtyRects)
     {
-        using var context = new ImmediateDrawingContext(canvas, false);
+        canvas.AutoFlush = true;
+        using var context = new ImmediateDrawingContext(canvas, GlobalTransformMatrix, false);
         try
         {
             _handler.Render(context, currentTransformedClip);
@@ -83,5 +84,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
             Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
                 ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnRender)} {{0}}", e);
         }
+
+        canvas.AutoFlush = false;
     }
 }
