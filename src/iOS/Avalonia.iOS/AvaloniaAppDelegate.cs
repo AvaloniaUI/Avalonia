@@ -33,7 +33,13 @@ namespace Avalonia.iOS
             add { _onDeactivated += value; }
             remove { _onDeactivated -= value; }
         }
-        
+
+        protected virtual AppBuilder CreateAppBuilder()
+        {
+            var builder = AppBuilder.Configure<TApp>().UseiOS(this);
+            return CustomizeAppBuilder(builder);
+        }
+
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
         
         [Export("window")]
@@ -42,7 +48,7 @@ namespace Avalonia.iOS
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
-            var builder = AppBuilder.Configure<TApp>().UseiOS(this);
+            var builder = CreateAppBuilder();
 
             var lifetime = new SingleViewLifetime();
 
@@ -59,8 +65,6 @@ namespace Avalonia.iOS
                 Window.RootViewController = controller;
                 view.InitWithController(controller);
             });
-
-            CustomizeAppBuilder(builder);
 
             builder.SetupWithLifetime(lifetime);
 

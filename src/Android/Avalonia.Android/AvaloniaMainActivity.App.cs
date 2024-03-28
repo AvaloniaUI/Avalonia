@@ -13,7 +13,7 @@ public class AvaloniaMainActivity<TApp> : AvaloniaMainActivity
 {
     protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
 
-    protected sealed override AppBuilder CreateAppBuilder()
+    protected override AppBuilder CreateAppBuilder()
     {
         return CustomizeAppBuilder(AppBuilder.Configure<TApp>());
     }
