@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform;
 
@@ -24,6 +25,8 @@ namespace Avalonia.iOS
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
         public ITrayIconImpl? CreateTrayIcon() => null;
+        
+        public void SortWindowsByZOrder(Window[] windows) => throw new NotSupportedException();
     }
     
     internal class PlatformIconLoaderStub : IPlatformIconLoader

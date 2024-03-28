@@ -39,7 +39,6 @@ namespace Avalonia.DesignerSupport.Remote
 
         public double DesktopScaling => 1.0;
         public PixelPoint Position { get; set; }
-        public IntPtr? ZOrder => null;
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }

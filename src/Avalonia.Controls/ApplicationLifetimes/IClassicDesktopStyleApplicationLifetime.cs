@@ -45,6 +45,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// Gets the list of all open windows in the application.
         /// </summary>
         IReadOnlyList<Window> Windows { get; }
+        
+        /// <summary>
+        /// Sorts the windows ascending by their Z order - the topmost window will be the last in the list.
+        /// </summary>
+        /// <param name="windows"></param>
+        void SortWindowsByZOrder(Window[] windows);
 
         /// <summary>
         /// Raised by the platform when an application shutdown is requested.

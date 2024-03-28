@@ -429,12 +429,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the window's z-order position. The highest value is the front, lower numbers are further back.
-        /// If the z-order can't be determined or the platform doesn't support window stacking, null is returned.
-        /// </summary>
-        public IntPtr? WindowZOrder => PlatformImpl?.ZOrder;
-
-        /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
         public void BeginMoveDrag(PointerPressedEventArgs e) => PlatformImpl?.BeginMoveDrag(e);

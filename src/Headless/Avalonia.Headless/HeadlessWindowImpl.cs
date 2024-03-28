@@ -100,7 +100,6 @@ namespace Avalonia.Headless
 
         public PixelPoint Position { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
-        public IntPtr? ZOrder => null;
         public void Activate()
         {
             Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);

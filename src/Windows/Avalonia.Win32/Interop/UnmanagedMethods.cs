@@ -1275,18 +1275,9 @@ namespace Avalonia.Win32.Interop
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr GetWindow(IntPtr hWnd, GetWindowCommand uCmd);
+        public static extern bool EnumChildWindows(IntPtr parentHwnd, EnumWindowsProc enumFunc, IntPtr lParam);
 
-        public enum GetWindowCommand : uint
-        {
-            GW_CHILD = 5,
-            GW_ENABLEDPOPUP = 6,
-            GW_HWNDFIRST = 0,
-            GW_HWNDLAST = 1,
-            GW_HWNDNEXT = 2,
-            GW_HWNDPREV = 3,
-            GW_OWNER = 4
-        }
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLongPtrW", ExactSpelling = true)]
         public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
