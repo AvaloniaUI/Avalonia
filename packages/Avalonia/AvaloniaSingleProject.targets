@@ -1,14 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <!-- For projects that need to include custom skia -->
-    <AvaloniaSingleProjectIncludeSkia Condition="'$(AvaloniaSingleProjectIncludeSkia)' == ''">true</AvaloniaSingleProjectIncludeSkia>
     <!-- For projects that want to treat "netx.0-windows" as a "netx.0" -->
     <AvaloniaSingleProjectTreatWindowsAsShared Condition="'$(AvaloniaSingleProjectTreatWindowsAsShared)' == ''">false</AvaloniaSingleProjectTreatWindowsAsShared>
     <!-- "net8.0" target without specific platform should be treated as a desktop target by default for executable projects.  -->
     <AvaloniaSingleProjectTreatSharedAsDesktop Condition="'$(AvaloniaSingleProjectTreatSharedAsDesktop)' == '' AND ('$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe')">true</AvaloniaSingleProjectTreatSharedAsDesktop>
-    <!-- Absolute path to Packages target file that can be included from the project. -->
-    <AvaloniaSingleProjectPackagesTargets>$(MSBuildThisFileDirectory)/AvaloniaSingleProject.Packages.targets</AvaloniaSingleProjectPackagesTargets>
   </PropertyGroup>
 
   <!-- Include targets into AvaloniaSingleProjectTargets -->
