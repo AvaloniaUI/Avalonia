@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -19,6 +20,8 @@ namespace Avalonia.DesignerSupport.Remote
         public static List<object> PreFlightMessages = new List<object>();
 
         public ITrayIconImpl CreateTrayIcon() => null;
+        
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
 
         public IWindowImpl CreateWindow() => new WindowStub();
 

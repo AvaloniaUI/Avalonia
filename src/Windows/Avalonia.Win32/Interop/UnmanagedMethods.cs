@@ -1274,6 +1274,11 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool EnumChildWindows(IntPtr parentHwnd, EnumWindowsProc enumFunc, IntPtr lParam);
+
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLongPtrW", ExactSpelling = true)]
         public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
 

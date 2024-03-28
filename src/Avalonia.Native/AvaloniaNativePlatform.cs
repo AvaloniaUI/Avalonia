@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -177,6 +178,14 @@ namespace Avalonia.Native
         public ITrayIconImpl CreateTrayIcon()
         {
             return new TrayIconImpl(_factory);
+        }
+
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        {
+            for (int i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = (windows[i].PlatformImpl as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
+            }
         }
 
         public IWindowImpl CreateWindow()

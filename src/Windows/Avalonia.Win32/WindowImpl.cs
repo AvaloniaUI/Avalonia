@@ -184,6 +184,8 @@ namespace Avalonia.Win32
         internal IInputRoot Owner
             => _owner ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
 
+        internal WindowImpl? ParentImpl => _parent;
+
         public Action? Activated { get; set; }
 
         public Func<WindowCloseReason, bool>? Closing { get; set; }

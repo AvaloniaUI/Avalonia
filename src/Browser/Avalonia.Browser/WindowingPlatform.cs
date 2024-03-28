@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -24,6 +25,11 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
     public ITrayIconImpl? CreateTrayIcon()
     {
         return null;
+    }
+
+    public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+    {
+        throw new NotSupportedException("Browser doesn't support windowing platform.");
     }
 
     public static KeyboardDevice Keyboard => s_keyboard ??

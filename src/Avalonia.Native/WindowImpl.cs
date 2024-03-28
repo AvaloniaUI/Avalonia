@@ -103,6 +103,8 @@ namespace Avalonia.Native
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
+        public IntPtr? ZOrder => _native.WindowZOrder;
+
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;
 
