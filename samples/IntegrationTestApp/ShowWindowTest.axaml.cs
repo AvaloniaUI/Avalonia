@@ -75,7 +75,7 @@ namespace IntegrationTestApp
 
         private void TimerOnTick(object? sender, EventArgs e)
         {
-            _orderTextBox!.Text = WindowZOrder.ToString();
+            _orderTextBox!.Text = MacOSIntegration.GetOrderedIndex(this).ToString();
         }
     }
 }
