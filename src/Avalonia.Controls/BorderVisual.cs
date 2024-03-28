@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -45,7 +46,7 @@ class CompositionBorderVisual : CompositionDrawListVisual
         {
         }
 
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+        protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
             IDirtyRectTracker dirtyRects)
         {
             if (ClipToBounds)
