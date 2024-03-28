@@ -30,7 +30,7 @@ namespace Avalonia.Skia
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
-        private Matrix _currentTransform;
+        private Matrix? _currentTransform;
         private bool _disposed;
         private GRContext? _grContext;
         public GRContext? GrContext => _grContext;
@@ -466,7 +466,7 @@ namespace Avalonia.Skia
                             Transform = oldTransform;
                         }
 
-                        Canvas.Restore();
+                        RestoreCanvas();
                     }
                 }
             }
@@ -509,7 +509,7 @@ namespace Avalonia.Skia
                         using (var outerRRect = new SKRoundRect(outerRect))
                             Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
                         Transform = oldTransform;
-                        Canvas.Restore();
+                        RestoreCanvas();
                         SKRoundRectCache.Shared.Return(shadowRect);
                     }
                 }
@@ -672,11 +672,17 @@ namespace Avalonia.Skia
             Canvas.ClipRegion(r);
         }
 
+        private void RestoreCanvas()
+        {
+            _currentTransform = null;
+            Canvas.Restore();
+        }
+        
         /// <inheritdoc />
         public void PopClip()
         {
             CheckLease();
-            Canvas.Restore();
+            RestoreCanvas();
         }
 
         public void PushLayer(Rect bounds)
@@ -688,7 +694,7 @@ namespace Avalonia.Skia
         public void PopLayer()
         {
             CheckLease();
-            Canvas.Restore();
+            RestoreCanvas();
         }
 
         /// <inheritdoc />
@@ -731,7 +737,7 @@ namespace Avalonia.Skia
 
             if (useOpacitySaveLayer)
             {
-                Canvas.Restore();
+                RestoreCanvas();
             }
 
             _currentOpacity = _opacityStack.Pop();
@@ -796,7 +802,7 @@ namespace Avalonia.Skia
         public void PopGeometryClip()
         {
             CheckLease();
-            Canvas.Restore();
+            RestoreCanvas();
         }
 
         /// <inheritdoc />
@@ -829,15 +835,15 @@ namespace Avalonia.Skia
             // Return the paint wrapper's paint less the reset since the paint is already reset in the Dispose method above.
             SKPaintCache.Shared.Return(paintWrapper.Paint);
 
-            Canvas.Restore();
+            RestoreCanvas();
 
-            Canvas.Restore();
+            RestoreCanvas();
         }
 
         /// <inheritdoc />
         public Matrix Transform
         {
-            get { return _currentTransform; }
+            get { return _currentTransform ??= Canvas.TotalMatrix.ToAvaloniaMatrix(); }
             set
             {
                 CheckLease();
@@ -1044,15 +1050,17 @@ namespace Avalonia.Skia
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
+                context.PushRenderOptions(RenderOptions);
+                
                 context.Transform = calc.IntermediateTransform;
-                context.RenderOptions = RenderOptions;
-
+                
                 context.DrawBitmap(
                     tileBrushImage,
                     1,
                     sourceRect,
                     targetRect);
 
+                context.PopRenderOptions();
                 context.PopClip();
             }
 
@@ -1127,9 +1135,10 @@ namespace Avalonia.Skia
 
                 using (var ctx = intermediate.CreateDrawingContext(true))
                 {
-                    ctx.RenderOptions = RenderOptions;
+                    ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
                     content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+                    ctx.PopRenderOptions();
                 }
 
                 ConfigureTileBrush(ref paintWrapper, targetRect, content.Brush, intermediate);
@@ -1150,15 +1159,24 @@ namespace Avalonia.Skia
             var tileBrush = content.Brush;
             var transform = rect.TopLeft == default ? Matrix.Identity : Matrix.CreateTranslation(-rect.X, -rect.Y);
 
+            if (content.Transform is not null)
+            {
+                var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
+                var offset = Matrix.CreateTranslation(transformOrigin);
+
+                transform *= -offset * content.Transform.Value * offset;
+            }
+
             var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
             transform *= calc.IntermediateTransform;
             
             using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
             using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
             {
-                ctx.RenderOptions = RenderOptions;
                 ctx.PushClip(calc.IntermediateClip);
+                ctx.PushRenderOptions(RenderOptions);
                 content.Render(ctx, transform);
+                ctx.PopRenderOptions();
                 ctx.PopClip();
             }
 
@@ -1186,15 +1204,6 @@ namespace Avalonia.Skia
             paintTransform = SKMatrix.Concat(paintTransform,
                 SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
             
-            if (tileBrush.Transform is { })
-            {
-                var origin = tileBrush.TransformOrigin.ToPixels(targetRect);
-                var offset = Matrix.CreateTranslation(origin);
-                var brushTransform = (-offset) * tileBrush.Transform.Value * (offset);
-
-                paintTransform = paintTransform.PreConcat(brushTransform.ToSKMatrix());
-            }
-
             if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
                 paintTransform =
                     paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetRect.X, (float)targetRect.Y));

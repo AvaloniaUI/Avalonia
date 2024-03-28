@@ -161,6 +161,21 @@
       <_DebugSymbolsIntermediatePath Include="@(_AvaloniaXamlCompiledSymbols)"/>
     </ItemGroup>
   </Target>
+
+  <!-- For some reason the IL Compiler hardcodes $(IntermediateOutputPath)$(TargetName)$(TargetExt) instead of using @(IntermediateAssembly), change that to our assembly. -->
+  <Target Name="InjectIlcAvaloniaXamlOutput"
+          DependsOnTargets="InjectAvaloniaXamlOutput"
+          AfterTargets="ComputeIlcCompileInputs"
+          BeforeTargets="PrepareForILLink"
+          Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
+    <ItemGroup>
+      <ManagedBinary Remove="$(IntermediateOutputPath)$(TargetName)$(TargetExt)" />
+      <ManagedBinary Include="@(_AvaloniaXamlCompiledAssembly)" />
+
+      <IlcCompileInput Remove="$(IntermediateOutputPath)$(TargetName)$(TargetExt)" />
+      <IlcCompileInput Include="@(_AvaloniaXamlCompiledAssembly)" />
+    </ItemGroup>
+  </Target>
   
   <Target Name="Avalonia_CollectUpToDateCheckOutputDesignTime" Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false" 
           BeforeTargets="CollectUpToDateCheckOutputDesignTime" DependsOnTargets="PrepareToCompileAvaloniaXaml">

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Avalonia.Native.Interop;
 using Avalonia.Rendering;
 #nullable enable
@@ -29,7 +30,12 @@ internal sealed class AvaloniaNativeRenderTimer : NativeCallbackBase, IRenderTim
             if (!registered)
             {
                 registered = true;
-                _platformRenderTimer.RegisterTick(this);
+                var registrationResult = _platformRenderTimer.RegisterTick(this);
+                if (registrationResult != 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Avalonia.Native was not able to start the RenderTimer. Native error code is: {registrationResult}");
+                }
             }
 
             if (_subscriberCount++ == 0)

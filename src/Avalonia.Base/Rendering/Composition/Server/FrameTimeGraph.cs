@@ -75,37 +75,32 @@ internal sealed class FrameTimeGraph
         _frameCount = 0;
     }
 
-    public void Render(IDrawingContextImpl context)
+    public void Render(ImmediateDrawingContext context)
     {
-        var originalTransform = context.Transform;
-        context.PushClip(new Rect(_size));
+        using var _ = context.PushClip(new Rect(_size));
 
-        context.DrawRectangle(_borderBrush, null, new RoundedRect(new Rect(_size)));
-        context.DrawRectangle(_borderBrush, null, new RoundedRect(new Rect(_headerSize)));
+        context.DrawRectangle(_borderBrush, null, new Rect(_size));
+        context.DrawRectangle(_borderBrush, null, new Rect(_headerSize));
 
-        context.Transform = originalTransform * Matrix.CreateTranslation(HeaderPadding, HeaderPadding);
+        using var __ = context.PushPreTransform(Matrix.CreateTranslation(HeaderPadding, HeaderPadding));
         _textRenderer.DrawAsciiText(context, _title.AsSpan(), Brushes.Black);
 
         if (_frameCount > 0)
         {
             var (min, avg, max) = GetYValues();
 
-            DrawLabelledValue(context, "Min", min, originalTransform, _headerSize.Width * 0.19);
-            DrawLabelledValue(context, "Avg", avg, originalTransform, _headerSize.Width * 0.46);
-            DrawLabelledValue(context, "Max", max, originalTransform, _headerSize.Width * 0.73);
+            DrawLabelledValue(context, "Min", min, _headerSize.Width * 0.19);
+            DrawLabelledValue(context, "Avg", avg, _headerSize.Width * 0.46);
+            DrawLabelledValue(context, "Max", max, _headerSize.Width * 0.73);
 
-            context.Transform = originalTransform * Matrix.CreateTranslation(0.0, _headerSize.Height);
-            context.DrawGeometry(null, _graphPen, BuildGraphGeometry(Math.Max(max, _defaultMaxY)));
+            using (context.PushPreTransform(Matrix.CreateTranslation(0.0, _headerSize.Height)))
+                context.PlatformImpl.DrawGeometry(null, _graphPen, BuildGraphGeometry(Math.Max(max, _defaultMaxY)));
         }
-
-        context.Transform = originalTransform;
-        context.PopClip();
     }
 
-    private void DrawLabelledValue(IDrawingContextImpl context, string label, double value, in Matrix originalTransform,
-        double left)
+    private void DrawLabelledValue(ImmediateDrawingContext context, string label, double value, double left)
     {
-        context.Transform = originalTransform * Matrix.CreateTranslation(left + HeaderPadding, HeaderPadding);
+        using var _ = context.PushPreTransform(Matrix.CreateTranslation(left + HeaderPadding, HeaderPadding));
 
         var brush = value <= _defaultMaxY ? Brushes.Black : Brushes.Red;
 

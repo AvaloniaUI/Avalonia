@@ -618,6 +618,9 @@ namespace Avalonia.Win32
                             SizeCommand.Maximized => WindowState.Maximized,
                             SizeCommand.Minimized => WindowState.Minimized,
                             _ when _isFullScreenActive => WindowState.FullScreen,
+                            // Ignore state changes for unshown windows. We always tell Windows that we are hidden
+                            // until shown, so the OS value should be ignored while we are in the unshown state.
+                            _ when !_shown => _lastWindowState,
                             _ => WindowState.Normal,
                         };
 

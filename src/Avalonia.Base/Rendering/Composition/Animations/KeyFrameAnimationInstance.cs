@@ -74,7 +74,7 @@ namespace Avalonia.Rendering.Composition.Animations
                 && elapsed > _totalDuration)
             {
                 // Active check?
-                TargetObject.Compositor.RemoveFromClock(this);
+                TargetObject.Compositor.Animations.RemoveFromClock(this);
                 _finished = true;
             }
             return res;
@@ -177,13 +177,13 @@ namespace Avalonia.Rendering.Composition.Animations
             {
                 return;
             }
-            TargetObject.Compositor.AddToClock(this);
+            TargetObject.Compositor.Animations.AddToClock(this);
             base.Activate();
         }
 
         public override void Deactivate()
         {
-            TargetObject.Compositor.RemoveFromClock(this);
+            TargetObject.Compositor.Animations.RemoveFromClock(this);
             base.Deactivate();
         }
     }

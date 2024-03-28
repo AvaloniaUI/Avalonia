@@ -41,12 +41,6 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         set => _impl.Transform = (_transform = value) * PostTransform;
     }
 
-    public RenderOptions RenderOptions
-    {
-        get => _impl.RenderOptions;
-        set => _impl.RenderOptions = value;
-    }
-
     public void Clear(Color color)
     {
         _impl.Clear(color);

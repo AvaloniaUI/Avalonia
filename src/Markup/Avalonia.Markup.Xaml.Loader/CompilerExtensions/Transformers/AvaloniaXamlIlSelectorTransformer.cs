@@ -36,7 +36,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return node;
 
             if (pn.Values.Count != 1)
-                throw new XamlSelectorsTransformException("Selector property should should have exactly one value",
+                throw new XamlSelectorsTransformException("Selector property should have exactly one value",
                     node);
             
             if (pn.Values[0] is XamlIlSelectorNode)

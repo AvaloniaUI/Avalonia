@@ -192,7 +192,10 @@ namespace Avalonia.Controls
 
         protected virtual void DestroyNativeControlCore(IPlatformHandle control)
         {
-            ((INativeControlHostDestroyableControlHandle)control).Destroy();
+            if (control is INativeControlHostDestroyableControlHandle nativeControlHostDestroyableControlHandle)
+            {
+                nativeControlHostDestroyableControlHandle.Destroy();
+            }
         }
         
     }

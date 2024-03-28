@@ -140,11 +140,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Returns true if the given index is contained in the table with the the given value
+        /// Returns true if the given index is contained in the table with the given value
         /// </summary>
         /// <param name="index">index to search for</param>
         /// <param name="value">value expected</param>
-        /// <returns>true if the given index is contained in the table with the the given value</returns>
+        /// <returns>true if the given index is contained in the table with the given value</returns>
         public bool ContainsIndexAndValue(int index, T value)
         {
             int lowerRangeIndex = this.FindRangeIndex(index);

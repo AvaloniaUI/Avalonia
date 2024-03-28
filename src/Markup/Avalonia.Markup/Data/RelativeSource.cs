@@ -45,7 +45,7 @@ namespace Avalonia.Data
     }
 
     /// <summary>
-    /// Describes the the location of a binding source, relative to the binding target.
+    /// Describes the location of a binding source, relative to the binding target.
     /// </summary>
     public class RelativeSource
     {

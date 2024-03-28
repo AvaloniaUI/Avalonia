@@ -14,11 +14,6 @@ namespace Avalonia.Platform
     public interface IDrawingContextImpl : IDisposable
     {
         /// <summary>
-        /// Gets or sets the current render options used to control the rendering behavior of drawing operations.
-        /// </summary>
-        RenderOptions RenderOptions { get; set; }
-
-        /// <summary>
         /// Gets or sets the current transform of the drawing context.
         /// </summary>
         Matrix Transform { get; set; }
