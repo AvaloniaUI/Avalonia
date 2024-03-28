@@ -26,6 +26,7 @@ using Stretch = System.Windows.Media.Stretch;
 using TileBrush = System.Windows.Media.TileBrush;
 using TileMode = System.Windows.Media.TileMode;
 using Transform = System.Windows.Media.Transform;
+using WPoint = System.Windows.Point;
 using WSize = System.Windows.Size;
 using WRect = System.Windows.Rect;
 using WColor = System.Windows.Media.Color;
@@ -34,6 +35,7 @@ namespace Avalonia.RenderTests.WpfCompare;
 
 internal static class WpfConvertExtensions
 {
+    public static WPoint ToWpf(this Point pt) => new(pt.X, pt.Y);
     public static WSize ToWpf(this Size size) => new(size.Width, size.Height);
     public static WRect ToWpf(this Rect rect) => new(rect.Left, rect.Top, rect.Width, rect.Height);
     public static WColor ToWpf(this Color color) => WColor.FromArgb(color.A, color.R, color.G, color.B);
@@ -51,6 +53,7 @@ internal class WpfCrossControl : Panel
         _children = src.Children.ToDictionary(x => x, x => new WpfCrossControl(x));
         Width = src.Bounds.Width;
         Height = src.Bounds.Height;
+        RenderTransform = new MatrixTransform(src.RenderTransform.ToWpf());
         foreach (var ch in src.Children)
         {
             var c = _children[ch];
@@ -95,6 +98,8 @@ internal class WpfCrossDrawingContext : ICrossDrawingContext
             return new RectangleGeometry(rg.Rect.ToWpf());
         else if (g is CrossSvgGeometry svg)
             return Geometry.Parse(svg.Path);
+        else if (g is CrossEllipseGeometry ellipse)
+            return new EllipseGeometry(ellipse.Rect.ToWpf());
         throw new NotSupportedException();
     }
 
@@ -135,10 +140,27 @@ internal class WpfCrossDrawingContext : ICrossDrawingContext
             return Sync(dst, src);
         }
 
+        static Brush SyncGradient(GradientBrush dst, CrossGradientBrush src)
+        {
+            dst.MappingMode = (BrushMappingMode)src.MappingMode;
+            dst.SpreadMethod = (GradientSpreadMethod)src.SpreadMethod;
+            dst.GradientStops =
+                new GradientStopCollection(src.GradientStops.Select(s => new GradientStop(s.Color.ToWpf(), s.Offset)));
+            return Sync(dst, src);
+        }
+
         if (brush is CrossSolidColorBrush br)
             return Sync(new SolidColorBrush(br.Color.ToWpf()), brush);
         if (brush is CrossDrawingBrush db)
             return SyncTile(new DrawingBrush(ConvertDrawing(db.Drawing)), db);
+        if (brush is CrossRadialGradientBrush radial)
+            return SyncGradient(new RadialGradientBrush()
+            {
+                RadiusX = radial.RadiusX,
+                RadiusY = radial.RadiusY,
+                Center = radial.Center.ToWpf(),
+                GradientOrigin = radial.GradientOrigin.ToWpf()
+            }, radial);
         throw new NotSupportedException();
     }
 
@@ -159,5 +181,8 @@ internal class WpfCrossDrawingContext : ICrossDrawingContext
     }
     
     public void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc) => _ctx.DrawRectangle(ConvertBrush(brush), ConvertPen(pen), rc.ToWpf());
+    public void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geo) => 
+        _ctx.DrawGeometry(ConvertBrush(brush), ConvertPen(pen), ConvertGeometry(geo));
+
     public void DrawImage(CrossImage image, Rect rc) => _ctx.DrawImage(ConvertImage(image), rc.ToWpf());
 }

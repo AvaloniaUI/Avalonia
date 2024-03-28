@@ -11,9 +11,9 @@ namespace Avalonia.RenderTests.WpfCompare;
 #endif
 
 
-public class TileBrushTests : CrossTestBase
+public class CrossTileBrushTests : CrossTestBase
 {
-    public TileBrushTests() : base("Media/TileBrushes")
+    public CrossTileBrushTests() : base("Media/TileBrushes")
     {
     }
 

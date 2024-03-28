@@ -25,6 +25,8 @@ class AvaloniaCrossControl : Control
         _children = src.Children.ToDictionary(x => x, x => new AvaloniaCrossControl(x));
         Width = src.Bounds.Width;
         Height = src.Bounds.Height;
+        RenderTransform = new MatrixTransform(src.RenderTransform);
+        RenderTransformOrigin = new RelativePoint(default, RelativeUnit.Relative);
         foreach (var ch in src.Children)
         {
             var c = _children[ch];
@@ -44,7 +46,7 @@ class AvaloniaCrossControl : Control
     {
         foreach (var ch in _children)
             ch.Value.Arrange(ch.Key.Bounds);
-        return base.ArrangeOverride(finalSize);
+        return finalSize;
     }
 
     public override void Render(DrawingContext context)
@@ -68,6 +70,11 @@ class AvaloniaCrossDrawingContext : ICrossDrawingContext
         => new RelativeRect(rc,
             mode == BrushMappingMode.RelativeToBoundingBox ? RelativeUnit.Relative : RelativeUnit.Absolute);
 
+    static RelativePoint ConvertPoint(Point pt, BrushMappingMode mode)
+        => new(pt, mode == BrushMappingMode.RelativeToBoundingBox ? RelativeUnit.Relative : RelativeUnit.Absolute);
+
+    static RelativeScalar ConvertScalar(double scalar, BrushMappingMode mode)
+        => new(scalar, mode == BrushMappingMode.RelativeToBoundingBox ? RelativeUnit.Relative : RelativeUnit.Absolute);
 
     static Geometry ConvertGeometry(CrossGeometry g)
     {
@@ -75,8 +82,11 @@ class AvaloniaCrossDrawingContext : ICrossDrawingContext
             return new RectangleGeometry(rg.Rect);
         else if (g is CrossSvgGeometry svg)
             return PathGeometry.Parse(svg.Path);
+        else if (g is CrossEllipseGeometry ellipse)
+            return new EllipseGeometry(ellipse.Rect);
         throw new NotSupportedException();
     }
+    
     static Drawing ConvertDrawing(CrossDrawing src)
     {
         if (src is CrossDrawingGroup g)
@@ -97,6 +107,7 @@ class AvaloniaCrossDrawingContext : ICrossDrawingContext
         {
             dst.Opacity = src.Opacity;
             dst.Transform = ConvertTransform(src.Transform);
+            dst.TransformOrigin = new RelativePoint(default, RelativeUnit.Absolute);
             if (src.RelativeTransform != null)
                 throw new PlatformNotSupportedException();
             return dst;
@@ -113,10 +124,27 @@ class AvaloniaCrossDrawingContext : ICrossDrawingContext
             return Sync(dst, src);
         }
 
+        static Brush SyncGradient(GradientBrush dst, CrossGradientBrush src)
+        {
+            dst.GradientStops = new GradientStops();
+            dst.GradientStops.AddRange(src.GradientStops);
+            dst.SpreadMethod = src.SpreadMethod;
+            return Sync(dst, src);
+        }
+        
         if (brush is CrossSolidColorBrush br)
             return Sync(new SolidColorBrush(br.Color), brush);
         if (brush is CrossDrawingBrush db)
             return SyncTile(new DrawingBrush(ConvertDrawing(db.Drawing)), db);
+        if (brush is CrossRadialGradientBrush radial)
+            return SyncGradient(
+                new RadialGradientBrush()
+                {
+                    Center = ConvertPoint(radial.Center, radial.MappingMode),
+                    GradientOrigin = ConvertPoint(radial.GradientOrigin, radial.MappingMode),
+                    RadiusX = ConvertScalar(radial.RadiusX, radial.MappingMode),
+                    RadiusY = ConvertScalar(radial.RadiusY, radial.MappingMode)
+                }, radial);
         throw new NotSupportedException();
     }
 
@@ -137,5 +165,8 @@ class AvaloniaCrossDrawingContext : ICrossDrawingContext
     }
     
     public void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc) => _ctx.DrawRectangle(ConvertBrush(brush), ConvertPen(pen), rc);
+    public void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geometry) =>
+        _ctx.DrawGeometry(ConvertBrush(brush), ConvertPen(pen), ConvertGeometry(geometry));
+
     public void DrawImage(CrossImage image, Rect rc) => _ctx.DrawImage(ConvertImage(image), rc);
 }
