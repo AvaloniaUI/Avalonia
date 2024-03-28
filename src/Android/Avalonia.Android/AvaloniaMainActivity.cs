@@ -13,6 +13,8 @@ namespace Avalonia.Android
 {
     public class AvaloniaMainActivity : AppCompatActivity, IAvaloniaActivity
     {
+        private protected static SingleViewLifetime Lifetime;
+
         private EventHandler<ActivatedEventArgs> _onActivated, _onDeactivated;
         
         public Action<int, Result, Intent> ActivityResult { get; set; }

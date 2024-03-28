@@ -10,23 +10,6 @@ namespace Avalonia.Android
     {
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
 
-        private static SingleViewLifetime? s_lifetime;
-        internal static object? ViewContent;
-
-        public object? Content
-        {
-            get
-            {
-                return ViewContent;
-            }
-            set
-            {
-                ViewContent = value;
-                if (View != null)
-                    View.Content = value;
-            }
-        }
-
         protected AppBuilder CreateAppBuilder()
         {
             var builder = AppBuilder.Configure<TApp>();
@@ -41,9 +24,9 @@ namespace Avalonia.Android
             // So, if lifetime was already created previously - recreate AvaloniaView.
             // If not, initialize Avalonia, and create AvaloniaView inside of AfterSetup callback.
             // We need this AfterSetup callback to match iOS/Browser behavior and ensure that view/toplevel is available in custom AfterSetup calls.
-            if (s_lifetime is not null)
+            if (Lifetime is not null)
             {
-                EnsureView(s_lifetime);
+                Lifetime.View = View = new AvaloniaView(this);
             }
             else
             {
@@ -53,26 +36,17 @@ namespace Avalonia.Android
                 builder
                     .AfterSetup(_ =>
                     {
-                        EnsureView(lifetime);
+                        lifetime.View = View = new AvaloniaView(this);
                     })
                     .SetupWithLifetime(lifetime);
 
-                s_lifetime = lifetime;
+                Lifetime = lifetime;
             }
 
             if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
                 is AndroidActivatableLifetime activatableLifetime)
             {
                 activatableLifetime.Activity = this;
-            }
-
-            void EnsureView(SingleViewLifetime lifetime)
-            {
-                lifetime.View = View = new AvaloniaView(this);
-                if (ViewContent != null)
-                {
-                    View.Content = ViewContent;
-                }
             }
         }
     }

@@ -1,15 +1,19 @@
-﻿using Avalonia.Controls;
+﻿#nullable enable
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android
 {
     internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
     {
-        private AvaloniaView _view;
-        
+        private Control? _mainView;
+        private AvaloniaView? _view;
+
         public AvaloniaView View
         {
-            get => _view; internal set
+            [return: MaybeNull] get => _view!;
+            internal set
             {
                 if (_view != null)
                 {
@@ -17,11 +21,26 @@ namespace Avalonia.Android
                     _view.Dispose();
                 }
                 _view = value;
-                _view.Content = MainView;
+                _view.Content = _mainView;
             }
         }
 
-        public Control MainView { get; set; }
-        public TopLevel TopLevel => View?.TopLevel;
+        public Control? MainView
+        {
+            get => _mainView;
+            set
+            {
+                if (_mainView != value)
+                {
+                    _mainView = value;
+                    if (_view != null)
+                    {
+                        _view.Content = _mainView;
+                    }
+                }
+            }
+        }
+
+        public TopLevel? TopLevel => View?.TopLevel;
     }
 }
