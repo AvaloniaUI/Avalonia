@@ -1,25 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;$(AvsCurrentTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>net8.0;net8.0-android;net8.0-browser;net8.0-tizen</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOsPlatform('Linux'))">$(TargetFrameworks);net8.0-ios</TargetFrameworks>
+    <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>    
+    <Nullable>enable</Nullable>
+    <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Assets\*" />
-    <AvaloniaResource Include="Assets\Fonts\*" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Regular.ttf" />
-  </ItemGroup>
+  
+  <PropertyGroup>
+    <AvaloniaSingleProject>true</AvaloniaSingleProject>
+    <ApplicationTitle>Mobile Sandbox</ApplicationTitle>
+    <ApplicationId>Avalonia.MobileSandbox</ApplicationId>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
@@ -32,4 +25,5 @@
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />
+  <Import Project="..\..\build\SourceGenerators.props" />
 </Project>
