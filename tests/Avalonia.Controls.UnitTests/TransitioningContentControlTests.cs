@@ -210,7 +210,7 @@ namespace Avalonia.Controls.UnitTests
             sync.ExecutePostedCallbacks();
 
             Assert.Equal(1, startedRaised);
-            Assert.Equal(null, target.Presenter!.Content); //We explicitly nullify old Content as soon as we are done with it so that it can be safely disposed by any ViewModel observing OldContent property
+            Assert.Equal("foo", target.Presenter!.Content);
             Assert.Equal("bar", presenter2.Content);
         }
 
