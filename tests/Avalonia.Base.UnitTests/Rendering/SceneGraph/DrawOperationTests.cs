@@ -40,7 +40,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 if (renderData == null)
                     return null;
                 ForceRender();
-                return renderData.Server.Bounds;
+                return renderData.Server.Bounds?.ToRect();
             }
         }
 

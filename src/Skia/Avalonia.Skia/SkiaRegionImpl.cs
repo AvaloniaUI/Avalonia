@@ -10,17 +10,17 @@ internal class SkiaRegionImpl : IPlatformRenderInterfaceRegion
     private SKRegion? _region = new();
     public SKRegion Region => _region ?? throw new ObjectDisposedException(nameof(SkiaRegionImpl));
     private bool _rectsValid;
-    private List<PixelRect>? _rects;
+    private List<LtrbPixelRect>? _rects;
     public void Dispose()
     {
         _region?.Dispose();
         _region = null;
     }
 
-    public void AddRect(PixelRect rect)
+    public void AddRect(LtrbPixelRect rect)
     {
         _rectsValid = false;
-        Region.Op(rect.X, rect.Y, rect.Right, rect.Bottom, SKRegionOperation.Union);
+        Region.Op(rect.Left, rect.Top, rect.Right, rect.Bottom, SKRegionOperation.Union);
     }
 
     public void Reset()
@@ -30,9 +30,9 @@ internal class SkiaRegionImpl : IPlatformRenderInterfaceRegion
     }
 
     public bool IsEmpty => Region.IsEmpty;
-    public PixelRect Bounds => Region.Bounds.ToAvaloniaPixelRect();
+    public LtrbPixelRect Bounds => Region.Bounds.ToAvaloniaLtrbPixelRect();
 
-    public IList<PixelRect> Rects
+    public IList<LtrbPixelRect> Rects
     {
         get
         {
@@ -42,12 +42,15 @@ internal class SkiaRegionImpl : IPlatformRenderInterfaceRegion
                 _rects.Clear();
                 using var iter = Region.CreateRectIterator();
                 while (iter.Next(out var rc))
-                    _rects.Add(rc.ToAvaloniaPixelRect());
+                    _rects.Add(rc.ToAvaloniaLtrbPixelRect());
             }
             return _rects;
         }
     }
 
-    public bool Intersects(Rect rect) => Region.Intersects(PixelRect.FromRect(rect, 1).ToSKRectI());
+    public bool Intersects(LtrbRect rect) => Region.Intersects(
+        new SKRectI((int)rect.Left, (int)rect.Top,
+            (int)Math.Ceiling(rect.Right), (int)Math.Ceiling(rect.Bottom)));
+    
     public bool Contains(Point pt) => Region.Contains((int)pt.X, (int)pt.Y);
 }

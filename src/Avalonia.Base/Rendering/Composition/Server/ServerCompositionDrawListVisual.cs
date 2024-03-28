@@ -27,7 +27,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
 #endif
     }
 
-    public override Rect OwnContentBounds => _renderCommands?.Bounds ?? default;
+    public override LtrbRect OwnContentBounds => _renderCommands?.Bounds ?? default;
 
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
@@ -40,7 +40,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         base.DeserializeChangesCore(reader, committedAt);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
         IDirtyRectTracker dirtyRects)
     {
         if (_renderCommands != null)

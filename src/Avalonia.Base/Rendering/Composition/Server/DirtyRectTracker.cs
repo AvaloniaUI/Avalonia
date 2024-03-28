@@ -10,38 +10,40 @@ namespace Avalonia.Rendering.Composition.Server;
 
 internal interface IDirtyRectTracker
 {
-    void AddRect(PixelRect rect);
+    void AddRect(LtrbPixelRect rect);
     IDisposable BeginDraw(IDrawingContextImpl ctx);
     bool IsEmpty { get; }
-    bool Intersects(Rect rect);
+    bool Intersects(LtrbRect rect);
     bool Contains(Point pt);
     void Reset();
     void Visualize(IDrawingContextImpl context);
-    PixelRect CombinedRect { get; }
-    IList<PixelRect> Rects { get; }
+    LtrbPixelRect CombinedRect { get; }
+    IList<LtrbPixelRect> Rects { get; }
 }
 
 internal class DirtyRectTracker : IDirtyRectTracker
 {
-    private PixelRect _rect;
+    private LtrbPixelRect _rect;
     private Rect _doubleRect;
-    private PixelRect[] _rectsForApi = new PixelRect[1];
+    private LtrbRect _normalRect;
+    private LtrbPixelRect[] _rectsForApi = new LtrbPixelRect[1];
     private Random _random = new();
-    public void AddRect(PixelRect rect)
+    public void AddRect(LtrbPixelRect rect)
     {
         _rect = _rect.Union(rect);
     }
     
     public IDisposable BeginDraw(IDrawingContextImpl ctx)
     {
-        ctx.PushClip(_rect.ToRect(1));
-        _doubleRect = _rect.ToRect(1);
+        ctx.PushClip(_rect.ToRectWithNoScaling());
+        _doubleRect = _rect.ToRectWithNoScaling();
+        _normalRect = new(_doubleRect);
         return Disposable.Create(ctx.PopClip);
     }
 
-    public bool IsEmpty => _rect.Width == 0 | _rect.Height == 0;
-    public bool Intersects(Rect rect) => _doubleRect.Intersects(rect);
-    public bool Contains(Point pt) => _rect.Contains(PixelPoint.FromPoint(pt, 1));
+    public bool IsEmpty => _rect.IsEmpty;
+    public bool Intersects(LtrbRect rect) => _normalRect.Intersects(rect);
+    public bool Contains(Point pt) => _rect.Contains((int)pt.X, (int)pt.Y);
 
     public void Reset() => _rect = default;
     public void Visualize(IDrawingContextImpl context)
@@ -52,14 +54,14 @@ internal class DirtyRectTracker : IDirtyRectTracker
             null, _doubleRect);
     }
 
-    public PixelRect CombinedRect => _rect;
+    public LtrbPixelRect CombinedRect => _rect;
 
-    public IList<PixelRect> Rects
+    public IList<LtrbPixelRect> Rects
     {
         get
         {
-            if (_rect.Width == 0 || _rect.Height == 0)
-                return Array.Empty<PixelRect>();
+            if (_rect.IsEmpty)
+                return Array.Empty<LtrbPixelRect>();
             _rectsForApi[0] = _rect;
             return _rectsForApi;
         }
@@ -76,7 +78,7 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
         _region = platformRender.CreateRegion();
     }
 
-    public void AddRect(PixelRect rect) => _region.AddRect(rect);
+    public void AddRect(LtrbPixelRect rect) => _region.AddRect(rect);
 
     public IDisposable BeginDraw(IDrawingContextImpl ctx)
     {
@@ -85,7 +87,7 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
     }
 
     public bool IsEmpty => _region.IsEmpty;
-    public bool Intersects(Rect rect) => _region.Intersects(rect);
+    public bool Intersects(LtrbRect rect) => _region.Intersects(rect);
     public bool Contains(Point pt) => _region.Contains(pt);
 
     public void Reset() => _region.Reset();
@@ -98,6 +100,6 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
             null, _region);
     }
 
-    public PixelRect CombinedRect => _region.Bounds;
-    public IList<PixelRect> Rects => _region.Rects;
+    public LtrbPixelRect CombinedRect => _region.Bounds;
+    public IList<LtrbPixelRect> Rects => _region.Rects;
 }

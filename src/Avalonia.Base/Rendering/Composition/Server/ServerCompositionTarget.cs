@@ -158,7 +158,7 @@ namespace Avalonia.Rendering.Composition.Server
                     _layer = null;
                     _layer = renderTargetContext.CreateLayer(PixelSize);
                     _layerSize = PixelSize;
-                    DirtyRects.AddRect(new PixelRect(_layerSize));
+                    DirtyRects.AddRect(new LtrbPixelRect(_layerSize));
                 }
                 else if (!needLayer)
                 {
@@ -168,7 +168,7 @@ namespace Avalonia.Rendering.Composition.Server
 
                 if (_fullRedrawRequested || (!needLayer && !properties.PreviousFrameIsRetained))
                 {
-                    DirtyRects.AddRect(new PixelRect(_layerSize));
+                    DirtyRects.AddRect(new LtrbPixelRect(_layerSize));
                     _fullRedrawRequested = false;
                 }
 
@@ -212,7 +212,7 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 context.Clear(Colors.Transparent);
                 if (useLayerClip)
-                    context.PushLayer(DirtyRects.CombinedRect.ToRect(1));
+                    context.PushLayer(DirtyRects.CombinedRect.ToRectUnscaled());
 
 
                 root.Render(new CompositorDrawingContextProxy(context), null, DirtyRects);

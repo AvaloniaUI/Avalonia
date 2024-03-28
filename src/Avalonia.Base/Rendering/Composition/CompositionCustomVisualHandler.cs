@@ -105,6 +105,6 @@ public abstract class CompositionCustomVisualHandler
     {
         VerifyInRender();
         rc = rc.TransformToAABB(_host!.GlobalTransformMatrix);
-        return _currentTransformedClip.Intersects(rc) && _host.Root!.DirtyRects.Intersects(rc);
+        return _currentTransformedClip.Intersects(rc) && _host.Root!.DirtyRects.Intersects(new (rc));
     }
 }

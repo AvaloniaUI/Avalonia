@@ -545,14 +545,14 @@ namespace Avalonia.Skia
             
             if (brush != null)
             {
-                using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRect(1)))
+                using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRectUnscaled()))
                 {
                     Canvas.DrawRegion(r.Region, fill.Paint);
                 }
             }
 
             if (pen is not null
-                && TryCreatePaint(_strokePaint, pen, r.Bounds.ToRect(1).Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
+                && TryCreatePaint(_strokePaint, pen, r.Bounds.ToRectUnscaled().Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
             {
                 using (stroke)
                 {
