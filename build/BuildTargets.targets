@@ -11,6 +11,7 @@
   <UsingTask TaskName="GenerateAvaloniaResourcesTask" AssemblyFile="$(AvaloniaBuildTasksLocation)" TaskFactory="TaskHostFactory"/>
   <UsingTask TaskName="CompileAvaloniaXamlTask" AssemblyFile="$(AvaloniaBuildTasksLocation)" TaskFactory="TaskHostFactory"/>
   
+  <Import Project="$(MSBuildThisFileDirectory)\DevSingleProject.targets"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.targets"/>
 </Project>
