@@ -1050,15 +1050,17 @@ namespace Avalonia.Skia
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
+                context.PushRenderOptions(RenderOptions);
+                
                 context.Transform = calc.IntermediateTransform;
-                context.RenderOptions = RenderOptions;
-
+                
                 context.DrawBitmap(
                     tileBrushImage,
                     1,
                     sourceRect,
                     targetRect);
 
+                context.PopRenderOptions();
                 context.PopClip();
             }
 
@@ -1133,9 +1135,10 @@ namespace Avalonia.Skia
 
                 using (var ctx = intermediate.CreateDrawingContext(true))
                 {
-                    ctx.RenderOptions = RenderOptions;
+                    ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
                     content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+                    ctx.PopRenderOptions();
                 }
 
                 ConfigureTileBrush(ref paintWrapper, targetRect, content.Brush, intermediate);
@@ -1205,8 +1208,9 @@ namespace Avalonia.Skia
             using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
             using (var ctx = pictureTarget.CreateDrawingContext(destinationRect.Size))
             {
-                ctx.RenderOptions = RenderOptions;
+                ctx.PushRenderOptions(RenderOptions);
                 content.Render(ctx, transform);
+                ctx.PopRenderOptions();
             }
 
             using var picture = pictureTarget.GetPicture();

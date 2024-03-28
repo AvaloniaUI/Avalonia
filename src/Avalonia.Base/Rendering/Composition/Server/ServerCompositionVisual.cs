@@ -58,6 +58,10 @@ namespace Avalonia.Rendering.Composition.Server
             canvas.PostTransform = transform;
             canvas.Transform = Matrix.Identity;
 
+            var applyRenderOptions = RenderOptions != default;
+
+            if (applyRenderOptions)
+                canvas.PushRenderOptions(RenderOptions);
             if (Effect != null)
                 canvas.PushEffect(Effect);
             
@@ -69,8 +73,6 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PushGeometryClip(Clip);
             if (OpacityMaskBrush != null)
                 canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
-
-            canvas.RenderOptions = RenderOptions;
 
             RenderCore(canvas, currentTransformedClip, dirtyRects);
             
@@ -91,6 +93,8 @@ namespace Avalonia.Rendering.Composition.Server
             
             if (Effect != null)
                 canvas.PopEffect();
+            if(applyRenderOptions)
+                canvas.PopRenderOptions();
         }
 
         protected virtual bool HandlesClipToBounds => false;
@@ -127,11 +131,6 @@ namespace Avalonia.Rendering.Composition.Server
                 return default;
 
             var wasVisible = IsVisibleInFrame;
-
-            if(Parent != null)
-            {
-                RenderOptions = RenderOptions.MergeWith(Parent.RenderOptions);
-            }
 
             // Calculate new parent-relative transform
             if (_combinedTransformDirty)
