@@ -43,7 +43,9 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
     protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
         IDirtyRectTracker dirtyRects)
     {
-        if (_renderCommands != null)
+        if (_renderCommands != null 
+            && currentTransformedClip.Intersects(TransformedOwnContentBounds)
+            && dirtyRects.Intersects(TransformedOwnContentBounds))
         {
             _renderCommands.Render(canvas);
         }

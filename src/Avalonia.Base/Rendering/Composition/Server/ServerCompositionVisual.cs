@@ -49,14 +49,12 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (AdornedVisual != null)
             {
-                canvas.PostTransform = Matrix.Identity;
                 canvas.Transform = Matrix.Identity;
                 if (AdornerIsClipped)
                     canvas.PushClip(AdornedVisual._combinedTransformedClipBounds.ToRect());
             }
             var transform = GlobalTransformMatrix;
-            canvas.PostTransform = transform;
-            canvas.Transform = Matrix.Identity;
+            canvas.Transform = transform;
 
             var applyRenderOptions = RenderOptions != default;
 
@@ -76,10 +74,6 @@ namespace Avalonia.Rendering.Composition.Server
 
             RenderCore(canvas, currentTransformedClip, dirtyRects);
             
-            // Hack to force invalidation of SKMatrix
-            canvas.PostTransform = transform;
-            canvas.Transform = Matrix.Identity;
-
             if (OpacityMaskBrush != null)
                 canvas.PopOpacityMask();
             if (Clip != null)
