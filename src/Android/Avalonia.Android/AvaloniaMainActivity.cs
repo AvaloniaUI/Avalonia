@@ -9,7 +9,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android;
 
-public abstract class AvaloniaMainActivity : AvaloniaActivity
+public class AvaloniaMainActivity : AvaloniaActivity
 {
     private protected static SingleViewLifetime? Lifetime;
 
@@ -40,6 +40,7 @@ public abstract class AvaloniaMainActivity : AvaloniaActivity
         else
         {
             var builder = CreateAppBuilder();
+            builder = CustomizeAppBuilder(builder);
 
             Lifetime = new SingleViewLifetime();
             Lifetime.Activity = this;
@@ -57,5 +58,6 @@ public abstract class AvaloniaMainActivity : AvaloniaActivity
         }
     }
 
-    protected abstract AppBuilder CreateAppBuilder();
+    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseAndroid();
+    protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 }

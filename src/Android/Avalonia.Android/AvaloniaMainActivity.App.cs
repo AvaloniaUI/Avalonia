@@ -11,10 +11,5 @@ namespace Avalonia.Android;
 public class AvaloniaMainActivity<TApp> : AvaloniaMainActivity
     where TApp : Application, new()
 {
-    protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
-
-    protected override AppBuilder CreateAppBuilder()
-    {
-        return CustomizeAppBuilder(AppBuilder.Configure<TApp>());
-    }
+    protected override AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>();
 }

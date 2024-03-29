@@ -31,12 +31,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
         public TopLevel? TopLevel => View.TopLevel;
     }
 
-    protected virtual AppBuilder CreateAppBuilder()
-    {
-        var builder = AppBuilder.Configure<TApp>().UseTizen();
-        return CustomizeAppBuilder(builder);
-    }
-
+    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseTizen();
     protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
     protected override void OnCreate()
@@ -67,6 +62,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
         TizenThreadingInterface.MainloopContext.Post(_ =>
         {
+            builder = CustomizeAppBuilder(builder);
             builder.AfterApplicationSetup(_ => _lifetime!.View.Initialise());
 
             Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup lifetime");

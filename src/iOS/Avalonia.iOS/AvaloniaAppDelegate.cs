@@ -34,14 +34,9 @@ namespace Avalonia.iOS
             remove { _onDeactivated -= value; }
         }
 
-        protected virtual AppBuilder CreateAppBuilder()
-        {
-            var builder = AppBuilder.Configure<TApp>().UseiOS(this);
-            return CustomizeAppBuilder(builder);
-        }
-
+        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseiOS();
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
-        
+
         [Export("window")]
         public UIWindow? Window { get; set; }
 
@@ -49,6 +44,7 @@ namespace Avalonia.iOS
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
             var builder = CreateAppBuilder();
+            builder = CustomizeAppBuilder(builder);
 
             var lifetime = new SingleViewLifetime();
 
