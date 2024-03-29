@@ -35,6 +35,7 @@ namespace Avalonia.Android
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
+        internal TopLevel TopLevel => _root;
 
         public object Content
         {
@@ -121,9 +122,6 @@ namespace Avalonia.Android
                 MaxClientSize = size;
                 base.OnResized(size);
             }
-
-            public WindowState WindowState { get; set; }
-            public IDisposable ShowDialog() => null;
         }
     }
 }

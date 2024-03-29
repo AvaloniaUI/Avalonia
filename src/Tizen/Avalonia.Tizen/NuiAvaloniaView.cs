@@ -36,7 +36,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
         set => _inputRoot = value;
     }
 
-    private TopLevel TopLevel
+    internal TopLevel TopLevel
         => _topLevel ?? throw new InvalidOperationException($"{nameof(NuiAvaloniaView)} hasn't been initialized");
 
     internal TopLevelImpl TopLevelImpl
