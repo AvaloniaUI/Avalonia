@@ -140,6 +140,16 @@ namespace Avalonia.Browser
             InputHelper.FocusElement(_containerElement);
         }
 
+        public Control? Content
+        {
+            get => (Control)_topLevel.Content!;
+            set => _topLevel.Content = value;
+        }
+
+        public bool IsComposing { get; private set; }
+
+        internal TopLevel TopLevel => _topLevel;
+
         private static RawPointerPoint ExtractRawPointerFromJSArgs(JSObject args)
         {
             var point = new RawPointerPoint
@@ -429,15 +439,7 @@ namespace Avalonia.Browser
             Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
             ManualTriggerRenderTimer.Instance.RaiseTick();
         }
-
-        public Control? Content
-        {
-            get => (Control)_topLevel.Content!;
-            set => _topLevel.Content = value;
-        }
-
-        public bool IsComposing { get; private set; }
-
+        
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
             return new BrowserNativeControlHost(_nativeControlsContainer);
