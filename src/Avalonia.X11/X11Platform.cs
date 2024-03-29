@@ -126,7 +126,7 @@ namespace Avalonia.X11
 
             return dbusTrayIcon;
         }
-
+        
         public IWindowImpl CreateWindow()
         {
             return new X11Window(this, null);

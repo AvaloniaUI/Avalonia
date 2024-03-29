@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;

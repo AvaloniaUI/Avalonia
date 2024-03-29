@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
