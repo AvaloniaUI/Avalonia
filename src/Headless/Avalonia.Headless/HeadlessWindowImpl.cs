@@ -413,5 +413,7 @@ namespace Avalonia.Headless
         {
             
         }
+
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
     }
 }

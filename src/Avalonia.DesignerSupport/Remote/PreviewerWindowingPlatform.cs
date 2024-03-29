@@ -20,8 +20,6 @@ namespace Avalonia.DesignerSupport.Remote
         public static List<object> PreFlightMessages = new List<object>();
 
         public ITrayIconImpl CreateTrayIcon() => null;
-        
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
 
         public IWindowImpl CreateWindow() => new WindowStub();
 

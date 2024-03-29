@@ -161,7 +161,5 @@ namespace Avalonia.UnitTests
         {
             return null;
         }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException("MockWindowingPlatform doesn't support windows sorting.");
     }
 }

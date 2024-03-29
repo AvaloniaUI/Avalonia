@@ -27,11 +27,6 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         return null;
     }
 
-    public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
-    {
-        throw new NotSupportedException("Browser doesn't support windowing platform.");
-    }
-
     public static KeyboardDevice Keyboard => s_keyboard ??
         throw new InvalidOperationException("BrowserWindowingPlatform not registered.");
 

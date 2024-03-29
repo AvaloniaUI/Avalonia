@@ -47,14 +47,19 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <inheritdoc />
         public void SortWindowsByZOrder(Window[] windows)
         {
-            var windowingPlatform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
+            if (windows.Length == 0)
+                return;
+
+            if (windows[0].PlatformImpl is not { } platformImpl)
+                throw new InvalidOperationException("Window.PlatformImpl is null");
+
 #if NET5_0_OR_GREATER
             Span<long> zOrder = stackalloc long[windows.Length];
-            windowingPlatform.GetWindowsZOrder(windows, zOrder);
+            platformImpl.GetWindowsZOrder(windows, zOrder);
             zOrder.Sort(windows.AsSpan());
 #else
             long[] zOrder = new long[windows.Length];
-            windowingPlatform.GetWindowsZOrder(windows, zOrder);
+            platformImpl.GetWindowsZOrder(windows, zOrder);
             Array.Sort(zOrder, windows);
 #endif
         }

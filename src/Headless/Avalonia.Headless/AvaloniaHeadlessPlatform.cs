@@ -64,8 +64,6 @@ namespace Avalonia.Headless
             public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true, _frameBufferFormat);
 
             public ITrayIconImpl? CreateTrayIcon() => null;
-            
-            public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException("Headless doesn't support windows sorting.");
         }
         
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)

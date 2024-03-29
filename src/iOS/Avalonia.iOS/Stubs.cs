@@ -25,9 +25,6 @@ namespace Avalonia.iOS
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
         public ITrayIconImpl? CreateTrayIcon() => null;
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
-            => throw new NotSupportedException();
     }
     
     internal class PlatformIconLoaderStub : IPlatformIconLoader
