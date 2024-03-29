@@ -122,9 +122,6 @@ namespace Avalonia.Android
                 MaxClientSize = size;
                 base.OnResized(size);
             }
-
-            public WindowState WindowState { get; set; }
-            public IDisposable ShowDialog() => null;
         }
     }
 }

@@ -55,7 +55,7 @@ public static class BrowserAppBuilder
 
         var lifetime = new BrowserSingleViewLifetime();
         builder
-            .AfterSetup(_ =>
+            .AfterApplicationSetup(_ =>
             {
                 lifetime.View = new AvaloniaView(mainDivId);
             })

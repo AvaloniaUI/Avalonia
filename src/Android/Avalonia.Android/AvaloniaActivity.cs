@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
@@ -71,8 +72,7 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        _view = CreateAvaloniaView();
-        _view.Content = _content;
+        InitializeAvaloniaView(_content);
 
         base.OnCreate(savedInstanceState);
 
@@ -141,15 +141,16 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         RequestPermissionsResult?.Invoke(requestCode, permissions, grantResults);
     }
 
-    private protected virtual AvaloniaView CreateAvaloniaView()
+    [MemberNotNull(nameof(_view))]
+    private protected virtual void InitializeAvaloniaView(object? initialContent)
     {
         if (Avalonia.Application.Current is null)
         {
             throw new InvalidOperationException(
                 "Avalonia Application was not initialized. Make sure you have created AvaloniaMainActivity.");
         }
-        
-        return new AvaloniaView(this);
+
+        _view = new AvaloniaView(this) { Content = initialContent };
     }
 
     private class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener

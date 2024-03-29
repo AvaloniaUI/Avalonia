@@ -25,9 +25,9 @@ public abstract class AvaloniaMainActivity : AvaloniaActivity
         base.OnCreate(savedInstanceState, persistentState);
     }
 
-    private protected override AvaloniaView CreateAvaloniaView()
+    private protected override void InitializeAvaloniaView(object? initialContent)
     {
-        // Android can run OnCreate + CreateAvaloniaView multiple times per process lifetime.
+        // Android can run OnCreate + InitializeAvaloniaView multiple times per process lifetime.
         // On each call we need to create new AvaloniaView, but we can't recreate Avalonia nor Avalonia controls.
         // So, if lifetime was already created previously - recreate AvaloniaView.
         // If not, initialize Avalonia, and create AvaloniaView inside of AfterSetup callback.
@@ -35,7 +35,7 @@ public abstract class AvaloniaMainActivity : AvaloniaActivity
         if (Lifetime is not null)
         {
             Lifetime.Activity = this;
-            return new AvaloniaView(this);
+            _view = new AvaloniaView(this) { Content = initialContent };
         }
         else
         {
@@ -43,17 +43,17 @@ public abstract class AvaloniaMainActivity : AvaloniaActivity
 
             Lifetime = new SingleViewLifetime();
             Lifetime.Activity = this;
-
-            AvaloniaView? view = null; 
+ 
             builder
-                .AfterSetup(_ =>
+                .AfterApplicationSetup(_ =>
                 {
-                    view = new AvaloniaView(this);
+                    _view = new AvaloniaView(this) { Content = initialContent };
                 })
                 .SetupWithLifetime(Lifetime);
 
-            // AfterSetup should always be called. If it wasn't, we have an unusual problem.
-            return view ?? throw new InvalidOperationException("Unknown error: AvaloniaView initialization failed.");
+            // AfterPlatformServicesSetup should always be called. If it wasn't, we have an unusual problem.
+            if (_view is null)
+                throw new InvalidOperationException("Unknown error: AvaloniaView initialization has failed.");
         }
     }
 

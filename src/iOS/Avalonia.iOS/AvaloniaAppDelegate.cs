@@ -52,7 +52,7 @@ namespace Avalonia.iOS
 
             var lifetime = new SingleViewLifetime();
 
-            builder.AfterSetup(_ =>
+            builder.AfterApplicationSetup(_ =>
             {
                 Window = new UIWindow();
 

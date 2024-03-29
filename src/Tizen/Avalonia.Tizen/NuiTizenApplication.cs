@@ -67,7 +67,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
         TizenThreadingInterface.MainloopContext.Post(_ =>
         {
-            builder.AfterSetup(_ => _lifetime!.View.Initialise());
+            builder.AfterApplicationSetup(_ => _lifetime!.View.Initialise());
 
             Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup lifetime");
             builder.SetupWithLifetime(_lifetime!);
