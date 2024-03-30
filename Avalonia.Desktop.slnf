@@ -66,6 +66,7 @@
       "tests\\Avalonia.Markup.UnitTests\\Avalonia.Markup.UnitTests.csproj",
       "tests\\Avalonia.Markup.Xaml.UnitTests\\Avalonia.Markup.Xaml.UnitTests.csproj",
       "tests\\Avalonia.ReactiveUI.UnitTests\\Avalonia.ReactiveUI.UnitTests.csproj",
+      "tests\\Avalonia.RenderTests.WpfCompare\\Avalonia.RenderTests.WpfCompare.csproj",
       "tests\\Avalonia.Skia.RenderTests\\Avalonia.Skia.RenderTests.csproj",
       "tests\\Avalonia.Skia.UnitTests\\Avalonia.Skia.UnitTests.csproj",
       "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj",
