@@ -682,7 +682,6 @@ namespace Avalonia.Win32
         public void Hide()
         {
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
-            _shown = false;
         }
 
         public virtual void Show(bool activate, bool isDialog)
@@ -1160,8 +1159,6 @@ namespace Avalonia.Win32
 
         private void ShowWindow(WindowState state, bool activate)
         {
-            _shown = true;
-
             if (_isClientAreaExtended)
             {
                 ExtendClientArea();
