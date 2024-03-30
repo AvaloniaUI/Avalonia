@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Avalonia
 {
@@ -40,6 +41,7 @@ namespace Avalonia
         /// </summary>
         internal IReadOnlyCollection<AvaloniaProperty> Properties => _properties.Values;
 
+        private ManualResetEvent _unregisteringManualResetEvent = new ManualResetEvent(true);
         /// <summary>
         /// Unregister all<see cref="AvaloniaProperty"/>s registered on types
         /// </summary>
@@ -48,6 +50,8 @@ namespace Avalonia
         public void UnregisterByModule(IEnumerable<Type> types)
         {
             _ = types ?? throw new ArgumentNullException(nameof(types));
+            
+            _unregisteringManualResetEvent.Reset();
             foreach (var type in types)
             {
                 Unregister(_registered, type);
@@ -58,6 +62,7 @@ namespace Avalonia
                 Unregister(_directCache,type);
                 Unregister(_inheritedCache,type);
             }
+            _unregisteringManualResetEvent.Set();
             
         }
         private void Unregister( Dictionary<Type, List<AvaloniaProperty>> dictionary,Type type)
@@ -83,7 +88,7 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegistered(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
+            _unregisteringManualResetEvent.WaitOne();
             if (_registeredCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -117,7 +122,7 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegisteredAttached(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
+            _unregisteringManualResetEvent.WaitOne();
             if (_attachedCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -148,7 +153,7 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegisteredDirect(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
+            _unregisteringManualResetEvent.WaitOne();
             if (_directCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -179,7 +184,7 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegisteredInherited(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
+            _unregisteringManualResetEvent.WaitOne();
             if (_inheritedCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -407,7 +412,7 @@ namespace Avalonia
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
             _ = property ?? throw new ArgumentNullException(nameof(property));
-
+            _unregisteringManualResetEvent.WaitOne();
             if (!_registered.TryGetValue(type, out var inner))
             {
                 inner = new Dictionary<int, AvaloniaProperty>();
@@ -458,7 +463,7 @@ namespace Avalonia
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
             _ = property ?? throw new ArgumentNullException(nameof(property));
-
+            _unregisteringManualResetEvent.WaitOne();
             if (!property.IsAttached)
             {
                 throw new InvalidOperationException(

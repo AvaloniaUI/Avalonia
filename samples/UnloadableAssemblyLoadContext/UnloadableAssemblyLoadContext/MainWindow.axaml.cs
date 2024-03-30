@@ -12,6 +12,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -37,7 +38,7 @@ public partial class MainWindow : Window
     {
         base.OnOpened(e);
         test();
-        Content = _plugTool.FindControl("UnloadableAssemblyLoadContextPlug.TestControl");
+        //Content = _plugTool.FindControl("UnloadableAssemblyLoadContextPlug.TestControl");
 
 
     }
@@ -96,7 +97,7 @@ public partial class MainWindow : Window
         var AssemblyLoadContextH = new AssemblyLoadContextH(fileInfo.FullName,"test");
         
         var assembly = AssemblyLoadContextH.LoadFromAssemblyPath(fileInfo.FullName);
-        
+        //var assemblyDescriptorResolver = AvaloniaLocator.CurrentMutable.GetService<IAssemblyDescriptorResolver>();
         _plugTool=new PlugTool();
         _plugTool.AssemblyLoadContextH = AssemblyLoadContextH;
       
@@ -128,37 +129,6 @@ public partial class MainWindow : Window
         }
         
     }
-    public class MyServiceProvider : IServiceProvider
-    {
-        public object GetService(Type serviceType)
-        {
-            if (serviceType == typeof(INameScope))
-            {
-                if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    var nameScope = NameScope.GetNameScope((StyledElement)desktop.MainWindow);
-                    return nameScope;
-                }
-
-                return null;
-            }
-                
-            return null;
-        }
-    }
+   
     
-    /*
-      XamlIlContext.Context<App> context = new XamlIlContext.Context<App>(obj0, new object[1]
-      {
-        (object) !AvaloniaResources.NamespaceInfo:/App.axaml.Singleton
-      }, "avares://UnloadableAssemblyLoadContext/App.axaml");
-      context.RootObject = obj1;
-      context.IntermediateRoot = (object) obj1;
-      App app1;
-      App app2 = app1 = obj1;
-      context.PushParent((object) app2);
-      App app3 = app2;
-      app3.RequestedThemeVariant = ThemeVariant.Default;
-      app3.Styles.Add((IStyle) !AvaloniaResources.Build:/Styles1.axaml(XamlIlRuntimeHelpers.CreateRootServiceProviderV3((IServiceProvider) context)));
-     */
 }
