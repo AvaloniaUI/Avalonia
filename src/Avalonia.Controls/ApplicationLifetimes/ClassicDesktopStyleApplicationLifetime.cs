@@ -44,26 +44,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <inheritdoc />
         public IReadOnlyList<Window> Windows => _windows;
 
-        /// <inheritdoc />
-        public void SortWindowsByZOrder(Window[] windows)
-        {
-            if (windows.Length == 0)
-                return;
-
-            if (windows[0].PlatformImpl is not { } platformImpl)
-                throw new InvalidOperationException("Window.PlatformImpl is null");
-
-#if NET5_0_OR_GREATER
-            Span<long> zOrder = stackalloc long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            zOrder.Sort(windows.AsSpan());
-#else
-            long[] zOrder = new long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            Array.Sort(zOrder, windows);
-#endif
-        }
-
         private void HandleWindowClosed(Window? window)
         {
             if (window == null)
