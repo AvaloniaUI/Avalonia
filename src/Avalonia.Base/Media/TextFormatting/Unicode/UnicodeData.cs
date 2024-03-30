@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -30,17 +29,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
         internal const int BIDIPAIREDBRACKEDTYPE_MASK = (1 << BIDIPAIREDBRACKEDTYPE_BITS) - 1;
         internal const int BIDICLASS_MASK = (1 << BIDICLASS_BITS) - 1;
 
-        private static readonly UnicodeTrie s_unicodeDataTrie;
-        private static readonly UnicodeTrie s_graphemeBreakTrie;
-        private static readonly UnicodeTrie s_biDiTrie;
-
-        static UnicodeData()
-        {
-            s_unicodeDataTrie = new UnicodeTrie(UnicodeDataTrie.Data);
-            s_graphemeBreakTrie = new UnicodeTrie(GraphemeBreakTrie.Data);
-            s_biDiTrie = new UnicodeTrie(BidiTrie.Data);
-        }
-
         /// <summary>
         /// Gets the <see cref="GeneralCategory"/> for a Unicode codepoint.
         /// </summary>
@@ -49,7 +37,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GeneralCategory GetGeneralCategory(uint codepoint)
         {
-            return (GeneralCategory)(s_unicodeDataTrie.Get(codepoint) & CATEGORY_MASK);
+            return (GeneralCategory)(UnicodeDataTrie.Trie.Get(codepoint) & CATEGORY_MASK);
         }
 
         /// <summary>
@@ -60,7 +48,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Script GetScript(uint codepoint)
         {
-            return (Script)((s_unicodeDataTrie.Get(codepoint) >> SCRIPT_SHIFT) & SCRIPT_MASK);
+            return (Script)((UnicodeDataTrie.Trie.Get(codepoint) >> SCRIPT_SHIFT) & SCRIPT_MASK);
         }
 
         /// <summary>
@@ -71,7 +59,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BidiClass GetBiDiClass(uint codepoint)
         {
-            return (BidiClass)((s_biDiTrie.Get(codepoint) >> BIDICLASS_SHIFT) & BIDICLASS_MASK);
+            return (BidiClass)((BidiTrie.Trie.Get(codepoint) >> BIDICLASS_SHIFT) & BIDICLASS_MASK);
         }
 
         /// <summary>
@@ -82,7 +70,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BidiPairedBracketType GetBiDiPairedBracketType(uint codepoint)
         {
-            return (BidiPairedBracketType)((s_biDiTrie.Get(codepoint) >> BIDIPAIREDBRACKEDTYPE_SHIFT) & BIDIPAIREDBRACKEDTYPE_MASK);
+            return (BidiPairedBracketType)((BidiTrie.Trie.Get(codepoint) >> BIDIPAIREDBRACKEDTYPE_SHIFT) & BIDIPAIREDBRACKEDTYPE_MASK);
         }
 
         /// <summary>
@@ -93,7 +81,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Codepoint GetBiDiPairedBracket(uint codepoint)
         {
-            return new Codepoint((s_biDiTrie.Get(codepoint) & BIDIPAIREDBRACKED_MASK));
+            return new Codepoint(BidiTrie.Trie.Get(codepoint) & BIDIPAIREDBRACKED_MASK);
         }
 
         /// <summary>
@@ -104,7 +92,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static LineBreakClass GetLineBreakClass(uint codepoint)
         {
-            return (LineBreakClass)((s_unicodeDataTrie.Get(codepoint) >> LINEBREAK_SHIFT) & LINEBREAK_MASK);
+            return (LineBreakClass)((UnicodeDataTrie.Trie.Get(codepoint) >> LINEBREAK_SHIFT) & LINEBREAK_MASK);
         }
 
         /// <summary>
@@ -115,7 +103,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GraphemeBreakClass GetGraphemeClusterBreak(uint codepoint)
         {
-            return (GraphemeBreakClass)s_graphemeBreakTrie.Get(codepoint);
+            return (GraphemeBreakClass)GraphemeBreakTrie.Trie.Get(codepoint);
         }
     }
 }
