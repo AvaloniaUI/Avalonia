@@ -325,19 +325,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return _data[block + (c & DATA_MASK)];
         }
 
-        public byte[] ToBuffer()
-        {
-            var mem = new MemoryStream();
-            Save(mem);
-            return mem.GetBuffer();
-        }
-
-        public void Save(Stream stream)
-        {
-            var trie = this.Freeze();
-            trie.Save(stream);
-        }
-
         public UnicodeTrie Freeze()
         {
             int allIndexesLength, i;

@@ -24,7 +24,7 @@ namespace Avalonia.Skia
         // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
         // but does so ignoring the current transform
         private readonly Vector _intermediateSurfaceDpi;
-        private readonly Stack<PaintWrapper> _maskStack = new();
+        private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Matrix? _postTransform;
@@ -545,14 +545,14 @@ namespace Avalonia.Skia
             
             if (brush != null)
             {
-                using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRect(1)))
+                using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRectUnscaled()))
                 {
                     Canvas.DrawRegion(r.Region, fill.Paint);
                 }
             }
 
             if (pen is not null
-                && TryCreatePaint(_strokePaint, pen, r.Bounds.ToRect(1).Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
+                && TryCreatePaint(_strokePaint, pen, r.Bounds.ToRectUnscaled().Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
             {
                 using (stroke)
                 {
@@ -813,7 +813,7 @@ namespace Avalonia.Skia
             var paint = SKPaintCache.Shared.Get();
 
             Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push(CreatePaint(paint, mask, bounds));
+            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
         }
 
         /// <inheritdoc />
@@ -826,9 +826,10 @@ namespace Avalonia.Skia
             
             Canvas.SaveLayer(paint);
             SKPaintCache.Shared.ReturnReset(paint);
-
-            PaintWrapper paintWrapper;
-            using (paintWrapper = _maskStack.Pop())
+            
+            var (transform, paintWrapper) = _maskStack.Pop();
+            Canvas.SetMatrix(transform);
+            using (paintWrapper)
             {
                 Canvas.DrawPaint(paintWrapper.Paint);
             }
@@ -1050,15 +1051,17 @@ namespace Avalonia.Skia
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
+                context.PushRenderOptions(RenderOptions);
+                
                 context.Transform = calc.IntermediateTransform;
-                context.RenderOptions = RenderOptions;
-
+                
                 context.DrawBitmap(
                     tileBrushImage,
                     1,
                     sourceRect,
                     targetRect);
 
+                context.PopRenderOptions();
                 context.PopClip();
             }
 
@@ -1133,9 +1136,10 @@ namespace Avalonia.Skia
 
                 using (var ctx = intermediate.CreateDrawingContext(true))
                 {
-                    ctx.RenderOptions = RenderOptions;
+                    ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
                     content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+                    ctx.PopRenderOptions();
                 }
 
                 ConfigureTileBrush(ref paintWrapper, targetRect, content.Brush, intermediate);
@@ -1170,9 +1174,10 @@ namespace Avalonia.Skia
             using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
             using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
             {
-                ctx.RenderOptions = RenderOptions;
                 ctx.PushClip(calc.IntermediateClip);
+                ctx.PushRenderOptions(RenderOptions);
                 content.Render(ctx, transform);
+                ctx.PopRenderOptions();
                 ctx.PopClip();
             }
 

@@ -1,10 +1,12 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android;
 
 public interface IAvaloniaActivity : IActivityResultHandler, IActivityNavigationService
 {
-    event EventHandler<ActivatedEventArgs> Activated;
-    event EventHandler<ActivatedEventArgs> Deactivated;
+    object? Content { get; set; }
+    event EventHandler<ActivatedEventArgs>? Activated;
+    event EventHandler<ActivatedEventArgs>? Deactivated;
 }

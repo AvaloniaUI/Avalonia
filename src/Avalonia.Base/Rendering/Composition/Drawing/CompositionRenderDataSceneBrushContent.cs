@@ -19,7 +19,7 @@ internal class CompositionRenderDataSceneBrushContent : ISceneBrushContent
     }
 
     public ITileBrush Brush { get; }
-    public Rect Rect => _rect ?? (RenderData.Server?.Bounds ?? default);
+    public Rect Rect => _rect ?? (RenderData.Server?.Bounds?.ToRect() ?? default);
 
     public double Opacity => Brush.Opacity;
     public ITransform? Transform => Brush.Transform;
