@@ -97,7 +97,7 @@ public partial class MainWindow : Window
         var AssemblyLoadContextH = new AssemblyLoadContextH(fileInfo.FullName,"test");
         
         var assembly = AssemblyLoadContextH.LoadFromAssemblyPath(fileInfo.FullName);
-        //var assemblyDescriptorResolver = AvaloniaLocator.CurrentMutable.GetService<IAssemblyDescriptorResolver>();
+        var assemblyDescriptorResolver = 
         _plugTool=new PlugTool();
         _plugTool.AssemblyLoadContextH = AssemblyLoadContextH;
       
