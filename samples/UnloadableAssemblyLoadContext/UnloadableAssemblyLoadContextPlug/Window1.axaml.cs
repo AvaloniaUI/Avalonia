@@ -16,10 +16,7 @@ public partial class Window1 : Window
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
-        if (Debugger.IsAttached)
-        {
-            this.AttachDevTools();
-        }
+      
         
     }
 }
