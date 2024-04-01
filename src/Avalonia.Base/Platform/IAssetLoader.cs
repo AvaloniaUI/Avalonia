@@ -78,6 +78,10 @@ namespace Avalonia.Platform
         /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
         IEnumerable<Uri> GetAssets(Uri uri, Uri? baseUri);
         
+        /// <summary>
+        /// Removes the assembly from the cache.
+        /// </summary>
+        /// <param name="name">The Assemblies.First().GetName().Name</param>
         void RemoveAssembly(string name);
     }
 }
