@@ -31,7 +31,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
         public TopLevel? TopLevel => View.TopLevel;
     }
 
-    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseTizen();
+    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseTizen();
     protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
     protected override void OnCreate()
