@@ -6,9 +6,6 @@
     <ProvisioningType>manual</ProvisioningType>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <CodesignKey>Apple Development: maxkatz6@outlook.com (DN2P3PH6J5)</CodesignKey>
-  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
