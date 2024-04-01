@@ -55,7 +55,7 @@
             <Panel Name="ContentRoot">
               <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
-              <Rectangle Name="LightDismissLayer" />
+              <Rectangle Name="LightDismissLayer" IsVisible="False"/>
             </Panel>
 
           </Grid>
@@ -138,7 +138,7 @@
             <Panel Name="ContentRoot">
               <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
-              <Rectangle Name="LightDismissLayer" />
+              <Rectangle Name="LightDismissLayer" IsVisible="False"/>
             </Panel>
 
           </Grid>
@@ -238,7 +238,7 @@
       <Setter Property="IsVisible" Value="False" />
       <Setter Property="Fill" Value="Transparent" />
     </Style>
-    <Style Selector="^:lightdismiss /template/ Rectangle#LightDismissLayer">
+    <Style Selector="^:lightDismiss /template/ Rectangle#LightDismissLayer">
       <Setter Property="Fill">
         <SolidColorBrush Color="{DynamicResource ThemeControlLowColor}" Opacity="0.6" />
       </Setter>
