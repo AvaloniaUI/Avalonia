@@ -713,6 +713,48 @@ namespace Avalonia.LeakTests
                 GC.KeepAlive(geometry);
             }
         }
+        
+        [Fact]
+        public void Polyline_WithObservableCollectionPointsBinding_Is_Freed()
+        {
+            using (Start())
+            {
+                var observableCollection = new ObservableCollection<Point>(){new()};
+
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new Polyline()
+                        {
+                            Points = observableCollection
+                        }
+                    };
+
+                    window.Show();
+
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<Polyline>(window.Presenter.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Polyline>()).ObjectsCount));
+
+                // We are keeping collection alive to simulate a resource that outlives the control.
+                GC.KeepAlive(observableCollection);
+            }
+        }
 
         [Fact]
         public void ItemsRepeater_Is_Freed()
