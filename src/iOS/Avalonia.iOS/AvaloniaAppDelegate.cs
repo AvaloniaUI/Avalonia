@@ -34,7 +34,7 @@ namespace Avalonia.iOS
             remove { _onDeactivated -= value; }
         }
 
-        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseiOS();
+        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS();
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
         [Export("window")]
