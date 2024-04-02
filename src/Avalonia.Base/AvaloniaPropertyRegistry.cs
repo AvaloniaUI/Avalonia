@@ -104,24 +104,20 @@ namespace Avalonia
 
             var t = type;
             result = new List<AvaloniaProperty>();
-
-            while (t != null)
+            lock (_unregisteringLocker)
             {
-                // Ensure the type's static ctor has been run.
-                RuntimeHelpers.RunClassConstructor(t.TypeHandle);
-
-                lock (_unregisteringLocker)
+                while (t != null)
                 {
+                    // Ensure the type's static ctor has been run.
+                    RuntimeHelpers.RunClassConstructor(t.TypeHandle);
                     if (_registered.TryGetValue(t, out var registered))
                     {
                         result.AddRange(registered.Values);
                     }
+                    t = t.BaseType;
                 }
-
-                t = t.BaseType;
+                _registeredCache.Add(type, result);
             }
-
-            _registeredCache.Add(type, result);
             return result;
         }
 
@@ -140,22 +136,18 @@ namespace Avalonia
 
             var t = type;
             result = new List<AvaloniaProperty>();
-
-            while (t != null)
+            lock (_unregisteringLocker)
             {
-                lock (_unregisteringLocker)
+                while (t != null)
                 {
                     if (_attached.TryGetValue(t, out var attached))
                     {
                         result.AddRange(attached.Values);
                     }
+                    t = t.BaseType;
                 }
-               
-
-                t = t.BaseType;
+                _attachedCache.Add(type, result);
             }
-
-            _attachedCache.Add(type, result);
             return result;
         }
 
@@ -174,20 +166,18 @@ namespace Avalonia
 
             var t = type;
             result = new List<AvaloniaProperty>();
-
-            while (t != null)
+            lock (_unregisteringLocker)
             {
-                lock (_unregisteringLocker)
+                while (t != null)
                 {
                     if (_direct.TryGetValue(t, out var direct))
                     {
                         result.AddRange(direct.Values);
                     }
+                    t = t.BaseType;
                 }
-                t = t.BaseType;
+                _directCache.Add(type, result);
             }
-
-            _directCache.Add(type, result);
             return result;
         }
 
