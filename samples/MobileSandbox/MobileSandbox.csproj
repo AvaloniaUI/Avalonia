@@ -23,6 +23,11 @@
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Only useful in VS, but https://www.vsixcookbook.com/tips/projects.html -->
+    <ProjectCapability Include="DiagnoseCapabilities" />
+  </ItemGroup>
+
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SourceGenerators.props" />
 </Project>
