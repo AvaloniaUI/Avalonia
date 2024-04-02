@@ -23,7 +23,7 @@ public class AssemblyLoadContextH : AssemblyLoadContext
         {
             AvaloniaPropertyRegistry.Instance.UnregisterByModule(sender.Assemblies.First().DefinedTypes);
             Application.Current.Styles.Remove(MainWindow.Style);
-            AvaloniaLocator.CurrentMutable.GetService<IAssetLoader>().RemoveAssembly(sender.Assemblies.First().GetName().Name);
+            AssetLoader.InvalidateAssemblyCache(sender.Assemblies.First().GetName().Name);
             MainWindow.Style= null;
         };
     }

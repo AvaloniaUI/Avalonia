@@ -155,9 +155,14 @@ public class StandardAssetLoader : IAssetLoader
         return Enumerable.Empty<Uri>();
     }
 
-    public void RemoveAssembly(string name)
+    public void InvalidateAssemblyCache(string name)
     {
-        _assemblyDescriptorResolver.RemoveAssembly(name);
+        _assemblyDescriptorResolver.InvalidateAssemblyCache(name);
+    }
+
+    public void InvalidateAssemblyCache()
+    {
+        _assemblyDescriptorResolver.InvalidateAssemblyCache();
     }
 
     public static void RegisterResUriParsers() => AssetLoader.RegisterResUriParsers();

@@ -223,7 +223,7 @@ namespace Avalonia
             return !(a == b);
         }
 
-        public void UnRegister(Type type)
+        public void Unregister(Type type)
         {
             _metadata.Remove(type);
             _metadataCache.Remove(type);
