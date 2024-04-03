@@ -23,8 +23,8 @@ internal abstract class BrowserSurface : IDisposable
         JsSurface = jsSurface;
 
         Scaling = 1;
-        ClientSize = new Size(100, 100);
-        RenderSize = new PixelSize(100, 100);
+        ClientSize = new Size(1, 1);
+        RenderSize = new PixelSize(1, 1);
     }
 
     public bool IsWebGl => _renderingMode is BrowserRenderingMode.WebGL1 or BrowserRenderingMode.WebGL2;
