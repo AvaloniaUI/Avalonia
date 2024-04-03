@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
@@ -720,6 +721,18 @@ namespace Avalonia.Controls.Presenters
         {
             var host = e.NewValue as IContentPresenterHost;
             Host = host?.RegisterContentPresenter(this) == true ? host : null;
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Host), Host, false);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Content), Content, true);
+            }
         }
     }
 }

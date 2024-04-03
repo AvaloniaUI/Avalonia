@@ -7,7 +7,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// A collection of <see cref="ITransition"/> definitions.
     /// </summary>
-    public sealed class Transitions : AvaloniaList<ITransition>
+    public sealed class Transitions : AvaloniaList<ITransition>, IAvaloniaListItemValidator<ITransition>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Transitions"/> class.
@@ -15,16 +15,18 @@ namespace Avalonia.Animation
         public Transitions()
         {
             ResetBehavior = ResetBehavior.Remove;
-            Validate = ValidateTransition;
+            Validator = this;
         }
 
-        private void ValidateTransition(ITransition obj)
+        void IAvaloniaListItemValidator<ITransition>.Validate(ITransition item)
         {
             Dispatcher.UIThread.VerifyAccess();
 
-            if (obj.Property.IsDirect)
+            var property = item.Property;
+            if (property.IsDirect)
             {
-                throw new InvalidOperationException("Cannot animate a direct property.");
+                var display = item is TransitionBase transition ? transition.DebugDisplay : item.ToString();
+                throw new InvalidOperationException($"Cannot animate direct property {property} on {display}.");
             }
         }
     }

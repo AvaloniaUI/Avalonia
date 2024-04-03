@@ -115,7 +115,34 @@ namespace Avalonia.Collections
         /// Gets or sets a validation routine that can be used to validate items before they are
         /// added.
         /// </summary>
-        public Action<T>? Validate { get; set; }
+        public Action<T>? Validate
+        {
+            get => Validator switch
+            {
+                null => null,
+                ItemValidator itemValidator => itemValidator.Validate,
+                { } other => other.Validate
+            };
+            set
+            {
+                if (value is null)
+                {
+                    Validator = null;
+                    return;
+                }
+
+                if (Validator is ItemValidator itemValidator)
+                {
+                    itemValidator.Validate = value;
+                }
+                else
+                {
+                    Validator = new ItemValidator(value);
+                }
+            }
+        }
+
+        internal IAvaloniaListItemValidator<T>? Validator { get; set; }
 
         /// <inheritdoc/>
         bool IList.IsFixedSize => false;
@@ -149,7 +176,7 @@ namespace Avalonia.Collections
 
             set
             {
-                Validate?.Invoke(value);
+                Validator?.Validate(value);
 
                 T old = _inner[index];
 
@@ -196,7 +223,7 @@ namespace Avalonia.Collections
         /// <param name="item">The item.</param>
         public virtual void Add(T item)
         {
-            Validate?.Invoke(item);
+            Validator?.Validate(item);
             int index = _inner.Count;
             _inner.Add(item);
             NotifyAdd(item, index);
@@ -303,7 +330,7 @@ namespace Avalonia.Collections
         /// <param name="item">The item.</param>
         public virtual void Insert(int index, T item)
         {
-            Validate?.Invoke(item);
+            Validator?.Validate(item);
             _inner.Insert(index, item);
             NotifyAdd(item, index);
         }
@@ -318,7 +345,7 @@ namespace Avalonia.Collections
             _ = items ?? throw new ArgumentNullException(nameof(items));
 
             bool willRaiseCollectionChanged = _collectionChanged != null;
-            bool hasValidation = Validate != null;
+            bool hasValidation = Validator is not null;
 
             if (items is IList list)
             {
@@ -330,7 +357,7 @@ namespace Avalonia.Collections
                         {
                             foreach (T item in collection)
                             {
-                                Validate!(item);
+                                Validator!.Validate(item);
                             }
                         }
 
@@ -351,7 +378,7 @@ namespace Avalonia.Collections
 
                                 if (hasValidation)
                                 {
-                                    Validate!(item);
+                                    Validator!.Validate(item);
                                 }
 
                                 _inner.Insert(insertIndex++, item);
@@ -381,7 +408,7 @@ namespace Avalonia.Collections
 
                             if (hasValidation)
                             {
-                                Validate!(item);
+                                Validator!.Validate(item);
                             }
 
                             _inner.Insert(insertIndex++, item);
@@ -771,6 +798,17 @@ namespace Avalonia.Collections
             {
                 _innerEnumerator.Dispose();
             }
+        }
+
+        private sealed class ItemValidator : IAvaloniaListItemValidator<T>
+        {
+            public ItemValidator(Action<T> validate)
+                => Validate = validate;
+
+            public Action<T> Validate { get; set; }
+
+            void IAvaloniaListItemValidator<T>.Validate(T item)
+                => Validate(item);
         }
     }
 

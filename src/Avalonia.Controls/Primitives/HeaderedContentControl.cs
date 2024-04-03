@@ -1,3 +1,4 @@
+using System.Text;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -82,6 +83,16 @@ namespace Avalonia.Controls.Primitives
             if (e.NewValue is ILogical newChild)
             {
                 LogicalChildren.Add(newChild);
+            }
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, true);
             }
         }
     }
