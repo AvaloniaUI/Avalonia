@@ -12,7 +12,7 @@ namespace Avalonia.Browser.Skia
         {
             foreach (var surface in surfaces)
             {
-                if (surface is BrowserSkiaSurface browserSkiaSurface)
+                if (surface is BrowserGlSurface browserSkiaSurface)
                 {
                     return new BrowserSkiaGpuRenderTarget(browserSkiaSurface);
                 }
@@ -31,17 +31,17 @@ namespace Avalonia.Browser.Skia
             
         }
 
-	public object? TryGetFeature(Type t) => null;
-        
+	    public object? TryGetFeature(Type t) => null;
+
         public bool IsLost => false;
-        
+
         public IDisposable EnsureCurrent()
         {
             return Disposable.Empty;
         }
     }
 
-    class BrowserSkiaGraphics : IPlatformGraphics
+    internal class BrowserSkiaGraphics : IPlatformGraphics
     {
         private BrowserSkiaGpu _skia = new();
         public bool UsesSharedContext => true;

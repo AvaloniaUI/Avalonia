@@ -1,12 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Metadata;
 
 namespace Avalonia.Browser;
 
-public class BrowserPlatformOptions
+public enum BrowserRenderingMode
 {
+    Software2D = 1,
+    WebGL1,
+    WebGL2
+}
+
+public record BrowserPlatformOptions
+{
+    /// <summary>
+    /// Gets or sets Avalonia rendering modes with fallbacks.
+    /// The first element in the array has the highest priority.
+    /// </summary>
+    /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
+    public IReadOnlyList<BrowserRenderingMode> RenderingMode { get; set; } = new[]
+    {
+        BrowserRenderingMode.WebGL2, BrowserRenderingMode.WebGL1, BrowserRenderingMode.Software2D
+    };
+
     /// <summary>
     /// Defines paths where avalonia modules and service locator should be resolved.
     /// If null, default path resolved depending on the backend (browser or blazor) is used.

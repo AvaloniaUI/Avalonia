@@ -29,7 +29,7 @@ internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime, ISing
     {
         if (View is null)
         {
-            throw new InvalidOperationException("Browser lifetime was not initialized. Make sure AppBuilder.StartBrowserApp was called.");
+            throw new InvalidOperationException("Browser lifetime was not initialized. Make sure AppBuilder.StartBrowserAppAsync was called.");
         }
     }
 

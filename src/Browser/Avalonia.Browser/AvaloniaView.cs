@@ -29,20 +29,7 @@ namespace Avalonia.Browser
         private EmbeddableControlRoot _topLevel;
 
         private readonly JSObject _containerElement;
-        private readonly JSObject _canvas;
-        private readonly JSObject _nativeControlsContainer;
         private readonly JSObject _inputElement;
-        private readonly JSObject? _splash;
-
-        private GLInfo? _jsGlInfo = null;
-        private double _dpi = 1;
-        private Size _canvasSize = new(100.0, 100.0);
-
-        private GRContext? _context;
-        private GRGlInterface? _glInterface;
-        private const SKColorType ColorType = SKColorType.Rgba8888;
-
-        private bool _useGL;        
         private TextInputMethodClient? _client;
 
         /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
@@ -51,39 +38,29 @@ namespace Avalonia.Browser
         {
         }
 
+        /// <param name="host">JSObject holding a div element where avalonia content should be rendered.</param>
         public AvaloniaView(JSObject host)
         {
+            if (host is null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
             var hostContent = DomHelper.CreateAvaloniaHost(host);
             if (hostContent == null)
             {
                 throw new InvalidOperationException("Avalonia WASM host wasn't initialized.");
             }
 
-            _containerElement = hostContent.GetPropertyAsJSObject("host")
-                                ?? throw new InvalidOperationException("Host cannot be null");
-            _canvas = hostContent.GetPropertyAsJSObject("canvas")
-                      ?? throw new InvalidOperationException("Canvas cannot be null");
-            _nativeControlsContainer = hostContent.GetPropertyAsJSObject("nativeHost")
+            _containerElement = host;
+            var nativeControlsContainer = hostContent.GetPropertyAsJSObject("nativeHost")
                                        ?? throw new InvalidOperationException("NativeHost cannot be null");
             _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
                             ?? throw new InvalidOperationException("InputElement cannot be null");
 
-            _splash = DomHelper.GetElementsByClassName("avalonia-splash", host)
-                      ?? DomHelper.GetElementById("avalonia-splash");
-
-            _topLevelImpl = new BrowserTopLevelImpl(this, _containerElement);
-            _topLevelImpl.SetCssCursor = (cursor) =>
-            {
-                InputHelper.SetCursor(_containerElement, cursor);
-            };
+            _topLevelImpl = new BrowserTopLevelImpl(_containerElement, nativeControlsContainer, this);
 
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
-            _topLevel.Prepare();
-            _topLevel.Renderer.Start();
-            if (_splash != null)
-            {
-                _topLevel.RequestAnimationFrame(_ => DomHelper.AddCssClass(_splash, "splash-close"));
-            }
 
             InputHelper.InitializeBackgroundHandlers();
 
@@ -103,42 +80,22 @@ namespace Avalonia.Browser
                 OnPointerCancel, OnWheel);
 
             InputHelper.SubscribeDropEvents(_containerElement, OnDragEvent);
-            
-            var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
-
-            _useGL = AvaloniaLocator.Current.GetService<IPlatformGraphics>() != null;
-
-            if (_useGL)
-            {
-                _jsGlInfo = CanvasHelper.InitialiseGL(_canvas, OnRenderFrame);
-                // create the SkiaSharp context
-                if (_context == null)
-                {
-                    _glInterface = GRGlInterface.Create();
-                    _context = GRContext.CreateGl(_glInterface);
-
-                    // bump the default resource cache limit
-                    _context.SetResourceCacheLimit(skiaOptions?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
-                }
-
-                _topLevelImpl.Surfaces = new[]
-                {
-                    new BrowserSkiaSurface(_context, _jsGlInfo, ColorType,
-                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _canvasSize,_dpi,
-                        GRSurfaceOrigin.BottomLeft)
-                };
-            }
-            else
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.BrowserPlatform)?
-                    .Log(this, "[Avalonia]: Unable to initialize Canvas surface.");
-            }
-
-            DomHelper.ObserveSize(host, OnSizeOrDpiChanged);
-
-            CanvasHelper.RequestAnimationFrame(_canvas, true);
-
             InputHelper.FocusElement(_containerElement);
+
+            _topLevel.Prepare();
+            _topLevel.Renderer.Start(); // TODO: use Start+StopRenderer() instead.
+            _topLevel.RequestAnimationFrame(_ =>
+            {
+                // Try to get local splash-screen of the specific host.
+                // If couldn't find - get global one by ID for compatibility.
+                var splash = DomHelper.GetElementsByClassName("avalonia-splash", host)
+                    ?? DomHelper.GetElementById("avalonia-splash"); 
+                if (splash is not null)
+                {
+                    DomHelper.AddCssClass(splash, "splash-close");
+                    splash.Dispose();
+                }
+            });
         }
 
         public Control? Content
@@ -426,26 +383,6 @@ namespace Avalonia.Browser
             return false;
         }
 
-        private void OnRenderFrame()
-        {
-            if (_useGL && (_jsGlInfo == null))
-            {
-                return;
-            }
-            if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0)
-            {
-                return;
-            }
-
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
-            ManualTriggerRenderTimer.Instance.RaiseTick();
-        }
-        
-        internal INativeControlHostImpl GetNativeControlHostImpl()
-        {
-            return new BrowserNativeControlHost(_nativeControlsContainer);
-        }
-
         private void ForceBlit()
         {
             // Note: this is technically a hack, but it's a kinda unique use case when
@@ -458,24 +395,6 @@ namespace Avalonia.Browser
             if (_topLevel.Renderer is CompositingRenderer dr)
             {
                 MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget, true);
-            }
-        }
-
-        private void OnSizeOrDpiChanged(double displayWidth, double displayHeight, double dpi)
-        {
-            var newSize = new Size(displayWidth, displayHeight);
-
-            if (_canvasSize != newSize || _dpi != dpi)
-            {
-                _dpi = dpi;
-
-                _canvasSize = newSize;
-
-                CanvasHelper.SetCanvasSize(_canvas, (int)_canvasSize.Width, (int)_canvasSize.Height);
-
-                _topLevelImpl.SetClientSize(new(displayWidth / dpi, displayHeight / dpi), dpi);
-
-                ForceBlit();
             }
         }
 
