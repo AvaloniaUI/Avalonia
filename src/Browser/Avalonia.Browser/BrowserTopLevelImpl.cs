@@ -42,14 +42,14 @@ namespace Avalonia.Browser
         private readonly List<BrowserMouseDevice> _mouseDevices;
         private readonly JSObject _container;
 
-        public BrowserTopLevelImpl(JSObject container, JSObject nativeControlHost, ITextInputMethodImpl textInputMethodImpl)
+        public BrowserTopLevelImpl(JSObject container, JSObject nativeControlHost, JSObject inputElement)
         {
-            _textInputMethodImpl = textInputMethodImpl;
             Surfaces = Enumerable.Empty<object>();
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
 
+            _textInputMethodImpl = new BrowserTextInputMethod(this, container, inputElement);
             _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = new BrowserNativeControlHost(nativeControlHost);
             _storageProvider = new BrowserStorageProvider();

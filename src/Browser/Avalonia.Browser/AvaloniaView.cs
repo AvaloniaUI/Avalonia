@@ -22,15 +22,11 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Avalonia.Browser
 {
-    public class AvaloniaView : ITextInputMethodImpl
+    public class AvaloniaView
     {
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
         private readonly BrowserTopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
-
-        private readonly JSObject _containerElement;
-        private readonly JSObject _inputElement;
-        private TextInputMethodClient? _client;
 
         /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
         public AvaloniaView(string divId)
@@ -52,35 +48,27 @@ namespace Avalonia.Browser
                 throw new InvalidOperationException("Avalonia WASM host wasn't initialized.");
             }
 
-            _containerElement = host;
             var nativeControlsContainer = hostContent.GetPropertyAsJSObject("nativeHost")
                                        ?? throw new InvalidOperationException("NativeHost cannot be null");
-            _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
+            var inputElement = hostContent.GetPropertyAsJSObject("inputElement")
                             ?? throw new InvalidOperationException("InputElement cannot be null");
 
-            _topLevelImpl = new BrowserTopLevelImpl(_containerElement, nativeControlsContainer, this);
+            _topLevelImpl = new BrowserTopLevelImpl(host, nativeControlsContainer, inputElement);
 
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
 
             InputHelper.InitializeBackgroundHandlers();
 
             InputHelper.SubscribeKeyEvents(
-                _containerElement,
+                host,
                 OnKeyDown,
                 OnKeyUp);
 
-            InputHelper.SubscribeTextEvents(
-                _inputElement,
-                OnBeforeInput,
-                OnCompositionStart,
-                OnCompositionUpdate,
-                OnCompositionEnd);
-
-            InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp,
+            InputHelper.SubscribePointerEvents(host, OnPointerMove, OnPointerDown, OnPointerUp,
                 OnPointerCancel, OnWheel);
 
-            InputHelper.SubscribeDropEvents(_containerElement, OnDragEvent);
-            InputHelper.FocusElement(_containerElement);
+            InputHelper.SubscribeDropEvents(host, OnDragEvent);
+            InputHelper.FocusElement(host);
 
             _topLevel.Prepare();
             _topLevel.Renderer.Start(); // TODO: use Start+StopRenderer() instead.
@@ -103,8 +91,6 @@ namespace Avalonia.Browser
             get => (Control)_topLevel.Content!;
             set => _topLevel.Content = value;
         }
-
-        public bool IsComposing { get; private set; }
 
         internal TopLevel TopLevel => _topLevel;
 
@@ -317,151 +303,6 @@ namespace Avalonia.Browser
         private bool OnKeyUp(string code, string key, int modifier)
         {
             return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
-        }
-
-        private bool OnBeforeInput(JSObject arg, int start, int end)
-        {
-            var type = arg.GetPropertyAsString("inputType");
-            if (type != "deleteByComposition")
-            {
-                if (type == "deleteContentBackward")
-                {
-                    start = _inputElement.GetPropertyAsInt32("selectionStart");
-                    end = _inputElement.GetPropertyAsInt32("selectionEnd");
-                }
-                else
-                {
-                    start = -1;
-                    end = -1;
-                }
-            }
-
-            if(start != -1 && end != -1 && _client != null)
-            {
-                _client.Selection = new TextSelection(start, end);
-            }
-            return false;
-        }
-
-        private bool OnCompositionStart (JSObject args)
-        {
-            if (_client == null)
-                return false;
-
-            _client.SetPreeditText(null);
-            IsComposing = true;
-
-            return false;
-        }
-
-        private bool OnCompositionUpdate(JSObject args)
-        {
-            if (_client == null)
-                return false;
-
-            _client.SetPreeditText(args.GetPropertyAsString("data"));
-
-            return false;
-        }
-
-        private bool OnCompositionEnd(JSObject args)
-        {
-            if (_client == null)
-                return false;
-
-            IsComposing = false;
-
-            _client.SetPreeditText(null);
-
-            var text = args.GetPropertyAsString("data");
-
-            if(text != null)
-            {
-                return _topLevelImpl.RawTextEvent(text);
-            }
-
-            return false;
-        }
-
-        private void ForceBlit()
-        {
-            // Note: this is technically a hack, but it's a kinda unique use case when
-            // we want to blit the previous frame
-            // renderer doesn't have much control over the render target
-            // we render on the UI thread
-            // We also don't want to have it as a meaningful public API.
-            // Therefore we have InternalsVisibleTo hack here.
-
-            if (_topLevel.Renderer is CompositingRenderer dr)
-            {
-                MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget, true);
-            }
-        }
-
-        private void HideIme()
-        {
-            InputHelper.HideElement(_inputElement);
-            InputHelper.FocusElement(_containerElement);
-        }
-
-        void ITextInputMethodImpl.SetClient(TextInputMethodClient? client)
-        {
-            if (_client != null)
-            {
-                _client.SurroundingTextChanged -= SurroundingTextChanged;
-            }
-
-            if (client != null)
-            {
-                client.SurroundingTextChanged += SurroundingTextChanged;
-            }
-
-            InputHelper.ClearInputElement(_inputElement);
-
-            _client = client;
-
-            if (_client != null)
-            {
-                InputHelper.ShowElement(_inputElement);
-                InputHelper.FocusElement(_inputElement);
-
-                var surroundingText = _client.SurroundingText ?? "";
-                var selection = _client.Selection;
-
-                InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
-            }
-            else
-            {
-                HideIme();
-            }
-        }
-
-        private void SurroundingTextChanged(object? sender, EventArgs e)
-        {
-            if (_client != null)
-            {
-                var surroundingText = _client.SurroundingText ?? "";
-                var selection = _client.Selection;
-
-                InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
-            }
-        }
-
-        void ITextInputMethodImpl.SetCursorRect(Rect rect)
-        {
-            InputHelper.FocusElement(_inputElement);
-            InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, _client?.Selection.End ?? 0);
-            InputHelper.FocusElement(_inputElement);
-        }
-
-        void ITextInputMethodImpl.SetOptions(TextInputOptions options)
-        {
-        }
-
-        void ITextInputMethodImpl.Reset()
-        {
-            InputHelper.ClearInputElement(_inputElement);
-            InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
         }
     }
 }
