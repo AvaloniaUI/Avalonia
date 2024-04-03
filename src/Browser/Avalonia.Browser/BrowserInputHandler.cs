@@ -88,7 +88,8 @@ internal class BrowserInputHandler
             return s_intermediatePointsPooledList;
         });
 
-        return RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"), coalescedEvents);
+        return RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"),
+            coalescedEvents);
     }
 
     private bool OnPointerDown(JSObject args)
@@ -151,7 +152,8 @@ internal class BrowserInputHandler
     private bool OnWheel(JSObject args)
     {
         return RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY")),
-            new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)), GetModifiers(args));
+            new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)),
+            GetModifiers(args));
     }
 
     private static RawInputModifiers GetModifiers(JSObject e)
@@ -172,7 +174,9 @@ internal class BrowserInputHandler
             modifiers |= RawInputModifiers.LeftMouseButton;
 
         if ((buttons & 2L) == 2)
-            modifiers |= e.GetPropertyAsString("type") == "pen" ? RawInputModifiers.PenBarrelButton : RawInputModifiers.RightMouseButton;
+            modifiers |= e.GetPropertyAsString("type") == "pen" ?
+                RawInputModifiers.PenBarrelButton :
+                RawInputModifiers.RightMouseButton;
 
         if ((buttons & 4L) == 4)
             modifiers |= RawInputModifiers.MiddleMouseButton;
@@ -218,18 +222,22 @@ internal class BrowserInputHandler
         {
             effectAllowed |= DragDropEffects.Copy;
         }
+
         if (effectAllowedStr.Contains("link", StringComparison.OrdinalIgnoreCase))
         {
             effectAllowed |= DragDropEffects.Link;
         }
+
         if (effectAllowedStr.Contains("move", StringComparison.OrdinalIgnoreCase))
         {
             effectAllowed |= DragDropEffects.Move;
         }
+
         if (effectAllowedStr.Equals("all", StringComparison.OrdinalIgnoreCase))
         {
             effectAllowed |= DragDropEffects.Move | DragDropEffects.Copy | DragDropEffects.Link;
         }
+
         if (effectAllowed == DragDropEffects.None)
         {
             return false;
@@ -241,8 +249,8 @@ internal class BrowserInputHandler
         return eventType is RawDragEventType.Drop or RawDragEventType.DragOver
                && dropEffect != DragDropEffects.None;
     }
-    
-    private bool OnKeyDown (string code, string key, int modifier)
+
+    private bool OnKeyDown(string code, string key, int modifier)
     {
         var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
 
@@ -258,7 +266,7 @@ internal class BrowserInputHandler
     {
         return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
     }
-    
+
     private bool RawPointerEvent(
         RawPointerEventType eventType, string pointerType,
         RawPointerPoint p, RawInputModifiers modifiers, long touchPointId,
@@ -275,8 +283,7 @@ internal class BrowserInputHandler
                 } :
                 new RawPointerEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers)
                 {
-                    RawPointerId = touchPointId,
-                    IntermediatePoints = intermediatePoints
+                    RawPointerId = touchPointId, IntermediatePoints = intermediatePoints
                 };
 
             input.Invoke(args);
@@ -300,6 +307,7 @@ internal class BrowserInputHandler
             if (mouseDevice.PointerId == pointerId)
                 return mouseDevice;
         }
+
         var newMouseDevice = new BrowserMouseDevice(pointerId, _container);
         _mouseDevices.Add(newMouseDevice);
         return newMouseDevice;
@@ -310,7 +318,7 @@ internal class BrowserInputHandler
         if (_inputRoot is { })
         {
             var args = new RawMouseWheelEventArgs(_wheelMouseDevice, Timestamp, _inputRoot, p, v, modifiers);
-            
+
             _topLevelImpl.Input?.Invoke(args);
 
             return args.Handled;
@@ -363,8 +371,9 @@ internal class BrowserInputHandler
 
         return false;
     }
-    
-    private DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers, BrowserDataObject dataObject, DragDropEffects dropEffect)
+
+    private DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers,
+        BrowserDataObject dataObject, DragDropEffects dropEffect)
     {
         var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
         var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataObject, dropEffect, modifiers);

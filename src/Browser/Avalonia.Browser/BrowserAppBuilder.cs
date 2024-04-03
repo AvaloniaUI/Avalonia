@@ -44,7 +44,7 @@ public record BrowserPlatformOptions
     /// By default, current domain root is used as a scope.
     /// </summary>
     public string? AvaloniaServiceWorkerScope { get; set; }
-    
+
     /// <summary>
     /// Avalonia uses "native-file-system-adapter" polyfill for the file dialogs.
     /// If native implementation is available, by default it is used.
@@ -62,13 +62,14 @@ public static class BrowserAppBuilder
     /// <param name="builder">Application builder.</param>
     /// <param name="mainDivId">ID of the html element where avalonia content should be rendered.</param>
     /// <param name="options">Browser backend specific options.</param>
-    public static async Task StartBrowserAppAsync(this AppBuilder builder, string mainDivId, BrowserPlatformOptions? options = null)
+    public static async Task StartBrowserAppAsync(this AppBuilder builder, string mainDivId,
+        BrowserPlatformOptions? options = null)
     {
         if (mainDivId is null)
         {
             throw new ArgumentNullException(nameof(mainDivId));
         }
-        
+
         builder = await PreSetupBrowser(builder, options);
 
         var lifetime = new BrowserSingleViewLifetime();
@@ -104,7 +105,7 @@ public static class BrowserAppBuilder
         options.FrameworkAssetPathResolver ??= fileName => $"./{fileName}";
 
         AvaloniaLocator.CurrentMutable.Bind<BrowserPlatformOptions>().ToConstant(options);
-        
+
         await AvaloniaModule.ImportMain();
 
         if (builder.WindowingSubsystemInitializer is null)
@@ -114,7 +115,7 @@ public static class BrowserAppBuilder
 
         return builder;
     }
-    
+
     public static AppBuilder UseBrowser(
         this AppBuilder builder)
     {

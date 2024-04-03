@@ -15,8 +15,10 @@ internal static class BrowserCompositor
     private static BrowserRenderTimer BrowserUiRenderTimer => s_browserUiRenderTimer ??= new BrowserRenderTimer(false);
 
     private static Compositor? s_webGlUiCompositor, s_softwareUiCompositor;
+
     internal static Compositor WebGlUiCompositor => s_webGlUiCompositor ??= new Compositor(
         new RenderLoop(BrowserUiRenderTimer), AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
+
     internal static Compositor SoftwareUiCompositor => s_softwareUiCompositor ??= new Compositor(
         new RenderLoop(BrowserUiRenderTimer), null);
 }

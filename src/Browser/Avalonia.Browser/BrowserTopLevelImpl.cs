@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
@@ -8,7 +7,6 @@ using Avalonia.Browser.Interop;
 using Avalonia.Browser.Rendering;
 using Avalonia.Browser.Skia;
 using Avalonia.Browser.Storage;
-using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -17,9 +15,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 
 [assembly: SupportedOSPlatform("browser")]
 
@@ -69,7 +65,7 @@ namespace Avalonia.Browser
                 BrowserCompositor.WebGlUiCompositor :
                 BrowserCompositor.SoftwareUiCompositor;
         }
-        
+
         private void OnScalingChanged()
         {
             if (_surface is not null)
@@ -134,6 +130,7 @@ namespace Avalonia.Browser
         public Action? Closed { get; set; }
         public Action? LostFocus { get; set; }
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.
@@ -172,7 +169,7 @@ namespace Avalonia.Browser
             {
                 return _clipboard;
             }
-            
+
             if (featureType == typeof(IInputPane))
             {
                 return _inputPane;

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Browser.Interop;
+﻿using Avalonia.Browser.Interop;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
-using static Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.Browser
 {

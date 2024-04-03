@@ -1,24 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
-using Avalonia.Browser.Skia;
-using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
-using Avalonia.Controls.Platform;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
-using Avalonia.Input.TextInput;
-using Avalonia.Logging;
-using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
-using SkiaSharp;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Avalonia.Browser
 {
@@ -28,7 +12,8 @@ namespace Avalonia.Browser
 
         /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
         public AvaloniaView(string divId)
-            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id '{divId}' was not found in the html document."))
+            : this(DomHelper.GetElementById(divId) ??
+                   throw new Exception($"Element with id '{divId}' was not found in the html document."))
         {
         }
 
@@ -47,9 +32,9 @@ namespace Avalonia.Browser
             }
 
             var nativeControlsContainer = hostContent.GetPropertyAsJSObject("nativeHost")
-                                       ?? throw new InvalidOperationException("NativeHost cannot be null");
+                                          ?? throw new InvalidOperationException("NativeHost cannot be null");
             var inputElement = hostContent.GetPropertyAsJSObject("inputElement")
-                            ?? throw new InvalidOperationException("InputElement cannot be null");
+                               ?? throw new InvalidOperationException("InputElement cannot be null");
 
             var topLevelImpl = new BrowserTopLevelImpl(host, nativeControlsContainer, inputElement);
             _topLevel = new EmbeddableControlRoot(topLevelImpl);
@@ -62,7 +47,7 @@ namespace Avalonia.Browser
                 // Try to get local splash-screen of the specific host.
                 // If couldn't find - get global one by ID for compatibility.
                 var splash = DomHelper.GetElementsByClassName("avalonia-splash", host)
-                    ?? DomHelper.GetElementById("avalonia-splash"); 
+                             ?? DomHelper.GetElementById("avalonia-splash");
                 if (splash is not null)
                 {
                     DomHelper.AddCssClass(splash, "splash-close");

@@ -38,13 +38,14 @@ internal abstract class BrowserSurface : IDisposable
 
     public event Action? SizeChanged;
     public event Action? ScalingChanged;
-    
+
     public static BrowserSurface Create(JSObject container, PixelFormat pixelFormat)
     {
         var opts = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
         if (opts.RenderingMode is null || !opts.RenderingMode.Any())
         {
-            throw new InvalidOperationException($"{nameof(BrowserPlatformOptions)}.{nameof(BrowserPlatformOptions.RenderingMode)} must not be empty or null");
+            throw new InvalidOperationException(
+                $"{nameof(BrowserPlatformOptions)}.{nameof(BrowserPlatformOptions.RenderingMode)} must not be empty or null");
         }
 
         BrowserSurface? surface = null;
@@ -69,7 +70,8 @@ internal abstract class BrowserSurface : IDisposable
 
         if (surface is null)
         {
-            throw new InvalidOperationException($"{nameof(BrowserPlatformOptions)}.{nameof(BrowserPlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
+            throw new InvalidOperationException(
+                $"{nameof(BrowserPlatformOptions)}.{nameof(BrowserPlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
         }
 
         CanvasHelper.OnSizeChanged(surface.JsSurface, surface.OnSizeChanged);

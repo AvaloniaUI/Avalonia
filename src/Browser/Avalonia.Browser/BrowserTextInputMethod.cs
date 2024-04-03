@@ -80,7 +80,8 @@ internal class BrowserTextInputMethod : ITextInputMethodImpl
     public void SetCursorRect(Rect rect)
     {
         InputHelper.FocusElement(_inputElement);
-        InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, _client?.Selection.End ?? 0);
+        InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height,
+            _client?.Selection.End ?? 0);
         InputHelper.FocusElement(_inputElement);
     }
 
@@ -111,14 +112,15 @@ internal class BrowserTextInputMethod : ITextInputMethodImpl
             }
         }
 
-        if(start != -1 && end != -1 && _client != null)
+        if (start != -1 && end != -1 && _client != null)
         {
             _client.Selection = new TextSelection(start, end);
         }
+
         return false;
     }
 
-    private bool OnCompositionStart (JSObject args)
+    private bool OnCompositionStart(JSObject args)
     {
         if (_client == null)
             return false;
@@ -150,7 +152,7 @@ internal class BrowserTextInputMethod : ITextInputMethodImpl
 
         var text = args.GetPropertyAsString("data");
 
-        if(text != null)
+        if (text != null)
         {
             return _inputHandler.RawTextEvent(text);
         }

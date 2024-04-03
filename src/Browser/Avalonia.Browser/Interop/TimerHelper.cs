@@ -6,7 +6,8 @@ namespace Avalonia.Browser.Interop;
 internal static partial class TimerHelper
 {
     [JSImport("TimerHelper.runAnimationFrames", AvaloniaModule.MainModuleName)]
-    public static partial void RunAnimationFrames([JSMarshalAs<JSType.Function<JSType.Number, JSType.Boolean>>] Func<double, bool> renderFrameCallback);
+    public static partial void RunAnimationFrames(
+        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Boolean>>] Func<double, bool> renderFrameCallback);
 
     [JSImport("globalThis.setTimeout")]
     public static partial int SetTimeout([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);

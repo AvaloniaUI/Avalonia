@@ -29,10 +29,9 @@ namespace Avalonia.Browser.Skia
 
         public void Dispose()
         {
-            
         }
 
-	    public object? TryGetFeature(Type t) => null;
+        public object? TryGetFeature(Type t) => null;
 
         public bool IsLost => false;
 

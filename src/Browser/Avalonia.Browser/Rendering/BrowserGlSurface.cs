@@ -11,12 +11,14 @@ internal sealed class BrowserGlSurface : BrowserSurface
 {
     private readonly GRGlInterface _glInterface;
 
-    public BrowserGlSurface(JSObject canvasSurface, GLInfo glInfo, PixelFormat pixelFormat, BrowserRenderingMode renderingMode)
+    public BrowserGlSurface(JSObject canvasSurface, GLInfo glInfo, PixelFormat pixelFormat,
+        BrowserRenderingMode renderingMode)
         : base(canvasSurface, renderingMode)
     {
         var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
         _glInterface = GRGlInterface.Create() ?? throw new InvalidOperationException("Unable to create GRGlInterface.");
-        Context = GRContext.CreateGl(_glInterface) ?? throw new InvalidOperationException("Unable to create GRContext.");
+        Context = GRContext.CreateGl(_glInterface) ??
+                  throw new InvalidOperationException("Unable to create GRContext.");
         if (skiaOptions?.MaxGpuResourceSizeBytes is { } resourceSizeBytes)
         {
             Context.SetResourceCacheLimit(resourceSizeBytes);
@@ -35,10 +37,10 @@ internal sealed class BrowserGlSurface : BrowserSurface
     public override void Dispose()
     {
         base.Dispose();
-            
+
         Context.Dispose();
         Context = null!;
-            
+
         _glInterface.Dispose();
     }
 
