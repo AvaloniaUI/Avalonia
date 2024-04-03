@@ -31,7 +31,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             public void ForceRender()
             {
                 _compositor.Commit();
-                _compositor.Server.Render();
+                _compositor.Server.Render(false);
             }
             
             public Rect? GetBounds()
@@ -40,7 +40,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 if (renderData == null)
                     return null;
                 ForceRender();
-                return renderData.Server.Bounds;
+                return renderData.Server.Bounds?.ToRect();
             }
         }
 

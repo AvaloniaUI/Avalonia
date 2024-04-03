@@ -44,18 +44,8 @@ namespace Avalonia.Rendering
 
         public static void Render(DrawingContext context, Visual visual, Rect clipRect)
         {
-            var currentRenderOptions = default(RenderOptions);
-            var platformContext = context as PlatformDrawingContext;
-
-            try
+            using(visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : (DrawingContext.PushedState?)null)
             {
-                if (platformContext != null)
-                {
-                    currentRenderOptions = platformContext.RenderOptions;
-
-                    platformContext.RenderOptions = visual.RenderOptions.MergeWith(platformContext.RenderOptions);
-                }
-
                 var opacity = visual.Opacity;
                 var clipToBounds = visual.ClipToBounds;
                 var bounds = new Rect(visual.Bounds.Size);
@@ -130,13 +120,6 @@ namespace Avalonia.Rendering
                     }
                 }
             }
-            finally
-            {
-                if (platformContext != null)
-                {
-                    platformContext.RenderOptions = currentRenderOptions;
-                }
-            }       
         }
     }
 }

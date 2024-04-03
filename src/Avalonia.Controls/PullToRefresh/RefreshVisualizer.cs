@@ -14,7 +14,6 @@ namespace Avalonia.Controls
 {
     public class RefreshVisualizer : ContentControl
     {
-        private const int DefaultIndicatorSize = 24;
         private const float MinimumIndicatorOpacity = 0.4f;
         private const float ParallaxPositionRatio = 0.5f;
         private double _executingRatio = 0.8;

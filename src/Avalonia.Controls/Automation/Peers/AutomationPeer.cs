@@ -182,7 +182,7 @@ namespace Avalonia.Automation.Peers
         public event EventHandler<AutomationPropertyChangedEventArgs>? PropertyChanged;
 
         /// <summary>
-        /// Raises an event to notify the automation client the the children of the peer have changed.
+        /// Raises an event to notify the automation client the children of the peer have changed.
         /// </summary>
         protected void RaiseChildrenChangedEvent() => ChildrenChanged?.Invoke(this, EventArgs.Empty);
 

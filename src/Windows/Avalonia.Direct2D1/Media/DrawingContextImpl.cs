@@ -34,11 +34,13 @@ namespace Avalonia.Direct2D1.Media
         /// An object to use to create layers. May be null, in which case a
         /// <see cref="WicRenderTargetBitmapImpl"/> will created when a new layer is requested.
         /// </param>
+        /// <param name="useScaledDrawing">Whether to scale drawings according to the DPI of <paramref name="renderTarget"/>.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
             ILayerFactory layerFactory,
             SharpDX.Direct2D1.RenderTarget renderTarget,
+            bool useScaledDrawing,
             SharpDX.DXGI.SwapChain1 swapChain = null,
             Action finishedCallback = null)
         {
@@ -58,6 +60,13 @@ namespace Avalonia.Direct2D1.Media
                 _ownsDeviceContext = true;
             }
 
+            if (!useScaledDrawing)
+            {
+                var scaling = _renderTarget.DotsPerInch.Width / 96;
+                if (!MathUtilities.AreClose(1, scaling))
+                    _postTransform = Matrix.CreateScale(1 / scaling, 1 / scaling);
+            }
+            
             _deviceContext.BeginDraw();
         }
 
@@ -66,8 +75,13 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         public Matrix Transform
         {
-            get { return _deviceContext.Transform.ToAvalonia(); }
-            set { _deviceContext.Transform = value.ToDirect2D(); }
+            get { return _transform; }
+            set
+            {
+                _transform = value;
+                _deviceContext.Transform =
+                    (_postTransform.HasValue ? value * _postTransform.Value : value).ToDirect2D();
+            }
         }
 
         public Matrix4x4 Transform4x4
@@ -353,6 +367,11 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
+        public void DrawRegion(IBrush brush, IPen pen, IPlatformRenderInterfaceRegion region)
+        {
+            throw new NotSupportedException();
+        }
+
         /// <inheritdoc />
         public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
         {
@@ -410,17 +429,17 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public IDrawingContextLayerImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(PixelSize pixelSize)
         {
+            var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
             if (_layerFactory != null)
             {
-                return _layerFactory.CreateLayer(size);
+                return _layerFactory.CreateLayer(pixelSize.ToSizeWithDpi(dpi));
             }
             else
             {
                 var platform = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-                var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
-                var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
+                
                 return (IDrawingContextLayerImpl)platform.CreateRenderTargetBitmap(pixelSize, dpi);
             }
         }
@@ -441,14 +460,40 @@ namespace Avalonia.Direct2D1.Media
             _deviceContext.PushAxisAlignedClip(clip.Rect.ToDirect2D(), AntialiasMode.PerPrimitive);
         }
 
+        public void PushClip(IPlatformRenderInterfaceRegion region)
+        {
+            throw new NotSupportedException();
+        }
+
         public void PopClip()
         {
             _deviceContext.PopAxisAlignedClip();
         }
 
+        public void PushLayer(Rect bounds)
+        {
+            var parameters = new LayerParameters
+            {
+                ContentBounds = bounds.ToDirect2D(),
+                MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
+                Opacity = 1
+            };
+            var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_deviceContext);
+            _deviceContext.PushLayer(ref parameters, layer);
+
+            _layers.Push(layer);
+        }
+
+        void IDrawingContextImpl.PopLayer()
+        {
+            PopLayer();
+        }
+
         readonly Stack<Layer> _layers = new Stack<Layer>();
         private readonly Stack<Layer> _layerPool = new Stack<Layer>();
         private RenderOptions _renderOptions;
+        private readonly Matrix? _postTransform;
+        private Matrix _transform = Matrix.Identity;
 
         /// <summary>
         /// Pushes an opacity value.
@@ -569,16 +614,35 @@ namespace Avalonia.Direct2D1.Media
                         var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
                         var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
 
+                        var transform = rect.TopLeft == default ?
+                            Matrix.Identity :
+                            Matrix.CreateTranslation(-rect.X, -rect.Y);
+
+                        var brushTransform = Matrix.Identity;
+
+                        if (sceneBrushContent.Transform != null)
+                        {
+                            var transformOrigin = sceneBrushContent.TransformOrigin.ToPixels(rect);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+
+                            brushTransform = -offset * sceneBrushContent.Transform.Value * offset;
+                        }
+
                         using (var intermediate = new BitmapRenderTarget(
                                    _deviceContext,
                                    CompatibleRenderTargetOptions.None,
                                    pixelSize.ToSizeWithDpi(dpi).ToSharpDX()))
                         {
-                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
+                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(true))
                             {
                                 intermediate.Clear(null);
-                                sceneBrushContent.Render(ctx,
-                                    rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+
+                                if (sceneBrush?.TileMode == TileMode.None)
+                                {
+                                    transform = brushTransform * transform;
+                                }
+                                
+                                sceneBrushContent.Render(ctx, transform);
                             }
 
                             return new ImageBrushImpl(

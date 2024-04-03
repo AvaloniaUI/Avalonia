@@ -77,14 +77,15 @@ namespace Avalonia.Rendering.Composition
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
             ICompositorScheduler scheduler, bool reclaimBuffersImmediately,
-            Dispatcher dispatcher)
+            Dispatcher dispatcher, CompositionOptions? options = null)
         {
+            options ??= AvaloniaLocator.Current.GetService<CompositionOptions>() ?? new();
             Loop = loop;
             UseUiThreadForSynchronousCommits = useUiThreadForSynchronousCommits;
             Dispatcher = dispatcher;
             _batchMemoryPool = new(reclaimBuffersImmediately);
             _batchObjectPool = new(reclaimBuffersImmediately);
-            _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
+            _server = new ServerCompositor(loop, gpu, options, _batchObjectPool, _batchMemoryPool);
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
             DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
@@ -294,7 +295,7 @@ namespace Avalonia.Rendering.Composition
             _objectSerializationHashSet.Contains(serializable);
 
         /// <summary>
-        /// Attempts to get the Compositor instance that will be used by default for new <see cref="Avalonia.Controls.TopLevel"/>s
+        /// Attempts to get the Compositor instance that will be used by default for new TopLevels
         /// created by the current platform backend.
         ///
         /// This won't work for every single platform backend and backend settings, e. g. with web we'll need to have

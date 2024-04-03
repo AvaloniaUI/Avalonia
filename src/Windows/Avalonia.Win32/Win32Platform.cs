@@ -240,6 +240,7 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
+                memoryStream.Seek(0, SeekOrigin.Begin);
                 return new IconImpl(memoryStream);
             }
         }

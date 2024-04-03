@@ -92,6 +92,7 @@ namespace Avalonia.X11
 
         private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
         {
+            private readonly IntPtr _display;
             private readonly PixelSize _pixelSize;
             private readonly UnmanagedBlob _blob;
 
@@ -101,6 +102,7 @@ namespace Avalonia.X11
                     (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
                 var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
+                _display = display;
                 _pixelSize = bitmap.PixelSize;
                 _blob = new UnmanagedBlob(size);
                 
@@ -115,7 +117,7 @@ namespace Avalonia.X11
                
                 using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
                 using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
-                using (var ctx = renderTarget.CreateDrawingContext())
+                using (var ctx = renderTarget.CreateDrawingContext(true))
                 {
                     var r = new Rect(_pixelSize.ToSize(1)); 
                     ctx.DrawBitmap(bitmap, 1, r, r);
@@ -128,7 +130,7 @@ namespace Avalonia.X11
 
             public override void Dispose()
             {
-                XLib.XcursorImageDestroy(Handle);
+                XLib.XFreeCursor(_display, Handle);
                 _blob.Dispose();
             }
 

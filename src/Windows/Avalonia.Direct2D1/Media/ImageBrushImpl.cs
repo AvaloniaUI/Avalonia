@@ -71,6 +71,14 @@ namespace Avalonia.Direct2D1.Media
             if (offset != default)
                 tileTransform = Matrix.CreateTranslation(offset);
 
+            if (brush.Transform != null && brush.TileMode != TileMode.None)
+            {
+                var transformOrigin = brush.TransformOrigin.ToPixels(destinationRect);
+                var originOffset = Matrix.CreateTranslation(transformOrigin);
+
+                tileTransform = -originOffset * brush.Transform.Value * originOffset * tileTransform;
+            }
+
             return new BrushProperties
             {
                 Opacity = (float)brush.Opacity,
@@ -98,7 +106,7 @@ namespace Avalonia.Direct2D1.Media
                 CompatibleRenderTargetOptions.None,
                 calc.IntermediateSize.ToSharpDX());
 
-            using (var context = new RenderTarget(result).CreateDrawingContext())
+            using (var context = new RenderTarget(result).CreateDrawingContext(true))
             {
                 var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
                 var rect = new Rect(bitmap.PixelSize.ToSizeWithDpi(dpi));

@@ -607,7 +607,7 @@ namespace Avalonia.Win32
 
             windowPlacement.NormalPosition = requestedWindowRect;
 
-            windowPlacement.ShowCmd = _lastWindowState switch
+            windowPlacement.ShowCmd = !_shown ? ShowWindowCommand.Hide : _lastWindowState switch
             {
                 WindowState.Minimized => ShowWindowCommand.ShowMinNoActive,
                 WindowState.Maximized => ShowWindowCommand.ShowMaximized,
@@ -682,7 +682,6 @@ namespace Avalonia.Win32
         public void Hide()
         {
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
-            _shown = false;
         }
 
         public virtual void Show(bool activate, bool isDialog)
@@ -1160,8 +1159,6 @@ namespace Avalonia.Win32
 
         private void ShowWindow(WindowState state, bool activate)
         {
-            _shown = true;
-
             if (_isClientAreaExtended)
             {
                 ExtendClientArea();
@@ -1199,7 +1196,7 @@ namespace Avalonia.Win32
 
             newWindowProperties.WindowState = state;
 
-            UpdateWindowProperties(newWindowProperties);
+            UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != SystemDecorations.Full);
 
             if (command.HasValue)
             {
@@ -1269,7 +1266,7 @@ namespace Avalonia.Win32
                     var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
                     var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                    if (!style.HasFlag(WindowStyles.WS_SIZEFRAME))
+                    if (!style.HasFlag(WindowStyles.WS_THICKFRAME))
                     {
                         // When calling SetWindowPos on a maximized window it automatically adjusts
                         // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
@@ -1406,16 +1403,16 @@ namespace Avalonia.Win32
 
                 if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
                 {
-                    style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_THICKFRAME;
                     style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
                 else
                 {
-                    style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_THICKFRAME;
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1423,7 +1420,7 @@ namespace Avalonia.Win32
                 }
                 else
                 {
-                    style &= ~fullDecorationFlags;
+                    style &= ~(fullDecorationFlags | WindowStyles.WS_THICKFRAME);
 
                     if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
                     {
@@ -1468,21 +1465,25 @@ namespace Avalonia.Win32
 
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-                GetClientRect(_hwnd, out var oldClientRect);
-                var oldClientRectOrigin = new POINT();
-                ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                oldClientRect.Offset(oldClientRectOrigin);
 
-                var newRect = oldClientRect;
-
-                if (newProperties.Decorations == SystemDecorations.Full)
+                if (_shown || forceChanges)
                 {
-                    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
-                }
+                    GetClientRect(_hwnd, out var oldClientRect);
+                    var oldClientRectOrigin = new POINT();
+                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
+                    oldClientRect.Offset(oldClientRectOrigin);
 
-                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
-                    SetWindowPosFlags.SWP_FRAMECHANGED);
+                    var newRect = oldClientRect;
+
+                    if (newProperties.Decorations == SystemDecorations.Full)
+                    {
+                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                    }
+
+                    SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                        SetWindowPosFlags.SWP_FRAMECHANGED);
+                }
             }
 
             // Ensure window state if decorations change
