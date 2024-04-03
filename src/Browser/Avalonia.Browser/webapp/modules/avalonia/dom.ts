@@ -103,11 +103,18 @@ export class AvaloniaDOM {
         }
     }
 
+    public static initSafeAreaPadding(): void {
+        document.documentElement.style.setProperty("--av-sat", "env(safe-area-inset-top)");
+        document.documentElement.style.setProperty("--av-sar", "env(safe-area-inset-right)");
+        document.documentElement.style.setProperty("--av-sab", "env(safe-area-inset-bottom)");
+        document.documentElement.style.setProperty("--av-sal", "env(safe-area-inset-left)");
+    }
+    
     public static getSafeAreaPadding(): number[] {
-        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sat"));
-        const bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sab"));
-        const left = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sal"));
-        const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sar"));
+        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sat"));
+        const bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sab"));
+        const left = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sal"));
+        const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sar"));
 
         return [left, top, bottom, right];
     }
