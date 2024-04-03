@@ -8,6 +8,12 @@
     <Right>target/net8.0-browser1.0/Avalonia.Browser.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Browser.AvaloniaView.OnDragEvent(System.Runtime.InteropServices.JavaScript.JSObject)</Target>
+    <Left>baseline/net7.0/Avalonia.Browser.dll</Left>
+    <Right>target/net8.0-browser1.0/Avalonia.Browser.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Avalonia.Browser.AvaloniaView</Target>
     <Left>baseline/net7.0/Avalonia.Browser.dll</Left>
