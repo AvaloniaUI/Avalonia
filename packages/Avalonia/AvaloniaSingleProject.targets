@@ -176,6 +176,8 @@
   </Target>
 
   <!-- IDE capabilities -->
+  <!-- Keep synced with https://github.com/dotnet/maui/blob/f0c4dd19d4c4cba7c6060ec5ceb8ba150bbdf9a5/src/Workload/Microsoft.Maui.Sdk/Sdk/Microsoft.Maui.Sdk.After.targets#L25 -->
+  <!-- Otherwise Visual Studio single project support might be broken. -->
   <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
     <ProjectCapability Include="Msix" />
     <ProjectCapability Include="MauiSingleProject" />
@@ -185,6 +187,12 @@
     <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
     <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
     <ProjectCapability Include="SingleTargetBuildForStartupProjects" Condition=" '$(EnableSingleTargetBuildForStartupProjects)' != 'false' " />
+
+    <ProjectCapability Include="UseMauiCore" />
+
+    <!-- .NET MAUI features (also required for single project) -->
+    <ProjectCapability Include="MauiCore" />
+    <ProjectCapability Include="Maui" />
   </ItemGroup>
 
   <!-- Android -->
