@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Browser.Rendering;
 using Avalonia.Skia;
 using SkiaSharp;
 

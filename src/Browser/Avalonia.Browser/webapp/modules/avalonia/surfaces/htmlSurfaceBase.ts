@@ -21,29 +21,20 @@ export abstract class HtmlCanvasSurfaceBase extends CanvasSurface {
         });
     }
 
-    public destroy(): void { }
-
-    public requestAnimationFrame(renderFrameCallback: () => void): () => void {
-        let renderLoopRequest = 0;
-        const surface = this;
-        function render(time: number) {
-            if (surface.sizeParams) {
-                surface.canvas.width = surface.sizeParams[0];
-                surface.canvas.height = surface.sizeParams[1];
-                delete surface.sizeParams;
-            }
-
-            renderFrameCallback();
-            renderLoopRequest = window.requestAnimationFrame(render);
-        }
-
-        renderLoopRequest = window.requestAnimationFrame(render);
-
-        return () => window.cancelAnimationFrame(renderLoopRequest);
+    public destroy(): void {
+        delete this.sizeChangedCallback;
     }
 
     public onSizeChanged(sizeChangedCallback: (width: number, height: number, dpr: number) => void) {
         if (this.sizeChangedCallback) { throw new Error("For simplicity, we don't support multiple size changed callbacks per surface, not needed yet."); }
         this.sizeChangedCallback = sizeChangedCallback;
+    }
+
+    public ensureSize() {
+        if (this.sizeParams) {
+            this.canvas.width = this.sizeParams[0];
+            this.canvas.height = this.sizeParams[1];
+            delete this.sizeParams;
+        }
     }
 }

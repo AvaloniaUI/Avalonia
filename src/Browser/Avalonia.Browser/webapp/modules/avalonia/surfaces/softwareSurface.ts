@@ -26,6 +26,8 @@ export class SoftwareSurface extends HtmlCanvasSurfaceBase {
     }
 
     public putPixelData(span: any /* IMemoryView */, width: number, height: number): void {
+        this.ensureSize();
+
         const heap8 = this.runtime?.localHeapViewU8();
 
         let clampedBuffer: Uint8ClampedArray;

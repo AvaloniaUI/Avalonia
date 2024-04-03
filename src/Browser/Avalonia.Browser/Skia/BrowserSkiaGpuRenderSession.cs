@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Browser.Rendering;
 using Avalonia.Skia;
 using SkiaSharp;
 
@@ -15,10 +16,10 @@ namespace Avalonia.Browser.Skia
                 ?? throw new InvalidOperationException("Unable to create SKSurface.");
 
             GrContext = browserGlSurface.Context;
-
             ScaleFactor = browserGlSurface.Scaling;
-
             SurfaceOrigin = GRSurfaceOrigin.BottomLeft;
+
+            browserGlSurface.EnsureResize();
         }
 
         public void Dispose()

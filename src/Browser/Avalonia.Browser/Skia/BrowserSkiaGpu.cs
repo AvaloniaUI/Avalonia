@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Browser.Rendering;
 using Avalonia.Platform;
 using Avalonia.Skia;
 using Avalonia.Reactive;

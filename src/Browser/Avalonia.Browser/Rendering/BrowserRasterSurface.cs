@@ -11,7 +11,7 @@ namespace Avalonia.Browser.Skia;
 internal sealed class BrowserRasterSurface : BrowserSurface, IFramebufferPlatformSurface
 {
     public PixelFormat PixelFormat { get; set; }
-        
+
     private FramebufferData? _fbData;
     private readonly Action _onDisposeAction;
     private readonly int _bytesPerPixel;
@@ -52,7 +52,7 @@ internal sealed class BrowserRasterSurface : BrowserSurface, IFramebufferPlatfor
 
     private void Blit()
     {
-        if (_fbData is {} data)
+        if (_fbData is { } data)
         {
             CanvasHelper.PutPixelData(JsSurface, data.AsSegment, data.Size.Width, data.Size.Height);
         }
@@ -78,7 +78,7 @@ internal sealed class BrowserRasterSurface : BrowserSurface, IFramebufferPlatfor
 
             AsSegment = new ArraySegment<byte>(_array, 0, length);
         }
-            
+
         public PixelSize Size { get; }
 
         public int RowBytes { get; }

@@ -13,6 +13,6 @@ export abstract class CanvasSurface {
     }
 
     abstract destroy(): void;
-    abstract requestAnimationFrame(renderFrameCallback: () => void): () => void;
+    abstract ensureSize(): void;
     abstract onSizeChanged(sizeChangedCallback: (width: number, height: number, dpr: number) => void): void;
 }

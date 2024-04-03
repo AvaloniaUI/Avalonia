@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Rendering;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -12,9 +13,8 @@ using Avalonia.Threading;
 
 namespace Avalonia.Browser.Skia;
 
-internal abstract class BrowserSurface : IDisposable, IRenderTimer
+internal abstract class BrowserSurface : IDisposable
 {
-    private readonly Stopwatch _sw = Stopwatch.StartNew();
     private readonly BrowserRenderingMode _renderingMode;
 
     protected BrowserSurface(JSObject jsSurface, BrowserRenderingMode renderingMode)
@@ -27,19 +27,6 @@ internal abstract class BrowserSurface : IDisposable, IRenderTimer
         RenderSize = new PixelSize(100, 100);
     }
 
-    [UnmanagedCallersOnly]
-    private static int Frame(double time, nint userData)
-    {
-        if (userData == 0
-            || !(GCHandle.FromIntPtr(userData).Target is BrowserSurface surface))
-        {
-            return 0;
-        }
-
-        surface.Tick?.Invoke(TimeSpan.FromMilliseconds(time));
-        return 1;
-    }
-    
     public bool IsWebGl => _renderingMode is BrowserRenderingMode.WebGL1 or BrowserRenderingMode.WebGL2;
 
     public JSObject JsSurface { get; private set; }
@@ -49,12 +36,9 @@ internal abstract class BrowserSurface : IDisposable, IRenderTimer
 
     public bool IsValid => RenderSize.Width > 0 && RenderSize.Height > 0 && Scaling > 0;
 
-    public event Action<TimeSpan>? Tick;
     public event Action? SizeChanged;
     public event Action? ScalingChanged;
-
-    public bool RunsInBackground => false;
-
+    
     public static BrowserSurface Create(JSObject container, PixelFormat pixelFormat)
     {
         var opts = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
@@ -72,6 +56,7 @@ internal abstract class BrowserSurface : IDisposable, IRenderTimer
                 surface = jsGlInfo != null
                     ? new BrowserGlSurface(jsSurface, jsGlInfo, pixelFormat, mode)
                     : new BrowserRasterSurface(jsSurface, pixelFormat, mode);
+                break;
             }
             catch (Exception ex)
             {
@@ -87,7 +72,6 @@ internal abstract class BrowserSurface : IDisposable, IRenderTimer
             throw new InvalidOperationException($"{nameof(BrowserPlatformOptions)}.{nameof(BrowserPlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
         }
 
-        CanvasHelper.RequestAnimationFrame(surface.JsSurface, surface.OnTimerTick);
         CanvasHelper.OnSizeChanged(surface.JsSurface, surface.OnSizeChanged);
         return surface;
     }
@@ -99,17 +83,6 @@ internal abstract class BrowserSurface : IDisposable, IRenderTimer
         JsSurface = null!;
         RenderSize = default;
         ClientSize = default;
-    }
-
-    private void OnTimerTick()
-    {
-        if (IsValid)
-        {
-            // TODO: do we need it?
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
-
-            Tick?.Invoke(_sw.Elapsed);   
-        }
     }
 
     private void OnSizeChanged(int pixelWidth, int pixelHeight, double dpr)

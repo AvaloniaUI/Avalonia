@@ -32,9 +32,6 @@ internal static partial class CanvasHelper
         return (canvasView, glInfo);
     }
 
-    [JSImport("CanvasFactory.requestAnimationFrame", AvaloniaModule.MainModuleName)]
-    public static partial void RequestAnimationFrame(JSObject canvasSurface, [JSMarshalAs<JSType.Function>] Action renderFrameCallback);
-
     [JSImport("CanvasFactory.onSizeChanged", AvaloniaModule.MainModuleName)]
     public static partial void OnSizeChanged(
         JSObject canvasSurface,
@@ -47,18 +44,9 @@ internal static partial class CanvasHelper
     [JSImport("CanvasFactory.destroy", AvaloniaModule.MainModuleName)]
     public static partial void Destroy(JSObject canvasSurface);
 
+    [JSImport("CanvasFactory.ensureSize", AvaloniaModule.MainModuleName)]
+    public static partial void EnsureSize(JSObject canvasSurface);
+
     [JSImport("CanvasFactory.putPixelData", AvaloniaModule.MainModuleName)]
     public static partial void PutPixelData(JSObject canvasSurface, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data, int width, int height);
-
-    [JSImport("globalThis.setTimeout")]
-    public static partial int SetTimeout([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
-
-    [JSImport("globalThis.clearTimeout")]
-    public static partial int ClearTimeout(int id);
-
-    [JSImport("globalThis.setInterval")]
-    public static partial int SetInterval([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
-
-    [JSImport("globalThis.clearInterval")]
-    public static partial int ClearInterval(int id);
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Rendering;
 using Avalonia.Browser.Skia;
 using Avalonia.Browser.Storage;
 using Avalonia.Controls;
@@ -63,9 +64,9 @@ namespace Avalonia.Browser
             _surface.SizeChanged += OnSizeChanged;
             _surface.ScalingChanged += OnScalingChanged;
             Surfaces = new[] { _surface };
-            Compositor = new Compositor(
-                new RenderLoop(_surface),
-                _surface.IsWebGl ? AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>() : null);
+            Compositor = _surface.IsWebGl ?
+                BrowserCompositor.WebGlUiCompositor :
+                BrowserCompositor.SoftwareUiCompositor;
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;

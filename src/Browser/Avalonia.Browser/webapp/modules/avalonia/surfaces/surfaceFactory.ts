@@ -30,12 +30,12 @@ export class CanvasFactory {
         surface.destroy();
     }
 
-    public static requestAnimationFrame(surface: CanvasSurface, renderFrameCallback: () => void): () => void {
-        return surface.requestAnimationFrame(renderFrameCallback);
-    }
-
     public static onSizeChanged(surface: CanvasSurface, sizeChangedCallback: (width: number, height: number, dpr: number) => void) {
         surface.onSizeChanged(sizeChangedCallback);
+    }
+
+    public static ensureSize(surface: CanvasSurface): void {
+        surface.ensureSize();
     }
 
     public static putPixelData(surface: SoftwareSurface, span: any /* IMemoryView */, width: number, height: number): void {

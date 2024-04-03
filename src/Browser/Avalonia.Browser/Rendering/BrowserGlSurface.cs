@@ -1,10 +1,11 @@
 using System;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Skia;
 using Avalonia.Platform;
 using SkiaSharp;
 
-namespace Avalonia.Browser.Skia;
+namespace Avalonia.Browser.Rendering;
 
 internal sealed class BrowserGlSurface : BrowserSurface
 {
@@ -39,5 +40,10 @@ internal sealed class BrowserGlSurface : BrowserSurface
         Context = null!;
             
         _glInterface.Dispose();
+    }
+
+    public void EnsureResize()
+    {
+        CanvasHelper.EnsureSize(JsSurface);
     }
 }

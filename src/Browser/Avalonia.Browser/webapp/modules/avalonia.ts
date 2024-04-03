@@ -5,6 +5,7 @@ import { StreamHelper } from "./avalonia/stream";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
 import { NavigationHelper } from "./avalonia/navigationHelper";
 import { GeneralHelpers } from "./avalonia/generalHelpers";
+import { TimerHelper } from "./avalonia/timer";
 import { CanvasFactory } from "./avalonia/surfaces/surfaceFactory";
 
 async function registerServiceWorker(path: string, scope: string | undefined) {
@@ -22,5 +23,6 @@ export {
     NativeControlHost,
     NavigationHelper,
     GeneralHelpers,
+    TimerHelper,
     registerServiceWorker
 };
