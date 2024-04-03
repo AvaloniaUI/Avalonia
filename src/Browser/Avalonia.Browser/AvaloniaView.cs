@@ -68,7 +68,8 @@ namespace Avalonia.Browser
             _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
                             ?? throw new InvalidOperationException("InputElement cannot be null");
 
-            _splash = DomHelper.GetElementById("avalonia-splash");
+            _splash = DomHelper.GetElementsByClassName("avalonia-splash", host)
+                      ?? DomHelper.GetElementById("avalonia-splash");
 
             _topLevelImpl = new BrowserTopLevelImpl(this, _containerElement);
             _topLevelImpl.SetCssCursor = (cursor) =>

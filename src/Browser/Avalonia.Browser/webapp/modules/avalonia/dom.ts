@@ -24,6 +24,10 @@ export class AvaloniaDOM {
         };
     }
 
+    static getFirstElementByClassName(className: string, parent?: HTMLElement): Element | null {
+        const elements = (parent ?? globalThis.document).getElementsByClassName(className);
+        return elements ? elements[0] : null;
+    }
     static createAvaloniaHost(host: HTMLElement) {
         const randomIdPart = Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 10);
 

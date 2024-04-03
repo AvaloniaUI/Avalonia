@@ -8,6 +8,9 @@ internal static partial class DomHelper
     [JSImport("globalThis.document.getElementById")]
     internal static partial JSObject? GetElementById(string id);
 
+    [JSImport("AvaloniaDOM.getFirstElementByClassName", AvaloniaModule.MainModuleName)]
+    internal static partial JSObject? GetElementsByClassName(string className, JSObject? parent);
+
     [JSImport("AvaloniaDOM.createAvaloniaHost", AvaloniaModule.MainModuleName)]
     public static partial JSObject CreateAvaloniaHost(JSObject element);
 
