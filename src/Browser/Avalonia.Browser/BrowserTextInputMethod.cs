@@ -7,16 +7,16 @@ namespace Avalonia.Browser;
 
 internal class BrowserTextInputMethod : ITextInputMethodImpl
 {
-    private readonly BrowserTopLevelImpl _topLevelImpl;
     private readonly JSObject _inputElement;
     private readonly JSObject _containerElement;
+    private readonly BrowserInputHandler _inputHandler;
     private TextInputMethodClient? _client;
 
-    public BrowserTextInputMethod(BrowserTopLevelImpl topLevelImpl, JSObject inputElement, JSObject containerElement)
+    public BrowserTextInputMethod(BrowserInputHandler inputHandler, JSObject containerElement, JSObject inputElement)
     {
-        _topLevelImpl = topLevelImpl;
-        _inputElement = inputElement;
-        _containerElement = containerElement;
+        _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
+        _containerElement = containerElement ?? throw new ArgumentNullException(nameof(containerElement));
+        _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
 
         InputHelper.SubscribeTextEvents(
             _inputElement,
@@ -152,7 +152,7 @@ internal class BrowserTextInputMethod : ITextInputMethodImpl
 
         if(text != null)
         {
-            return _topLevelImpl.RawTextEvent(text);
+            return _inputHandler.RawTextEvent(text);
         }
 
         return false;
