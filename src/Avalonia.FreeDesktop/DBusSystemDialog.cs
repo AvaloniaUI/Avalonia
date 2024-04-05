@@ -98,12 +98,46 @@ namespace Avalonia.FreeDesktop
             objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
             var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
+            FilePickerFileType? selectedType = null;
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
                 if (e is not null)
                     tsc.TrySetException(e);
                 else
+                {
+                    if(x.results.TryGetValue("current_filter", out var value))
+                    {
+                        var currentFilter = value.Value as DBusStructItem;
+                        if(currentFilter != null)
+                        {
+                            var name = (currentFilter[0] as DBusStringItem)?.Value.ToString() ?? "";
+                            selectedType = new FilePickerFileType(name);
+                            if(currentFilter[1] is DBusArrayItem types)
+                            {
+                                List<string> filters = new List<string>();
+                                List<string> mimeTypes = new List<string>();
+                                foreach(var t in types)
+                                {
+                                    if(t is DBusStructItem filter)
+                                    {
+                                        if((filter[0] as DBusUInt32Item)?.Value == 1)
+                                        {
+                                            mimeTypes.Add((filter[1] as DBusStringItem)?.Value.ToString() ?? "");
+                                        }
+                                        else
+                                        {
+                                            filters.Add((filter[1] as DBusStringItem)?.Value.ToString() ?? "");
+                                        }
+                                    }
+                                }
+
+                                selectedType.Patterns = filters;
+                                selectedType.MimeTypes = mimeTypes;
+                            }
+                        }
+                    }
                     tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
+                }
             });
 
             var uris = await tsc.Task;
@@ -113,7 +147,7 @@ namespace Avalonia.FreeDesktop
                 return null;
 
             // WSL2 freedesktop automatically adds extension from selected file type, but we can't pass "default ext". So apply it manually.
-            path = StorageProviderHelpers.NameWithExtension(path, options.DefaultExtension, null);
+            path = StorageProviderHelpers.NameWithExtension(path, options.DefaultExtension, selectedType);
             return new BclStorageFile(new FileInfo(path));
         }
 
