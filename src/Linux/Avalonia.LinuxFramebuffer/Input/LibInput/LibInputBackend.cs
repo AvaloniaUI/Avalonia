@@ -1,5 +1,5 @@
+#nullable enable
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -11,28 +11,26 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
     public partial class LibInputBackend : IInputBackend
     {
-        private IScreenInfoProvider _screen;
-        private IInputRoot _inputRoot;
+        private IScreenInfoProvider? _screen;
+        private IInputRoot? _inputRoot;
         private const string LibInput = nameof(LinuxFramebuffer) + "/" + nameof(Input) + "/" + nameof(LibInput);
+        private Action<RawInputEventArgs>? _onInput;
+        private readonly LibInputBackendOptions? _options;
         private readonly RawEventGrouper _rawEventGrouper;
-        private Action<RawInputEventArgs> _onInput;
-        private readonly Dictionary<int, Point> _pointers = new();
 
         /// <summary>
         ///  Default constructor
         /// </summary>
         public LibInputBackend()
         {
-            var ctx = libinput_path_create_context();
-            _rawEventGrouper = new(DispatchInput);
-            new Thread(InputThread)
-            {
-                IsBackground = true,
-                Name = "Input Manager Worker",
-                Priority = ThreadPriority.Lowest
-            }.Start(ctx);
+            _options = default;
         }
-        
+
+        public LibInputBackend(LibInputBackendOptions options)
+        {
+            _options = options;
+        }
+
         private void DispatchInput(RawInputEventArgs args)
         {
             _onInput?.Invoke(args);
@@ -43,14 +41,13 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     , text.Text));
         }
 
-        private unsafe void InputThread(object state)
+        private unsafe void InputThread(IntPtr ctx, LibInputBackendOptions options)
         {
-            var ctx = (IntPtr)state;
             var fd = libinput_get_fd(ctx); 
             var pfd = new pollfd { fd = fd, events = NativeUnsafeMethods.EPOLLIN };
 
 
-            foreach (var f in Directory.GetFiles("/dev/input", "event*"))
+            foreach (var f in options.Events!)
             {
                 libinput_path_add_device(ctx, f);
             }
@@ -115,6 +112,18 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             _screen = screen;
             _onInput = onInput;
+            var ctx = libinput_path_create_context();
+            var options = new LibInputBackendOptions()
+            {
+                Events = _options?.Events is null
+                    ? Directory.GetFiles("/dev/input", "event*")
+                    : _options.Events,
+            };
+            new Thread(() => InputThread(ctx, options))
+            {
+                Name = "Input Manager Worker",
+                IsBackground = true
+            }.Start();
         }
 
         /// <inheritdoc />

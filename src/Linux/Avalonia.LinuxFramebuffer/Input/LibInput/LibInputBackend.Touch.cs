@@ -1,11 +1,14 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods;
 
 namespace Avalonia.LinuxFramebuffer.Input.LibInput;
-using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods;
+
 public partial class LibInputBackend
 {
+    private readonly Dictionary<int, Point> _pointers = new();
     private readonly TouchDevice _touch = new();
 
     private void HandleTouch(IntPtr ev, LibInputEventType type)

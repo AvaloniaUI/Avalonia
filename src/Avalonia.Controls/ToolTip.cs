@@ -304,7 +304,7 @@ namespace Avalonia.Controls
         {
             if (host is PopupRoot pr)
             {
-                pr.PlatformImpl?.SetWindowManagerAddShadowHint(hint);
+                pr.WindowManagerAddShadowHint = hint;
             }
         }
 

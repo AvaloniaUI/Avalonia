@@ -17,7 +17,7 @@ internal sealed class InputHandler
     private readonly ITopLevelImpl _tl;
     private readonly TouchDevice _touchDevice = new();
     private readonly MouseDevice _mouseDevice = new();
-    private readonly PenDevice _penDevice = new();
+    private readonly PenDevice _penDevice = new(releasePointerOnPenUp: true);
     private static long _nextTouchPointId = 1;
     private readonly Dictionary<UITouch, long> _knownTouches = new();
 
@@ -68,8 +68,13 @@ internal sealed class InputHandler
                     (TouchDevice, UITouchPhase.Cancelled) => RawPointerEventType.TouchCancel,
                     (TouchDevice, _) => RawPointerEventType.TouchUpdate,
                     
-                    (_, UITouchPhase.Began) => IsRightClick() ? RawPointerEventType.RightButtonDown : RawPointerEventType.LeftButtonDown,
-                    (_, UITouchPhase.Ended or UITouchPhase.Cancelled) => IsRightClick() ? RawPointerEventType.RightButtonUp : RawPointerEventType.RightButtonDown,
+                    (_, UITouchPhase.Began) => IsRightClick()
+                        ? RawPointerEventType.RightButtonDown
+                        : RawPointerEventType.LeftButtonDown,
+                    (_, UITouchPhase.Ended) => IsRightClick()
+                        ? RawPointerEventType.RightButtonUp
+                        : RawPointerEventType.LeftButtonUp,
+                    (_, UITouchPhase.Cancelled) => RawPointerEventType.LeaveWindow,
                     (_, _) => RawPointerEventType.Move,
                 }, ToPointerPoint(t), modifiers, id)
             {
@@ -288,7 +293,8 @@ internal sealed class InputHandler
         [UIKeyboardHidUsage.Keyboard0] = PhysicalKey.Digit0,
         [UIKeyboardHidUsage.KeyboardReturnOrEnter] = PhysicalKey.Enter,
         [UIKeyboardHidUsage.KeyboardEscape] = PhysicalKey.Escape,
-        [UIKeyboardHidUsage.KeyboardDeleteOrBackspace] = PhysicalKey.Delete,
+        // See KeyboardDeleteForward for an actual Delete.
+        [UIKeyboardHidUsage.KeyboardDeleteOrBackspace] = PhysicalKey.Backspace,
         [UIKeyboardHidUsage.KeyboardTab] = PhysicalKey.Tab,
         [UIKeyboardHidUsage.KeyboardSpacebar] = PhysicalKey.Space,
         [UIKeyboardHidUsage.KeyboardHyphen] = PhysicalKey.NumPadSubtract,

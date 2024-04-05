@@ -1,8 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
+  
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="../../src/Avalonia.Base/Avalonia.Base.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="../../src/Avalonia.Base/Reactive/**/*.cs" Exclude="../../src/Avalonia.Base/Reactive/AnonymousObserver.cs" />
+  </ItemGroup>
+  
 </Project>

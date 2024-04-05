@@ -21,6 +21,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod AvaloniaObjectSetStyledPropertyValue { get; }
         public IXamlType AvaloniaAttachedPropertyT { get; }
         public IXamlType IBinding { get; }
+        public IXamlType MultiBinding { get; }
         public IXamlMethod AvaloniaObjectBindMethod { get; }
         public IXamlMethod AvaloniaObjectSetValueMethod { get; }
         public IXamlType IDisposable { get; }
@@ -113,6 +114,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IResourceDictionary { get; }
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
+        public IXamlMethod ResourceDictionaryEnsureCapacity { get; }
+        public IXamlMethod ResourceDictionaryGetCount { get; }
         public IXamlType IThemeVariantProvider { get; }
         public IXamlType UriKind { get; }
         public IXamlConstructor UriConstructor { get; }
@@ -140,6 +143,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                  && m.Parameters[0].Name == "StyledProperty`1"
                                  && m.Parameters[2].Equals(BindingPriority));
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
+            MultiBinding = cfg.TypeSystem.GetType("Avalonia.Data.MultiBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
             ICommand = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");
             Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");
@@ -260,6 +264,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
                     cfg.TypeSystem.GetType("System.IServiceProvider"),
                     XamlIlTypes.Object));
+            ResourceDictionaryEnsureCapacity = ResourceDictionary.FindMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
+            ResourceDictionaryGetCount = ResourceDictionary.FindMethod("get_Count", XamlIlTypes.Int32, true);
             IThemeVariantProvider = cfg.TypeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });

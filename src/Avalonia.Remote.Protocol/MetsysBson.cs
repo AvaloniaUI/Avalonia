@@ -1588,11 +1588,12 @@ namespace Metsys.Bson.Configuration
         internal void AddMap<T>(string property, string alias)
         {
             var type = typeof(T);
-            if (!_aliasMap.ContainsKey(type))
+            if (!_aliasMap.TryGetValue(type, out var aliases))
             {
-                _aliasMap[type] = new Dictionary<string, string>();
+                aliases = new Dictionary<string, string>();
+                _aliasMap[type] = aliases;
             }
-            _aliasMap[type][property] = alias;
+            aliases[property] = alias;
         }
         internal string AliasFor(Type type, string property)
         {
@@ -1607,11 +1608,12 @@ namespace Metsys.Bson.Configuration
         public void AddIgnore<T>(string name)
         {
             var type = typeof(T);
-            if (!_ignored.ContainsKey(type))
+            if (!_ignored.TryGetValue(type, out var names))
             {
-                _ignored[type] = new HashSet<string>();
+                names = new HashSet<string>();
+                _ignored[type] = names;
             }
-            _ignored[type].Add(name);
+            names.Add(name);
         }
         public bool IsIgnored(Type type, string name)
         {
@@ -1622,11 +1624,12 @@ namespace Metsys.Bson.Configuration
         public void AddIgnoreIfNull<T>(string name)
         {
             var type = typeof(T);
-            if (!_ignoredIfNull.ContainsKey(type))
+            if (!_ignoredIfNull.TryGetValue(type, out var names))
             {
-                _ignoredIfNull[type] = new HashSet<string>();
+                names = new HashSet<string>();
+                _ignoredIfNull[type] = names;
             }
-            _ignoredIfNull[type].Add(name);
+            names.Add(name);
         }
         public bool IsIgnoredIfNull(Type type, string name)
         {
@@ -1643,6 +1646,5 @@ namespace Metsys.Bson
         public BsonException() { }
         public BsonException(string message) : base(message) { }
         public BsonException(string message, Exception innerException) : base(message, innerException) { }
-        protected BsonException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

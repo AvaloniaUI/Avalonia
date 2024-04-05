@@ -453,8 +453,6 @@ namespace Avalonia.Controls
         {
             Debug.Assert(_realizedElements is not null);
 
-            // If the control has not yet been laid out then the effective viewport won't have been set.
-            // Try to work it out from an ancestor control.
             var viewport = _viewport;
 
             // Get the viewport in the orientation direction.

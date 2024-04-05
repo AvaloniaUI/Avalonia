@@ -20,16 +20,14 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly ServerCompositor _compositor;
         private readonly Func<IEnumerable<object>> _surfaces;
-        private readonly DiagnosticTextRenderer? _diagnosticTextRenderer;
+        private CompositionTargetOverlays _overlays;
         private static long s_nextId = 1;
         private IRenderTarget? _renderTarget;
-        private FpsCounter? _fpsCounter;
-        private FrameTimeGraph? _renderTimeGraph;
-        private FrameTimeGraph? _layoutTimeGraph;
         private PixelSize _layerSize;
         private IDrawingContextLayerImpl? _layer;
         private bool _updateRequested;
         private bool _redrawRequested;
+        private bool _fullRedrawRequested;
         private bool _disposed;
         private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
         private readonly Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
@@ -40,22 +38,13 @@ namespace Avalonia.Rendering.Composition.Server
         public ReadbackIndices Readback { get; } = new();
         public int RenderedVisuals { get; set; }
 
-        private FpsCounter? FpsCounter
-            => _fpsCounter ??= _diagnosticTextRenderer != null ? new FpsCounter(_diagnosticTextRenderer) : null;
-
-        private FrameTimeGraph? LayoutTimeGraph
-            => _layoutTimeGraph ??= CreateTimeGraph("Layout");
-
-        private FrameTimeGraph? RenderTimeGraph
-            => _renderTimeGraph ??= CreateTimeGraph("Render");
-
         public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces,
             DiagnosticTextRenderer? diagnosticTextRenderer)
             : base(compositor)
         {
             _compositor = compositor;
             _surfaces = surfaces;
-            _diagnosticTextRenderer = diagnosticTextRenderer;
+            _overlays = new CompositionTargetOverlays(this, diagnosticTextRenderer);
             var platformRender = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             DirtyRects = compositor.Options.UseRegionDirtyRectClipping == true &&
                          platformRender?.SupportsRegions == true
@@ -63,14 +52,7 @@ namespace Avalonia.Rendering.Composition.Server
                 : new DirtyRectTracker();
             Id = Interlocked.Increment(ref s_nextId);
         }
-
-        private FrameTimeGraph? CreateTimeGraph(string title)
-        {
-            if (_diagnosticTextRenderer == null)
-                return null;
-            return new FrameTimeGraph(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, _diagnosticTextRenderer);
-        }
-
+        
         partial void OnIsEnabledChanged()
         {
             if (IsEnabled)
@@ -89,33 +71,16 @@ namespace Avalonia.Rendering.Composition.Server
 
         partial void OnDebugOverlaysChanged()
         {
-            if ((DebugOverlays & RendererDebugOverlays.Fps) == 0)
-            {
-                _fpsCounter?.Reset();
-            }
-
-            if ((DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) == 0)
-            {
-                _layoutTimeGraph?.Reset();
-            }
-
-            if ((DebugOverlays & RendererDebugOverlays.RenderTimeGraph) == 0)
-            {
-                _renderTimeGraph?.Reset();
-            }
+            _fullRedrawRequested = true;
+            _overlays.OnChanged(DebugOverlays);
         }
 
-        partial void OnLastLayoutPassTimingChanged()
-        {
-            if ((DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) != 0)
-            {
-                LayoutTimeGraph?.AddFrameValue(LastLayoutPassTiming.Elapsed.TotalMilliseconds);
-            }
-        }
+        partial void OnLastLayoutPassTimingChanged() => _overlays.OnLastLayoutPassTimingChanged(LastLayoutPassTiming);
 
         partial void DeserializeChangesExtra(BatchStreamReader c)
         {
             _redrawRequested = true;
+            _fullRedrawRequested = true;
         }
 
         public void Render()
@@ -156,8 +121,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             Revision++;
 
-            var captureTiming = (DebugOverlays & RendererDebugOverlays.RenderTimeGraph) != 0;
-            var startingTimestamp = captureTiming ? Stopwatch.GetTimestamp() : 0L;
+            _overlays.MarkUpdateCallStart();
 
             var transform = Matrix.CreateScale(Scaling, Scaling);
             // Update happens in a separate phase to extend dirty rect if needed
@@ -172,60 +136,65 @@ namespace Avalonia.Rendering.Composition.Server
             _updateRequested = false;
             Readback.CompleteWrite(Revision);
 
+            _overlays.MarkUpdateCallEnd();
+            
             if (!_redrawRequested)
                 return;
             _redrawRequested = false;
-            using (var targetContext = _renderTarget.CreateDrawingContext(false))
+
+            var renderTargetWithProperties = _renderTarget as IRenderTargetWithProperties;
+
+            
+            var needLayer = _overlays.RequireLayer // Check if we don't need overlays
+                            // Check if render target can be rendered to directly and preserves the previous frame
+                            || !(renderTargetWithProperties?.Properties.RetainsPreviousFrameContents == true
+                                && renderTargetWithProperties?.Properties.IsSuitableForDirectRendering == true);
+            
+            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(false, out var properties))
             {
-                if (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted)
+                if(needLayer && (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted))
                 {
                     _layer?.Dispose();
                     _layer = null;
-                    _layer = targetContext.CreateLayer(PixelSize);
+                    _layer = renderTargetContext.CreateLayer(PixelSize);
                     _layerSize = PixelSize;
-                    DirtyRects.AddRect(new PixelRect(_layerSize));
+                    DirtyRects.AddRect(new LtrbPixelRect(_layerSize));
+                }
+                else if (!needLayer)
+                {
+                    _layer?.Dispose();
+                    _layer = null;
+                }
+
+                if (_fullRedrawRequested || (!needLayer && !properties.PreviousFrameIsRetained))
+                {
+                    DirtyRects.AddRect(new LtrbPixelRect(_layerSize));
+                    _fullRedrawRequested = false;
                 }
 
                 if (!DirtyRects.IsEmpty)
                 {
-                    var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
-                                       Compositor.RenderInterface.GpuContext != null;
-                    using (var context = _layer.CreateDrawingContext(false))
+                    if (_layer != null)
                     {
-                        using (DirtyRects.BeginDraw(context))
+                        using (var context = _layer.CreateDrawingContext(false))
+                            RenderRootToContextWithClip(context, Root);
+
+                        renderTargetContext.Clear(Colors.Transparent);
+                        renderTargetContext.Transform = Matrix.Identity;
+                        if (_layer.CanBlit)
+                            _layer.Blit(renderTargetContext);
+                        else
                         {
-                            context.Clear(Colors.Transparent);
-                            if (useLayerClip) 
-                                context.PushLayer(DirtyRects.CombinedRect.ToRect(1));
-                                
-                            
-                            Root.Render(new CompositorDrawingContextProxy(context), null, DirtyRects);
-
-                            if (useLayerClip)
-                                context.PopLayer();
+                            var rect = new PixelRect(default, PixelSize).ToRect(1);
+                            renderTargetContext.DrawBitmap(_layer, 1, rect, rect);
                         }
+                        _overlays.Draw(renderTargetContext, true);
                     }
-                }
-
-                targetContext.Clear(Colors.Transparent);
-                targetContext.Transform = Matrix.Identity;
-                if (_layer.CanBlit)
-                    _layer.Blit(targetContext);
-                else
-                {
-                    var rect = new PixelRect(default, PixelSize).ToRect(1);
-                    targetContext.DrawBitmap(_layer, 1, rect, rect);
-                }
-
-                if (DebugOverlays != RendererDebugOverlays.None)
-                {
-                    if (captureTiming)
+                    else
                     {
-                        var elapsed = StopwatchHelper.GetElapsedTime(startingTimestamp);
-                        RenderTimeGraph?.AddFrameValue(elapsed.TotalMilliseconds);
+                        RenderRootToContextWithClip(renderTargetContext, Root);
+                        _overlays.Draw(renderTargetContext, false);
                     }
-                    
-                    DrawOverlays(targetContext, PixelSize.ToSize(Scaling));
                 }
 
                 RenderedVisuals = 0;
@@ -234,54 +203,23 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
-        private void DrawOverlays(IDrawingContextImpl targetContext, Size logicalSize)
+        void RenderRootToContextWithClip(IDrawingContextImpl context, ServerCompositionVisual root)
         {
-            if ((DebugOverlays & RendererDebugOverlays.DirtyRects) != 0) 
-                DirtyRects.Visualize(targetContext);
-
+            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
+                               Compositor.RenderInterface.GpuContext != null;
             
-            targetContext.Transform = Matrix.CreateScale(Scaling, Scaling);
-            
-            if ((DebugOverlays & RendererDebugOverlays.Fps) != 0)
+            using (DirtyRects.BeginDraw(context))
             {
-                var nativeMem = ByteSizeHelper.ToString((ulong) (
-                    (Compositor.BatchMemoryPool.CurrentUsage + Compositor.BatchMemoryPool.CurrentPool) *
-                    Compositor.BatchMemoryPool.BufferSize), false);
-                var managedMem = ByteSizeHelper.ToString((ulong) (
-                    (Compositor.BatchObjectPool.CurrentUsage + Compositor.BatchObjectPool.CurrentPool) *
-                    Compositor.BatchObjectPool.ArraySize *
-                    IntPtr.Size), false);
-                FpsCounter?.RenderFps(targetContext,
-                    FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} R:{RenderedVisuals:0000}"));
+                context.Clear(Colors.Transparent);
+                if (useLayerClip)
+                    context.PushLayer(DirtyRects.CombinedRect.ToRectUnscaled());
+
+                using (var proxy = new CompositorDrawingContextProxy(context))
+                    root.Render(proxy, null, DirtyRects);
+
+                if (useLayerClip)
+                    context.PopLayer();
             }
-
-            var top = 0.0;
-
-            void DrawTimeGraph(FrameTimeGraph? graph)
-            {
-                if (graph == null)
-                    return;
-                top += 8.0;
-                var oldTransform = targetContext.Transform;
-
-                targetContext.Transform = Matrix.CreateTranslation(logicalSize.Width - graph.Size.Width - 8.0, top) *
-                                          oldTransform;
-                graph.Render(targetContext);
-                top += graph.Size.Height;
-                targetContext.Transform = oldTransform;
-            }
-
-            if ((DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) != 0)
-            {
-                DrawTimeGraph(LayoutTimeGraph);
-            }
-
-            if ((DebugOverlays & RendererDebugOverlays.RenderTimeGraph) != 0)
-            {
-                DrawTimeGraph(RenderTimeGraph);
-            }
-            
-            targetContext.Transform = Matrix.Identity;
         }
         
         public void RequestUpdate() => _updateRequested = true;

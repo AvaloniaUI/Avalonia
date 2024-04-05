@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Styling;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -714,6 +715,11 @@ namespace Avalonia.Controls
                 _shown = true;
                 IsVisible = true;
 
+                // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
+                // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
+                // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
+                SetWindowStartupLocation(owner);
+
                 var initialSize = new Size(
                     double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
                     double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
@@ -727,6 +733,7 @@ namespace Avalonia.Controls
 
                 Owner = owner;
 
+                // Second call will calculate correct position because both current and owner windows have correct scaling.
                 SetWindowStartupLocation(owner);
 
                 StartRendering();
@@ -787,6 +794,11 @@ namespace Avalonia.Controls
                 _showingAsDialog = true;
                 IsVisible = true;
 
+                // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
+                // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
+                // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
+                SetWindowStartupLocation(owner);
+
                 var initialSize = new Size(
                     double.IsNaN(Width) ? ClientSize.Width : Width,
                     double.IsNaN(Height) ? ClientSize.Height : Height);
@@ -802,6 +814,7 @@ namespace Avalonia.Controls
 
                 Owner = owner;
 
+                // Second call will calculate correct position because both current and owner windows have correct scaling.
                 SetWindowStartupLocation(owner);
 
                 StartRendering();
@@ -931,7 +944,20 @@ namespace Avalonia.Controls
                 var ownerRect = new PixelRect(
                     owner.Position,
                     PixelSize.FromSize(ownerSize, scaling));
-                Position = ownerRect.CenterRect(rect).Position;
+                var childRect = ownerRect.CenterRect(rect);
+
+                if (Screens.ScreenFromWindow(this)?.WorkingArea is { } constraint)
+                {
+                    var maxX = constraint.Right - rect.Width;
+                    var maxY = constraint.Bottom - rect.Height;
+
+                    if (constraint.X <= maxX)
+                        childRect = childRect.WithX(MathUtilities.Clamp(childRect.X, constraint.X, maxX));
+                    if (constraint.Y <= maxY)
+                        childRect = childRect.WithY(MathUtilities.Clamp(childRect.Y, constraint.Y, maxY));
+                }
+
+                Position = childRect.Position;
             }
         }
 

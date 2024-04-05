@@ -353,6 +353,9 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
     private bool IsVirtualFile(Context context, AndroidUri uri)
     {
+        if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+            return false;
+
         if (!DocumentsContract.IsDocumentUri(context, uri))
             return false;
 

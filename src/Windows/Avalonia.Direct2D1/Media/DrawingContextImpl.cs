@@ -34,6 +34,7 @@ namespace Avalonia.Direct2D1.Media
         /// An object to use to create layers. May be null, in which case a
         /// <see cref="WicRenderTargetBitmapImpl"/> will created when a new layer is requested.
         /// </param>
+        /// <param name="useScaledDrawing">Whether to scale drawings according to the DPI of <paramref name="renderTarget"/>.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
@@ -613,6 +614,20 @@ namespace Avalonia.Direct2D1.Media
                         var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
                         var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
 
+                        var transform = rect.TopLeft == default ?
+                            Matrix.Identity :
+                            Matrix.CreateTranslation(-rect.X, -rect.Y);
+
+                        var brushTransform = Matrix.Identity;
+
+                        if (sceneBrushContent.Transform != null)
+                        {
+                            var transformOrigin = sceneBrushContent.TransformOrigin.ToPixels(rect);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+
+                            brushTransform = -offset * sceneBrushContent.Transform.Value * offset;
+                        }
+
                         using (var intermediate = new BitmapRenderTarget(
                                    _deviceContext,
                                    CompatibleRenderTargetOptions.None,
@@ -621,8 +636,13 @@ namespace Avalonia.Direct2D1.Media
                             using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(true))
                             {
                                 intermediate.Clear(null);
-                                sceneBrushContent.Render(ctx,
-                                    rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+
+                                if (sceneBrush?.TileMode == TileMode.None)
+                                {
+                                    transform = brushTransform * transform;
+                                }
+                                
+                                sceneBrushContent.Render(ctx, transform);
                             }
 
                             return new ImageBrushImpl(
