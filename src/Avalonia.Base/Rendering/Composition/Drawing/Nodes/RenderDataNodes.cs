@@ -136,8 +136,8 @@ abstract class RenderDataPushNode : IRenderDataItem, IDisposable
         if (Children.Count > 0)
         {
             foreach(var ch in Children)
-                if (ch is RenderDataPushNode node)
-                    node.Dispose();
+                if (ch is IDisposable disposable)
+                    disposable.Dispose();
             Children.Dispose();
         }
     }
