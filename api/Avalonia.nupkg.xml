@@ -1077,6 +1077,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Platform.IAssetLoader.InvalidateAssemblyCache</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Platform.IAssetLoader.InvalidateAssemblyCache(System.String)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
     <Target>P:Avalonia.Media.IRadialGradientBrush.RadiusX</Target>
     <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
