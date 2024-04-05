@@ -21,7 +21,7 @@ public static class FilePickerFileTypes
 
     public static FilePickerFileType ImageAll { get; } = new("All Images")
     {
-        Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp" },
+        Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.webp" },
         AppleUniformTypeIdentifiers = new[] { "public.image" },
         MimeTypes = new[] { "image/*" }
     };
@@ -38,6 +38,13 @@ public static class FilePickerFileTypes
         Patterns = new[] { "*.png" },
         AppleUniformTypeIdentifiers = new[] { "public.png" },
         MimeTypes = new[] { "image/png" }
+    };
+
+    public static FilePickerFileType ImageWebp { get; } = new("WebP image")
+    {
+        Patterns = new[] { "*.webp" },
+        AppleUniformTypeIdentifiers = new[] { "org.webmproject.webp" },
+        MimeTypes = new[] { "image/webp" }
     };
 
     public static FilePickerFileType Pdf { get; } = new("PDF document")
