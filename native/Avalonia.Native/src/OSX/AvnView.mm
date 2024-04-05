@@ -436,6 +436,7 @@
 
 - (void)mouseEntered:(NSEvent *)event
 {
+    [self mouseEvent:event withType:Move];
     [super mouseEntered:event];
 }
 
