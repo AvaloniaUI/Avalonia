@@ -45,6 +45,16 @@ namespace Avalonia.UnitTests
                 x => x.GetUnescapeAbsolutePath().IndexOf(absPath, StringComparison.Ordinal) >= 0);
         }
 
+        public void InvalidateAssemblyCache(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InvalidateAssemblyCache()
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetDefaultAssembly(Assembly asm)
         {
             throw new NotImplementedException();
