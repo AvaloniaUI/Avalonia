@@ -56,6 +56,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("ShowDelay", 400);
 
         /// <summary>
+        /// Defines the ToolTip.BetweenShowDelay property.
+        /// </summary>
+        public static readonly AttachedProperty<int> BetweenShowDelayProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("BetweenShowDelay", 100);
+
+        /// <summary>
         /// Defines the ToolTip.ShowOnDisabled property.
         /// </summary>
         public static readonly AttachedProperty<bool> ShowOnDisabledProperty =
@@ -224,6 +230,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the number of milliseconds since the last tooltip closed during which the tooltip of <paramref name="element"/> will open immediately,
+        /// or a negative value indicating that the tooltip will always wait for <see cref="ShowDelayProperty"/> before opening.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        public static int GetBetweenShowDelay(Control element) => element.GetValue(BetweenShowDelayProperty);
+
+        /// <summary>
+        /// Sets the number of milliseconds since the last tooltip closed during which the tooltip of <paramref name="element"/> will open immediately.
+        /// </summary>
+        /// <remarks>
+        /// Setting a negative value disables the immediate opening behaviour. The tooltip of <paramref name="element"/> will then always wait until 
+        /// <see cref="ShowDelayProperty"/> elapses before showing.
+        /// </remarks>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">The number of milliseconds to set, or a negative value to disable the behaviour.</param>
+        public static void SetBetweenShowDelay(Control element, int value) => element.SetValue(BetweenShowDelayProperty, value);
+
+        /// <summary>
         /// Gets whether a control will display a tooltip even if it disabled.
         /// </summary>
         /// <param name="element">The control to get the property from.</param>
@@ -298,6 +322,8 @@ namespace Avalonia.Controls
         }
         
         IPopupHost? IPopupHostProvider.PopupHost => _popupHost;
+
+        internal IPopupHost? PopupHost => _popupHost;
 
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
