@@ -4,6 +4,9 @@
     <DefineConstants>AVALONIA_SKIA;AVALONIA_SKIA3;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <_IncludeSkiaSharp3>true</_IncludeSkiaSharp3>
+    <!-- We need to re-include these with a newer version -->
+    <IncludeLinuxSkia>true</IncludeLinuxSkia>
+    <IncludeWasmSkia>true</IncludeWasmSkia>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.RenderTests\**\*.cs" />
