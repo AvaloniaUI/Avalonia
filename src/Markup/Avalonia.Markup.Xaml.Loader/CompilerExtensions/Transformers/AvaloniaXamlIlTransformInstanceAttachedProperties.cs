@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 && prop.DeclaringType is XamlAstClrTypeReference declaringRef)
             {
                 // Target and declared type aren't assignable but both inherit from AvaloniaObject
-                var avaloniaObject = context.Configuration.TypeSystem.FindType("Avalonia.AvaloniaObject");
+                var avaloniaObject = context.GetAvaloniaTypes().AvaloniaObject;
                 if (avaloniaObject.IsAssignableFrom(targetRef.Type)
                     && avaloniaObject.IsAssignableFrom(declaringRef.Type)
                     && !declaringRef.Type.IsAssignableFrom(targetRef.Type))
