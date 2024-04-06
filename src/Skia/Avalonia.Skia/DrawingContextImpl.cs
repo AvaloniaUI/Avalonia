@@ -328,7 +328,7 @@ namespace Avalonia.Skia
             {
                 var ac = shadow.Color;
 
-                var filter = SkiaCompat.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
+                var filter = SKImageFilter.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
                 var color = new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity));
 
                 paint.Reset();
@@ -828,7 +828,7 @@ namespace Avalonia.Skia
             SKPaintCache.Shared.ReturnReset(paint);
             
             var (transform, paintWrapper) = _maskStack.Pop();
-            Canvas.SetMatrix(transform);
+            SkiaCompat.SetMatrix(Canvas, transform);
             using (paintWrapper)
             {
                 Canvas.DrawPaint(paintWrapper.Paint);

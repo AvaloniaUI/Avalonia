@@ -30,7 +30,7 @@ partial class DrawingContextImpl
             if (blur.Radius <= 0)
                 return null;
             var sigma = SkBlurRadiusToSigma(blur.Radius);
-            return SkiaCompat.CreateBlur(sigma, sigma);
+            return SKImageFilter.CreateBlur(sigma, sigma);
         }
 
         if (effect is IDropShadowEffect drop)
@@ -41,7 +41,7 @@ partial class DrawingContextImpl
                 alpha *= _currentOpacity;
             var color = new SKColor(drop.Color.R, drop.Color.G, drop.Color.B, (byte)Math.Max(0, Math.Min(255, alpha)));
 
-            return SkiaCompat.CreateDropShadow((float)drop.OffsetX, (float)drop.OffsetY, sigma, sigma, color);
+            return SKImageFilter.CreateDropShadow((float)drop.OffsetX, (float)drop.OffsetY, sigma, sigma, color);
         }
 
         return null;

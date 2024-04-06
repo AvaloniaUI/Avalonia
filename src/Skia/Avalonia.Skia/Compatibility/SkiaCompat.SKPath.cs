@@ -6,6 +6,7 @@ namespace Avalonia.Skia;
 
 internal static partial class SkiaCompat
 {
+    // TODO: remove as https://github.com/mono/SkiaSharp/pull/2789 is shipped.
     public static void Transform(SKPath path, in SKMatrix matrix)
     {
         if (s_isSkiaSharp3)
