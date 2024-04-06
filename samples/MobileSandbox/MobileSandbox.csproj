@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(AvsCurrentTargetFramework)</TargetFrameworks>
-    <TargetFrameworks>net8.0;net8.0-android;net8.0-browser;net8.0-ios</TargetFrameworks>
-    <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>    
   </PropertyGroup>
