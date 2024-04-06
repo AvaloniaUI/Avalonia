@@ -23,6 +23,7 @@
     ],
     "quotes": ["warn", "double"],
     "semi": ["error", "always"],
+    "@typescript-eslint/no-this-alias": "off",
     "@typescript-eslint/quotes": ["warn", "double"],
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-extraneous-class": "off",
