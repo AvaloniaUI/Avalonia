@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <DefineConstants>AVALONIA_SKIA;AVALONIA_SKIA2;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
+    <DefineConstants>AVALONIA_SKIA;AVALONIA_SKIA3;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <_IncludeSkiaSharp3>true</_IncludeSkiaSharp3>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.RenderTests\**\*.cs" />
