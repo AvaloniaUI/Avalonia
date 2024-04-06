@@ -20,6 +20,16 @@ namespace Avalonia
 
         private static int s_nextId;
 
+        [Flags]
+        private enum Flag : byte
+        {
+            Inherits = 1,   // 0b_0000_0001
+            IsAttached = 2, // 0b_0000_0010
+            IsDirect = 4,   // 0b_0000_0100
+            IsReadOnly = 8  // 0b_0000_1000
+        }
+        private Flag _flags; // A 8-bit field to save all property flags.
+
         /// <summary>
         /// Provides a metadata object for types which have no metadata of their own.
         /// </summary>
@@ -114,22 +124,38 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether the property inherits its value.
         /// </summary>
-        public bool Inherits { get; private protected set; }
+        public bool Inherits
+        {
+            get => (_flags & Flag.Inherits) != 0;
+            private protected set => _flags = value ? (_flags | Flag.Inherits) : (_flags & ~Flag.Inherits);
+        }
 
         /// <summary>
         /// Gets a value indicating whether this is an attached property.
         /// </summary>
-        public bool IsAttached { get; private protected set; }
+        public bool IsAttached
+        {
+            get => (_flags & Flag.IsAttached) != 0;
+            private protected set => _flags = value ? (_flags | Flag.IsAttached) : (_flags & ~Flag.IsAttached);
+        }
 
         /// <summary>
         /// Gets a value indicating whether this is a direct property.
         /// </summary>
-        public bool IsDirect { get; private protected set; }
+        public bool IsDirect
+        {
+            get => (_flags & Flag.IsDirect) != 0;
+            private protected set => _flags = value ? (_flags | Flag.IsDirect) : (_flags & ~Flag.IsDirect);
+        }
 
         /// <summary>
         /// Gets a value indicating whether this is a readonly property.
         /// </summary>
-        public bool IsReadOnly { get; private protected set; }
+        public bool IsReadOnly
+        {
+            get => (_flags & Flag.IsReadOnly) != 0;
+            private protected set => _flags = value ? (_flags | Flag.IsReadOnly) : (_flags & ~Flag.IsReadOnly);
+        }
 
         /// <summary>
         /// Gets an observable that is fired when this property changes on any
