@@ -271,7 +271,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Registers an attached <see cref="AvaloniaProperty"/>.
+        /// Registers a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
         /// <typeparam name="TValue">The type of the property's value.</typeparam>
