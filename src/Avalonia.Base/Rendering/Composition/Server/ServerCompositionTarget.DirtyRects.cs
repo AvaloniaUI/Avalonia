@@ -8,14 +8,27 @@ namespace Avalonia.Rendering.Composition.Server;
 internal partial class ServerCompositionTarget
 {
     public readonly IDirtyRectTracker DirtyRects;
+
+    static int Clamp0(int value, int max) => Math.Max(Math.Min(value, max), 0);
     
     public void AddDirtyRect(LtrbRect rect)
     {
         if (rect.IsZeroSize)
             return;
-        var snapped = LtrbPixelRect.FromRectWithNoScaling(SnapToDevicePixels(rect, Scaling));
+        
         DebugEvents?.RectInvalidated(rect.ToRect());
-        DirtyRects.AddRect(snapped);
+        
+        var snapped = LtrbPixelRect.FromRectWithNoScaling(SnapToDevicePixels(rect, Scaling));
+
+        var clamped = new LtrbPixelRect(
+            Clamp0(snapped.Left, _pixelSize.Width),
+            Clamp0(snapped.Top, _pixelSize.Height),
+            Clamp0(snapped.Right, _pixelSize.Width),
+            Clamp0(snapped.Bottom, _pixelSize.Height)
+        );
+        
+        if (!clamped.IsEmpty)
+            DirtyRects.AddRect(clamped);
         _redrawRequested = true;
     }
 
