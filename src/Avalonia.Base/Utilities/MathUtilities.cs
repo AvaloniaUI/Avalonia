@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.CompilerServices;
+using Avalonia.Metadata;
 
 namespace Avalonia.Utilities
 {
     /// <summary>
     /// Provides math utilities not provided in System.Math.
     /// </summary>
+    [Unstable("This API might be removed in next major version. Please use corresponding BCL APIs.")]
 #if !BUILDTASK
     public
 #endif
