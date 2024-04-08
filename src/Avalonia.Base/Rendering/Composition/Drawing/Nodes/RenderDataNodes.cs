@@ -78,13 +78,19 @@ interface IRenderDataItem
     bool HitTest(Point p);
 }
 
-class RenderDataCustomNode : IRenderDataItem
+class RenderDataCustomNode : IRenderDataItem, IDisposable
 {
     public ICustomDrawOperation? Operation { get; set; }
     public bool HitTest(Point p) => Operation?.HitTest(p) ?? false;
     public void Invoke(ref RenderDataNodeRenderContext context) => Operation?.Render(new(context.Context, false));
 
     public Rect? Bounds => Operation?.Bounds;
+
+    public void Dispose()
+    {
+        Operation?.Dispose();
+        Operation = null;
+    }
 }
 
 abstract class RenderDataPushNode : IRenderDataItem, IDisposable
@@ -130,8 +136,8 @@ abstract class RenderDataPushNode : IRenderDataItem, IDisposable
         if (Children.Count > 0)
         {
             foreach(var ch in Children)
-                if (ch is RenderDataPushNode node)
-                    node.Dispose();
+                if (ch is IDisposable disposable)
+                    disposable.Dispose();
             Children.Dispose();
         }
     }

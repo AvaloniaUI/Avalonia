@@ -26,12 +26,6 @@ internal sealed class PlatformDrawingContext : DrawingContext
         _ownsImpl = ownsImpl;
     }
 
-    public RenderOptions RenderOptions
-    {
-        get => _impl.RenderOptions;
-        set => _impl.RenderOptions = value;
-    }
-
     protected override void DrawLineCore(IPen pen, Point p1, Point p2) =>
         _impl.DrawLine(pen, p1, p2);
 

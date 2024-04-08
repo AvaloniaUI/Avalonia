@@ -9,6 +9,9 @@ namespace Avalonia.Platform.Internal;
 internal interface IAssemblyDescriptorResolver
 {
     IAssemblyDescriptor GetAssembly(string name);
+    void InvalidateAssemblyCache(string name);
+    void InvalidateAssemblyCache();
+    
 }
 
 internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
@@ -43,5 +46,14 @@ internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
         }
 
         return rv;
+    }
+    public void InvalidateAssemblyCache(string name)
+    {
+        _assemblyNameCache.Remove(name);
+    }
+
+    public void InvalidateAssemblyCache()
+    {
+        _assemblyNameCache.Clear();
     }
 }

@@ -69,10 +69,14 @@ namespace Avalonia
         public string? RenderingSubsystemName { get; private set; }
 
         /// <summary>
-        /// Gets or sets a method to call after the <see cref="Application"/> is setup.
+        /// Gets a method to call after the <see cref="Application"/> is setup.
         /// </summary>
         public Action<AppBuilder> AfterSetupCallback { get; private set; } = builder => { };
 
+        /// <summary>
+        /// Callbacks that are commonly used by backends to initialize avalonia views.
+        /// </summary>
+        private Action<AppBuilder> AfterApplicationSetupCallback { get; set; } = builder => { };
 
         public Action<AppBuilder> AfterPlatformServicesSetupCallback { get; private set; } = builder => { };
         
@@ -159,8 +163,14 @@ namespace Avalonia
             AfterSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
             return Self;
         }
-        
-        
+
+        [PrivateApi]
+        public AppBuilder AfterApplicationSetup(Action<AppBuilder> callback)
+        {
+            AfterApplicationSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
+            return Self;
+        }
+
         public AppBuilder AfterPlatformServicesSetup(Action<AppBuilder> callback)
         {
             AfterPlatformServicesSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
@@ -328,6 +338,7 @@ namespace Avalonia
             AvaloniaLocator.CurrentMutable.BindToSelf(Instance);
             Instance.RegisterServices();
             Instance.Initialize();
+            AfterApplicationSetupCallback?.Invoke(Self);
             AfterSetupCallback?.Invoke(Self);
             Instance.OnFrameworkInitializationCompleted();
         }

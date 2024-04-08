@@ -326,7 +326,7 @@ namespace Avalonia
             VerifyAccess();
             ValidatePriority(priority);
 
-            LogPropertySet(property, value, BindingPriority.LocalValue);
+            LogPropertySet(property, value, priority);
 
             if (value is UnsetValueType)
             {

@@ -150,6 +150,9 @@ namespace Avalonia.Controls.Primitives
 
         public IPopupHost? Host => _openState?.PopupHost;
 
+        /// <summary>
+        /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
+        /// </summary>
         public bool WindowManagerAddShadowHint
         {
             get => GetValue(WindowManagerAddShadowHintProperty);
@@ -258,7 +261,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the the anchor rectangle within the parent that the popup will be placed
+        /// Gets or sets the anchor rectangle within the parent that the popup will be placed
         /// relative to when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         /// <remarks>
@@ -289,7 +292,7 @@ namespace Avalonia.Controls.Primitives
         /// through to the parent window.
         /// </summary>
         /// <remarks>
-        /// When <see cref="IsLightDismissEnabled"/> is set to true, clicks outside the the popup
+        /// When <see cref="IsLightDismissEnabled"/> is set to true, clicks outside the popup
         /// cause the popup to close. When <see cref="OverlayDismissEventPassThrough"/> is set to
         /// false, these clicks will be handled by the popup and not be registered by the parent
         /// window. When set to true, the events will be passed through to the parent window.
@@ -653,9 +656,9 @@ namespace Avalonia.Controls.Primitives
 
         private static void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
         {
-            if(host is PopupRoot pr && pr.PlatformImpl is not null)
+            if (host is PopupRoot pr)
             {
-                pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
+                pr.WindowManagerAddShadowHint = hint;
             }
         }
 
