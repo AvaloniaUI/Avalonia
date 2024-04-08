@@ -223,6 +223,11 @@ namespace Avalonia
             return !(a == b);
         }
 
+        public void Unregister(Type type)
+        {
+            _metadata.Remove(type);
+            _metadataCache.Remove(type);
+        }
         /// <summary>
         /// Registers a <see cref="AvaloniaProperty"/>.
         /// </summary>
@@ -266,7 +271,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Registers an attached <see cref="AvaloniaProperty"/>.
+        /// Registers a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
         /// <typeparam name="TValue">The type of the property's value.</typeparam>

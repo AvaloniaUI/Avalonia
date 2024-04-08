@@ -20,6 +20,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Transform?> TransformProperty =
             AvaloniaProperty.Register<PopupRoot, Transform?>(nameof(Transform));
 
+        /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
+            Popup.WindowManagerAddShadowHintProperty.AddOwner<PopupRoot>();
+
         private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
@@ -50,6 +56,7 @@ namespace Avalonia.Controls.Primitives
             : base(impl, dependencyResolver)
         {
             ParentTopLevel = parent;
+            impl.SetWindowManagerAddShadowHint(WindowManagerAddShadowHint);
         }
 
         /// <summary>
@@ -64,6 +71,15 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(TransformProperty);
             set => SetValue(TransformProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
+        /// </summary>
+        public bool WindowManagerAddShadowHint
+        {
+            get => GetValue(WindowManagerAddShadowHintProperty);
+            set => SetValue(WindowManagerAddShadowHintProperty, value);
         }
 
         /// <summary>
@@ -178,6 +194,16 @@ namespace Avalonia.Controls.Primitives
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new PopupRootAutomationPeer(this);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == WindowManagerAddShadowHintProperty)
+            {
+                PlatformImpl?.SetWindowManagerAddShadowHint(change.GetNewValue<bool>());
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Browser.Rendering;
 using Avalonia.Platform;
 using Avalonia.Skia;
 using Avalonia.Reactive;
@@ -12,7 +13,7 @@ namespace Avalonia.Browser.Skia
         {
             foreach (var surface in surfaces)
             {
-                if (surface is BrowserSkiaSurface browserSkiaSurface)
+                if (surface is BrowserGlSurface browserSkiaSurface)
                 {
                     return new BrowserSkiaGpuRenderTarget(browserSkiaSurface);
                 }
@@ -28,20 +29,19 @@ namespace Avalonia.Browser.Skia
 
         public void Dispose()
         {
-            
         }
 
-	public object? TryGetFeature(Type t) => null;
-        
+        public object? TryGetFeature(Type t) => null;
+
         public bool IsLost => false;
-        
+
         public IDisposable EnsureCurrent()
         {
             return Disposable.Empty;
         }
     }
 
-    class BrowserSkiaGraphics : IPlatformGraphics
+    internal class BrowserSkiaGraphics : IPlatformGraphics
     {
         private BrowserSkiaGpu _skia = new();
         public bool UsesSharedContext => true;
