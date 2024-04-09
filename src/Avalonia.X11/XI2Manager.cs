@@ -96,6 +96,8 @@ namespace Avalonia.X11
         private PointerDeviceInfo _pointerDevice;
         private AvaloniaX11Platform _platform;
 
+        private XIValuatorClassInfo? _pressureXIValuatorClassInfo;
+
         public bool Init(AvaloniaX11Platform platform)
         {
             _platform = platform;
@@ -113,6 +115,13 @@ namespace Avalonia.X11
             }
             if(_pointerDevice == null)
                 return false;
+
+            if (_multitouch)
+            {
+                var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
+                _pressureXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == pressureAtom);
+            }
+
             /*
             int mask = 0;
             
@@ -226,8 +235,24 @@ namespace Avalonia.X11
                     (ev.Type == XiEventType.XI_TouchUpdate ?
                         RawPointerEventType.TouchUpdate :
                         RawPointerEventType.TouchEnd);
+
+                var rawPointerPoint = new RawPointerPoint()
+                {
+                    Position = ev.Position
+                };
+
+                if (_pressureXIValuatorClassInfo is {} valuatorClassInfo)
+                {
+                    if (ev.Valuators.TryGetValue(valuatorClassInfo.Number, out var pressureValue))
+                    {
+                        // In our API we use range from 0.0 to 1.0.
+                        var pressure = (pressureValue - valuatorClassInfo.Min) / (valuatorClassInfo.Max - valuatorClassInfo.Min);
+                        rawPointerPoint.Pressure = (float)pressure;
+                    }
+                }
+
                 client.ScheduleXI2Input(new RawTouchEventArgs(client.TouchDevice,
-                    ev.Timestamp, client.InputRoot, type, ev.Position, ev.Modifiers, ev.Detail));
+                    ev.Timestamp, client.InputRoot, type, rawPointerPoint, ev.Modifiers, ev.Detail));
                 return;
             }
 
