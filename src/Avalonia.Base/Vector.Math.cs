@@ -1,6 +1,10 @@
 using System;
 using System.Globalization;
 using System.Numerics;
+
+# if NET6_0_OR_GREATER
+using Silk.NET.Maths;
+# endif
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -11,24 +15,20 @@ using Avalonia.Utilities;
 namespace Avalonia
 {
 
-#if NETSTANDARD2_0
+#if NET6_0_OR_GREATER
     /// <summary>
     /// Defines a vector.
     /// </summary>
 #if !BUILDTASK
     public
 #endif
+
     readonly struct Vector : IEquatable<Vector>
     {
-        /// <summary>
-        /// The X component.
-        /// </summary>
-        private readonly double _x;
 
-        /// <summary>
-        /// The Y component.
-        /// </summary>
-        private readonly double _y;
+        private readonly Vector2D<double> _inner;
+
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vector"/> structure.
@@ -37,19 +37,25 @@ namespace Avalonia
         /// <param name="y">The Y component.</param>
         public Vector(double x, double y)
         {
-            _x = x;
-            _y = y;
+            _inner = new Vector2D<double>(x, y);
         }
+
+        public Vector(Vector2D<double> v)
+        {
+            _inner = v;
+        }
+
+        
 
         /// <summary>
         /// Gets the X component.
         /// </summary>
-        public double X => _x;
+        public double X => _inner.X;
 
         /// <summary>
         /// Gets the Y component.
         /// </summary>
-        public double Y => _y;
+        public double Y => _inner.Y;
 
         /// <summary>
         /// Converts the <see cref="Vector"/> to a <see cref="Point"/>.
@@ -57,7 +63,17 @@ namespace Avalonia
         /// <param name="a">The vector.</param>
         public static explicit operator Point(Vector a)
         {
-            return new Point(a._x, a._y);
+            return new Point(a._inner.X, a._inner.Y);
+        }
+
+
+        /// <summary>
+        /// Convert the <see cref="Vector2D<double/>"/> to a <see cref="Vector"/>
+        /// </summary>
+        /// <param name="a"></param>
+        public static explicit operator Vector(Vector2D<double> a)
+        {
+            return new Vector(a);
         }
 
         /// <summary>
@@ -120,7 +136,7 @@ namespace Avalonia
         /// <summary>
         /// Squared Length of the vector.
         /// </summary>
-        public double SquaredLength => _x * _x + _y * _y;
+        public double SquaredLength =>  Vector2D.Dot(_inner,_inner);
 
         /// <summary>
         /// Negates a vector.
@@ -156,7 +172,7 @@ namespace Avalonia
         public bool Equals(Vector other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
-            return _x == other._x && _y == other._y;
+            return _inner==other._inner;
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
@@ -167,8 +183,8 @@ namespace Avalonia
         /// <returns>True if vectors are nearly equal.</returns>
         public bool NearlyEquals(Vector other)
         {
-            return MathUtilities.AreClose(_x, other._x) && 
-                   MathUtilities.AreClose(_y, other._y);
+            return MathUtilities.AreClose(_inner.X, other._inner.X) &&
+                   MathUtilities.AreClose(_inner.Y, other._inner.Y);
         }
 
         public override bool Equals(object? obj) => obj is Vector other && Equals(other);
@@ -177,13 +193,13 @@ namespace Avalonia
         {
             unchecked
             {
-                return (_x.GetHashCode() * 397) ^ _y.GetHashCode();
+                return (_inner.X.GetHashCode() * 397) ^ _inner.Y.GetHashCode();
             }
         }
 
         public static bool operator ==(Vector left, Vector right)
         {
-            return left.Equals(right);
+            return left._inner.Equals(right._inner);
         }
 
         public static bool operator !=(Vector left, Vector right)
@@ -197,7 +213,7 @@ namespace Avalonia
         /// <returns>The string representation of the vector.</returns>
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", _x, _y);
+            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", _inner.X, _inner.Y);
         }
 
         /// <summary>
@@ -207,7 +223,7 @@ namespace Avalonia
         /// <returns>The new vector.</returns>
         public Vector WithX(double x)
         {
-            return new Vector(x, _y);
+            return new Vector(x, _inner.Y);
         }
 
         /// <summary>
@@ -217,7 +233,7 @@ namespace Avalonia
         /// <returns>The new vector.</returns>
         public Vector WithY(double y)
         {
-            return new Vector(_x, y);
+            return new Vector(_inner.X, y);
         }
 
         /// <summary>
@@ -241,7 +257,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>The dot product.</returns>
         public static double Dot(Vector a, Vector b)
-            => a._x * b._x + a._y * b._y;
+            => Vector2D.Dot( a._inner, b._inner);
 
         /// <summary>
         /// Returns the cross product of two vectors.
@@ -250,7 +266,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>The cross product.</returns>
         public static double Cross(Vector a, Vector b)
-            => a._x * b._y - a._y * b._x;
+            => a._inner.X * b._inner.Y - a._inner.Y * b._inner.X;
 
         /// <summary>
         /// Normalizes the given vector.
@@ -258,8 +274,8 @@ namespace Avalonia
         /// <param name="vector">The vector</param>
         /// <returns>The normalized vector.</returns>
         public static Vector Normalize(Vector vector)
-            => Divide(vector, vector.Length);
-        
+            => new(vector._inner/vector.Length);
+
         /// <summary>
         /// Divides the first vector by the second.
         /// </summary>
@@ -267,7 +283,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector Divide(Vector a, Vector b)
-            => new Vector(a._x / b._x, a._y / b._y);
+            => new Vector(Vector2D.Divide(a._inner, b._inner));
 
         /// <summary>
         /// Divides the vector by the given scalar.
@@ -276,7 +292,7 @@ namespace Avalonia
         /// <param name="scalar">The scalar value</param>
         /// <returns>The scaled vector.</returns>
         public static Vector Divide(Vector vector, double scalar)
-            => new Vector(vector._x / scalar, vector._y / scalar);
+            => new Vector(vector._inner/scalar);
 
         /// <summary>
         /// Multiplies the first vector by the second.
@@ -285,7 +301,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector Multiply(Vector a, Vector b)
-            => new Vector(a._x * b._x, a._y * b._y);
+            => new Vector(Vector2D.Multiply(a._inner,b._inner));
 
         /// <summary>
         /// Multiplies the vector by the given scalar.
@@ -294,7 +310,7 @@ namespace Avalonia
         /// <param name="scalar">The scalar value</param>
         /// <returns>The scaled vector.</returns>
         public static Vector Multiply(Vector vector, double scalar)
-            => new Vector(vector._x * scalar, vector._y * scalar);
+            => new Vector(vector._inner * scalar);
 
         /// <summary>
         /// Adds the second to the first vector
@@ -303,7 +319,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>The summed vector.</returns>
         public static Vector Add(Vector a, Vector b)
-            => new Vector(a._x + b._x, a._y + b._y);
+            => new Vector(a._inner + b._inner);
 
         /// <summary>
         /// Subtracts the second from the first vector
@@ -312,7 +328,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>The difference vector.</returns>
         public static Vector Subtract(Vector a, Vector b)
-            => new Vector(a._x - b._x, a._y - b._y);
+            => new Vector(a._inner - b._inner);
 
         /// <summary>
         /// Negates the vector
@@ -320,7 +336,7 @@ namespace Avalonia
         /// <param name="vector">The vector to negate.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector Negate(Vector vector)
-            => new Vector(-vector._x, -vector._y);
+            => new Vector(-vector._inner);
 
         /// <summary>
         /// Returns the vector (0.0, 0.0).
@@ -353,8 +369,8 @@ namespace Avalonia
         /// <param name="y">The Y component.</param>
         public void Deconstruct(out double x, out double y)
         {
-            x = this._x;
-            y = this._y;
+            x = this._inner.X;
+            y = this._inner.Y;
         }
 
         internal Vector2 ToVector2() => new Vector2((float)X, (float)Y);
@@ -368,19 +384,19 @@ namespace Avalonia
         /// Returns a vector whose elements are the absolute values of each of the specified vector's elements.
         /// </summary>
         /// <returns></returns>
-        public Vector Abs() => new(Math.Abs(X), Math.Abs(Y));
+        public Vector Abs() => new(Vector2D.Abs(_inner));
 
         /// <summary>
         /// Restricts a vector between a minimum and a maximum value.
         /// </summary>
-        public static Vector Clamp(Vector value, Vector min, Vector max) => 
-            Min(Max(value, min), max);
+        public static Vector Clamp(Vector value, Vector min, Vector max) =>
+            new(Vector2D.Clamp<double>(value._inner, min._inner, max._inner));
 
         /// <summary>
         /// Returns a vector whose elements are the maximum of each of the pairs of elements in two specified vectors
         /// </summary>
         public static Vector Max(Vector left, Vector right) =>
-            new(Math.Max(left.X, right.X), Math.Max(left.Y, right.Y));
+            new(Vector2D.Max<double>(left._inner, right._inner));
 
         /// <summary>
         /// Returns a vector whose elements are the minimum of each of the pairs of elements in two specified vectors

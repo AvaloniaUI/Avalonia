@@ -6,4 +6,7 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
   </ItemGroup>
+	<ItemGroup Condition="('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0')))">
+    <PackageReference Include="Silk.NET.Maths" Version="2.20.0" />
+  </ItemGroup>
 </Project>
