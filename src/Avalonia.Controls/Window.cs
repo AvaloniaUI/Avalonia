@@ -1106,7 +1106,7 @@ namespace Avalonia.Controls
         private static WindowIcon? LoadDefaultIcon()
         {
             if (Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
-                && Uri.TryCreate($"avares://{assemblyName}/!AppIcon", UriKind.Absolute, out var path)
+                && Uri.TryCreate($"avares://{assemblyName}/!__AvaloniaDefaultWindowIcon", UriKind.Absolute, out var path)
                 && AssetLoader.Exists(path))
             {
                 using var stream = AssetLoader.Open(path);
