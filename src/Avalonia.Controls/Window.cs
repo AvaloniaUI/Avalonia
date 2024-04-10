@@ -90,6 +90,7 @@ namespace Avalonia.Controls
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
+        private bool _hasSetInitialSize = false;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -728,6 +729,8 @@ namespace Avalonia.Controls
                     PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
 
+                _hasSetInitialSize = true; 
+
                 LayoutManager.ExecuteInitialLayoutPass();
 
                 Owner = owner;
@@ -1020,7 +1023,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
-            if (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height))
+            if (_hasSetInitialSize && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
 
