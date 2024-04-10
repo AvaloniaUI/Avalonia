@@ -1105,12 +1105,11 @@ namespace Avalonia.Controls
 
         private static WindowIcon? LoadDefaultIcon()
         {
-            var assemblyName = Assembly.GetEntryAssembly()?.GetName()?.Name;
-            var basePath = assemblyName is not null ? new Uri($"avares://{assemblyName}/", UriKind.Absolute) : null;
-            var path = new Uri("/!AppIcon", UriKind.Relative);
-            if (!AssetLoader.Exists(path, basePath))
+            if (Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
+                && Uri.TryCreate($"avares://{assemblyName}/!AppIcon", UriKind.Absolute, out var path)
+                && AssetLoader.Exists(path))
             {
-                using var stream = AssetLoader.Open(path, path);
+                using var stream = AssetLoader.Open(path);
                 return new WindowIcon(stream);
             }
             return null;
