@@ -800,6 +800,8 @@ namespace Avalonia.Controls
                 // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
                 // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
                 SetWindowStartupLocation(owner);
+                
+                _canHandleResized = true; 
 
                 var initialSize = new Size(
                     double.IsNaN(Width) ? ClientSize.Width : Width,
