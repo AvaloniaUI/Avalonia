@@ -55,8 +55,6 @@ namespace Avalonia.Win32
                 { WindowEdge.West, HitTestValues.HTLEFT }
             };
 
-        private static readonly Lazy<IconImpl?> s_defaultIconImpl = new(LoadDefaultIcon);
-
         /// <summary>
         /// The Windows DPI which equates to a <see cref="RenderScaling"/> of 1.0.
         /// </summary>
@@ -784,24 +782,14 @@ namespace Avalonia.Win32
 
         private Win32Icon? LoadIcon(Icons type, uint dpi)
         {
+            if (_iconImpl == null)
+            {
+                return null;
+            }
+
             if (type == Icons.ICON_SMALL2)
             {
                 type = Icons.ICON_SMALL;
-            }
-
-            if (_iconImpl == null)
-            {
-                if (s_defaultIconImpl.Value is { } defaultIcon)
-                {
-                    return type switch
-                    {
-                        Icons.ICON_SMALL => defaultIcon.SmallIcon,
-                        Icons.ICON_BIG => defaultIcon.BigIcon,
-                        _ => throw new NotImplementedException(),
-                    };
-                }
-
-                return null;
             }
 
             var iconKey = (type, dpi);
@@ -817,20 +805,6 @@ namespace Avalonia.Win32
             }
 
             return icon;
-        }
-
-        private static IconImpl? LoadDefaultIcon()
-        {
-            if (GetModuleFileName(default) is { } moduleFileName)
-            {
-                var iconsCount = ExtractIconEx(moduleFileName, 0, out var largeIcon, out var smallIcon, 1);
-                if (iconsCount >= 1)
-                {
-                    return new IconImpl(new Win32Icon(smallIcon), new Win32Icon(largeIcon));
-                }
-            }
-
-            return null;
         }
 
         private void RefreshIcon()
