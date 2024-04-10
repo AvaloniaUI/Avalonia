@@ -1,3 +1,5 @@
+using System;
+using Avalonia.Browser.Rendering;
 using Avalonia.Skia;
 using SkiaSharp;
 
@@ -7,16 +9,17 @@ namespace Avalonia.Browser.Skia
     {
         private readonly SKSurface _surface;
 
-        public BrowserSkiaGpuRenderSession(BrowserSkiaSurface browserSkiaSurface, GRBackendRenderTarget renderTarget)
+        public BrowserSkiaGpuRenderSession(BrowserGlSurface browserGlSurface, GRBackendRenderTarget renderTarget)
         {
-            _surface = SKSurface.Create(browserSkiaSurface.Context, renderTarget, browserSkiaSurface.Origin, 
-                browserSkiaSurface.ColorType, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
+            _surface = SKSurface.Create(browserGlSurface.Context, renderTarget, GRSurfaceOrigin.BottomLeft, 
+                browserGlSurface.PixelFormat.ToSkColorType(), new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal))
+                ?? throw new InvalidOperationException("Unable to create SKSurface.");
 
-            GrContext = browserSkiaSurface.Context;
+            GrContext = browserGlSurface.Context;
+            ScaleFactor = browserGlSurface.Scaling;
+            SurfaceOrigin = GRSurfaceOrigin.BottomLeft;
 
-            ScaleFactor = browserSkiaSurface.Scaling;
-
-            SurfaceOrigin = browserSkiaSurface.Origin;
+            browserGlSurface.EnsureResize();
         }
 
         public void Dispose()

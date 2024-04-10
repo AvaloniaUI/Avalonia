@@ -403,6 +403,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="error">The new binding or data validation error.</param>
     private protected void PublishValue(object? value, BindingError? error = null)
     {
+        if (!IsRunning)
+            return;
+
         // When binding to DataContext and the expression results in a binding error, the binding
         // expression should produce null rather than UnsetValue in order to not propagate
         // incorrect DataContexts from parent controls while things are being set up.

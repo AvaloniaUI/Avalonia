@@ -609,6 +609,10 @@ namespace Avalonia.Win32
                     _resizeReason = WindowResizeReason.User;
                     break;
 
+                case WindowsMessage.WM_SHOWWINDOW:
+                    _shown = wParam != default;
+                    break;
+
                 case WindowsMessage.WM_SIZE:
                     {
                         var size = (SizeCommand)wParam;

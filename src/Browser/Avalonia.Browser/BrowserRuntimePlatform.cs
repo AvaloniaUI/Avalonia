@@ -1,8 +1,5 @@
 using System;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text.RegularExpressions;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform;
 
