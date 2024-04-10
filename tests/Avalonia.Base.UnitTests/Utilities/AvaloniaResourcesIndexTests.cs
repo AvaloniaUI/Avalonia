@@ -85,7 +85,7 @@ public class AvaloniaResourcesIndexTests
         Assert.Equal(resourceBytes.Length, index[0].Size);
 
         Assert.Equal("!__AvaloniaDefaultWindowIcon", index[1].Path);
-        Assert.Equal(0, index[0].Offset);
-        Assert.Equal(resourceBytes.Length, index[0].Size);
+        Assert.Equal(0, index[1].Offset);
+        Assert.Equal(resourceBytes.Length, index[1].Size);
     }
 }
