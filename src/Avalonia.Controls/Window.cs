@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
@@ -87,6 +88,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IFocusScope, ILayoutRoot
     {
+        private static readonly Lazy<WindowIcon?> s_defaultIcon = new(LoadDefaultIcon);
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
@@ -228,7 +230,7 @@ namespace Avalonia.Controls
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
-            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon(icon?.PlatformImpl));
+            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
 
@@ -1099,6 +1101,19 @@ namespace Avalonia.Controls
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new WindowAutomationPeer(this);
+        }
+
+        private static WindowIcon? LoadDefaultIcon()
+        {
+            var assemblyName = Assembly.GetEntryAssembly()?.GetName()?.Name;
+            var basePath = assemblyName is not null ? new Uri($"avares://{assemblyName}/", UriKind.Absolute) : null;
+            var path = new Uri("/!AppIcon", UriKind.Relative);
+            if (!AssetLoader.Exists(path, basePath))
+            {
+                using var stream = AssetLoader.Open(path, path);
+                return new WindowIcon(stream);
+            }
+            return null;
         }
     }
 }
