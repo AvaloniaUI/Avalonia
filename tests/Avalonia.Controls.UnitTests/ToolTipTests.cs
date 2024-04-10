@@ -368,6 +368,30 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(ToolTip.GetIsOpen(other));
         }
 
+        [Fact]
+        public void Should_Close_When_Pointer_Leaves_Window()
+        {
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var target = new Decorator()
+                {
+                    [ToolTip.TipProperty] = "Tip",
+                    [ToolTip.ShowDelayProperty] = 0
+                };
+
+                var mouseEnter = SetupWindowAndGetMouseEnterAction(target);
+
+                mouseEnter(target);
+                Assert.True(ToolTip.GetIsOpen(target));
+
+                var topLevel = TopLevel.GetTopLevel(target);
+                topLevel.PlatformImpl.Input(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel, 
+                    RawPointerEventType.LeaveWindow, default(RawPointerPoint), RawInputModifiers.None));
+
+                Assert.False(ToolTip.GetIsOpen(target));
+            }
+        }
+
         private Action<Control> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string testName = null)
         {
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -390,6 +414,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(windowContent.IsVisible);
 
             var controlIds = new Dictionary<Control, int>();
+            IInputRoot lastRoot = null;
 
             return control =>
             {
@@ -411,8 +436,19 @@ namespace Avalonia.Controls.UnitTests
                 hitTesterMock.Setup(m => m.HitTestFirst(point, window, It.IsAny<Func<Visual, bool>>()))
                     .Returns(control);
 
-                windowImpl.Object.Input(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, (IInputRoot)control?.VisualRoot ?? window,
+                var root = (IInputRoot)control?.VisualRoot ?? window;
+                var timestamp = (ulong)DateTime.Now.Ticks;
+
+                windowImpl.Object.Input(new RawPointerEventArgs(s_mouseDevice, timestamp, root,
                         RawPointerEventType.Move, point, RawInputModifiers.None));
+
+                if (lastRoot != null && lastRoot != root)
+                {
+                    ((TopLevel)lastRoot).PlatformImpl?.Input(new RawPointerEventArgs(s_mouseDevice, timestamp, 
+                        lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
+                }
+
+                lastRoot = root;
 
                 Assert.True(control == null || control.IsPointerOver);
             };
