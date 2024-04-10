@@ -14,6 +14,7 @@ namespace Avalonia.Controls
         private readonly IDisposable _subscriptions;
 
         private Control? _tipControl;
+        private long _lastTipCloseTime;
         private DispatcherTimer? _timer;
 
         public ToolTipService(IInputManager inputManager)
@@ -25,12 +26,21 @@ namespace Avalonia.Controls
                 ToolTip.IsOpenProperty.Changed.Subscribe(TipOpenChanged));
         }
 
-        public void Dispose() => _subscriptions.Dispose();
+        public void Dispose()
+        {
+            StopTimer();
+            _subscriptions.Dispose();
+        }
 
         private void InputManager_OnProcess(RawInputEventArgs e)
         {
             if (e is RawPointerEventArgs pointerEvent)
             {
+                if (e.Root == _tipControl?.GetValue(ToolTip.ToolTipProperty)?.PopupHost)
+                {
+                    return; // pointer is over the current tooltip
+                }
+
                 switch (pointerEvent.Type)
                 {
                     case RawPointerEventType.Move:
@@ -50,8 +60,13 @@ namespace Avalonia.Controls
 
         public void Update(Visual? candidateToolTipHost)
         {
+            var currentToolTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);
+
             while (candidateToolTipHost != null)
             {
+                if (candidateToolTipHost == currentToolTip) // when OverlayPopupHost is in use, the tooltip is in the same window as the host control
+                    return;
+
                 if (candidateToolTipHost is Control control)
                 {
                     if (!ToolTip.GetServiceEnabled(control))
@@ -135,16 +150,29 @@ namespace Avalonia.Controls
         {
             StopTimer();
 
-            if (oldValue != null)
+            var closedPreviousTip = false; // avoid race conditions by remembering whether we closed a tooltip in the current call.
+
+            if (oldValue != null && ToolTip.GetIsOpen(oldValue))
             {
-                // If the control is showing a tooltip and the pointer is over the tooltip, don't close it.
-                if (oldValue.GetValue(ToolTip.ToolTipProperty) is not { IsPointerOver: true })
-                    Close(oldValue);
+                Close(oldValue);
+                closedPreviousTip = true;
             }
 
-            if (newValue != null)
+            if (newValue != null && !ToolTip.GetIsOpen(newValue))
             {
-                var showDelay = ToolTip.GetShowDelay(newValue);
+                var betweenShowDelay = ToolTip.GetBetweenShowDelay(newValue);
+
+                int showDelay;
+
+                if (betweenShowDelay >= 0 && (closedPreviousTip || (DateTime.UtcNow.Ticks - _lastTipCloseTime) <= betweenShowDelay * TimeSpan.TicksPerMillisecond))
+                {
+                    showDelay = 0;
+                }
+                else
+                {
+                    showDelay = ToolTip.GetShowDelay(newValue);
+                }
+
                 if (showDelay == 0)
                 {
                     Open(newValue);
@@ -165,6 +193,7 @@ namespace Avalonia.Controls
 
         private void ToolTipClosed(object? sender, EventArgs e)
         {
+            _lastTipCloseTime = DateTime.UtcNow.Ticks;
             if (sender is ToolTip toolTip)
             {
                 toolTip.Closed -= ToolTipClosed;
