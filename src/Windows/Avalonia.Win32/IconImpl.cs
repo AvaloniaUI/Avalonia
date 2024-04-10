@@ -12,6 +12,12 @@ namespace Avalonia.Win32
 
         private static readonly int s_taskbarIconSize = Win32Platform.WindowsVersion < PlatformConstants.Windows10 ? 32 : 24;
 
+        public IconImpl(Win32Icon smallIcon, Win32Icon bigIcon)
+        {
+            _smallIcon = smallIcon;
+            _bigIcon = bigIcon;
+        }
+
         public IconImpl(Stream smallIcon, Stream bigIcon)
         {
             _smallIcon = CreateIconImpl(smallIcon);
@@ -22,6 +28,9 @@ namespace Avalonia.Win32
         {
             _smallIcon = _bigIcon = CreateIconImpl(icon);
         }
+
+        public Win32Icon SmallIcon => _smallIcon;
+        public Win32Icon BigIcon => _bigIcon;
 
         private static Win32Icon CreateIconImpl(Stream stream)
         {

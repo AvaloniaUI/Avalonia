@@ -11,11 +11,16 @@ namespace Avalonia.Win32.Interop;
 
 internal class Win32Icon : IDisposable
 {
+    public Win32Icon(IntPtr handle)
+    {
+        Handle = handle;
+    }
+
     public Win32Icon(Bitmap bitmap, PixelPoint hotSpot = default)
     {
         Handle = CreateIcon(bitmap, hotSpot);
     }
-    
+
     public Win32Icon(IBitmapImpl bitmap, PixelPoint hotSpot = default)
     {
         using var memoryStream = new MemoryStream();

@@ -1376,6 +1376,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool DestroyIcon(IntPtr hIcon);
 
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        public static extern int ExtractIconEx(string szExeFileName, int nIconIndex, out IntPtr phiconLarge,
+            out IntPtr phiconSmall, int nIcons);
+
         [DllImport("user32.dll", EntryPoint = "PeekMessageW", ExactSpelling = true)]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
 
@@ -1822,6 +1826,28 @@ namespace Avalonia.Win32.Interop
             {
                 throw new Exception("RtlGetVersion failed!");
             }
+        }
+
+        [DllImport("kernel32", EntryPoint = "GetModuleFileName", CharSet=CharSet.Unicode, SetLastError = true)]
+        private static extern uint IntGetModuleFileName(IntPtr hModule, StringBuilder buffer, uint length);
+
+        internal static string? GetModuleFileName(IntPtr hModule)
+        {
+            // Environment.ProcessPath is not avaialable on netstandard.
+            uint length;
+            var buffer = new StringBuilder(260);
+            while ((length = IntGetModuleFileName(hModule, buffer, (uint)buffer.Capacity)) >= buffer.Capacity)
+            {
+                buffer.EnsureCapacity((int)length);
+            }
+
+            if (length == 0)
+            {
+                return null;
+            }
+
+            buffer.Length = (int)length;
+            return buffer.ToString();
         }
 
         [DllImport("kernel32", EntryPoint = "WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
