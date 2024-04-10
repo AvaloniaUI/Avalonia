@@ -90,7 +90,7 @@ namespace Avalonia.Controls
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
-        private bool _hasSetInitialSize = false;
+        private bool _canHandleResized = false;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -720,6 +720,8 @@ namespace Avalonia.Controls
                 // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
                 SetWindowStartupLocation(owner);
 
+                _canHandleResized = true; 
+                
                 var initialSize = new Size(
                     double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
                     double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
@@ -728,8 +730,6 @@ namespace Avalonia.Controls
                 {
                     PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
-
-                _hasSetInitialSize = true; 
 
                 LayoutManager.ExecuteInitialLayoutPass();
 
@@ -1023,7 +1023,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
-            if (_hasSetInitialSize && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
+            if (_canHandleResized && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
 
