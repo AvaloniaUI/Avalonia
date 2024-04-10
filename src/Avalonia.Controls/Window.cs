@@ -1105,11 +1105,13 @@ namespace Avalonia.Controls
 
         private static WindowIcon? LoadDefaultIcon()
         {
-            if (Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
+            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader. 
+            if (AvaloniaLocator.Current.GetService<IAssetLoader>() is { } assetLoader
+                && Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
                 && Uri.TryCreate($"avares://{assemblyName}/!__AvaloniaDefaultWindowIcon", UriKind.Absolute, out var path)
-                && AssetLoader.Exists(path))
+                && assetLoader.Exists(path))
             {
-                using var stream = AssetLoader.Open(path);
+                using var stream = assetLoader.Open(path);
                 return new WindowIcon(stream);
             }
             return null;
