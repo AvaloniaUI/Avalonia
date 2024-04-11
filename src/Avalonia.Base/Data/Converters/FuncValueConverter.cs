@@ -55,7 +55,7 @@ namespace Avalonia.Data.Converters
         private readonly Func<TIn?, TParam?, TOut> _convert;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TOut}"/> class.
+        /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TParam, TOut}"/> class.
         /// </summary>
         /// <param name="convert">The convert function.</param>
         public FuncValueConverter(Func<TIn?, TParam?, TOut> convert)
