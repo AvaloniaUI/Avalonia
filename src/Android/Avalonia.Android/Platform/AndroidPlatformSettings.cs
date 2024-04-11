@@ -5,7 +5,6 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Provider;
 using Android.Views.Accessibility;
-using AndroidX.Core.Content.Resources;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Color = Avalonia.Media.Color;
