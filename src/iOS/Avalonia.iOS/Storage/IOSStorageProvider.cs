@@ -104,14 +104,31 @@ internal class IOSStorageProvider : IStorageProvider
 
     public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
-        // TODO: research if it's possible, maybe with additional permissions.
-        return Task.FromResult<IStorageFile?>(null);
+        var fileUrl = (NSUrl?)filePath;
+        var isDirectory = false;
+        var file = fileUrl is not null
+                   && fileUrl.Path is { } path
+                   && NSFileManager.DefaultManager.FileExists(path, ref isDirectory)
+                   && !isDirectory
+                   && NSFileManager.DefaultManager.IsReadableFile(path) ?
+            new IOSStorageFile(fileUrl) :
+            null;
+
+        return Task.FromResult<IStorageFile?>(file);
     }
 
     public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
     {
-        // TODO: research if it's possible, maybe with additional permissions.
-        return Task.FromResult<IStorageFolder?>(null);
+        var folderUrl = (NSUrl?)folderPath;
+        var isDirectory = false;
+        var folder = folderUrl is not null
+                   && folderUrl.Path is { } path
+                   && NSFileManager.DefaultManager.FileExists(path, ref isDirectory)
+                   && isDirectory ?
+            new IOSStorageFolder(folderUrl) :
+            null;
+
+        return Task.FromResult<IStorageFolder?>(folder);
     }
 
     public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)

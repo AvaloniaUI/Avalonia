@@ -29,6 +29,13 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 ?? string.Empty;
         }
     }
+    
+    public static IStorageItem CreateItem(NSUrl url, NSUrl? securityScopedAncestorUrl = null)
+    {
+        return url.HasDirectoryPath ?
+            new IOSStorageFolder(url, securityScopedAncestorUrl) :
+            new IOSStorageFile(url, securityScopedAncestorUrl);
+    }
 
     internal NSUrl Url { get; }
     // Calling StartAccessingSecurityScopedResource on items retrieved from, or created in a folder
@@ -161,7 +168,7 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
     public IOSStorageFile(NSUrl url, NSUrl? securityScopedAncestorUrl = null) : base(url, securityScopedAncestorUrl)
     {
     }
-    
+
     public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Read));
@@ -208,9 +215,7 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
                     else
                     {
                         var items = content
-                            .Select(u => u.HasDirectoryPath ?
-                                (IStorageItem)new IOSStorageFolder(u, SecurityScopedAncestorUrl) :
-                                new IOSStorageFile(u, SecurityScopedAncestorUrl))
+                            .Select(u => CreateItem(u, SecurityScopedAncestorUrl))
                             .ToArray();
                         tcs.TrySetResult(items);
                     }
