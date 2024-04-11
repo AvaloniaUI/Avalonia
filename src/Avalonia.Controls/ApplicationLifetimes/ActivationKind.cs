@@ -3,10 +3,15 @@ namespace Avalonia.Controls.ApplicationLifetimes;
 public enum ActivationKind
 {
     /// <summary>
-    /// When the application is passed a URI to open.
+    /// When the application is passed a file to open.
     /// </summary>
-    OpenUri = 20, 
-    
+    File = 10,
+
+    /// <summary>
+    /// When the application is passed a URI to open, protocol activation.
+    /// </summary>
+    OpenUri = 20,
+
     /// <summary>
     /// When the application is asked to reopen.
     /// An example of this is on MacOS when all the windows are closed,

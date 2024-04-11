@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.ApplicationLifetimes;
 
@@ -15,7 +16,7 @@ public class ActivatedEventArgs : EventArgs
     {
         Kind = kind;
     }
-      
+
     /// <summary>
     /// The <see cref="ActivationKind"/> that this event represents.
     /// </summary>

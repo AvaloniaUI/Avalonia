@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes;
 
-public class ProtocolActivatedEventArgs : ActivatedEventArgs
+public sealed class ProtocolActivatedEventArgs : ActivatedEventArgs
 {
-    public ProtocolActivatedEventArgs(ActivationKind kind, Uri uri) : base(kind)
+    public ProtocolActivatedEventArgs(Uri uri) : base(ActivationKind.OpenUri)
     {
         Uri = uri;
     }
