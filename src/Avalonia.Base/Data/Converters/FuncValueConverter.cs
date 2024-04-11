@@ -44,7 +44,7 @@ namespace Avalonia.Data.Converters
     }
 
     /// <summary>
-    /// A general purpose <see cref="IValueConverter"/> that uses a <see cref="Func{TIn, TParam, TResult}"/>
+    /// A general purpose <see cref="IValueConverter"/> that uses a <see cref="Func{TIn, TParam, TOut}"/>
     /// to provide the converter logic.
     /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
