@@ -3,9 +3,8 @@
     <AvaloniaXamlReportImportance Condition="'$(AvaloniaXamlReportImportance)' == ''">low</AvaloniaXamlReportImportance>
     <_AvaloniaSkipXamlCompilation Condition="'$(_AvaloniaSkipXamlCompilation)' == ''">false</_AvaloniaSkipXamlCompilation>
     <AvaloniaUseCompiledBindingsByDefault Condition="'$(AvaloniaUseCompiledBindingsByDefault)' == ''">false</AvaloniaUseCompiledBindingsByDefault>
+    <AvaloniaIncludeApplicationIconAsWindowIcon Condition="'$(AvaloniaIncludeApplicationIconAsWindowIcon)' == ''">true</AvaloniaIncludeApplicationIconAsWindowIcon>
   </PropertyGroup>
-  
-  
 
   <PropertyGroup>
     <!-- Enable property page if VisualStudioVersion is great or equal 17.0 and Language is'not VB.NET -->
@@ -31,7 +30,15 @@
     <None Remove="**\*.axaml" />
     <None Remove="**\*.paml" />
   </ItemGroup>
-  
+
+  <!-- Include App icon, so we can use it as a default Window icon. -->
+  <ItemGroup Condition="'$(AvaloniaIncludeApplicationIconAsWindowIcon)' == 'true'">
+    <AvaloniaResource Include="$(ApplicationIcon)"
+                      Visible="false"
+                      Link="!__AvaloniaDefaultWindowIcon"
+                      Condition="'$(ApplicationIcon)' != ''" />
+  </ItemGroup>
+
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
              AssemblyFile="$(AvaloniaBuildTasksLocation)"
              />
