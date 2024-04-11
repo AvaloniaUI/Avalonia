@@ -68,6 +68,7 @@ internal abstract class TargetTypeConverter
 
 #pragma warning disable IL2026
 #pragma warning disable IL2067
+#pragma warning disable IL2072
             // TODO: TypeConverters are not trimming friendly in some edge cases, we probably need
             // to make compiled bindings emit conversion code at compile-time.
             var toTypeConverter = TypeDescriptor.GetConverter(t);

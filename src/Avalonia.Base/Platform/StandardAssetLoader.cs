@@ -155,6 +155,16 @@ public class StandardAssetLoader : IAssetLoader
         return Enumerable.Empty<Uri>();
     }
 
+    public void InvalidateAssemblyCache(string name)
+    {
+        _assemblyDescriptorResolver.InvalidateAssemblyCache(name);
+    }
+
+    public void InvalidateAssemblyCache()
+    {
+        _assemblyDescriptorResolver.InvalidateAssemblyCache();
+    }
+
     public static void RegisterResUriParsers() => AssetLoader.RegisterResUriParsers();
 
     private bool TryGetAsset(Uri uri, Uri? baseUri, [NotNullWhen(true)] out IAssetDescriptor? assetDescriptor)
