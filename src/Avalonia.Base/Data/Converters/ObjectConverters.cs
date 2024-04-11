@@ -21,7 +21,7 @@ namespace Avalonia.Data.Converters
         /// A value converter that returns true if the input object is equal to a parameter object.
         /// </summary>
         public static readonly IValueConverter Equal =
-            new FuncValueConverter<object?, object?, bool>((a, b) => a is not null && a.Equals(b));
+            new FuncValueConverter<object?, object?, bool>((a, b) => a?.Equals(b) ?? b is null);
  
         /// <summary>
         /// A value converter that returns true if the input object is not equal to a parameter object.
