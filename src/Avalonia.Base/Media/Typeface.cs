@@ -90,7 +90,7 @@ namespace Avalonia.Media
                 }
 
                 throw new InvalidOperationException(
-                    $"Could not create glyphTypeface. Font family: {FontFamily?.Name}. Style: {Style}. Weight: {Weight}. Stretch: {Stretch}");
+                    $"Could not create glyphTypeface. Font family: {FontFamily?.Name} ({FontFamily?.Key}). Style: {Style}. Weight: {Weight}. Stretch: {Stretch}");
             }
         }
 
