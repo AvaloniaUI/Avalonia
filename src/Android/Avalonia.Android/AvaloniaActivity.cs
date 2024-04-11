@@ -6,9 +6,12 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Android.Provider;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using AndroidX.DocumentFile.Provider;
+using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android;
@@ -81,12 +84,23 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         _listener = new GlobalLayoutListener(_view);
 
         _view.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
-            
+
+        // TODO: we probably don't need to create AvaloniaView, if it's just a protocol activation, and main activity is already created.
         if (Intent?.Data is {} androidUri
             && androidUri.IsAbsolute
-            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var protocolUri))
+            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
         {
-            _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(ActivationKind.OpenUri, protocolUri));
+            if (uri.Scheme == Uri.UriSchemeFile)
+            {
+                if (AndroidStorageItem.CreateItem(this, androidUri) is { } item)
+                {
+                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new [] { item }));
+                }
+            }
+            else
+            {
+                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
+            }
         }
     }
 
