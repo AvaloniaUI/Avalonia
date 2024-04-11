@@ -6,16 +6,9 @@ namespace Avalonia.Native;
 
 #nullable enable
 
-internal class MacOSActivatableLifetime : IActivatableLifetime
+internal class MacOSActivatableLifetime : ActivatableLifetimeBase
 {
-    /// <inheritdoc />
-    public event EventHandler<ActivatedEventArgs>? Activated;
-    
-    /// <inheritdoc />
-    public event EventHandler<ActivatedEventArgs>? Deactivated;
-
-    /// <inheritdoc />
-    public bool TryLeaveBackground()
+    public override bool TryLeaveBackground()
     {
         var nativeApplicationCommands = AvaloniaLocator.Current.GetService<INativeApplicationCommands>();
         nativeApplicationCommands?.ShowApp();
@@ -23,27 +16,11 @@ internal class MacOSActivatableLifetime : IActivatableLifetime
         return true;
     }
 
-    /// <inheritdoc />
-    public bool TryEnterBackground()
+    public override bool TryEnterBackground()
     {
         var nativeApplicationCommands = AvaloniaLocator.Current.GetService<INativeApplicationCommands>();
         nativeApplicationCommands?.HideApp();
 
         return true;
-    }
-
-    internal void RaiseUrl(Uri uri)
-    {
-        Activated?.Invoke(this, new ProtocolActivatedEventArgs(ActivationKind.OpenUri, uri));
-    }
-    
-    internal void RaiseActivated(ActivationKind kind)
-    {
-        Activated?.Invoke(this, new ActivatedEventArgs(kind));
-    }
-
-    internal void RaiseDeactivated(ActivationKind kind)
-    {
-        Deactivated?.Invoke(this, new ActivatedEventArgs(kind));
     }
 }
