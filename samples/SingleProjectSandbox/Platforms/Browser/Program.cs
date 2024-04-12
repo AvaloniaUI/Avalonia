@@ -1,19 +1,15 @@
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Browser;
-using MobileSandbox;
+using SingleProjectSandbox;
 
 [assembly:SupportedOSPlatform("browser")]
 
-internal partial class Program
+internal static class Program
 {
     public static async Task Main(string[] args)
     {
-        await BuildAvaloniaApp()
+        await App.BuildAvaloniaApp()
             .StartBrowserAppAsync("out");
     }
-    
-    public static AppBuilder BuildAvaloniaApp()
-           => AppBuilder.Configure<App>();
 }

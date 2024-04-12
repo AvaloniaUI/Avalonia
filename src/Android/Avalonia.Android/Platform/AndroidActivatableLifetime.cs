@@ -5,9 +5,9 @@ namespace Avalonia.Android.Platform;
 
 internal class AndroidActivatableLifetime : ActivatableLifetimeBase
 {
-    private IAvaloniaActivity _activity;
+    private IAvaloniaActivity? _activity;
 
-    public IAvaloniaActivity Activity
+    public IAvaloniaActivity? Activity
     {
         get => _activity;
         set
@@ -30,7 +30,7 @@ internal class AndroidActivatableLifetime : ActivatableLifetimeBase
 
     public override bool TryEnterBackground() => (_activity as Activity)?.MoveTaskToBack(true) == true;
 
-    private void ActivityOnDeactivated(object sender, ActivatedEventArgs e) => OnDeactivated(e);
+    private void ActivityOnDeactivated(object? sender, ActivatedEventArgs e) => OnDeactivated(e);
 
-    private void ActivityOnActivated(object sender, ActivatedEventArgs e) => OnActivated(e);
+    private void ActivityOnActivated(object? sender, ActivatedEventArgs e) => OnActivated(e);
 }

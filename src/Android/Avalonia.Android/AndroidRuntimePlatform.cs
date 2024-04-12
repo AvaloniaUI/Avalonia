@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using Android.Content.PM;
 using Android.Content;
 using Avalonia.Platform;

@@ -34,6 +34,7 @@
   <!-- Include App icon, so we can use it as a default Window icon. -->
   <ItemGroup Condition="'$(AvaloniaIncludeApplicationIconAsWindowIcon)' == 'true'">
     <AvaloniaResource Include="$(ApplicationIcon)"
+                      Visible="false"
                       Link="!__AvaloniaDefaultWindowIcon"
                       Condition="'$(ApplicationIcon)' != ''" />
   </ItemGroup>

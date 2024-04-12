@@ -2,10 +2,14 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-namespace MobileSandbox;
+namespace SingleProjectSandbox;
 
 public class App : Application
 {
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .LogToTrace();
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
