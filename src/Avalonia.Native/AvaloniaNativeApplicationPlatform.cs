@@ -43,12 +43,33 @@ namespace Avalonia.Native
 
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
             {
+                var files = new List<IStorageItem>();
+                var uris = new List<Uri>();
                 foreach (var url in urls.ToStringArray())
                 {
                     if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
                     {
-                        lifetime.OnActivated(new ProtocolActivatedEventArgs(uri));
+                        if (uri.Scheme == Uri.UriSchemeFile)
+                        {
+                            if (StorageProviderHelpers.TryCreateBclStorageItem(uri.LocalPath) is { } file)
+                            {
+                                files.Add(file);
+                            }
+                        }
+                        else
+                        {
+                            uris.Add(uri);
+                        }
                     }
+                }
+
+                foreach (var uri in uris)
+                {
+                    lifetime.OnActivated(new ProtocolActivatedEventArgs(uri));
+                }
+                if (files.Count > 0)
+                {
+                    lifetime.OnActivated(new FileActivatedEventArgs(files));
                 }
             }
         }
