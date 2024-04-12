@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
@@ -18,6 +20,7 @@ namespace Avalonia
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
+    [DebuggerDisplay("{DebugDisplay}")]
     public class AvaloniaObject : IAvaloniaObjectDebug, INotifyPropertyChanged
     {
         private readonly ValueStore _values;
@@ -100,6 +103,11 @@ namespace Avalonia
             get { return new IndexerBinding(this, binding.Property!, binding.Mode); }
             set { this.Bind(binding.Property!, value); }
         }
+
+        /// <summary>
+        /// Gets a string to display inside the debugger for this object.
+        /// </summary>
+        internal string DebugDisplay => GetDebugDisplay(true);
 
         /// <summary>
         /// Returns a value indicating whether the current thread is the UI thread.
@@ -858,6 +866,28 @@ namespace Avalonia
                 property,
                 value,
                 priority);
+        }
+
+        internal string GetDebugDisplay(bool includeContent)
+        {
+            var builder = new StringBuilder();
+            BuildDebugDisplay(builder, includeContent);
+            return builder.ToString();
+        }
+
+        internal virtual void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            var type = GetType();
+
+            if (type.Namespace is { } ns &&
+                (ns == "Avalonia" || ns.StartsWith("Avalonia.", StringComparison.Ordinal)))
+            {
+                builder.Append(type.Name);
+            }
+            else
+            {
+                builder.Append(ToString());
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

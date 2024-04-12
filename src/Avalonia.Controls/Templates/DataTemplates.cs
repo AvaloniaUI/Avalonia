@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Templates
     /// <summary>
     /// A collection of <see cref="IDataTemplate"/>s.
     /// </summary>
-    public class DataTemplates : AvaloniaList<IDataTemplate>
+    public class DataTemplates : AvaloniaList<IDataTemplate>, IAvaloniaListItemValidator<IDataTemplate>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DataTemplates"/> class.
@@ -14,13 +14,12 @@ namespace Avalonia.Controls.Templates
         public DataTemplates()
         {
             ResetBehavior = ResetBehavior.Remove;
-            
-            Validate += ValidateDataTemplate;
+            Validator = this;
         }
 
-        private static void ValidateDataTemplate(IDataTemplate template)
+        void IAvaloniaListItemValidator<IDataTemplate>.Validate(IDataTemplate item)
         {
-            var valid = template switch
+            var valid = item switch
             {
                 ITypedDataTemplate typed => typed.DataType is not null,
                 _ => true
