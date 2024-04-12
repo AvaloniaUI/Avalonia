@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -13,9 +15,37 @@ namespace Avalonia.Skia
         private bool _isDisposed;
         private readonly SKTypeface _typeface;
 
+        private static uint GetIntTag(string v)
+        {
+            return (uint)v[0] << 24 | (uint)v[1] << 16 | (uint)v[2] << 08 | (uint)v[3] << 00;
+        }
+
+        public static bool TryReadFontMetrics(SKTypeface typeface, out int Ascent, out int Descent, out int LineGap)
+        {
+            // See: https://learn.microsoft.com/en-us/typography/opentype/spec/recom#baseline-to-baseline-distances
+            if (typeface.TryGetTableData(GetIntTag("OS/2"), out byte[]? os2Table) && 
+                typeface.TryGetTableData(GetIntTag("hhea"), out byte[]? hheaTable))
+            {
+                if (ReadOS2Table(os2Table, out int usWinAscent, out int usWinDescent) && 
+                    ReadHHEATable(hheaTable, out int ascender, out int descender, out int lineGap) &&
+                    usWinAscent > 0 && usWinDescent > 0)
+                {
+                    Ascent = usWinAscent;
+                    Descent = usWinDescent;
+                    LineGap = Math.Max(0, (ascender - descender + lineGap) - (usWinAscent + usWinDescent));
+                    return true;
+                }
+            }
+
+            Ascent = Descent = LineGap = 0;
+            return false;
+        }
+
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
             _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
+
+            var hasOs2Metrics = TryReadFontMetrics(typeface, out int FMAscent, out int FMDescent, out int FMLineGap);
 
             Face = new Face(GetTable)
             {
@@ -37,9 +67,9 @@ namespace Avalonia.Skia
             Metrics = new FontMetrics
             {
                 DesignEmHeight = (short)Face.UnitsPerEm,
-                Ascent = -ascent,
-                Descent = -descent,
-                LineGap = lineGap,
+                Ascent = hasOs2Metrics ? (-FMAscent) : (-ascent), // have to invert OS2 ascent here for some reason
+                Descent = hasOs2Metrics ? FMDescent : (-descent),
+                LineGap = hasOs2Metrics ? FMLineGap : (lineGap),
                 UnderlinePosition = -underlineOffset,
                 UnderlineThickness = underlineSize,
                 StrikethroughPosition = -strikethroughOffset,
@@ -218,6 +248,66 @@ namespace Avalonia.Skia
                 stream = null;
 
                 return false;
+            }
+        }
+
+        private static bool ReadOS2Table(byte[]? array, out int usWinAscent, out int usWinDescent)
+        {
+            if (array == null || array.Length < 78)
+            {
+                usWinAscent = 0;
+                usWinDescent = 0;
+                return false;
+            }
+
+            using (MemoryStream stream = new MemoryStream(array))
+            {
+                // The offset to get to the usWinAscent field in the table
+                stream.Seek(74, SeekOrigin.Begin);
+                usWinAscent = ReadU2BE(stream);
+                usWinDescent = ReadU2BE(stream);
+
+                return true;
+            }
+        }
+
+        private static bool ReadHHEATable(byte[]? array, out int ascender, out int descender, out int lineGap)
+        {
+            if (array == null || array.Length < 8)
+            {
+                ascender = descender = lineGap = 0;
+                return false;
+            }
+
+            using (MemoryStream stream = new MemoryStream(array))
+            {
+                // The offset to get to the ascender field in the table
+                stream.Seek(4, SeekOrigin.Begin);
+                ascender = ReadU2BE(stream);
+                descender = ReadU2BE(stream);
+                lineGap = ReadU2BE(stream);
+
+                return true;
+            }
+        }
+
+        // Helper method to read a big endian UInt16
+        private static ushort ReadU2BE(Stream stream)
+        {
+            var buf = ArrayPool<byte>.Shared.Rent(2);
+            try
+            {
+                int numRead = stream.Read(buf, 0, 2);
+                if (numRead != 2)
+                {
+                    throw new IOException("Could not read 2 bytes for UInt16");
+                }
+
+                return BinaryPrimitives.ReadUInt16BigEndian(new ReadOnlySpan<byte>(buf, 0, numRead));
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buf);
             }
         }
     }
