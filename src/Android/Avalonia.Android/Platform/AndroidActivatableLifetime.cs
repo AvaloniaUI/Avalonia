@@ -1,4 +1,3 @@
-using System;
 using Android.App;
 using Avalonia.Controls.ApplicationLifetimes;
 
