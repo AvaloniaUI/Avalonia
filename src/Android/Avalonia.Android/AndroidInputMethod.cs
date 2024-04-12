@@ -50,7 +50,7 @@ namespace Avalonia.Android
 
             _host = host;
             _imm = host.Context?.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>()
-                ?? throw new InvalidOperationException("TView.Context is expected to be not null.");
+                   ?? throw new InvalidOperationException("Context.InputMethodService is expected to be not null.");
 
             _host.Focusable = true;
             _host.FocusableInTouchMode = true;
