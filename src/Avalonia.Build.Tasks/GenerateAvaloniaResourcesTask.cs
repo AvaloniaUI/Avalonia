@@ -80,7 +80,13 @@ namespace Avalonia.Build.Tasks
         {
             AvaloniaResourcesIndexReaderWriter.WriteResources(
                 output,
-                sources.Select(source => (source.Path, source.Size, (Func<Stream>) source.Open)).ToList());
+                sources.Select(source => new AvaloniaResourcesEntry
+                {
+                    Path = source.Path,
+                    Size = source.Size,
+                    SystemPath = source.SystemPath,
+                    Open = source.Open
+                }).ToList());
         }
 
         private bool PreProcessXamlFiles(List<Source> sources)

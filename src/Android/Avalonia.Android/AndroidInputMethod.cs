@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Runtime;
 using Android.Text;
@@ -13,8 +14,9 @@ namespace Avalonia.Android
     {
         public View View { get; }
 
-        public TextInputMethodClient Client { get; }
+        public TextInputMethodClient? Client { get; }
 
+        [MemberNotNullWhen(true, nameof(Client))]
         public bool IsActive { get; }
 
         public InputMethodManager IMM { get; }
@@ -38,8 +40,8 @@ namespace Avalonia.Android
     {
         private readonly TView _host;
         private readonly InputMethodManager _imm;
-        private TextInputMethodClient _client;
-        private AvaloniaInputConnection _inputConnection;
+        private TextInputMethodClient? _client;
+        private AvaloniaInputConnection? _inputConnection;
 
         public AndroidInputMethod(TView host)
         {
@@ -47,7 +49,8 @@ namespace Avalonia.Android
                 throw new InvalidOperationException("Host should return true from OnCheckIsTextEditor()");
 
             _host = host;
-            _imm = host.Context.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
+            _imm = host.Context?.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>()
+                   ?? throw new InvalidOperationException("Context.InputMethodService is expected to be not null.");
 
             _host.Focusable = true;
             _host.FocusableInTouchMode = true;
@@ -55,9 +58,11 @@ namespace Avalonia.Android
 
         public View View => _host;
 
+        [MemberNotNullWhen(true, nameof(Client))]
+        [MemberNotNullWhen(true, nameof(_client))]
         public bool IsActive => Client != null;
 
-        public TextInputMethodClient Client => _client;
+        public TextInputMethodClient? Client => _client;
 
         public InputMethodManager IMM => _imm;
 
@@ -66,7 +71,7 @@ namespace Avalonia.Android
 
         }
 
-        public void SetClient(TextInputMethodClient client)
+        public void SetClient(TextInputMethodClient? client)
         {
             _client = client;
 
@@ -103,9 +108,9 @@ namespace Avalonia.Android
             }
         }
 
-        private void _client_SelectionChanged(object sender, EventArgs e)
+        private void _client_SelectionChanged(object? sender, EventArgs e)
         {
-            if (_inputConnection.IsInBatchEdit)
+            if (_inputConnection is null || _inputConnection.IsInBatchEdit)
                 return;
             OnSelectionChanged();
         }
@@ -121,19 +126,19 @@ namespace Avalonia.Android
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
 
-            _inputConnection.SetSelection(selection.Start, selection.End);
+            _inputConnection?.SetSelection(selection.Start, selection.End);
         }
 
-        private void _client_SurroundingTextChanged(object sender, EventArgs e)
+        private void _client_SurroundingTextChanged(object? sender, EventArgs e)
         {
-            if (_inputConnection.IsInBatchEdit)
+            if (_inputConnection is null || _inputConnection.IsInBatchEdit)
                 return;
             OnSurroundingTextChanged();
         }
 
         public void OnBatchEditedEnded()
         {
-            if (_inputConnection.IsInBatchEdit)
+            if (_inputConnection is null || _inputConnection.IsInBatchEdit)
                 return;
 
             OnSurroundingTextChanged();
@@ -142,7 +147,7 @@ namespace Avalonia.Android
 
         private void OnSurroundingTextChanged()
         {
-            if(_client is null)
+            if(_client is null || _inputConnection is null)
             {
                 return;
             }
@@ -199,7 +204,7 @@ namespace Avalonia.Android
             _host.InitEditorInfo((topLevel, outAttrs) =>
             {
                 if (_client == null)
-                    return null;
+                    return null!;
 
                 _inputConnection = new AvaloniaInputConnection(topLevel, this);
 

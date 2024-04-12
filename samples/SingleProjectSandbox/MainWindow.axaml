@@ -1,0 +1,10 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:local="using:SingleProjectSandbox"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        CanResize="False"
+        Width="720" Height="1280"
+        Title="Single Project Sandbox"
+        WindowStartupLocation="CenterScreen"
+        x:Class="SingleProjectSandbox.MainWindow">
+  <local:MainView />
+</Window>

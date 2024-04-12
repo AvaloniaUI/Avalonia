@@ -107,8 +107,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 _brush = new DrawingBrush()
                 {
                     TileMode = TileMode.None,
-                    SourceRect = new RelativeRect(0, 0, 50, 50, RelativeUnit.Absolute),
-                    DestinationRect = new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative),
+                    SourceRect = new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative),
+                    DestinationRect = new RelativeRect(0, 0, 50, 50, RelativeUnit.Absolute),
                     Transform = new TranslateTransform(150, 150),
                     Drawing = new DrawingGroup()
                     {

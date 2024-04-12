@@ -33,6 +33,12 @@ public static class AssetLoader
     /// <inheritdoc cref="IAssetLoader.GetAssets"/>
     public static IEnumerable<Uri> GetAssets(Uri uri, Uri? baseUri)
         => GetAssetLoader().GetAssets(uri, baseUri);
+    
+    /// <inheritdoc cref="IAssetLoader.InvalidateAssemblyCache()"/>
+    public static void InvalidateAssemblyCache(string name) => GetAssetLoader().InvalidateAssemblyCache(name);
+    /// <inheritdoc cref="IAssetLoader.InvalidateAssemblyCache(string)"/>
+    public static void InvalidateAssemblyCache() => GetAssetLoader().InvalidateAssemblyCache();
+    
 #endif
 
     internal static void RegisterResUriParsers()
