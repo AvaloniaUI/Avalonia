@@ -2,6 +2,7 @@ using System;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using System.Reactive.Disposables;
 using System.Threading;
