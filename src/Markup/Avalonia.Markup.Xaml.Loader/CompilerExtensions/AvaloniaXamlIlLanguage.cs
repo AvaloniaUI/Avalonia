@@ -79,7 +79,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             var emit = new XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>
             {
                 ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.EmitProvideValueTarget,
-                ContextTypeBuilderCallback = (b, c) => EmitNameScopeField(rv, typeSystem, b, c)
+                ContextTypeBuilderCallback = definition => EmitNameScopeField(rv, typeSystem, definition)
             };
             return (rv, emit);
         }
@@ -88,13 +88,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         private static void EmitNameScopeField(XamlLanguageTypeMappings mappings,
             IXamlTypeSystem typeSystem,
-            IXamlTypeBuilder<IXamlILEmitter> typebuilder, IXamlILEmitter constructor)
+            IXamlILContextDefinition<IXamlILEmitter> definition)
         {
 
             var nameScopeType = typeSystem.FindType("Avalonia.Controls.INameScope");
-            var field = typebuilder.DefineField(nameScopeType, 
+            var field = definition.TypeBuilder.DefineField(nameScopeType,
                 ContextNameScopeFieldName, XamlVisibility.Public, false);
-            constructor
+            definition.ConstructorBuilder.Generator
                 .Ldarg_0()
                 .Ldarg(1)
                 .Ldtype(nameScopeType)
