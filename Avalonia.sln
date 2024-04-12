@@ -212,7 +212,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DesignerSupport.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DevGenerators", "src\tools\DevGenerators\DevGenerators.csproj", "{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobileSandbox", "samples\MobileSandbox\MobileSandbox.csproj", "{3B8519C1-2F51-4F12-A348-120AB91D4532}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SingleProjectSandbox", "samples\SingleProjectSandbox\SingleProjectSandbox.csproj", "{3B8519C1-2F51-4F12-A348-120AB91D4532}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Browser", "src\Browser\Avalonia.Browser\Avalonia.Browser.csproj", "{4A39637C-9338-4925-A4DB-D072E292EC78}"
 EndProject
