@@ -109,7 +109,7 @@ namespace Avalonia.Data
 
             if (mode == BindingMode.Default)
             {
-                if (targetProperty?.GetMetadata(target.GetType()) is { } metadata)
+                if (targetProperty?.GetMetadata(target) is { } metadata)
                     mode = metadata.DefaultBindingMode;
                 else
                     mode = BindingMode.OneWay;

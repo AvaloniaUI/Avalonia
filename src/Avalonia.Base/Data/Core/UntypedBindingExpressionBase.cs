@@ -532,9 +532,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         if (TargetProperty is not null && _target?.TryGetTarget(out var target) == true)
         {
             if (TargetProperty.IsDirect)
-                _defaultValue = ((IDirectPropertyAccessor)TargetProperty).GetUnsetValue(target.GetType());
+                _defaultValue = ((IDirectPropertyAccessor)TargetProperty).GetUnsetValue(target);
             else
-                _defaultValue = ((IStyledPropertyAccessor)TargetProperty).GetDefaultValue(target.GetType());
+                _defaultValue = ((IStyledPropertyAccessor)TargetProperty).GetDefaultValue(target);
 
             _isDefaultValueInitialized = true;
             return _defaultValue;
