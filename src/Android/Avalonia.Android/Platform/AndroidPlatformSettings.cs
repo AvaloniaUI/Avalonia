@@ -1,12 +1,7 @@
 ﻿using System;
-using Android;
 using Android.Content;
 using Android.Content.Res;
-using Android.Graphics;
 using Android.Provider;
-using Android.Views.Accessibility;
-using AndroidX.Core.Content.Resources;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Color = Avalonia.Media.Color;
 
@@ -60,16 +55,25 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         else if (OperatingSystem.IsAndroidVersionAtLeast(23))
         {
             // See https://developer.android.com/reference/android/R.attr
-            var array = context.Theme.ObtainStyledAttributes(new[] { 16843829 }); // Resource.Attribute.ColorAccent
-            var accent = array.GetColor(0, 0);
-
-            _latestValues = new PlatformColorValues
+            var array = context.Theme?.ObtainStyledAttributes(new[] { 16843829 }); // Resource.Attribute.ColorAccent
+            if (array is not null)
             {
-                ThemeVariant = systemTheme,
-                ContrastPreference = IsHighContrast(context),
-                AccentColor1 = new Color(accent.A, accent.R, accent.G, accent.B)
-            };
-            array.Recycle();
+                try
+                {
+                    var accent = array.GetColor(0, 0);
+
+                    _latestValues = new PlatformColorValues
+                    {
+                        ThemeVariant = systemTheme,
+                        ContrastPreference = IsHighContrast(context),
+                        AccentColor1 = new Color(accent.A, accent.R, accent.G, accent.B)
+                    };
+                }
+                finally
+                {
+                    array.Recycle();   
+                }
+            }
         }
         else
         {
