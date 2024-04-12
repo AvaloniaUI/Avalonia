@@ -10,7 +10,7 @@ namespace Avalonia.Android
 
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
-        public ITrayIconImpl CreateTrayIcon() => null;
+        public ITrayIconImpl? CreateTrayIcon() => null;
     }
 
     internal class PlatformIconLoaderStub : IPlatformIconLoader

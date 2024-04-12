@@ -3,7 +3,6 @@
     <TargetFramework>$(AvsCurrentAndroidTargetFramework)</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>portable</DebugType>
     <AndroidResgenNamespace>Avalonia.Android.Internal</AndroidResgenNamespace>
   </PropertyGroup>
   <ItemGroup>
@@ -16,6 +15,8 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
+
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
 </Project>
