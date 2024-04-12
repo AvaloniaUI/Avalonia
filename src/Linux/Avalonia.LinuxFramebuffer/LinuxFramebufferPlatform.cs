@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using Avalonia;
@@ -88,7 +89,7 @@ namespace Avalonia.LinuxFramebuffer
         }
     }
 
-    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
+    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
     {
         private readonly IOutputBackend _fb;
         private readonly IInputBackend? _inputBackend;
@@ -114,25 +115,7 @@ namespace Avalonia.LinuxFramebuffer
             {
                 if (_topLevel == null)
                 {
-                    var inputBackend = _inputBackend;
-                    if (inputBackend == null)
-                    {
-                        if (Environment.GetEnvironmentVariable("AVALONIA_USE_EVDEV") == "1")
-                            inputBackend = EvDevBackend.CreateFromEnvironment();
-                        else
-                            inputBackend = new LibInputBackend();
-                    }
-
-                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, inputBackend));
-                    tl.Prepare();
-                    tl.StartRendering();
-                    _topLevel = tl;
-                    
-
-                    if (_topLevel is IFocusScope scope && _topLevel.FocusManager is FocusManager focusManager)
-                    {
-                        focusManager.SetFocusScope(scope);
-                    }
+                    EnsureTopLevel();
                 }
 
                 _topLevel.Content = value;
@@ -155,6 +138,38 @@ namespace Avalonia.LinuxFramebuffer
             Exit?.Invoke(this, e);
             ExitCode = e.ApplicationExitCode;
             _cts.Cancel();
+        }
+
+        public TopLevel? TopLevel
+        {
+            get
+            {
+                EnsureTopLevel();
+                return _topLevel;
+            }
+        }
+
+        [MemberNotNull(nameof(_topLevel))]
+        private void EnsureTopLevel()
+        {
+            var inputBackend = _inputBackend;
+            if (inputBackend == null)
+            {
+                if (Environment.GetEnvironmentVariable("AVALONIA_USE_EVDEV") == "1")
+                    inputBackend = EvDevBackend.CreateFromEnvironment();
+                else
+                    inputBackend = new LibInputBackend();
+            }
+
+            var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, inputBackend));
+            tl.Prepare();
+            tl.StartRendering();
+            _topLevel = tl;
+
+            if (_topLevel is IFocusScope scope && _topLevel.FocusManager is FocusManager focusManager)
+            {
+                focusManager.SetFocusScope(scope);
+            }
         }
     }
 }

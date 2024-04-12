@@ -150,6 +150,9 @@ namespace Avalonia.Controls.Primitives
 
         public IPopupHost? Host => _openState?.PopupHost;
 
+        /// <summary>
+        /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
+        /// </summary>
         public bool WindowManagerAddShadowHint
         {
             get => GetValue(WindowManagerAddShadowHintProperty);
@@ -653,9 +656,9 @@ namespace Avalonia.Controls.Primitives
 
         private static void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
         {
-            if(host is PopupRoot pr && pr.PlatformImpl is not null)
+            if (host is PopupRoot pr)
             {
-                pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
+                pr.WindowManagerAddShadowHint = hint;
             }
         }
 

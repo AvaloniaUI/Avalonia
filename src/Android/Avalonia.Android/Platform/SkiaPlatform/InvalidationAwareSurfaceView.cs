@@ -16,14 +16,19 @@ namespace Avalonia.Android
         readonly object _lock = new object();
         private readonly Handler _handler;
 
-        IntPtr IPlatformHandle.Handle =>
-            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, Holder.Surface.Handle);
+        IntPtr IPlatformHandle.Handle => Holder?.Surface?.Handle is { } handle ?
+            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle) :
+            default;
 
         public InvalidationAwareSurfaceView(Context context) : base(context)
         {
+            if (Holder is null)
+                throw new InvalidOperationException(
+                    "SurfaceView.Holder was not expected to be null during InvalidationAwareSurfaceView initialization.");
+
             Holder.AddCallback(this);
             Holder.SetFormat(global::Android.Graphics.Format.Transparent);
-            _handler = new Handler(context.MainLooper);
+            _handler = new Handler(context.MainLooper!);
         }
 
         public override void Invalidate()
@@ -34,7 +39,7 @@ namespace Avalonia.Android
                     return;
                 _handler.Post(() =>
                 {
-                    if (Holder.Surface?.IsValid != true)
+                    if (Holder?.Surface?.IsValid != true)
                         return;
                     try
                     {
@@ -77,8 +82,8 @@ namespace Avalonia.Android
         protected abstract void Draw();
         public string HandleDescriptor => "SurfaceView";
 
-        public PixelSize Size => new PixelSize(Holder.SurfaceFrame.Width(), Holder.SurfaceFrame.Height());
+        public PixelSize Size => new(Holder?.SurfaceFrame?.Width() ?? 1, Holder?.SurfaceFrame?.Height() ?? 1);
 
-        public double Scaling => Resources.DisplayMetrics.Density;
+        public double Scaling => Resources?.DisplayMetrics?.Density ?? 1;
     }
 }

@@ -2,10 +2,9 @@
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmMainJSPath>AppBundle/main.js</WasmMainJSPath>
+    <WasmMainJSPath>wwwroot/main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <WasmRuntimeAssetsLocation>./</WasmRuntimeAssetsLocation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <WasmExtraFilesToDeploy Include="AppBundle/**" />
+    <WasmExtraFilesToDeploy Include="wwwroot/**" />
   </ItemGroup>
 
   <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.props" />

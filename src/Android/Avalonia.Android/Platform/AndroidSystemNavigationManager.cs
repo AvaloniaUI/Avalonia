@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 
