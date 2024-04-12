@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +7,6 @@ using Android.App;
 using Android.Content;
 using Android.Provider;
 using Avalonia.Platform.Storage;
-using Java.Lang;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
 using JavaFile = Java.IO.File;
@@ -244,7 +241,7 @@ internal class AndroidStorageProvider : IStorageProvider
 
         return resultList;
 
-        void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        void OnActivityResult(int requestCode, Result resultCode, Intent? data)
         {
             if (currentRequestCode != requestCode)
             {

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Input;
 
 namespace Avalonia.Android.Platform.Specific.Helpers;

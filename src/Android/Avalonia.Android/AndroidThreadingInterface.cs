@@ -14,11 +14,12 @@ namespace Avalonia.Android
     internal sealed class AndroidThreadingInterface : IPlatformThreadingInterface
     {
         private Handler _handler;
-        private static Thread s_uiThread;
+        private static Thread? s_uiThread;
 
         public AndroidThreadingInterface()
         {
-            _handler = new Handler(App.Context.MainLooper);
+            _handler = new Handler(App.Context.MainLooper
+                ?? throw new InvalidOperationException("Application.Context.MainLooper was not expected to be null."));
         }
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
@@ -27,7 +28,7 @@ namespace Avalonia.Android
                 interval = TimeSpan.FromMilliseconds(10);
 
             var stopped = false;
-            Timer timer = null;
+            Timer? timer = null;
             timer = new Timer(_ =>
             {
                 if (stopped)
@@ -42,7 +43,7 @@ namespace Avalonia.Android
                     finally
                     {
                         if (!stopped)
-                            timer.Change(interval, Timeout.InfiniteTimeSpan);
+                            timer!.Change(interval, Timeout.InfiniteTimeSpan);
                     }
                 });
             },
@@ -70,9 +71,9 @@ namespace Avalonia.Android
                     return s_uiThread == Thread.CurrentThread;
 
                 var isOnMainThread = OperatingSystem.IsAndroidVersionAtLeast(23)
-                    ? Looper.MainLooper.IsCurrentThread
-                    : Looper.MainLooper.Thread.Equals(Java.Lang.Thread.CurrentThread());
-                if (isOnMainThread)
+                    ? Looper.MainLooper?.IsCurrentThread
+                    : Looper.MainLooper?.Thread.Equals(Java.Lang.Thread.CurrentThread());
+                if (isOnMainThread == true)
                 {
                     s_uiThread = Thread.CurrentThread;
                     return true;
@@ -81,6 +82,6 @@ namespace Avalonia.Android
                 return false;
             }
         }
-        public event Action<DispatcherPriority?> Signaled;
+        public event Action<DispatcherPriority?>? Signaled;
     }
 }

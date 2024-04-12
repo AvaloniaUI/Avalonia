@@ -14,14 +14,14 @@ namespace Avalonia.Android
 {
     internal sealed class ChoreographerTimer : Java.Lang.Object, IRenderTimer, Choreographer.IFrameCallback
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         private readonly Thread _thread;
-        private readonly TaskCompletionSource<Choreographer> _choreographer = new TaskCompletionSource<Choreographer>();
+        private readonly TaskCompletionSource<Choreographer> _choreographer = new();
 
         private readonly ISet<AvaloniaView> _views = new HashSet<AvaloniaView>();
 
-        private Action<TimeSpan> _tick;
+        private Action<TimeSpan>? _tick;
         private int _count;
 
         public ChoreographerTimer()
@@ -29,8 +29,7 @@ namespace Avalonia.Android
             _thread = new Thread(Loop);
             _thread.Start();
         }
-        
-        
+
         public bool RunsInBackground => true;
 
         public event Action<TimeSpan> Tick
@@ -84,7 +83,7 @@ namespace Avalonia.Android
         private void Loop()
         {
             Looper.Prepare();
-            _choreographer.SetResult(Choreographer.Instance);
+            _choreographer.SetResult(Choreographer.Instance!);
             Looper.Loop();
         }
 
@@ -96,7 +95,7 @@ namespace Avalonia.Android
             {
                 if (_count > 0 && _views.Count > 0)
                 {
-                    Choreographer.Instance.PostFrameCallback(this);
+                    Choreographer.Instance!.PostFrameCallback(this);
                 }
             }
         }

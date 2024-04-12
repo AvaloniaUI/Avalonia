@@ -1,7 +1,4 @@
-#nullable enable
-
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Android.OS;
 using Avalonia.Android.Platform;
 using Avalonia.Controls.ApplicationLifetimes;

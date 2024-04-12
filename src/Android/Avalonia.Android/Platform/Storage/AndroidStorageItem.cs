@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +6,6 @@ using System.Threading.Tasks;
 using Android;
 using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Provider;
 using Android.Webkit;
 using AndroidX.DocumentFile.Provider;
@@ -136,7 +133,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
             return true;
         }
 
-        return await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
+        return await _activity!.CheckPermission(Manifest.Permission.ReadExternalStorage);
     }
     
     public void Dispose()

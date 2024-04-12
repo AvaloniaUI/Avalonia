@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
-using Android.Content;
 using Android.Content.PM;
 
 namespace Avalonia.Android.Platform;
