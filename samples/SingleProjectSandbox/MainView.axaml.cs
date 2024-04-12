@@ -3,7 +3,7 @@ using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace MobileSandbox;
+namespace SingleProjectSandbox;
 
 public partial class MainView : UserControl
 {

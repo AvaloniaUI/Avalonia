@@ -25,9 +25,6 @@
       AND (('$(AvaloniaSingleProjectTreatSharedAsDesktop)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == '')
       OR ('$(AvaloniaSingleProjectTreatWindowsAsShared)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'))">
     <_AvaloniaDesktopTarget>true</_AvaloniaDesktopTarget>
-    <_AvaloniaWindowsTarget>true</_AvaloniaWindowsTarget>
-    <_AvaloniaMacOSTarget>true</_AvaloniaMacOSTarget>
-    <_AvaloniaLinuxTarget>true</_AvaloniaLinuxTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_AvaloniaWindowsTarget)' == 'true' ">
@@ -94,6 +91,16 @@
     <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
     <MauiPlatformSpecificFolder Include="$(DesktopProjectFolder)" TargetPlatformIdentifier="" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(SupportedOSPlatformVersion)' == '' AND '$(AvaloniaSingleProject)' == 'true'">
+    <!-- Keep in sync with TargetFrameworks.props -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">13.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">13.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">10.15</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+  </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_AvaloniaAndroidTarget)' == 'true' ">
     <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>

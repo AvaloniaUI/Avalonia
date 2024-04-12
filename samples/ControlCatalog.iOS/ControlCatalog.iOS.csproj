@@ -4,7 +4,7 @@
     <ProvisioningType>manual</ProvisioningType>
     <TargetFramework>$(AvsCurrentIOSTargetFramework)</TargetFramework>
 <!--    <TargetFramework>$(AvsCurrentTvOSTargetFramework)</TargetFramework>-->
-    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
