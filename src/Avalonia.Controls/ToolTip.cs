@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -79,8 +80,9 @@ namespace Avalonia.Controls
         internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip?>("ToolTip");
 
-        private IPopupHost? _popupHost;
+        private Popup? _popup;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+        private CompositeDisposable? _subscriptions;
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
@@ -88,10 +90,6 @@ namespace Avalonia.Controls
         static ToolTip()
         {
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
-
-            HorizontalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
-            VerticalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
-            PlacementProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
         }
 
         internal Control? AdornedControl { get; private set; }
@@ -309,21 +307,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void RecalculatePositionOnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
-        {
-            var control = (Control)args.Sender;
-            var tooltip = control.GetValue(ToolTipProperty);
-            if (tooltip == null)
-            {
-                return;
-            }
+        IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
 
-            tooltip.RecalculatePosition(control);
-        }
-        
-        IPopupHost? IPopupHostProvider.PopupHost => _popupHost;
-
-        internal IPopupHost? PopupHost => _popupHost;
+        internal IPopupHost? PopupHost => _popup?.Host;
 
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
@@ -331,47 +317,54 @@ namespace Avalonia.Controls
             remove => _popupHostChangedHandler -= value;
         }
 
-        internal void RecalculatePosition(Control control)
-        {
-            _popupHost?.ConfigurePosition(control, GetPlacement(control), new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
-        }
-
         private void Open(Control control)
         {
             Close();
+            
+            if (_popup is null)
+            {
+                _popup = new Popup();
+                _popup.Child = this;
+                _popup.WindowManagerAddShadowHint = false;
 
-            _popupHost = OverlayPopupHost.CreatePopupHost(control, null);
-            _popupHost.SetChild(this);
-            ((ISetLogicalParent)_popupHost).SetParent(control);
-            ApplyTemplatedParent(this, control.TemplatedParent);
+                _popup.Opened += OnPopupOpened;
+                _popup.Closed += OnPopupClosed;
+            }
 
-            _popupHost.ConfigurePosition(control, GetPlacement(control),
-                new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
+            _subscriptions = new CompositeDisposable(new[]
+            {
+                _popup.Bind(Popup.HorizontalOffsetProperty, control.GetBindingObservable(HorizontalOffsetProperty)),
+                _popup.Bind(Popup.VerticalOffsetProperty, control.GetBindingObservable(VerticalOffsetProperty)),
+                _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty))
+            });
 
-            WindowManagerAddShadowHintChanged(_popupHost, false);
+            _popup.PlacementTarget = control;
+            _popup.SetPopupParent(control);
 
-            _popupHost.Show();
-            _popupHostChangedHandler?.Invoke(_popupHost);
+            _popup.IsOpen = true;
         }
 
         private void Close()
         {
-            if (_popupHost != null)
+            _subscriptions?.Dispose();
+
+            if (_popup is not null)
             {
-                _popupHost.SetChild(null);
-                _popupHost.Dispose();
-                _popupHost = null;
-                _popupHostChangedHandler?.Invoke(null);
-                Closed?.Invoke(this, EventArgs.Empty);
+                _popup.IsOpen = false;
+                _popup.SetPopupParent(null);
+                _popup.PlacementTarget = null;
             }
         }
 
-        private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
+        private void OnPopupClosed(object? sender, EventArgs e)
         {
-            if (host is PopupRoot pr)
-            {
-                pr.WindowManagerAddShadowHint = hint;
-            }
+            _popupHostChangedHandler?.Invoke(null);
+            Closed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnPopupOpened(object? sender, EventArgs e)
+        {
+            _popupHostChangedHandler?.Invoke(((Popup)sender!).Host);
         }
 
         private void UpdatePseudoClasses(bool newValue)
