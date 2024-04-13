@@ -68,7 +68,6 @@ namespace Avalonia.Data
         /// Gets the value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T? GetValueOrDefault() => _value;
 
         /// <summary>
