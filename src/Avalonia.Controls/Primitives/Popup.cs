@@ -580,6 +580,23 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Helper method to set popup's styling and templated parent.
+        /// </summary>
+        internal void SetPopupParent(Control? newParent)
+        {
+            if (Parent != null && Parent != newParent)
+            {
+                ((ISetLogicalParent)this).SetParent(null);
+            }
+
+            if (Parent == null || PlacementTarget != newParent)
+            {
+                ((ISetLogicalParent)this).SetParent(newParent);
+                TemplatedParent = newParent?.TemplatedParent;
+            }
+        }
+
         private void UpdateHostPosition(IPopupHost popupHost, Control placementTarget)
         {
             popupHost.ConfigurePosition(
