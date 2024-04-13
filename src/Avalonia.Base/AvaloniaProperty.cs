@@ -32,8 +32,8 @@ namespace Avalonia
         private Type? _singleHostType;
         private AvaloniaPropertyMetadata? _singleMetadata;
 
-        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata = new(TypeEqualityComparer.Instance);
-        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadataCache = new(TypeEqualityComparer.Instance);
+        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata = new(ReferenceEqualityComparer.Instance);
+        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadataCache = new(ReferenceEqualityComparer.Instance);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
