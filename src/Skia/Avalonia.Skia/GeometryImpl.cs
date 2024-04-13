@@ -13,6 +13,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal abstract class GeometryImpl : IGeometryImpl
     {
+        private readonly object _lock = new();
         private PathCache _pathCache;
         private SKPathMeasure? _cachedPathMeasure;
 
@@ -45,7 +46,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool StrokeContains(IPen? pen, Point point)
         {
-            lock (this)
+            lock (_lock)
             {
                 _pathCache.UpdateIfNeeded(StrokePath, pen);
 
@@ -76,7 +77,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Rect GetRenderBounds(IPen? pen)
         {
-            lock (this)
+            lock (_lock)
             {
                 _pathCache.UpdateIfNeeded(StrokePath, pen);
                 return _pathCache.RenderBounds;
@@ -160,7 +161,7 @@ namespace Avalonia.Skia
         /// </summary>
         protected void InvalidateCaches()
         {
-            lock (this)
+            lock (_lock)
             {
                 _pathCache.Dispose();
                 _pathCache = default;
