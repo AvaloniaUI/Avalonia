@@ -2,20 +2,21 @@
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:dataGridAsyncDemoMvvm="clr-namespace:DataGridAsyncDemoMVVM"
         x:DataType="dataGridAsyncDemoMvvm:MainViewModel"
+        x:CompileBindings="True"
         x:Class="Sandbox.MainWindow">
   <DockPanel>
     <StackPanel DockPanel.Dock="Right" Spacing="20">
       <Button Content="Select Random" Command="{Binding SelectRandomCommand}" />
       <TextBlock Text="{Binding RandomIndex}"/>
     </StackPanel>
-    <ComboBox ItemsSource="{Binding Selector.Options}" SelectedItem="{Binding SelectedItem}">
+    <ComboBox ItemsSource="{Binding Selector.Options}" SelectedItem="{Binding Selector.ListSelectedItem}">
       <ComboBox.ItemTemplate>
         <DataTemplate>
           <StackPanel>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding Item.Id}" />
-              <TextBlock Text="{Binding Item.Str1}" />
-              <TextBlock Text="{Binding Item.Str2}" />
+            <StackPanel Orientation="Horizontal" DataContext="{Binding Item}">
+              <TextBlock Text="{Binding Id}" />
+              <TextBlock Text="{Binding Str1}" />
+              <TextBlock Text="{Binding Str2}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
               <TextBlock Text="{Binding IsLoading}" />
@@ -24,5 +25,30 @@
         </DataTemplate>
       </ComboBox.ItemTemplate>
     </ComboBox>
+    
+    <TextBlock>
+      <TextBlock.Inlines>
+        <Run>Some text</Run>
+        <InlineUIContainer>
+          <StackPanel>
+            <Button Content="Button 1" />
+            <Button Content="Button 2" />
+          </StackPanel>
+        </InlineUIContainer>
+      </TextBlock.Inlines>
+    </TextBlock>
+      <TextBlock>
+        <TextBlock.Inlines>
+          <InlineCollection>
+            <Run>Some text</Run>
+            <InlineUIContainer>
+              <StackPanel>
+                <Button Content="Button 1" />
+                <Button Content="Button 2" />
+              </StackPanel>
+            </InlineUIContainer>
+          </InlineCollection>
+        </TextBlock.Inlines>
+      </TextBlock>
   </DockPanel>
 </Window>

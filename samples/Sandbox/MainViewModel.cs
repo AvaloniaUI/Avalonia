@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
     using System.Windows.Input;
     using Avalonia.Controls;
+    using Avalonia.ReactiveUI;
     using Avalonia.Threading;
     using CommunityToolkit.Mvvm.ComponentModel;
     using ReactiveUI;
@@ -19,18 +20,18 @@
         where TViewModel : class
     {
         [ObservableProperty]
-        private TViewModel? selectedItem;
+        private IDataItem<TViewModel>? selectedItem;
 
         [ObservableProperty]
         private IDataItem<TViewModel>? listSelectedItem;
 
         private readonly DataSource<TViewModel, TModel> _dataSource;
-        private readonly Action<TViewModel> _setter;
+        private readonly Action<IDataItem<TViewModel>> _setter;
         private readonly bool _preLoadFirstPage;
 
         /// <inheritdoc/>
         protected DataSourceSingleSelectViewModel1(DataSource<TViewModel, TModel> dataSource,
-            Action<TViewModel?> setter, bool preLoadFirstPage = true)
+            Action<IDataItem<TViewModel>?> setter, bool preLoadFirstPage = true)
         {
             _dataSource = dataSource;
             _setter = setter;
@@ -48,11 +49,15 @@
                 await Task.CompletedTask;
             }
 
-            SelectedItem = await DataSource.GetViewModelAsync(predicate);
+            var item = await DataSource.GetViewModelAsync(predicate);
+            if (item is { })
+            {
+                SelectedItem = DataItem.Create(item);
+            }
 
             if (SelectedItem != null)
             {
-                ListSelectedItem = DataItem.Create(SelectedItem);
+                ListSelectedItem = SelectedItem;
             }
         }
 
@@ -60,11 +65,11 @@
         {
             if (value != null)
             {
-                SelectedItem = value.Item;
+                SelectedItem = value;
             }
         }
 
-        partial void OnSelectedItemChanged(TViewModel? value)
+        partial void OnSelectedItemChanged(IDataItem<TViewModel>? value)
         {
             _setter(value);
         }
@@ -72,7 +77,7 @@
 
     public class RemoteItemSelector : DataSourceSingleSelectViewModel1<RemoteOrDbDataItem, RemoteOrDbDataItem>
     {
-        public RemoteItemSelector(DataSource<RemoteOrDbDataItem, RemoteOrDbDataItem> dataSource, Action<RemoteOrDbDataItem> setter) : base(dataSource, setter, false)
+        public RemoteItemSelector(DataSource<RemoteOrDbDataItem, RemoteOrDbDataItem> dataSource, Action<IDataItem<RemoteOrDbDataItem>> setter) : base(dataSource, setter, false)
         {
         }
     }
@@ -80,16 +85,15 @@
     public partial class MainViewModel : ViewModelBase
     {
         [ObservableProperty]
-        private RemoteOrDbDataItem? _selectedItem;
+        private IDataItem<RemoteOrDbDataItem>? _selectedItem;
 
         [ObservableProperty]
         private int _randomIndex;
 
         public MainViewModel()
         {
+            RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
             var dataSource = new RemoteOrDbDataSource();
-
-            Items = dataSource.Collection;
 
             Selector = new(dataSource, x => SelectedItem = x);
 
@@ -101,18 +105,16 @@
 
                 RandomIndex = index;
 
-                //Selector.SelectedItem = DataItem.Create(dataSource.Emulation.Items[RandomIndex]);
+                Selector.ListSelectedItem = DataItem.Create(dataSource.Emulation.Items[RandomIndex]);
             });
             
             Dispatcher.UIThread.Post(async () =>
             {
-               // SelectedItem = DataItem.Create(dataSource.Emulation.Items[500]); 
+                Selector.ListSelectedItem = DataItem.Create(dataSource.Emulation.Items[500]); 
             });
         }
         
         public RemoteItemSelector Selector { get;}
-
-        public IReadOnlyCollection<IDataItem<RemoteOrDbDataItem>> Items { get; }
         
         public ICommand SelectRandomCommand { get; }
     }
