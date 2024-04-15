@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.Transform;
 using XamlX.TypeSystem;
 
-namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers;
+namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 
 internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
 {
