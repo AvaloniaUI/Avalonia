@@ -18,6 +18,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType AvaloniaProperty { get; }
         public IXamlType AvaloniaPropertyT { get; }
         public IXamlType StyledPropertyT { get; }
+        public IXamlType RoutedEvent { get; }
+        public IXamlType RoutedEventT { get; }
+        public IXamlType RoutedEventArgs { get; }
         public IXamlMethod AvaloniaObjectSetStyledPropertyValue { get; }
         public IXamlType AvaloniaAttachedPropertyT { get; }
         public IXamlType IBinding { get; }
@@ -135,6 +138,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaProperty = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty");
             AvaloniaPropertyT = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty`1");
             StyledPropertyT = cfg.TypeSystem.GetType("Avalonia.StyledProperty`1");
+            RoutedEvent = cfg.TypeSystem.GetType("Avalonia.Interactivity.RoutedEvent");
+            RoutedEventT = cfg.TypeSystem.GetType("Avalonia.Interactivity.RoutedEvent`1");
+            RoutedEventArgs = cfg.TypeSystem.GetType("Avalonia.Interactivity.RoutedEventArgs");
             AvaloniaAttachedPropertyT = cfg.TypeSystem.GetType("Avalonia.AttachedProperty`1");
             BindingPriority = cfg.TypeSystem.GetType("Avalonia.Data.BindingPriority");
             AvaloniaObjectSetStyledPropertyValue = AvaloniaObject
