@@ -7,6 +7,6 @@
       <!-- https://github.com/dotnet/msbuild/issues/2661 -->
       <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
       <RunApiCompat>False</RunApiCompat>
-      <LangVersion>11</LangVersion>
+      <LangVersion>12</LangVersion>
   </PropertyGroup>
 </Project>
