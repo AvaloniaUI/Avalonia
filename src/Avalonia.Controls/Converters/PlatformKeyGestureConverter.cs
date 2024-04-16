@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Converters
             }
             else
             {
-                return gesture.ToString();
+                return ToString(gesture, "Cmd");
             }
         }
 
