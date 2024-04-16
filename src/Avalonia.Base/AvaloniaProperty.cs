@@ -69,7 +69,7 @@ namespace Avalonia
             Id = s_nextId++;
 
             metadata.Freeze();
-            _metadata.Add(hostType, metadata ?? throw new ArgumentNullException(nameof(metadata)));
+            _metadata.Add(hostType, metadata);
             _defaultMetadata = metadata.GenerateTypeSafeMetadata();
             _singleMetadata = new(hostType, metadata);
         }
