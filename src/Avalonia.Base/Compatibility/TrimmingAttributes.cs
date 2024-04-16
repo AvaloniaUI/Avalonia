@@ -7,7 +7,6 @@
 
 namespace System.Diagnostics.CodeAnalysis
 {
-#nullable enable
 #if !NET6_0_OR_GREATER
     [AttributeUsage(
         AttributeTargets.Field | AttributeTargets.ReturnValue | AttributeTargets.GenericParameter |
