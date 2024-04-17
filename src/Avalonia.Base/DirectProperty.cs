@@ -94,6 +94,7 @@ namespace Avalonia
                 enableDataValidation: enableDataValidation);
 
             metadata.Merge(GetMetadata<TOwner>(), this);
+            metadata.Freeze();
 
             var result = new DirectProperty<TNewOwner, TValue>(
                 (DirectPropertyBase<TValue>)this,
