@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;
 using Avalonia.Headless.Vnc;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -21,10 +22,9 @@ namespace Avalonia
             string host, int port,
             string[] args,
             ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose,
-            string? password = null,
-            ILogger? logger = null)
+            string? password = null)
         {
-            logger ??= NullLogger.Instance;
+            var vncLogger = new AvaloniaVncLogger();
             var tcpServer = new TcpListener(host == null ? IPAddress.Loopback : IPAddress.Parse(host), port);
             tcpServer.Start();
             return builder
@@ -49,8 +49,7 @@ namespace Avalonia
                                         ? AuthenticationMethod.None
                                         : AuthenticationMethod.Password
                                 };
-                                var session = new VncServerSession(new VncPasswordChallenge(),
-                                    logger: logger);
+                                var session = new VncServerSession(new VncPasswordChallenge(), logger:vncLogger);
                                 if (string.IsNullOrWhiteSpace(password) == false)
                                 {
                                     session.PasswordProvided += (s, e) =>
@@ -67,7 +66,7 @@ namespace Avalonia
                             }
                             catch (Exception e)
                             {
-                                logger.LogError(e,"VNC Connection Exception");
+                                Logger.TryGet(LogEventLevel.Error, LogArea.VncPlatform)?.Log(tcpServer,"Error accepting client:{Exception}", e);
                             }
                             finally
                             {
