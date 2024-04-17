@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -229,58 +228,103 @@ namespace Avalonia.Skia
             const int TagOs2 = 1330851634; // pre-computed value for HarfBuzzSharp.Tag.Parse("OS/2")
             const int TagHhea = 1751672161; // pre-computed value for HarfBuzzSharp.Tag.Parse("hhea")
 
-            // See: https://learn.microsoft.com/en-us/typography/opentype/spec/recom#baseline-to-baseline-distances
-            if (typeface.TryGetTableData(TagOs2, out byte[]? os2Table) &&
-                typeface.TryGetTableData(TagHhea, out byte[]? hheaTable))
+            if (typeface.TryGetTableData(TagHhea, out byte[]? hheaTable) &&
+                ReadHHEATable(hheaTable, out int hheaAscender, out int hheaDescender, out int hheaLineGap))
             {
-                if (ReadOS2Table(os2Table, out int usWinAscent, out int usWinDescent) &&
-                    ReadHHEATable(hheaTable, out int ascender, out int descender, out int hheaLineGap) &&
-                    usWinAscent > 0 && usWinDescent > 0)
+                // See: https://learn.microsoft.com/en-us/typography/opentype/spec/recom#baseline-to-baseline-distances
+                // See Also: https://github.com/mono/libgdiplus/blob/94a49875487e296376f209fe64b921c6020f74c0/src/font.c#L757-L792
+
+                bool hasOs2;
+                if (typeface.TryGetTableData(TagOs2, out byte[]? os2Table) && ReadOS2Table(os2Table, out var os2))
                 {
-                    ascent = usWinAscent;
-                    descent = usWinDescent;
-                    lineGap = Math.Max(0, (ascender - descender + hheaLineGap) - (usWinAscent + usWinDescent));
-                    return true;
+                    hasOs2 = true;
                 }
+                else
+                {
+                    hasOs2 = false;
+                    os2 = default;
+                }
+
+                const int fsSelectionUseTypoMetrics = (1 << 7);
+                if (hasOs2 && (os2.fsSelection & fsSelectionUseTypoMetrics) != 0)
+                {
+                    /* Use the typographic Ascender, Descender, and LineGap values for everything. */
+                    // This is the most common case using these values. sTypoDescender is huge, same with hheaDescender
+                    lineGap = os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap;
+                    descent = os2.sTypoDescender;
+                    ascent = os2.sTypoAscender;
+                }
+                else
+                {
+                    /* Calculate the LineSpacing for both the hhea table and the OS/2 table. */
+                    int hhea_linespacing = hheaAscender + Math.Abs(hheaDescender) + hheaLineGap;
+                    int os2_linespacing = hasOs2 ? (os2.usWinAscent + os2.usWinDescent) : 0;
+
+                    /* The LineSpacing is the maximum of the two sumations. */
+                    lineGap = Math.Max(hhea_linespacing, os2_linespacing);
+
+                    /* If the OS/2 table exists, use usWinDescent as the
+                     * CellDescent. Otherwise use hhea's Descender value. */
+                    descent = hasOs2 ? os2.usWinDescent : hheaDescender;
+
+                    /* If the OS/2 table exists, use usWinAscent as the
+                     * CellAscent. Otherwise use hhea's Ascender value. */
+                    ascent = hasOs2 ? os2.usWinAscent : hheaAscender;
+                }
+
+                return true;
             }
 
             ascent = descent = lineGap = 0;
             return false;
         }
 
-        private static bool ReadOS2Table(byte[]? array, out int usWinAscent, out int usWinDescent)
+        private static bool ReadOS2Table(byte[]? array, out OS2TableInfo os2)
         {
+            os2 = default;
             if (array == null || array.Length < 78)
             {
-                usWinAscent = usWinDescent = 0;
                 return false;
             }
 
-            // 74 is the offset to get to the usWinAscent field in the table
-            var span = new Span<byte>(array, 74, 4);
+            // 62 is the offset to the fsSelection field in the OS/2 table
+            var span = new Span<byte>(array, 62, 16);
 
-            usWinAscent = BinaryPrimitives.ReadUInt16BigEndian(span);
-            usWinDescent = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(2));
-
+            os2.fsSelection = BinaryPrimitives.ReadUInt16BigEndian(span);
+            os2.sTypoAscender = BinaryPrimitives.ReadInt16BigEndian(new Span<byte>(array, 68, 2));
+            os2.sTypoDescender = BinaryPrimitives.ReadInt16BigEndian(new Span<byte>(array, 70, 2));
+            os2.sTypoLineGap = BinaryPrimitives.ReadInt16BigEndian(span.Slice(10));
+            os2.usWinAscent = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(12));
+            os2.usWinDescent = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(14));
             return true;
         }
 
         private static bool ReadHHEATable(byte[]? array, out int ascender, out int descender, out int lineGap)
         {
-            if (array == null || array.Length < 8)
+            if (array == null || array.Length < 10) // 10 would be the endIndex (exclusive) of lineGap
             {
                 ascender = descender = lineGap = 0;
                 return false;
             }
 
-            // 4 is the offset to the ascender field in the table
+            // 4 is the offset to the hheaAscender field in the hhea table
             var span = new Span<byte>(array, 4, 6);
 
-            ascender = BinaryPrimitives.ReadUInt16BigEndian(span);
-            descender = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(2));
-            lineGap = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(4));
+            ascender = BinaryPrimitives.ReadInt16BigEndian(span);
+            descender = BinaryPrimitives.ReadInt16BigEndian(span.Slice(2));
+            lineGap = BinaryPrimitives.ReadInt16BigEndian(span.Slice(4));
 
             return true;
+        }
+
+        private struct OS2TableInfo
+        {
+            public ushort fsSelection;
+            public short sTypoAscender;
+            public short sTypoDescender;
+            public short sTypoLineGap;
+            public ushort usWinAscent;
+            public ushort usWinDescent;
         }
     }
 }
