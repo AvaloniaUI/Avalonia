@@ -33,7 +33,7 @@ namespace Avalonia
                     UseHeadlessDrawing = false,
                     FrameBufferFormat = PixelFormat.Bgra8888
                 })
-                .AfterSetup(_ =>
+                .AfterApplicationSetup(_ =>
                 {
                     var lt = ((IClassicDesktopStyleApplicationLifetime) builder.Instance!.ApplicationLifetime!);
                     lt.Startup += async delegate
