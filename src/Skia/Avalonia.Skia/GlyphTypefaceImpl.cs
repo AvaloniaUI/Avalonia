@@ -40,7 +40,7 @@ namespace Avalonia.Skia
             {
                 DesignEmHeight = (short)Face.UnitsPerEm,
                 Ascent = hasOs2Metrics ? (-fmAscent) : (-ascent), // have to invert OS2 ascent here for some reason
-                Descent = hasOs2Metrics ? fmDescent : (-descent),
+                Descent = hasOs2Metrics ? (fmDescent) : (-descent),
                 LineGap = hasOs2Metrics ? fmLineGap : (lineGap),
                 UnderlinePosition = -underlineOffset,
                 UnderlineThickness = underlineSize,
@@ -228,51 +228,20 @@ namespace Avalonia.Skia
             const int TagOs2 = 1330851634; // pre-computed value for HarfBuzzSharp.Tag.Parse("OS/2")
             const int TagHhea = 1751672161; // pre-computed value for HarfBuzzSharp.Tag.Parse("hhea")
 
-            if (typeface.TryGetTableData(TagHhea, out byte[]? hheaTable) &&
+            if (typeface.TryGetTableData(TagHhea, out byte[]? hheaTable) && 
                 ReadHHEATable(hheaTable, out int hheaAscender, out int hheaDescender, out int hheaLineGap))
             {
                 // See: https://learn.microsoft.com/en-us/typography/opentype/spec/recom#baseline-to-baseline-distances
                 // See Also: https://github.com/mono/libgdiplus/blob/94a49875487e296376f209fe64b921c6020f74c0/src/font.c#L757-L792
 
-                bool hasOs2;
-                if (typeface.TryGetTableData(TagOs2, out byte[]? os2Table) && ReadOS2Table(os2Table, out var os2))
+                if (typeface.TryGetTableData(TagOs2, out byte[]? os2Table) && 
+                    ReadOS2Table(os2Table, out var os2))
                 {
-                    hasOs2 = true;
+                    descent = os2.usWinDescent;
+                    ascent = os2.usWinAscent;
+                    lineGap = Math.Max(0, (hheaAscender - hheaDescender + hheaLineGap) - (os2.usWinAscent + os2.usWinDescent));
+                    return true;
                 }
-                else
-                {
-                    hasOs2 = false;
-                    os2 = default;
-                }
-
-                const int fsSelectionUseTypoMetrics = (1 << 7);
-                if (hasOs2 && (os2.fsSelection & fsSelectionUseTypoMetrics) != 0)
-                {
-                    /* Use the typographic Ascender, Descender, and LineGap values for everything. */
-                    // This is the most common case using these values. sTypoDescender is huge, same with hheaDescender
-                    lineGap = os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap;
-                    descent = os2.sTypoDescender;
-                    ascent = os2.sTypoAscender;
-                }
-                else
-                {
-                    /* Calculate the LineSpacing for both the hhea table and the OS/2 table. */
-                    int hhea_linespacing = hheaAscender + Math.Abs(hheaDescender) + hheaLineGap;
-                    int os2_linespacing = hasOs2 ? (os2.usWinAscent + os2.usWinDescent) : 0;
-
-                    /* The LineSpacing is the maximum of the two sumations. */
-                    lineGap = Math.Max(hhea_linespacing, os2_linespacing);
-
-                    /* If the OS/2 table exists, use usWinDescent as the
-                     * CellDescent. Otherwise use hhea's Descender value. */
-                    descent = hasOs2 ? os2.usWinDescent : hheaDescender;
-
-                    /* If the OS/2 table exists, use usWinAscent as the
-                     * CellAscent. Otherwise use hhea's Ascender value. */
-                    ascent = hasOs2 ? os2.usWinAscent : hheaAscender;
-                }
-
-                return true;
             }
 
             ascent = descent = lineGap = 0;
@@ -291,8 +260,8 @@ namespace Avalonia.Skia
             var span = new Span<byte>(array, 62, 16);
 
             os2.fsSelection = BinaryPrimitives.ReadUInt16BigEndian(span);
-            os2.sTypoAscender = BinaryPrimitives.ReadInt16BigEndian(new Span<byte>(array, 68, 2));
-            os2.sTypoDescender = BinaryPrimitives.ReadInt16BigEndian(new Span<byte>(array, 70, 2));
+            os2.sTypoAscender = BinaryPrimitives.ReadInt16BigEndian(span.Slice(6));
+            os2.sTypoDescender = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8));
             os2.sTypoLineGap = BinaryPrimitives.ReadInt16BigEndian(span.Slice(10));
             os2.usWinAscent = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(12));
             os2.usWinDescent = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(14));
