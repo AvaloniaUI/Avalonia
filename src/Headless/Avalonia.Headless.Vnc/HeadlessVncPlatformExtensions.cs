@@ -24,7 +24,7 @@ namespace Avalonia
             string? password = null,
             ILogger? logger = null)
         {
-            logger = logger ??= NullLogger.Instance;
+            logger ??= NullLogger.Instance;
             var tcpServer = new TcpListener(host == null ? IPAddress.Loopback : IPAddress.Parse(host), port);
             tcpServer.Start();
             return builder
