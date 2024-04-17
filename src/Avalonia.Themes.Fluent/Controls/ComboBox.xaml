@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
+                    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
                     x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
@@ -36,6 +37,7 @@
   <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
   <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
   <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
+  <converters:MultiDataTemplatesConverter x:Key="TemplatesConverter"/>
 
   <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
     <Setter Property="Padding" Value="{DynamicResource ComboBoxPadding}" />
@@ -84,11 +86,17 @@
                        IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}" />
             <ContentControl x:Name="ContentPresenter"
                             Content="{TemplateBinding SelectionBoxItem}"
-                            ContentTemplate="{TemplateBinding ItemTemplate}"
                             Grid.Column="0"
                             Margin="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+              <ContentControl.ContentTemplate>
+                <MultiBinding Converter="{StaticResource TemplatesConverter}">
+                  <TemplateBinding Property="SelectedItemTemplate"></TemplateBinding>
+                  <TemplateBinding Property="ItemTemplate"></TemplateBinding>
+                </MultiBinding>
+              </ContentControl.ContentTemplate>
+            </ContentControl>
 
             <Border x:Name="DropDownOverlay"
                     Grid.Column="1"

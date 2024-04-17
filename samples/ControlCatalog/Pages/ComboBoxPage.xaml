@@ -12,8 +12,8 @@
         <StackPanel
             Margin="0,16,0,0"
             HorizontalAlignment="Center"
-            Orientation="Horizontal"
             Spacing="8">
+            <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
             <WrapPanel
                 MaxWidth="660"
                 Margin="0,16,0,0"
@@ -99,8 +99,30 @@
                     <ComboBoxItem>Inline Item 4</ComboBoxItem>
                 </ComboBox>
 
-                <ComboBox WrapSelection="{Binding WrapSelection}" ItemsSource="{Binding Values}" DisplayMemberBinding="{Binding Name}">
+                <ComboBox 
+                    WrapSelection="{Binding WrapSelection}" 
+                    ItemsSource="{Binding Values}" 
+                    DisplayMemberBinding="{Binding Name}">
                 
+                </ComboBox>
+              
+                <ComboBox 
+                    WrapSelection="{Binding WrapSelection}" 
+                    PlaceholderText="Different Template"
+                    ItemsSource="{Binding Values}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}"></TextBlock>
+                                <TextBlock Text="{Binding Id}"></TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                    <ComboBox.SelectedItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" Foreground="Red"></TextBlock>
+                        </DataTemplate>
+                    </ComboBox.SelectedItemTemplate>
                 </ComboBox>
 
                 <ComboBox WrapSelection="{Binding WrapSelection}" ItemsSource="{Binding Values}" >
@@ -114,9 +136,6 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </WrapPanel>
-
-            <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
-
         </StackPanel>
     </StackPanel>
 </UserControl>

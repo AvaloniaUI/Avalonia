@@ -5,10 +5,12 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
@@ -71,6 +73,13 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
+        
+        /// <summary>
+        /// Defines the <see cref="SelectedItemTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> SelectedItemTemplateProperty =
+            AvaloniaProperty.Register<ComboBox, IDataTemplate?>(
+                nameof(SelectedItemTemplate), defaultBindingMode: BindingMode.TwoWay);
 
         private Popup? _popup;
         private object? _selectionBoxItem;
@@ -157,6 +166,16 @@ namespace Avalonia.Controls
         {
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the DataTemplate used to display the selected item. This has a higher priority than <see cref="ItemsControl.ItemTemplate"/> if set.
+        /// </summary>
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
+        public IDataTemplate? SelectedItemTemplate
+        {
+            get => GetValue(SelectedItemTemplateProperty);
+            set => SetValue(SelectedItemTemplateProperty, value);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -433,7 +452,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                if(ItemTemplate is null && DisplayMemberBinding is { } binding)
+                if(ItemTemplate is null && SelectedItemTemplate is null && DisplayMemberBinding is { } binding)
                 {
                     var template = new FuncDataTemplate<object?>((_, _) =>
                     new TextBlock
