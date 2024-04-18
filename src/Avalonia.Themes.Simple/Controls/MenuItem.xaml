@@ -112,7 +112,6 @@
       <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="^:checked:toggle /template/ ContentControl#PART_ToggleIconPresenter">
-      <Setter Property="IsVisible" Value="True" />
       <Setter Property="Content">
         <Template>
           <Path VerticalAlignment="Center"
