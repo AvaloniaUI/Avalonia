@@ -344,6 +344,23 @@ internal static unsafe class PixelFormatReader
         public void Reset(IntPtr address) => _address = (Rgba8888Pixel*)address;
     }
 
+    public unsafe struct Rgb32PixelFormatReader : IPixelFormatReader
+    {
+        private Rgba8888Pixel* _address;
+        public Rgba8888Pixel ReadNext()
+        {
+            var address = (byte*)_address;
+
+            var value = new Rgba8888Pixel(address[0], address[1], address[2], 255);
+
+            _address++;
+
+            return value;
+        }
+
+        public void Reset(IntPtr address) => _address = (Rgba8888Pixel*)address;
+    }
+
     public unsafe struct Bgra8888PixelFormatReader : IPixelFormatReader
     {
         private byte* _address;
@@ -357,6 +374,23 @@ internal static unsafe class PixelFormatReader
         }
 
         public void Reset(IntPtr address) => _address = (byte*)address;
+    }
+
+    public unsafe struct Bgr32PixelFormatReader : IPixelFormatReader
+    {
+        private Rgba8888Pixel* _address;
+        public Rgba8888Pixel ReadNext()
+        {
+            var address = (byte*)_address;
+
+            var value = new Rgba8888Pixel(address[2], address[1], address[0], 255);
+
+            _address++;
+
+            return value;
+        }
+
+        public void Reset(IntPtr address) => _address = (Rgba8888Pixel*)address;
     }
 
     public static bool SupportsFormat(PixelFormat format)
@@ -374,7 +408,9 @@ internal static unsafe class PixelFormatReader
             case PixelFormatEnum.Gray32Float:
             case PixelFormatEnum.Rgba64:
             case PixelFormatEnum.Rgb24:
+            case PixelFormatEnum.Rgb32:
             case PixelFormatEnum.Bgr24:
+            case PixelFormatEnum.Bgr32:
             case PixelFormatEnum.Bgr555:
             case PixelFormatEnum.Bgr565:
                 return true;
@@ -412,8 +448,8 @@ internal static unsafe class PixelFormatReader
             case PixelFormatEnum.Rgba8888:
                 Read<Rgba8888PixelFormatReader>(pixels, source, size, stride);
                 break;
-            case PixelFormatEnum.Bgra8888:
-               Read<Bgra8888PixelFormatReader>(pixels, source, size, stride);
+            case PixelFormatEnum.Bgra8888: 
+                Read<Bgra8888PixelFormatReader>(pixels, source, size, stride);
                 break;
             case PixelFormatEnum.BlackWhite:
                 Read<BlackWhitePixelFormatReader>(pixels, source, size, stride);
@@ -439,8 +475,14 @@ internal static unsafe class PixelFormatReader
             case PixelFormatEnum.Rgb24:
                 Read<Rgb24PixelFormatReader>(pixels, source, size, stride);
                 break;
+            case PixelFormatEnum.Rgb32:
+                Read<Rgb32PixelFormatReader>(pixels, source, size, stride);
+                break;
             case PixelFormatEnum.Bgr24:
                 Read<Bgr24PixelFormatReader>(pixels, source, size, stride);
+                break;
+            case PixelFormatEnum.Bgr32:
+                Read<Bgr32PixelFormatReader>(pixels, source, size, stride);
                 break;
             case PixelFormatEnum.Bgr555:
                 Read<Bgr555PixelFormatReader>(pixels, source, size, stride);

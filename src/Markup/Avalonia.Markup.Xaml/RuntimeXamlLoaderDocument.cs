@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
@@ -6,24 +7,24 @@ namespace Avalonia.Markup.Xaml;
 
 public class RuntimeXamlLoaderDocument
 {
-    public RuntimeXamlLoaderDocument(string xaml)
+    public RuntimeXamlLoaderDocument([StringSyntax(StringSyntaxAttribute.Xml)] string xaml)
     {
         XamlStream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
     }
 
-    public RuntimeXamlLoaderDocument(Uri? baseUri, string xaml)
+    public RuntimeXamlLoaderDocument(Uri? baseUri, [StringSyntax(StringSyntaxAttribute.Xml)] string xaml)
         : this(xaml)
     {
         BaseUri = baseUri;
     }
 
-    public RuntimeXamlLoaderDocument(object? rootInstance, string xaml)
+    public RuntimeXamlLoaderDocument(object? rootInstance, [StringSyntax(StringSyntaxAttribute.Xml)] string xaml)
         : this(xaml)
     {
         RootInstance = rootInstance;
     }
     
-    public RuntimeXamlLoaderDocument(Uri? baseUri, object? rootInstance, string xaml)
+    public RuntimeXamlLoaderDocument(Uri? baseUri, object? rootInstance, [StringSyntax(StringSyntaxAttribute.Xml)] string xaml)
         : this(baseUri, xaml)
     {
         RootInstance = rootInstance;
