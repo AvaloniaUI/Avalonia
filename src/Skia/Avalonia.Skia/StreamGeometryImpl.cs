@@ -189,7 +189,6 @@ namespace Avalonia.Skia
             {
                 if (isStroked)
                 {
-
                     Stroke.LineTo((float)point.X, (float)point.Y);
                 }
                 else

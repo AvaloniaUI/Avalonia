@@ -60,5 +60,4 @@ namespace Avalonia.Platform
         /// <param name="fillRule"></param>
         void SetFillRule(FillRule fillRule);
     }
-
 }
