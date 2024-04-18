@@ -135,6 +135,7 @@ namespace Avalonia.Automation.Peers
         protected void InvalidateChildren()
         {
             _childrenValid = false;
+            _children = null;
             RaiseChildrenChangedEvent();
         }
 

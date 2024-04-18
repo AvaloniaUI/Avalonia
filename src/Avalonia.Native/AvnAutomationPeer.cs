@@ -8,46 +8,78 @@ using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Native.Interop;
+using Avalonia.Utilities;
 
 #nullable enable
 
 namespace Avalonia.Native
 {
-    internal class AvnAutomationPeer : NativeCallbackBase, IAvnAutomationPeer
+    internal class AvnAutomationPeer : NativeCallbackBase, IAvnAutomationPeer, IWeakEventSubscriber<EventArgs>
     {
+        private static readonly WeakEvent<AutomationPeer, EventArgs> ChildrenChangedWeakEvent = WeakEvent.Register<AutomationPeer>(
+                (s, h) => s.ChildrenChanged += h,
+                (s, h) => s.ChildrenChanged -= h
+            );
+
+        private static readonly WeakEvent<IRootProvider, EventArgs> FocusChangeddWeakEvent = WeakEvent.Register<IRootProvider>(
+            (s, h) => s.FocusChanged += h,
+            (s, h) => s.FocusChanged -= h
+        );
+
         private static readonly ConditionalWeakTable<AutomationPeer, AvnAutomationPeer> s_wrappers = new();
-        private readonly AutomationPeer _inner;
+        private readonly WeakReference<AutomationPeer> _inner;
 
         private AvnAutomationPeer(AutomationPeer inner)
         {
-            _inner = inner;
-            _inner.ChildrenChanged += (_, _) => Node?.ChildrenChanged();
+            _inner = new WeakReference<AutomationPeer>(inner);
+            ChildrenChangedWeakEvent.Subscribe(inner, this);
             if (inner is IRootProvider root)
-                root.FocusChanged += (_, _) => Node?.FocusChanged(); 
+                FocusChangeddWeakEvent.Subscribe(root, this);
         }
 
-        ~AvnAutomationPeer() => Node?.Dispose();
-        
-        public IAvnAutomationNode? Node { get; private set; }
-        public IAvnString? AcceleratorKey => _inner.GetAcceleratorKey().ToAvnString();
-        public IAvnString? AccessKey => _inner.GetAccessKey().ToAvnString();
-        public AvnAutomationControlType AutomationControlType => (AvnAutomationControlType)_inner.GetAutomationControlType();
-        public IAvnString? AutomationId => _inner.GetAutomationId().ToAvnString();
-        public AvnRect BoundingRectangle => _inner.GetBoundingRectangle().ToAvnRect();
-        public IAvnAutomationPeerArray Children => new AvnAutomationPeerArray(_inner.GetChildren());
-        public IAvnString ClassName => _inner.GetClassName().ToAvnString();
-        public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
-        public IAvnString Name => _inner.GetName().ToAvnString();
-        public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
-        public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
+        public void OnEvent(object? sender, WeakEvent ev, EventArgs e)
+        {
+            if (ev == ChildrenChangedWeakEvent)
+            {
+                Node?.ChildrenChanged();
+            }
+            else if (ev == FocusChangeddWeakEvent)
+            {
+                Node?.FocusChanged();
+            }
+        }
 
-        public int HasKeyboardFocus() => _inner.HasKeyboardFocus().AsComBool();
-        public int IsContentElement() => _inner.IsContentElement().AsComBool();
-        public int IsControlElement() => _inner.IsControlElement().AsComBool();
-        public int IsEnabled() => _inner.IsEnabled().AsComBool();
-        public int IsKeyboardFocusable() => _inner.IsKeyboardFocusable().AsComBool();
-        public void SetFocus() => _inner.SetFocus();
-        public int ShowContextMenu() => _inner.ShowContextMenu().AsComBool();
+        ~AvnAutomationPeer()
+        {
+            Node?.Dispose();
+        }
+
+        public IAvnAutomationNode? Node { get; private set; }
+        public IAvnString? AcceleratorKey => this._inner.TryGetTarget(out var _inner) ? _inner.GetAcceleratorKey().ToAvnString() : null;
+
+        public IAvnString? AccessKey => this._inner.TryGetTarget(out var _inner) ? _inner.GetAccessKey().ToAvnString() : default;
+        public AvnAutomationControlType AutomationControlType => this._inner.TryGetTarget(out var _inner) ? (AvnAutomationControlType)_inner.GetAutomationControlType() : default;
+        public IAvnString? AutomationId => this._inner.TryGetTarget(out var _inner) ? _inner.GetAutomationId().ToAvnString() : default;
+        public AvnRect BoundingRectangle => this._inner.TryGetTarget(out var _inner) ? _inner.GetBoundingRectangle().ToAvnRect() : default;
+        public IAvnAutomationPeerArray Children => new AvnAutomationPeerArray(this._inner.TryGetTarget(out var _inner) ? _inner.GetChildren() : Array.Empty<AutomationPeer>());
+        public IAvnString ClassName => this._inner.TryGetTarget(out var _inner) ? _inner.GetClassName().ToAvnString() : default;
+        public IAvnAutomationPeer? LabeledBy => this._inner.TryGetTarget(out var _inner) ? Wrap(_inner.GetLabeledBy()) : default;
+        public IAvnString Name => this._inner.TryGetTarget(out var _inner) ? _inner.GetName().ToAvnString() : default;
+        public IAvnAutomationPeer? Parent => this._inner.TryGetTarget(out var _inner) ? Wrap(_inner.GetParent()) : default;
+        public IAvnAutomationPeer? VisualRoot => this._inner.TryGetTarget(out var _inner) ? Wrap(_inner.GetVisualRoot()) : default;
+
+        public int HasKeyboardFocus() => this._inner.TryGetTarget(out var _inner) ? _inner.HasKeyboardFocus().AsComBool() : default;
+        public int IsContentElement() => this._inner.TryGetTarget(out var _inner) ? _inner.IsContentElement().AsComBool() : default;
+        public int IsControlElement() => this._inner.TryGetTarget(out var _inner) ? _inner.IsControlElement().AsComBool() : default;
+        public int IsEnabled() => this._inner.TryGetTarget(out var _inner) ? _inner.IsEnabled().AsComBool() : default;
+        public int IsKeyboardFocusable() => this._inner.TryGetTarget(out var _inner) ? _inner.IsKeyboardFocusable().AsComBool() : default;
+        public void SetFocus()
+        {
+            if (this._inner.TryGetTarget(out var _inner))
+                _inner.SetFocus();
+        }
+
+        public int ShowContextMenu() => this._inner.TryGetTarget(out var _inner) ? _inner.ShowContextMenu().AsComBool() : default;
 
         public void SetNode(IAvnAutomationNode node)
         {
@@ -60,6 +92,8 @@ namespace Avalonia.Native
         {
             get
             {
+                if (!this._inner.TryGetTarget(out var _inner))
+                    return null;
                 var peer = _inner;
                 var parent = peer.GetParent();
 
@@ -104,7 +138,7 @@ namespace Avalonia.Native
                 else
                     break;
             }
-            
+
             return Wrap(result);
         }
 
@@ -160,7 +194,7 @@ namespace Avalonia.Native
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
-        
+
         public int IsToggleProvider() => IsProvider<IToggleProvider>();
         public int ToggleProvider_GetToggleState() => (int)ToggleProvider.ToggleState;
         public void ToggleProvider_Toggle() => ToggleProvider.Toggle();
@@ -177,11 +211,13 @@ namespace Avalonia.Native
 
         private T GetProvider<T>()
         {
+            if (!this._inner.TryGetTarget(out var _inner))
+                throw new InvalidOperationException("The peer has been disposed.");
             return _inner.GetProvider<T>() ?? throw new InvalidOperationException(
                 $"The peer {_inner} does not implement {typeof(T)}.");
         }
 
-        private int IsProvider<T>() => (_inner.GetProvider<T>() is not null).AsComBool();
+        private int IsProvider<T>() => this._inner.TryGetTarget(out var _inner) ? (_inner.GetProvider<T>() is not null).AsComBool() : 0;
     }
 
     internal class AvnAutomationPeerArray : NativeCallbackBase, IAvnAutomationPeerArray
