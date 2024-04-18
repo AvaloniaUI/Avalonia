@@ -48,14 +48,15 @@ namespace Avalonia.ReactiveUI
 
             if (change.Property == DataContextProperty)
             {
-                if (Object.ReferenceEquals(change.OldValue, ViewModel))
+                if (ReferenceEquals(change.OldValue, ViewModel)
+                    && change.NewValue is null or TViewModel)
                 {
                     SetCurrentValue(ViewModelProperty, change.NewValue);
                 }
             }
             else if (change.Property == ViewModelProperty)
             {
-                if (Object.ReferenceEquals(change.OldValue, DataContext))
+                if (ReferenceEquals(change.OldValue, DataContext))
                 {
                     SetCurrentValue(DataContextProperty, change.NewValue);
                 }
