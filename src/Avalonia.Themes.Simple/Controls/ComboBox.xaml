@@ -1,8 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
                     x:ClassModifier="internal">
-  <converters:MultiDataTemplatesConverter x:Key="TemplatesConverter"/>
   <ControlTheme x:Key="{x:Type ComboBox}"
                 TargetType="ComboBox">
     <Setter Property="Background" Value="Transparent" />
@@ -35,13 +33,8 @@
             <ContentControl Margin="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Content="{TemplateBinding SelectionBoxItem}">
-              <ContentControl.ContentTemplate>
-                <MultiBinding Converter="{StaticResource TemplatesConverter}">
-                  <TemplateBinding Property="SelectedItemTemplate"></TemplateBinding>
-                  <TemplateBinding Property="ItemTemplate"></TemplateBinding>
-                </MultiBinding>
-              </ContentControl.ContentTemplate>
+                            Content="{TemplateBinding SelectionBoxItem}"
+                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}">
             </ContentControl>
             <ToggleButton Name="toggle"
                           Grid.Column="1"

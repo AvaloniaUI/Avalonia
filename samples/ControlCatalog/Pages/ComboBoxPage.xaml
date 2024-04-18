@@ -118,11 +118,11 @@
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
-                    <ComboBox.SelectedItemTemplate>
+                    <ComboBox.SelectionBoxItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Name}" Foreground="Red"></TextBlock>
                         </DataTemplate>
-                    </ComboBox.SelectedItemTemplate>
+                    </ComboBox.SelectionBoxItemTemplate>
                 </ComboBox>
 
                 <ComboBox WrapSelection="{Binding WrapSelection}" ItemsSource="{Binding Values}" >

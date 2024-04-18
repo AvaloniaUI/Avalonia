@@ -75,11 +75,21 @@ namespace Avalonia.Controls
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
         
         /// <summary>
-        /// Defines the <see cref="SelectedItemTemplate"/> property.
+        /// Defines the <see cref="SelectionBoxItemTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate?> SelectedItemTemplateProperty =
+        public static readonly StyledProperty<IDataTemplate?> SelectionBoxItemTemplateProperty =
             AvaloniaProperty.Register<ComboBox, IDataTemplate?>(
-                nameof(SelectedItemTemplate), defaultBindingMode: BindingMode.TwoWay);
+                nameof(SelectionBoxItemTemplate), defaultBindingMode: BindingMode.TwoWay, coerce: CoerceSelectionBoxItemTemplate);
+        
+        private static IDataTemplate? CoerceSelectionBoxItemTemplate(AvaloniaObject obj, IDataTemplate? template)
+        {
+            if (template is not null) return template;
+            if(obj is ComboBox comboBox && template is null)
+            {
+                return comboBox.ItemTemplate;
+            }
+            return template;
+        }
 
         private Popup? _popup;
         private object? _selectionBoxItem;
@@ -172,10 +182,10 @@ namespace Avalonia.Controls
         /// Gets or sets the DataTemplate used to display the selected item. This has a higher priority than <see cref="ItemsControl.ItemTemplate"/> if set.
         /// </summary>
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        public IDataTemplate? SelectedItemTemplate
+        public IDataTemplate? SelectionBoxItemTemplate
         {
-            get => GetValue(SelectedItemTemplateProperty);
-            set => SetValue(SelectedItemTemplateProperty, value);
+            get => GetValue(SelectionBoxItemTemplateProperty);
+            set => SetValue(SelectionBoxItemTemplateProperty, value);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -341,7 +351,10 @@ namespace Avalonia.Controls
             {
                 PseudoClasses.Set(pcDropdownOpen, change.GetNewValue<bool>());
             }
-
+            else if (change.Property == ItemTemplateProperty)
+            {
+                CoerceValue(SelectionBoxItemTemplateProperty);
+            }
             base.OnPropertyChanged(change);
         }
 
@@ -452,7 +465,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                if(ItemTemplate is null && SelectedItemTemplate is null && DisplayMemberBinding is { } binding)
+                if(ItemTemplate is null && SelectionBoxItemTemplate is null && DisplayMemberBinding is { } binding)
                 {
                     var template = new FuncDataTemplate<object?>((_, _) =>
                     new TextBlock
