@@ -8,8 +8,6 @@ using Avalonia.Headless;
 using Avalonia.Headless.Vnc;
 using Avalonia.Logging;
 using Avalonia.Platform;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
 
@@ -17,15 +15,44 @@ namespace Avalonia
 {
     public static class HeadlessVncPlatformExtensions
     {
+        /// <summary>
+        /// Start Avalonia application with Headless VNC platform without password.
+        /// </summary>
+        /// <param name="builder">Application Builder</param>
+        /// <param name="host">VNC Server IP will be bind, if null or empty IPAddress.LoopBack will be used.</param>
+        /// <param name="port">VNC Server port will be bind</param>
+        /// <param name="args">Avalonia application start args</param>
+        /// <param name="shutdownMode">shut down mode <see cref="ShutdownMode"/></param>
+        /// <returns></returns>
         public static int StartWithHeadlessVncPlatform(
             this AppBuilder builder,
             string host, int port,
             string[] args,
-            ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose,
-            string? password = null)
+            ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
+        {
+            return StartWithHeadlessVncPlatform(builder, host, port, null, args, shutdownMode);
+        }
+
+        /// <summary>
+        /// Start Avalonia application with Headless VNC platform with password.
+        /// </summary>
+        /// <param name="builder">Application Builder</param>
+        /// <param name="host">VNC Server IP will be bind, if null or empty IPAddress.LoopBack will be used.</param>
+        /// <param name="port">VNC Server port will be bind</param>
+        /// <param name="password">VNC connection auth password</param>
+        /// <param name="args">Avalonia application start args</param>
+        /// <param name="shutdownMode">shut down mode <see cref="ShutdownMode"/></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static int StartWithHeadlessVncPlatform(
+            this AppBuilder builder,
+            string host, int port,
+            string? password,
+            string[] args,
+            ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
         {
             var vncLogger = new AvaloniaVncLogger();
-            var tcpServer = new TcpListener(host == null ? IPAddress.Loopback : IPAddress.Parse(host), port);
+            var tcpServer = new TcpListener(string.IsNullOrEmpty(host) ? IPAddress.Loopback : IPAddress.Parse(host), port);
             tcpServer.Start();
             return builder
                 .UseHeadless(new AvaloniaHeadlessPlatformOptions
