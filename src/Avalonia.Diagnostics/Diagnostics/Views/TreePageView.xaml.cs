@@ -69,9 +69,40 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void OnClipboardCopyRequested(object? sender, string e)
+        private void OnClipboardCopyRequested(object? sender, string selector)
         {
-            TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(e);
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            {
+                var @do = new DataObject();
+                var text = ToText(selector);
+                @do.Set(DataFormats.Text, text);
+                @do.Set(Constants.DataFormats.Avalonia_DevTools_Selector, selector);
+                clipboard.SetDataObjectAsync(@do);
+            }
+        }
+
+        private static string ToText(string text)
+        {
+            var sb = new System.Text.StringBuilder();
+            var bufferStartIndex = -1;
+            for (var ic = 0; ic < text.Length; ic++)
+            {
+                var c = text[ic];
+                switch (c)
+                {
+                    case '{':
+                        bufferStartIndex = sb.Length;
+                        break;
+                    case '}' when bufferStartIndex > -1:
+                        sb.Remove(bufferStartIndex, sb.Length - bufferStartIndex);
+                        bufferStartIndex = sb.Length;
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+            return sb.ToString();
         }
     }
 }
