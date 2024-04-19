@@ -76,9 +76,19 @@ namespace Avalonia.Skia
             return new SKRect((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
         }
         
+        internal static SKRect ToSKRect(this LtrbRect r)
+        {
+            return new SKRect((float)r.Left, (float)r.Right, (float)r.Right, (float)r.Bottom);
+        }
+        
         public static SKRectI ToSKRectI(this PixelRect r)
         {
             return new SKRectI(r.X, r.Y, r.Right, r.Bottom);
+        }
+        
+        internal static SKRectI ToSKRectI(this LtrbPixelRect r)
+        {
+            return new SKRectI(r.Left, r.Top, r.Right, r.Bottom);
         }
 
         public static SKRoundRect ToSKRoundRect(this RoundedRect r)
@@ -101,9 +111,19 @@ namespace Avalonia.Skia
             return new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
         }
         
+        internal static LtrbRect ToAvaloniaLtrbRect(this SKRect r)
+        {
+            return new LtrbRect(r.Left, r.Top, r.Right, r.Bottom);
+        }
+        
         public static PixelRect ToAvaloniaPixelRect(this SKRectI r)
         {
             return new PixelRect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
+        }
+        
+        internal static LtrbPixelRect ToAvaloniaLtrbPixelRect(this SKRectI r)
+        {
+            return new LtrbPixelRect(r.Left, r.Top, r.Right, r.Bottom);
         }
 
         public static SKMatrix ToSKMatrix(this Matrix m)
@@ -142,6 +162,8 @@ namespace Avalonia.Skia
                 return SKColorType.Bgra8888;
             if (fmt == PixelFormat.Rgba8888)
                 return SKColorType.Rgba8888;
+            if (fmt == PixelFormat.Rgb32)
+                return SKColorType.Rgb888x;
             throw new ArgumentException("Unknown pixel format: " + fmt);
         }
 
@@ -153,6 +175,8 @@ namespace Avalonia.Skia
                 return PixelFormats.Bgra8888;
             if (colorType == SKColorType.Rgba8888)
                 return PixelFormats.Rgba8888;
+            if (colorType == SKColorType.Rgb888x)
+                return PixelFormats.Rgb32;
             return null;
         }
 

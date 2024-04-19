@@ -14,7 +14,7 @@ class ServerCompositionRenderData : SimpleServerRenderResource
 {
     private PooledInlineList<IRenderDataItem> _items;
     private PooledInlineList<IServerRenderResource> _referencedResources;
-    private Rect? _bounds;
+    private LtrbRect? _bounds;
     private bool _boundsValid;
     private static readonly ThreadSafeObjectPool<Collector> s_resourceHashSetPool = new();
 
@@ -67,7 +67,7 @@ class ServerCompositionRenderData : SimpleServerRenderResource
         }
     }
 
-    public Rect? Bounds
+    public LtrbRect? Bounds
     {
         get
         {
@@ -80,25 +80,31 @@ class ServerCompositionRenderData : SimpleServerRenderResource
         }
     }
 
-    private Rect? CalculateRenderBounds()
+    private LtrbRect? CalculateRenderBounds()
     {
-        Rect? totalBounds = null;
+        LtrbRect? totalBounds = null;
         foreach (var item in _items) 
-            totalBounds = Rect.Union(totalBounds, item.Bounds);
+            totalBounds = LtrbRect.FullUnion(totalBounds, item.Bounds);
         
         return ApplyRenderBoundsRounding(totalBounds);
     }
 
     public static Rect? ApplyRenderBoundsRounding(Rect? rect)
     {
+        if (rect == null)
+            return null;
+        return ApplyRenderBoundsRounding(new LtrbRect(rect.Value))?.ToRect();
+    }
+    
+    public static LtrbRect? ApplyRenderBoundsRounding(LtrbRect? rect)
+    {
         if (rect != null)
         {
             var r = rect.Value;
             // I don't believe that it's correct to do here (rather than in CompositionVisual),
             // but it's the old behavior, so I'm keeping it for now
-            return new Rect(
-                new Point(Math.Floor(r.X), Math.Floor(r.Y)),
-                new Point(Math.Ceiling(r.Right), Math.Ceiling(r.Bottom)));
+            return new LtrbRect(Math.Floor(r.Left), Math.Floor(r.Top),
+                Math.Ceiling(r.Right), Math.Ceiling(r.Bottom));
         }
 
         return null;

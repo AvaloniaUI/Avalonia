@@ -247,7 +247,6 @@ namespace ControlCatalog.Pages
                     FileTypeChoices = fileTypes,
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
-                    DefaultExtension = fileTypes?.Any() == true ? "txt" : null,
                     ShowOverwritePrompt = true
                 });
 

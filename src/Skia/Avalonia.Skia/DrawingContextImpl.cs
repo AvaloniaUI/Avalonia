@@ -24,7 +24,7 @@ namespace Avalonia.Skia
         // TODO: Get rid of this value, it's currently used to calculate intermediate sizes for tile brushes
         // but does so ignoring the current transform
         private readonly Vector _intermediateSurfaceDpi;
-        private readonly Stack<PaintWrapper> _maskStack = new();
+        private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Matrix? _postTransform;
@@ -545,14 +545,14 @@ namespace Avalonia.Skia
             
             if (brush != null)
             {
-                using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRect(1)))
+                using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRectUnscaled()))
                 {
                     Canvas.DrawRegion(r.Region, fill.Paint);
                 }
             }
 
             if (pen is not null
-                && TryCreatePaint(_strokePaint, pen, r.Bounds.ToRect(1).Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
+                && TryCreatePaint(_strokePaint, pen, r.Bounds.ToRectUnscaled().Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
             {
                 using (stroke)
                 {
@@ -813,7 +813,7 @@ namespace Avalonia.Skia
             var paint = SKPaintCache.Shared.Get();
 
             Canvas.SaveLayer(bounds.ToSKRect(), paint);
-            _maskStack.Push(CreatePaint(paint, mask, bounds));
+            _maskStack.Push((Canvas.TotalMatrix, CreatePaint(paint, mask, bounds)));
         }
 
         /// <inheritdoc />
@@ -826,9 +826,10 @@ namespace Avalonia.Skia
             
             Canvas.SaveLayer(paint);
             SKPaintCache.Shared.ReturnReset(paint);
-
-            PaintWrapper paintWrapper;
-            using (paintWrapper = _maskStack.Pop())
+            
+            var (transform, paintWrapper) = _maskStack.Pop();
+            Canvas.SetMatrix(transform);
+            using (paintWrapper)
             {
                 Canvas.DrawPaint(paintWrapper.Paint);
             }
@@ -1050,15 +1051,17 @@ namespace Avalonia.Skia
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
+                context.PushRenderOptions(RenderOptions);
+                
                 context.Transform = calc.IntermediateTransform;
-                context.RenderOptions = RenderOptions;
-
+                
                 context.DrawBitmap(
                     tileBrushImage,
                     1,
                     sourceRect,
                     targetRect);
 
+                context.PopRenderOptions();
                 context.PopClip();
             }
 
@@ -1133,9 +1136,10 @@ namespace Avalonia.Skia
 
                 using (var ctx = intermediate.CreateDrawingContext(true))
                 {
-                    ctx.RenderOptions = RenderOptions;
+                    ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
                     content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+                    ctx.PopRenderOptions();
                 }
 
                 ConfigureTileBrush(ref paintWrapper, targetRect, content.Brush, intermediate);
@@ -1145,42 +1149,76 @@ namespace Avalonia.Skia
         private void ConfigureSceneBrushContentWithPicture(ref PaintWrapper paintWrapper, ISceneBrushContent content,
             Rect targetRect)
         {
-            var rect = content.Rect;
-            var contentSize = rect.Size;
-            if (contentSize.Width <= 0 || contentSize.Height <= 0)
+            var tileBrush = content.Brush;
+
+            var contentBounds = content.Rect;
+
+            if (contentBounds.Size.Width <= 0 || contentBounds.Size.Height <= 0)
             {
                 paintWrapper.Paint.Color = SKColor.Empty;
+
                 return;
             }
-            
-            var tileBrush = content.Brush;
-            var transform = rect.TopLeft == default ? Matrix.Identity : Matrix.CreateTranslation(-rect.X, -rect.Y);
+
+            var brushTransform = Matrix.Identity;
+
+            var destinationRect = content.Brush.DestinationRect.ToPixels(targetRect.Size);
+
+            var sourceRect = tileBrush.SourceRect.ToPixels(contentBounds);
+
+            brushTransform *= Matrix.CreateTranslation(-sourceRect.Position);
+
+            if (sourceRect.Size != destinationRect.Size)
+            {
+                //scale source to destination size
+                var scale = tileBrush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
+
+                var scaleTransform = Matrix.CreateScale(scale);
+
+                brushTransform *= scaleTransform;
+            }
+
+            var transform = Matrix.Identity;
 
             if (content.Transform is not null)
             {
                 var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
                 var offset = Matrix.CreateTranslation(transformOrigin);
+                transform = -offset * content.Transform.Value * offset;
 
-                transform *= -offset * content.Transform.Value * offset;
+                if (tileBrush.TileMode == TileMode.None)
+                {
+                    brushTransform *= transform;
+
+                    destinationRect = destinationRect.TransformToAABB(transform);
+
+                    destinationRect = new Rect(0, 0, destinationRect.Left + destinationRect.Width,
+                        destinationRect.Top + destinationRect.Height);
+                }
             }
 
-            var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
-            transform *= calc.IntermediateTransform;
-            
-            using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
-            using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
+            if (tileBrush.Stretch == Stretch.None && transform == Matrix.Identity)
             {
-                ctx.RenderOptions = RenderOptions;
-                ctx.PushClip(calc.IntermediateClip);
-                content.Render(ctx, transform);
-                ctx.PopClip();
+                //align content
+                var alignmentOffset = TileBrushCalculator.CalculateTranslate(tileBrush.AlignmentX, tileBrush.AlignmentY,
+                    contentBounds, destinationRect, Vector.One);
+
+                brushTransform *= Matrix.CreateTranslation(alignmentOffset);
+            }
+
+            using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
+            using (var ctx = pictureTarget.CreateDrawingContext(destinationRect.Size))
+            {
+                ctx.PushRenderOptions(RenderOptions);
+                content.Render(ctx, brushTransform);
+                ctx.PopRenderOptions();
             }
 
             using var picture = pictureTarget.GetPicture();
 
             var paintTransform =
                 tileBrush.TileMode != TileMode.None
-                    ? SKMatrix.CreateTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)
+                    ? SKMatrix.CreateTranslation(-(float)destinationRect.X, -(float)destinationRect.Y)
                     : SKMatrix.CreateIdentity();
 
             SKShaderTileMode tileX =
@@ -1199,10 +1237,15 @@ namespace Avalonia.Skia
 
             paintTransform = SKMatrix.Concat(paintTransform,
                 SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
-            
+
             if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
                 paintTransform =
                     paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetRect.X, (float)targetRect.Y));
+
+            if (tileBrush.TileMode != TileMode.None)
+            {
+                paintTransform = paintTransform.PreConcat(transform.ToSKMatrix());
+            }
 
             using (var shader = picture.ToShader(tileX, tileY, paintTransform,
                        new SKRect(0, 0, picture.CullRect.Width, picture.CullRect.Height)))

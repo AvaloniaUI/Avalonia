@@ -1,0 +1,19 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaSingleProject.targets"/>
+
+  <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" Condition="'$(_AvaloniaWindowsTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Avalonia.Native\Avalonia.Native.csproj" Condition="'$(_AvaloniaMacOSTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Avalonia.X11\Avalonia.X11.csproj" Condition="'$(_AvaloniaLinuxTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" Condition="'$(_AvaloniaAndroidTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" Condition="'$(_AvaloniaIOSTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Browser\Avalonia.Browser\Avalonia.Browser.csproj" Condition="'$(_AvaloniaBrowserTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" Condition="'$(_AvaloniaTizenTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" Condition="'$(_AvaloniaTizenTarget)' == 'true'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" Condition="'$(_AvaloniaDesktopTarget)' == 'true'" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.props" Condition="'$(_AvaloniaBrowserTarget)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.targets" Condition="'$(_AvaloniaBrowserTarget)' == 'true'" />
+</Project>
