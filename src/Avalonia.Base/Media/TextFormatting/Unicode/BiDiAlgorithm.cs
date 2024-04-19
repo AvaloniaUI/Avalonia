@@ -1580,7 +1580,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
-        /// Check if a a directionality is neutral for rules N1 and N2
+        /// Check if a directionality is neutral for rules N1 and N2
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNeutralClass(BidiClass direction)
