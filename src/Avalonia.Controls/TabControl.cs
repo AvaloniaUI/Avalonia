@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Automation.Peers;
@@ -311,7 +312,7 @@ namespace Avalonia.Controls
                 // Forward TabOnceActiveElement to the panel.
                 KeyboardNavigation.SetTabOnceActiveElement(
                     panel,
-                    change.GetNewValue<IInputElement?>());
+                    change.GetNewValue<WeakReference<IInputElement>?>());
             }
         }
 

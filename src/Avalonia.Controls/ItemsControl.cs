@@ -548,7 +548,7 @@ namespace Avalonia.Controls
             // the focused control. This ensures that tabbing back into the control will focus
             // the last focused control when TabNavigationMode == Once.
             if (e.Source != this && e.Source is IInputElement ie)
-                KeyboardNavigation.SetTabOnceActiveElement(this, ie);
+                KeyboardNavigation.SetTabOnceActiveElement(this, new WeakReference<IInputElement>(ie));
         }
 
         /// <summary>

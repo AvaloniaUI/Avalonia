@@ -552,7 +552,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             };
 
-            KeyboardNavigation.SetTabOnceActiveElement(container, next);
+            KeyboardNavigation.SetTabOnceActiveElement(container, new WeakReference<IInputElement>(next));
 
             var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
@@ -631,7 +631,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             };
 
-            KeyboardNavigation.SetTabOnceActiveElement(container, next);
+            KeyboardNavigation.SetTabOnceActiveElement(container, new WeakReference<IInputElement>(next));
 
             var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
@@ -1069,7 +1069,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             };
 
-            KeyboardNavigation.SetTabOnceActiveElement(container, next);
+            KeyboardNavigation.SetTabOnceActiveElement(container, new WeakReference<IInputElement>(next));
 
             var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 

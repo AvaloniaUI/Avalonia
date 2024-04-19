@@ -322,7 +322,8 @@ namespace Avalonia.Controls.UnitTests
             focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
-            Assert.Equal(focused, KeyboardNavigation.GetTabOnceActiveElement(itemsControl));
+            Assert.True(KeyboardNavigation.GetTabOnceActiveElement(target).TryGetTarget(out var tabOnceActiveElement));
+            Assert.Equal(focused, tabOnceActiveElement);
 
             scroll.Offset = new Vector(0, 200);
             Layout(target);

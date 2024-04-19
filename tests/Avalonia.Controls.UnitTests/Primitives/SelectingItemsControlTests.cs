@@ -1239,7 +1239,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Prepare(target);
 
                 var container = target.ContainerFromIndex(1)!;
-                Assert.Same(container, KeyboardNavigation.GetTabOnceActiveElement(target));
+                Assert.True(KeyboardNavigation.GetTabOnceActiveElement(target).TryGetTarget(out var tabOnceActiveElement));
+                Assert.Same(container, tabOnceActiveElement);
             }
         }
 
@@ -1261,7 +1262,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var panel = target.Presenter.Panel;
 
-                Assert.Same(container, KeyboardNavigation.GetTabOnceActiveElement(target));
+                Assert.True(KeyboardNavigation.GetTabOnceActiveElement(target).TryGetTarget(out var tabOnceActiveElement));
+                Assert.Same(container, tabOnceActiveElement);
             }
         }
 
@@ -1285,7 +1287,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 items.RemoveAt(1);
 
                 var panel = target.Presenter.Panel;
-
+                
                 Assert.Null(KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel));
             }
         }

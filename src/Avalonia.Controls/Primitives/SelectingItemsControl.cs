@@ -527,7 +527,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             if (Selection.AnchorIndex == index)
-                KeyboardNavigation.SetTabOnceActiveElement(this, container);
+                KeyboardNavigation.SetTabOnceActiveElement(this, new WeakReference<IInputElement>(container));
         }
 
         /// <inheritdoc />
@@ -932,7 +932,10 @@ namespace Avalonia.Controls.Primitives
                 _hasScrolledToSelectedItem = false;
 
                 var anchorIndex = GetAnchorIndex();
-                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(anchorIndex));
+                if (ContainerFromIndex(anchorIndex) is { } containerFromIndex)
+                    KeyboardNavigation.SetTabOnceActiveElement(this, new WeakReference<IInputElement>(containerFromIndex));
+                else
+                    KeyboardNavigation.SetTabOnceActiveElement(this, null);
                 AutoScrollToSelectedItemIfNecessary(anchorIndex);
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)

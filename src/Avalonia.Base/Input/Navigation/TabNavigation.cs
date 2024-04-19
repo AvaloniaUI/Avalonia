@@ -595,7 +595,9 @@ namespace Avalonia.Input.Navigation
 
         private static IInputElement? GetActiveElement(IInputElement e)
         {
-            return ((AvaloniaObject)e).GetValue(KeyboardNavigation.TabOnceActiveElementProperty);
+            if (((AvaloniaObject)e).GetValue(KeyboardNavigation.TabOnceActiveElementProperty)?.TryGetTarget(out var target) ?? false)
+                return target;
+            return null;
         }
 
         private static IInputElement GetGroupParent(IInputElement e) => GetGroupParent(e, false);

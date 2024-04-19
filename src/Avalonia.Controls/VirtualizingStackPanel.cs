@@ -690,7 +690,8 @@ namespace Avalonia.Controls
             {
                 element.SetCurrentValue(Visual.IsVisibleProperty, false);
             }
-            else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
+            else if ((KeyboardNavigation.GetTabOnceActiveElement(ItemsControl)
+                     ?.TryGetTarget(out var target) ?? false) && target == element)
             {
                 _focusedElement = element;
                 _focusedIndex = index;
@@ -764,7 +765,8 @@ namespace Avalonia.Controls
         {
             if (_focusedElement is not null &&
                 e.Property == KeyboardNavigation.TabOnceActiveElementProperty && 
-                e.GetOldValue<IInputElement?>() == _focusedElement)
+                (e.GetOldValue<WeakReference<IInputElement>?>()?.TryGetTarget(out var target) ?? false) &&
+                target == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
                 RecycleElement(_focusedElement, _focusedIndex);
