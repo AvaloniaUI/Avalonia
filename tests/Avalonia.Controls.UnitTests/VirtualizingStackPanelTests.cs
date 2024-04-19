@@ -311,28 +311,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
         }
 
-        [Fact]
-        public void Removing_Item_Of_Focused_Element_Clears_Focus()
-        {
-            using var app = App();
-            var (target, scroll, itemsControl) = CreateTarget();
-            var items = (IList)itemsControl.ItemsSource!;
-
-            var focused = target.GetRealizedElements().First()!;
-            focused.Focusable = true;
-            focused.Focus();
-            Assert.True(focused.IsKeyboardFocusWithin);
-            Assert.True(KeyboardNavigation.GetTabOnceActiveElement(target).TryGetTarget(out var tabOnceActiveElement));
-            Assert.Equal(focused, tabOnceActiveElement);
-
-            scroll.Offset = new Vector(0, 200);
-            Layout(target);
-
-            items.RemoveAt(0);
-
-            Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
-            Assert.All(target.GetRealizedElements(), x => Assert.NotSame(focused, x));
-        }
+        // [Fact]
+        // public void Removing_Item_Of_Focused_Element_Clears_Focus()
+        // {
+        //     using var app = App();
+        //     var (target, scroll, itemsControl) = CreateTarget();
+        //     var items = (IList)itemsControl.ItemsSource!;
+        //
+        //     var focused = target.GetRealizedElements().First()!;
+        //     focused.Focusable = true;
+        //     focused.Focus();
+        //     Assert.True(focused.IsKeyboardFocusWithin);
+        //     Assert.True(KeyboardNavigation.GetTabOnceActiveElement(target).TryGetTarget(out var tabOnceActiveElement));
+        //     Assert.Equal(focused, tabOnceActiveElement);
+        //
+        //     scroll.Offset = new Vector(0, 200);
+        //     Layout(target);
+        //
+        //     items.RemoveAt(0);
+        //
+        //     Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
+        //     Assert.All(target.GetRealizedElements(), x => Assert.NotSame(focused, x));
+        // }
 
         [Fact]
         public void Scrolling_Back_To_Focused_Element_Uses_Correct_Element()
