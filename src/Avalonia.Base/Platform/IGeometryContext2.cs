@@ -1,6 +1,7 @@
 ﻿namespace Avalonia.Platform
 {
-    public interface IGeometryContextEx : IGeometryContext
+    // TODO12 combine with IGeometryContext
+    public interface IGeometryContext2 : IGeometryContext
     {
         /// <summary>
         /// Draws a line to the specified point.

@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// of <see cref="StreamGeometryContext"/> is obtained by calling
     /// <see cref="StreamGeometry.Open"/>.
     /// </remarks>
-    public class StreamGeometryContext : IGeometryContext, IGeometryContextEx
+    public class StreamGeometryContext : IGeometryContext, IGeometryContext2
     {
         private readonly IStreamGeometryContextImpl _impl;
 
@@ -110,8 +110,8 @@ namespace Avalonia.Media
         /// <param name="isStroked">Whether the segment is stroked</param>
         public void LineTo(Point point, bool isStroked)
         {
-            if (_impl is IGeometryContextEx contextEx)
-                contextEx.LineTo(point, isStroked);
+            if (_impl is IGeometryContext2 context2)
+                context2.LineTo(point, isStroked);
             else
                 _impl.LineTo(point);
 

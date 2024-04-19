@@ -77,12 +77,14 @@ namespace Avalonia.Skia
         /// <summary>
         /// A Skia implementation of a <see cref="IStreamGeometryContextImpl"/>.
         /// </summary>
-        private class StreamContext : IStreamGeometryContextImpl, IGeometryContextEx
+        private class StreamContext : IStreamGeometryContextImpl, IGeometryContext2
         {
             private readonly StreamGeometryImpl _geometryImpl;
             private SKPath Stroke => _geometryImpl._strokePath;
             private SKPath Fill => _geometryImpl._fillPath ??= new();
             private bool _isFilled;
+            private Point _startPoint;
+            private bool _isFigureBroken;
             private bool Duplicate => _isFilled && !ReferenceEquals(_geometryImpl._fillPath, Stroke);
 
             /// <summary>
@@ -138,6 +140,8 @@ namespace Avalonia.Skia
                 }
 
                 _isFilled = isFilled;
+                _startPoint = startPoint;
+                _isFigureBroken = false;
                 Stroke.MoveTo((float)startPoint.X, (float)startPoint.Y);
                 if (Duplicate)
                     Fill.MoveTo((float)startPoint.X, (float)startPoint.Y);
@@ -172,7 +176,13 @@ namespace Avalonia.Skia
             {
                 if (isClosed)
                 {
-                    Stroke.Close();
+                    if (_isFigureBroken)
+                    {
+                        LineTo(_startPoint);
+                        _isFigureBroken = false;
+                    }
+                    else
+                        Stroke.Close();
                     if (Duplicate)
                         Fill.Close();
                 }
@@ -195,6 +205,8 @@ namespace Avalonia.Skia
                 {
                     if (Stroke == Fill)
                         _geometryImpl._fillPath = Stroke.Clone();
+
+                    _isFigureBroken = true;
 
                     Stroke.MoveTo((float)point.X, (float)point.Y);
                 }
