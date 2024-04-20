@@ -226,7 +226,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             IsVisibleInFrame = IsHitTestVisibleInFrame
                                && _parent?.IsVisibleInFrame != false
-                               && EffectiveOpacity > 0.04;
+                               && EffectiveOpacity > 0.003;
 
             if (wasVisible != IsVisibleInFrame || positionChanged)
             {
