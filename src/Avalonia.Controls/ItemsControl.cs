@@ -11,11 +11,10 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -452,8 +451,21 @@ namespace Avalonia.Controls
             // I use SetValue instead of ClearValue to avoid DataContext inheritance
             container.SetValue(DataContextProperty, null);
 
-            // 
-            KeyboardNavigation.SetTabOnceActiveElement(this, null);
+            if (KeyboardNavigation.GetTabOnceActiveElement(this) is InputElement ie)
+            {
+                foreach (var ancestor in ie.GetVisualAncestors())
+                {
+                    if (ancestor == container)
+                    {
+                        KeyboardNavigation.SetTabOnceActiveElement(this, null);
+                        break;
+                    }
+                    if (ancestor == this)
+                    {
+                        break;
+                    }
+                }
+            }
 
             if (container is HeaderedContentControl hcc)
             {
@@ -476,7 +488,7 @@ namespace Avalonia.Controls
                 ic.ClearValue(ItemTemplateProperty);
                 ic.ClearValue(ItemContainerThemeProperty);
             }
-            
+
             if (container is HeaderedItemsControl hic)
             {
                 hic.ClearValue(HeaderedItemsControl.HeaderProperty);
@@ -834,7 +846,7 @@ namespace Avalonia.Controls
         {
             var current = from;
 
-            for (;;)
+            for (; ; )
             {
                 var result = container.GetControl(direction, current, wrap);
 
