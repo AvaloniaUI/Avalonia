@@ -82,6 +82,8 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT GetExtendTitleBarHeight (double*ret) override;
 
     virtual HRESULT SetExtendTitleBarHeight (double value) override;
+    
+    virtual HRESULT GetWindowZOrder (long* zOrder) override;
 
     void EnterFullScreenMode ();
 
