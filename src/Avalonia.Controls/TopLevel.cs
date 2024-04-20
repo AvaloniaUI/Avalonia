@@ -122,6 +122,7 @@ namespace Avalonia.Controls
             );
 
         private readonly IInputManager? _inputManager;
+        private readonly IToolTipService? _tooltipService;
         private readonly IAccessKeyHandler? _accessKeyHandler;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IGlobalStyles? _globalStyles;
@@ -182,6 +183,8 @@ namespace Avalonia.Controls
                     newInputElement.PropertyChanged += topLevel.PointerOverElementOnPropertyChanged;
                 }
             });
+
+            ToolTip.ServiceEnabledProperty.Changed.Subscribe(OnToolTipServiceEnabledChanged);
         }
 
         /// <summary>
@@ -211,6 +214,7 @@ namespace Avalonia.Controls
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
+            _tooltipService = TryGetService<IToolTipService>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
@@ -833,7 +837,9 @@ namespace Avalonia.Controls
                     var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
                     if (e is RawPointerEventArgs pointerArgs)
                     {
-                        pointerArgs.InputHitTestResult = topLevel.InputHitTest(pointerArgs.Position);
+                        var hitTestElement = topLevel.InputHitTest(pointerArgs.Position, enabledElementsOnly: false);
+
+                        pointerArgs.InputHitTestResult = (hitTestElement, FirstEnabledAncestor(hitTestElement));
                     }
 
                     topLevel._inputManager?.ProcessInput(e);
@@ -845,6 +851,17 @@ namespace Avalonia.Controls
                     this,
                     "PlatformImpl is null, couldn't handle input.");
             }
+        }
+
+        private static IInputElement? FirstEnabledAncestor(IInputElement? hitTestElement)
+        {
+            var candidate = hitTestElement;
+            while (candidate?.IsEffectivelyEnabled == false)
+            {
+                candidate = (candidate as Visual)?.Parent as IInputElement;
+            }
+
+            return candidate;
         }
 
         private void PointerOverElementOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -863,6 +880,30 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
         {
             _pointerOverPreProcessor?.SceneInvalidated(e.DirtyRect);
+            UpdateToolTip(e.DirtyRect);
+        }
+
+        private static void OnToolTipServiceEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> args)
+        {
+            if (args.GetNewValue<bool>()
+                && args.Priority != BindingPriority.Inherited 
+                && args.Sender is Visual visual 
+                && GetTopLevel(visual) is { } topLevel)
+            {
+                topLevel.UpdateToolTip(visual.Bounds.Translate((Vector)visual.TranslatePoint(default, topLevel)!));
+            }
+        }
+
+        private void UpdateToolTip(Rect dirtyRect)
+        {
+            if (_tooltipService != null && _pointerOverPreProcessor?.LastPosition is { } lastPos)
+            {
+                var clientPoint = this.PointToClient(lastPos);
+                if (dirtyRect.Contains(clientPoint))
+                {
+                    _tooltipService.Update(HitTester.HitTestFirst(clientPoint, this, null));
+                }
+            }
         }
 
         void PlatformImpl_LostFocus()

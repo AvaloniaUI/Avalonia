@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -7,6 +8,7 @@ namespace Avalonia
     /// </summary>
     public abstract class AvaloniaPropertyMetadata
     {
+        private bool _isReadOnly;
         private BindingMode _defaultBindingMode;
 
         /// <summary>
@@ -54,6 +56,11 @@ namespace Avalonia
             AvaloniaPropertyMetadata baseMetadata, 
             AvaloniaProperty property)
         {
+            if (_isReadOnly)
+            {
+                throw new InvalidOperationException("The metadata is read-only.");
+            }
+
             if (_defaultBindingMode == BindingMode.Default)
             {
                 _defaultBindingMode = baseMetadata.DefaultBindingMode;
@@ -61,6 +68,13 @@ namespace Avalonia
 
             EnableDataValidation ??= baseMetadata.EnableDataValidation;
         }
+
+        /// <summary>
+        /// Makes this instance read-only.
+        /// No further modifications are allowed after this call.
+        /// </summary>
+        public void Freeze()
+            => _isReadOnly = true;
 
         /// <summary>
         /// Gets a copy of this object configured for use with any owner type.

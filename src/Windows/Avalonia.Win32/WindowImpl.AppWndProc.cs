@@ -1191,11 +1191,10 @@ namespace Avalonia.Win32
             var keyData = ToInt32(lParam);
             var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
-
-            if (key == Key.None && physicalKey == PhysicalKey.None)
-                return null;
-
             var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
+                return null;
 
             return new RawKeyEventArgs(
                 WindowsKeyboardDevice.Instance,

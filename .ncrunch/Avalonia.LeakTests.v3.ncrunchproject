@@ -1,0 +1,7 @@
+﻿<ProjectConfiguration>
+  <Settings>
+    <CustomBuildProperties>
+      <Value>TargetFramework = net462</Value>
+    </CustomBuildProperties>
+  </Settings>
+</ProjectConfiguration>

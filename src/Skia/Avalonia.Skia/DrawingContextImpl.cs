@@ -1160,34 +1160,20 @@ namespace Avalonia.Skia
                 return;
             }
 
-            var brushTransform = Matrix.CreateTranslation(-contentBounds.Position);
-
-            contentBounds = contentBounds.TransformToAABB(brushTransform);
+            var brushTransform = Matrix.Identity;
 
             var destinationRect = content.Brush.DestinationRect.ToPixels(targetRect.Size);
 
-            if (tileBrush.Stretch != Stretch.None)
-            {
-                //scale content to destination size
-                var scale = tileBrush.Stretch.CalculateScaling(destinationRect.Size, contentBounds.Size);
-
-                var scaleTransform = Matrix.CreateScale(scale);
-
-                contentBounds = contentBounds.TransformToAABB(scaleTransform);
-
-                brushTransform *= scaleTransform;
-            }
-
             var sourceRect = tileBrush.SourceRect.ToPixels(contentBounds);
 
-            //scale content to source size
-            if (contentBounds.Size != sourceRect.Size)
+            brushTransform *= Matrix.CreateTranslation(-sourceRect.Position);
+
+            if (sourceRect.Size != destinationRect.Size)
             {
-                var scale = tileBrush.Stretch.CalculateScaling(sourceRect.Size, contentBounds.Size);
+                //scale source to destination size
+                var scale = tileBrush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
 
                 var scaleTransform = Matrix.CreateScale(scale);
-
-                contentBounds = contentBounds.TransformToAABB(scaleTransform);
 
                 brushTransform *= scaleTransform;
             }
@@ -1199,11 +1185,16 @@ namespace Avalonia.Skia
                 var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
                 var offset = Matrix.CreateTranslation(transformOrigin);
                 transform = -offset * content.Transform.Value * offset;
-            }
 
-            if (content.Brush.TileMode == TileMode.None)
-            {
-                brushTransform *= transform;
+                if (tileBrush.TileMode == TileMode.None)
+                {
+                    brushTransform *= transform;
+
+                    destinationRect = destinationRect.TransformToAABB(transform);
+
+                    destinationRect = new Rect(0, 0, destinationRect.Left + destinationRect.Width,
+                        destinationRect.Top + destinationRect.Height);
+                }
             }
 
             if (tileBrush.Stretch == Stretch.None && transform == Matrix.Identity)

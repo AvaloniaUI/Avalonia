@@ -108,7 +108,6 @@ namespace Avalonia.Headless
         public Action? Deactivated { get; set; }
         public Action? Activated { get; set; }
         public IPlatformHandle Handle { get; } = new PlatformHandle(IntPtr.Zero, "STUB");
-        public Size MaxClientSize { get; } = new Size(1920, 1280);
         public void Resize(Size clientSize, WindowResizeReason reason)
         {
             if (ClientSize == clientSize)

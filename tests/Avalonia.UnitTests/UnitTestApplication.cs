@@ -53,6 +53,8 @@ namespace Avalonia.UnitTests
                     Dispatcher.UIThread.RunJobs();
                 }
 
+                ((ToolTipService)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+
                 scope.Dispose();
                 Dispatcher.ResetForUnitTests();
                 SynchronizationContext.SetSynchronizationContext(oldContext);
@@ -67,6 +69,7 @@ namespace Avalonia.UnitTests
                 .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
+                .Bind<IToolTipService>().ToConstant(Services.InputManager == null ? null : new ToolTipService(Services.InputManager))
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<IMouseDevice>().ToConstant(Services.MouseDevice?.Invoke())
                 .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation ?? (() => null))

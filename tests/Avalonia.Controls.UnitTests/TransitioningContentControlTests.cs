@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -128,6 +129,36 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TransitionCompleted_Should_Be_Raised_When_Content_Changes()
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var (target, transition) = CreateTarget("foo");
+
+            var completedTransitions = new List<TransitionCompletedEventArgs>();
+            target.TransitionCompleted += (_, e) => completedTransitions.Add(e);
+
+            target.Content = "bar";
+            Layout(target);
+            VerifyCompletedTransitions();
+
+            transition.Complete();
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions(new TransitionCompletedEventArgs("foo", "bar", true));
+
+            target.Content = "foo";
+            Layout(target);
+            VerifyCompletedTransitions(new TransitionCompletedEventArgs("foo", "bar", true));
+
+            transition.Complete();
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions(new("foo", "bar", true), new("bar", "foo", true));
+
+            void VerifyCompletedTransitions(params TransitionCompletedEventArgs[] expected)
+                => Assert.Equal(expected, completedTransitions, TransitionCompletedEventArgsComparer.Instance);
+        }
+
+        [Fact]
         public void Transition_Should_Be_Canceled_If_Content_Changes_While_Running()
         {
             using var app = Start();
@@ -181,6 +212,30 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, startedRaised);
             Assert.Equal("baz", target.Presenter!.Content);
             Assert.Equal("bar", presenter2.Content);
+        }
+
+        [Fact]
+        public void TransitionCompleted_Should_Be_Raised_If_Content_Changes_While_Running()
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var (target, _) = CreateTarget("foo");
+
+            var completedTransitions = new List<TransitionCompletedEventArgs>();
+            target.TransitionCompleted += (_, e) => completedTransitions.Add(e);
+
+            target.Content = "bar";
+            Layout(target);
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions();
+
+            target.Content = "baz";
+            Layout(target);
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions(new TransitionCompletedEventArgs("foo", "bar", false));
+
+            void VerifyCompletedTransitions(params TransitionCompletedEventArgs[] expected)
+                => Assert.Equal(expected, completedTransitions, TransitionCompletedEventArgsComparer.Instance);
         }
 
         [Theory]
@@ -349,6 +404,25 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public void Complete() => _tcs!.TrySetResult();
+        }
+
+        private sealed class TransitionCompletedEventArgsComparer : IEqualityComparer<TransitionCompletedEventArgs>
+        {
+            public static TransitionCompletedEventArgsComparer Instance { get; } = new();
+
+            public bool Equals(TransitionCompletedEventArgs? x, TransitionCompletedEventArgs? y)
+            {
+                if (ReferenceEquals(x, y))
+                    return true;
+
+                if (x is null || y is null)
+                    return false;
+
+                return x.From == y.From && x.To == y.To && x.HasRunToCompletion == y.HasRunToCompletion;
+            }
+
+            public int GetHashCode(TransitionCompletedEventArgs obj)
+                => HashCode.Combine(obj.From, obj.To, obj.HasRunToCompletion);
         }
     }
 }

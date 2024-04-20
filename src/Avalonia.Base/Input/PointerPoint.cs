@@ -164,6 +164,11 @@ namespace Avalonia.Input
             YTilt = yTilt;
         }
 
+        internal PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind, RawPointerPoint rawPoint)
+            : this(modifiers, kind, rawPoint.Twist, rawPoint.Pressure, rawPoint.XTilt, rawPoint.YTilt)
+        {
+        }
+
         internal PointerPointProperties(PointerPointProperties basedOn, RawPointerPoint rawPoint)
         {
             IsLeftButtonPressed = basedOn.IsLeftButtonPressed;
