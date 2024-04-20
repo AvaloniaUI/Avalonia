@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
@@ -87,10 +88,12 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IFocusScope, ILayoutRoot
     {
+        private static readonly Lazy<WindowIcon?> s_defaultIcon = new(LoadDefaultIcon);
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
+        private bool _canHandleResized = false;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -228,7 +231,7 @@ namespace Avalonia.Controls
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
-            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon(icon?.PlatformImpl));
+            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
 
@@ -720,6 +723,8 @@ namespace Avalonia.Controls
                 // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
                 SetWindowStartupLocation(owner);
 
+                _canHandleResized = true; 
+                
                 var initialSize = new Size(
                     double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
                     double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
@@ -798,6 +803,8 @@ namespace Avalonia.Controls
                 // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
                 // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
                 SetWindowStartupLocation(owner);
+                
+                _canHandleResized = true; 
 
                 var initialSize = new Size(
                     double.IsNaN(Width) ? ClientSize.Width : Width,
@@ -833,6 +840,29 @@ namespace Avalonia.Controls
                 OnOpened(EventArgs.Empty);
                 return result.Task;
             }
+        }
+
+        /// <summary>
+        /// Sorts the windows ascending by their Z order - the topmost window will be the last in the list.
+        /// </summary>
+        /// <param name="windows"></param>
+        public static void SortWindowsByZOrder(Window[] windows)
+        {
+            if (windows.Length == 0)
+                return;
+
+            if (windows[0].PlatformImpl is not { } platformImpl)
+                throw new InvalidOperationException("Window.PlatformImpl is null");
+
+#if NET5_0_OR_GREATER
+            Span<long> zOrder = stackalloc long[windows.Length];
+            platformImpl.GetWindowsZOrder(windows, zOrder);
+            zOrder.Sort(windows.AsSpan());
+#else
+            long[] zOrder = new long[windows.Length];
+            platformImpl.GetWindowsZOrder(windows, zOrder);
+            Array.Sort(zOrder, windows);
+#endif
         }
 
         private void UpdateEnabled()
@@ -1034,7 +1064,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
-            if (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height))
+            if (_canHandleResized && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
 
@@ -1101,27 +1131,18 @@ namespace Avalonia.Controls
             return new WindowAutomationPeer(this);
         }
 
-        /// <summary>
-        /// Sorts the windows ascending by their Z order - the topmost window will be the last in the list.
-        /// </summary>
-        /// <param name="windows"></param>
-        public static void SortWindowsByZOrder(Window[] windows)
+        private static WindowIcon? LoadDefaultIcon()
         {
-            if (windows.Length == 0)
-                return;
-
-            if (windows[0].PlatformImpl is not { } platformImpl)
-                throw new InvalidOperationException("Window.PlatformImpl is null");
-
-#if NET5_0_OR_GREATER
-            Span<long> zOrder = stackalloc long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            zOrder.Sort(windows.AsSpan());
-#else
-            long[] zOrder = new long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            Array.Sort(zOrder, windows);
-#endif
+            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader. 
+            if (AvaloniaLocator.Current.GetService<IAssetLoader>() is { } assetLoader
+                && Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
+                && Uri.TryCreate($"avares://{assemblyName}/!__AvaloniaDefaultWindowIcon", UriKind.Absolute, out var path)
+                && assetLoader.Exists(path))
+            {
+                using var stream = assetLoader.Open(path);
+                return new WindowIcon(stream);
+            }
+            return null;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Logging;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server;
@@ -41,7 +42,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
             Compositor.Animations.RemoveFromClock(this);
     }
 
-    public override Rect OwnContentBounds => _handler.GetRenderBounds();
+    public override LtrbRect OwnContentBounds => new(_handler.GetRenderBounds());
 
     protected override void OnAttachedToRoot(ServerCompositionTarget target)
     {
@@ -60,7 +61,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
 
     internal void HandlerInvalidate(Rect rc)
     {
-        Root?.AddDirtyRect(rc.TransformToAABB(GlobalTransformMatrix));
+        Root?.AddDirtyRect(new LtrbRect(rc).TransformToAABB(GlobalTransformMatrix));
     }
     
     internal void HandlerRegisterForNextAnimationFrameUpdate()
@@ -70,18 +71,21 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
             Compositor.Animations.AddToClock(this);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip,
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
         IDirtyRectTracker dirtyRects)
     {
-        using var context = new ImmediateDrawingContext(canvas, false);
+        canvas.AutoFlush = true;
+        using var context = new ImmediateDrawingContext(canvas, GlobalTransformMatrix, false);
         try
         {
-            _handler.Render(context, currentTransformedClip);
+            _handler.Render(context, currentTransformedClip.ToRect());
         }
         catch (Exception e)
         {
             Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
                 ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnRender)} {{0}}", e);
         }
+
+        canvas.AutoFlush = false;
     }
 }

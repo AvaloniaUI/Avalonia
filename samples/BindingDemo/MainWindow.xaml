@@ -120,5 +120,20 @@
         <Button Content="Command Method Do" Command="{Binding Do}" x:Name="ToDo"/>
       </StackPanel>
     </TabItem>
+    <TabItem Header="Advanced">
+      <TabItem.Resources>
+        <local:GenericValueConverter x:Key="BrushConverter" x:TypeArguments="SolidColorBrush"/>
+      </TabItem.Resources>
+      <StackPanel>
+        <!-- Tests for #10856  -->
+        <TextBlock Text="{local:GenericMarkupExtension, Value=Red, x:TypeArguments=Color}"/>
+        <TextBlock HorizontalAlignment="Left"
+                   Text="{Binding $self.Background, Converter={StaticResource BrushConverter}}">
+          <TextBlock.Background>
+            <SolidColorBrush Color="Yellow"/>
+          </TextBlock.Background>
+        </TextBlock>
+      </StackPanel>
+    </TabItem>
   </TabControl>
 </Window>

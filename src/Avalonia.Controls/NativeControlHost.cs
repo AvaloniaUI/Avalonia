@@ -88,7 +88,7 @@ namespace Avalonia.Controls
                 }
 
                 // If there is no attachment, but the control exists,
-                // attempt to attach to to the current toplevel or destroy the control if it's incompatible
+                // attempt to attach to the current toplevel or destroy the control if it's incompatible
                 if (_attachment == null && _nativeControlHandle != null)
                 {
                     if (_currentHost.IsCompatibleWith(_nativeControlHandle))

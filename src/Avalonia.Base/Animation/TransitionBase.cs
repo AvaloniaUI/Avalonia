@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Avalonia.Animation.Easings;
 
 namespace Avalonia.Animation
@@ -96,5 +97,12 @@ namespace Avalonia.Animation
             => Apply(control, clock, oldValue, newValue);
         
         internal abstract IDisposable Apply(Animatable control, IClock clock, object? oldValue, object? newValue);
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Property), Property, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Duration), Duration, includeContent);
+        }
     }
 }

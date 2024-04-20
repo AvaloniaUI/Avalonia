@@ -27,6 +27,24 @@ internal static unsafe class PixelFormatWriter
         public void Reset(IntPtr address) => _address = (byte*)address;
     }
 
+    public unsafe struct Rgb32PixelFormatWriter : IPixelFormatWriter
+    {
+        private byte* _address;
+        public void WriteNext(Rgba8888Pixel pixel)
+        {
+            var address = _address;
+
+            address[0] = pixel.R;
+            address[1] = pixel.G;
+            address[2] = pixel.B;
+            address[3] = 255;
+
+            _address += 4;
+        }
+
+        public void Reset(IntPtr address) => _address = (byte*)address;
+    }
+
     public unsafe struct Rgba64PixelFormatWriter : IPixelFormatWriter
     {
         private Rgba64Pixel* _address;
@@ -87,6 +105,24 @@ internal static unsafe class PixelFormatWriter
             addr[0] = pixel.B;
 
             _address += 3;
+        }
+
+        public void Reset(IntPtr address) => _address = (byte*)address;
+    }
+
+    public unsafe struct Bgr32PixelFormatWriter : IPixelFormatWriter
+    {
+        private byte* _address;
+        public void WriteNext(Rgba8888Pixel pixel)
+        {
+            var address = _address;
+
+            address[0] = pixel.B;
+            address[1] = pixel.G;
+            address[2] = pixel.R;
+            address[3] = 255;
+
+            _address += 4;
         }
 
         public void Reset(IntPtr address) => _address = (byte*)address;
@@ -434,8 +470,14 @@ internal static unsafe class PixelFormatWriter
             case PixelFormatEnum.Rgb24:
                 Write<Rgb24PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
+            case PixelFormatEnum.Rgb32:
+                Write<Rgb32PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
             case PixelFormatEnum.Bgr24:
                 Write<Bgr24PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
+                break;
+            case PixelFormatEnum.Bgr32:
+                Write<Bgr32PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);
                 break;
             case PixelFormatEnum.Bgr555:
                 Write<Bgr555PixelFormatWriter>(pixels, dest, size, stride, alphaFormat, srcAlphaFormat);

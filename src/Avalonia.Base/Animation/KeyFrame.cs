@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Avalonia.Collections;
 using Avalonia.Metadata;
 
@@ -95,6 +96,20 @@ namespace Avalonia.Animation
             }
         }
 
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            switch (TimingMode)
+            {
+                case KeyFrameTimingMode.TimeSpan:
+                    DebugDisplayHelper.AppendOptionalValue(builder, nameof(KeyTime), KeyTime, includeContent);
+                    break;
+                case KeyFrameTimingMode.Cue:
+                    DebugDisplayHelper.AppendOptionalValue(builder, nameof(Cue), Cue, includeContent);
+                    break;
+            }
+        }
     }
 
 }
