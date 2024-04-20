@@ -300,8 +300,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnloadableAssemblyLoadConte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.RenderTests.WpfCompare", "tests\Avalonia.RenderTests.WpfCompare\Avalonia.RenderTests.WpfCompare.csproj", "{9AE1B827-21AC-4063-AB22-C8804B7F931E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Skia3.RenderTests", "tests\Avalonia.Skia3.RenderTests\Avalonia.Skia3.RenderTests.csproj", "{074B4D91-3EC5-4AB1-9521-C468B5A8340C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -698,10 +696,6 @@ Global
 		{9AE1B827-21AC-4063-AB22-C8804B7F931E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AE1B827-21AC-4063-AB22-C8804B7F931E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AE1B827-21AC-4063-AB22-C8804B7F931E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{074B4D91-3EC5-4AB1-9521-C468B5A8340C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{074B4D91-3EC5-4AB1-9521-C468B5A8340C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{074B4D91-3EC5-4AB1-9521-C468B5A8340C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{074B4D91-3EC5-4AB1-9521-C468B5A8340C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -789,7 +783,6 @@ Global
 		{D7FE3E0F-3FE0-4F87-A2F5-24F1454D84C0} = {9CCA131B-DE95-4D44-8788-C3CAE28574CD}
 		{DA5F1FF9-4259-4C54-B443-85CFA226EE6A} = {9CCA131B-DE95-4D44-8788-C3CAE28574CD}
 		{9AE1B827-21AC-4063-AB22-C8804B7F931E} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
-		{074B4D91-3EC5-4AB1-9521-C468B5A8340C} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

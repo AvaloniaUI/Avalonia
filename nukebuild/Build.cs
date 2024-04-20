@@ -259,7 +259,6 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             RunCoreTest("Avalonia.Skia.RenderTests");
-            RunCoreTest("Avalonia.Skia3.RenderTests");
             if (Parameters.IsRunningOnWindows)
                 RunCoreTest("Avalonia.Direct2D1.RenderTests");
         });
