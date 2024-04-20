@@ -457,10 +457,10 @@ namespace Avalonia.Controls
                 {
                     if (ancestor == container)
                     {
-                        KeyboardNavigation.SetTabOnceActiveElement(this, null);
+                        KeyboardNavigation.SetTabOnceActiveElement(this, ItemsPanelRoot);
                         break;
                     }
-                    if (ancestor == this)
+                    if (ancestor == ItemsPanelRoot || ancestor == this)
                     {
                         break;
                     }
