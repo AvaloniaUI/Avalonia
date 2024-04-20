@@ -139,7 +139,7 @@ namespace Avalonia.Skia
                 {
                     if (!_isDisposed)
                     {
-                        SkiaCompat.SetMatrix(_context.Canvas, _revertTransform);
+                        _context.Canvas.SetMatrix(_revertTransform);
                         _context._leased = false;
                         _isDisposed = true;
                     }
@@ -828,7 +828,7 @@ namespace Avalonia.Skia
             SKPaintCache.Shared.ReturnReset(paint);
             
             var (transform, paintWrapper) = _maskStack.Pop();
-            SkiaCompat.SetMatrix(Canvas, transform);
+            Canvas.SetMatrix(transform);
             using (paintWrapper)
             {
                 Canvas.DrawPaint(paintWrapper.Paint);
@@ -860,7 +860,7 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                SkiaCompat.SetMatrix(Canvas, transform.ToSKMatrix());
+                Canvas.SetMatrix(transform.ToSKMatrix());
             }
         }
 

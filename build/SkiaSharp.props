@@ -1,12 +1,12 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Condition="'$(_IncludeSkiaSharp3)' != 'true'">
-    <PackageReference Include="SkiaSharp" Version="2.88.8-preview.1.1" />
-    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8-preview.1.1" />
-    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.8-preview.1.1" />
+  <ItemGroup Condition="'$(AvsIncludeSkiaSharp3)' != 'true'">
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
+    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.8" />
   </ItemGroup>
-  <ItemGroup Condition="'$(_IncludeSkiaSharp3)' == 'true'">
-    <PackageReference Include="SkiaSharp" Version="3.0.0-preview.2.1" />
-    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="SkiaSharp.NativeAssets.Linux" Version="3.0.0-preview.2.1" />
-    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.0.0-preview.2.1" />
+  <ItemGroup Condition="'$(AvsIncludeSkiaSharp3)' == 'true'">
+    <PackageReference Include="SkiaSharp" Version="3.0.0-preview.3.1" />
+    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="SkiaSharp.NativeAssets.Linux" Version="3.0.0-preview.3.1" />
+    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.0.0-preview.3.1" />
   </ItemGroup>
 </Project>
