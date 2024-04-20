@@ -448,6 +448,13 @@ namespace Avalonia.Controls
         /// <param name="container">The container element.</param>
         protected internal virtual void ClearContainerForItemOverride(Control container)
         {
+            // Ensure DataContex is Clear to avoid memory leak
+            // I use SetValue instead of ClearValue to avoid DataContext inheritance
+            container.SetValue(DataContextProperty, null);
+
+            // 
+            KeyboardNavigation.SetTabOnceActiveElement(this, null);
+
             if (container is HeaderedContentControl hcc)
             {
                 hcc.ClearValue(HeaderedContentControl.ContentProperty);
