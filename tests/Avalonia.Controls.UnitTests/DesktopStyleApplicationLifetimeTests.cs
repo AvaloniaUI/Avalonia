@@ -355,9 +355,13 @@ namespace Avalonia.Controls.UnitTests
             {
                 lifetime.SetupCore(Array.Empty<string>());
 
-                var hasExit = false;
+                lifetime.Exit += (_, _) => Assert.Fail("lifetime.Exit was called.");
+                Dispatcher.UIThread.ShutdownStarted += UiThreadOnShutdownStarted;
 
-                lifetime.Exit += (_, _) => hasExit = true;
+                static void UiThreadOnShutdownStarted(object sender, EventArgs e)
+                {
+                    Assert.Fail("Dispatcher.UIThread.ShutdownStarted was called.");
+                }
 
                 var windowA = new Window();
 
@@ -378,7 +382,8 @@ namespace Avalonia.Controls.UnitTests
                 lifetime.TryShutdown();
 
                 Assert.Equal(1, raised);
-                Assert.False(hasExit);
+
+                Dispatcher.UIThread.ShutdownStarted -= UiThreadOnShutdownStarted;
             }
         }
         
