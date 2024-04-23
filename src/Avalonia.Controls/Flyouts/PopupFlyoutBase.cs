@@ -205,7 +205,7 @@ namespace Avalonia.Controls.Primitives
 
             OnClosed();
 
-            Target = null;
+            Popup.PlacementTarget = Target = null;
 
             return true;
         }
