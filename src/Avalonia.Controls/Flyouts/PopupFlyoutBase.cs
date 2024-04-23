@@ -205,6 +205,8 @@ namespace Avalonia.Controls.Primitives
 
             OnClosed();
 
+            Target = null;
+
             return true;
         }
 
