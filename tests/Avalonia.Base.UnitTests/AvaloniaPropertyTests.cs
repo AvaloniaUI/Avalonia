@@ -83,6 +83,27 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Default_Metadata_Cannot_Be_Changed_After_Property_Initialization()
+        {
+            var metadata = new TestMetadata();
+            var property = new TestProperty<string>("test", typeof(Class1), metadata);
+
+            Assert.Throws<InvalidOperationException>(() => metadata.Merge(new TestMetadata(), property));
+        }
+
+        [Fact]
+        public void Overridden_Metadata_Cannot_Be_Changed_After_OverrideMetadata()
+        {
+            var metadata = new TestMetadata(BindingMode.TwoWay);
+            var overridden = new TestMetadata();
+            var property = new TestProperty<string>("test", typeof(Class1), metadata);
+
+            property.OverrideMetadata<Class2>(overridden);
+
+            Assert.Throws<InvalidOperationException>(() => overridden.Merge(new TestMetadata(), property));
+        }
+
+        [Fact]
         public void Changed_Observable_Fired()
         {
             var target = new Class1();

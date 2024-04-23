@@ -7,7 +7,10 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
-    public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItemBase>, INativeMenuExporterEventsImplBridge
+    public partial class NativeMenu : AvaloniaObject,
+        IEnumerable<NativeMenuItemBase>,
+        INativeMenuExporterEventsImplBridge,
+        IAvaloniaListItemValidator<NativeMenuItemBase>
     {
         private readonly AvaloniaList<NativeMenuItemBase> _items =
             new AvaloniaList<NativeMenuItemBase> { ResetBehavior = ResetBehavior.Remove };
@@ -43,7 +46,7 @@ namespace Avalonia.Controls
 
         public NativeMenu()
         {
-            _items.Validate = Validator;
+            _items.Validator = this;
             _items.CollectionChanged += ItemsChanged;
         }
 
@@ -62,10 +65,14 @@ namespace Avalonia.Controls
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
-        private void Validator(NativeMenuItemBase obj)
+        void IAvaloniaListItemValidator<NativeMenuItemBase>.Validate(NativeMenuItemBase item)
         {
-            if (obj.Parent != null)
-                throw new InvalidOperationException("NativeMenuItem already has a parent");
+            if (item.Parent is { } parent)
+            {
+                throw new InvalidOperationException(
+                    $"The menu item {item.DebugDisplay} already has a parent {parent.DebugDisplay} " +
+                    $"while trying to add it as a child of {DebugDisplay}.");
+            }
         }
 
         private void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)

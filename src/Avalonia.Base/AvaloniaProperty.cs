@@ -50,7 +50,10 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata,
             Action<AvaloniaObject, bool>? notifying = null)
         {
-            _ = name ?? throw new ArgumentNullException(nameof(name));
+            ThrowHelper.ThrowIfNull(name, nameof(name));
+            ThrowHelper.ThrowIfNull(valueType, nameof(valueType));
+            ThrowHelper.ThrowIfNull(ownerType, nameof(ownerType));
+            ThrowHelper.ThrowIfNull(metadata, nameof(metadata));
 
             if (name.Contains('.'))
             {
@@ -60,12 +63,13 @@ namespace Avalonia
             _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
 
             Name = name;
-            PropertyType = valueType ?? throw new ArgumentNullException(nameof(valueType));
-            OwnerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
+            PropertyType = valueType;
+            OwnerType = ownerType;
             Notifying = notifying;
             Id = s_nextId++;
 
-            _metadata.Add(hostType, metadata ?? throw new ArgumentNullException(nameof(metadata)));
+            metadata.Freeze();
+            _metadata.Add(hostType, metadata);
             _defaultMetadata = metadata.GenerateTypeSafeMetadata();
             _singleMetadata = new(hostType, metadata);
         }
@@ -147,7 +151,7 @@ namespace Avalonia
         /// </summary>
         /// <remarks>
         /// When a property changes, change notifications are sent to all property subscribers;
-        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and and the
+        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and the
         /// <see cref="AvaloniaObject.PropertyChanged"/> event. If this callback is set for a property,
         /// then it will be called before and after these notifications take place. The bool argument
         /// will be true before the property change notifications are sent and false afterwards. This
@@ -584,6 +588,7 @@ namespace Avalonia
 
             var baseMetadata = GetMetadata(type);
             metadata.Merge(baseMetadata, this);
+            metadata.Freeze();
             _metadata.Add(type, metadata);
             _metadataCache.Clear();
 

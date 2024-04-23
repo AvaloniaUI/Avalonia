@@ -1,14 +1,13 @@
-using System;
 using Android.App;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android.Platform;
 
-internal class AndroidActivatableLifetime : IActivatableLifetime
+internal class AndroidActivatableLifetime : ActivatableLifetimeBase
 {
-    private IAvaloniaActivity _activity;
+    private IAvaloniaActivity? _activity;
 
-    public IAvaloniaActivity Activity
+    public IAvaloniaActivity? Activity
     {
         get => _activity;
         set
@@ -28,20 +27,10 @@ internal class AndroidActivatableLifetime : IActivatableLifetime
             }
         }
     }
-    
-    public event EventHandler<ActivatedEventArgs> Activated;
-    public event EventHandler<ActivatedEventArgs> Deactivated;
 
-    public bool TryLeaveBackground() => false;
-    public bool TryEnterBackground() => (_activity as Activity)?.MoveTaskToBack(true) == true;
+    public override bool TryEnterBackground() => (_activity as Activity)?.MoveTaskToBack(true) == true;
 
-    private void ActivityOnDeactivated(object sender, ActivatedEventArgs e)
-    {
-        Deactivated?.Invoke(this, e);
-    }
+    private void ActivityOnDeactivated(object? sender, ActivatedEventArgs e) => OnDeactivated(e);
 
-    private void ActivityOnActivated(object sender, ActivatedEventArgs e)
-    {
-        Activated?.Invoke(this, e);
-    }
+    private void ActivityOnActivated(object? sender, ActivatedEventArgs e) => OnActivated(e);
 }

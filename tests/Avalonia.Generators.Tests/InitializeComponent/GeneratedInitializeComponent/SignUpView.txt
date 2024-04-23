@@ -31,16 +31,17 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
-            UserNameTextBox = this.FindNameScope()?.Find<global::Controls.CustomTextBox>("UserNameTextBox");
-            UserNameValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("UserNameValidation");
-            PasswordTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
-            PasswordValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("PasswordValidation");
-            AwesomeListView = this.FindNameScope()?.Find<global::Avalonia.Controls.ListBox>("AwesomeListView");
-            ConfirmPasswordTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
-            ConfirmPasswordValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
-            SignUpButtonDescription = this.FindNameScope()?.Find<global::Avalonia.Controls.Documents.Run>("SignUpButtonDescription");
-            SignUpButton = this.FindNameScope()?.Find<global::Avalonia.Controls.Button>("SignUpButton");
-            CompoundValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("CompoundValidation");
+            var __thisNameScope__ = this.FindNameScope();
+            UserNameTextBox = __thisNameScope__?.Find<global::Controls.CustomTextBox>("UserNameTextBox");
+            UserNameValidation = __thisNameScope__?.Find<global::Avalonia.Controls.TextBlock>("UserNameValidation");
+            PasswordTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+            PasswordValidation = __thisNameScope__?.Find<global::Avalonia.Controls.TextBlock>("PasswordValidation");
+            AwesomeListView = __thisNameScope__?.Find<global::Avalonia.Controls.ListBox>("AwesomeListView");
+            ConfirmPasswordTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
+            ConfirmPasswordValidation = __thisNameScope__?.Find<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
+            SignUpButtonDescription = __thisNameScope__?.Find<global::Avalonia.Controls.Documents.Run>("SignUpButtonDescription");
+            SignUpButton = __thisNameScope__?.Find<global::Avalonia.Controls.Button>("SignUpButton");
+            CompoundValidation = __thisNameScope__?.Find<global::Avalonia.Controls.TextBlock>("CompoundValidation");
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Windows.Input;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -214,6 +215,16 @@ namespace Avalonia.Controls
                 if (change.NewValue is ICommand newCommand)
                     WeakEvents.CommandCanExecuteChanged.Subscribe(newCommand, _canExecuteChangedSubscriber);
                 CanExecuteChanged();
+            }
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, true);
             }
         }
     }
