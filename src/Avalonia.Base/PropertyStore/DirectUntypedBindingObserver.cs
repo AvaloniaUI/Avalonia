@@ -16,7 +16,7 @@ namespace Avalonia.PropertyStore
         public DirectUntypedBindingObserver(ValueStore owner, DirectPropertyBase<T> property)
         {
             _owner = owner;
-            _hasDataValidation = property.GetMetadata(owner.Owner.GetType())?.EnableDataValidation ?? false;
+            _hasDataValidation = property.GetMetadata(owner.Owner).EnableDataValidation ?? false;
             Property = property;
         }
 

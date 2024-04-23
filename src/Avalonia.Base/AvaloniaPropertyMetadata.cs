@@ -8,7 +8,6 @@ namespace Avalonia
     /// </summary>
     public abstract class AvaloniaPropertyMetadata
     {
-        private bool _isReadOnly;
         private BindingMode _defaultBindingMode;
 
         /// <summary>
@@ -48,6 +47,11 @@ namespace Avalonia
         public bool? EnableDataValidation { get; private set; }
 
         /// <summary>
+        /// Gets whether this instance is read-only and can't be modified.
+        /// </summary>
+        public bool IsReadOnly { get; private set; }
+
+        /// <summary>
         /// Merges the metadata with the base metadata.
         /// </summary>
         /// <param name="baseMetadata">The base metadata to merge.</param>
@@ -56,7 +60,7 @@ namespace Avalonia
             AvaloniaPropertyMetadata baseMetadata, 
             AvaloniaProperty property)
         {
-            if (_isReadOnly)
+            if (IsReadOnly)
             {
                 throw new InvalidOperationException("The metadata is read-only.");
             }
@@ -74,7 +78,7 @@ namespace Avalonia
         /// No further modifications are allowed after this call.
         /// </summary>
         public void Freeze()
-            => _isReadOnly = true;
+            => IsReadOnly = true;
 
         /// <summary>
         /// Gets a copy of this object configured for use with any owner type.
