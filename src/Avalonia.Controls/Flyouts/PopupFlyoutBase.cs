@@ -201,10 +201,11 @@ namespace Avalonia.Controls.Primitives
             {
                 Target.DetachedFromVisualTree -= PlacementTarget_DetachedFromVisualTree;
                 Target.KeyUp -= OnPlacementTargetOrPopupKeyUp;
-                Target = null;
             }
 
             OnClosed();
+
+            Target = null;
 
             return true;
         }
