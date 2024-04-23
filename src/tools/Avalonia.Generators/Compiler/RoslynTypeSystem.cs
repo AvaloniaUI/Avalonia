@@ -189,6 +189,8 @@ internal class RoslynType : IXamlType
     public IXamlType GetEnumUnderlyingType() => null;
 
     public IReadOnlyList<IXamlType> GenericParameters { get; } = new List<IXamlType>();
+
+    public bool IsFunctionPointer => false;
 }
 
 internal class RoslynConstructor : IXamlConstructor
