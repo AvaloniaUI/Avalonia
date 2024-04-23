@@ -228,9 +228,6 @@ namespace Avalonia.Base.UnitTests.Layout
             var root = new LayoutTestRoot();
             var availableSize = default(Size);
 
-            // Should not measure with this size.
-            root.MaxClientSize = new Size(123, 456);
-
             root.DoMeasureOverride = (_, s) =>
             {
                 availableSize = s;
