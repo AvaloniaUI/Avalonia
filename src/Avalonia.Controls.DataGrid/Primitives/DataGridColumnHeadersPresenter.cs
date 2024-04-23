@@ -118,7 +118,7 @@ namespace Avalonia.Controls.Primitives
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
             return child is DataGridColumnHeader header
-                ? OwningGrid.ColumnsInternal.GetColumnDisplayIndex(header.ColumnIndex)
+                ? OwningGrid.ColumnsInternal.GetColumnVisibleIndex(header.ColumnIndex)
                 : throw new InvalidOperationException("Invalid cell type");
         }
 
