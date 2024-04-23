@@ -410,6 +410,10 @@ namespace Avalonia.Controls.Primitives
                 (x, handler) => x.TemplateApplied += handler,
                 (x, handler) => x.TemplateApplied -= handler).DisposeWith(handlerCleanup);
 
+            SubscribeToEventHandler<Control, EventHandler<VisualTreeAttachmentEventArgs>>(placementTarget, TargetDetached,
+                (x, handler) => x.DetachedFromVisualTree += handler,
+                (x, handler) => x.DetachedFromVisualTree -= handler).DisposeWith(handlerCleanup);
+            
             if (topLevel is Window window && window.PlatformImpl != null)
             {
                 SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
@@ -769,6 +773,11 @@ namespace Avalonia.Controls.Primitives
                     PassThroughEvent(e);
                 }
             }
+        }
+
+        private void TargetDetached(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            Close();
         }
 
         private static void PassThroughEvent(PointerPressedEventArgs e)
