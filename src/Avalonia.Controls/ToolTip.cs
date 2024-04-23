@@ -358,6 +358,13 @@ namespace Avalonia.Controls
 
         private void OnPopupClosed(object? sender, EventArgs e)
         {
+            // This condition is true, when Popup was closed by any other reason outside of ToolTipService/ToolTip, keeping IsOpen=true.
+            if (AdornedControl is { } adornedControl
+                && GetIsOpen(adornedControl))
+            {
+                adornedControl.SetCurrentValue(IsOpenProperty, false);
+            }
+
             _popupHostChangedHandler?.Invoke(null);
             Closed?.Invoke(this, EventArgs.Empty);
         }
