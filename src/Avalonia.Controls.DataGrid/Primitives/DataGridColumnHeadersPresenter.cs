@@ -124,7 +124,19 @@ namespace Avalonia.Controls.Primitives
 
         bool IChildIndexProvider.TryGetTotalCount(out int count)
         {
-            count = OwningGrid.ColumnsInternal.VisibleColumnCount;
+            // VisibleColumnCount is updated the next measure pass after columns are added or removed
+            // but this is called as the column is being added or removed. 
+            // count = OwningGrid.ColumnsInternal.VisibleColumnCount;
+
+            count = 0;
+            for (int i = 0; i < Children.Count; i++)
+            {
+                if (Children[i] is DataGridColumnHeader { OwningColumn: { IsVisible: true } and not DataGridFillerColumn })
+                {
+                    count++;
+                }
+            }
+
             return true;
         }
 
