@@ -206,9 +206,6 @@ namespace Avalonia.Controls.Primitives
 
             OnClosed();
 
-            // Set to null after all other events.
-            Target = null;
-
             return true;
         }
 
