@@ -120,6 +120,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
 		build\XUnit.props = build\XUnit.props
 		build\TargetFrameworks.props = build\TargetFrameworks.props
+		build\WarnAsErrors.props = build\WarnAsErrors.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6FAF79-58B4-482F-9122-0668C346364C}"

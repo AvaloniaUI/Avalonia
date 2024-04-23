@@ -157,7 +157,7 @@ namespace Avalonia.Skia
                 var oldMatrix = context.Canvas.TotalMatrix;
                 context.Canvas.ResetMatrix();
                 _surface.Surface.Draw(context.Canvas, 0, 0, null);
-                SkiaCompat.SetMatrix(context.Canvas, oldMatrix);
+                context.Canvas.SetMatrix(oldMatrix);
             }
         }
 

@@ -150,7 +150,7 @@ namespace Avalonia
         /// </summary>
         /// <remarks>
         /// When a property changes, change notifications are sent to all property subscribers;
-        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and and the
+        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and the
         /// <see cref="AvaloniaObject.PropertyChanged"/> event. If this callback is set for a property,
         /// then it will be called before and after these notifications take place. The bool argument
         /// will be true before the property change notifications are sent and false afterwards. This
