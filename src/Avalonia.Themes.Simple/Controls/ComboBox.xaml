@@ -34,7 +34,8 @@
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             Content="{TemplateBinding SelectionBoxItem}"
-                            ContentTemplate="{TemplateBinding ItemTemplate}" />
+                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}">
+            </ContentControl>
             <ToggleButton Name="toggle"
                           Grid.Column="1"
                           Background="Transparent"

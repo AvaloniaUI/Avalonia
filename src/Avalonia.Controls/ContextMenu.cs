@@ -324,11 +324,7 @@ namespace Avalonia.Controls
                 _popup.KeyUp += PopupKeyUp;
             }
 
-            if (_popup.Parent != control)
-            {
-                ((ISetLogicalParent)_popup).SetParent(null);
-                ((ISetLogicalParent)_popup).SetParent(control);
-            }
+            _popup.SetPopupParent(control);
 
             _popup.Placement = placement;
 
@@ -383,7 +379,7 @@ namespace Avalonia.Controls
 
             if (_attachedControls is null || _attachedControls.Count == 0)
             {
-                ((ISetLogicalParent)_popup!).SetParent(null);
+                _popup!.SetPopupParent(null);
             }
 
             RaiseEvent(new RoutedEventArgs

@@ -2,6 +2,7 @@
 @clr-access internal
 @clr-map bool int
 @clr-map u_int64_t ulong
+@clr-map long IntPtr
 @cpp-preamble @@
 #pragma once
 #include "com.h"
@@ -750,6 +751,7 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints);
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
+     HRESULT GetWindowZOrder(long*ret);
 }
 
 [uuid(939b6599-40a8-4710-a4c8-5d72d8f174fb)]

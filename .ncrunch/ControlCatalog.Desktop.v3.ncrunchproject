@@ -1,5 +1,8 @@
 ﻿<ProjectConfiguration>
   <Settings>
+    <CustomBuildProperties>
+      <Value>TargetFramework = net461</Value>
+    </CustomBuildProperties>
     <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
   </Settings>
 </ProjectConfiguration>

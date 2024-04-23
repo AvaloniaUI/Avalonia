@@ -18,7 +18,7 @@ namespace Avalonia.PropertyStore
         {
             _owner = owner;
             Property = property;
-            _hasDataValidation = property.GetMetadata(owner.Owner.GetType()).EnableDataValidation ?? false;
+            _hasDataValidation = property.GetMetadata(owner.Owner).EnableDataValidation ?? false;
         }
 
         public StyledProperty<T> Property { get;}
@@ -121,7 +121,7 @@ namespace Avalonia.PropertyStore
         {
             if (!_isDefaultValueInitialized)
             {
-                _defaultValue = Property.GetDefaultValue(_owner.Owner.GetType());
+                _defaultValue = Property.GetDefaultValue(_owner.Owner);
                 _isDefaultValueInitialized = true;
             }
 
