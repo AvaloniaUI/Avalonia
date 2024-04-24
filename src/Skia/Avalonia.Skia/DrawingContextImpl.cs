@@ -1210,7 +1210,7 @@ namespace Avalonia.Skia
             using (var ctx = pictureTarget.CreateDrawingContext(destinationRect.Size))
             {
                 ctx.PushRenderOptions(RenderOptions);
-                content.Render(ctx, transform);
+                content.Render(ctx, brushTransform);
                 ctx.PopRenderOptions();
             }
 
