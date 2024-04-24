@@ -368,6 +368,120 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(ToolTip.GetIsOpen(other));
         }
 
+        [Fact]
+        public void ToolTip_Events_Order_Is_Defined()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var tip = new ToolTip() { Content = "Tip" };
+            var target = new Decorator()
+            {
+                [ToolTip.TipProperty] = tip,
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var eventsOrder = new List<(string eventName, object sender, object source)>();
+
+            tip.Opened += (sender, args) => eventsOrder.Add(("Opened", sender, null));
+            tip.Closed += (sender, args) => eventsOrder.Add(("Closed", sender, null));
+
+            ToolTip.AddToolTipOpeningHandler(target,
+                (sender, args) => eventsOrder.Add(("Opening", sender, args.Source)));
+            ToolTip.AddToolTipClosingHandler(target,
+                (sender, args) => eventsOrder.Add(("Closing", sender, args.Source)));
+
+            target.PropertyChanged += (sender, args) =>
+            {
+                if (args.Property == ToolTip.IsOpenProperty)
+                {
+                    eventsOrder.Add(("IsOpen=" + args.NewValue, sender, null));
+                }
+            };
+
+            SetupWindowAndActivateToolTip(target);
+
+            Assert.True(ToolTip.GetIsOpen(target));
+
+            target[ToolTip.TipProperty] = null;
+
+            Assert.False(ToolTip.GetIsOpen(target));
+
+            Assert.Equal(
+                new[]
+                {
+                    ("Opening", (object)target, (object)target),
+                    ("Opened", tip, null),
+                    ("IsOpen=True", target, null),
+
+                    ("Closing", target, target),
+                    ("Closed", tip, null),
+                    ("IsOpen=False", target, null),
+                },
+                eventsOrder);
+        }
+        
+        [Fact]
+        public void ToolTip_Is_Not_Opened_If_Opening_Event_Handled()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var tip = new ToolTip() { Content = "Tip" };
+            var target = new Decorator()
+            {
+                [ToolTip.TipProperty] = tip,
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var tipEventsCount = 0;
+            tip.Opened += (sender, args) => tipEventsCount++;
+            tip.Closed += (sender, args) => tipEventsCount++;
+
+            ToolTip.AddToolTipOpeningHandler(target,
+                (sender, args) => args.Handled = true);
+
+            SetupWindowAndActivateToolTip(target);
+
+            Assert.False(ToolTip.GetIsOpen(target));
+            
+            Assert.Equal(0, tipEventsCount);
+        }
+
+        [Fact]
+        public void ToolTip_Can_Be_Replaced_On_The_Fly_Via_Opening_Event()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var tip1 = new ToolTip() { Content = "Hi" };
+            var tip2 = new ToolTip() { Content = "Bye" };
+            var target = new Decorator()
+            {
+                [ToolTip.TipProperty] = tip1,
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var tip1EventsCount = 0;
+            var tip2EventsCount = 0;
+
+            tip1.Opened += (sender, args) => tip1EventsCount++;
+            tip1.Closed += (sender, args) => tip1EventsCount++;
+            tip2.Opened += (sender, args) => tip2EventsCount++;
+            tip2.Closed += (sender, args) => tip2EventsCount++;
+
+            ToolTip.AddToolTipOpeningHandler(target,
+                (sender, args) => target[ToolTip.TipProperty] = tip2);
+
+            SetupWindowAndActivateToolTip(target);
+
+            Assert.True(ToolTip.GetIsOpen(target));
+
+            target[ToolTip.TipProperty] = null;
+
+            Assert.False(ToolTip.GetIsOpen(target));
+
+            Assert.Equal(0, tip1EventsCount);
+            Assert.Equal(2, tip2EventsCount);
+        }
+
         private Action<Control> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string testName = null)
         {
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
