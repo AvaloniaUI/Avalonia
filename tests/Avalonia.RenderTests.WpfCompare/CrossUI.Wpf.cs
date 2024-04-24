@@ -66,9 +66,19 @@ namespace CrossUI
             _context = _streamGeometry.Open();
         }
 
+        public void ArcTo(Avalonia.Point point, Avalonia.Size size, double rotationAngle, bool isLargeArc, Avalonia.Media.SweepDirection sweepDirection, bool isStroked)
+        {
+            _context.ArcTo(point.ToWpf(), size.ToWpf(), rotationAngle, isLargeArc, (SweepDirection)sweepDirection, isStroked, true);
+        }
+
         public void BeginFigure(Avalonia.Point point, bool isFilled, bool isClosed)
         {
             _context.BeginFigure(point.ToWpf(), isFilled, isClosed);
+        }
+
+        public void CubicBezierTo(Avalonia.Point controlPoint1, Avalonia.Point controlPoint2, Avalonia.Point endPoint, bool isStroked)
+        {
+            _context.BezierTo(controlPoint1.ToWpf(), controlPoint2.ToWpf(), endPoint.ToWpf(), isStroked, true);
         }
 
         public void Dispose()
@@ -89,6 +99,11 @@ namespace CrossUI
         public void LineTo(Avalonia.Point point, bool isStroked)
         {
             _context.LineTo(point.ToWpf(), isStroked, true);
+        }
+
+        public void QuadraticBezierTo(Avalonia.Point controlPoint, Avalonia.Point endPoint, bool isStroked)
+        {
+            _context.QuadraticBezierTo(controlPoint.ToWpf(), endPoint.ToWpf(), isStroked, true);
         }
     }
 }
@@ -168,10 +183,14 @@ namespace Avalonia.RenderTests.WpfCompare
                 return new PathGeometry()
                 {
                     Figures = new PathFigureCollection(pathGeometry.Figures.Select(f => new PathFigure(
-                        f.Start.ToWpf(), f.Segments.Select(s =>
+                        f.Start.ToWpf(), f.Segments.Select<CrossPathSegment, PathSegment>(s =>
                             s switch
                             {
-                                CrossPathSegment.Line line => new LineSegment(line.To.ToWpf(), s.IsStroked)
+                                CrossPathSegment.Line line => new LineSegment(line.To.ToWpf(), s.IsStroked),
+                                CrossPathSegment.Arc arc => new ArcSegment(arc.Point.ToWpf(), arc.Size.ToWpf(), arc.RotationAngle, arc.IsLargeArc, (SweepDirection)arc.SweepDirection, s.IsStroked),
+                                CrossPathSegment.CubicBezier cubicBezier => new BezierSegment(cubicBezier.Point1.ToWpf(), cubicBezier.Point2.ToWpf(), cubicBezier.Point3.ToWpf(), cubicBezier.IsStroked),
+                                CrossPathSegment.QuadraticBezier quadraticBezier => new QuadraticBezierSegment(quadraticBezier.Point1.ToWpf(), quadraticBezier.Point2.ToWpf(), quadraticBezier.IsStroked),
+                                _ => throw new NotImplementedException(),
                             }), f.Closed)))
                 };
             throw new NotSupportedException();

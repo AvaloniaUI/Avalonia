@@ -40,10 +40,20 @@ namespace CrossUI
             _context = _streamGeometry.Open();
         }
 
+        public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked)
+        {
+            _context.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection, isStroked);
+        }
+
         public void BeginFigure(Point point, bool isFilled, bool isClosed)
         {
             _isClosed = isClosed;
             _context.BeginFigure(point, isFilled);
+        }
+
+        public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked)
+        {
+            _context.CubicBezierTo(controlPoint1, controlPoint2, endPoint, isStroked);
         }
 
         public void Dispose()
@@ -65,6 +75,11 @@ namespace CrossUI
         public void LineTo(Point point, bool isStroked)
         {
             _context.LineTo(point, isStroked);
+        }
+
+        public void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked)
+        {
+            _context.QuadraticBezierTo(controlPoint, endPoint, isStroked);
         }
     }
 }
@@ -157,12 +172,34 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
                         {
                             StartPoint = f.Start,
                             IsClosed = f.Closed,
-                            Segments = RetAddRange<PathSegments, PathSegment>(new PathSegments(), f.Segments.Select(s =>
+                            Segments = RetAddRange<PathSegments, PathSegment>(new PathSegments(), f.Segments.Select<CrossPathSegment, PathSegment>(s =>
                                 s switch
                                 {
                                     CrossPathSegment.Line l => new LineSegment()
                                     {
                                         Point = l.To, IsStroked = l.IsStroked
+                                    },
+                                    CrossPathSegment.Arc a => new ArcSegment()
+                                    {
+                                        Point = a.Point,
+                                        RotationAngle = a.RotationAngle,
+                                        Size = a.Size,
+                                        IsLargeArc = a.IsLargeArc,
+                                        SweepDirection = a.SweepDirection,
+                                        IsStroked = a.IsStroked
+                                    },
+                                    CrossPathSegment.CubicBezier c => new BezierSegment()
+                                    {
+                                        Point1 = c.Point1,
+                                        Point2 = c.Point2,
+                                        Point3 = c.Point3,
+                                        IsStroked = c.IsStroked
+                                    },
+                                    CrossPathSegment.QuadraticBezier q => new QuadraticBezierSegment()
+                                    {
+                                        Point1 = q.Point1,
+                                        Point2 = q.Point2,
+                                        IsStroked = q.IsStroked
                                     }
                                 }))
                         }))

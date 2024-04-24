@@ -155,6 +155,9 @@ public class CrossPathFigure
 public abstract record class CrossPathSegment(bool IsStroked)
 {
     public record Line(Point To, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record Arc(Point Point, Size Size, double RotationAngle, bool IsLargeArc, SweepDirection SweepDirection, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record CubicBezier(Point Point1, Point Point2, Point Point3, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record QuadraticBezier(Point Point1, Point Point2, bool IsStroked) : CrossPathSegment(IsStroked);
 }
 
 public class CrossDrawingBrush : CrossTileBrush
@@ -176,6 +179,9 @@ public interface ICrossStreamGeometryContextImpl : IDisposable
     void BeginFigure(Point point, bool isFilled, bool isClosed);
     void EndFigure();
     void LineTo(Point point, bool isStroked);
+    void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked);
+    void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked);
+    void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked);
 }
 
 public interface ICrossStreamGeometryContextImplProvider
