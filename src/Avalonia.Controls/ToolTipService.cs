@@ -194,7 +194,8 @@ namespace Avalonia.Controls
             {
                 ToolTip.SetIsOpen(control, true);
 
-                if (control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
+                // Value can be coerced back to false, need to double check.
+                if (ToolTip.GetIsOpen(control) && control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
                 {
                     tooltip.Closed += ToolTipClosed;
                     tooltip.PointerExited += ToolTipPointerExited;
