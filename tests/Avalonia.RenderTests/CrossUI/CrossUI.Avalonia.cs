@@ -149,7 +149,32 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
                 return new EllipseGeometry(ellipse.Rect);
             else if(g is CrossStreamGeometry streamGeometry)
                 return (StreamGeometry)streamGeometry.GetContext().GetGeometry();
+            else if (g is CrossPathGeometry path)
+                return new PathGeometry()
+                {
+                    Figures = RetAddRange(new PathFigures(), path.Figures.Select(f =>
+                        new PathFigure()
+                        {
+                            StartPoint = f.Start,
+                            IsClosed = f.Closed,
+                            Segments = RetAddRange<PathSegments, PathSegment>(new PathSegments(), f.Segments.Select(s =>
+                                s switch
+                                {
+                                    CrossPathSegment.Line l => new LineSegment()
+                                    {
+                                        Point = l.To, IsStroked = l.IsStroked
+                                    }
+                                }))
+                        }))
+                };
             throw new NotSupportedException();
+        }
+
+        static TList RetAddRange<TList, T>(TList l, IEnumerable<T> en) where TList : IList<T>
+        {
+            foreach(var e in en)
+                l.Add(e);
+            return l;
         }
     
         static Drawing ConvertDrawing(CrossDrawing src)
@@ -217,7 +242,7 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
         {
             if (pen == null)
                 return null;
-            return new Pen(ConvertBrush(pen.Brush), pen.Thickness);
+            return new Pen(ConvertBrush(pen.Brush), pen.Thickness) { LineCap = pen.LineCap, LineJoin = pen.LineJoin };
         }
 
         static IImage ConvertImage(CrossImage image)

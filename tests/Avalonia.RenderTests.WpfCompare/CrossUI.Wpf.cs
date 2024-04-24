@@ -32,6 +32,10 @@ using WRect = System.Windows.Rect;
 using WColor = System.Windows.Media.Color;
 using WMatrix = System.Windows.Media.Matrix;
 using Avalonia.RenderTests.WpfCompare;
+using PenLineCap = Avalonia.Media.PenLineCap;
+using WPenLineCap = System.Windows.Media.PenLineCap;
+using PenLineJoin = Avalonia.Media.PenLineJoin;
+using WPenLineJoin = System.Windows.Media.PenLineJoin;
 
 namespace CrossUI
 {
@@ -160,6 +164,16 @@ namespace Avalonia.RenderTests.WpfCompare
                 return new EllipseGeometry(ellipse.Rect.ToWpf());
             else if (g is CrossStreamGeometry streamGeometry)
                 return (StreamGeometry)streamGeometry.GetContext().GetGeometry();
+            else if (g is CrossPathGeometry pathGeometry)
+                return new PathGeometry()
+                {
+                    Figures = new PathFigureCollection(pathGeometry.Figures.Select(f => new PathFigure(
+                        f.Start.ToWpf(), f.Segments.Select(s =>
+                            s switch
+                            {
+                                CrossPathSegment.Line line => new LineSegment(line.To.ToWpf(), s.IsStroked)
+                            }), f.Closed)))
+                };
             throw new NotSupportedException();
         }
 
@@ -228,7 +242,27 @@ namespace Avalonia.RenderTests.WpfCompare
         {
             if (pen == null)
                 return null;
-            return new Pen(ConvertBrush(pen.Brush), pen.Thickness);
+            
+            var cap = pen.LineCap switch
+            {
+                PenLineCap.Flat => WPenLineCap.Flat,
+                PenLineCap.Round => WPenLineCap.Round,
+                PenLineCap.Square => WPenLineCap.Square
+            };
+            var join = pen.LineJoin switch
+            {
+                PenLineJoin.Bevel => WPenLineJoin.Bevel,
+                PenLineJoin.Miter => WPenLineJoin.Miter,
+                PenLineJoin.Round => WPenLineJoin.Round
+            };
+
+            return new Pen(ConvertBrush(pen.Brush), pen.Thickness)
+            {
+                StartLineCap = cap, 
+                EndLineCap = cap, 
+                DashCap = cap,
+                LineJoin = join,
+            };
         }
 
         private static ImageSource ConvertImage(CrossImage image)

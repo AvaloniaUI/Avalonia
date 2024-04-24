@@ -140,6 +140,23 @@ public class CrossRectangleGeometry : CrossGeometry
     }
 }
 
+public class CrossPathGeometry : CrossGeometry
+{
+    public List<CrossPathFigure> Figures { get; set; } = new();
+}
+
+public class CrossPathFigure
+{
+    public Point Start { get; set; }
+    public List<CrossPathSegment> Segments { get; set; } = new();
+    public bool Closed { get; set; }
+}
+
+public abstract record class CrossPathSegment(bool IsStroked)
+{
+    public record Line(Point To, bool IsStroked) : CrossPathSegment(IsStroked);
+}
+
 public class CrossDrawingBrush : CrossTileBrush
 {
     public CrossDrawing Drawing;
@@ -149,6 +166,8 @@ public class CrossPen
 {
     public CrossBrush Brush;
     public double Thickness = 1;
+    public PenLineJoin LineJoin { get; set; } = PenLineJoin.Miter;
+    public PenLineCap LineCap { get; set; } = PenLineCap.Flat;
 }
 
 public interface ICrossStreamGeometryContextImpl : IDisposable

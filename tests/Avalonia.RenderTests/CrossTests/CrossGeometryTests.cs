@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media;
 using CrossUI;
 using Xunit;
@@ -106,5 +108,76 @@ public class CrossGeometryTests : CrossTestBase
             Height = 280,
             Background = brush
         });
+    }
+    
+    [CrossTheory,
+        InlineData(PenLineCap.Flat, PenLineJoin.Round),
+        InlineData(PenLineCap.Flat, PenLineJoin.Bevel),
+        InlineData(PenLineCap.Flat, PenLineJoin.Miter),
+        InlineData(PenLineCap.Round, PenLineJoin.Round),
+        InlineData(PenLineCap.Round, PenLineJoin.Bevel),
+        InlineData(PenLineCap.Round, PenLineJoin.Miter),
+    ]
+    public void Should_Properly_CloseFigure(PenLineCap lineCap, PenLineJoin lineJoin)
+    {
+        var geometry = new CrossPathGeometry();
+
+
+        var center = new Point(150, 150);
+        var r = 100d;
+
+        var pointCount = 5;
+        var points = Enumerable.Range(0, pointCount).Select(a => a * Math.PI / pointCount * 2).Select(a =>
+            new Point(center.X + Math.Sin(a) * r, center.Y + Math.Cos(a) * r)).ToArray();
+
+        var figure = new CrossPathFigure() { Start = points[0], Closed = true };
+        geometry.Figures.Add(figure);
+        var lineNum = 0;
+        for (var c = 2; lineNum < pointCount - 1; c = (c + 2) % pointCount, lineNum++)
+        {
+            figure.Segments.Add(new CrossPathSegment.Line(points[c], (lineNum) % 3 < 2));
+        }
+        
+        var control = new CrossFuncControl(ctx =>
+        {
+            ctx.DrawRectangle(new CrossSolidColorBrush(Colors.White), null, new(0, 0, 300, 300));
+            ctx.DrawGeometry(null,
+                new CrossPen()
+                {
+                    Brush = new CrossSolidColorBrush(Colors.Black),
+                    Thickness = 20,
+                    LineJoin = lineJoin,
+                    LineCap = lineCap
+                }, geometry);
+        }) { Width = 300, Height = 300 };
+        /*
+        var brush = new CrossDrawingBrush()
+        {
+            TileMode = TileMode.None,
+            Drawing = new CrossDrawingGroup()
+            {
+                Children = new List<CrossDrawing>()
+                {
+                    new CrossGeometryDrawing(new CrossRectangleGeometry(new(0, 0, 300, 300)))
+                    {
+                        Brush = new CrossSolidColorBrush(Colors.White)
+                    },
+                    new CrossGeometryDrawing(geometry)
+                    {
+                        Pen = new CrossPen()
+                        {
+                            Brush = new CrossSolidColorBrush(Colors.Black),
+                            Thickness = 40,
+                            LineJoin = lineJoin,
+                            LineCap = lineCap
+                        }
+                    }
+                }
+            }
+        };*/
+
+        //RenderAndCompare(new CrossControl() { Width = 300, Height = 300, Background = brush },
+        RenderAndCompare(control,
+            $"{nameof(Should_Properly_CloseFigure)}_{lineCap}_{lineJoin}");
     }
 }
