@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -212,6 +213,85 @@ namespace Avalonia.Skia
                 }
                 if (Duplicate)
                     Fill.LineTo((float)point.X, (float)point.Y);
+            }
+
+            /// <inheritdoc />
+            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked)
+            {
+                var arc = isLargeArc ? SKPathArcSize.Large : SKPathArcSize.Small;
+                var sweep = sweepDirection == SweepDirection.Clockwise
+                    ? SKPathDirection.Clockwise
+                    : SKPathDirection.CounterClockwise;
+
+                if (isStroked)
+                {
+                    Stroke.ArcTo(
+                        (float)size.Width,
+                        (float)size.Height,
+                        (float)rotationAngle,
+                        arc,
+                        sweep,
+                        (float)point.X,
+                        (float)point.Y);
+                }
+                else
+                {
+                    if (Stroke == Fill)
+                        _geometryImpl._fillPath = Stroke.Clone();
+
+                    _isFigureBroken = true;
+
+                    Stroke.MoveTo((float)point.X, (float)point.Y);
+                }
+                if (Duplicate)
+                    Fill.ArcTo(
+                        (float)size.Width,
+                        (float)size.Height,
+                        (float)rotationAngle,
+                        arc,
+                        sweep,
+                        (float)point.X,
+                        (float)point.Y);
+            }
+
+            /// <inheritdoc />
+            public void CubicBezierTo(Point point1, Point point2, Point point3, bool isStroked)
+            {
+                if (isStroked)
+                {
+                    Stroke.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
+                }
+                else
+                {
+                    if (Stroke == Fill)
+                        _geometryImpl._fillPath = Stroke.Clone();
+
+                    _isFigureBroken = true;
+
+                    Stroke.MoveTo((float)point3.X, (float)point3.Y);
+                }
+                if (Duplicate)
+                    Fill.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
+            }
+
+            /// <inheritdoc />
+            public void QuadraticBezierTo(Point point1, Point point2, bool isStroked)
+            {
+                if (isStroked)
+                {
+                    Stroke.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
+                }
+                else
+                {
+                    if (Stroke == Fill)
+                        _geometryImpl._fillPath = Stroke.Clone();
+
+                    _isFigureBroken = true;
+
+                    Stroke.MoveTo((float)point2.X, (float)point2.Y);
+                }
+                if (Duplicate)
+                    Fill.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
             }
         }
     }

@@ -103,11 +103,7 @@ namespace Avalonia.Media
             _impl.Dispose();
         }
 
-        /// <summary>
-        /// Draws a line to the specified point.
-        /// </summary>
-        /// <param name="point">The destination point.</param>
-        /// <param name="isStroked">Whether the segment is stroked</param>
+        /// <inheritdoc/>
         public void LineTo(Point point, bool isStroked)
         {
             if (_impl is IGeometryContext2 context2)
@@ -116,6 +112,36 @@ namespace Avalonia.Media
                 _impl.LineTo(point);
 
             _currentPoint = point;
+        }
+
+        public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked)
+        {
+            if (_impl is IGeometryContext2 context2)
+                context2.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection, isStroked);
+            else
+                _impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
+
+            _currentPoint = point;
+        }
+
+        public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked)
+        {
+            if (_impl is IGeometryContext2 context2)
+                context2.CubicBezierTo(controlPoint1, controlPoint2, endPoint, isStroked);
+            else
+                _impl.CubicBezierTo(controlPoint1, controlPoint2, endPoint);
+
+            _currentPoint = endPoint;
+        }
+
+        public void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked)
+        {
+            if (_impl is IGeometryContext2 context2)
+                context2.QuadraticBezierTo(controlPoint, endPoint, isStroked);
+            else
+                _impl.QuadraticBezierTo(controlPoint, endPoint);
+
+            _currentPoint = endPoint;
         }
     }
 }
