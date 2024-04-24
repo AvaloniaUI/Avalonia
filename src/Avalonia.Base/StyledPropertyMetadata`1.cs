@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -31,7 +32,11 @@ namespace Avalonia
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        public TValue DefaultValue => _defaultValue.GetValueOrDefault()!;
+        public TValue DefaultValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _defaultValue.GetValueOrDefault()!;
+        }
 
         /// <summary>
         /// Gets the value coercion callback, if any.
@@ -62,6 +67,11 @@ namespace Avalonia
         /// <inheritdoc />
         public override AvaloniaPropertyMetadata GenerateTypeSafeMetadata()
         {
+            if (IsReadOnly && CoerceValue is null)
+            {
+                return this;
+            }
+
             var copy = new StyledPropertyMetadata<TValue>(DefaultValue, DefaultBindingMode, null, EnableDataValidation ?? false);
             copy.Freeze();
             return copy;

@@ -189,7 +189,8 @@ namespace Avalonia.Controls.Primitives
             IsOpen = false;
             Popup.IsOpen = false;
 
-            ((ISetLogicalParent)Popup).SetParent(null);
+            Popup.PlacementTarget = null;
+            Popup.SetPopupParent(null);
 
             // Ensure this isn't active
             _transientDisposable?.Dispose();
@@ -230,17 +231,8 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (Popup.Parent != null && Popup.Parent != placementTarget)
-            {
-                ((ISetLogicalParent)Popup).SetParent(null);
-            }
-
-            if (Popup.Parent == null || Popup.PlacementTarget != placementTarget)
-            {
-                Popup.PlacementTarget = Target = placementTarget;
-                ((ISetLogicalParent)Popup).SetParent(placementTarget);
-                Popup.TemplatedParent = placementTarget.TemplatedParent;
-            }
+            Popup.PlacementTarget = Target = placementTarget;
+            Popup.SetPopupParent(placementTarget);
 
             if (Popup.Child == null)
             {

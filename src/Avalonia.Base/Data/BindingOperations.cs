@@ -34,7 +34,7 @@ namespace Avalonia.Data
 
             if (mode == BindingMode.Default)
             {
-                mode = property.GetMetadata(target.GetType()).DefaultBindingMode;
+                mode = property.GetMetadata(target).DefaultBindingMode;
             }
 
             switch (mode)
