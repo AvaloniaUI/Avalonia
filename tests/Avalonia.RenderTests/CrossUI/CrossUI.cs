@@ -8,6 +8,11 @@ using Avalonia;
 
 namespace CrossUI;
 
+public partial class CrossGlobals
+{
+
+}
+
 public class CrossBrush
 {
     public double Opacity = 1;
@@ -108,6 +113,23 @@ public class CrossEllipseGeometry : CrossGeometry
     public Rect Rect { get; set; }
 }
 
+public class CrossStreamGeometry : CrossGeometry
+{
+    private ICrossStreamGeometryContextImpl? _contextImpl;
+
+    public CrossStreamGeometry()
+    {
+
+    }
+
+    public ICrossStreamGeometryContextImpl GetContext()
+    {
+        _contextImpl ??= CrossGlobals.GetContextImplProvider().Create();
+
+        return _contextImpl;
+    }
+}
+
 public class CrossRectangleGeometry : CrossGeometry
 {
     public Rect Rect;
@@ -127,6 +149,19 @@ public class CrossPen
 {
     public CrossBrush Brush;
     public double Thickness = 1;
+}
+
+public interface ICrossStreamGeometryContextImpl : IDisposable
+{
+    object GetGeometry();
+    void BeginFigure(Point point, bool isFilled, bool isClosed);
+    void EndFigure();
+    void LineTo(Point point, bool isStroked);
+}
+
+public interface ICrossStreamGeometryContextImplProvider
+{
+    ICrossStreamGeometryContextImpl Create();
 }
 
 public interface ICrossDrawingContext
