@@ -348,11 +348,12 @@ namespace Avalonia.Controls.Primitives
                     }
 
                     InitializeSelectionModel(_selection);
-                    var seletcedItems = SelectedItems;
-                    if (_oldSelectedItems.TryGetTarget(out var oldSelectedItems) || oldSelectedItems != seletcedItems)
+                    var selectedItems = SelectedItems;
+                    _oldSelectedItems.TryGetTarget(out var oldSelectedItems);
+                    if (oldSelectedItems != selectedItems)
                     {
-                        RaisePropertyChanged(SelectedItemsProperty, oldSelectedItems, seletcedItems);
-                        _oldSelectedItems.SetTarget(seletcedItems);
+                        RaisePropertyChanged(SelectedItemsProperty, oldSelectedItems, selectedItems);
+                        _oldSelectedItems.SetTarget(selectedItems);
                     }
                 }
             }
