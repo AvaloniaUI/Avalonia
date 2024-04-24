@@ -403,11 +403,17 @@ namespace Avalonia.Controls
             remove => _popupHostChangedHandler -= value;
         }
 
+        /// <summary>
+        /// Called when the Tooltip is opened. Also raises the Opened event.
+        /// </summary>
         protected virtual void OnOpened()
         {
             Opened?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Called when the Tooltip is closed. Also raises the Closed event.
+        /// </summary>
         protected virtual void OnClosed()
         {
             Closed?.Invoke(this, EventArgs.Empty);
