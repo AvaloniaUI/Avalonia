@@ -92,9 +92,6 @@ namespace Avalonia.Controls
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
         }
 
-        internal Control? AdornedControl { get; private set; }
-        internal event EventHandler? Closed;
-
         /// <summary>
         /// Gets the value of the ToolTip.Tip attached property.
         /// </summary>
@@ -297,26 +294,50 @@ namespace Avalonia.Controls
 
                 toolTip.AdornedControl = control;
                 toolTip.Open(control);
-                toolTip?.UpdatePseudoClasses(newValue);
             }
             else if (control.GetValue(ToolTipProperty) is { } toolTip)
             {
                 toolTip.AdornedControl = null;
                 toolTip.Close();
-                toolTip?.UpdatePseudoClasses(newValue);
             }
         }
 
-        IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
+        /// <summary>
+        /// Occurs when a ToolTip becomes visible.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="ToolTipOpeningEvent"/> attached event is also raised when the <see cref="ToolTip"/> control is opening.
+        /// </remarks>
+        public event EventHandler? Opened;
 
+        /// <summary>
+        /// Occurs when a ToolTip is closed and is no longer visible.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="ToolTipClosingEvent"/> attached event is also raised when the <see cref="ToolTip"/> control is closed.
+        /// </remarks>
+        public event EventHandler? Closed;
+
+        internal Control? AdornedControl { get; private set; }
         internal IPopupHost? PopupHost => _popup?.Host;
 
+        IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
             add => _popupHostChangedHandler += value; 
             remove => _popupHostChangedHandler -= value;
         }
 
+        protected virtual void OnOpened()
+        {
+            Opened?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnClosed()
+        {
+            Closed?.Invoke(this, EventArgs.Empty);
+        }
+        
         private void Open(Control control)
         {
             Close();
@@ -366,12 +387,15 @@ namespace Avalonia.Controls
             }
 
             _popupHostChangedHandler?.Invoke(null);
-            Closed?.Invoke(this, EventArgs.Empty);
+            UpdatePseudoClasses(false);
+            OnClosed();
         }
 
         private void OnPopupOpened(object? sender, EventArgs e)
         {
             _popupHostChangedHandler?.Invoke(((Popup)sender!).Host);
+            UpdatePseudoClasses(true);
+            OnOpened();
         }
 
         private void UpdatePseudoClasses(bool newValue)
