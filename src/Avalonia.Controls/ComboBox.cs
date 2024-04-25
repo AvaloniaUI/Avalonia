@@ -386,11 +386,6 @@ namespace Avalonia.Controls
         {
             _subscriptionsOnOpen.Clear();
 
-            if (CanFocus(this))
-            {
-                Focus();
-            }
-
             DropDownClosed?.Invoke(this, EventArgs.Empty);
         }
 
