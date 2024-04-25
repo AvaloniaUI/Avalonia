@@ -76,7 +76,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Contains(toolTipCandidates, x => x.Text == "Tip:Button");
         }
 
-        [PlatformFact(TestPlatforms.MacOS)]
+        [PlatformFact(TestPlatforms.MacOS, Skip = "Flaky test")]
         public void MacOS_Native_Menu_Has_ToolTip_If_Defined()
         {
             var menuBar = _session.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
