@@ -80,7 +80,7 @@ Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a p
 ## Code of Conduct
 
 This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
-For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct). 
+For more information see the [Code of Conduct](CODE_OF_CONDUCT.md). 
 
 ## Licence
 
@@ -113,9 +113,6 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
 
 *Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
-## .NET Foundation
-
-This project is supported by the [.NET Foundation](https://dotnetfoundation.org).
 
 ## Avalonia XPF
 Unleash the full potential of your existing WPF apps with our cross-platform UI framework, enabling WPF apps to run on macOS and Linux without requiring expensive and risky rewrites.

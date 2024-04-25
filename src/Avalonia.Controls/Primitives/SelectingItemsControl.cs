@@ -141,8 +141,8 @@ namespace Avalonia.Controls.Primitives
         private DispatcherTimer? _textSearchTimer;
         private ISelectionModel? _selection;
         private int _oldSelectedIndex;
-        private object? _oldSelectedItem;
-        private IList? _oldSelectedItems;
+        private WeakReference _oldSelectedItem = new(null);
+        private WeakReference<IList?> _oldSelectedItems = new(null);
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
         private bool _hasScrolledToSelectedItem;
@@ -286,7 +286,7 @@ namespace Avalonia.Controls.Primitives
                 else if (Selection is InternalSelectionModel ism)
                 {
                     var result = ism.WritableSelectedItems;
-                    _oldSelectedItems = result;
+                    _oldSelectedItems.SetTarget(result);
                     return result;
                 }
 
@@ -348,11 +348,12 @@ namespace Avalonia.Controls.Primitives
                     }
 
                     InitializeSelectionModel(_selection);
-
-                    if (_oldSelectedItems != SelectedItems)
+                    var selectedItems = SelectedItems;
+                    _oldSelectedItems.TryGetTarget(out var oldSelectedItems);
+                    if (oldSelectedItems != selectedItems)
                     {
-                        RaisePropertyChanged(SelectedItemsProperty, _oldSelectedItems, SelectedItems);
-                        _oldSelectedItems = SelectedItems;
+                        RaisePropertyChanged(SelectedItemsProperty, oldSelectedItems, selectedItems);
+                        _oldSelectedItems.SetTarget(selectedItems);
                     }
                 }
             }
@@ -935,21 +936,35 @@ namespace Avalonia.Controls.Primitives
                 KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(anchorIndex));
                 AutoScrollToSelectedItemIfNecessary(anchorIndex);
             }
-            else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex))
             {
-                RaisePropertyChanged(SelectedIndexProperty, _oldSelectedIndex, SelectedIndex);
-                _oldSelectedIndex = SelectedIndex;
+                var selectedIndex = SelectedIndex;
+                var oldSelectedIndex = _oldSelectedIndex;
+                if (_oldSelectedIndex != selectedIndex)
+                {
+                    RaisePropertyChanged(SelectedIndexProperty, oldSelectedIndex, selectedIndex);
+                    _oldSelectedIndex = selectedIndex;
+                }
             }
-            else if (e.PropertyName == nameof(ISelectionModel.SelectedItem) && _oldSelectedItem != SelectedItem)
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedItem))
             {
-                RaisePropertyChanged(SelectedItemProperty, _oldSelectedItem, SelectedItem);
-                _oldSelectedItem = SelectedItem;
+                var selectedItem = SelectedItem;
+                var oldSelectedItem = _oldSelectedItem.Target;
+                if (selectedItem != oldSelectedItem)
+                {
+                    RaisePropertyChanged(SelectedItemProperty, oldSelectedItem, selectedItem);
+                    _oldSelectedItem.Target = selectedItem;
+                }
             }
-            else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems) &&
-                     _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
+            else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems))
             {
-                RaisePropertyChanged(SelectedItemsProperty, _oldSelectedItems, SelectedItems);
-                _oldSelectedItems = SelectedItems;
+                _oldSelectedItems.TryGetTarget(out var oldSelectedItems);
+                if (oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
+                {
+                    var selectedItems = SelectedItems;
+                    RaisePropertyChanged(SelectedItemsProperty, oldSelectedItems, selectedItems);
+                    _oldSelectedItems.SetTarget(selectedItems);
+                }
             }
             else if (e.PropertyName == nameof(ISelectionModel.Source))
             {
@@ -1221,7 +1236,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             _oldSelectedIndex = model.SelectedIndex;
-            _oldSelectedItem = model.SelectedItem;
+            _oldSelectedItem.Target = model.SelectedItem;
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {

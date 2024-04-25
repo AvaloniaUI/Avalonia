@@ -161,7 +161,7 @@ namespace Avalonia.Base.UnitTests.Utilities
 
         [Theory]
         [MemberData(nameof(Counts))]
-        public void GetKeyValue_Finds_Value(int count)
+        public void GetValue_Finds_Value(int count)
         {
             if (count == 0)
                 return;
@@ -169,20 +169,19 @@ namespace Avalonia.Base.UnitTests.Utilities
             var target = CreateTarget(count);
             var index = count / 2;
 
-            target.GetKeyValue(index, out var property, out var value);
+            var value = target.GetValue(index);
 
-            Assert.NotNull(property);
             Assert.NotNull(value);
         }
 
         [Theory]
         [MemberData(nameof(Counts))]
-        public void GetKeyValue_Throws_If_Index_Out_Of_Range(int count)
+        public void GetValue_Throws_If_Index_Out_Of_Range(int count)
         {
             var target = CreateTarget(count);
             var index = count;
 
-            Assert.Throws<IndexOutOfRangeException>(() => target.GetKeyValue(index, out var _, out var _));
+            Assert.Throws<IndexOutOfRangeException>(() => target.GetValue(index));
         }
 
         [Theory]
