@@ -87,7 +87,7 @@ namespace Avalonia.IntegrationTests.Appium
             buttonMenuItem.MovePointerOver();
 
             // Wait for tooltip to open.
-            Thread.Sleep(2000);
+            Thread.Sleep(4000);
 
             var toolTipCandidates = _session.FindElementsByClassName("XCUIElementTypeStaticText");
             Assert.Contains(toolTipCandidates, x => x.Text == "Tip:Button");
