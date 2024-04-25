@@ -73,7 +73,7 @@ namespace Avalonia.IntegrationTests.Appium
             Thread.Sleep(2000);
 
             var toolTipCandidates = _session.FindElementsByClassName("TextBlock");
-            Assert.Contains(toolTipCandidates, x => x.Text == "Button");
+            Assert.Contains(toolTipCandidates, x => x.Text == "Tip:Button");
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
@@ -90,7 +90,7 @@ namespace Avalonia.IntegrationTests.Appium
             Thread.Sleep(2000);
 
             var toolTipCandidates = _session.FindElementsByClassName("XCUIElementTypeStaticText");
-            Assert.Contains(toolTipCandidates, x => x.Text == "Button");
+            Assert.Contains(toolTipCandidates, x => x.Text == "Tip:Button");
         }
     }
 }
