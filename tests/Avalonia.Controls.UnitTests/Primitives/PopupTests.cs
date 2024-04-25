@@ -222,6 +222,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Should_Close_When_Control_Detaches()
+        {
+            using (CreateServices())
+            {
+                var button = new Button();
+                var target = new Popup() {Placement = PlacementMode.Pointer, PlacementTarget = button};
+                var root = PreparedWindow(button);
+
+                target.Open();
+
+                Assert.True(target.IsOpen);
+                root.Content = null;
+                Assert.False(target.IsOpen);
+            }
+        }
+
+        [Fact]
         public void Popup_Open_Should_Raise_Single_Opened_Event()
         {
             using (CreateServices())

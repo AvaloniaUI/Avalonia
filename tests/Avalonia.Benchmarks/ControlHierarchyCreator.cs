@@ -14,7 +14,7 @@ namespace Avalonia.Benchmarks
 
                 for (int j = 0; j < innerCount; ++j)
                 {
-                    var child = new Button();
+                    var child = new Button() { Width = 100, Height = 50 };
 
                     parent.Children.Add(child);
 

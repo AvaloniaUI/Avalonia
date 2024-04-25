@@ -23,10 +23,11 @@ namespace Avalonia.PropertyStore
             AvaloniaObject owner,
             StyledProperty<T> property,
             EffectiveValue<T>? inherited)
+            : base(property)
         {
             Priority = BindingPriority.Unset;
             BasePriority = BindingPriority.Unset;
-            _metadata = property.GetMetadata(owner.GetType());
+            _metadata = property.GetMetadata(owner);
 
             var value = inherited is null ? _metadata.DefaultValue : inherited.Value;
 

@@ -710,11 +710,13 @@ namespace Avalonia.Controls.Selection
                     if (indexesChanged)
                     {
                         RaisePropertyChanged(nameof(SelectedIndexes));
+                        _selectedIndexes?.RaiseCollectionReset();
                     }
 
                     if (indexesChanged || operation.IsSourceUpdate)
                     {
                         RaisePropertyChanged(nameof(SelectedItems));
+                        _selectedItems?.RaiseCollectionReset();
                     }
                 } 
                 

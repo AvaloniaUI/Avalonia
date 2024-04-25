@@ -105,7 +105,7 @@
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     </Style>
     
-    <Style Selector="^:toggle /template/ Viewbox#PART_ToggleIconPresenter, ^:radio /template/ Viewbox#PART_ToggleIconPresenter">
+    <Style Selector="^:toggle /template/ ContentControl#PART_ToggleIconPresenter, ^:radio /template/ ContentControl#PART_ToggleIconPresenter">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="^:toggle /template/ ContentPresenter#PART_IconPresenter, ^:radio /template/ ContentPresenter#PART_IconPresenter">
