@@ -2325,7 +2325,7 @@ namespace Avalonia.Controls
 
             if ((!ShowGridLines) && (_gridLinesRenderer != null))
             {
-                VisualChildren.Add(_gridLinesRenderer);
+                VisualChildren.Remove(_gridLinesRenderer);
                 _gridLinesRenderer = null;
             }
 
