@@ -17,6 +17,15 @@ namespace Avalonia
         object? GetDefaultValue(Type type);
 
         /// <summary>
+        /// Gets the default value for the property for the specified object.
+        /// </summary>
+        /// <param name="owner">The object.</param>
+        /// <returns>
+        /// The default value.
+        /// </returns>
+        object? GetDefaultValue(AvaloniaObject owner);
+
+        /// <summary>
         /// Validates the specified property value.
         /// </summary>
         /// <param name="value">The value.</param>
