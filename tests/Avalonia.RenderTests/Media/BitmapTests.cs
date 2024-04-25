@@ -8,7 +8,6 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.UnitTests;
 using Xunit;
 using Path = System.IO.Path;
 
