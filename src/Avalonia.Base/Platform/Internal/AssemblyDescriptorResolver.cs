@@ -26,7 +26,7 @@ internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
         if (!_assemblyNameCache.TryGetValue(name, out var rv))
         {
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
+            var match = loadedAssemblies.FirstOrDefault(a => name.Equals(a.GetName().Name, StringComparison.InvariantCultureIgnoreCase));
             if (match != null)
             {
                 _assemblyNameCache[name] = rv = new AssemblyDescriptor(match);
