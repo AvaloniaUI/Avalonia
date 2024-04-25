@@ -70,7 +70,7 @@ namespace Avalonia.IntegrationTests.Appium
             buttonMenuItem.MovePointerOver();
 
             // Wait for tooltip to open.
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
             var toolTipCandidates = _session.FindElementsByClassName("TextBlock");
             Assert.Contains(toolTipCandidates, x => x.Text == "Button");
