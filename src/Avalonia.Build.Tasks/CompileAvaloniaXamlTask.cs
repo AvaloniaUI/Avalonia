@@ -51,8 +51,11 @@ namespace Avalonia.Build.Tasks
 
         private static void CopyAndTouch(string source, string destination)
         {
-            File.Copy(source, destination, overwrite: true);
-            File.SetLastWriteTimeUtc(destination, DateTime.UtcNow);
+            if (File.Exists(source))
+            {
+                File.Copy(source, destination, overwrite: true);
+                File.SetLastWriteTimeUtc(destination, DateTime.UtcNow);
+            }
         }
 
         [Required]
