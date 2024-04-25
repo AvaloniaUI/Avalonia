@@ -269,7 +269,18 @@ namespace Avalonia.Controls
                     return;
                 }
             }
-            PseudoClasses.Set(pcPressed, true);
+
+            if (IsDropDownOpen)
+            {
+                // When a drop-down is open with OverlayDismissEventPassThrough enabled and the control
+                // is pressed, close the drop-down
+                SetCurrentValue(IsDropDownOpenProperty, false);
+                e.Handled = true;
+            }
+            else
+            {
+                PseudoClasses.Set(pcPressed, true);
+            }
         }
 
         /// <inheritdoc/>
@@ -285,7 +296,7 @@ namespace Avalonia.Controls
                         e.Handled = true;
                     }
                 }
-                else
+                else if (PseudoClasses.Contains(pcPressed))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
