@@ -13,7 +13,7 @@ internal class MacOSTextBoxFactory : INativeControlFactory
         MacHelper.EnsureInitialized();
 
         var textView = new NSTextView();
-        textView.TextStorage.Append(new("macOS TextView"));
+        textView.TextStorage.Append(new("Native text box"));
 
         return new MacOSViewHandle(textView);
     }
