@@ -87,7 +87,7 @@ namespace Avalonia.Input
 
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     (Visual)args.Root, args.Position, ev.Timestamp,
-                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
+                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
                     keyModifier, _clickCount));
             }
 
@@ -99,7 +99,7 @@ namespace Avalonia.Input
                     target = gestureTarget ?? target;
                     var e = new PointerReleasedEventArgs(target, pointer,
                             (Visual)args.Root, args.Position, ev.Timestamp,
-                            new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind),
+                            new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind, args.Point),
                             keyModifier, MouseButton.Left);
                     if (gestureTarget != null)
                     {
@@ -127,7 +127,7 @@ namespace Avalonia.Input
                 target = gestureTarget ?? target;
                 var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer!, (Visual)args.Root,
                     args.Position, ev.Timestamp,
-                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
+                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
                     keyModifier, args.IntermediatePoints);
 
                 if (gestureTarget != null)

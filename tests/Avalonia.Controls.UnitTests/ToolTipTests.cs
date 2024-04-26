@@ -12,39 +12,52 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ToolTipTests
+    public class ToolTipTests_Popup : ToolTipTests
     {
+        protected override TestServices ConfigureServices(TestServices baseServices) => baseServices;
+    }
+
+    public class ToolTipTests_Overlay : ToolTipTests
+    {
+        protected override TestServices ConfigureServices(TestServices baseServices) =>
+            baseServices.With(windowingPlatform: new MockWindowingPlatform(popupImpl: window => null));
+    }
+
+    public abstract class ToolTipTests
+    {
+        protected abstract TestServices ConfigureServices(TestServices baseServices);
+
         private static readonly MouseDevice s_mouseDevice = new(new Pointer(0, PointerType.Mouse, true));
 
         [Fact]
         public void Should_Close_When_Control_Detaches()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var panel = new Panel();
-                
+
                 var target = new Decorator()
                 {
                     [ToolTip.TipProperty] = "Tip",
                     [ToolTip.ShowDelayProperty] = 0
                 };
-                
+
                 panel.Children.Add(target);
 
                 SetupWindowAndActivateToolTip(panel, target);
 
                 Assert.True(ToolTip.GetIsOpen(target));
-                
+
                 panel.Children.Remove(target);
-                
+
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
-        
+
         [Fact]
         public void Should_Close_When_Tip_Is_Opened_And_Detached_From_Visual_Tree()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator
                 {
@@ -64,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(ToolTip.GetIsOpen(target));
 
                 panel.Children.Remove(target);
-                
+
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
@@ -72,7 +85,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Open_On_Pointer_Enter()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator()
                 {
@@ -85,11 +98,11 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(ToolTip.GetIsOpen(target));
             }
         }
-        
+
         [Fact]
         public void Content_Should_Update_When_Tip_Property_Changes_And_Already_Open()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator()
                 {
@@ -101,7 +114,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(ToolTip.GetIsOpen(target));
                 Assert.Equal("Tip", target.GetValue(ToolTip.ToolTipProperty).Content);
-                
+
                 ToolTip.SetTip(target, "Tip1");
                 Assert.Equal("Tip1", target.GetValue(ToolTip.ToolTipProperty).Content);
             }
@@ -110,7 +123,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Open_On_Pointer_Enter_With_Delay()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator()
                 {
@@ -133,7 +146,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Open_Class_Should_Not_Initially_Be_Added()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.StyledWindow)))
             {
                 var toolTip = new ToolTip();
                 var window = new Window();
@@ -156,7 +169,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Setting_IsOpen_Should_Add_Open_Class()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.StyledWindow)))
             {
                 var toolTip = new ToolTip();
                 var window = new Window();
@@ -181,7 +194,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clearing_IsOpen_Should_Remove_Open_Class()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.StyledWindow)))
             {
                 var toolTip = new ToolTip();
                 var window = new Window();
@@ -207,7 +220,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Close_On_Null_Tip()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator()
                 {
@@ -228,7 +241,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Not_Close_When_Pointer_Is_Moved_Over_ToolTip()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator()
                 {
@@ -253,7 +266,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Not_Close_When_Pointer_Is_Moved_From_ToolTip_To_Original_Control()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator()
                 {
@@ -280,7 +293,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Close_When_Pointer_Is_Moved_From_ToolTip_To_Another_Control()
         {
-            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            using (UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow)))
             {
                 var target = new Decorator()
                 {
@@ -309,6 +322,50 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.False(ToolTip.GetIsOpen(target));
             }
+        }
+
+        [Fact]
+        public void New_ToolTip_Replaces_Other_ToolTip_Immediately()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+            
+            var target = new Decorator()
+            {
+                [ToolTip.TipProperty] = "Tip",
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var other = new Decorator()
+            {
+                [ToolTip.TipProperty] = "Tip",
+                [ToolTip.ShowDelayProperty] = (int) TimeSpan.FromHours(1).TotalMilliseconds,
+            };
+
+            var panel = new StackPanel
+            {
+                Children = { target, other }
+            };
+
+            var mouseEnter = SetupWindowAndGetMouseEnterAction(panel);
+            
+            mouseEnter(other);
+            Assert.False(ToolTip.GetIsOpen(other)); // long delay
+
+            mouseEnter(target);
+            Assert.True(ToolTip.GetIsOpen(target)); // no delay
+
+            mouseEnter(other);
+            Assert.True(ToolTip.GetIsOpen(other)); // delay skipped, a tooltip was already open
+
+            // Now disable the between-show system
+
+            mouseEnter(target);
+            Assert.True(ToolTip.GetIsOpen(target));
+
+            ToolTip.SetBetweenShowDelay(other, -1);
+
+            mouseEnter(other);
+            Assert.False(ToolTip.GetIsOpen(other));
         }
 
         private Action<Control> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string testName = null)
@@ -354,7 +411,7 @@ namespace Avalonia.Controls.UnitTests
                 hitTesterMock.Setup(m => m.HitTestFirst(point, window, It.IsAny<Func<Visual, bool>>()))
                     .Returns(control);
 
-                windowImpl.Object.Input(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, window,
+                windowImpl.Object.Input(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, (IInputRoot)control?.VisualRoot ?? window,
                         RawPointerEventType.Move, point, RawInputModifiers.None));
 
                 Assert.True(control == null || control.IsPointerOver);

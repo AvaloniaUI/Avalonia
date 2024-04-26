@@ -36,7 +36,8 @@ internal static partial class CanvasHelper
     public static partial void OnSizeChanged(
         JSObject canvasSurface,
         [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number, JSType.Number>>]
-        Action<int, int, double> onSizeChanged);
+        // TODO: this callback should be <int, int, double>. Revert after next .NET 9 preview.  
+        Action<double, double, double> onSizeChanged);
 
     [JSImport("CanvasFactory.create", AvaloniaModule.MainModuleName)]
     private static partial JSObject Create(JSObject canvasSurface, int mode);

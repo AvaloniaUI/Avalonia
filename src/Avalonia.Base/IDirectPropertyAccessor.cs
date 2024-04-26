@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Metadata;
 
 namespace Avalonia
 {
@@ -38,5 +37,11 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         object? GetUnsetValue(Type type);
+
+        /// <summary>
+        /// Gets the unset value of the property for the specified object.
+        /// </summary>
+        /// <param name="owner">The object.</param>
+        object? GetUnsetValue(AvaloniaObject owner);
     }
 }

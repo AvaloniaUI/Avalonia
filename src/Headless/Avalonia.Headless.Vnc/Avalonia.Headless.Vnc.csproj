@@ -7,7 +7,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Avalonia.Headless\Avalonia.Headless.csproj" />
-      <PackageReference Include="Quamotion.RemoteViewing" Version="1.1.21" />
+      <PackageReference Include="Quamotion.RemoteViewing" Version="1.1.179" />
     </ItemGroup>
 
     <Import Project="..\..\..\build\DevAnalyzers.props" />

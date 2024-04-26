@@ -29,7 +29,7 @@ namespace Avalonia
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
     [UsableDuringInitialization]
-    public partial class Visual : StyledElement
+    public partial class Visual : StyledElement, IAvaloniaListItemValidator<Visual>
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -150,7 +150,7 @@ namespace Avalonia
 
             var visualChildren = new AvaloniaList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = visual => ValidateVisualChild(visual);
+            visualChildren.Validator = this;
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -618,17 +618,19 @@ namespace Avalonia
         /// <summary>
         /// Ensures a visual child is not null and not already parented.
         /// </summary>
-        /// <param name="c">The visual child.</param>
-        private static void ValidateVisualChild(Visual c)
+        /// <param name="item">The visual child.</param>
+        void IAvaloniaListItemValidator<Visual>.Validate(Visual item)
         {
-            if (c == null)
+            if (item is null)
             {
-                throw new ArgumentNullException(nameof(c), "Cannot add null to VisualChildren.");
+                throw new ArgumentNullException(nameof(item), $"Cannot add null to {nameof(VisualChildren)}.");
             }
 
-            if (c.VisualParent != null)
+            if (item.VisualParent is { } parent)
             {
-                throw new InvalidOperationException("The control already has a visual parent.");
+                throw new InvalidOperationException(
+                    $"The control {item.DebugDisplay} already has a visual parent {parent.GetDebugDisplay(false)} " +
+                    $"while trying to add it as a child of {GetDebugDisplay(false)}.");
             }
         }
 

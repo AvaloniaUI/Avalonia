@@ -94,9 +94,10 @@ namespace Avalonia
                 enableDataValidation: enableDataValidation);
 
             metadata.Merge(GetMetadata<TOwner>(), this);
+            metadata.Freeze();
 
             var result = new DirectProperty<TNewOwner, TValue>(
-                (DirectPropertyBase<TValue>)this,
+                this,
                 getter,
                 setter,
                 metadata);
@@ -143,9 +144,9 @@ namespace Avalonia
         }
 
         object? IDirectPropertyAccessor.GetUnsetValue(Type type)
-        {
-            var metadata = GetMetadata(type);
-            return metadata.UnsetValue;
-        }
+            => GetMetadata(type).UnsetValue;
+
+        object? IDirectPropertyAccessor.GetUnsetValue(AvaloniaObject owner)
+            => GetMetadata(owner).UnsetValue;
     }
 }
