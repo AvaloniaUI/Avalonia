@@ -41,6 +41,9 @@ internal static partial class CanvasHelper
 
     [JSImport("CanvasFactory.create", AvaloniaModule.MainModuleName)]
     private static partial JSObject Create(JSObject canvasSurface, int mode);
+    
+    [JSImport("CanvasFactory.createRenderTargetSurface", AvaloniaModule.MainModuleName)]
+    public static partial JSObject CreateRenderTargetSurface(JSObject canvasSurface, int[] modes, int threadId);
 
     [JSImport("CanvasFactory.destroy", AvaloniaModule.MainModuleName)]
     public static partial void Destroy(JSObject canvasSurface);

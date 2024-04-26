@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Web;
@@ -24,6 +25,7 @@ internal partial class Program
         Trace.Listeners.Add(new ConsoleTraceListener());
     
         var options = ParseArgs(args) ?? new BrowserPlatformOptions();
+        options.UseMtCompatibleRenderingPath = true;
     
         await BuildAvaloniaApp()
             .LogToTrace()

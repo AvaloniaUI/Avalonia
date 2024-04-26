@@ -52,6 +52,8 @@ public record BrowserPlatformOptions
     /// For more details, see https://github.com/jimmywarting/native-file-system-adapter#a-note-when-downloading-with-the-polyfilled-version.
     /// </summary>
     public bool PreferFileDialogPolyfill { get; set; }
+    
+    public bool UseMtCompatibleRenderingPath { get; set; }
 }
 
 public static class BrowserAppBuilder

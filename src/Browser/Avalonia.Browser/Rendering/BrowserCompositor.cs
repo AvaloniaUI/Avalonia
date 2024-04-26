@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -12,13 +13,14 @@ namespace Avalonia.Browser.Rendering;
 internal static class BrowserCompositor
 {
     private static BrowserRenderTimer? s_browserUiRenderTimer;
-    private static BrowserRenderTimer BrowserUiRenderTimer => s_browserUiRenderTimer ??= new BrowserRenderTimer(false);
+    public static BrowserRenderTimer RenderTimer => s_browserUiRenderTimer ??= new BrowserRenderTimer(false);
+    public static Lazy<RenderLoop> RenderLoop = new(() => new RenderLoop(RenderTimer), true);
 
     private static Compositor? s_webGlUiCompositor, s_softwareUiCompositor;
 
     internal static Compositor WebGlUiCompositor => s_webGlUiCompositor ??= new Compositor(
-        new RenderLoop(BrowserUiRenderTimer), AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
+        new RenderLoop(RenderTimer), AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
 
     internal static Compositor SoftwareUiCompositor => s_softwareUiCompositor ??= new Compositor(
-        new RenderLoop(BrowserUiRenderTimer), null);
+        new RenderLoop(RenderTimer), null);
 }

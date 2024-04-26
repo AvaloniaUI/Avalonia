@@ -16,14 +16,22 @@ function getGL(): EmscriptenGL {
     return (module?.GL ?? self.AvaloniaGL ?? self.SkiaSharpGL) as EmscriptenGL;
 }
 
-export class WebGlRenderTarget implements WebRenderTarget {
+export class WebGlRenderTarget extends WebRenderTarget {
     public contextHandle?: number;
+    public attrs: WebGLContextAttributes;
     public fboId?: number;
     public stencil?: number;
     public sample?: number;
     public depth?: number;
     private static _gl: EmscriptenGL | null = null;
-    public renderTargetType = "webgl";
+
+    public get width() {
+        return this.canvas.width;
+    }
+
+    public get height() {
+        return this.canvas.height;
+    }
 
     constructor(public canvas: HTMLCanvasElement | OffscreenCanvas, mode: BrowserRenderingMode) {
         // Skia only understands WebGL context wrapped in Emscripten.
@@ -58,12 +66,14 @@ export class WebGlRenderTarget implements WebRenderTarget {
 
         const handle = WebGlRenderTarget._gl.registerContext(context, attrs);
         (context as any).gl_handle = handle;
+        super(canvas, "webgl");
 
         this.contextHandle = handle;
         this.fboId = context.getParameter(context.FRAMEBUFFER_BINDING)?.id ?? 0;
         this.stencil = context.getParameter(context.STENCIL_BITS);
         this.sample = context.getParameter(context.SAMPLES);
         this.depth = context.getParameter(context.DEPTH_BITS);
+        this.attrs = attrs;
     }
 
     public static getCurrentContext(): number {

@@ -140,7 +140,6 @@ namespace Avalonia.Rendering.Composition.Server
             
             if (!_redrawRequested)
                 return;
-            _redrawRequested = false;
 
             var renderTargetWithProperties = _renderTarget as IRenderTargetWithProperties;
 
@@ -199,6 +198,7 @@ namespace Avalonia.Rendering.Composition.Server
 
                 RenderedVisuals = 0;
 
+                _redrawRequested = false;
                 DirtyRects.Reset();
             }
         }

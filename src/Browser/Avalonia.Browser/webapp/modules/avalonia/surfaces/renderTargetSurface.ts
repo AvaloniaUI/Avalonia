@@ -1,5 +1,5 @@
 import { HtmlCanvasSurfaceBase } from "./htmlSurfaceBase";
-import { WebRenderTargetRegistry } from "./webRenderTarget";
+import { WebRenderTargetRegistry } from "./webRenderTargetRegistry";
 import { BrowserRenderingMode } from "./surfaceBase";
 
 export class RenderTargetSurface extends HtmlCanvasSurfaceBase {

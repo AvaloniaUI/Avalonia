@@ -72,10 +72,15 @@ internal abstract class BrowserSurface : IDisposable
             throw new InvalidOperationException(
                 $"{nameof(BrowserPlatformOptions)}.{nameof(BrowserPlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
         }
-
-        CanvasHelper.OnSizeChanged(surface.JsSurface, surface.OnSizeChanged);
+        surface.Initialize();
         return surface;
     }
+
+    protected virtual void Initialize()
+    {
+        CanvasHelper.OnSizeChanged(JsSurface, OnSizeChanged);
+    }
+    
 
     public virtual void Dispose()
     {
@@ -86,7 +91,7 @@ internal abstract class BrowserSurface : IDisposable
         ClientSize = default;
     }
 
-    private void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
+    protected virtual void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
     {
         var oldScaling = Scaling;
         var oldClientSize = ClientSize;
@@ -98,4 +103,6 @@ internal abstract class BrowserSurface : IDisposable
         if (Math.Abs(oldScaling - dpr) > 0.0001)
             ScalingChanged?.Invoke();
     }
+
+    public virtual object[] GetRenderSurfaces() => [this];
 }

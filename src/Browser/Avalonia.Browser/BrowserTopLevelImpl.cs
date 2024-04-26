@@ -39,10 +39,9 @@ namespace Avalonia.Browser
         {
             InputHelper.InitializeBackgroundHandlers();
         }
-
+        
         public BrowserTopLevelImpl(JSObject container, JSObject nativeControlHost, JSObject inputElement)
         {
-            Surfaces = Enumerable.Empty<object>();
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
             _inputHandler = new BrowserInputHandler(this, container);
@@ -56,11 +55,18 @@ namespace Avalonia.Browser
 
             _container = container;
 
-            _surface = BrowserSurface.Create(container, PixelFormats.Rgba8888);
+            var opts = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
+            if (opts.UseMtCompatibleRenderingPath || BrowserWindowingPlatform.IsThreadingEnabled)
+            {
+                _surface = RenderTargetBrowserSurface.Create(container, opts.RenderingMode);
+            }
+            else
+            {
+                _surface = BrowserSurface.Create(container, PixelFormats.Rgba8888);
+            }
+
             _surface.SizeChanged += OnSizeChanged;
             _surface.ScalingChanged += OnScalingChanged;
-
-            Surfaces = new[] { _surface };
             Compositor = _surface.Compositor;
         }
 
@@ -118,7 +124,7 @@ namespace Avalonia.Browser
         public Size? FrameSize => null;
         public double RenderScaling => _surface?.Scaling ?? 1;
 
-        public IEnumerable<object> Surfaces { get; set; }
+        public IEnumerable<object> Surfaces => _surface?.GetRenderSurfaces() ?? [];
 
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
