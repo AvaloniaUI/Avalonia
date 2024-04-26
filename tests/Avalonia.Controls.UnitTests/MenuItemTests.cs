@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Controls.Utils;
+using Avalonia.Controls.UnitTests.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -768,6 +767,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(menuItem4.IsChecked);
         }
 
+        [Fact]
+        public void MenuItem_CommandParameter_Does_Not_Change_While_Execution()
+        {
+            var target = new MenuItem();
+            object lastParamenter = "A";
+            var generator = new Random();
+            var onlyOnce = false;
+            var command = new TestCommand(parameter =>
+            {
+                if (!onlyOnce)
+                {
+                    onlyOnce = true;
+                    target.CommandParameter = generator.Next();
+                }
+                lastParamenter = parameter;
+                return true;
+            },
+            parameter =>
+            {
+                Assert.Equal(lastParamenter, parameter);
+            });
+            target.CommandParameter = lastParamenter;
+            target.Command = command;
+            var root = new TestRoot { Child = target };
+
+            (target as IClickableControl).RaiseClick();
+        }
+
         private IDisposable Application()
         {
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
@@ -790,41 +817,10 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(services);
         }
 
-        private class TestCommand : ICommand
-        {
-            private readonly Func<object, bool> _canExecute;
-            private readonly Action<object> _execute;
-            private EventHandler _canExecuteChanged;
-
-            public TestCommand(bool enabled = true)
-                : this(_ => enabled, _ => { })
-            {
-            }
-
-            public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
-            {
-                _canExecute = canExecute;
-                _execute = execute ?? (_ => { });
-            }
-
-            public int SubscriptionCount { get; private set; }
-
-            public event EventHandler CanExecuteChanged
-            {
-                add { _canExecuteChanged += value; ++SubscriptionCount; }
-                remove { _canExecuteChanged -= value; --SubscriptionCount; }
-            }
-
-            public bool CanExecute(object parameter) => _canExecute(parameter);
-
-            public void Execute(object parameter) => _execute(parameter);
-
-            public void RaiseCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
 
         private record MenuViewModel(string Header)
         {
-            public IList<MenuViewModel> Children { get; set;}
+            public IList<MenuViewModel> Children { get; set; }
         }
     }
 }

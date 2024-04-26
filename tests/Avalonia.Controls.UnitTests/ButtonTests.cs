@@ -1,5 +1,7 @@
 ﻿using System;
-using System.Windows.Input;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Controls.UnitTests.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -9,7 +11,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 using MouseButton = Avalonia.Input.MouseButton;
@@ -391,6 +392,34 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Button_CommandParameter_Does_Not_Change_While_Execution()
+        {
+            var target = new Button();
+            object lastParamenter = "A";
+            var generator = new Random();
+            var onlyOnce = false;
+            var command = new TestCommand(parameter =>
+            {
+                if (!onlyOnce)
+                {
+                    onlyOnce = true;
+                    target.CommandParameter = generator.Next();
+                }
+                lastParamenter = parameter;
+                return true;
+            },
+            parameter =>
+            {
+                Assert.Equal(lastParamenter, parameter);
+            });
+            target.CommandParameter = lastParamenter;
+            target.Command = command;
+            var root = new TestRoot { Child = target };
+
+            (target as IClickableControl).RaiseClick();
+        }
+
         private KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
@@ -421,50 +450,20 @@ namespace Avalonia.Controls.UnitTests
             _helper.Move(button, pos);
         }
 
-        private class TestCommand : ICommand
+
+
+        private class TestTopLevel : TopLevel
         {
-            private readonly Func<object, bool> _canExecute;
-            private readonly Action<object> _execute;
-            private EventHandler _canExecuteChanged;
-            private bool _enabled = true;
+            private readonly ILayoutManager _layoutManager;
+            public bool IsClosed { get; private set; }
 
-            public TestCommand(bool enabled = true)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+                : base(impl)
             {
-                _enabled = enabled;
-                _canExecute = _ => _enabled;
-                _execute = _ => { };
+                _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
-            {
-                _canExecute = canExecute;
-                _execute = execute ?? (_ => { });
-            }
-
-            public bool IsEnabled
-            {
-                get { return _enabled; }
-                set
-                {
-                    if (_enabled != value)
-                    {
-                        _enabled = value;
-                        _canExecuteChanged?.Invoke(this, EventArgs.Empty);
-                    }
-                }
-            }
-
-            public int SubscriptionCount { get; private set; }
-
-            public event EventHandler CanExecuteChanged
-            {
-                add { _canExecuteChanged += value; ++SubscriptionCount; }
-                remove { _canExecuteChanged -= value; --SubscriptionCount; }
-            }
-
-            public bool CanExecute(object parameter) => _canExecute(parameter);
-
-            public void Execute(object parameter) => _execute(parameter);
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
     }
 }
