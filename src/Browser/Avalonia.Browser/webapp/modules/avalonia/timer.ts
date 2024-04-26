@@ -3,10 +3,10 @@ export class TimerHelper {
         function render(time: number) {
             const next = renderFrameCallback(time);
             if (next) {
-                window.requestAnimationFrame(render);
+                self.requestAnimationFrame(render);
             }
         }
 
-        window.requestAnimationFrame(render);
+        self.requestAnimationFrame(render);
     }
 }

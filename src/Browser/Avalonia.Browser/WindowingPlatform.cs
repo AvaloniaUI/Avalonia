@@ -65,7 +65,6 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
             .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
             .Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>()
-            .Bind<IRenderTimer>().ToConstant(ManualTriggerRenderTimer.Instance)
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()

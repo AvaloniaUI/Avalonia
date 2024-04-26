@@ -22,22 +22,23 @@ internal class BrowserRenderTimer : IRenderTimer
     {
         add
         {
-            if (!_started)
-            {
-                _started = true;
-                if (BrowserWindowingPlatform.IsThreadingEnabled)
-                {
-                    
-                }
-                else
-                    TimerHelper.RunAnimationFrames(RenderFrameCallback);
-            }
+            if (!BrowserWindowingPlatform.IsThreadingEnabled)
+                StartOnThisThread();
 
             _tick += value;
         }
         remove
         {
             _tick -= value;
+        }
+    }
+
+    public void StartOnThisThread()
+    {
+        if (!_started)
+        {
+            _started = true;
+            TimerHelper.RunAnimationFrames(RenderFrameCallback);
         }
     }
 
