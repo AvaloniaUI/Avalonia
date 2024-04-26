@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Input.GestureRecognizers
@@ -13,7 +14,7 @@ namespace Avalonia.Input.GestureRecognizers
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private bool _isScrollInertiaEnabled;
-        private int _scrollStartDistance = 30;
+        private int _scrollStartDistance = (int)((AvaloniaLocator.Current?.GetService<IPlatformSettings>()?.GetTapSize(PointerType.Touch).Height ?? 10)  / 2);
 
         private bool _scrolling;
         private Point _trackedRootPoint;
@@ -54,7 +55,7 @@ namespace Avalonia.Input.GestureRecognizers
         public static readonly DirectProperty<ScrollGestureRecognizer, int> ScrollStartDistanceProperty =
             AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, int>(nameof(ScrollStartDistance),
                 o => o.ScrollStartDistance, (o, v) => o.ScrollStartDistance = v,
-                unsetValue: 30);
+                unsetValue: (int)(AvaloniaLocator.Current.GetService<IPlatformSettings>()?.GetTapSize(PointerType.Touch).Height ?? 30));
 
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
