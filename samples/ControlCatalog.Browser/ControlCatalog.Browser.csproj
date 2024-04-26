@@ -7,7 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebuggerSupport>true</DebuggerSupport>
     <WasmDebugLevel>5</WasmDebugLevel>
-    <WasmEnableThreads>false</WasmEnableThreads>
+    <WasmEnableThreads>true</WasmEnableThreads>
   </PropertyGroup>
 
   <ItemGroup>
