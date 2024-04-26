@@ -296,26 +296,6 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Gets the index of the column among the visible columns in display order. 
-        /// </summary>
-        internal int GetColumnVisibleIndex(int columnIndex)
-        {
-            if (columnIndex < 0 || columnIndex >= ItemsInternal.Count)
-                return -1;
-            var column = ItemsInternal[columnIndex];
-            if (!column.IsVisible)
-                return -1;
-
-            int index = 0;
-            while ((column = GetPreviousColumn(column, true, null, null)) != null)
-            {
-                index++;
-            }
-
-            return index;
-        }
-
         internal DataGridColumn GetColumnAtDisplayIndex(int displayIndex)
         {
             if (displayIndex < 0 || displayIndex >= ItemsInternal.Count || displayIndex >= DisplayIndexMap.Count)

@@ -118,25 +118,13 @@ namespace Avalonia.Controls.Primitives
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
             return child is DataGridColumnHeader header
-                ? OwningGrid.ColumnsInternal.GetColumnVisibleIndex(header.ColumnIndex)
+                ? header.OwningColumn?.DisplayIndex ?? -1
                 : throw new InvalidOperationException("Invalid cell type");
         }
 
         bool IChildIndexProvider.TryGetTotalCount(out int count)
         {
-            // VisibleColumnCount is updated the next measure pass after columns are added or removed
-            // but this is called as the column is being added or removed. 
-            // count = OwningGrid.ColumnsInternal.VisibleColumnCount;
-
-            count = 0;
-            for (int i = 0; i < Children.Count; i++)
-            {
-                if (Children[i] is DataGridColumnHeader { OwningColumn: { IsVisible: true } and not DataGridFillerColumn })
-                {
-                    count++;
-                }
-            }
-
+            count = Children.Count - 1; // Adjust for filler column
             return true;
         }
 
