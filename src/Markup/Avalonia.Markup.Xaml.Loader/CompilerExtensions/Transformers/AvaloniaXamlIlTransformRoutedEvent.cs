@@ -46,8 +46,8 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
                             {
                                 instance.Setters.Add(new XamlDirectCallAddHandler(eventField,
                                     targetRef.Type,
-                                    xkt.Interactivity.AddHandlerT.MakeGenericMethod(new[] { agrument }),
-                                    context.Configuration.TypeSystem.FindType("System.EventHandler`1").MakeGenericType(agrument)
+                                    xkt.Interactivity.AddHandlerT.MakeGenericMethod([agrument]),
+                                    xkt.EventHandlerT.MakeGenericType(agrument)
                                     )
                                 );
                             }
@@ -56,7 +56,12 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
                     }
                     else
                     {
-                        //TODO: Throw Exception?
+                        context.ReportDiagnostic(new XamlX.XamlDiagnostic(
+                            AvaloniaXamlDiagnosticCodes.InvalidXAML,
+                            XamlX.XamlDiagnosticSeverity.Error,
+                            $"Event definition {prop.Name} found, but its type {eventField.FieldType.GetFqn()} is not compatible with RoutedEvent.",
+                            node)
+                        , false);
                     }
                 }
             }
@@ -76,7 +81,7 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
             IXamlType routedEventHandler
             )
         {
-            Parameters = new[] { routedEventHandler };
+            Parameters = [routedEventHandler];
             _eventField = eventField;
             _declaringType = declaringType;
             _addMethod = addMethod;

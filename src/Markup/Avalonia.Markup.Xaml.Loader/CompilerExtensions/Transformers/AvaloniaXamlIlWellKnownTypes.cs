@@ -125,6 +125,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType WindowTransparencyLevel { get; }
         public IXamlType IReadOnlyListOfT { get; }
         public IXamlType ControlTemplate { get; }
+        public IXamlType EventHandlerT {  get; }
 
         sealed internal class InteractivityWellKnownTypes
         {
@@ -203,7 +204,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
             UnsetValueType = cfg.TypeSystem.GetType("Avalonia.UnsetValueType");
-            StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
             StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
             INameScope = cfg.TypeSystem.GetType("Avalonia.Controls.INameScope");
             INameScopeRegister = INameScope.GetMethod(
@@ -314,7 +314,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
             ControlTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.ControlTemplate");
             IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");
-
+            EventHandlerT = cfg.TypeSystem.GetType("System.EventHandler`1");
             Interactivity = new InteractivityWellKnownTypes(cfg);
         }
     }
