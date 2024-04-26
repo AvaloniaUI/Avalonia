@@ -99,7 +99,9 @@ namespace Avalonia.Controls.UnitTests
                 [!MenuItem.CommandProperty] = new Binding("Command"),
             };
             var root = new TestRoot { Child = target };
-                
+
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
 
@@ -164,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = null;
             Assert.Equal(0, command.SubscriptionCount);
         }
-        
+
         [Fact]
         public void MenuItem_Invokes_CanExecute_When_Added_To_Logical_Tree_And_CommandParameter_Changed()
         {
@@ -172,13 +174,15 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem { Command = command };
             var root = new TestRoot { Child = target };
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
             target.CommandParameter = true;
             Assert.True(target.IsEffectivelyEnabled);
 
             target.CommandParameter = false;
             Assert.False(target.IsEffectivelyEnabled);
         }
-        
+
         [Fact]
         public void MenuItem_Does_Not_Invoke_CanExecute_When_ContextMenu_Closed()
         {
@@ -196,7 +200,8 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
-                
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -206,8 +211,9 @@ namespace Avalonia.Controls.UnitTests
 
                 command.RaiseCanExecuteChanged();
                 Assert.Equal(0, canExecuteCallCount);
-                
+
                 contextMenu.Open();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.Equal(3, canExecuteCallCount);// 3 because popup is changing logical child and moreover we need to invalidate again after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -217,7 +223,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(5, canExecuteCallCount);
             }
         }
-        
+
         [Fact]
         public void MenuItem_Does_Not_Invoke_CanExecute_When_MenuFlyout_Closed()
         {
@@ -236,7 +242,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
-                
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -248,6 +254,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.Equal(2, canExecuteCallCount); // 2 because we need to invalidate after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -257,7 +264,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(4, canExecuteCallCount);
             }
         }
-        
+
         [Fact]
         public void MenuItem_Does_Not_Invoke_CanExecute_When_Parent_MenuItem_Closed()
         {
@@ -277,7 +284,9 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 contextMenu.Open();
-                
+
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -376,7 +385,7 @@ namespace Avalonia.Controls.UnitTests
             var panel = Assert.IsType<StackPanel>(menu.Presenter.Panel);
             Assert.Equal(2, panel.Children.Count);
 
-            for (var i = 0; i <  panel.Children.Count; i++)
+            for (var i = 0; i < panel.Children.Count; i++)
             {
                 var menuItem = Assert.IsType<MenuItem>(panel.Children[i]);
 
@@ -500,7 +509,7 @@ namespace Avalonia.Controls.UnitTests
 
             var window = new Window { Content = menu };
             window.Show();
-            
+
             Assert.False(menuItem1.IsChecked);
             Assert.True(menuItem2.IsChecked);
             Assert.False(menuItem3.IsChecked);
@@ -511,7 +520,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(menuItem2.IsChecked);
             Assert.True(menuItem3.IsChecked);
         }
-        
+
         [Fact]
         public void Radio_Menu_Group_Can_Be_Changed_In_Runtime()
         {
@@ -540,7 +549,7 @@ namespace Avalonia.Controls.UnitTests
 
             var window = new Window { Content = menu };
             window.Show();
-            
+
             Assert.False(menuItem1.IsChecked);
             Assert.True(menuItem2.IsChecked);
             Assert.False(menuItem3.IsChecked);
@@ -554,12 +563,12 @@ namespace Avalonia.Controls.UnitTests
 
             menuItem3.GroupName = null;
             menuItem1.IsChecked = true;
-            
+
             Assert.True(menuItem1.IsChecked);
             Assert.False(menuItem2.IsChecked);
             Assert.True(menuItem3.IsChecked);
         }
-        
+
         [Fact]
         public void Radio_MenuItem_In_Same_Group_But_Submenu_Is_Unchecked()
         {
@@ -599,7 +608,7 @@ namespace Avalonia.Controls.UnitTests
 
             var window = new Window { Content = menu };
             window.Show();
-            
+
             Assert.False(menuItem1.IsChecked);
             Assert.False(menuItem2.IsChecked);
             Assert.True(menuItem3.IsChecked);
@@ -800,7 +809,7 @@ namespace Avalonia.Controls.UnitTests
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
             var screenImpl = new Mock<IScreenImpl>();
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
-            screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(1, screen, screen, true) });
+            screenImpl.Setup(X => X.AllScreens).Returns(new[] { new Screen(1, screen, screen, true) });
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
