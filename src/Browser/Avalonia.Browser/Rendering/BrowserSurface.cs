@@ -87,11 +87,11 @@ internal abstract class BrowserSurface : IDisposable
         ClientSize = default;
     }
 
-    private void OnSizeChanged(int pixelWidth, int pixelHeight, double dpr)
+    private void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
     {
         var oldScaling = Scaling;
         var oldClientSize = ClientSize;
-        RenderSize = new PixelSize(pixelWidth, pixelHeight);
+        RenderSize = new PixelSize((int)pixelWidth, (int)pixelHeight);
         ClientSize = RenderSize.ToSize(dpr);
         Scaling = dpr;
         if (oldClientSize != ClientSize)
