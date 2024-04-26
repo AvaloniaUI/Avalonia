@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using OpenQA.Selenium.Appium;
+﻿using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -28,6 +27,28 @@ namespace Avalonia.IntegrationTests.Appium
             textBox.SendKeys("Hello, World!");
 
             Assert.Equal("Hello, World!Win32 EDIT", textBox.Text);
+        }
+
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Can_Edit_Native_TextBox_In_Popup()
+        {
+            var checkBox = _session.FindElementByAccessibilityId("EmbeddingPopupOpenCheckBox");
+            checkBox.Click();
+
+            try
+            {
+                var textBox = _session.FindElementByXPath($"//*[@AutomationId='NativeTextBoxInPopup']//*[1]");
+
+                Assert.Equal("Win32 EDIT", textBox.Text);
+
+                textBox.SendKeys("Hello, World!");
+
+                Assert.Equal("Hello, World!Win32 EDIT", textBox.Text);
+            }
+            finally
+            {
+                checkBox.Click();
+            }
         }
     }
 }
