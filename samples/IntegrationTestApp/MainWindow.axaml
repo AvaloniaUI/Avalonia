@@ -97,7 +97,7 @@
 
       <TabItem Header="Embedding">
         <StackPanel>
-          <embedding:NativeTextBox Height="23"/>
+          <embedding:NativeTextBox Name="NativeTextBox" Height="23"/>
         </StackPanel>
       </TabItem>
       

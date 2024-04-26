@@ -9,7 +9,7 @@ internal class Win32TextBoxFactory : INativeControlFactory
     public IPlatformHandle CreateControl(IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
         var handle = WinApi.CreateWindowEx(0, "EDIT",
-            @"Win32 Text Box",
+            @"Win32 EDIT",
             (uint)(WinApi.WindowStyles.WS_CHILD | WinApi.WindowStyles.WS_VISIBLE | WinApi.WindowStyles.WS_BORDER), 
             0, 0, 1, 1, 
             parent.Handle,
