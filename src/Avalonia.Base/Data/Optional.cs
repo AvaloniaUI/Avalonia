@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Data
 {
@@ -67,7 +68,7 @@ namespace Avalonia.Data
         /// Gets the value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
-        public T? GetValueOrDefault() => HasValue ? _value : default;
+        public T? GetValueOrDefault() => _value;
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.

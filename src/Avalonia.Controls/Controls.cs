@@ -7,7 +7,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A collection of <see cref="Control"/>s.
     /// </summary>
-    public class Controls : AvaloniaList<Control>
+    public class Controls : AvaloniaList<Control>, IAvaloniaListItemValidator<Control>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Controls"/> class.
@@ -30,14 +30,17 @@ namespace Avalonia.Controls
         private void Configure()
         {
             ResetBehavior = ResetBehavior.Remove;
-            Validate = item =>
+            Validator = this;
+        }
+
+        void IAvaloniaListItemValidator<Control>.Validate(Control item)
+        {
+            if (item is null)
             {
-                if (item is null)
-                {
-                    throw new ArgumentNullException(nameof(item),
-                        $"A null control cannot be added to a {nameof(Controls)} collection.");
-                }
-            };
+                throw new ArgumentNullException(
+                    nameof(item),
+                    $"A null control cannot be added to a {nameof(Controls)} collection.");
+            }
         }
     }
 }

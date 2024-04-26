@@ -203,6 +203,7 @@ namespace Avalonia.Controls.Selection
         public void BeginBatchUpdate()
         {
             _operation ??= new Operation(this);
+            _operation.SkipLostSelection = false;
             ++_operation.UpdateCount;
         }
 
@@ -709,11 +710,13 @@ namespace Avalonia.Controls.Selection
                     if (indexesChanged)
                     {
                         RaisePropertyChanged(nameof(SelectedIndexes));
+                        _selectedIndexes?.RaiseCollectionReset();
                     }
 
                     if (indexesChanged || operation.IsSourceUpdate)
                     {
                         RaisePropertyChanged(nameof(SelectedItems));
+                        _selectedItems?.RaiseCollectionReset();
                     }
                 } 
                 

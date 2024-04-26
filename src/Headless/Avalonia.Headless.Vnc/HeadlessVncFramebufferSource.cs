@@ -23,7 +23,7 @@ namespace Avalonia.Headless.Vnc
             session.PointerChanged += (_, args) =>
             {
                 var pt = new Point(args.X, args.Y);
-                    
+
                 var buttons = (VncButton)args.PressedButtons;
 
                 MouseButton TranslateButton(VncButton vncButton) =>
@@ -36,14 +36,14 @@ namespace Avalonia.Headless.Vnc
                     };
 
                 var modifiers = (RawInputModifiers)(((int)buttons & 7) << 4);
-                
+
                 Dispatcher.UIThread.Post(() =>
                 {
                     Window?.MouseMove(pt);
                     foreach (var btn in CheckedButtons)
                         if (_previousButtons.HasFlag(btn) && !buttons.HasFlag(btn))
                             Window?.MouseUp(pt, TranslateButton(btn), modifiers);
-                    
+
                     foreach (var btn in CheckedButtons)
                         if (!_previousButtons.HasFlag(btn) && buttons.HasFlag(btn))
                             Window?.MouseDown(pt, TranslateButton(btn), modifiers);
@@ -96,11 +96,11 @@ namespace Avalonia.Headless.Vnc
                 KeySym.AltLeft or KeySym.AltRight => RawInputModifiers.Alt,
                 _ => null
             };
-            
-            if(!toggleModifier.HasValue)
+
+            if (!toggleModifier.HasValue)
                 return false;
 
-            if(args.Pressed)
+            if (args.Pressed)
                 _keyState |= toggleModifier.Value;
             else
                 _keyState &= ~toggleModifier.Value;
@@ -309,9 +309,9 @@ namespace Avalonia.Headless.Vnc
             ScrollUp = 8,
             ScrollDown = 16
         }
-        
 
-        private static VncButton[] CheckedButtons = new[] {VncButton.Left, VncButton.Middle, VncButton.Right}; 
+
+        private static VncButton[] CheckedButtons = new[] { VncButton.Left, VncButton.Middle, VncButton.Right };
 
         public unsafe VncFramebuffer Capture()
         {
@@ -338,5 +338,17 @@ namespace Avalonia.Headless.Vnc
 
             return _framebuffer;
         }
+        
+        public ExtendedDesktopSizeStatus SetDesktopSize(int width, int height)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                Window.Width = width;
+                Window.Height = height;
+            });
+            return ExtendedDesktopSizeStatus.Success;
+        }
+
+        public bool SupportsResizing => true;
     }
 }

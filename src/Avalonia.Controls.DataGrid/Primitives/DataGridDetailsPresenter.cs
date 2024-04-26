@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
@@ -41,6 +43,11 @@ namespace Avalonia.Controls.Primitives
         public DataGridDetailsPresenter()
         {
             AffectsMeasure<DataGridDetailsPresenter>(ContentHeightProperty);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridDetailsPresenterAutomationPeer(this);
         }
 
         /// <summary>

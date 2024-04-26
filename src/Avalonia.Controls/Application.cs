@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IApplicationPlatformEvents
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IApplicationPlatformEvents, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -62,7 +62,7 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
-        [Obsolete("Cast ApplicationLifetime to IActivatableApplicationLifetime instead.")]
+        [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
         /// <inheritdoc/>
@@ -204,7 +204,7 @@ namespace Avalonia
         /// which should always be preferred over a global one,
         /// as specific top levels might have different settings set-up. 
         /// </remarks>
-        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        public IPlatformSettings? PlatformSettings => this.TryGetFeature<IPlatformSettings>();
         
         event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
@@ -268,6 +268,7 @@ namespace Avalonia
                 .Bind<IThemeVariantHost>().ToConstant(this)
                 .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
+                .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
 
@@ -329,7 +330,34 @@ namespace Avalonia
             get => _name;
             set => SetAndRaise(NameProperty, ref _name, value);
         }
-        
+
+        /// <summary>
+        /// Queries for an optional feature.
+        /// </summary>
+        /// <param name="featureType">Feature type.</param>
+        /// <remarks>
+        /// Features currently supported by <see cref="Application.TryGetFeature"/>:
+        /// <list type="bullet">
+        /// <item>IPlatformSettings</item>
+        /// <item>IActivatableApplicationLifetime</item>
+        /// </list>
+        /// </remarks>
+        public object? TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IPlatformSettings))
+            {
+                return AvaloniaLocator.Current.GetService<IPlatformSettings>();
+            }
+
+            if (featureType == typeof(IActivatableLifetime))
+            {
+                return AvaloniaLocator.Current.GetService<IActivatableLifetime>();
+            }
+
+            // Do not return just any service from AvaloniaLocator.
+            return null;
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);

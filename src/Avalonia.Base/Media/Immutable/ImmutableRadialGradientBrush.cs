@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Media.Immutable
 {
@@ -31,12 +32,34 @@ namespace Avalonia.Media.Immutable
             RelativePoint? center = null,
             RelativePoint? gradientOrigin = null,
             double radius = 0.5)
+            : this(gradientStops, opacity, transform, transformOrigin, spreadMethod,
+                center, gradientOrigin, 
+                new RelativeScalar(radius, RelativeUnit.Relative),
+                new RelativeScalar(radius, RelativeUnit.Relative)
+                )
+        {
+
+        }
+        
+        public ImmutableRadialGradientBrush(
+            IReadOnlyList<ImmutableGradientStop> gradientStops,
+            double opacity = 1,
+            ImmutableTransform? transform = null,
+            RelativePoint? transformOrigin = null,
+            GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
+            RelativePoint? center = null,
+            RelativePoint? gradientOrigin = null,
+            RelativeScalar? radiusX = null,
+            RelativeScalar? radiusY = null
+            )
             : base(gradientStops, opacity, transform, transformOrigin, spreadMethod)
         {
             Center = center ?? RelativePoint.Center;
             GradientOrigin = gradientOrigin ?? RelativePoint.Center;
-            Radius = radius;
+            RadiusX = radiusX ?? RelativeScalar.Middle;
+            RadiusY = radiusY ?? RelativeScalar.Middle;
         }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmutableRadialGradientBrush"/> class.
@@ -47,7 +70,8 @@ namespace Avalonia.Media.Immutable
         {
             Center = source.Center;
             GradientOrigin = source.GradientOrigin;
-            Radius = source.Radius;
+            RadiusX = source.RadiusX;
+            RadiusY = source.RadiusX;
         }
 
         /// <inheritdoc/>
@@ -57,6 +81,11 @@ namespace Avalonia.Media.Immutable
         public RelativePoint GradientOrigin { get; }
 
         /// <inheritdoc/>
-        public double Radius { get; }
+        public RelativeScalar RadiusX { get; }
+        
+        /// <inheritdoc/>
+        public RelativeScalar RadiusY { get; }
+
+        [Obsolete("Use RadiusX/RadiusY")] public double Radius => RadiusX.Scalar;
     }
 }

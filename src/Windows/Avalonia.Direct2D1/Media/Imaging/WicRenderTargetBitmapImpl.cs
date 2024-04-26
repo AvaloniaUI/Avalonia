@@ -2,6 +2,7 @@ using System;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
+using RenderTargetProperties = SharpDX.Direct2D1.RenderTargetProperties;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -34,14 +35,14 @@ namespace Avalonia.Direct2D1.Media
             base.Dispose();
         }
 
-        public virtual IDrawingContextImpl CreateDrawingContext()
-            => CreateDrawingContext(null);
+        public virtual IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
+            => CreateDrawingContext(useScaledDrawing, null);
 
         public bool IsCorrupted => false;
 
-        public IDrawingContextImpl CreateDrawingContext(Action finishedCallback)
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing, Action finishedCallback)
         {
-            return new DrawingContextImpl(null, _renderTarget, finishedCallback: () =>
+            return new DrawingContextImpl(null, _renderTarget, useScaledDrawing, finishedCallback: () =>
                 {
                     Version++;
                     finishedCallback?.Invoke();

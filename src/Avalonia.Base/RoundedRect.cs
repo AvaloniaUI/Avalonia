@@ -36,8 +36,13 @@ namespace Avalonia
         public Vector RadiiTopRight { get; }
         public Vector RadiiBottomLeft { get; }
         public Vector RadiiBottomRight { get; }
-        
-        public RoundedRect(Rect rect, Vector radiiTopLeft, Vector radiiTopRight, Vector radiiBottomRight, Vector radiiBottomLeft)
+
+        public RoundedRect(
+            Rect rect,
+            Vector radiiTopLeft,
+            Vector radiiTopRight,
+            Vector radiiBottomRight,
+            Vector radiiBottomLeft)
         {
             Rect = rect;
             RadiiTopLeft = radiiTopLeft;
@@ -46,7 +51,11 @@ namespace Avalonia
             RadiiBottomLeft = radiiBottomLeft;
         }
 
-        public RoundedRect(Rect rect, double radiusTopLeft, double radiusTopRight, double radiusBottomRight,
+        public RoundedRect(
+            Rect rect,
+            double radiusTopLeft,
+            double radiusTopRight,
+            double radiusBottomRight,
             double radiusBottomLeft)
             : this(rect,
                 new Vector(radiusTopLeft, radiusTopLeft),
@@ -55,34 +64,28 @@ namespace Avalonia
                 new Vector(radiusBottomLeft, radiusBottomLeft)
             )
         {
-            
         }
 
         public RoundedRect(Rect rect, Vector radii) : this(rect, radii, radii, radii, radii) 
         {
-            
         }
 
         public RoundedRect(Rect rect, double radiusX, double radiusY) : this(rect, new Vector(radiusX, radiusY))
         {
-            
         }
 
         public RoundedRect(Rect rect, double radius) : this(rect, radius, radius)
         {
-            
         }
 
         public RoundedRect(Rect rect) : this(rect, 0)
         {
-            
         }
 
         public RoundedRect(in Rect bounds, in CornerRadius radius) : this(bounds,
             radius.TopLeft, radius.TopRight,
             radius.BottomRight, radius.BottomLeft)
         {
-
         }
 
         public static implicit operator RoundedRect(Rect r) => new RoundedRect(r);
@@ -99,7 +102,7 @@ namespace Avalonia
         {
             return Deflate(-dx, -dy);
         }
-        
+
         public unsafe RoundedRect Deflate(double dx, double dy)
         {
             if (!IsRounded)
@@ -143,7 +146,7 @@ namespace Avalonia
             return new RoundedRect(new Rect(left, top, right - left, bottom - top),
                 radii[0], radii[1], radii[2], radii[3]);
         }
-        
+
         /// <summary>
         /// This method should be used internally to check for the rect emptiness
         /// Once we add support for WPF-like empty rects, there will be an actual implementation

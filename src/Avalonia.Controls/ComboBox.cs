@@ -5,10 +5,12 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
@@ -17,7 +19,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A drop-down list control.
     /// </summary>
-    [TemplatePart("PART_Popup", typeof(Popup))]
+    [TemplatePart("PART_Popup", typeof(Popup), IsRequired = true)]
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
@@ -71,6 +73,23 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
+        
+        /// <summary>
+        /// Defines the <see cref="SelectionBoxItemTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> SelectionBoxItemTemplateProperty =
+            AvaloniaProperty.Register<ComboBox, IDataTemplate?>(
+                nameof(SelectionBoxItemTemplate), defaultBindingMode: BindingMode.TwoWay, coerce: CoerceSelectionBoxItemTemplate);
+        
+        private static IDataTemplate? CoerceSelectionBoxItemTemplate(AvaloniaObject obj, IDataTemplate? template)
+        {
+            if (template is not null) return template;
+            if(obj is ComboBox comboBox && template is null)
+            {
+                return comboBox.ItemTemplate;
+            }
+            return template;
+        }
 
         private Popup? _popup;
         private object? _selectionBoxItem;
@@ -159,6 +178,16 @@ namespace Avalonia.Controls
             set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the DataTemplate used to display the selected item. This has a higher priority than <see cref="ItemsControl.ItemTemplate"/> if set.
+        /// </summary>
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
+        public IDataTemplate? SelectionBoxItemTemplate
+        {
+            get => GetValue(SelectionBoxItemTemplateProperty);
+            set => SetValue(SelectionBoxItemTemplateProperty, value);
+        }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -211,17 +240,17 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
-            else if (!IsDropDownOpen)
+            // Ignore key buttons, if they are used for XY focus.
+            else if (!IsDropDownOpen
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 if (e.Key == Key.Down)
                 {
-                    SelectNext();
-                    e.Handled = true;
+                    e.Handled = SelectNext();
                 }
                 else if (e.Key == Key.Up)
                 {
-                    SelectPrevious();
-                    e.Handled = true;
+                    e.Handled = SelectPrevious();
                 }
             }
             // This part of code is needed just to acquire initial focus, subsequent focus navigation will be done by ItemsControl.
@@ -247,12 +276,7 @@ namespace Avalonia.Controls
                 {
                     if (IsFocused)
                     {
-                        if (e.Delta.Y < 0)
-                            SelectNext();
-                        else
-                            SelectPrevious();
-
-                        e.Handled = true;
+                        e.Handled = e.Delta.Y < 0 ? SelectNext() : SelectPrevious();
                     }
                 }
                 else
@@ -327,7 +351,10 @@ namespace Avalonia.Controls
             {
                 PseudoClasses.Set(pcDropdownOpen, change.GetNewValue<bool>());
             }
-
+            else if (change.Property == ItemTemplateProperty)
+            {
+                CoerceValue(SelectionBoxItemTemplateProperty);
+            }
             base.OnPropertyChanged(change);
         }
 
@@ -438,7 +465,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                if(ItemTemplate is null && DisplayMemberBinding is { } binding)
+                if(ItemTemplate is null && SelectionBoxItemTemplate is null && DisplayMemberBinding is { } binding)
                 {
                     var template = new FuncDataTemplate<object?>((_, _) =>
                     new TextBlock
@@ -481,10 +508,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
-        private void SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
+        private bool SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
+        private bool SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
 
-        private void MoveSelection(int startIndex, int step, bool wrap)
+        private bool MoveSelection(int startIndex, int step, bool wrap)
         {
             static bool IsSelectable(object? o) => (o as AvaloniaObject)?.GetValue(IsEnabledProperty) ?? true;
 
@@ -503,7 +530,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        return;
+                        return false;
                     }
                 }
 
@@ -513,9 +540,11 @@ namespace Avalonia.Controls
                 if (IsSelectable(item) && IsSelectable(container))
                 {
                     SelectedIndex = i;
-                    break;
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 
 namespace Avalonia.Skia;
@@ -14,6 +15,22 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
     public SkiaContext(ISkiaGpu? gpu)
     {
         _gpu = gpu;
+
+        var features = new Dictionary<Type, object>();
+        
+        if (gpu != null)
+        {
+            void TryFeature<T>() where T : class
+            {
+                if (gpu!.TryGetFeature<T>() is { } feature)
+                    features!.Add(typeof(T), feature);
+            }
+            // TODO12: extend ISkiaGpu with PublicFeatures instead
+            TryFeature<IOpenGlTextureSharingRenderInterfaceContextFeature>();
+            TryFeature<IExternalObjectsRenderInterfaceContextFeature>();
+        }
+
+        PublicFeatures = features;
     }
     
     public void Dispose()
@@ -44,6 +61,7 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
     }
 
     public bool IsLost => _gpu?.IsLost ?? false;
+    public IReadOnlyDictionary<Type, object> PublicFeatures { get; }
 
     public object? TryGetFeature(Type featureType) => _gpu?.TryGetFeature(featureType);
 }

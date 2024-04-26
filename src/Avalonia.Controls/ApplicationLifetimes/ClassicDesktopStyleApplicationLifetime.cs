@@ -68,7 +68,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             return DoShutdown(new ShutdownRequestedEventArgs(), true, false, exitCode);
         }
 
-        internal void SetupCore(string[] args)
+        internal void SubscribeGlobalEvents()
         {
             if (_compositeDisposable is not null)
             {
@@ -76,7 +76,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 // Until developer started it manually later. To avoid API breaking changes, it will execute Setup method twice.
                 return;
             }
-            
+
             _compositeDisposable = new CompositeDisposable(
                 Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (sender, _) =>
                 {
@@ -91,7 +91,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     var window = (Window)sender!;
                     _windows.Remove(window);
                     HandleWindowClosed(window);
-                }));
+                }));            
+        }
+
+        internal void SetupCore(string[] args)
+        {
+            SubscribeGlobalEvents();
 
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
@@ -158,6 +163,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             _exitCode = exitCode;
             _isShuttingDown = true;
+            var shutdownCancelled = false;
 
             try
             {
@@ -175,6 +181,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 if (!force && Windows.Count > 0)
                 {
                     e.Cancel = true;
+                    shutdownCancelled = true;
                     return false;
                 }
 
@@ -184,10 +191,14 @@ namespace Avalonia.Controls.ApplicationLifetimes
             }
             finally
             {
-                _cts?.Cancel();
-                _cts = null;
                 _isShuttingDown = false;
-                Dispatcher.UIThread.InvokeShutdown();
+
+                if (!shutdownCancelled)
+                {
+                    _cts?.Cancel();
+                    _cts = null;
+                    Dispatcher.UIThread.InvokeShutdown();
+                }
             }
 
             return true;
@@ -212,8 +223,8 @@ namespace Avalonia
         private static ClassicDesktopStyleApplicationLifetime PrepareLifetime(AppBuilder builder, string[] args,
             Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder)
         {
-            var lifetime = builder.LifetimeOverride?.Invoke(typeof(ClassicDesktopStyleApplicationLifetime)) as ClassicDesktopStyleApplicationLifetime 
-                ?? new ClassicDesktopStyleApplicationLifetime();
+            var lifetime = new ClassicDesktopStyleApplicationLifetime();
+            lifetime.SubscribeGlobalEvents();
 
             lifetime.Args = args;
             lifetimeBuilder?.Invoke(lifetime);

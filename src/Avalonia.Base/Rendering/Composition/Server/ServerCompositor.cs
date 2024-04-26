@@ -27,8 +27,6 @@ namespace Avalonia.Rendering.Composition.Server
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
         private readonly List<ServerCompositionTarget> _activeTargets = new();
-        private readonly HashSet<IServerClockItem> _clockItems = new();
-        private readonly List<IServerClockItem> _clockItemsToUpdate = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
         private readonly object _lock = new object();
@@ -38,12 +36,19 @@ namespace Avalonia.Rendering.Composition.Server
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
+        public CompositionOptions Options { get; }
+        public ServerCompositorAnimations Animations { get; }
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
+            CompositionOptions options,
             BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
         {
+            Options = options;
+            Animations = new();
             _renderLoop = renderLoop;
             RenderInterface = new PlatformRenderInterfaceContextManager(platformGraphics);
+            RenderInterface.ContextDisposed += RT_OnContextDisposed;
+            RenderInterface.ContextCreated += RT_OnContextCreated;
             BatchObjectPool = batchObjectPool;
             BatchMemoryPool = batchMemoryPool;
             _renderLoop.Add(this);
@@ -155,7 +160,8 @@ namespace Avalonia.Rendering.Composition.Server
             _reusableToNotifyRenderedList.Clear();
         }
 
-        public void Render()
+        public void Render() => Render(true);
+        public void Render(bool catchExceptions)
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -165,7 +171,7 @@ namespace Avalonia.Rendering.Composition.Server
                 try
                 {
                     using (Dispatcher.UIThread.DisableProcessing()) 
-                        RenderReentrancySafe();
+                        RenderReentrancySafe(catchExceptions);
                 }
                 finally
                 {
@@ -173,10 +179,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
             }
             else
-                RenderReentrancySafe();
+                RenderReentrancySafe(catchExceptions);
         }
         
-        private void RenderReentrancySafe()
+        private void RenderReentrancySafe(bool catchExceptions)
         {
             lock (_lock)
             {
@@ -185,7 +191,7 @@ namespace Avalonia.Rendering.Composition.Server
                     try
                     {
                         _safeThread = Thread.CurrentThread;
-                        RenderCore();
+                        RenderCore(catchExceptions);
                     }
                     finally
                     {
@@ -199,19 +205,14 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
         
-        private void RenderCore()
+        private void RenderCore(bool catchExceptions)
         {
             UpdateServerTime();
             ApplyPendingBatches();
             NotifyBatchesProcessed();
-            
-            foreach(var animation in _clockItems)
-                _clockItemsToUpdate.Add(animation);
 
-            foreach (var animation in _clockItemsToUpdate)
-                animation.OnTick();
-            
-            _clockItemsToUpdate.Clear();
+            Animations.Process();
+
 
             ApplyEnqueuedRenderResourceChanges();
             
@@ -222,7 +223,7 @@ namespace Avalonia.Rendering.Composition.Server
                 foreach (var t in _activeTargets)
                     t.Render();
             }
-            catch (Exception e)
+            catch (Exception e) when(RT_OnContextLostExceptionFilterObserver(e) && catchExceptions)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Exception when rendering: {Error}", e);
             }
@@ -238,12 +239,6 @@ namespace Avalonia.Rendering.Composition.Server
             _activeTargets.Remove(target);
         }
         
-        public void AddToClock(IServerClockItem item) =>
-            _clockItems.Add(item);
-
-        public void RemoveFromClock(IServerClockItem item) =>
-            _clockItems.Remove(item);
-
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             using (RenderInterface.EnsureCurrent())

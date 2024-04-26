@@ -36,12 +36,12 @@
           <Border Name="Root" Background="{TemplateBinding Background}"
                   BorderThickness="0" ClipToBounds="True">
 
-            <ContentControl Name="Content"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Margin="{TemplateBinding Padding}" />
+            <ContentPresenter Name="PART_ContentPresenter"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Margin="{TemplateBinding Padding}" />
 
           </Border>
 
@@ -84,7 +84,7 @@
       <Style Selector="^:pressed /template/ Border#Border">
         <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark2}" />
       </Style>
-      <Style Selector="^ ContentControl#Content">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}" />
         <Setter Property="FontWeight" Value="SemiBold" />
       </Style>
@@ -95,16 +95,16 @@
       <Style Selector="^ /template/ Border#Root">
         <Setter Property="Background" Value="{DynamicResource CalendarViewOutOfScopeBackground}" />
       </Style>
-      <Style Selector="^ /template/ ContentControl#Content">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewOutOfScopeForeground}" />
       </Style>
     </Style>
 
-    <Style Selector="^:blackout /template/ ContentControl#Content">
+    <Style Selector="^:blackout /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewBlackoutForeground}" />
     </Style>
 
-    <Style Selector="^:disabled /template/ ContentControl#Content">
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}" />
     </Style>
   </ControlTheme>

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
@@ -366,7 +365,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.UpdateChild();
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(0, 0, 100, 100));
-            target.BringDescendantIntoView(target.Child, new Rect(200, 200, 0, 0));
+            target.BringDescendantIntoView(target.Child!, new Rect(200, 200, 0, 0));
 
             Assert.Equal(new Vector(100, 100), target.Offset);
         }
@@ -398,6 +397,96 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.BringDescendantIntoView(border, new Rect(200, 200, 0, 0));
 
             Assert.Equal(new Vector(150, 150), target.Offset);
+        }
+
+        [Fact]
+        public void Nested_Presenters_Should_Scroll_Outer_When_Content_Exceeds_Viewport()
+        {
+            ScrollContentPresenter innerPresenter;
+            Border border;
+
+            var outerPresenter = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 100,
+                Height = 100,
+                Content = innerPresenter = new ScrollContentPresenter
+                {
+                    CanHorizontallyScroll = true,
+                    CanVerticallyScroll = true,
+                    Width = 100,
+                    Height = 200,
+                    Content = border = new Border
+                    {
+                        Width = 200, // larger than viewport
+                        Height = 25,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness(0, 120, 0, 0)
+                    }
+                }
+            };
+
+            innerPresenter.UpdateChild();
+            outerPresenter.UpdateChild();
+            outerPresenter.Measure(new Size(100, 100));
+            outerPresenter.Arrange(new Rect(0, 0, 100, 100));
+
+            border.BringIntoView();
+
+            Assert.Equal(new Vector(0, 45), outerPresenter.Offset);
+            Assert.Equal(new Vector(0, 0), innerPresenter.Offset);
+        }
+
+        [Fact]
+        public void Nested_Presenters_Should_Scroll_Outer_When_Viewports_Are_Close()
+        {
+            ScrollContentPresenter innerPresenter;
+            Border border;
+
+            var outerPresenter = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 100,
+                Height = 170.0568181818182,
+                UseLayoutRounding = false,
+                Content = innerPresenter = new ScrollContentPresenter
+                {
+                    CanHorizontallyScroll = true,
+                    CanVerticallyScroll = true,
+                    Width = 100,
+                    Height = 493.2613636363636,
+                    UseLayoutRounding = false,
+                    Content = new StackPanel
+                    {
+                        Children =
+                        {
+                            new Border
+                            {
+                                Height = 455.31818181818187,
+                                UseLayoutRounding = false
+                            },
+                            (border = new Border {
+                                Width = 100,
+                                Height = 37.94318181818182,
+                                UseLayoutRounding = false
+                            })
+                        }
+                    }
+                }
+            };
+
+            innerPresenter.UpdateChild();
+            outerPresenter.UpdateChild();
+            outerPresenter.Measure(new Size(100, 170.0568181818182));
+            outerPresenter.Arrange(new Rect(0, 0, 100, 170.0568181818182));
+
+            border.BringIntoView();
+
+            Assert.Equal(new Vector(0, 323.20454545454544), outerPresenter.Offset);
+            Assert.Equal(new Vector(0, 0), innerPresenter.Offset);
         }
 
         private class TestControl : Control

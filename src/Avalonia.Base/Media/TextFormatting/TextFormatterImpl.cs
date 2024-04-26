@@ -272,7 +272,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
 
                                 var shaperOptions = new TextShaperOptions(
-                                    properties.CachedGlyphTypeface,
+                                    properties.CachedGlyphTypeface, properties.FontFeatures,
                                     properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
                                     paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
@@ -976,7 +976,8 @@ namespace Avalonia.Media.TextFormatting
 
             var cultureInfo = textRun.Properties.CultureInfo;
 
-            var shaperOptions = new TextShaperOptions(glyphTypeface, fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
+            var shaperOptions = new TextShaperOptions(glyphTypeface, textRun.Properties.FontFeatures, 
+                fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
 
             var shapedBuffer = textShaper.ShapeText(textRun.Text, shaperOptions);
 

@@ -66,7 +66,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
-            if (sender is Visual v && BelongsToDevTool(v))
+            if (sender is Visual v && v.DoesBelongToDevTool())
                 return;
 
             var s = sender!;
@@ -101,7 +101,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
-            if (e.Source is Visual v && BelongsToDevTool(v))
+            if (e.Source is Visual v && v.DoesBelongToDevTool())
                 return;
 
             var s = e.Source;
@@ -126,21 +126,6 @@ namespace Avalonia.Diagnostics.ViewModels
                 handler();
         }
 
-        private static bool BelongsToDevTool(Visual v)
-        {
-            var current = v;
 
-            while (current != null)
-            {
-                if (current is MainView || current is MainWindow)
-                {
-                    return true;
-                }
-
-                current = current.VisualParent;
-            }
-
-            return false;
-        }
     }
 }

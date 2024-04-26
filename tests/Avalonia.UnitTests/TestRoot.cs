@@ -50,8 +50,6 @@ namespace Avalonia.UnitTests
 
         public Size ClientSize { get; set; } = new Size(1000, 1000);
 
-        public Size MaxClientSize { get; set; } = Size.Infinity;
-
         public double LayoutScaling { get; set; } = 1;
 
         internal ILayoutManager LayoutManager { get; set; }
@@ -79,16 +77,16 @@ namespace Avalonia.UnitTests
         public IRenderTarget CreateRenderTarget()
         {
             var dc = new Mock<IDrawingContextImpl>();
-            dc.Setup(x => x.CreateLayer(It.IsAny<Size>())).Returns(() =>
+            dc.Setup(x => x.CreateLayer(It.IsAny<PixelSize>())).Returns(() =>
             {
                 var layerDc = new Mock<IDrawingContextImpl>();
                 var layer = new Mock<IDrawingContextLayerImpl>();
-                layer.Setup(x => x.CreateDrawingContext()).Returns(layerDc.Object);
+                layer.Setup(x => x.CreateDrawingContext(It.IsAny<bool>())).Returns(layerDc.Object);
                 return layer.Object;
             });
 
             var result = new Mock<IRenderTarget>();
-            result.Setup(x => x.CreateDrawingContext()).Returns(dc.Object);
+            result.Setup(x => x.CreateDrawingContext(It.IsAny<bool>())).Returns(dc.Object);
             return result.Object;
         }
 

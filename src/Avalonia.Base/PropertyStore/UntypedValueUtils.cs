@@ -23,23 +23,5 @@ namespace Avalonia.PropertyStore
 
             return v;
         }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
-        public static bool TryConvertAndValidate<T>(
-            StyledProperty<T> property,
-            object? value, 
-            [MaybeNullWhen(false)] out T result)
-        {
-            if (TypeUtilities.TryConvertImplicit(typeof(T), value, out var v))
-            {
-                result = (T)v!;
-
-                if (property.ValidateValue?.Invoke(result) != false)
-                    return true;
-            }
-
-            result = default;
-            return false;
-        }
     }
 }

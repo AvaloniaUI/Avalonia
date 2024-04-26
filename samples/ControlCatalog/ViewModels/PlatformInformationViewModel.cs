@@ -9,6 +9,14 @@ public class PlatformInformationViewModel : ViewModelBase
 {
     public PlatformInformationViewModel()
     {
+        /*  NOTE:
+        *   ------------
+        *   The below API is not meant to be used in production Apps. 
+        *   If you need to consume this info, please use:
+        *      - OperatingSystem ( https://learn.microsoft.com/en-us/dotnet/api/system.operatingsystem | if .NET 5 or greater)
+        *      - or RuntimeInformation ( https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.runtimeinformation )
+        */
+        
         var runtimeInfo = AvaloniaLocator.Current.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
 
         if (runtimeInfo is { } info)

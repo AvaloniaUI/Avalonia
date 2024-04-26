@@ -107,6 +107,8 @@ namespace Avalonia.Native
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
+        public IntPtr? ZOrder => _native.WindowZOrder;
+
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;
 
@@ -216,7 +218,7 @@ namespace Avalonia.Native
 
         public void SetParent(IWindowImpl parent)
         {
-            _native.SetParent(((WindowImpl)parent).Native);
+            _native.SetParent(((WindowImpl)parent)?.Native);
         }
 
         public void SetEnabled(bool enable)
@@ -237,6 +239,14 @@ namespace Avalonia.Native
             }
             
             return base.TryGetFeature(featureType);
+        }
+
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        {
+            for (int i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = (windows[i].PlatformImpl as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
+            }
         }
     }
 }

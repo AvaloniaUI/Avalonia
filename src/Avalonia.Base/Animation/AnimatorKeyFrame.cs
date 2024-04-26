@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Avalonia.Animation.Animators;
 using Avalonia.Data;
 using Avalonia.Reactive;
@@ -47,11 +48,11 @@ namespace Avalonia.Animation
 
             if (value is IBinding binding)
             {
-                return this.Bind(ValueProperty, binding, targetControl);
+                return Bind(ValueProperty, binding, targetControl);
             }
             else
             {
-                return this.Bind(ValueProperty, Observable.SingleValue(value).ToBinding(), targetControl);
+                return Bind(ValueProperty, Observable.SingleValue(value).ToBinding(), targetControl);
             }
         }
 
@@ -74,6 +75,14 @@ namespace Avalonia.Animation
             }
 
             return (T)typeConv.ConvertTo(Value, typeof(T))!;
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Property), Property, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Cue), Cue, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Value), Value, includeContent);
         }
     }
 }

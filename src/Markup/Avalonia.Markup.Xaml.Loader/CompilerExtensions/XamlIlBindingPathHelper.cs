@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Reflection.Emit;
 using Avalonia.Markup.Parsers;
@@ -12,9 +11,9 @@ using XamlX.TypeSystem;
 using XamlX;
 using XamlX.Emit;
 using XamlX.IL;
-using Avalonia.Utilities;
 
 using XamlIlEmitContext = XamlX.Emit.XamlEmitContextWithLocals<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
+using System.Xml.Linq;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -245,12 +244,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         nodes.Add(new FindVisualAncestorPathElementNode(visualAncestor.Type, visualAncestor.Level));
                         break;
                     case TemplatedParentBindingExpressionNode templatedParent:
-                        var templatedParentField = context.GetAvaloniaTypes().StyledElement.GetAllFields()
-                            .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == "TemplatedParentProperty");
-                        nodes.Add(new SelfPathElementNode(selfType));
-                        nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(
-                            templatedParentField,
-                            templatedParent.Type));
+                        var templatedParentType = context
+                            .ParentNodes()
+                            .OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
+                            .Where(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate)
+                            .FirstOrDefault()?.TargetType;
+
+                        if (templatedParentType is null)
+                        {
+                            throw new XamlTransformException("A binding with a TemplatedParent RelativeSource has to be in a ControlTemplate.", lineInfo);
+                        }
+
+                        nodes.Add(new TemplatedParentPathElementNode(templatedParentType.GetClrType()));
                         break;
                     case BindingExpressionGrammar.AncestorNode ancestor:
                         if (ancestor.Namespace is null && ancestor.TypeName is null)
@@ -557,6 +562,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
+        class TemplatedParentPathElementNode : IXamlIlBindingPathElementNode
+        {
+            public TemplatedParentPathElementNode(IXamlType elementType)
+            {
+                Type = elementType;
+            }
+
+            public IXamlType Type { get; }
+
+            public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
+            {
+                codeGen
+                    .EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.FindMethod(m => m.Name == "TemplatedParent"));
+            }
+        }
+
         class XamlIlAvaloniaPropertyPropertyPathElementNode : IXamlIlBindingPathElementNode
         {
             private readonly IXamlField _field;
@@ -644,7 +665,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     // In this case, we need to emit our own delegate type.
                     string delegateTypeName = context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
-                    specificDelegateType = newDelegateTypeBuilder = context.DefineDelegateSubType(delegateTypeName, Method.ReturnType, Method.Parameters);
+                    specificDelegateType = newDelegateTypeBuilder = context.DeclaringType.DefineDelegateSubType(
+                        delegateTypeName,
+                        XamlVisibility.Private,
+                        Method.ReturnType,
+                        Method.Parameters);
                 }
 
                 codeGen
@@ -876,8 +901,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public XamlILNodeEmitResult Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
+                var intType = context.Configuration.TypeSystem.GetType("System.Int32");
                 var types = context.GetAvaloniaTypes();
-                codeGen.Newobj(types.CompiledBindingPathBuilder.FindConstructor());
+
+                // We're calling the CompiledBindingPathBuilder(int apiVersion) with an apiVersion 
+                // of 1 to indicate that we don't want TemplatedParent compatibility hacks enabled.
+                codeGen
+                    .Ldc_I4(1)
+                    .Newobj(types.CompiledBindingPathBuilder.FindConstructor(new() { intType }));
 
                 foreach (var transform in _transformElements)
                 {

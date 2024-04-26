@@ -13,22 +13,22 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a date for a 
     /// <see cref="DatePicker"/>
     /// </summary>
-    [TemplatePart("PART_AcceptButton",    typeof(Button))]
+    [TemplatePart("PART_AcceptButton",    typeof(Button), IsRequired = true)]
     [TemplatePart("PART_DayDownButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_DayHost",         typeof(Panel))]
-    [TemplatePart("PART_DaySelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_DayHost",         typeof(Panel), IsRequired = true)]
+    [TemplatePart("PART_DaySelector",     typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_DayUpButton",     typeof(RepeatButton))]
     [TemplatePart("PART_DismissButton",   typeof(Button))]
     [TemplatePart("PART_FirstSpacer",     typeof(Rectangle))]
     [TemplatePart("PART_MonthDownButton", typeof(RepeatButton))]
-    [TemplatePart("PART_MonthHost",       typeof(Panel))]
-    [TemplatePart("PART_MonthSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_MonthHost",       typeof(Panel), IsRequired = true)]
+    [TemplatePart("PART_MonthSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_MonthUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_PickerContainer", typeof(Grid))]
+    [TemplatePart("PART_PickerContainer", typeof(Grid), IsRequired = true)]
     [TemplatePart("PART_SecondSpacer",    typeof(Rectangle))]
     [TemplatePart("PART_YearDownButton",  typeof(RepeatButton))]
-    [TemplatePart("PART_YearHost",        typeof(Panel))]
-    [TemplatePart("PART_YearSelector",    typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_YearHost",        typeof(Panel), IsRequired = true)]
+    [TemplatePart("PART_YearSelector",    typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_YearUpButton",    typeof(RepeatButton))]
     public class DatePickerPresenter : PickerPresenterBase
     {
