@@ -62,7 +62,7 @@ internal class RenderTargetBrowserSurface : BrowserSurface
         public BrowserRenderTarget? Target =>
             _target ??= BrowserRenderTarget.GetRenderTarget(_targetId, () => CanvasSize);
 
-        public bool IsReady => Target != null;
+        public bool IsReady => Target != null && CanvasSize.Size != default;
         public bool UsesContexts => Target!.PlatformGraphicsContext != null;
         public bool UsesSharedContext => UsesContexts;
         public (PixelSize Size, double Scaling) CanvasSize { get; set; }
@@ -95,8 +95,7 @@ internal class RenderTargetBrowserSurface : BrowserSurface
 
     public static RenderTargetBrowserSurface Create(JSObject container, IReadOnlyList<BrowserRenderingMode> modes)
     {
-        // TODO: Get thread id from JSWebWorker
-        var js = CanvasHelper.CreateRenderTargetSurface(container, modes.Select(m => (int)m).ToArray(), 0);
+        var js = CanvasHelper.CreateRenderTargetSurface(container, modes.Select(m => (int)m).ToArray(), RenderWorker.WorkerThreadId);
         return new RenderTargetBrowserSurface(js);
     }
 }

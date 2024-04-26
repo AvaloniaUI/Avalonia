@@ -38,18 +38,16 @@ internal class BrowserRenderTimer : IRenderTimer
         if (!_started)
         {
             _started = true;
-            TimerHelper.RunAnimationFrames(RenderFrameCallback);
+            TimerHelper.AnimationFrame += RenderFrameCallback;
+            TimerHelper.RunAnimationFrames();
         }
     }
 
-    private bool RenderFrameCallback(double timestamp)
+    private void RenderFrameCallback(double timestamp)
     {
         if (_tick is { } tick)
         {
             tick.Invoke(TimeSpan.FromMilliseconds(timestamp));
-            return true;
         }
-
-        return false;
     }
 }

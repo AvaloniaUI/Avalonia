@@ -4,6 +4,7 @@ using System.Threading;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
@@ -64,12 +65,12 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
             .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
             .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
-            .Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>()
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
+        AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>();
 
         if (AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() is { } options
             && options.RegisterAvaloniaServiceWorker)

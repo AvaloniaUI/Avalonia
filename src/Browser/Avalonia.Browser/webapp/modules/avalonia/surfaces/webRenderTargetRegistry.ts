@@ -21,9 +21,13 @@ export class WebRenderTargetRegistry {
         } else {
             const self = globalThis as any;
             const module = self.Module ?? self.getDotnetRuntime(0)?.Module;
-            const pthread = module?.PThread;
-            if (pthread == null) { throw new Error("Unable to access emscripten PThread api"); }
-            const worker = pthread.pthreads[pthreadId]?.worker as Worker;
+            const pthreads = module?.PThread;
+            if (pthreads == null) { throw new Error("Unable to access emscripten PThread api"); }
+            const pthread = pthreads.pthreads[pthreadId];
+            if (pthread == null) { throw new Error(`Unable get pthread with id ${pthreadId}`); }
+            let worker: Worker | undefined;
+            if (pthread.postMessage != null) { worker = pthread as Worker; } else { worker = pthread.worker; }
+
             if (worker == null) { throw new Error(`Unable get Worker for pthread ${pthreadId}`); }
             const offscreen = canvas.transferControlToOffscreen();
             worker.postMessage({
@@ -31,7 +35,7 @@ export class WebRenderTargetRegistry {
                 canvas: offscreen,
                 modes: preferredModes,
                 id
-            });
+            }, [offscreen]);
             WebRenderTargetRegistry.registry[id] = {
                 canvas,
                 worker
@@ -41,18 +45,18 @@ export class WebRenderTargetRegistry {
     }
 
     static initializeWorker() {
-        self.addEventListener("onmessage", ev => {
-            const msg = ev as MessageEvent;
+        const oldHandler = self.onmessage;
+        self.onmessage = ev => {
+            const msg = ev;
             if (msg.data.avaloniaCmd === "registerCanvas") {
                 WebRenderTargetRegistry.targets[msg.data.id] = WebRenderTargetRegistry.createRenderTarget(msg.data.canvas, msg.data.modes);
-            }
-            if (msg.data.avaloniaCmd === "unregisterCanvas") {
+            } else if (msg.data.avaloniaCmd === "unregisterCanvas") {
                 /* eslint-disable */
                 // Our keys are _always_ numbers and are safe to delete
                 delete WebRenderTargetRegistry.targets[msg.data.id];
                 /* eslint-enable */
-            }
-        });
+            } else if (oldHandler != null) { oldHandler.call(self, ev); }
+        };
     }
 
     static getRenderTarget(id: number): WebRenderTarget | undefined {
