@@ -34,7 +34,10 @@ namespace IntegrationTestApp
                 .UsePlatformDetect()
                 .AfterSetup(builder =>
                 {
-                    NativeTextBox.Factory = OperatingSystem.IsWindows() ? new Win32TextBoxFactory() : null;
+                    NativeTextBox.Factory = 
+                        OperatingSystem.IsWindows() ? new Win32TextBoxFactory() :
+                        OperatingSystem.IsMacOS() ? new MacOSTextBoxFactory() :
+                        null;
                 })
                 .LogToTrace();
     }

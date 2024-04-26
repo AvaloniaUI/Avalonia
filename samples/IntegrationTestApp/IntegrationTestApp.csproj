@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
+    <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
   </ItemGroup>
 
   <ItemGroup>
