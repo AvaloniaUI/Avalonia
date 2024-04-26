@@ -4,6 +4,7 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);AVP1012</NoWarn>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,7 +13,7 @@
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
     <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <AvaloniaResource Include="Assets\*" />
   </ItemGroup>

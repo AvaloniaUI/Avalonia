@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:integrationTestApp="using:IntegrationTestApp"
+        xmlns:embedding="using:IntegrationTestApp.Embedding"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
         Name="MainWindow"
@@ -94,6 +95,12 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="Embedding">
+        <StackPanel>
+          <embedding:NativeTextBox Height="23"/>
+        </StackPanel>
+      </TabItem>
+      
       <TabItem Header="Gestures">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
