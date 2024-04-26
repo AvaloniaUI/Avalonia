@@ -1133,6 +1133,9 @@ interface IAvnAutomationPeer : IUnknown
 
      IAvnAutomationPeer* GetRootPeer();
      
+     bool IsInteropPeer();
+     [intptr]void* InteropPeer_GetNativeControlHandle();
+          
      bool IsRootProvider();
      IAvnWindowBase* RootProvider_GetWindow();
      IAvnAutomationPeer* RootProvider_GetFocus();
