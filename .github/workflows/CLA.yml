@@ -7,7 +7,7 @@ on:
 
 jobs:
   Runner:
-    runs-on: ubuntu-latest0
+    runs-on: ubuntu-latest
     steps:
       - name: 'Clone bot repo'
         if: ${{ github.event.issue.pull_request }} && ((github.event.comment.user.login != 'cla-avalonia') || github.event_name == 'pull_request_target')
