@@ -4,12 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 
 namespace Avalonia.Browser.Rendering;
 
-internal partial class RenderWorker
+public partial class RenderWorker
 {
     [DllImport("*")]
     private static extern int pthread_self();
@@ -17,12 +18,12 @@ internal partial class RenderWorker
     [JSImport("WebRenderTargetRegistry.initializeWorker", AvaloniaModule.MainModuleName)]
     private static partial void InitializeRenderTargets(); 
     
-    public static int WorkerThreadId;
+    internal static int WorkerThreadId;
     
     public static Task InitializeAsync()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var workerTask = JSWebWorkerWrapper.RunAsync(async () =>
+        var workerTask = JSWebWorkerClone.RunAsync(async () =>
         {
             try
             {
@@ -46,6 +47,64 @@ internal partial class RenderWorker
                 tcs.TrySetException(workerTask.Exception);
         });
         return tcs.Task;
+    }
+
+    public static class JSWebWorkerClone
+    {
+        private static readonly MethodInfo _setExtLoop;
+        private static readonly MethodInfo _intallInterop;
+
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Runtime.InteropServices.JavaScript.JSSynchronizationContext", 
+            "System.Runtime.InteropServices.JavaScript")]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Runtime.InteropServices.JavaScript.JSHostImplementation", 
+            "System.Runtime.InteropServices.JavaScript")]
+        [UnconditionalSuppressMessage("Trimming", 
+            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+            Justification = "Private runtime API")]
+        static JSWebWorkerClone()
+        {
+#pragma warning disable IL2075
+            var syncContext = typeof(System.Runtime.InteropServices.JavaScript.JSHost)
+                .Assembly!.GetType("System.Runtime.InteropServices.JavaScript.JSSynchronizationContext")!;
+            var hostImpl = typeof(System.Runtime.InteropServices.JavaScript.JSHost)
+                .Assembly!.GetType("System.Runtime.InteropServices.JavaScript.JSHostImplementation")!;
+            
+            _setExtLoop = hostImpl.GetMethod("SetHasExternalEventLoop")!;
+            _intallInterop = syncContext.GetMethod("InstallWebWorkerInterop")!;
+#pragma warning restore IL2075
+        }
+
+        public static Task RunAsync(Func<Task> run)
+        {
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var th = new Thread(_ =>
+            {
+                _intallInterop.Invoke(null, [false, CancellationToken.None]);
+                try
+                {
+                    run().ContinueWith(t =>
+                    {
+                        if (t.IsFaulted)
+                            tcs.TrySetException(t.Exception);
+                        else if (t.IsCanceled)
+                            tcs.TrySetCanceled();
+                        else
+                            tcs.TrySetResult();
+                    });
+                }
+                catch(Exception e)
+                {
+                    tcs.TrySetException(e);
+                }
+            })
+            {
+                Name = "Manual JS worker"
+            };
+            _setExtLoop.Invoke(null, [th]);
+            th.Start();
+            return tcs.Task;
+        }
+        
     }
     
     class JSWebWorkerWrapper

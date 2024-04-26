@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices.JavaScript;
+using System.Threading.Tasks;
 
 namespace Avalonia.Browser.Interop;
 
@@ -17,9 +18,10 @@ internal static partial class TimerHelper
     
     public static Action? Timeout;
     [JSExport]
-    public static void JsExportOnTimeout()
+    public static Task JsExportOnTimeout()
     {
         Timeout?.Invoke();
+        return Task.CompletedTask;
     }
 
     [JSImport("TimerHelper.setTimeout", AvaloniaModule.MainModuleName)]
@@ -30,9 +32,10 @@ internal static partial class TimerHelper
 
     public static Action? Interval;
     [JSExport]
-    public static void JsExportOnInterval()
+    public static Task JsExportOnInterval()
     {
         Interval?.Invoke();
+        return Task.CompletedTask;
     }
     
     [JSImport("TimerHelper.setInterval", AvaloniaModule.MainModuleName)]

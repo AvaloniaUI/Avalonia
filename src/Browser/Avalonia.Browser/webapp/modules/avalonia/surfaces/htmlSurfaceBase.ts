@@ -19,6 +19,21 @@ export abstract class HtmlCanvasSurfaceBase extends CanvasSurface {
         });
     }
 
+    public get width() {
+        if (this.sizeParams) { return this.sizeParams[0]; }
+        return 1;
+    }
+
+    public get height() {
+        if (this.sizeParams) { return this.sizeParams[1]; }
+        return 1;
+    }
+
+    public get scaling() {
+        if (this.sizeParams) { return this.sizeParams[2]; }
+        return 1;
+    }
+
     public destroy(): void {
         delete this.sizeChangedCallback;
     }
@@ -26,7 +41,7 @@ export abstract class HtmlCanvasSurfaceBase extends CanvasSurface {
     public onSizeChanged(sizeChangedCallback: (width: number, height: number, dpr: number) => void) {
         if (this.sizeChangedCallback) { throw new Error("For simplicity, we don't support multiple size changed callbacks per surface, not needed yet."); }
         this.sizeChangedCallback = sizeChangedCallback;
-        if (this.sizeParams) { this.sizeChangedCallback(this.sizeParams[0], this.sizeParams[1], this.sizeParams[2]); }
+        // if (this.sizeParams) { this.sizeChangedCallback(this.sizeParams[0], this.sizeParams[1], this.sizeParams[2]); }
     }
 
     public ensureSize() {
