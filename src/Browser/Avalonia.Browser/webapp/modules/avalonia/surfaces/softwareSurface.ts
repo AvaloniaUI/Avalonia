@@ -1,4 +1,3 @@
-import { BrowserRenderingMode } from "./surfaceBase";
 import { HtmlCanvasSurfaceBase } from "./htmlSurfaceBase";
 import { RuntimeAPI } from "../../../types/dotnet";
 
@@ -12,6 +11,7 @@ function isSharedArrayBuffer(buffer: any): buffer is SharedArrayBuffer {
 
 export class SoftwareSurface extends HtmlCanvasSurfaceBase {
     private readonly runtime: RuntimeAPI | undefined;
+    private readonly context: CanvasRenderingContext2D;
 
     constructor(public canvas: HTMLCanvasElement) {
         const context = canvas.getContext("2d", {
@@ -20,7 +20,8 @@ export class SoftwareSurface extends HtmlCanvasSurfaceBase {
         if (!context) {
             throw new Error("HTMLCanvasElement.getContext(2d) returned null.");
         }
-        super(canvas, context, BrowserRenderingMode.Software2D);
+        super(canvas);
+        this.context = context;
 
         this.runtime = globalThis.getDotnetRuntime(0);
     }
@@ -43,6 +44,6 @@ export class SoftwareSurface extends HtmlCanvasSurfaceBase {
         }
 
         const imageData = new ImageData(clampedBuffer, width, height);
-        (this.context as CanvasRenderingContext2D).putImageData(imageData, 0, 0);
+        (this.context).putImageData(imageData, 0, 0);
     }
 }

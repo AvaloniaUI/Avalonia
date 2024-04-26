@@ -7,11 +7,6 @@ export enum BrowserRenderingMode {
 }
 
 export abstract class CanvasSurface {
-    constructor(
-        public context: AvaloniaRenderingContext,
-        public mode: BrowserRenderingMode) {
-    }
-
     abstract destroy(): void;
     abstract ensureSize(): void;
     abstract onSizeChanged(sizeChangedCallback: (width: number, height: number, dpr: number) => void): void;

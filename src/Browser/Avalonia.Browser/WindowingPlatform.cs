@@ -1,4 +1,6 @@
 using System;
+using System.Reflection;
+using System.Threading;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -12,6 +14,29 @@ namespace Avalonia.Browser;
 
 internal class BrowserWindowingPlatform : IWindowingPlatform
 {
+    internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
+    
+    static bool DetectThreadSupport()
+    {
+        var prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        if (prop != null && prop.GetValue(null) is bool value)
+            return value;
+        // No property is found, try to start a thread and get an exception in the face if threads aren't available
+        try
+        {
+#pragma warning disable CA1416
+            new Thread(() => { }).Start();
+#pragma warning restore CA1416
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+
+    }
+    
     private static KeyboardDevice? s_keyboard;
 
     public IWindowImpl CreateWindow() => throw new NotSupportedException("Browser doesn't support windowing platform. In order to display a single-view content, set ISingleViewApplicationLifetime.MainView.");

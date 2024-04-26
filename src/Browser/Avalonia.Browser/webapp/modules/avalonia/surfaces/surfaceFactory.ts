@@ -2,6 +2,7 @@ import { AvaloniaDOM } from "../dom";
 import { SoftwareSurface } from "./softwareSurface";
 import { BrowserRenderingMode, CanvasSurface } from "./surfaceBase";
 import { WebGlSurface } from "./webGlSurface";
+import { RenderTargetSurface } from "./renderTargetSurface";
 
 export class CanvasFactory {
     public static create(container: HTMLElement, mode: BrowserRenderingMode): CanvasSurface {
@@ -20,6 +21,17 @@ export class CanvasFactory {
             } else {
                 throw new Error(`Unsupported rendering mode: ${BrowserRenderingMode[mode]}`);
             }
+        } catch (ex) {
+            AvaloniaDOM.detachCanvas(container, canvas);
+            throw ex;
+        }
+    }
+
+    public static createRenderTargetSurface(container: HTMLElement, modes: BrowserRenderingMode[], threadId: number): RenderTargetSurface {
+        const canvas = AvaloniaDOM.createAvaloniaCanvas(container);
+        AvaloniaDOM.attachCanvas(container, canvas);
+        try {
+            return new RenderTargetSurface(canvas, modes, threadId);
         } catch (ex) {
             AvaloniaDOM.detachCanvas(container, canvas);
             throw ex;

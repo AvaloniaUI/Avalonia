@@ -47,7 +47,7 @@ export class WebGlSurface extends HtmlCanvasSurfaceBase {
         gl.makeContextCurrent(handle);
         (context as any).gl_handle = handle;
 
-        super(canvas, context, BrowserRenderingMode.Software2D);
+        super(canvas);
 
         this.contextHandle = handle;
         this.fboId = context.getParameter(context.FRAMEBUFFER_BINDING)?.id ?? 0;

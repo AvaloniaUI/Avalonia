@@ -1,15 +1,13 @@
 import { ResizeHandler } from "./resizeHandler";
-import { CanvasSurface, AvaloniaRenderingContext, BrowserRenderingMode } from "./surfaceBase";
+import { CanvasSurface } from "./surfaceBase";
 
 export abstract class HtmlCanvasSurfaceBase extends CanvasSurface {
     private sizeParams?: [number, number, number];
     private sizeChangedCallback?: (width: number, height: number, dpr: number) => void;
 
     constructor(
-        public canvas: HTMLCanvasElement,
-        public context: AvaloniaRenderingContext,
-        public mode: BrowserRenderingMode) {
-        super(context, mode);
+        public canvas: HTMLCanvasElement) {
+        super();
 
         // No need to ubsubsribe, canvas never leaves JS world, it should be GC'ed with all callbacks.
         ResizeHandler.observeSize(canvas, (width, height, dpr) => {

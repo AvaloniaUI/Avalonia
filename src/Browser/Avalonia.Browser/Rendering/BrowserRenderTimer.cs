@@ -2,12 +2,14 @@ using System;
 using System.Diagnostics;
 using Avalonia.Browser.Interop;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace Avalonia.Browser.Rendering;
 
 internal class BrowserRenderTimer : IRenderTimer
 {
     private Action<TimeSpan>? _tick;
+    private bool _started;
 
     public BrowserRenderTimer(bool isBackground)
     {
@@ -20,9 +22,15 @@ internal class BrowserRenderTimer : IRenderTimer
     {
         add
         {
-            if (_tick is null)
+            if (!_started)
             {
-                TimerHelper.RunAnimationFrames(RenderFrameCallback);
+                _started = true;
+                if (BrowserWindowingPlatform.IsThreadingEnabled)
+                {
+                    
+                }
+                else
+                    TimerHelper.RunAnimationFrames(RenderFrameCallback);
             }
 
             _tick += value;
