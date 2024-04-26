@@ -61,9 +61,7 @@ namespace Avalonia.Browser
             _surface.ScalingChanged += OnScalingChanged;
 
             Surfaces = new[] { _surface };
-            Compositor = _surface.IsWebGl ?
-                BrowserCompositor.WebGlUiCompositor :
-                BrowserCompositor.SoftwareUiCompositor;
+            Compositor = _surface.Compositor;
         }
 
         private void OnScalingChanged()

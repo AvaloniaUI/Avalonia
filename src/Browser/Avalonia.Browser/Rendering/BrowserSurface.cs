@@ -9,25 +9,24 @@ using Avalonia.Browser.Rendering;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
 namespace Avalonia.Browser.Skia;
 
 internal abstract class BrowserSurface : IDisposable
 {
-    private readonly BrowserRenderingMode _renderingMode;
-
-    protected BrowserSurface(JSObject jsSurface, BrowserRenderingMode renderingMode)
+    protected BrowserSurface(JSObject jsSurface, Compositor compositor)
     {
-        _renderingMode = renderingMode;
         JsSurface = jsSurface;
 
+        Compositor = compositor;
         Scaling = 1;
         ClientSize = new Size(1, 1);
         RenderSize = new PixelSize(1, 1);
     }
 
-    public bool IsWebGl => _renderingMode is BrowserRenderingMode.WebGL1 or BrowserRenderingMode.WebGL2;
+    public Compositor Compositor { get; }
 
     public JSObject JsSurface { get; private set; }
     public double Scaling { get; private set; }
@@ -55,8 +54,8 @@ internal abstract class BrowserSurface : IDisposable
             {
                 var (jsSurface, jsGlInfo) = CanvasHelper.CreateSurface(container, mode);
                 surface = jsGlInfo != null
-                    ? new BrowserGlSurface(jsSurface, jsGlInfo, pixelFormat, mode)
-                    : new BrowserRasterSurface(jsSurface, pixelFormat, mode);
+                    ? new BrowserGlSurface(jsSurface, jsGlInfo, pixelFormat, BrowserCompositor.WebGlUiCompositor)
+                    : new BrowserRasterSurface(jsSurface, pixelFormat, BrowserCompositor.SoftwareUiCompositor);
                 break;
             }
             catch (Exception ex)

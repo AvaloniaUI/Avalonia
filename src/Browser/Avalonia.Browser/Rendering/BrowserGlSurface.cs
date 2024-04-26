@@ -3,6 +3,7 @@ using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using SkiaSharp;
 
 namespace Avalonia.Browser.Rendering;
@@ -12,8 +13,8 @@ internal sealed class BrowserGlSurface : BrowserSurface
     private readonly GRGlInterface _glInterface;
 
     public BrowserGlSurface(JSObject canvasSurface, GLInfo glInfo, PixelFormat pixelFormat,
-        BrowserRenderingMode renderingMode)
-        : base(canvasSurface, renderingMode)
+        Compositor compositor)
+        : base(canvasSurface, compositor)
     {
         var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
         _glInterface = GRGlInterface.Create() ?? throw new InvalidOperationException("Unable to create GRGlInterface.");

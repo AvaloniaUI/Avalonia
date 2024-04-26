@@ -5,6 +5,7 @@ using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Browser.Skia;
 
@@ -16,8 +17,8 @@ internal sealed class BrowserRasterSurface : BrowserSurface, IFramebufferPlatfor
     private readonly Action _onDisposeAction;
     private readonly int _bytesPerPixel;
 
-    public BrowserRasterSurface(JSObject canvasSurface, PixelFormat pixelFormat, BrowserRenderingMode renderingMode)
-        : base(canvasSurface, renderingMode)
+    public BrowserRasterSurface(JSObject canvasSurface, PixelFormat pixelFormat, Compositor compositor)
+        : base(canvasSurface, compositor)
     {
         PixelFormat = pixelFormat;
         _onDisposeAction = Blit;
