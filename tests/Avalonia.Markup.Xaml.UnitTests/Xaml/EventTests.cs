@@ -84,24 +84,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.True(host.WasClicked);
         }
 
-        [Fact]
-        public void Attached_Event_Tunnel_Routed_Event_Handler()
-        {
-            var xaml = @"<Panel xmlns='https://github.com/avaloniaui' PreviewKeyDown='OnKeyDown'><TextBox Name='target'/></Panel>";
-            var host = new MyPanel();
-
-            AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: host);
-
-            var target = host.FindControl<TextBox>("target");
-            target.RaiseEvent(new KeyEventArgs
-            {
-                RoutedEvent = InputElement.KeyDownEvent,
-                Key = Key.A,
-            });
-
-            Assert.True(host.WasKeyDown);
-        }
-
         public class MyButton : Button
         {
             public bool WasClicked { get; private set; }
@@ -115,10 +97,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             public bool WasClicked { get; private set; }
             public bool WasTapped { get; private set; }
-            public bool WasKeyDown { get; private set; }
             public void OnClick(object sender, RoutedEventArgs e) => WasClicked = true;
             public void OnTapped(object sender, RoutedEventArgs e) => WasTapped = true;
-            public void OnKeyDown(object sender, KeyEventArgs e) => WasKeyDown = true;
         }
     }
 }

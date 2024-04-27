@@ -23,18 +23,7 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
 
             if (interactiveType.IsAssignableFrom(targetRef.Type))
             {
-                var isTunnel = false;
-                var eventName = string.Empty;
-                if (prop.Name.StartsWith("Preview", System.StringComparison.OrdinalIgnoreCase))
-                {
-                    eventName = $"{prop.Name.Substring(7)}Event";
-                    isTunnel = true;
-                }
-                else
-                {
-                    eventName = $"{prop.Name}Event";
-                }
-
+                var eventName = $"{prop.Name}Event";
                 if (declaringRef.Type.GetAllFields().FirstOrDefault(f => f.IsStatic && f.Name == eventName) is { } eventField)
                 {
                     if (routedEventType.IsAssignableFrom(eventField.FieldType))
@@ -47,8 +36,7 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
                         instance.Setters.Add(new XamlDirectCallAddHandler(eventField,
                             targetRef.Type,
                             xkt.Interactivity.AddHandler,
-                            xkt.Interactivity.RoutedEventHandler,
-                            isTunnel
+                            xkt.Interactivity.RoutedEventHandler
                             )
                         );
                         if (eventField.FieldType.GenericArguments?.Count == 1)
@@ -59,8 +47,7 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
                                 instance.Setters.Add(new XamlDirectCallAddHandler(eventField,
                                     targetRef.Type,
                                     xkt.Interactivity.AddHandlerT.MakeGenericMethod([agrument]),
-                                    xkt.EventHandlerT.MakeGenericType(agrument),
-                                    isTunnel
+                                    xkt.EventHandlerT.MakeGenericType(agrument)
                                     )
                                 );
                             }
@@ -87,25 +74,17 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
         private readonly IXamlField _eventField;
         private readonly IXamlType _declaringType;
         private readonly IXamlMethod _addMethod;
-        private readonly int _routingStrategy;
-        const int Direct = 0x01;
-        const int Tunnel = 0x02;
-        const int Bubble = 0x04;
 
         public XamlDirectCallAddHandler(IXamlField eventField,
             IXamlType declaringType,
             IXamlMethod addMethod,
-            IXamlType routedEventHandler,
-            bool isTunnel
+            IXamlType routedEventHandler
             )
         {
             Parameters = [routedEventHandler];
             _eventField = eventField;
             _declaringType = declaringType;
             _addMethod = addMethod;
-            _routingStrategy = isTunnel 
-                ? Tunnel
-                : Direct + Bubble;
         }
 
         public IXamlType TargetType => _declaringType;
@@ -131,7 +110,7 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
             for (var i = 0; i < arguments.Count; ++i)
                 context.Emit(arguments[i], emitter, Parameters[i]);
 
-            emitter.Ldc_I4(_routingStrategy);
+            emitter.Ldc_I4(5);
             emitter.Ldc_I4(0);
 
             emitter.EmitCall(_addMethod, true);
