@@ -60,8 +60,7 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
                             AvaloniaXamlDiagnosticCodes.InvalidXAML,
                             XamlX.XamlDiagnosticSeverity.Error,
                             $"Event definition {prop.Name} found, but its type {eventField.FieldType.GetFqn()} is not compatible with RoutedEvent.",
-                            node)
-                        , false);
+                            node));
                     }
                 }
             }
