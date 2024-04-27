@@ -57,7 +57,7 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
                     else
                     {
                         context.ReportDiagnostic(new XamlX.XamlDiagnostic(
-                            AvaloniaXamlDiagnosticCodes.InvalidXAML,
+                            AvaloniaXamlDiagnosticCodes.TransformError,
                             XamlX.XamlDiagnosticSeverity.Error,
                             $"Event definition {prop.Name} found, but its type {eventField.FieldType.GetFqn()} is not compatible with RoutedEvent.",
                             node));
