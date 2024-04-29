@@ -160,7 +160,7 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
         {
             var info = new VkImportSemaphoreWin32HandleInfoKHR()
             {
-                sType = VkStructureType.VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR,
+                sType = VkStructureType.VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR,
                 handle = handle.Handle,
                 handleType = typeBit,
                 semaphore = semaphore.Handle
