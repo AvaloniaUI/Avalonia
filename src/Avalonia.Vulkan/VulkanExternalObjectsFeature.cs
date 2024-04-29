@@ -119,9 +119,6 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
         return new ImportedImage(_context, _pool, handle, properties);
     }
 
-    [DllImport("/home/kekekeks/Projects/pinvokewtf/cmake-build-debug/libpinvokewtf.so")]
-    static extern void invoke_2(IntPtr func, IntPtr dev, VkImportSemaphoreFdInfoKHR* info);
-
     public IVulkanExternalSemaphore ImportSemaphore(IPlatformHandle handle)
     {
         if (!SupportedSemaphoreTypes.Contains(handle.HandleDescriptor))
