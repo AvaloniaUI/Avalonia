@@ -150,6 +150,9 @@ namespace Avalonia.Controls.Primitives
 
         public IPopupHost? Host => _openState?.PopupHost;
 
+        /// <summary>
+        /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
+        /// </summary>
         public bool WindowManagerAddShadowHint
         {
             get => GetValue(WindowManagerAddShadowHintProperty);
@@ -258,7 +261,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the the anchor rectangle within the parent that the popup will be placed
+        /// Gets or sets the anchor rectangle within the parent that the popup will be placed
         /// relative to when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         /// <remarks>
@@ -289,7 +292,7 @@ namespace Avalonia.Controls.Primitives
         /// through to the parent window.
         /// </summary>
         /// <remarks>
-        /// When <see cref="IsLightDismissEnabled"/> is set to true, clicks outside the the popup
+        /// When <see cref="IsLightDismissEnabled"/> is set to true, clicks outside the popup
         /// cause the popup to close. When <see cref="OverlayDismissEventPassThrough"/> is set to
         /// false, these clicks will be handled by the popup and not be registered by the parent
         /// window. When set to true, the events will be passed through to the parent window.
@@ -407,6 +410,10 @@ namespace Avalonia.Controls.Primitives
                 (x, handler) => x.TemplateApplied += handler,
                 (x, handler) => x.TemplateApplied -= handler).DisposeWith(handlerCleanup);
 
+            SubscribeToEventHandler<Control, EventHandler<VisualTreeAttachmentEventArgs>>(placementTarget, TargetDetached,
+                (x, handler) => x.DetachedFromVisualTree += handler,
+                (x, handler) => x.DetachedFromVisualTree -= handler).DisposeWith(handlerCleanup);
+            
             if (topLevel is Window window && window.PlatformImpl != null)
             {
                 SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
@@ -577,6 +584,23 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Helper method to set popup's styling and templated parent.
+        /// </summary>
+        internal void SetPopupParent(Control? newParent)
+        {
+            if (Parent != null && Parent != newParent)
+            {
+                ((ISetLogicalParent)this).SetParent(null);
+            }
+
+            if (Parent == null || PlacementTarget != newParent)
+            {
+                ((ISetLogicalParent)this).SetParent(newParent);
+                TemplatedParent = newParent?.TemplatedParent;
+            }
+        }
+
         private void UpdateHostPosition(IPopupHost popupHost, Control placementTarget)
         {
             popupHost.ConfigurePosition(
@@ -653,9 +677,9 @@ namespace Avalonia.Controls.Primitives
 
         private static void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
         {
-            if(host is PopupRoot pr && pr.PlatformImpl is not null)
+            if (host is PopupRoot pr)
             {
-                pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
+                pr.WindowManagerAddShadowHint = hint;
             }
         }
 
@@ -749,6 +773,11 @@ namespace Avalonia.Controls.Primitives
                     PassThroughEvent(e);
                 }
             }
+        }
+
+        private void TargetDetached(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            Close();
         }
 
         private static void PassThroughEvent(PointerPressedEventArgs e)

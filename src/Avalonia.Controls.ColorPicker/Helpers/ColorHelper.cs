@@ -15,7 +15,12 @@ namespace Avalonia.Controls.Primitives
         private static readonly Dictionary<KnownColor, string> _cachedKnownColorNames = new Dictionary<KnownColor, string>();
         private static readonly object _displayNameCacheMutex = new object();
         private static readonly object _knownColorCacheMutex = new object();
-        private static readonly KnownColor[] _knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
+        private static readonly KnownColor[] _knownColors =
+#if NET6_0_OR_GREATER
+            Enum.GetValues<KnownColor>();
+#else 
+            (KnownColor[])Enum.GetValues(typeof(KnownColor));
+#endif
 
         /// <summary>
         /// Gets the relative (perceptual) luminance/brightness of the given color.

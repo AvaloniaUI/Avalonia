@@ -39,6 +39,9 @@ public partial class Dispatcher : IDispatcher
             MaximumInputStarvationTimeInExplicitProcessingExplicitMode;
         if (_backgroundProcessingImpl != null)
             _backgroundProcessingImpl.ReadyForBackgroundProcessing += OnReadyForExplicitBackgroundProcessing;
+
+        _unhandledExceptionEventArgs = new DispatcherUnhandledExceptionEventArgs(this);
+        _exceptionFilterEventArgs = new DispatcherUnhandledExceptionFilterEventArgs(this);
     }
     
     public static Dispatcher UIThread => s_uiThread ??= CreateUIThreadDispatcher();
@@ -86,6 +89,6 @@ public partial class Dispatcher : IDispatcher
     {
         DispatcherPriority.Validate(priority, nameof(priority));
         var index = priority - DispatcherPriority.MinValue;
-        return _priorityContexts[index] ??= new(priority);
+        return _priorityContexts[index] ??= new(this, priority);
     }
 }

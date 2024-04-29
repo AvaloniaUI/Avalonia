@@ -1,4 +1,8 @@
 using System;
+using System.Runtime.CompilerServices;
+#if !BUILDTASK
+using Avalonia.Metadata;
+#endif
 
 namespace Avalonia.Utilities
 {
@@ -6,6 +10,7 @@ namespace Avalonia.Utilities
     /// Provides math utilities not provided in System.Math.
     /// </summary>
 #if !BUILDTASK
+    [Unstable("This API might be removed in next major version. Please use corresponding BCL APIs.")]
     public
 #endif
     static class MathUtilities
@@ -358,7 +363,95 @@ namespace Avalonia.Utilities
         {
             return GetMinMax(initialValue, initialValue + delta);
         }
+        
+#if !BUILDTASK
+        internal static int WhichPolygonSideIntersects(
+            uint cPoly,
+            ReadOnlySpan<Vector> pPtPoly,
+            Vector ptCurrent,
+            Vector vecEdge)
+        {
+            uint nPositive = 0;
+            uint nNegative = 0;
+            uint nZero = 0;
 
+            var vecEdgeNormal = new Point(-vecEdge.Y, vecEdge.X);
+
+            for (var i = 0; i < cPoly; i++)
+            {
+                var vecCurrent = ptCurrent - pPtPoly[i];
+                var rDot = Vector.Dot(vecCurrent, vecEdgeNormal);
+
+                if (rDot > 0.0f)
+                {
+                    nPositive++;
+                }
+                else if (rDot < 0.0f)
+                {
+                    nNegative++;
+                }
+                else
+                {
+                    nZero++;
+                }
+
+                if ((nPositive > 0 && nNegative > 0) || (nZero > 0))
+                {
+                    return 0;
+                }
+            }
+
+            return nPositive > 0 ? 1 : -1;
+        }
+
+        internal static bool DoPolygonsIntersect(
+            uint cPolyA,
+            ReadOnlySpan<Vector> pPtPolyA,
+            uint cPolyB,
+            ReadOnlySpan<Vector> pPtPolyB)
+        {
+            for (var i = 0; i < cPolyA; i++)
+            {
+                var vecEdge = pPtPolyA[(int)((i + 1) % cPolyA)] - pPtPolyA[i];
+                if (WhichPolygonSideIntersects(cPolyB, pPtPolyB, pPtPolyA[i], vecEdge) < 0)
+                {
+                    return false;
+                }
+            }
+
+            for (var i = 0; i < cPolyB; i++)
+            {
+                var vecEdge = pPtPolyB[(int)((i + 1) % cPolyB)] - pPtPolyB[i];
+                if (WhichPolygonSideIntersects(cPolyA, pPtPolyA, pPtPolyB[i], vecEdge) < 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
+        internal static bool IsEntirelyContained(
+            uint cPolyA,
+            ReadOnlySpan<Vector> pPtPolyA,
+            uint cPolyB,
+            ReadOnlySpan<Vector> pPtPolyB)
+        {
+            for (var i = 0; i < cPolyB; i++)
+            {
+                var vecEdge = pPtPolyB[(i + 1) % (int)cPolyB] - pPtPolyB[i];
+                if (WhichPolygonSideIntersects(cPolyA, pPtPolyA, pPtPolyB[i], vecEdge) <= 0)
+                {
+                    // The whole of the polygon is entirely on the outside of the edge,
+                    // so we can never intersect
+                    return false;
+                }
+            }
+
+            return true;
+        }
+#endif
+        
         private static void ThrowCannotBeGreaterThanException<T>(T min, T max)
         {
             throw new ArgumentException($"{min} cannot be greater than {max}.");

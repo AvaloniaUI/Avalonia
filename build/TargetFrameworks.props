@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <AvsCurrentTargetFramework>net8.0</AvsCurrentTargetFramework>
+    <AvsCurrentWindowsTargetFramework>$(AvsCurrentTargetFramework)-windows</AvsCurrentWindowsTargetFramework>
+    <AvsCurrentMacOSTargetFramework>$(AvsCurrentTargetFramework)-macos</AvsCurrentMacOSTargetFramework>
+    <AvsCurrentAndroidTargetFramework>$(AvsCurrentTargetFramework)-android34.0</AvsCurrentAndroidTargetFramework>
+    <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios17.0</AvsCurrentIOSTargetFramework>
+    <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos17.0</AvsCurrentTvOSTargetFramework>
+    <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
+    <AvsCurrentTizenTargetFramework>$(AvsCurrentTargetFramework)-tizen</AvsCurrentTizenTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
+    <AvsLegacyTargetFrameworks>net6.0</AvsLegacyTargetFrameworks>
+    <AvsLegacyWindowsTargetFrameworks>net6.0-windows</AvsLegacyWindowsTargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Keep in sync with AvaloniaSingleProject.targets -->
+    <!-- Min version is defined here, but target version is defined in AvsCurrentIOSTargetFramework. -->
+    <AvsMinSupportedIOSVersion>13.0</AvsMinSupportedIOSVersion>
+    <AvsMinSupportedTvOSVersion>13.0</AvsMinSupportedTvOSVersion>
+    <AvsMinSupportedMacCatalystVersion>13.1</AvsMinSupportedMacCatalystVersion>
+    <AvsMinSupportedTizenVersion>6.5</AvsMinSupportedTizenVersion>
+    <AvsMinSupportedAndroidVersion>21.0</AvsMinSupportedAndroidVersion>
+    <!-- Desktop OS min version is not set in any of ours backends, but only used in some samples. -->
+    <!-- Avalonia technically supports 10.12. -->
+    <AvsMinSupportedMacOsVersion>10.15</AvsMinSupportedMacOsVersion>
+  </PropertyGroup>
+</Project>

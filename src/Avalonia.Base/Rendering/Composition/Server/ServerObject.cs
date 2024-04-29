@@ -16,36 +16,14 @@ namespace Avalonia.Rendering.Composition.Server
     internal abstract class ServerObject : SimpleServerObject, IExpressionObject
     {
         private uint _activationCount;
+        private ServerObjectAnimations? _animations;
+        public ServerObjectAnimations? Animations => _animations;
+        public ServerObjectAnimations GetOrCreateAnimations() => _animations ??= new(this);
         public bool IsActive => _activationCount != 0;
-        private InlineDictionary<CompositionProperty, ServerObjectSubscriptionStore> _subscriptions;
-        private InlineDictionary<CompositionProperty, IAnimationInstance> _animations;
-        
-        private class ServerObjectSubscriptionStore
-        {
-            public bool IsValid;
-            public RefTrackingDictionary<IAnimationInstance>? Subscribers;
-
-            public void Invalidate()
-            {
-                if (!IsValid)
-                    return;
-                IsValid = false;
-                if (Subscribers != null)
-                    foreach (var sub in Subscribers)
-                        sub.Key.Invalidate();
-            }
-        }
             
         public ServerObject(ServerCompositor compositor) : base(compositor)
         {
         }
-
-        public virtual ExpressionVariant GetPropertyForAnimation(string name)
-        {
-            return default;
-        }
-
-        ExpressionVariant IExpressionObject.GetProperty(string name) => GetPropertyForAnimation(name);
 
         public void Activate()
         {
@@ -65,92 +43,37 @@ namespace Avalonia.Rendering.Composition.Server
                 Deactivated();
         }
 
-        protected void Activated()
-        {
-            foreach(var kp in _animations)
-                kp.Value.Activate();
-        }
+        private void Activated() => _animations?.Activated();
 
-        protected void Deactivated()
-        {
-            foreach(var kp in _animations)
-                kp.Value.Deactivate();
-        }
-
-        void InvalidateSubscriptions(CompositionProperty property)
-        {
-            if(_subscriptions.TryGetValue(property, out var subs))
-                subs.Invalidate();
-        }
+        private void Deactivated() => _animations?.Deactivated();
 
         protected new void SetValue<T>(CompositionProperty prop, ref T field, T value)
         {
             field = value;
-            InvalidateSubscriptions(prop);
+            _animations?.OnSetDirectValue(prop);
         }
 
-        protected new T GetValue<T>(CompositionProperty prop, ref T field)
-        {
-            if (_subscriptions.TryGetValue(prop, out var subs))
-                subs.IsValid = true;
-            return field;
-        }
-
-        protected void SetAnimatedValue<T>(CompositionProperty prop, ref T field,
+        protected void SetAnimatedValue<T>(CompositionProperty<T> prop, ref T field,
             TimeSpan committedAt, IAnimationInstance animation) where T : struct
         {
-            if (IsActive && _animations.TryGetValue(prop, out var oldAnimation))
-                oldAnimation.Deactivate();
-            _animations[prop] = animation;
-            
-            animation.Initialize(committedAt, ExpressionVariant.Create(field), prop);
-            if(IsActive)
-                animation.Activate();
-            
-            InvalidateSubscriptions(prop);
+            GetOrCreateAnimations().OnSetAnimatedValue(prop, ref field, committedAt, animation);
         }
 
         protected void SetAnimatedValue<T>(CompositionProperty property, out T field, T value)
         {
-            if (_animations.TryGetAndRemoveValue(property, out var animation) && IsActive) 
-                animation.Deactivate();
             field = value;
-            InvalidateSubscriptions(property);
+            _animations?.RemoveAnimationForProperty(property);
         }
         
-        protected T GetAnimatedValue<T>(CompositionProperty property, ref T field) where T : struct
-        {
-            if (_subscriptions.TryGetValue(property, out var subscriptions))
-                subscriptions.IsValid = true;
-
-            if (_animations.TryGetValue(property, out var animation))
-                field = animation.Evaluate(Compositor.ServerNow, ExpressionVariant.Create(field))
-                .CastOrDefault<T>();
-
-            return field;
-        }
+        public virtual void NotifyAnimatedValueChanged(CompositionProperty prop) => ValuesInvalidated();
         
-        public virtual void NotifyAnimatedValueChanged(CompositionProperty prop)
-        {
-            InvalidateSubscriptions(prop);
-            ValuesInvalidated();
-        }
-
-        public void SubscribeToInvalidation(CompositionProperty member, IAnimationInstance animation)
-        {
-            if (!_subscriptions.TryGetValue(member, out var store))
-                _subscriptions[member] = store = new ServerObjectSubscriptionStore();
-            if (store.Subscribers == null)
-                store.Subscribers = new();
-            store.Subscribers.AddRef(animation);
-        }
-
-        public void UnsubscribeFromInvalidation(CompositionProperty member, IAnimationInstance animation)
-        {
-            if(_subscriptions.TryGetValue(member, out var store))
-                store.Subscribers?.ReleaseRef(animation);
-        }
-
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
+        ExpressionVariant IExpressionObject.GetProperty(string name)
+        {
+            if (_animations == null)
+                return CompositionProperty.Find(this.GetType(), name)?.GetVariant?.Invoke(this) ?? default;
+
+            return _animations.GetPropertyForAnimation(name);
+        }
     }
 }

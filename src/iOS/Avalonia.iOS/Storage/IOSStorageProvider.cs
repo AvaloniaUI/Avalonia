@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
 using UIKit;
@@ -11,8 +9,7 @@ using Foundation;
 using UniformTypeIdentifiers;
 using UTTypeLegacy = MobileCoreServices.UTType;
 using UTType = UniformTypeIdentifiers.UTType;
-
-#nullable enable
+using System.Runtime.Versioning;
 
 namespace Avalonia.iOS.Storage;
 
@@ -30,49 +27,48 @@ internal class IOSStorageProvider : IStorageProvider
 
     public bool CanPickFolder => true;
 
-    public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+    public Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+    {
+        if (!options.AllowMultiple
+            && options.SuggestedStartLocation is IOSStorageFolder { WellKnownFolder: WellKnownFolder.Pictures })
+        {
+            return OpenImagePickerAsync(options);
+        }
+        else
+        {
+            return OpenDocumentsPickerAsync(options);
+        }
+    }
+
+    private async Task<IReadOnlyList<IStorageFile>> OpenImagePickerAsync(FilePickerOpenOptions options)
+    {
+#pragma warning disable CA1422 // Validate platform compatibility - we can't use PHImagePicker here.
+        using var imagePicker = new UIImagePickerController();
+        imagePicker.SourceType = UIImagePickerControllerSourceType.PhotoLibrary;
+        imagePicker.MediaTypes = new string[] { UTTypeLegacy.Image };
+        imagePicker.AllowsEditing = false;
+        imagePicker.Title = options.Title;
+#pragma warning restore CA1422 // Validate platform compatibility
+
+        var tcs = new TaskCompletionSource<NSUrl[]>();
+        imagePicker.Delegate = new ImageOpenPickerDelegate(urls => tcs.TrySetResult(urls));
+        var urls = await ShowPicker(imagePicker, tcs);
+
+        return urls.Select(u => new IOSStorageFile(u)).ToArray();
+    }
+
+    private async Task<IReadOnlyList<IStorageFile>> OpenDocumentsPickerAsync(FilePickerOpenOptions options)
     {
         UIDocumentPickerViewController documentPicker;
         if (OperatingSystem.IsIOSVersionAtLeast(14))
         {
-            var allowedUtils = options.FileTypeFilter?.SelectMany(f =>
-                {
-                    // We check for OS version outside of the lambda, it's safe.
-#pragma warning disable CA1416
-                    if (f.TryGetExtensions() is { } extensions && extensions.Any())
-                    {
-                        return extensions.Select(UTType.CreateFromExtension);
-                    }
-                    if (f.AppleUniformTypeIdentifiers?.Any() == true)
-                    {
-                        return f.AppleUniformTypeIdentifiers.Select(UTType.CreateFromIdentifier);
-                    }
-                    if (f.MimeTypes?.Any() == true)
-                    {
-                        return f.MimeTypes.Select(UTType.CreateFromMimeType);
-                    }
-                    return Array.Empty<UTType>();
-#pragma warning restore CA1416
-                })
-                .Where(id => id is not null)
-                .ToArray() ?? new[]
-            {
-                UTTypes.Content,
-                UTTypes.Item,
-                UTTypes.Data
-            };
-            documentPicker = new UIDocumentPickerViewController(allowedUtils!, false);
+            var allowedTypes = FileTypesToUTType(options.FileTypeFilter);
+            documentPicker = new UIDocumentPickerViewController(allowedTypes!, false);
         }
         else
         {
-            var allowedUtils = options.FileTypeFilter?.SelectMany(f => f.AppleUniformTypeIdentifiers ?? Array.Empty<string>())
-                .ToArray() ?? new[]
-            {
-                UTTypeLegacy.Content,
-                UTTypeLegacy.Item,
-                "public.data"
-            };
-            documentPicker = new UIDocumentPickerViewController(allowedUtils, UIDocumentPickerMode.Open);
+            var allowedTypes = FileTypesToUTTypeLegacy(options.FileTypeFilter);
+            documentPicker = new UIDocumentPickerViewController(allowedTypes, UIDocumentPickerMode.Open);
         }
 
         using (documentPicker)
@@ -87,7 +83,9 @@ internal class IOSStorageProvider : IStorageProvider
                 documentPicker.AllowsMultipleSelection = options.AllowMultiple;
             }
 
-            var urls = await ShowPicker(documentPicker);
+            documentPicker.Title = options.Title;
+
+            var urls = await ShowDocumentPicker(documentPicker);
             return urls.Select(u => new IOSStorageFile(u)).ToArray();
         }
     }
@@ -106,14 +104,31 @@ internal class IOSStorageProvider : IStorageProvider
 
     public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
-        // TODO: research if it's possible, maybe with additional permissions.
-        return Task.FromResult<IStorageFile?>(null);
+        var fileUrl = (NSUrl?)filePath;
+        var isDirectory = false;
+        var file = fileUrl is not null
+                   && fileUrl.Path is { } path
+                   && NSFileManager.DefaultManager.FileExists(path, ref isDirectory)
+                   && !isDirectory
+                   && NSFileManager.DefaultManager.IsReadableFile(path) ?
+            new IOSStorageFile(fileUrl) :
+            null;
+
+        return Task.FromResult<IStorageFile?>(file);
     }
 
     public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
     {
-        // TODO: research if it's possible, maybe with additional permissions.
-        return Task.FromResult<IStorageFolder?>(null);
+        var folderUrl = (NSUrl?)folderPath;
+        var isDirectory = false;
+        var folder = folderUrl is not null
+                   && folderUrl.Path is { } path
+                   && NSFileManager.DefaultManager.FileExists(path, ref isDirectory)
+                   && isDirectory ?
+            new IOSStorageFolder(folderUrl) :
+            null;
+
+        return Task.FromResult<IStorageFolder?>(folder);
     }
 
     public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
@@ -128,14 +143,19 @@ internal class IOSStorageProvider : IStorageProvider
             WellKnownFolder.Videos => NSSearchPathDirectory.MoviesDirectory,
             _ => throw new ArgumentOutOfRangeException(nameof(wellKnownFolder), wellKnownFolder, null)
         };
-        
-        var uri = NSFileManager.DefaultManager.GetUrl(directoryType, NSSearchPathDomain.Local, null, true, out var error);
+
+        var uri = NSFileManager.DefaultManager.GetUrl(directoryType, NSSearchPathDomain.User, null, true, out var error);
         if (error != null)
         {
             throw new NSErrorException(error);
         }
 
-        return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(uri));
+        if (uri is null)
+        {
+            return Task.FromResult<IStorageFolder?>(null);
+        }
+
+        return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(uri, wellKnownFolder));
     }
 
     public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
@@ -148,7 +168,9 @@ internal class IOSStorageProvider : IStorageProvider
     {
         using var documentPicker = OperatingSystem.IsIOSVersionAtLeast(14) ?
             new UIDocumentPickerViewController(new[] { UTTypes.Folder }, false) :
+#pragma warning disable CA1422
             new UIDocumentPickerViewController(new string[] { UTTypeLegacy.Folder }, UIDocumentPickerMode.Open);
+#pragma warning restore CA1422
 
         if (OperatingSystem.IsIOSVersionAtLeast(13))
         {
@@ -160,7 +182,7 @@ internal class IOSStorageProvider : IStorageProvider
             documentPicker.AllowsMultipleSelection = options.AllowMultiple;
         }
         
-        var urls = await ShowPicker(documentPicker);
+        var urls = await ShowDocumentPicker(documentPicker);
         return urls.Select(u => new IOSStorageFolder(u)).ToArray();
     }
 
@@ -174,20 +196,24 @@ internal class IOSStorageProvider : IStorageProvider
         };
     }
 
-    private Task<NSUrl[]> ShowPicker(UIDocumentPickerViewController documentPicker)
+    private Task<NSUrl[]> ShowDocumentPicker(UIDocumentPickerViewController documentPicker)
     {
         var tcs = new TaskCompletionSource<NSUrl[]>();
         documentPicker.Delegate = new PickerDelegate(urls => tcs.TrySetResult(urls));
+        return ShowPicker(documentPicker, tcs);
+    }
 
-        if (documentPicker.PresentationController != null)
+    private Task<NSUrl[]> ShowPicker(UIViewController picker, TaskCompletionSource<NSUrl[]> tcs)
+    {
+        if (picker.PresentationController != null)
         {
-            documentPicker.PresentationController.Delegate =
+            picker.PresentationController.Delegate =
                 new UIPresentationControllerDelegate(() => tcs.TrySetResult(Array.Empty<NSUrl>()));
         }
 
         var controller = _view.Window?.RootViewController ?? throw new InvalidOperationException("RootViewController wasn't initialized");
-        controller.PresentViewController(documentPicker, true, null);
-        
+        controller.PresentViewController(picker, true, null);
+
         return tcs.Task;
     }
 
@@ -206,7 +232,73 @@ internal class IOSStorageProvider : IStorageProvider
         }
         return url;
     }
-        
+
+    private static string[] FileTypesToUTTypeLegacy(IReadOnlyList<FilePickerFileType>? filePickerFileTypes)
+    {
+        return filePickerFileTypes?
+            .SelectMany(f => f.AppleUniformTypeIdentifiers ?? Array.Empty<string>())
+            .ToArray() ?? new[]
+            {
+#pragma warning disable CA1422
+                UTTypeLegacy.Content,
+                UTTypeLegacy.Item,
+#pragma warning restore CA1422
+                "public.data"
+            };
+    }
+
+    [SupportedOSPlatform("ios14.0")]
+    private static UTType[] FileTypesToUTType(IReadOnlyList<FilePickerFileType>? filePickerFileTypes)
+    {
+        return filePickerFileTypes?.SelectMany(f =>
+        {
+            if (f.TryGetExtensions() is { } extensions && extensions.Any())
+            {
+                return extensions.Select(UTType.CreateFromExtension);
+            }
+            if (f.AppleUniformTypeIdentifiers?.Any() == true)
+            {
+                return f.AppleUniformTypeIdentifiers.Select(UTType.CreateFromIdentifier);
+            }
+            if (f.MimeTypes?.Any() == true)
+            {
+                return f.MimeTypes.Select(UTType.CreateFromMimeType);
+            }
+            return Array.Empty<UTType>();
+        })
+        .Where(id => id is not null)
+        .Cast<UTType>()
+        .ToArray() ?? new[]
+        {
+            UTTypes.Content,
+            UTTypes.Item,
+            UTTypes.Data
+        };
+    }
+
+    private class ImageOpenPickerDelegate : UIImagePickerControllerDelegate
+    {
+        private readonly Action<NSUrl[]>? _pickHandler;
+
+        internal ImageOpenPickerDelegate(Action<NSUrl[]> pickHandler)
+            => _pickHandler = pickHandler;
+
+        public override void Canceled(UIImagePickerController picker)
+            => _pickHandler?.Invoke(Array.Empty<NSUrl>());
+
+        public override void FinishedPickingMedia(UIImagePickerController picker, NSDictionary info)
+        {
+            if (info.ValueForKey(new NSString("UIImagePickerControllerImageURL")) is NSUrl nSUrl)
+            {
+                _pickHandler?.Invoke(new[] { nSUrl });
+            }
+            else
+            {
+                _pickHandler?.Invoke(Array.Empty<NSUrl>());
+            }
+        }
+    }
+
     private class PickerDelegate : UIDocumentPickerDelegate
     {
         private readonly Action<NSUrl[]>? _pickHandler;

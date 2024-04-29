@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 
@@ -8,47 +11,43 @@ internal record GLInfo(int ContextId, uint FboId, int Stencils, int Samples, int
 
 internal static partial class CanvasHelper
 {
-
-    [DllImport("libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    static extern JSObject InterceptGLObject();
-
-    public static GLInfo InitialiseGL(JSObject canvas, Action renderFrameCallback)
+    public static (JSObject CanvasView, GLInfo? GLInfo) CreateSurface(
+        JSObject container, BrowserRenderingMode renderingMode)
     {
-        InterceptGLObject();
+        var isGlMode = renderingMode is BrowserRenderingMode.WebGL1 or BrowserRenderingMode.WebGL2;
 
-        var info = InitGL(canvas, canvas.GetPropertyAsString("id")!, renderFrameCallback);
+        var canvasView = Create(container, (int)renderingMode);
 
-        var glInfo = new GLInfo(
-            info.GetPropertyAsInt32("context"),
-            (uint)info.GetPropertyAsInt32("fboId"),
-            info.GetPropertyAsInt32("stencil"),
-            info.GetPropertyAsInt32("sample"),
-            info.GetPropertyAsInt32("depth"));
+        GLInfo? glInfo = null;
+        if (isGlMode)
+        {
+            glInfo = new GLInfo(
+                canvasView.GetPropertyAsInt32("contextHandle")!,
+                (uint)canvasView.GetPropertyAsInt32("fboId"),
+                canvasView.GetPropertyAsInt32("stencil"),
+                canvasView.GetPropertyAsInt32("sample"),
+                canvasView.GetPropertyAsInt32("depth"));
+        }
 
-        return glInfo;
+        return (canvasView, glInfo);
     }
 
-    [JSImport("Canvas.requestAnimationFrame", AvaloniaModule.MainModuleName)]
-    public static partial void RequestAnimationFrame(JSObject canvas, bool renderLoop);
+    [JSImport("CanvasFactory.onSizeChanged", AvaloniaModule.MainModuleName)]
+    public static partial void OnSizeChanged(
+        JSObject canvasSurface,
+        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number, JSType.Number>>]
+        // TODO: this callback should be <int, int, double>. Revert after next .NET 9 preview.  
+        Action<double, double, double> onSizeChanged);
 
-    [JSImport("Canvas.setCanvasSize", AvaloniaModule.MainModuleName)]
-    public static partial void SetCanvasSize(JSObject canvas, int width, int height);
+    [JSImport("CanvasFactory.create", AvaloniaModule.MainModuleName)]
+    private static partial JSObject Create(JSObject canvasSurface, int mode);
 
-    [JSImport("Canvas.initGL", AvaloniaModule.MainModuleName)]
-    private static partial JSObject InitGL(
-        JSObject canvas,
-        string canvasId,
-        [JSMarshalAs<JSType.Function>] Action renderFrameCallback);
+    [JSImport("CanvasFactory.destroy", AvaloniaModule.MainModuleName)]
+    public static partial void Destroy(JSObject canvasSurface);
 
-    [JSImport("globalThis.setTimeout")]
-    public static partial int SetTimeout([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
+    [JSImport("CanvasFactory.ensureSize", AvaloniaModule.MainModuleName)]
+    public static partial void EnsureSize(JSObject canvasSurface);
 
-    [JSImport("globalThis.clearTimeout")]
-    public static partial int ClearTimeout(int id);
-
-    [JSImport("globalThis.setInterval")]
-    public static partial int SetInterval([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
-
-    [JSImport("globalThis.clearInterval")]
-    public static partial int ClearInterval(int id);
+    [JSImport("CanvasFactory.putPixelData", AvaloniaModule.MainModuleName)]
+    public static partial void PutPixelData(JSObject canvasSurface, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data, int width, int height);
 }

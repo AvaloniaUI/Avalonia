@@ -200,14 +200,16 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
-        [Fact]
-        public void Should_Match_Chararcter_Width_Fallbacks()
+        [Theory]
+        [InlineData("NotFound, Unknown", null)] // system fonts
+        [InlineData("/#NotFound, /#Unknown", "avares://some/path")] // embedded fonts
+        public void Should_Match_Character_With_Fallbacks(string familyName, string baseUri)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    var fontFamily = FontFamily.Parse("NotFound, Unknown");
+                    var fontFamily = FontFamily.Parse(familyName, baseUri is null ? null : new Uri(baseUri));
 
                     Assert.True(FontManager.Current.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface));
 

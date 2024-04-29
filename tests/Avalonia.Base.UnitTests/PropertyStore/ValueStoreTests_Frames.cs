@@ -99,7 +99,23 @@ namespace Avalonia.Base.UnitTests.PropertyStore
         }
 
         [Fact]
-        public void Completing_Binding_Removes_ImmediateValueFrame()
+        public void Disposing_Binding_Removes_ImmediateValueFrame()
+        {
+            var target = new Class1();
+            var source = new Binding { Priority = BindingPriority.Style };
+            var expression = target.Bind(Class1.FooProperty, source);
+
+            var valueStore = target.GetValueStore();
+            Assert.Equal(1, valueStore.Frames.Count);
+            Assert.IsType<ImmediateValueFrame>(valueStore.Frames[0]);
+
+            expression.Dispose();
+
+            Assert.Equal(0, valueStore.Frames.Count);
+        }
+
+        [Fact]
+        public void Completing_Observable_Removes_ImmediateValueFrame()
         {
             var target = new Class1();
             var source = new BehaviorSubject<BindingValue<string>>("foo");

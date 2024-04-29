@@ -14,7 +14,6 @@ namespace Avalonia.Styling
     {
         private readonly IReadOnlyList<Query> _queries;
         private string? _queryString;
-        private Type? _targetType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AndQuery"/> class.

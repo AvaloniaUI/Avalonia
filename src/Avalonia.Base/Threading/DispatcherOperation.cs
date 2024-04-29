@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -117,7 +118,7 @@ public class DispatcherOperation
     /// </summary>
     /// <returns>
     ///     The status of the operation.  To obtain the return value
-    ///     of the invoked delegate, use the the Result property.
+    ///     of the invoked delegate, use the Result property.
     /// </returns>
     public void Wait() => Wait(TimeSpan.FromMilliseconds(-1));
 
@@ -283,13 +284,17 @@ public class DispatcherOperation
         {
             lock (Dispatcher.InstanceLock)
             {
+                // Ensure TaskSource created.
+                _ = GetTaskCore();
                 Status = DispatcherOperationStatus.Completed;
                 if (TaskSource is TaskCompletionSource<object?> tcs)
                     tcs.SetException(e);
             }
 
-            if (ThrowOnUiThread)
+            if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
+            {
                 throw;
+            }
         }
     }
 
@@ -312,10 +317,11 @@ public class DispatcherOperation
         {
             if (Status == DispatcherOperationStatus.Aborted)
                 return s_abortedTask;
+            if (TaskSource is TaskCompletionSource<object?> tcs)
+                return tcs.Task;
             if (Status == DispatcherOperationStatus.Completed)
                 return Task.CompletedTask;
-            if (TaskSource is not TaskCompletionSource<object?> tcs)
-                TaskSource = tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskSource = tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
             return tcs.Task;
         }
     }
@@ -401,13 +407,17 @@ internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperatio
         {
             lock (Dispatcher.InstanceLock)
             {
+                // Ensure TaskSource created.
+                _ = GetTaskCore();
                 Status = DispatcherOperationStatus.Completed;
                 if (TaskSource is TaskCompletionSource<object?> tcs)
                     tcs.SetException(e);
             }
 
-            if (ThrowOnUiThread)
+            if (ThrowOnUiThread && !Dispatcher.TryCatchWhen(e))
+            {
                 throw;
+            }
         }
     }
 }

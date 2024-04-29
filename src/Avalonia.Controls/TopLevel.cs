@@ -123,6 +123,7 @@ namespace Avalonia.Controls
             );
 
         private readonly IInputManager? _inputManager;
+        private readonly IToolTipService? _tooltipService;
         private readonly IAccessKeyHandler? _accessKeyHandler;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IGlobalStyles? _globalStyles;
@@ -184,6 +185,8 @@ namespace Avalonia.Controls
                     newInputElement.PropertyChanged += topLevel.PointerOverElementOnPropertyChanged;
                 }
             });
+
+            ToolTip.ServiceEnabledProperty.Changed.Subscribe(OnToolTipServiceEnabledChanged);
         }
 
         /// <summary>
@@ -213,6 +216,7 @@ namespace Avalonia.Controls
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
+            _tooltipService = TryGetService<IToolTipService>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
@@ -274,7 +278,7 @@ namespace Avalonia.Controls
                 systemNavigationManager.BackRequested += (_, e) =>
                 {
                     e.RoutedEvent = BackRequestedEvent;
-                    RaiseEvent(e);
+                    Dispatcher.UIThread.Send(_ => RaiseEvent(e));
                 };
             }
 
@@ -308,13 +312,12 @@ namespace Avalonia.Controls
                 if (backRequested)
                 {
                     var backRequestedEventArgs = new RoutedEventArgs(BackRequestedEvent);
-                    RaiseEvent(backRequestedEventArgs);
+                    Dispatcher.UIThread.Send(_ => RaiseEvent(backRequestedEventArgs));
 
                     e.Handled = backRequestedEventArgs.Handled;
                 }
             });
         }
-
         /// <summary>
         /// Fired when the window is opened.
         /// </summary>
@@ -558,6 +561,7 @@ namespace Avalonia.Controls
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
         public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();
+        public ILauncher Launcher => PlatformImpl?.TryGetFeature<ILauncher>() ?? new NoopLauncher();
 
         /// <summary>
         /// Gets the platform's clipboard implementation
@@ -569,7 +573,7 @@ namespace Avalonia.Controls
 
         /// <inheritdoc />
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
-        
+
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -722,6 +726,7 @@ namespace Avalonia.Controls
             OnClosed(EventArgs.Empty);
 
             LayoutManager.Dispose();
+            _platformImplBindings.Clear();
         }
 
         /// <summary>
@@ -747,7 +752,7 @@ namespace Avalonia.Controls
         private void HandleScalingChanged(double scaling)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
-            ScalingChanged?.Invoke(this, EventArgs.Empty);
+            Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
         }
 
         private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
@@ -794,14 +799,17 @@ namespace Avalonia.Controls
         protected virtual void OnOpened(EventArgs e)
         {
             FrameSize = PlatformImpl?.FrameSize;
-            Opened?.Invoke(this, e);  
-        } 
+            Dispatcher.UIThread.Send(_ => Opened?.Invoke(this, e));
+        }
 
         /// <summary>
         /// Raises the <see cref="Closed"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+        protected virtual void OnClosed(EventArgs e)
+        {
+            Dispatcher.UIThread.Send(_ => Closed?.Invoke(this, e));
+        }
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
@@ -833,12 +841,18 @@ namespace Avalonia.Controls
         {
             if (PlatformImpl != null)
             {
-                if (e is RawPointerEventArgs pointerArgs)
+                Dispatcher.UIThread.Send(static state =>
                 {
-                    pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
-                }
+                    var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
+                    if (e is RawPointerEventArgs pointerArgs)
+                    {
+                        var hitTestElement = topLevel.InputHitTest(pointerArgs.Position, enabledElementsOnly: false);
 
-                _inputManager?.ProcessInput(e);
+                        pointerArgs.InputHitTestResult = (hitTestElement, FirstEnabledAncestor(hitTestElement));
+                    }
+
+                    topLevel._inputManager?.ProcessInput(e);
+                }, (this, e));
             }
             else
             {
@@ -846,6 +860,17 @@ namespace Avalonia.Controls
                     this,
                     "PlatformImpl is null, couldn't handle input.");
             }
+        }
+
+        private static IInputElement? FirstEnabledAncestor(IInputElement? hitTestElement)
+        {
+            var candidate = hitTestElement;
+            while (candidate?.IsEffectivelyEnabled == false)
+            {
+                candidate = (candidate as Visual)?.Parent as IInputElement;
+            }
+
+            return candidate;
         }
 
         private void PointerOverElementOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -864,6 +889,30 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
         {
             _pointerOverPreProcessor?.SceneInvalidated(e.DirtyRect);
+            UpdateToolTip(e.DirtyRect);
+        }
+
+        private static void OnToolTipServiceEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> args)
+        {
+            if (args.GetNewValue<bool>()
+                && args.Priority != BindingPriority.Inherited 
+                && args.Sender is Visual visual 
+                && GetTopLevel(visual) is { } topLevel)
+            {
+                topLevel.UpdateToolTip(visual.Bounds.Translate((Vector)visual.TranslatePoint(default, topLevel)!));
+            }
+        }
+
+        private void UpdateToolTip(Rect dirtyRect)
+        {
+            if (_tooltipService != null && _pointerOverPreProcessor?.LastPosition is { } lastPos)
+            {
+                var clientPoint = this.PointToClient(lastPos);
+                if (dirtyRect.Contains(clientPoint))
+                {
+                    _tooltipService.Update(HitTester.HitTestFirst(clientPoint, this, null));
+                }
+            }
         }
 
         void PlatformImpl_LostFocus()

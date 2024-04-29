@@ -14,7 +14,6 @@ namespace Avalonia.Controls
 {
     public class RefreshVisualizer : ContentControl
     {
-        private const int DefaultIndicatorSize = 24;
         private const float MinimumIndicatorOpacity = 0.4f;
         private const float ParallaxPositionRatio = 0.5f;
         private double _executingRatio = 0.8;
@@ -129,70 +128,58 @@ namespace Avalonia.Controls
 
             if (_root != null)
             {
-                _content = Content as Control;
-
-                if (_content == null)
+                OnOrientationChanged();
+                
+                if (_root != null && _content != null)
                 {
-                    _content = new PathIcon()
-                    {
-                        Height = DefaultIndicatorSize,
-                        Width = DefaultIndicatorSize,
-                        Name = "PART_Icon"
-                    };
+                    _root.Children.Insert(0, _content);
+                    _content.VerticalAlignment = Layout.VerticalAlignment.Center;
+                    _content.HorizontalAlignment = Layout.HorizontalAlignment.Center;
 
-                    _content.Loaded += (s, e) =>
-                    {
-                        var composition = ElementComposition.GetElementVisual(_content);
-
-                        if(composition == null)
-                            return;
-
-                        var compositor = composition.Compositor;
-                        composition.Opacity = 0;
-
-                        var smoothRotationAnimation
-                            = compositor.CreateScalarKeyFrameAnimation();
-                        smoothRotationAnimation.Target = "RotationAngle";
-                        smoothRotationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                        smoothRotationAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-                        var opacityAnimation
-                            = compositor.CreateScalarKeyFrameAnimation();
-                        opacityAnimation.Target = "Opacity";
-                        opacityAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                        opacityAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-                        var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
-                        offsetAnimation.Target = "Offset";
-                        offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                        offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
-
-                        var scaleAnimation
-                            = compositor.CreateVector3KeyFrameAnimation();
-                        scaleAnimation.Target = "Scale";
-                        scaleAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-                        scaleAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-                        var animation = compositor.CreateImplicitAnimationCollection();
-                        animation["RotationAngle"] = smoothRotationAnimation;
-                        animation["Offset"] = offsetAnimation;
-                        animation["Scale"] = scaleAnimation;
-                        animation["Opacity"] = opacityAnimation;
-
-                        composition.ImplicitAnimations = animation;
-
-                        UpdateContent();
-                    };
-
-                    SetCurrentValue(ContentProperty, _content);
-                }
-                else
-                {
-                    RaisePropertyChanged(ContentProperty, null, Content, Data.BindingPriority.Style, false);
+                    UpdateContent();
                 }
             }
+        }
 
-            OnOrientationChanged();
+        private void OnContentLoaded(object? s, RoutedEventArgs e)
+        {
+            if (_content == null)
+                return;
+            
+            var composition = ElementComposition.GetElementVisual(_content);
+
+            if (composition == null) return;
+
+            var compositor = composition.Compositor;
+            composition.Opacity = 0;
+
+            var smoothRotationAnimation = compositor.CreateScalarKeyFrameAnimation();
+            smoothRotationAnimation.Target = "RotationAngle";
+            smoothRotationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            smoothRotationAnimation.Duration = TimeSpan.FromMilliseconds(100);
+
+            var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
+            opacityAnimation.Target = "Opacity";
+            opacityAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            opacityAnimation.Duration = TimeSpan.FromMilliseconds(100);
+
+            var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+            offsetAnimation.Target = "Offset";
+            offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
+
+            var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Target = "Scale";
+            scaleAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(100);
+
+            var animation = compositor.CreateImplicitAnimationCollection();
+            animation["RotationAngle"] = smoothRotationAnimation;
+            animation["Offset"] = offsetAnimation;
+            animation["Scale"] = scaleAnimation;
+            animation["Opacity"] = opacityAnimation;
+
+            composition.ImplicitAnimations = animation;
 
             UpdateContent();
         }
@@ -229,6 +216,7 @@ namespace Avalonia.Controls
                             visualizerVisual.Offset = IsPullDirectionVertical ?
                                 new Vector3D(visualizerVisual.Offset.X, 0, 0) :
                                 new Vector3D(0, visualizerVisual.Offset.Y, 0);
+                            visual.Offset = visualizerVisual.Offset;
                             _content.InvalidateMeasure();
                             break;
                         case RefreshVisualizerState.Interacting:
@@ -353,14 +341,27 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ContentProperty)
             {
+                if (change.OldValue is Control c)
+                {
+                    c.Loaded -= OnContentLoaded;
+                    _root?.Children.Remove(c);
+                }
+
+                _content = change.NewValue as Control;
+
+                if (_content != null)
+                {
+                    _content.Loaded += OnContentLoaded;
+                }
+
                 if (_root != null && _content != null)
                 {
                     _root.Children.Insert(0, _content);
                     _content.VerticalAlignment = Layout.VerticalAlignment.Center;
                     _content.HorizontalAlignment = Layout.HorizontalAlignment.Center;
-                }
 
-                UpdateContent();
+                    UpdateContent();
+                }
             }
             else if (change.Property == OrientationProperty)
             {

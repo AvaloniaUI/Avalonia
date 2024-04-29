@@ -50,7 +50,7 @@
   <BoolProperty Name="AvaloniaNameGeneratorIsEnabled"
               DisplayName="Use Name Generator"
               Description="Enable/Disable Avalonia Name Source Generator"
-              HelpUrl="https://github.com/AvaloniaUI/Avalonia/blob/master/src/tools/Avalonia.Generators/README.md"
+              HelpUrl="https://github.com/AvaloniaUI/Avalonia/blob/master/src/tools/Avalonia.Generators/README.md#advanced-usage"
               Category="NameGenerator" />
 
   <EnumProperty Name="AvaloniaNameGeneratorBehavior"
@@ -66,6 +66,18 @@
       </NameValuePair>
     </EnumProperty.Metadata>
   </EnumProperty>
+
+  <BoolProperty Name="AvaloniaNameGeneratorAttachDevTools"
+              DisplayName="Attach Dev Tools"
+              Description="Allowed to automatic attach DevTools in Window InitializeComponent method."
+              Category="NameGenerator">
+    <BoolProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorBehavior" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorBehavior" "InitializeComponent")</NameValuePair.Value>
+      </NameValuePair>
+    </BoolProperty.Metadata>
+  </BoolProperty>
 
   <EnumProperty Name="AvaloniaNameGeneratorDefaultFieldModifier"
               DisplayName="Default Class Field/Property Modifier"

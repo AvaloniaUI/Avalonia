@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <DefineConstants>$(DefineConstants);AVALONIA_D2D</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.RenderTests\**\*.cs" />
+    <Compile Remove="..\Avalonia.RenderTests\CrossTests\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />

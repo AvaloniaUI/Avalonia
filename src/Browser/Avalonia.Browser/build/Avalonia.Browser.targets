@@ -1,0 +1,30 @@
+<Project>
+  <PropertyGroup>
+    <EmccFlags Condition="'$(AvaloniaAllowWebGl2)' == 'true'">$(EmccFlags) -sUSE_WEBGL2=1 -sMAX_WEBGL_VERSION=2 -lGL </EmccFlags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- So we can access Emscripten APIs -->
+    <EmccExportedRuntimeMethod Include="GL" />
+  </ItemGroup>
+  
+  <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->
+  <ItemGroup Condition="'$(ShouldIncludeAvaloniaLegacyAssets)' == 'True'">
+    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' == ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" />
+    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' != ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" TargetPath="$(WasmRuntimeAssetsLocation)/%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(ShouldIncludeNativeSkiaSharp)' == 'True' or '$(ShouldIncludeNativeHarfBuzzSharp)' == 'True'">
+    <WasmBuildNative Condition="'$(WasmBuildNative)' == ''">true</WasmBuildNative>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkVersion)' != '' and '$(ShouldIncludeNativeSkiaSharp)' == 'True'">
+    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)/3.1.34/mt/*.a" Condition="'$(WasmEnableThreads)' == 'True'" />
+    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)/3.1.34/st/*.a" Condition="'$(WasmEnableThreads)' != 'True'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkVersion)' != '' and '$(ShouldIncludeNativeHarfBuzzSharp)' == 'True'">
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)/3.1.34/st/*.a" Condition="'$(WasmEnableThreads)' != 'True'" />
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)/3.1.34/mt/*.a" Condition="'$(WasmEnableThreads)' == 'True'" />
+  </ItemGroup>
+</Project>

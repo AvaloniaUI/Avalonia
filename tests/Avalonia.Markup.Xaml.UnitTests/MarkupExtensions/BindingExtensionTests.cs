@@ -11,7 +11,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
     public class BindingExtensionTests : XamlTestBase
     {
-
         [Fact]
         public void BindingExtension_Binds_To_Source()
         {

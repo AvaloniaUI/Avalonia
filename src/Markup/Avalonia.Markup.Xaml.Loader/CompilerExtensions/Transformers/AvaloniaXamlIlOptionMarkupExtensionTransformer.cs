@@ -330,12 +330,16 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
 
         public string Name => "ProvideValue";
         public bool IsPublic => true;
+        public bool IsPrivate => false;
+        public bool IsFamily => false;
         public bool IsStatic => false;
         public IXamlType ReturnType => ExtensionNodeContainer.GetReturnType();
         public IReadOnlyList<IXamlType> Parameters { get; }
         public IXamlType DeclaringType { get; }
         public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) => throw new NotImplementedException();
         public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
+
+        public IXamlParameterInfo GetParameterInfo(int index) => new AnonymousParameterInfo(Parameters[index], index);
 
         public void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {

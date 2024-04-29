@@ -14,10 +14,10 @@ namespace Avalonia.Styling
     public class Styles : AvaloniaObject,
         IAvaloniaList<IStyle>,
         IStyle,
-        IResourceProvider
+        IResourceProvider,
+        IAvaloniaListItemValidator<IStyle>
     {
         private readonly AvaloniaList<IStyle> _styles = new();
-        private readonly AvaloniaList<Media> _medias = new();
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
 
@@ -25,11 +25,7 @@ namespace Avalonia.Styling
         {
             _styles.ResetBehavior = ResetBehavior.Remove;
             _styles.CollectionChanged += OnCollectionChanged;
-            _styles.Validate = i =>
-            {
-                if (i is ControlTheme)
-                    throw new InvalidOperationException("ControlThemes cannot be added to a Styles collection.");
-            };
+            _styles.Validator = this;
         }
 
         public Styles(IResourceHost owner)
@@ -311,6 +307,15 @@ namespace Avalonia.Styling
             }
 
             CollectionChanged?.Invoke(this, e);
+        }
+
+        void IAvaloniaListItemValidator<IStyle>.Validate(IStyle item)
+        {
+            if (item is ControlTheme theme)
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(ControlTheme)} (for {theme.TargetType}) cannot be added to a {nameof(Styles)} collection.");
+            }
         }
     }
 }

@@ -52,6 +52,39 @@ public:
 // interval—on the order of decades or more"
 static double distantFutureInterval = (double)50*365*24*3600;
 
+
+
+@implementation ObserverStateHolder : NSObject
+{
+    @public bool InsideCallback;
+}
+@end
+
+@implementation ObserverHolder : NSObject
+{
+    @public CFRunLoopObserverRef Observer;
+    @public ObserverStateHolder* State;
+}
+
+- (ObserverHolder*) init
+{
+    self = [super init];
+    self->State = [ObserverStateHolder new];
+    return self;
+}
+
+- (void) dealloc
+{
+    if(Observer != nil)
+    {
+        CFRunLoopObserverInvalidate(Observer);
+        CFRelease(Observer);
+        Observer = nil;
+    }
+}
+
+@end
+
 @interface Signaler : NSObject
 -(void) setEvents:(IAvnPlatformThreadingInterfaceEvents*) events;
 -(void) updateTimer:(int)ms;
@@ -66,7 +99,7 @@ static double distantFutureInterval = (double)50*365*24*3600;
     bool _wakeupDelegateSent;
     bool _signaled;
     bool _backgroundProcessingRequested;
-    CFRunLoopObserverRef _observer;
+    @public ObserverHolder* Observer;
     CFRunLoopTimerRef _timer;
 }
 
@@ -83,15 +116,19 @@ static double distantFutureInterval = (double)50*365*24*3600;
     }
 }
 
-- (Signaler*) init
+- (ObserverHolder*) createObserver
 {
-    _observer = CFRunLoopObserverCreateWithHandler(nil,
+    ObserverHolder* holder = [ObserverHolder new];
+    ObserverStateHolder* state = holder->State;
+    
+    holder->Observer = CFRunLoopObserverCreateWithHandler(nil,
                                                    kCFRunLoopBeforeSources
                                                    | kCFRunLoopAfterWaiting
                                                    | kCFRunLoopBeforeWaiting
                                                    ,
                                                    true, 0,
                                                    ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+        state->InsideCallback = true;
         if(activity == kCFRunLoopBeforeWaiting)
         {
             bool triggerProcessing;
@@ -103,10 +140,15 @@ static double distantFutureInterval = (double)50*365*24*3600;
                 self->_events->ReadyForBackgroundProcessing();
         }
         [self checkSignaled];
+        state->InsideCallback = false;
     });
-    CFRunLoopAddObserver(CFRunLoopGetMain(), _observer, kCFRunLoopCommonModes);
-    
-    
+    CFRunLoopAddObserver(CFRunLoopGetMain(), holder->Observer, kCFRunLoopCommonModes);
+    return holder;
+}
+
+- (Signaler*) init
+{
+    Observer = [self createObserver];
     _timer = CFRunLoopTimerCreateWithHandler(nil, CFAbsoluteTimeGetCurrent() + distantFutureInterval, distantFutureInterval, 0, 0, ^(CFRunLoopTimerRef timer) {
         self->_events->Timer();
     });
@@ -118,12 +160,7 @@ static double distantFutureInterval = (double)50*365*24*3600;
 
 - (void) destroyObserver
 {
-    if(_observer != nil)
-    {
-        CFRunLoopObserverInvalidate(_observer);
-        CFRelease(_observer);
-        _observer = nil;
-    }
+    Observer = nil;
     
     if(_timer != nil)
     {
@@ -182,12 +219,13 @@ class PlatformThreadingInterface : public ComSingleObject<IAvnPlatformThreadingI
 private:
     ComPtr<IAvnPlatformThreadingInterfaceEvents> _events;
     Signaler* _signaler;
-    CFRunLoopObserverRef _observer = nil;
+    ObserverHolder* _currentObserver;
 public:
     FORWARD_IUNKNOWN()
     PlatformThreadingInterface()
     {
         _signaler = [Signaler new];
+        _currentObserver = _signaler->Observer;
     };
     
     ~PlatformThreadingInterface()
@@ -228,18 +266,25 @@ public:
         }
         else
         {
-            while(!can->Cancelled)
-            {
-                @autoreleasepool
+            @autoreleasepool {
+                auto previousObserver = _currentObserver;
+                if(_currentObserver->State->InsideCallback)
+                    _currentObserver = [_signaler createObserver];
+                
+                while(!can->Cancelled)
                 {
-                    NSEvent* ev = [NSApp
-                                   nextEventMatchingMask:NSEventMaskAny
-                                   untilDate: [NSDate dateWithTimeIntervalSinceNow:1]
-                                   inMode:NSDefaultRunLoopMode
-                                   dequeue:true];
-                    if(ev != NULL)
-                        [NSApp sendEvent:ev];
+                    @autoreleasepool
+                    {
+                        NSEvent* ev = [NSApp
+                                       nextEventMatchingMask:NSEventMaskAny
+                                       untilDate: [NSDate dateWithTimeIntervalSinceNow:1]
+                                       inMode:NSDefaultRunLoopMode
+                                       dequeue:true];
+                        if(ev != NULL)
+                            [NSApp sendEvent:ev];
+                    }
                 }
+                _currentObserver = previousObserver;
             }
         }
     };

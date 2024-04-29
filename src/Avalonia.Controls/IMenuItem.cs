@@ -40,6 +40,22 @@ namespace Avalonia.Controls
         IMenuElement? Parent { get; }
 
         /// <summary>
+        /// Gets toggle type of the menu item.
+        /// </summary>
+        MenuItemToggleType ToggleType { get; }
+        
+        /// <summary>
+        /// Gets menu item group name when <see cref="ToggleType"/> is <see cref="MenuItemToggleType.Radio"/>.
+        /// </summary>
+        string? GroupName { get; }
+        
+        /// <summary>
+        /// Gets or sets if menu item is checked when <see cref="ToggleType"/> is
+        /// <see cref="MenuItemToggleType.CheckBox"/> or <see cref="MenuItemToggleType.Radio"/>.
+        /// </summary>
+        bool IsChecked { get; set; }
+        
+        /// <summary>
         /// Raises a click event on the menu item.
         /// </summary>
         void RaiseClick();

@@ -366,6 +366,20 @@ HRESULT WindowImpl::GetWindowState(AvnWindowState *ret) {
     }
 }
 
+HRESULT WindowImpl::GetWindowZOrder(long* zOrder) {
+    START_COM_CALL;
+    @autoreleasepool {
+        if (zOrder == nullptr) {
+            return E_POINTER;
+        }
+
+        // negate the value to match expected z-order in Avalonia
+        // (top-most window should have the highest z-order value)
+        *zOrder = -[Window orderedIndex];
+        return S_OK;
+    }
+}
+
 HRESULT WindowImpl::TakeFocusFromChildren() {
     START_COM_CALL;
 

@@ -1,8 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <DefineConstants>AVALONIA_SKIA;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <DefineConstants>$(DefineConstants);AVALONIA_SKIA</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IncludeLinuxSkia>true</IncludeLinuxSkia>
+    <IncludeWasmSkia>true</IncludeWasmSkia>
+
+<!--    <AvaSkiaRenderTestsIncludeSkiaSharp3>true</AvaSkiaRenderTestsIncludeSkiaSharp3>-->
+    <AvsIncludeSkiaSharp3 Condition="'$(AvsIncludeSkiaSharp3)' == '' AND '$(AvaSkiaRenderTestsIncludeSkiaSharp3)' == 'true'">true</AvsIncludeSkiaSharp3>
+    <DefineConstants Condition="'$(AvsIncludeSkiaSharp3)' == 'true'">$(DefineConstants);AVALONIA_SKIA3</DefineConstants>
+    <DefineConstants Condition="'$(AvsIncludeSkiaSharp3)' != 'true'">$(DefineConstants);AVALONIA_SKIA2</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.RenderTests\**\*.cs" />

@@ -2,23 +2,19 @@ jobs:
 
 - job: GetPRNumber
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'ubuntu-20.04'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-  - task: PowerShell@2
-    displayName: Get PR Number
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
-      targetType: 'inline'
-      script: |
-        $prId = $env:System_PullRequest_PullRequestNumber
-        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
-
-        if (!([string]::IsNullOrWhiteSpace($prId)))
-        {
-          Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
-        }
-      
+      packageType: sdk
+      useGlobalJson: true
+  - task: CmdLine@2
+    displayName: 'Run Build'
+    inputs:
+        script: ./build.sh --target OutputVersion --version-output-dir $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -36,7 +32,7 @@ jobs:
       version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 7.0 SDK'
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -45,7 +41,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install wasm-tools wasm-experimental
+       dotnet workload install android macos wasm-tools
 
   - task: CmdLine@2
     displayName: 'Install Tizen Workload'
@@ -82,7 +78,7 @@ jobs:
       version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 7.0 SDK'
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -91,7 +87,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install wasm-tools wasm-experimental
+       dotnet workload install android ios macos wasm-tools
 
   - task: CmdLine@2
     displayName: 'Install Tizen Workload'
@@ -162,7 +158,7 @@ jobs:
       version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 7.0 SDK'
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -171,7 +167,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios wasm-tools wasm-experimental
+       dotnet workload install android ios tvos wasm-tools
 
   - task: PowerShell@2
     displayName: 'Install Tizen Workload'

@@ -8,6 +8,6 @@ namespace Avalonia.Android
 {
     public interface IActivityConfigurationService
     {
-        event EventHandler ConfigurationChanged;
+        event EventHandler? ConfigurationChanged;
     }
 }

@@ -2325,7 +2325,7 @@ namespace Avalonia.Controls
 
             if ((!ShowGridLines) && (_gridLinesRenderer != null))
             {
-                VisualChildren.Add(_gridLinesRenderer);
+                VisualChildren.Remove(_gridLinesRenderer);
                 _gridLinesRenderer = null;
             }
 
@@ -2357,7 +2357,7 @@ namespace Avalonia.Controls
             if (grid._extData != null    // trivial grid is 1 by 1. there is no grid lines anyway
                 && grid.ListenToNotifications)
             {
-                grid.InvalidateVisual();
+                grid.InvalidateArrange();
             }
 
             grid.SetFlags((bool)e.NewValue!, Flags.ShowGridLinesPropertyValue);

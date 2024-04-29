@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Animation.Easings;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.Platform
 {
@@ -26,6 +27,20 @@ namespace Avalonia.Controls.Platform
         event EventHandler<InputPaneStateEventArgs>? StateChanged;
     }
 
+    [PrivateApi]
+    public abstract class InputPaneBase : IInputPane
+    {
+        public virtual InputPaneState State { get; protected set; }
+        public virtual Rect OccludedRect { get; protected set; }
+        public event EventHandler<InputPaneStateEventArgs>? StateChanged;
+
+        protected void OnStateChanged(InputPaneStateEventArgs eventArgs)
+        {
+            Dispatcher.UIThread.Send(
+                _ => StateChanged?.Invoke(this, eventArgs));
+        }
+    }
+    
     /// <summary>
     /// The input pane opened state.
     /// </summary>

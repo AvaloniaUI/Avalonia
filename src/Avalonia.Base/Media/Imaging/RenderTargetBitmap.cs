@@ -77,7 +77,7 @@ namespace Avalonia.Media.Imaging
         /// <returns>The drawing context.</returns>
         public DrawingContext CreateDrawingContext(bool clear)
         {
-            var platform = PlatformImpl.Item.CreateDrawingContext();
+            var platform = PlatformImpl.Item.CreateDrawingContext(true);
             if(clear)
                 platform.Clear(Colors.Transparent);
             return new PlatformDrawingContext(platform);

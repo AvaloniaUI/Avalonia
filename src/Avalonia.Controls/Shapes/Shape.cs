@@ -64,6 +64,7 @@ namespace Avalonia.Controls.Shapes
         private Geometry? _definingGeometry;
         private Geometry? _renderedGeometry;
         private IPen? _strokePen;
+        private EventHandler? _geometryChangedHandler;
 
         /// <summary>
         /// Gets a value that represents the <see cref="Geometry"/> of the shape.
@@ -75,6 +76,10 @@ namespace Avalonia.Controls.Shapes
                 if (_definingGeometry == null)
                 {
                     _definingGeometry = CreateDefiningGeometry();
+                    if (_definingGeometry is not null && VisualRoot is not null)
+                    {
+                        _definingGeometry.Changed += GeometryChangedHandler;
+                    }
                 }
 
                 return _definingGeometry;
@@ -186,6 +191,8 @@ namespace Avalonia.Controls.Shapes
             get => GetValue(StrokeJoinProperty);
             set => SetValue(StrokeJoinProperty, value);
         }
+        
+        private EventHandler GeometryChangedHandler => _geometryChangedHandler ??= OnGeometryChanged;
 
         public sealed override void Render(DrawingContext context)
         {
@@ -225,12 +232,29 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         /// <returns>Defining <see cref="Geometry"/> of the shape.</returns>
         protected abstract Geometry? CreateDefiningGeometry();
+        
+        /// <summary>
+        /// Called when the underlying <see cref="Geometry"/> changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void OnGeometryChanged(object? sender, EventArgs e)
+        {
+            _renderedGeometry = null;
+            
+            InvalidateMeasure();
+        }
 
         /// <summary>
         /// Invalidates the geometry of this shape.
         /// </summary>
         protected void InvalidateGeometry()
         {
+            if (_definingGeometry is not null)
+            {
+                _definingGeometry.Changed -= GeometryChangedHandler;
+            }
+
             _renderedGeometry = null;
             _definingGeometry = null;
 
@@ -254,7 +278,7 @@ namespace Avalonia.Controls.Shapes
                     InvalidateMeasure();
                 }
                 
-                if (!Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin))
+                if (Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin))
                 {
                     InvalidateVisual();
                 }
@@ -293,6 +317,26 @@ namespace Avalonia.Controls.Shapes
             }
 
             return default;
+        }
+        
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (_definingGeometry is not null)
+            {
+                _definingGeometry.Changed += GeometryChangedHandler;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (_definingGeometry is not null)
+            {
+                _definingGeometry.Changed -= GeometryChangedHandler;
+            }
         }
 
         internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)

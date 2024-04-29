@@ -25,7 +25,7 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        private void Activity_ConfigurationChanged(object sender, EventArgs e)
+        private void Activity_ConfigurationChanged(object? sender, EventArgs e)
         {
             OrientationChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -35,8 +35,8 @@ namespace Avalonia.Android.Platform
             ScreenSizeChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public event EventHandler ScreenSizeChanged;
-        public event EventHandler OrientationChanged;
+        public event EventHandler? ScreenSizeChanged;
+        public event EventHandler? OrientationChanged;
 
         public double GetScreenHeight() => _topLevelImpl.Size.Height;
 
@@ -44,7 +44,7 @@ namespace Avalonia.Android.Platform
 
         public MediaOrientation GetDeviceOrientation()
         {
-            return _topLevelImpl.View.Resources.Configuration.Orientation switch
+            return _topLevelImpl.View.Resources?.Configuration?.Orientation switch
             {
                 global::Android.Content.Res.Orientation.Landscape => MediaOrientation.Landscape,
                 global::Android.Content.Res.Orientation.Portrait => MediaOrientation.Portrait,

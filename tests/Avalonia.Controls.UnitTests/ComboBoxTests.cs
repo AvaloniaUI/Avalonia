@@ -453,5 +453,69 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
             }
         }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Overrides_ItemTemplate()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            IDataTemplate selectionBoxItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x });
+            var target = new ComboBox
+            {
+                ItemsSource = new []{ "Foo" },
+                SelectionBoxItemTemplate = selectionBoxItemTemplate,
+                ItemTemplate = itemTemplate,
+            };
+            
+            Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
+        }
+        
+        [Fact]
+        public void SelectionBoxItemTemplate_Inherits_From_ItemTemplate_When_NotSet()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            var target = new ComboBox
+            {
+                ItemsSource = new []{ "Foo" },
+                ItemTemplate = itemTemplate,
+            };
+            
+            Assert.Equal(itemTemplate, target.SelectionBoxItemTemplate);
+        }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Overrides_ItemTemplate_After_ItemTemplate_Changed()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            IDataTemplate selectionBoxItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x });
+            IDataTemplate itemTemplate2 = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "?" });
+            var target = new ComboBox
+            {
+                ItemsSource = new[] { "Foo" },
+                SelectionBoxItemTemplate = selectionBoxItemTemplate,
+                ItemTemplate = itemTemplate,
+            };
+
+            Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
+            
+            target.ItemTemplate = itemTemplate2;
+            
+            Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
+        }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Inherits_From_ItemTemplate_When_ItemTemplate_Changed()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            IDataTemplate selectionBoxItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x });
+            IDataTemplate itemTemplate2 = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "?" });
+            var target = new ComboBox { ItemsSource = new[] { "Foo" }, ItemTemplate = itemTemplate, };
+
+            Assert.Equal(itemTemplate, target.SelectionBoxItemTemplate);
+
+            target.ItemTemplate = itemTemplate2;
+            target.SelectionBoxItemTemplate = null;
+
+            Assert.Equal(itemTemplate2, target.SelectionBoxItemTemplate);
+        }
     }
 }
