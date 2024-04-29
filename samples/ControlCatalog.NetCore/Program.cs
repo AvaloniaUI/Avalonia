@@ -134,7 +134,6 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
-                    RenderingMode = new [] { X11RenderingMode.Vulkan }
                 })
 
                 .With(new VulkanOptions
