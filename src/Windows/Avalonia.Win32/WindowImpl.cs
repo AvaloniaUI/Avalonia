@@ -1205,6 +1205,8 @@ namespace Avalonia.Win32
                 UnmanagedMethods.ShowWindow(_hwnd, command.Value);
             }
 
+            ExtendClientArea();
+
             if (state == WindowState.Maximized)
             {
                 MaximizeWithoutCoveringTaskbar();
