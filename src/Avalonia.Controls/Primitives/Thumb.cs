@@ -30,20 +30,20 @@ namespace Avalonia.Controls.Primitives
 
         public event EventHandler<VectorEventArgs>? DragStarted
         {
-            add { AddHandler(DragStartedEvent, value); }
-            remove { RemoveHandler(DragStartedEvent, value); }
+            add => AddHandler(DragStartedEvent, value);
+            remove => RemoveHandler(DragStartedEvent, value);
         }
 
         public event EventHandler<VectorEventArgs>? DragDelta
         {
-            add { AddHandler(DragDeltaEvent, value); }
-            remove { RemoveHandler(DragDeltaEvent, value); }
+            add => AddHandler(DragDeltaEvent, value);
+            remove => RemoveHandler(DragDeltaEvent, value);
         }
 
         public event EventHandler<VectorEventArgs>? DragCompleted
         {
-            add { AddHandler(DragCompletedEvent, value); }
-            remove { RemoveHandler(DragCompletedEvent, value); }
+            add => AddHandler(DragCompletedEvent, value);
+            remove => RemoveHandler(DragCompletedEvent, value);
         }
 
         internal void AdjustDrag(Vector v)

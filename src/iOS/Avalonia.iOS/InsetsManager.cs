@@ -1,21 +1,13 @@
 using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
-using UIKit;
 
 namespace Avalonia.iOS;
-#nullable enable
 
-internal class InsetsManager : IInsetsManager
+internal class InsetsManager : InsetsManagerBase
 {
-    private readonly AvaloniaView _view;
     private IAvaloniaViewController? _controller;
-    private bool _displayEdgeToEdge;
-
-    public InsetsManager(AvaloniaView view)
-    {
-        _view = view;
-    }
+    private bool _displayEdgeToEdge = true;
 
     internal void InitWithController(IAvaloniaViewController controller)
     {
@@ -24,36 +16,13 @@ internal class InsetsManager : IInsetsManager
         {
             _controller.SafeAreaPaddingChanged += (_, _) =>
             {
-                SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
+                OnSafeAreaChanged(new SafeAreaChangedArgs(SafeAreaPadding));
                 DisplayEdgeToEdgeChanged?.Invoke(this, _displayEdgeToEdge);
             };
         }
     }
 
-    public SystemBarTheme? SystemBarTheme
-    {
-        get => _controller?.PreferredStatusBarStyle switch
-        {
-            UIStatusBarStyle.LightContent => Controls.Platform.SystemBarTheme.Dark,
-            UIStatusBarStyle.DarkContent => Controls.Platform.SystemBarTheme.Light,
-            _ => null
-        };
-        set
-        {
-            if (_controller != null)
-            {
-                _controller.PreferredStatusBarStyle = value switch
-                {
-                    Controls.Platform.SystemBarTheme.Light => UIStatusBarStyle.DarkContent,
-                    Controls.Platform.SystemBarTheme.Dark => UIStatusBarStyle.LightContent,
-                    null => UIStatusBarStyle.Default,
-                    _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
-                };
-            }
-        }
-    }
-
-    public bool? IsSystemBarVisible
+    public override bool? IsSystemBarVisible
     {
         get => _controller?.PrefersStatusBarHidden == false;
         set
@@ -64,10 +33,9 @@ internal class InsetsManager : IInsetsManager
             }
         }
     }
-    public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
     public event EventHandler<bool>? DisplayEdgeToEdgeChanged;
 
-    public bool DisplayEdgeToEdge
+    public override bool DisplayEdgeToEdge
     {
         get => _displayEdgeToEdge;
         set
@@ -76,11 +44,12 @@ internal class InsetsManager : IInsetsManager
             {
                 _displayEdgeToEdge = value;
                 DisplayEdgeToEdgeChanged?.Invoke(this, value);
+                OnSafeAreaChanged(new SafeAreaChangedArgs(SafeAreaPadding));
             }
         }
     }
 
-    public Thickness SafeAreaPadding => _controller?.SafeAreaPadding ?? default;
+    public override Thickness SafeAreaPadding => _displayEdgeToEdge ? _controller?.SafeAreaPadding ?? default : default;
 
-    public Color? SystemBarColor { get; set; }
+    public override Color? SystemBarColor { get; set; }
 }

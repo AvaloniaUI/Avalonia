@@ -28,6 +28,20 @@ namespace Avalonia.Media.Fonts
             HasFallbacks = _names.Length > 1;
         }
 
+        internal FamilyNameCollection(FrugalStructList<FontSourceIdentifier> fontSources) 
+        { 
+            _names = new string[fontSources.Count];
+
+            for (int i = 0; i < fontSources.Count; i++)
+            {
+                _names[i] = fontSources[i].Name;
+            }
+
+            PrimaryFamilyName = _names[0];
+
+            HasFallbacks = _names.Length > 1;
+        }
+
         private static string[] SplitNames(string names)
 #if NET6_0_OR_GREATER
             => names.Split(',', StringSplitOptions.TrimEntries);

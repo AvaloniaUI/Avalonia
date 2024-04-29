@@ -6,6 +6,8 @@ using Avalonia.Diagnostics;
 using Avalonia.Data.Core;
 using Xunit;
 using Avalonia.Markup.Parsers;
+using Avalonia.Utilities;
+using Avalonia.Data.Core.ExpressionNodes;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
@@ -23,7 +25,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Get_Attached_Property_Value()
         {
             var data = new Class1();
-            var target = ExpressionObserverBuilder.Build(data, "(Owner.Foo)", typeResolver: _typeResolver);
+            var target = Build(data, "(Owner.Foo)", typeResolver: _typeResolver);
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -35,7 +37,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public async Task Should_Get_Attached_Property_Value_With_Namespace()
         {
             var data = new Class1();
-            var target = ExpressionObserverBuilder.Build(
+            var target = Build(
                 data,
                 "(NS:Owner.Foo)",
                 typeResolver: (ns, name) => ns == "NS" && name == "Owner" ? typeof(Owner) : null);
@@ -55,7 +57,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
                 }
             };
 
-            var target = ExpressionObserverBuilder.Build(data, "Next.(Owner.Foo)", typeResolver: _typeResolver);
+            var target = Build(data, "Next.(Owner.Foo)", typeResolver: _typeResolver);
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
@@ -64,10 +66,26 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public async Task Should_Get_Chained_Attached_Property_Value_With_TypeCast()
+        {
+            var expected = new Class1();
+
+            var data = new Class1();
+            data.SetValue(Owner.SomethingProperty, new Class1() { Next = expected });
+
+            var target = Build(data, "((Class1)(Owner.Something)).Next", typeResolver: (ns, name) => name == "Class1" ? typeof(Class1) : _typeResolver(ns, name));
+            var result = await target.Take(1);
+
+            Assert.Equal(expected, result);
+
+            Assert.Null(((IAvaloniaObjectDebug)data).GetPropertyChangedSubscribers());
+        }
+
+        [Fact]
         public void Should_Track_Simple_Attached_Value()
         {
             var data = new Class1();
-            var target = ExpressionObserverBuilder.Build(data, "(Owner.Foo)", typeResolver: _typeResolver);
+            var target = Build(data, "(Owner.Foo)", typeResolver: _typeResolver);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -91,7 +109,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
                 }
             };
 
-            var target = ExpressionObserverBuilder.Build(data, "Next.(Owner.Foo)", typeResolver: _typeResolver);
+            var target = Build(data, "Next.(Owner.Foo)", typeResolver: _typeResolver);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -107,10 +125,10 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Should_Not_Keep_Source_Alive()
         {
-            Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
+            Func<Tuple<IObservable<object>, WeakReference>> run = () =>
             {
                 var source = new Class1();
-                var target = ExpressionObserverBuilder.Build(source, "(Owner.Foo)", typeResolver: _typeResolver);
+                var target = Build(source, "(Owner.Foo)", typeResolver: _typeResolver);
                 return Tuple.Create(target, new WeakReference(source));
             };
 
@@ -131,7 +149,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new Class1();
 
-            Assert.Throws<ExpressionParseException>(() => ExpressionObserverBuilder.Build(data, "(Owner.)", typeResolver: _typeResolver));
+            Assert.Throws<ExpressionParseException>(() => Build(data, "(Owner.)", typeResolver: _typeResolver));
         }
 
         [Fact]
@@ -139,16 +157,29 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new Class1();
 
-            Assert.Throws<ExpressionParseException>(() => ExpressionObserverBuilder.Build(data, "(Owner.Foo.Bar)", typeResolver: _typeResolver));
+            Assert.Throws<ExpressionParseException>(() => Build(data, "(Owner.Foo.Bar)", typeResolver: _typeResolver));
+        }
+
+        private static IObservable<object> Build(object source, string path, Func<string, string, Type> typeResolver)
+        {
+            var r = new CharacterReader(path);
+            var grammar = BindingExpressionGrammar.Parse(ref r).Nodes;
+            var nodes = ExpressionNodeFactory.CreateFromAst(grammar, typeResolver, null, out _);
+            return new BindingExpression(source, nodes, AvaloniaProperty.UnsetValue).ToObservable();
         }
 
         private static class Owner
         {
             public static readonly AttachedProperty<string> FooProperty =
                 AvaloniaProperty.RegisterAttached<Class1, string>(
-                    "Foo", 
-                    typeof(Owner), 
+                    "Foo",
+                    typeof(Owner),
                     defaultValue: "foo");
+
+            public static readonly AttachedProperty<AvaloniaObject> SomethingProperty =
+                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject>(
+                    "Something",
+                    typeof(Owner));
         }
 
         private class Class1 : AvaloniaObject
@@ -158,8 +189,8 @@ namespace Avalonia.Markup.UnitTests.Parsers
 
             public Class1 Next
             {
-                get { return GetValue(NextProperty); }
-                set { SetValue(NextProperty, value); }
+                get => GetValue(NextProperty);
+                set => SetValue(NextProperty, value);
             }
         }
     }

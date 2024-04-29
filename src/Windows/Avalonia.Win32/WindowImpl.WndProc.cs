@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 
 namespace Avalonia.Win32

@@ -61,10 +61,7 @@ namespace Avalonia.Controls.PullToRefresh
         public double InteractionRatio
         {
             get => _interactionRatio;
-            set
-            {
-                SetAndRaise(InteractionRatioProperty, ref _interactionRatio, value);
-            }
+            set => SetAndRaise(InteractionRatioProperty, ref _interactionRatio, value);
         }
 
         public double ExecutionRatio

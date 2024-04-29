@@ -58,7 +58,18 @@ namespace Avalonia.Input
         /// </summary>
         public ulong Timestamp { get; }
 
-        internal bool IsGestureRecognitionSkipped { get; private set; }
+        internal bool IsGestureRecognitionSkipped
+        {
+            get
+            {
+                return (Pointer as Pointer)?.IsGestureRecognitionSkipped ?? false;
+            }
+            private set
+            {
+                if (Pointer is Pointer pointer)
+                    pointer.IsGestureRecognitionSkipped = true;
+            }
+        }
 
         /// <summary>
         /// Gets a value that indicates which key modifiers were active at the time that the pointer event was initiated.

@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
+using Avalonia.Media.TextFormatting.Unicode;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -14,6 +15,10 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
     {
         private OrgFreedesktopIBusService? _service;
         private OrgFreedesktopIBusInputContext? _context;
+        private string? _preeditText;
+        private int _preeditCursor;
+        private bool _preeditShown = true;
+        private int _insideReset = 0;
 
         public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
@@ -25,8 +30,50 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             _context = new OrgFreedesktopIBusInputContext(Connection, name, path);
             AddDisposable(await _context.WatchCommitTextAsync(OnCommitText));
             AddDisposable(await _context.WatchForwardKeyEventAsync(OnForwardKey));
+            AddDisposable(await _context.WatchUpdatePreeditTextAsync(OnUpdatePreedit));
+            AddDisposable(await _context.WatchShowPreeditTextAsync(OnShowPreedit));
+            AddDisposable(await _context.WatchHidePreeditTextAsync(OnHidePreedit));
             Enqueue(() => _context.SetCapabilitiesAsync((uint)IBusCapability.CapFocus));
             return true;
+        }
+
+        private void OnHidePreedit(Exception? obj)
+        {
+            _preeditShown = false;
+            if (Client?.SupportsPreedit == true)
+                Client.SetPreeditText(null, null);
+        }
+
+        private void OnShowPreedit(Exception? obj)
+        {
+            _preeditShown = true;
+            if (Client?.SupportsPreedit == true)
+                Client.SetPreeditText(_preeditText, _preeditText == null ? null : _preeditCursor);
+        }
+
+        private void OnUpdatePreedit(Exception? arg1, (DBusVariantItem text, uint cursor_pos, bool visible) preeditComponents)
+        {
+            if (preeditComponents.text is { Value: DBusStructItem { Count: >= 3 } structItem } &&
+                structItem[2] is DBusStringItem stringItem)
+            {
+                _preeditText = stringItem.Value;
+                _preeditCursor = _preeditText != null
+                    ? Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
+                        (int)Math.Min(preeditComponents.cursor_pos, int.MaxValue), false)
+                    : 0;
+                
+                _preeditShown = true;
+            }
+            else
+            {
+                _preeditText = null;
+                _preeditShown = false;
+                _preeditCursor = 0;
+            }
+
+            if (Client?.SupportsPreedit == true)
+                Client.SetPreeditText(
+                    _preeditShown ? _preeditText : null, _preeditCursor);
         }
 
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
@@ -57,6 +104,14 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnCommitText(Exception? e, DBusVariantItem variantItem)
         {
+            if (_insideReset > 0) 
+            {
+                // For some reason iBus can trigger a CommitText while being reset.
+                // Thankfully the signal is sent _during_ Reset call processing,
+                // so it arrives on-the-wire before Reset call result, so we can 
+                // check if we have any pending Reset calls and ignore the signal here
+                return;
+            }
             if (e is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitText failed: {e}");
@@ -84,8 +139,24 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             => (active ? _context?.FocusInAsync() : _context?.FocusOutAsync())
                 ?? Task.CompletedTask;
 
-        protected override Task ResetContextCore()
-            => _context?.ResetAsync() ?? Task.CompletedTask;
+        protected override async Task ResetContextCore()
+        {
+            _preeditShown = true;
+            if (_context == null)
+                return;
+            if (_context == null)
+                return;
+
+            try
+            {
+                _insideReset++;
+                await _context.ResetAsync();
+            }
+            finally
+            {
+                _insideReset--;
+            }
+        }
 
         protected override Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode)
         {
@@ -108,6 +179,15 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         public override void SetOptions(TextInputOptions options)
         {
             // No-op, because ibus
+        }
+
+        protected override async Task SetCapabilitiesCore(bool supportsPreedit, bool supportsSurroundingText)
+        {
+            var caps = IBusCapability.CapFocus;
+            if (supportsPreedit)
+                caps |= IBusCapability.CapPreeditText;
+            if (_context != null)
+                await _context.SetCapabilitiesAsync((uint)caps);
         }
     }
 }

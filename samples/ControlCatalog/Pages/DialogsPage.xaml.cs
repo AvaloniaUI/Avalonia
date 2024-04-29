@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -25,6 +26,7 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
 
             IStorageFolder? lastSelectedDirectory = null;
+            IStorageItem? lastSelectedItem = null;
             bool ignoreTextChanged = false;
 
             var results = this.Get<ItemsControl>("PickerLastResults");
@@ -42,7 +44,7 @@ namespace ControlCatalog.Pages
                 {
                     lastSelectedDirectory = await GetStorageProvider().TryGetWellKnownFolderAsync(folderEnum);
                 }
-                else
+                else if (!string.IsNullOrWhiteSpace(currentFolderBox.Text))
                 {
                     if (!Uri.TryCreate(currentFolderBox.Text, UriKind.Absolute, out var folderLink))
                     {
@@ -51,7 +53,14 @@ namespace ControlCatalog.Pages
 
                     if (folderLink is not null)
                     {
-                        lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPathAsync(folderLink);
+                        try
+                        {
+                            lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPathAsync(folderLink);
+                        }
+                        catch (SecurityException)
+                        {
+                            
+                        }
                     }
                 }
             };
@@ -59,37 +68,49 @@ namespace ControlCatalog.Pages
 
             List<FileDialogFilter> GetFilters()
             {
-                if (this.Get<CheckBox>("UseFilters").IsChecked != true)
-                    return new List<FileDialogFilter>();
-                return new List<FileDialogFilter>
-                            {
-                                new FileDialogFilter
-                                {
-                                    Name = "Text files (.txt)", Extensions = new List<string> {"txt"}
-                                },
-                                new FileDialogFilter
-                                {
-                                    Name = "All files",
-                                    Extensions = new List<string> {"*"}
-                                }
-                            };
+                return GetFileTypes()?.Select(f => new FileDialogFilter
+                {
+                    Name = f.Name, Extensions = f.Patterns!.ToList()
+                }).ToList() ?? new List<FileDialogFilter>();
             }
 
             List<FilePickerFileType>? GetFileTypes()
             {
-                if (this.Get<CheckBox>("UseFilters").IsChecked != true)
-                    return null;
-                return new List<FilePickerFileType>
-                            {
-                                FilePickerFileTypes.All,
-                                FilePickerFileTypes.TextPlain,
-                                new("Binary Log")
-                                {
-                                    Patterns = new[] { "*.binlog", "*.buildlog" },
-                                    MimeTypes = new[] { "application/binlog", "application/buildlog" },
-                                    AppleUniformTypeIdentifiers = new []{ "public.data" }
-                                }
-                            };
+                var selectedItem = (this.Get<ComboBox>("FilterSelector").SelectedItem as ComboBoxItem)?.Content
+                    ?? "None";
+
+                var binLogType = new FilePickerFileType("Binary Log")
+                {
+                    Patterns = new[] { "*.binlog", "*.buildlog" },
+                    MimeTypes = new[] { "application/binlog", "application/buildlog" },
+                    AppleUniformTypeIdentifiers = new[] { "public.data" }
+                };
+
+                return selectedItem switch
+                {
+                    "All + TXT + BinLog" => new List<FilePickerFileType>
+                    {
+                        FilePickerFileTypes.All, FilePickerFileTypes.TextPlain, binLogType
+                    },
+                    "Binlog" => new List<FilePickerFileType> { binLogType },
+                    "TXT extension only" => new List<FilePickerFileType>
+                    {
+                        new("TXT") { Patterns = FilePickerFileTypes.TextPlain.Patterns }
+                    },
+                    "TXT mime only" => new List<FilePickerFileType>
+                    {
+                        new("TXT") { MimeTypes = FilePickerFileTypes.TextPlain.MimeTypes }
+                    },
+                    "TXT apple type id only" => new List<FilePickerFileType>
+                    {
+                        new("TXT")
+                        {
+                            AppleUniformTypeIdentifiers =
+                                FilePickerFileTypes.TextPlain.AppleUniformTypeIdentifiers
+                        }
+                    },
+                    _ => null
+                };
             }
 
             this.Get<Button>("OpenFile").Click += async delegate
@@ -148,7 +169,7 @@ namespace ControlCatalog.Pages
                 }
                 else
                 {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
+                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result!));
                     results.ItemsSource = new[] { result };
                     resultsVisible.IsVisible = true;
                 }
@@ -210,6 +231,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Open file",
                     FileTypeFilter = GetFileTypes(),
+                    SuggestedFileName = "FileName",
                     SuggestedStartLocation = lastSelectedDirectory,
                     AllowMultiple = openMultiple.IsChecked == true
                 });
@@ -225,8 +247,7 @@ namespace ControlCatalog.Pages
                     FileTypeChoices = fileTypes,
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
-                    DefaultExtension = fileTypes?.Any() == true ? "txt" : null,
-                    ShowOverwritePrompt = false
+                    ShowOverwritePrompt = true
                 });
 
                 if (file is not null)
@@ -252,6 +273,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Folder file",
                     SuggestedStartLocation = lastSelectedDirectory,
+                    SuggestedFileName = "FileName",
                     AllowMultiple = openMultiple.IsChecked == true
                 });
 
@@ -276,11 +298,40 @@ namespace ControlCatalog.Pages
                 await SetPickerResult(folder is null ? null : new[] { folder });
                 SetFolder(folder);
             };
+            
+            this.Get<Button>("LaunchUri").Click += async delegate
+            {
+                var statusBlock = this.Get<TextBlock>("LaunchStatus");
+                if (Uri.TryCreate(this.Get<TextBox>("UriToLaunch").Text, UriKind.Absolute, out var uri))
+                {
+                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
+                    statusBlock.Text = "LaunchUriAsync returned " + result;
+                }
+                else
+                {
+                    statusBlock.Text = "Can't parse the Uri";
+                }
+            };
+
+            this.Get<Button>("LaunchFile").Click += async delegate
+            {
+                var statusBlock = this.Get<TextBlock>("LaunchStatus");
+                if (lastSelectedItem is not null)
+                {
+                    var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchFileAsync(lastSelectedItem);
+                    statusBlock.Text = "LaunchFileAsync returned " + result;
+                }
+                else
+                {
+                    statusBlock.Text = "Please select any file or folder first";
+                }
+            };
 
             void SetFolder(IStorageFolder? folder)
             {
                 ignoreTextChanged = true;
                 lastSelectedDirectory = folder;
+                lastSelectedItem = folder;
                 currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
                 ignoreTextChanged = false;
             }
@@ -330,6 +381,7 @@ namespace ControlCatalog.Pages
                             }
                         }
                     }
+                    lastSelectedItem = item;
                 }
 
                 results.ItemsSource = mappedResults;
@@ -423,8 +475,8 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         private IStorageProvider GetStorageProvider()
         {
             var forceManaged = this.Get<CheckBox>("ForceManaged").IsChecked ?? false;
-            return forceManaged
-                ? new ManagedStorageProvider<Window>(GetWindow(), null)
+            return forceManaged 
+                ? new ManagedStorageProvider(GetWindow()) // NOTE: In your production App use 'AppBuilder.UseManagedSystemDialogs()'
                 : GetTopLevel().StorageProvider;
         }
 

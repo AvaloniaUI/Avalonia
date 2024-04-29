@@ -155,7 +155,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            OwningGrid.SetRowSelection(itemIndex, false /*isSelected*/, false /*setAnchorSlot*/);
+            OwningGrid.SetRowSelection(OwningGrid.SlotFromRowIndex(itemIndex), false /*isSelected*/, false /*setAnchorSlot*/);
         }
 
         public void RemoveAt(int index)

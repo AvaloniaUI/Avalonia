@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
                 if(v is VisualLayerManager vlm)
                     if (vlm.OverlayLayer != null)
                         return vlm.OverlayLayer;
-            if (visual is TopLevel tl)
+            if (TopLevel.GetTopLevel(visual) is {} tl)
             {
                 var layers = tl.GetVisualDescendants().OfType<VisualLayerManager>().FirstOrDefault();
                 return layers?.OverlayLayer;

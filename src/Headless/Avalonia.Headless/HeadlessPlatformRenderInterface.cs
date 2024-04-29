@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -32,6 +33,8 @@ namespace Avalonia.Headless
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
         public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
+        public bool SupportsRegions => false;
+        public IPlatformRenderInterfaceRegion CreateRegion() => throw new NotSupportedException();
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -48,11 +51,18 @@ namespace Avalonia.Headless
         }
 
         public IStreamGeometryImpl CreateStreamGeometry() => new HeadlessStreamingGeometryStub();
-        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) => throw new NotImplementedException();
-        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) => throw new NotImplementedException();
+
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) =>
+            new HeadlessGeometryStub(children.Count != 0 ?
+                children.Select(c => c.Bounds).Aggregate((a, b) => a.Union(b)) :
+                default);
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) 
+            => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
         public bool IsLost => false;
+        public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
         public object? TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
@@ -181,6 +191,8 @@ namespace Avalonia.Headless
 
                 return Bounds.Inflate(pen.Thickness / 2);
             }
+
+            public IGeometryImpl GetWidenedGeometry(IPen pen) => this;
 
             public bool StrokeContains(IPen? pen, Point point)
             {
@@ -388,7 +400,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext()
+            public IDrawingContextImpl CreateDrawingContext(bool _)
             {
                 return new HeadlessDrawingContextStub();
             }
@@ -404,7 +416,10 @@ namespace Avalonia.Headless
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
+            public PixelFormat? Format { get; }
+            public AlphaFormat? AlphaFormat { get; }
             public int Version { get; set; }
+
             public void Save(string fileName, int? quality = null)
             {
 
@@ -415,7 +430,6 @@ namespace Avalonia.Headless
 
             }
 
-            public PixelFormat? Format { get; }
 
             public ILockedFramebuffer Lock()
             {
@@ -442,7 +456,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextLayerImpl CreateLayer(Size size)
+            public IDrawingContextLayerImpl CreateLayer(PixelSize size)
             {
                 return new HeadlessBitmapStub(size, new Vector(96, 96));
             }
@@ -452,9 +466,22 @@ namespace Avalonia.Headless
 
             }
 
+            public void PushClip(IPlatformRenderInterfaceRegion region)
+            {
+                
+            }
+
             public void PopClip()
             {
 
+            }
+
+            public void PushLayer(Rect bounds)
+            {
+            }
+
+            public void PopLayer()
+            {
             }
 
             public void PushOpacity(double opacity, Rect? rect)
@@ -529,6 +556,11 @@ namespace Avalonia.Headless
                 
             }
 
+            public void DrawRegion(IBrush? brush, IPen? pen, IPlatformRenderInterfaceRegion region)
+            {
+                
+            }
+
             public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
             {
             }
@@ -542,6 +574,16 @@ namespace Avalonia.Headless
             {
                 
             }
+
+            public void PushRenderOptions(RenderOptions renderOptions)
+            {
+               
+            }
+
+            public void PopRenderOptions()
+            {
+               
+            }
         }
 
         private class HeadlessRenderTarget : IRenderTarget
@@ -551,7 +593,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext()
+            public IDrawingContextImpl CreateDrawingContext(bool _)
             {
                 return new HeadlessDrawingContextStub();
             }

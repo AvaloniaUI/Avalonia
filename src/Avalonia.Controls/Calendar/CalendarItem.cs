@@ -56,8 +56,8 @@ namespace Avalonia.Controls.Primitives
 
         public IBrush? HeaderBackground
         {
-            get { return GetValue(HeaderBackgroundProperty); }
-            set { SetValue(HeaderBackgroundProperty, value); }
+            get => GetValue(HeaderBackgroundProperty);
+            set => SetValue(HeaderBackgroundProperty, value);
         }
 
         public static readonly StyledProperty<ITemplate<Control>?> DayTitleTemplateProperty =
@@ -77,7 +77,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal Button? HeaderButton
         {
-            get { return _headerButton; }
+            get => _headerButton;
             private set
             {
                 if (_headerButton != null)
@@ -98,7 +98,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal Button? NextButton
         {
-            get { return _nextButton; }
+            get => _nextButton;
             private set
             {
                 if (_nextButton != null)
@@ -129,7 +129,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal Button? PreviousButton
         {
-            get { return _previousButton; }
+            get => _previousButton;
             private set
             {
                 if (_previousButton != null)

@@ -2,7 +2,7 @@
 
 namespace Avalonia.Diagnostics
 {
-    public class AppliedStyle
+    public sealed class AppliedStyle
     {
         private readonly IStyleInstance _instance;
 

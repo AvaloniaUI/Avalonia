@@ -16,6 +16,8 @@ namespace Avalonia.Media.Fonts
 
         private readonly Uri _source;
 
+        private IFontManagerImpl? _fontManager;
+
         public EmbeddedFontCollection(Uri key, Uri source)
         {
             _key = key;
@@ -31,6 +33,8 @@ namespace Avalonia.Media.Fonts
 
         public override void Initialize(IFontManagerImpl fontManager)
         {
+            _fontManager = fontManager;
+
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             var fontAssets = FontFamilyLoader.LoadFontAssets(_source);
@@ -39,7 +43,7 @@ namespace Avalonia.Media.Fonts
             {
                 var stream = assetLoader.Open(fontAsset);
 
-                if (fontManager.TryCreateGlyphTypeface(stream, out var glyphTypeface))
+                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                 {
                     if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
                     {
@@ -69,8 +73,42 @@ namespace Avalonia.Media.Fonts
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
+                if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface != null)
+                {
+                    return true;
+                }
+
                 if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
                 {
+                    if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+                    {
+                        var fontSimulations = FontSimulations.None;
+
+                        if (style != FontStyle.Normal && glyphTypeface2.Style != style)
+                        {
+                            fontSimulations |= FontSimulations.Oblique;
+                        }
+
+                        if ((int)weight >= 600 && glyphTypeface2.Weight != weight)
+                        {
+                            fontSimulations |= FontSimulations.Bold;
+                        }
+
+                        if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
+                        {
+                            using (stream)
+                            {
+                                if(_fontManager is not null && _fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out glyphTypeface) && 
+                                    glyphTypefaces.TryAdd(key, glyphTypeface))
+                                {
+                                    return true;
+                                }
+
+                                return false;
+                            }
+                        }
+                    }
+
                     return true;
                 }
             }

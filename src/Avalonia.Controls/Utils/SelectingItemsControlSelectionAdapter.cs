@@ -40,7 +40,7 @@ namespace Avalonia.Controls.Utils
         /// control.</value>
         public SelectingItemsControl? SelectorControl
         {
-            get { return _selector; }
+            get => _selector;
 
             set
             {
@@ -111,10 +111,7 @@ namespace Avalonia.Controls.Utils
         /// <value>The selected item of the underlying selection adapter.</value>
         public object? SelectedItem
         {
-            get
-            {
-                return SelectorControl?.SelectedItem;
-            }
+            get => SelectorControl?.SelectedItem;
 
             set
             {
@@ -142,10 +139,7 @@ namespace Avalonia.Controls.Utils
         /// adapter.</value>
         public IEnumerable? ItemsSource
         {
-            get
-            {
-                return SelectorControl?.ItemsSource;
-            }
+            get => SelectorControl?.ItemsSource;
             set
             {
                 if (SelectorControl != null)

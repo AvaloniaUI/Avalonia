@@ -15,7 +15,11 @@ namespace Avalonia.Platform
         Gray32Float,
         Rgba64,
         Rgb24,
-        Bgr24
+        Rgb32,
+        Bgr24,
+        Bgr32,
+        Bgr555,
+        Bgr565
     }
 
     public record struct PixelFormat
@@ -34,8 +38,10 @@ namespace Avalonia.Platform
                     return 4;
                 else if (FormatEnum == PixelFormatEnum.Gray8)
                     return 8;
-                else if (FormatEnum == PixelFormatEnum.Rgb565 
-                         || FormatEnum == PixelFormatEnum.Gray16)
+                else if (FormatEnum == PixelFormatEnum.Rgb565 ||
+                    FormatEnum == PixelFormatEnum.Bgr555 ||
+                    FormatEnum == PixelFormatEnum.Bgr565 ||
+                    FormatEnum == PixelFormatEnum.Gray16)
                     return 16;
                 else if (FormatEnum is PixelFormatEnum.Bgr24 or PixelFormatEnum.Rgb24)
                     return 24;
@@ -57,6 +63,7 @@ namespace Avalonia.Platform
 
         public static PixelFormat Rgb565 => PixelFormats.Rgb565;
         public static PixelFormat Rgba8888 => PixelFormats.Rgba8888;
+        public static PixelFormat Rgb32 => PixelFormats.Rgb32;
         public static PixelFormat Bgra8888 => PixelFormats.Bgra8888;
         
         public override string ToString() => FormatEnum.ToString();
@@ -75,6 +82,10 @@ namespace Avalonia.Platform
         public static PixelFormat Gray16 { get; } = new PixelFormat(PixelFormatEnum.Gray16);
         public static PixelFormat Gray32Float { get; } = new PixelFormat(PixelFormatEnum.Gray32Float);
         public static PixelFormat Rgb24 { get; } = new PixelFormat(PixelFormatEnum.Rgb24);
+        public static PixelFormat Rgb32 { get; } = new PixelFormat(PixelFormatEnum.Rgb32);
         public static PixelFormat Bgr24 { get; } = new PixelFormat(PixelFormatEnum.Bgr24);
+        public static PixelFormat Bgr32 { get; } = new PixelFormat(PixelFormatEnum.Bgr32);
+        public static PixelFormat Bgr555 { get; } = new PixelFormat(PixelFormatEnum.Bgr555);
+        public static PixelFormat Bgr565 { get; } = new PixelFormat(PixelFormatEnum.Bgr565);
     }
 }

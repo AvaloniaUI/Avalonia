@@ -139,6 +139,9 @@ namespace Avalonia.Input.GestureRecognizers
                 sampleCount++;
             } while (sampleCount < HistorySize);
 
+            var offset = newestSample.Point - oldestSample.Point;
+            var duration = newestSample.Time - oldestSample.Time;
+
             if (sampleCount >= MinSampleSize)
             {
                 var xFit = LeastSquaresSolver.Solve(2, time.Slice(0, sampleCount), x.Slice(0, sampleCount), w.Slice(0, sampleCount));
@@ -150,11 +153,22 @@ namespace Avalonia.Input.GestureRecognizers
                         return new VelocityEstimate( // convert from pixels/ms to pixels/s
                           PixelsPerSecond: new Vector(xFit.Coefficients[1] * 1000, yFit.Coefficients[1] * 1000),
                           Confidence: xFit.Confidence * yFit.Confidence,
-                          Duration: newestSample.Time - oldestSample.Time,
-                          Offset: newestSample.Point - oldestSample.Point
+                          Duration: duration,
+                          Offset: offset
                         );
                     }
                 }
+            }
+            else if(sampleCount > 1)
+            {
+                // Return linear velocity if we don't have enough samples
+                var distance = newestSample.Point - oldestSample.Point;
+                return new VelocityEstimate(
+                  PixelsPerSecond: new Vector(distance.X / duration.Milliseconds * 1000, distance.Y / duration.Milliseconds * 1000),
+                  Confidence: 1,
+                  Duration: duration,
+                  Offset: offset
+                );
             }
 
             // We're unable to make a velocity estimate but we did have at least one
@@ -162,8 +176,8 @@ namespace Avalonia.Input.GestureRecognizers
             return new VelocityEstimate(
               PixelsPerSecond: Vector.Zero,
               Confidence: 1.0,
-              Duration: newestSample.Time - oldestSample.Time,
-              Offset: newestSample.Point - oldestSample.Point
+              Duration: duration,
+              Offset: offset
             );
         }
 
@@ -194,7 +208,7 @@ namespace Avalonia.Input.GestureRecognizers
     }
 
     /// An nth degree polynomial fit to a dataset.
-    internal class PolynomialFit
+    internal sealed class PolynomialFit
     {
         /// Creates a polynomial fit of the given degree.
         ///
@@ -213,7 +227,7 @@ namespace Avalonia.Input.GestureRecognizers
         public double Confidence { get; set; }
     }
 
-    internal class LeastSquaresSolver
+    internal sealed class LeastSquaresSolver
     {
         private const double PrecisionErrorTolerance = 1e-10;
 

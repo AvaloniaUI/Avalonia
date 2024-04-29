@@ -87,20 +87,17 @@ namespace Avalonia.Controls
                     (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
-            set
-            {
-                SelectedIndex = value is Control c ?
+            set => SelectedIndex = value is Control c ?
                     IndexFromContainer(c) : -1;
-            }
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
+        IEnumerable<IMenuItem> IMenuElement.SubItems => LogicalChildren.OfType<IMenuItem>();
 
         /// <summary>
         /// Gets the interaction handler for the menu.
         /// </summary>
-        protected IMenuInteractionHandler InteractionHandler { get; }
+        protected internal IMenuInteractionHandler InteractionHandler { get; }
 
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is opened.

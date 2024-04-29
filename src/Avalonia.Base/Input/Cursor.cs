@@ -42,7 +42,7 @@ namespace Avalonia.Input
     public class Cursor : IDisposable
     {
         public static readonly Cursor Default = new Cursor(StandardCursorType.Arrow);
-        private string _name;
+        private readonly string _name;
 
         private Cursor(ICursorImpl platformImpl, string name)
         {

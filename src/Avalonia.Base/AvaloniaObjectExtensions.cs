@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Reactive;
 
 namespace Avalonia
@@ -233,9 +234,10 @@ namespace Avalonia
         /// An optional anchor from which to locate required context. When binding to objects that
         /// are not in the logical tree, certain types of binding need an anchor into the tree in 
         /// order to locate named controls or resources. The <paramref name="anchor"/> parameter 
-        /// can be used to provice this context.
+        /// can be used to provide this context.
         /// </param>
         /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
+        [Obsolete("Use AvaloniaObject.Bind(AvaloniaProperty, IBinding")]
         public static IDisposable Bind(
             this AvaloniaObject target,
             AvaloniaProperty property,
@@ -246,20 +248,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             binding = binding ?? throw new ArgumentNullException(nameof(binding));
 
-            var result = binding.Initiate(
-                target,
-                property,
-                anchor,
-                property.GetMetadata(target.GetType()).EnableDataValidation ?? false);
-
-            if (result != null)
-            {
-                return BindingOperations.Apply(target, property, result, anchor);
-            }
-            else
-            {
-                return Disposable.Empty;
-            }
+            return target.Bind(property, binding);
         }
 
         /// <summary>
@@ -367,9 +356,9 @@ namespace Avalonia
             return observable.Subscribe(new ClassHandlerObserver<TTarget, TValue>(action));
         }
 
-        private class BindingAdaptor : IBinding
+        private class BindingAdaptor : IBinding2
         {
-            private IObservable<object?> _source;
+            private readonly IObservable<object?> _source;
 
             public BindingAdaptor(IObservable<object?> source)
             {
@@ -382,7 +371,13 @@ namespace Avalonia
                 object? anchor = null,
                 bool enableDataValidation = false)
             {
-                return InstancedBinding.OneWay(_source);
+                var expression = new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
+                return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.LocalValue);
+            }
+
+            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
+            {
+                return new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
             }
         }
 

@@ -7,6 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
+using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition.Server
 {
@@ -20,34 +21,40 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly IRenderLoop _renderLoop;
 
-        private readonly Queue<Batch> _batches = new Queue<Batch>();
+        private readonly Queue<CompositionBatch> _batches = new Queue<CompositionBatch>();
         private readonly Queue<Action> _receivedJobQueue = new();
         public long LastBatchId { get; private set; }
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
-        private List<ServerCompositionTarget> _activeTargets = new();
-        private HashSet<IServerClockItem> _clockItems = new();
-        private List<IServerClockItem> _clockItemsToUpdate = new();
+        private readonly List<ServerCompositionTarget> _activeTargets = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
-        private object _lock = new object();
+        private readonly object _lock = new object();
         private Thread? _safeThread;
+        private bool _uiThreadIsInsideRender;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
+        public CompositionOptions Options { get; }
+        public ServerCompositorAnimations Animations { get; }
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
+            CompositionOptions options,
             BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
         {
+            Options = options;
+            Animations = new();
             _renderLoop = renderLoop;
             RenderInterface = new PlatformRenderInterfaceContextManager(platformGraphics);
+            RenderInterface.ContextDisposed += RT_OnContextDisposed;
+            RenderInterface.ContextCreated += RT_OnContextCreated;
             BatchObjectPool = batchObjectPool;
             BatchMemoryPool = batchMemoryPool;
             _renderLoop.Add(this);
         }
 
-        public void EnqueueBatch(Batch batch)
+        public void EnqueueBatch(CompositionBatch batch)
         {
             lock (_batches) 
                 _batches.Enqueue(batch);
@@ -55,13 +62,13 @@ namespace Avalonia.Rendering.Composition.Server
 
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
-        List<Batch> _reusableToNotifyProcessedList = new();
-        List<Batch> _reusableToNotifyRenderedList = new();
+        readonly List<CompositionBatch> _reusableToNotifyProcessedList = new();
+        readonly List<CompositionBatch> _reusableToNotifyRenderedList = new();
         void ApplyPendingBatches()
         {
             while (true)
             {
-                Batch batch;
+                CompositionBatch batch;
                 lock (_batches)
                 {
                     if(_batches.Count == 0)
@@ -153,37 +160,59 @@ namespace Avalonia.Rendering.Composition.Server
             _reusableToNotifyRenderedList.Clear();
         }
 
-        public void Render()
+        public void Render() => Render(true);
+        public void Render(bool catchExceptions)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                if (_uiThreadIsInsideRender)
+                    throw new InvalidOperationException("Reentrancy is not supported");
+                _uiThreadIsInsideRender = true;
+                try
+                {
+                    using (Dispatcher.UIThread.DisableProcessing()) 
+                        RenderReentrancySafe(catchExceptions);
+                }
+                finally
+                {
+                    _uiThreadIsInsideRender = false;
+                }
+            }
+            else
+                RenderReentrancySafe(catchExceptions);
+        }
+        
+        private void RenderReentrancySafe(bool catchExceptions)
         {
             lock (_lock)
             {
                 try
                 {
-                    _safeThread = Thread.CurrentThread;
-                    RenderCore();
+                    try
+                    {
+                        _safeThread = Thread.CurrentThread;
+                        RenderCore(catchExceptions);
+                    }
+                    finally
+                    {
+                        NotifyBatchesRendered();
+                    }
                 }
                 finally
                 {
-                    NotifyBatchesRendered();
                     _safeThread = null;
                 }
-                
             }
         }
         
-        private void RenderCore()
+        private void RenderCore(bool catchExceptions)
         {
             UpdateServerTime();
             ApplyPendingBatches();
             NotifyBatchesProcessed();
-            
-            foreach(var animation in _clockItems)
-                _clockItemsToUpdate.Add(animation);
 
-            foreach (var animation in _clockItemsToUpdate)
-                animation.OnTick();
-            
-            _clockItemsToUpdate.Clear();
+            Animations.Process();
+
 
             ApplyEnqueuedRenderResourceChanges();
             
@@ -194,7 +223,7 @@ namespace Avalonia.Rendering.Composition.Server
                 foreach (var t in _activeTargets)
                     t.Render();
             }
-            catch (Exception e)
+            catch (Exception e) when(RT_OnContextLostExceptionFilterObserver(e) && catchExceptions)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Exception when rendering: {Error}", e);
             }
@@ -210,12 +239,6 @@ namespace Avalonia.Rendering.Composition.Server
             _activeTargets.Remove(target);
         }
         
-        public void AddToClock(IServerClockItem item) =>
-            _clockItems.Add(item);
-
-        public void RemoveFromClock(IServerClockItem item) =>
-            _clockItems.Remove(item);
-
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             using (RenderInterface.EnsureCurrent())

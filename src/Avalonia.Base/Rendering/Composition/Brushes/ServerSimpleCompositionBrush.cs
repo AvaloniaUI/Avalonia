@@ -14,7 +14,7 @@ namespace Avalonia.Rendering.Composition.Server
         ITransform? IBrush.Transform => Transform;
     }
 
-    class ServerCompositionSimpleGradientBrush : ServerCompositionSimpleBrush, IGradientBrush
+    internal class ServerCompositionSimpleGradientBrush : ServerCompositionSimpleBrush, IGradientBrush
     {
         
         internal ServerCompositionSimpleGradientBrush(ServerCompositor compositor) : base(compositor)
@@ -49,7 +49,7 @@ namespace Avalonia.Rendering.Composition.Server
     
     partial class ServerCompositionSimpleRadialGradientBrush : IRadialGradientBrush
     {
-        
+        public double Radius => RadiusX.Scalar;
     }
     
     partial class ServerCompositionSimpleSolidColorBrush : ISolidColorBrush

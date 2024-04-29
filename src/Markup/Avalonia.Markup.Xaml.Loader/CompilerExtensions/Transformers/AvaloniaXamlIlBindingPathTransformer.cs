@@ -116,14 +116,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentDataContextNode is null)
                     {
-                        throw new XamlX.XamlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", binding);
+                        throw new XamlBindingsTransformException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", binding);
                     }
 
                     return parentDataContextNode.DataContextType;
                 };
 
                 var selfType = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().First().Type.GetClrType();
-                
+
+                if (context.GetAvaloniaTypes().MultiBinding.IsAssignableFrom(selfType))
+                {
+                    selfType = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().Skip(1).First().Type.GetClrType();
+                }
+
                 // When using self bindings with setters we need to change target type to resolved selector type.
                 if (context.GetAvaloniaTypes().SetterBase.IsAssignableFrom(selfType))
                 {

@@ -12,13 +12,14 @@
     </Border>
   </Design.PreviewWith>
 
+  <StreamGeometry x:Key="CheckMarkPathData">M5.5 10.586 1.707 6.793A1 1 0 0 0 .293 8.207l4.5 4.5a1 1 0 0 0 1.414 0l11-11A1 1 0 0 0 15.793.293L5.5 10.586Z</StreamGeometry>
+  
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
     <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="32" />
     <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
@@ -56,7 +57,7 @@
               </Panel>
             </Viewbox>
           </Grid>
-          <ContentPresenter x:Name="ContentPresenter"
+          <ContentPresenter x:Name="PART_ContentPresenter"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
                           Margin="{TemplateBinding Padding}"
@@ -71,7 +72,7 @@
 
     <!-- Unchecked PointerOver State -->
     <Style Selector="^:pointerover">
-      <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedPointerOver}" />
       </Style>
 
@@ -92,7 +93,7 @@
 
     <!-- Unchecked Pressed State -->
     <Style Selector="^:pressed">
-      <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedPressed}" />
       </Style>
 
@@ -113,7 +114,7 @@
 
     <!-- Unchecked Disabled state -->
     <Style Selector="^:disabled">
-      <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedDisabled}" />
       </Style>
 
@@ -145,14 +146,14 @@
 
       <Style Selector="^ /template/ Path#CheckGlyph">
         <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundChecked}" />
-        <Setter Property="Data" Value="M1507 31L438 1101L-119 543L-29 453L438 919L1417 -59L1507 31Z" />
+        <Setter Property="Data" Value="{StaticResource CheckMarkPathData}" />
         <Setter Property="Width" Value="9" />
         <Setter Property="Opacity" Value="1" />
       </Style>
 
       <!-- Checked PointerOver State -->
       <Style Selector="^:pointerover">
-        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundCheckedPointerOver}" />
         </Style>
 
@@ -173,7 +174,7 @@
 
       <!-- Checked Pressed State -->
       <Style Selector="^:pressed">
-        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundCheckedPressed}" />
         </Style>
 
@@ -194,7 +195,7 @@
 
       <!-- Checked Disabled State -->
       <Style Selector="^:disabled">
-        <Style Selector="^ ContentPresenter#ContentPresenter">
+        <Style Selector="^ ContentPresenter#PART_ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundCheckedDisabled}" />
         </Style>
 
@@ -234,7 +235,7 @@
 
       <!-- Indeterminate PointerOver State -->
       <Style Selector="^:pointerover">
-        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminatePointerOver}" />
         </Style>
 
@@ -255,7 +256,7 @@
 
       <!-- Indeterminate Pressed State -->
       <Style Selector="^:pressed">
-        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminatePressed}" />
         </Style>
 
@@ -276,7 +277,7 @@
 
       <!-- Indeterminate Disabled State -->
       <Style Selector="^:disabled">
-        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminateDisabled}" />
         </Style>
 

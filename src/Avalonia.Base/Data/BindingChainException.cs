@@ -4,12 +4,12 @@ namespace Avalonia.Data
 {
     /// <summary>
     /// An exception returned through <see cref="BindingNotification"/> signaling that a
-    /// requested binding expression could not be evaluated because of a null in one of the links
-    /// of the binding chain.
+    /// requested binding expression could not be evaluated because of an error in one of
+    /// the links of the binding chain.
     /// </summary>
     public class BindingChainException : Exception
     {
-        private string _message;
+        private readonly string _message;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingChainException"/> class.
@@ -60,15 +60,15 @@ namespace Avalonia.Data
             {
                 if (Expression != null && ExpressionErrorPoint != null)
                 {
-                    return $"{_message} in expression '{Expression}' at '{ExpressionErrorPoint}'.";
+                    return $"An error occured binding to '{Expression}' at '{ExpressionErrorPoint}': '{_message}'";
                 }
-                else if (ExpressionErrorPoint != null)
+                else if (Expression != null)
                 {
-                    return $"{_message} in expression '{ExpressionErrorPoint}'.";
+                    return $"An error occured binding to '{Expression}': '{_message}'";
                 }
                 else
                 {
-                    return $"{_message} in expression.";
+                    return $"An error occured in a binding: '{_message}'";
                 }
             }
         }

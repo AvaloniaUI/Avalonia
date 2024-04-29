@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Platform
@@ -21,6 +22,7 @@ namespace Avalonia.Platform
                 _ => new(4, 4),
             };
         }
+
         public virtual Size GetDoubleTapSize(PointerType type)
         {
             return type switch
@@ -29,6 +31,7 @@ namespace Avalonia.Platform
                 _ => new(4, 4),
             };
         }
+
         public virtual TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
 
         public virtual TimeSpan HoldWaitDuration => TimeSpan.FromMilliseconds(300);
@@ -48,7 +51,8 @@ namespace Avalonia.Platform
 
         protected void OnColorValuesChanged(PlatformColorValues colorValues)
         {
-            ColorValuesChanged?.Invoke(this, colorValues);
+            Dispatcher.UIThread.Send(
+                _ => ColorValuesChanged?.Invoke(this, colorValues));
         }
     }
 }

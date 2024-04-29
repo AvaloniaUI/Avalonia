@@ -50,8 +50,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double ItemWidth
         {
-            get { return GetValue(ItemWidthProperty); }
-            set { SetValue(ItemWidthProperty, value); }
+            get => GetValue(ItemWidthProperty);
+            set => SetValue(ItemWidthProperty, value);
         }
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double ItemHeight
         {
-            get { return GetValue(ItemHeightProperty); }
-            set { SetValue(ItemHeightProperty, value); }
+            get => GetValue(ItemHeightProperty);
+            set => SetValue(ItemHeightProperty, value);
         }
 
         /// <summary>
@@ -279,12 +279,12 @@ namespace Avalonia.Controls
 
             internal double Width
             {
-                get { return _orientation == Orientation.Horizontal ? U : V; }
+                get => _orientation == Orientation.Horizontal ? U : V;
                 set { if (_orientation == Orientation.Horizontal) U = value; else V = value; }
             }
             internal double Height
             {
-                get { return _orientation == Orientation.Horizontal ? V : U; }
+                get => _orientation == Orientation.Horizontal ? V : U;
                 set { if (_orientation == Orientation.Horizontal) V = value; else U = value; }
             }
         }

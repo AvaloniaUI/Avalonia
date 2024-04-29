@@ -2,9 +2,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:Avalonia.Diagnostics.Views"
              xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
+             xmlns:convertes="using:Avalonia.Diagnostics.Converters"
              x:Class="Avalonia.Diagnostics.Views.MainView"
              x:DataType="viewModels:MainViewModel">
-  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,0,Auto">
+  <UserControl.Resources>
+    <x:Double x:Key="SampleSize">16</x:Double>
+    <convertes:BrushSelectorConveter x:Key="bsc"
+               Brush="{DynamicResource HighlightBrush}"/>
+  </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="Border.Sample">
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Grid.Column" Value="1"/>
+      <Setter Property="Width" Value="{StaticResource SampleSize}"/>
+      <Setter Property="Height" Value="{StaticResource SampleSize}"/>
+      <Setter Property="Margin" Value="10 0 -20 0"/>
+    </Style>
+  </UserControl.Styles>
+  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,Auto">
     <Menu>
       <MenuItem Header="_File">
         <MenuItem Header="E_xit" Command="{Binding $parent[Window].Close}" />
@@ -15,7 +31,7 @@
                 <DrawingGroup>
                   <GeometryDrawing Geometry="F1 M 13.4533,17.56C 13.4533,19.8827 15.344,21.772 17.6653,21.772L 17.6653,21.772C 19.988,21.772 21.8773,19.8827 21.8773,17.56L 21.8773,17.56C 21.8773,15.2373 19.988,13.348 17.6653,13.348L 17.6653,13.348C 15.344,13.348 13.4533,15.2373 13.4533,17.56 Z ">
                     <GeometryDrawing.Brush>
-                      <RadialGradientBrush Center="0.245696,0.288009" GradientOrigin="0.245696,0.288009" Radius="0.499952">
+                      <RadialGradientBrush Center="0.245696,0.288009" GradientOrigin="0.245696,0.288009" RadiusX="50%" RadiusY="50%">
                         <RadialGradientBrush.GradientStops>
                           <GradientStop Color="#FF878A8C" Offset="0" />
                           <GradientStop Color="#FF544A4C" Offset="0.991379" />
@@ -25,7 +41,7 @@
                   </GeometryDrawing>
                   <GeometryDrawing Geometry="F1 M 13.332,6.22803L 10.2227,9.72668L 8.49866,9.72668L 8.49866,7.56136L 5.33333,7.56136L 5.33333,9.72668L 3.33333,9.72668L 3.33333,24.3947L 13.1213,24.3947C 14.424,25.264 15.9853,25.772 17.6653,25.772L 17.6653,25.772C 19.344,25.772 20.9067,25.264 22.2094,24.3947L 28.6667,24.3947L 28.6667,9.72668L 24.944,9.72668L 21.8333,6.22803M 12.12,17.56C 12.12,14.5013 14.608,12.0147 17.6653,12.0147L 17.6653,12.0147C 20.7227,12.0147 23.2107,14.5013 23.2107,17.56L 23.2107,17.56C 23.2107,20.6174 20.7227,23.104 17.6653,23.104L 17.6653,23.104C 14.608,23.104 12.12,20.6174 12.12,17.56 Z ">
                     <GeometryDrawing.Brush>
-                      <RadialGradientBrush Center="0.196943,0.216757" GradientOrigin="0.196943,0.216757" Radius="0.44654">
+                      <RadialGradientBrush Center="0.196943,0.216757" GradientOrigin="0.196943,0.216757" RadiusX="50%" RadiusY="50%">
                         <RadialGradientBrush.GradientStops>
                           <GradientStop Color="#FF87898C" Offset="0" />
                           <GradientStop Color="#FF544A4C" Offset="1" />
@@ -40,13 +56,6 @@
         </MenuItem>
       </MenuItem>
       <MenuItem Header="_View">
-        <MenuItem Header="_Console" Command="{Binding $parent[views:MainView].ToggleConsole}">
-          <MenuItem.Icon>
-            <CheckBox BorderThickness="0"
-                      IsChecked="{Binding Console.IsVisible}"
-                      IsEnabled="False" />
-          </MenuItem.Icon>
-        </MenuItem>
         <MenuItem Header="Control _Details">
           <MenuItem Header="Show Implemented Interfaces" Command="{Binding ToggleShowImplementedInterfaces}">
             <MenuItem.Icon>
@@ -61,8 +70,7 @@
                         IsChecked="{Binding ShowDetailsPropertyType}"
                         IsEnabled="False"/>
             </MenuItem.Icon>
-
-          </MenuItem>          
+          </MenuItem>
         </MenuItem>
       </MenuItem>
       <MenuItem Header="_Overlays">
@@ -101,6 +109,145 @@
                       IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
+        <MenuItem Header="Focus Highlighter" Grid.IsSharedSizeScope="True">
+          <MenuItem.Items>
+            <!-- None -->
+            <MenuItem Command="{Binding SelectFocusHighlighter}"
+                      CommandParameter="{x:Null}">
+              <MenuItem.Header>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition SharedSizeGroup="Sample"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="(none)"
+                             VerticalAlignment="Center"/>
+                  <Border Classes="Sample"/>
+                </Grid>
+              </MenuItem.Header>
+              <MenuItem.Icon>
+                <Border CornerRadius="8"
+                        Width="16"
+                        Height="16"
+                        BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                        BorderThickness="1"
+                        >
+                  <Border Background="{Binding FocusHighlighter,Converter={StaticResource bsc},ConverterParameter={x:Null}}"
+                          Margin="2"
+                          CornerRadius="6"/>
+                </Border>
+              </MenuItem.Icon>
+            </MenuItem>
+            <!-- Red -->
+            <MenuItem Command="{Binding SelectFocusHighlighter}"
+                      CommandParameter="{x:Static Brushes.Red}">
+              <MenuItem.Header>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition SharedSizeGroup="Sample"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="Red"
+                             VerticalAlignment="Center"/>
+                  <Border Classes="Sample" Background="Red"/>
+                </Grid>
+              </MenuItem.Header>
+              <MenuItem.Icon>
+                <Border CornerRadius="8"
+                        Width="16"
+                        Height="16"
+                        BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                        BorderThickness="1"
+                        >
+                  <Border Background="{Binding FocusHighlighter,Converter={StaticResource bsc},ConverterParameter={x:Static Brushes.Red}}"
+                          Margin="2"
+                          CornerRadius="6"/>
+                </Border>
+              </MenuItem.Icon>
+            </MenuItem>
+            <!-- Blue -->
+            <MenuItem Command="{Binding SelectFocusHighlighter}"
+                      CommandParameter="{x:Static Brushes.Blue}">
+              <MenuItem.Header>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition SharedSizeGroup="Sample"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="Blue"
+                             VerticalAlignment="Center"/>
+                  <Border Classes="Sample" Background="Blue"/>
+                </Grid>
+              </MenuItem.Header>
+              <MenuItem.Icon>
+                <Border CornerRadius="8"
+                        Width="16"
+                        Height="16"
+                        BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                        BorderThickness="1"
+                        >
+                  <Border Background="{Binding FocusHighlighter,Converter={StaticResource bsc},ConverterParameter={x:Static Brushes.Blue}}"
+                          Margin="2"
+                          CornerRadius="6"/>
+                </Border>
+              </MenuItem.Icon>
+            </MenuItem>
+            <!-- Black -->
+            <MenuItem Command="{Binding SelectFocusHighlighter}"
+                      CommandParameter="{x:Static Brushes.Black}">
+              <MenuItem.Header>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition SharedSizeGroup="Sample"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="Black"
+                             VerticalAlignment="Center"/>
+                  <Border Classes="Sample" Background="Black"/>
+                </Grid>
+              </MenuItem.Header>
+              <MenuItem.Icon>
+                <Border CornerRadius="8"
+                        Width="16"
+                        Height="16"
+                        BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                        BorderThickness="1"
+                        >
+                  <Border Background="{Binding FocusHighlighter,Converter={StaticResource bsc},ConverterParameter={x:Static Brushes.Black}}"
+                          Margin="2"
+                          CornerRadius="6"/>
+                </Border>
+              </MenuItem.Icon>
+            </MenuItem>
+            <!-- White -->
+            <MenuItem Command="{Binding SelectFocusHighlighter}"
+                      CommandParameter="{x:Static Brushes.White}">
+              <MenuItem.Header>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition SharedSizeGroup="Sample"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="White"
+                             VerticalAlignment="Center"/>
+                  <Border Classes="Sample" Background="White"/>
+                </Grid>
+              </MenuItem.Header>
+              <MenuItem.Icon>
+                <Border CornerRadius="8"
+                        Width="16"
+                        Height="16"
+                        BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                        BorderThickness="1"
+                        >
+                  <Border Background="{Binding FocusHighlighter,Converter={StaticResource bsc},ConverterParameter={x:Static Brushes.White}}"
+                          Margin="2"
+                          CornerRadius="6"/>
+                </Border>
+              </MenuItem.Icon>
+            </MenuItem>
+          </MenuItem.Items>
+        </MenuItem>
       </MenuItem>
     </Menu>
 
@@ -119,13 +266,7 @@
                   Background="{DynamicResource ThemeControlMidBrush}"
                   IsVisible="False" />
 
-    <views:ConsoleView Name="console"
-                       Grid.Row="4"
-                       DataContext="{Binding Console}"
-                       IsVisible="{Binding IsVisible}" />
-
-
-    <Border Grid.Row="5"
+    <Border Grid.Row="4"
             BorderBrush="{DynamicResource ThemeControlMidBrush}"
             BorderThickness="0,1,0,0">
       <Grid ColumnDefinitions="*, Auto">

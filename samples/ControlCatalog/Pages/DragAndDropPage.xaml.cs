@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -14,26 +15,54 @@ namespace ControlCatalog.Pages
         private const string CustomFormat = "application/xxx-avalonia-controlcatalog-custom";
         public DragAndDropPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             _dropState = this.Get<TextBlock>("DropState");
 
             int textCount = 0;
-            SetupDnd("Text", d => d.Set(DataFormats.Text,
-                $"Text was dragged {++textCount} times"), DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
 
-            SetupDnd("Custom", d => d.Set(CustomFormat, "Test123"), DragDropEffects.Move);
-            SetupDnd("Files", async d => d.Set(DataFormats.Files, new[] { await (VisualRoot as TopLevel)!.StorageProvider.TryGetFileFromPathAsync(Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName) }), DragDropEffects.Copy);
+            SetupDnd(
+                "Text",
+                d => d.Set(DataFormats.Text, $"Text was dragged {++textCount} times"),
+                DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
+
+            SetupDnd(
+                "Custom",
+                d => d.Set(CustomFormat, "Test123"),
+                DragDropEffects.Move);
+
+            SetupDnd(
+                "Files",
+                async d =>
+                {
+                    if (Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName is { } name &&
+                        TopLevel.GetTopLevel(this) is { } topLevel &&
+                        await topLevel.StorageProvider.TryGetFileFromPathAsync(name) is { } storageFile)
+                    {
+                        d.Set(DataFormats.Files, new[] { storageFile });
+                    }
+                },
+                DragDropEffects.Copy);
         }
 
-        void SetupDnd(string suffix, Action<DataObject> factory, DragDropEffects effects)
+        private void SetupDnd(string suffix, Action<DataObject> factory, DragDropEffects effects) =>
+            SetupDnd(
+                suffix,
+                o =>
+                {
+                    factory(o);
+                    return Task.CompletedTask;
+                },
+                effects);
+
+        private void SetupDnd(string suffix, Func<DataObject, Task> factory, DragDropEffects effects)
         {
             var dragMe = this.Get<Border>("DragMe" + suffix);
             var dragState = this.Get<TextBlock>("DragState" + suffix);
 
-            async void DoDrag(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+            async void DoDrag(object? sender, PointerPressedEventArgs e)
             {
                 var dragData = new DataObject();
-                factory(dragData);
+                await factory(dragData);
 
                 var result = await DragDrop.DoDragDrop(e, dragData, effects);
                 switch (result)

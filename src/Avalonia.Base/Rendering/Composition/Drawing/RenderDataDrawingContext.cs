@@ -259,6 +259,12 @@ internal class RenderDataDrawingContext : DrawingContext
             });
     }
 
+    protected override void PushRenderOptionsCore(RenderOptions renderOptions) => Push(new RenderDataRenderOptionsNode()
+    {
+        RenderOptions = renderOptions
+    });
+
+
     protected override void PopClipCore() => Pop<RenderDataClipNode>();
 
     protected override void PopGeometryClipCore() => Pop<RenderDataGeometryClipNode>();
@@ -268,6 +274,8 @@ internal class RenderDataDrawingContext : DrawingContext
     protected override void PopOpacityMaskCore() => Pop<RenderDataOpacityMaskNode>();
 
     protected override void PopTransformCore() => Pop<RenderDataPushMatrixNode>();
+
+    protected override void PopRenderOptionsCore() => Pop<RenderDataRenderOptionsNode>();
 
     internal override void DrawBitmap(IRef<IBitmapImpl>? source, double opacity, Rect sourceRect, Rect destRect)
     {

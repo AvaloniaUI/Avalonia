@@ -16,9 +16,26 @@ namespace Avalonia.Markup.Parsers
 
     internal static class BindingExpressionGrammar
     {
+        private static readonly List<INode> s_pool = new();
+
         public static (List<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
         {
-            var nodes = new List<INode>();
+            var result = new List<INode>();
+            var mode = Parse(ref r, result);
+            return (result, mode);
+        }
+
+        public static (List<INode> Nodes, SourceMode Mode) ParseToPooledList(ref CharacterReader r)
+        {
+            // Most of the time the list will be passed to `ExpressionNodeFactory.CreateFromAst`
+            // and then discarded so as a micro-optimization we can reuse the list.
+            s_pool.Clear();
+            var mode = Parse(ref r, s_pool);
+            return (s_pool, mode);
+        }
+
+        private static SourceMode Parse(ref CharacterReader r, List<INode> nodes)
+        {
             var state = State.Start;
             var mode = SourceMode.Data;
 
@@ -62,12 +79,17 @@ namespace Avalonia.Markup.Parsers
                 }
             }
 
+            if (!r.End)
+            {
+                throw new ExpressionParseException(r.Position, "Expected end of expression.");
+            }
+
             if (state == State.BeforeMember)
             {
                 throw new ExpressionParseException(r.Position, "Unexpected end of expression.");
             }
 
-            return (nodes, mode);
+            return mode;
         }
 
         private static State ParseStart(ref CharacterReader r, IList<INode> nodes)
@@ -235,8 +257,10 @@ namespace Avalonia.Markup.Parsers
                 }
 
                 result = ParseBeforeMember(ref r, nodes);
+                if (result == State.AttachedProperty)
+                    result = ParseAttachedProperty(ref r, nodes);
 
-                if(r.Peek == '[')
+                if (r.Peek == '[')
                 {
                     result = ParseIndexer(ref r, nodes);
                 }

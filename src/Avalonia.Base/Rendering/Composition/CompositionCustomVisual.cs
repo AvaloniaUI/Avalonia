@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using System.Numerics;
+using Avalonia.Media;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
+using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition;
 
-public class CompositionCustomVisual : CompositionContainerVisual
+public sealed class CompositionCustomVisual : CompositionContainerVisual
 {
+    private static readonly ThreadSafeObjectPool<List<object>> s_messageListPool = new(); 
     private List<object>? _messages;
 
     internal CompositionCustomVisual(Compositor compositor, CompositionCustomVisualHandler handler)
@@ -17,21 +20,26 @@ public class CompositionCustomVisual : CompositionContainerVisual
 
     public void SendHandlerMessage(object message)
     {
-        (_messages ??= new()).Add(message);
-        RegisterForSerialization();
+        if (_messages == null)
+        {
+            _messages = s_messageListPool.Get();
+            Compositor.RequestCompositionUpdate(OnCompositionUpdate);
+        }
+        _messages.Add(message);
     }
 
-    private protected override void SerializeChangesCore(BatchStreamWriter writer)
+    private void OnCompositionUpdate()
     {
-        base.SerializeChangesCore(writer);
-        if (_messages == null || _messages.Count == 0)
-            writer.Write(0);
-        else
+        if(_messages == null)
+            return;
+        
+        var messages = _messages;
+        _messages = null;
+        Compositor.PostServerJob(()=>
         {
-            writer.Write(_messages.Count);
-            foreach (var m in _messages)
-                writer.WriteObject(m);
-            _messages.Clear();
-        }
+            ((ServerCompositionCustomVisual)Server).DispatchMessages(messages);
+            messages.Clear();
+            s_messageListPool.ReturnAndSetNull(ref messages);
+        });
     }
 }

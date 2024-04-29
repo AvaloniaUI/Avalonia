@@ -15,7 +15,6 @@
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
-    bool _lastKeyHandled;
     AvnPixelSize _lastPixelSize;
     NSObject<IRenderTarget>* _currentRenderTarget;
     AvnPlatformResizeReason _resizeReason;
@@ -24,6 +23,7 @@
     NSMutableAttributedString* _text;
     NSRange _selectedRange;
     NSRange _markedRange;
+    NSEvent* _lastKeyDownEvent;
 }
 
 - (void)onClosed
@@ -447,34 +447,21 @@
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput: false])
+    if([self ignoreUserInput: false] || _parent == nullptr)
     {
         return;
     }
 
-    auto key = s_KeyMap[[event keyCode]];
-
-    uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+    auto scanCode = [event keyCode];
+    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
+    auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
+    
+    auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    if(_parent != nullptr)
-    {
-        auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
-        if (key != LeftCtrl && key != RightCtrl) {
-          _lastKeyHandled = handled;
-        } else {
-          _lastKeyHandled = false;
-        }
-    }
-}
-
-- (BOOL)performKeyEquivalent:(NSEvent *)event
-{
-    bool result = _lastKeyHandled;
-
-    _lastKeyHandled = false;
-
-    return result;
+    _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -490,7 +477,6 @@
     bool isControlPressed = (newModifierState & Control) == Control;
     bool isShiftPressed = (newModifierState & Shift) == Shift;
     bool isCommandPressed = (newModifierState & Windows) == Windows;
-
 
     if (isAltPressed && !isAltCurrentlyPressed)
     {
@@ -534,15 +520,67 @@
     [super flagsChanged:event];
 }
 
+- (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
+    return _parent->BaseEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
+}
+
 - (void)keyDown:(NSEvent *)event
 {
-    _lastKeyHandled = false;
-        
-    [self keyboardEvent:event withType:KeyDown];
-    
-    if(!_lastKeyHandled){
-        [[self inputContext] handleEvent:event];
+    if([self ignoreUserInput: false] || _parent == nullptr)
+    {
+        return;
     }
+    
+    _lastKeyDownEvent = event;
+    
+    auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+    
+    auto scanCode = [event keyCode];
+    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
+    
+    auto modifiers = [self getModifiers:[event modifierFlags]];
+    
+    //InputMethod is active
+    if(_parent->InputMethod->IsActive()){
+        auto hasInputModifier = modifiers != AvnInputModifiersNone;
+        
+        //Handle keyDown first if an input modifier is present
+        if(hasInputModifier){
+            if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
+                //User code has handled the event
+                _lastKeyDownEvent = nullptr;
+                
+                return;
+            }
+        }
+        
+        if([[self inputContext] handleEvent:event] == NO){
+            //KeyDown has not been consumed by the input context
+                
+            //Only raise a keyDown if we don't have a modifier
+            if(!hasInputModifier){
+                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
+            }
+        }
+        
+    }
+    //InputMethod not active
+    else{
+        auto keyDownHandled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
+            
+        //Raise text input event for unhandled key down
+        if(!keyDownHandled){
+            if(keySymbol != nullptr && key != AvnKeyEnter){
+                auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+                
+                _parent->BaseEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
+            }
+        }
+    }
+    
+    _lastKeyDownEvent = nullptr;
 }
 
 - (void)keyUp:(NSEvent *)event
@@ -552,7 +590,9 @@
 }
 
 - (void) doCommandBySelector:(SEL)selector{
-    
+    if(_lastKeyDownEvent != nullptr){
+        [self keyboardEvent:_lastKeyDownEvent withType:KeyDown];
+    }
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -599,8 +639,6 @@
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-    _lastKeyHandled = true;
-    
     NSString* markedText;
         
     if([string isKindOfClass:[NSAttributedString class]])
@@ -669,8 +707,7 @@
         
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
         
-    _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
-    
+    _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point

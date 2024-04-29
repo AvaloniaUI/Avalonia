@@ -123,7 +123,7 @@ namespace Avalonia.Media
         /// <param name="boxShadows">Box shadow effect parameters</param>
         /// <remarks>
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
-        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// If the pen is null, then no stroke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
         public void DrawRectangle(IBrush? brush, IPen? pen, Rect rect,
             double radiusX = 0, double radiusY = 0,
@@ -283,7 +283,8 @@ namespace Avalonia.Media
                 Opacity,
                 Clip,
                 GeometryClip,
-                OpacityMask
+                OpacityMask,
+                RenderOptions
             }
 
             public RestoreState(DrawingContext context, PushedStateType type)
@@ -308,6 +309,8 @@ namespace Avalonia.Media
                     _context.PopGeometryClipCore();
                 else if (_type == PushedStateType.OpacityMask)
                     _context.PopOpacityMaskCore();
+                else if (_type == PushedStateType.RenderOptions)
+                    _context.PopRenderOptionsCore();
             }
         }
 
@@ -400,6 +403,20 @@ namespace Avalonia.Media
             return new PushedState(this);
         }
 
+        /// <summary>
+        /// Pushes render options.
+        /// </summary>
+        /// <param name="renderOptions">The render options.</param>
+        /// <returns>A disposable to undo the render options.</returns>
+        public PushedState PushRenderOptions(RenderOptions renderOptions)
+        {
+            PushRenderOptionsCore(renderOptions);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.RenderOptions));
+            return new PushedState(this);
+        }
+        protected abstract void PushRenderOptionsCore(RenderOptions renderOptions);
+
         [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
         [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
@@ -415,6 +432,7 @@ namespace Avalonia.Media
         protected abstract void PopOpacityCore();
         protected abstract void PopOpacityMaskCore();
         protected abstract void PopTransformCore();
+        protected abstract void PopRenderOptionsCore();
         
         private static bool PenIsVisible(IPen? pen)
         {

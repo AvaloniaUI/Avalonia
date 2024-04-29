@@ -128,7 +128,7 @@
                 <Calendar Name="PART_Calendar"
                           FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
                           IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
-                          SelectedDate="{TemplateBinding SelectedDate, Mode=TwoWay}"
+                          SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate, Mode=TwoWay}"
                           DisplayDate="{TemplateBinding DisplayDate}"
                           DisplayDateStart="{TemplateBinding DisplayDateStart}"
                           DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />

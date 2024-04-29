@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <AvaloniaAllowWebGl2 Condition="'$(AvaloniaAllowWebGl2)' == ''">true</AvaloniaAllowWebGl2>
+    <ShouldIncludeAvaloniaAssets Condition=" '$(ShouldIncludeAvaloniaAssets)' == '' ">True</ShouldIncludeAvaloniaAssets>
+    <ShouldIncludeAvaloniaLegacyAssets Condition=" '$(ShouldIncludeAvaloniaLegacyAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True'">True</ShouldIncludeAvaloniaLegacyAssets>
+    <ShouldIncludeAvaloniaStaticAssets Condition=" '$(ShouldIncludeAvaloniaStaticAssets)' == '' AND '$(ShouldIncludeAvaloniaAssets)' == 'True'">True</ShouldIncludeAvaloniaStaticAssets>
+
+    <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">True</ShouldIncludeNativeSkiaSharp>
+    <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">True</ShouldIncludeNativeHarfBuzzSharp>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssets.props" />
+</Project>

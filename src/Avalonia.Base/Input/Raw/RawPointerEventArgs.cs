@@ -123,7 +123,7 @@ namespace Avalonia.Input.Raw
         /// </summary>
         public Lazy<IReadOnlyList<RawPointerPoint>?>? IntermediatePoints { get; set; }
 
-        internal IInputElement? InputHitTestResult { get; set; }
+        internal (IInputElement? element, IInputElement? firstEnabledAncestor) InputHitTestResult { get; set; }
     }
 
     [PrivateApi]

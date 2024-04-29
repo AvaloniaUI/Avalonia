@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -36,7 +37,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public PropertyInfo Property { get; }
         public override object Key => Name;
         public override string Name { get; }
-        public override string Group => "CLR Properties";
+        public override string Group => IsPinned ? "Pinned" : "CLR Properties";
 
         public override Type AssignedType => _assignedType;
         public override Type PropertyType => _propertyType;
@@ -81,6 +82,15 @@ namespace Avalonia.Diagnostics.ViewModels
             RaiseAndSetIfChanged(ref _value, value, nameof(Value));
             RaiseAndSetIfChanged(ref _assignedType, valueType ?? Property.PropertyType, nameof(AssignedType));
             RaisePropertyChanged(nameof(Type));
+        }
+
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (e.PropertyName == nameof(IsPinned))
+            {
+                RaisePropertyChanged(nameof(Group));
+            }
         }
     }
 }

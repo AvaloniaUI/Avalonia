@@ -2,23 +2,19 @@ jobs:
 
 - job: GetPRNumber
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'ubuntu-20.04'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-  - task: PowerShell@2
-    displayName: Get PR Number
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
-      targetType: 'inline'
-      script: |
-        $prId = $env:System_PullRequest_PullRequestNumber
-        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
-
-        if (!([string]::IsNullOrWhiteSpace($prId)))
-        {
-          Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
-        }
-      
+      packageType: sdk
+      useGlobalJson: true
+  - task: CmdLine@2
+    displayName: 'Run Build'
+    inputs:
+        script: ./build.sh --target OutputVersion --version-output-dir $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -30,20 +26,29 @@ jobs:
     vmImage: 'ubuntu-20.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.404'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.404
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.101'
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
-      version: 7.0.101
+      packageType: sdk
+      useGlobalJson: true
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install wasm-tools wasm-experimental
+       dotnet workload install android macos wasm-tools
+
+  - task: CmdLine@2
+    displayName: 'Install Tizen Workload'
+    inputs:
+      targetType: 'inline'
+      script: |
+       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash -s -- -d "/opt/hostedtoolcache/dotnet"
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -67,21 +72,30 @@ jobs:
     vmImage: 'macos-12'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.404'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.404
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.101'
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
-      version: 7.0.101
+      packageType: sdk
+      useGlobalJson: true
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install wasm-tools wasm-experimental
-      
+       dotnet workload install android ios macos wasm-tools
+
+  - task: CmdLine@2
+    displayName: 'Install Tizen Workload'
+    inputs:
+      targetType: 'inline'
+      script: |
+       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
+  
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
     inputs:
@@ -138,20 +152,29 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.404'
+    displayName: 'Use .NET 6.0 Runtime'
     inputs:
-      version: 6.0.404
+      packageType: runtime
+      version: 6.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.101'
+    displayName: 'Use .NET 8.0 SDK'
     inputs:
-      version: 7.0.101
+      packageType: sdk
+      useGlobalJson: true
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios wasm-tools wasm-experimental
+       dotnet workload install android ios tvos wasm-tools
+
+  - task: PowerShell@2
+    displayName: 'Install Tizen Workload'
+    inputs:
+      targetType: 'inline'
+      script: |
+       (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1') | Invoke-Expression
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

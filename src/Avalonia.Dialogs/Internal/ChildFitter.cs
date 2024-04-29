@@ -11,7 +11,7 @@ namespace Avalonia.Dialogs.Internal
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Child.Measure(finalSize);
+            Child?.Measure(finalSize);
             base.ArrangeOverride(finalSize);
             return finalSize;
         }

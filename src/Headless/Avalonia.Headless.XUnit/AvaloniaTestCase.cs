@@ -1,9 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -37,10 +35,11 @@ internal class AvaloniaTestCase : XunitTestCase
 
         // We need to block the XUnit thread to ensure its concurrency throttle is effective.
         // See https://github.com/AArnott/Xunit.StaFact/pull/55#issuecomment-826187354 for details.
-        var runSummary = AvaloniaTestCaseRunner
-            .RunTest(session, this, DisplayName, SkipReason, constructorArguments,
-                TestMethodArguments, messageBus, aggregator, cancellationTokenSource)
-            .GetAwaiter().GetResult();
+        var runSummary =
+            Task.Run(() => AvaloniaTestCaseRunner.RunTest(session, this, DisplayName, SkipReason, constructorArguments,
+                TestMethodArguments, messageBus, aggregator, cancellationTokenSource))
+            .GetAwaiter()
+            .GetResult();
 
         return Task.FromResult(runSummary);
     }

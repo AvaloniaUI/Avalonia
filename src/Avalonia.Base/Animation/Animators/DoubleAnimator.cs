@@ -5,7 +5,7 @@
     /// </summary>
     internal class DoubleAnimator : Animator<double>
     {
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public override double Interpolate(double progress, double oldValue, double newValue)
         {
             return ((newValue - oldValue) * progress) + oldValue;

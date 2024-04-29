@@ -117,8 +117,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<SpinEventArgs>? Spin
         {
-            add { AddHandler(SpinEvent, value); }
-            remove { RemoveHandler(SpinEvent, value); }
+            add => AddHandler(SpinEvent, value);
+            remove => RemoveHandler(SpinEvent, value);
         }
 
         /// <summary>
@@ -126,8 +126,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ValidSpinDirections ValidSpinDirection
         {
-            get { return GetValue(ValidSpinDirectionProperty); }
-            set { SetValue(ValidSpinDirectionProperty, value); }
+            get => GetValue(ValidSpinDirectionProperty);
+            set => SetValue(ValidSpinDirectionProperty, value);
         }
 
         /// <summary>

@@ -83,7 +83,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var found = tref.Type.GetAllFields()
                     .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == propertyFieldName);
                 if (found == null)
-                    throw new XamlX.XamlParseException(
+                    throw new XamlX.XamlTransformException(
                         $"Unable to find {propertyFieldName} field on type {tref.Type.GetFullName()}", lineInfo);
                 return new XamlIlAvaloniaPropertyFieldNode(context.GetAvaloniaTypes(), lineInfo, found);
             }
@@ -110,7 +110,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 avaloniaPropertyType = avaloniaPropertyType.BaseType;
             }
 
-            throw new XamlX.XamlParseException(
+            throw new XamlX.XamlTransformException(
                 $"{field.Name}'s type {field.FieldType} doesn't inherit from  AvaloniaProperty<T>, make sure to use typed properties",
                 lineInfo);
 
@@ -228,6 +228,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             public PropertySetterBinderParameters BinderParameters { get; }
 
             public IReadOnlyList<IXamlType> Parameters { get; set; }
+            public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
 
             public abstract void Emit(IXamlILEmitter emitter);
 

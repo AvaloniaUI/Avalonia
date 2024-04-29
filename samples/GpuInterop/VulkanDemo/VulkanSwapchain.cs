@@ -141,6 +141,6 @@ class VulkanSwapchainImage : ISwapchainImage
         if (_image.IsDirectXBacked)
             _lastPresent = _target.UpdateWithKeyedMutexAsync(_importedImage, 1, 0);
         else
-            _lastPresent = _target.UpdateWithSemaphoresAsync(_importedImage, _renderCompletedSemaphore, _availableSemaphore);
+            _lastPresent = _target.UpdateWithSemaphoresAsync(_importedImage, _renderCompletedSemaphore!, _availableSemaphore!);
     }
 }

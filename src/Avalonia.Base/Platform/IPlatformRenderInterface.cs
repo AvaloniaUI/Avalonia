@@ -199,6 +199,9 @@ namespace Avalonia.Platform
         public PixelFormat DefaultPixelFormat { get; }
 
         bool IsSupportedBitmapPixelFormat(PixelFormat format);
+        
+        bool SupportsRegions { get; }
+        IPlatformRenderInterfaceRegion CreateRegion();
     }
 
     [Unstable, PrivateApi]
@@ -217,5 +220,10 @@ namespace Avalonia.Platform
         /// Indicates that the context is no longer usable. This method should be thread-safe
         /// </summary>
         bool IsLost { get; }
+        
+        /// <summary>
+        /// Exposes features that should be available for consumption while context isn't active (e. g. from the UI thread)
+        /// </summary>
+        IReadOnlyDictionary<Type, object> PublicFeatures { get; }
     }
 }

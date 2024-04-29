@@ -3,12 +3,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Avalonia.Controls"
+             xmlns:converters="clr-namespace:Avalonia.Markup.Xaml.Converters;assembly=Avalonia.Markup.Xaml"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.ColorPickerPage">
 
   <UserControl.Resources>
+    <converters:ColorToBrushConverter x:Key="ToBrushConverter"/>
   </UserControl.Resources>
 
   <Grid x:Name="LayoutRoot"
@@ -17,14 +19,30 @@
     <ColorView Grid.Column="0"
                Grid.Row="0"
                ColorSpectrumShape="Ring" />
-    <ColorPicker Grid.Column="0"
-                 Grid.Row="1"
-                 HsvColor="hsv(120, 1, 1)"
-                 Margin="0,50,0,0">
-      <ColorPicker.Palette>
-        <controls:FlatHalfColorPalette />
-      </ColorPicker.Palette>
-    </ColorPicker>
+    <StackPanel Grid.Column="0" Grid.Row="1">
+      <ColorPicker Grid.Column="0"
+                   Grid.Row="1"
+                   HsvColor="hsv(120, 1, 1)"
+                   Margin="0,50,0,0">
+        <ColorPicker.Palette>
+          <controls:FlatHalfColorPalette />
+        </ColorPicker.Palette>
+      </ColorPicker>
+      <ColorPicker HsvColor="hsv(120, 1, 1)"
+                   Width="150"
+                   Margin="0,50,0,0">
+      </ColorPicker>
+      <ColorPicker Width="150"
+                   VerticalContentAlignment="Center"
+                   HsvColor="hsv(120, 1, 1)"
+                   Margin="0,50,0,0">
+        <ColorPicker.Content>
+          <TextBlock Text="{Binding $parent[ColorPicker].Color}" 
+                     Foreground="{Binding $parent[ColorPicker].Color, Converter={StaticResource ToBrushConverter}}"></TextBlock>
+        </ColorPicker.Content>
+      </ColorPicker>
+    </StackPanel>
+
     <Grid Grid.Column="2"
           Grid.Row="0"
           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">

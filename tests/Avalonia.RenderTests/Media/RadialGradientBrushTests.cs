@@ -125,7 +125,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         },
                         GradientOrigin = new RelativePoint(0.25, 0.25, RelativeUnit.Relative),
                         Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                        Radius = 0.5                        
+                        RadiusX = RelativeScalar.Middle,
+                        RadiusY = RelativeScalar.Middle
                     }
                 }
             };
@@ -157,7 +158,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         },
                         GradientOrigin = new RelativePoint(0.1, 0.1, RelativeUnit.Relative),
                         Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                        Radius = 0.5
+                        RadiusX = RelativeScalar.Middle,
+                        RadiusY = RelativeScalar.Middle
                     }
                 }
             };
@@ -199,6 +201,77 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             private readonly Action<DrawingContext> _render;
             public DrawnControl(Action<DrawingContext> render) => _render = render;
             public override void Render(DrawingContext context) => _render(context);
+        }
+        
+        
+        [Theory,
+         InlineData(false, false),
+         InlineData(false, true),
+         InlineData(true, false),
+         InlineData(true, true),
+        ]
+        public async Task RadialGradientBrush_Is_Properly_Mapped(bool relative, bool moveOrigin)
+        {
+            var center = relative ? RelativePoint.Center : new RelativePoint(128, 128, RelativeUnit.Absolute);
+            var brush = new RadialGradientBrush
+            {
+                Center = center,
+                GradientStops =
+                {
+                    new GradientStop { Color = Colors.Red, Offset = 0 },
+                    new GradientStop { Color = Colors.Blue, Offset = 1 }
+                },
+                SpreadMethod = moveOrigin ? GradientSpreadMethod.Pad : GradientSpreadMethod.Repeat,
+                RadiusX = relative ? RelativeScalar.Middle : new RelativeScalar(128, RelativeUnit.Absolute),
+                RadiusY = relative ? RelativeScalar.Middle : new RelativeScalar(64, RelativeUnit.Absolute),
+                GradientOrigin = moveOrigin
+                    ? (relative
+                        ? new RelativePoint(0.1, 0.1, RelativeUnit.Relative)
+                        : new RelativePoint(32, 32, RelativeUnit.Absolute))
+                    : center
+            };
+
+            var testName =
+                $"{nameof(RadialGradientBrush_Is_Properly_Mapped)}_{(relative ? "Relative" : "Absolute")}_{(moveOrigin ? "MovedOrigin" : "CenterOrigin")}";
+            await RenderToFile(new RelativePointTestPrimitivesHelper(brush, !relative), testName);
+            CompareImages(testName);
+        }
+
+
+        [Theory(
+#if !AVALONIA_SKIA
+            Skip = "Direct2D backend doesn't seem to support brush transforms while Direct2D is certainly capable of doing that. I'm not fixing it in this PR however"
+#endif
+            ),
+         InlineData(false),
+         InlineData(true)
+        ]
+        public async Task RadialGradientBrush_With_Different_Radius_Is_Properly_Rotated(bool moveOrigin)
+        {
+            var brush = new RadialGradientBrush
+            {
+                GradientStops =
+                {
+                    new GradientStop { Color = Colors.Red, Offset = 0 },
+                    new GradientStop { Color = Colors.Blue, Offset = 1 }
+                },
+                GradientOrigin = moveOrigin ? new RelativePoint(0.1, 0.1, RelativeUnit.Relative) : RelativePoint.Center,
+                RadiusY = new RelativeScalar(0.25, RelativeUnit.Relative),
+                Transform = new RotateTransform(45),
+                TransformOrigin = RelativePoint.Center
+            };
+
+            var testName =
+                $"{nameof(RadialGradientBrush_With_Different_Radius_Is_Properly_Rotated)}_{(moveOrigin ? "MovedOrigin" : "CenterOrigin")}";
+            
+            await RenderToFile(new Border()
+            {
+                Background = brush,
+                Width = 256,
+                Height = 256,
+                MinHeight = 256
+            }, testName);
+            CompareImages(testName);
         }
     }
 }

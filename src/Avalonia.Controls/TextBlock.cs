@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Text;
 using Avalonia.Automation.Peers;
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    [DebuggerDisplay("Text = {" + nameof(DebugText) + "}")]
     public class TextBlock : Control, IInlineHost
     {
         /// <summary>
@@ -53,7 +54,7 @@ namespace Avalonia.Controls
             TextElement.FontWeightProperty.AddOwner<TextBlock>();
 
         /// <summary>
-        /// Defines the <see cref="FontWeight"/> property.
+        /// Defines the <see cref="FontStretch"/> property.
         /// </summary>
         public static readonly StyledProperty<FontStretch> FontStretchProperty =
             TextElement.FontStretchProperty.AddOwner<TextBlock>();
@@ -81,6 +82,16 @@ namespace Avalonia.Controls
                 nameof(LineHeight),
                 double.NaN,
                 validate: IsValidLineHeight,
+                inherits: true);
+
+        /// <summary>
+        /// Defines the <see cref="LineSpacing"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<double> LineSpacingProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
+                nameof(LineSpacing),
+                0,
+                validate: IsValidLineSpacing,
                 inherits: true);
 
         /// <summary>
@@ -138,6 +149,12 @@ namespace Avalonia.Controls
             Inline.TextDecorationsProperty.AddOwner<TextBlock>();
 
         /// <summary>
+        /// Defines the <see cref="FontFeatures"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
+            TextElement.FontFeaturesProperty.AddOwner<TextBlock>();
+
+        /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
         public static readonly DirectProperty<TextBlock, InlineCollection?> InlinesProperty =
@@ -145,8 +162,8 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        private Size _constraint;
-        private IReadOnlyList<TextRun>? _textRuns;
+        protected Size _constraint;
+        protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
         /// <summary>
@@ -178,8 +195,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Thickness Padding
         {
-            get { return GetValue(PaddingProperty); }
-            set { SetValue(PaddingProperty, value); }
+            get => GetValue(PaddingProperty);
+            set => SetValue(PaddingProperty, value);
         }
 
         /// <summary>
@@ -187,8 +204,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? Background
         {
-            get { return GetValue(BackgroundProperty); }
-            set { SetValue(BackgroundProperty, value); }
+            get => GetValue(BackgroundProperty);
+            set => SetValue(BackgroundProperty, value);
         }
 
         /// <summary>
@@ -200,15 +217,13 @@ namespace Avalonia.Controls
             set => SetValue(TextProperty, value);
         }
 
-        private string? DebugText => Text ?? Inlines?.Text;
-
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.
         /// </summary>
         public FontFamily FontFamily
         {
-            get { return GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
+            get => GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
         }
 
         /// <summary>
@@ -216,8 +231,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double FontSize
         {
-            get { return GetValue(FontSizeProperty); }
-            set { SetValue(FontSizeProperty, value); }
+            get => GetValue(FontSizeProperty);
+            set => SetValue(FontSizeProperty, value);
         }
 
         /// <summary>
@@ -225,8 +240,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return GetValue(FontStyleProperty); }
-            set { SetValue(FontStyleProperty, value); }
+            get => GetValue(FontStyleProperty);
+            set => SetValue(FontStyleProperty, value);
         }
 
         /// <summary>
@@ -234,8 +249,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FontWeight FontWeight
         {
-            get { return GetValue(FontWeightProperty); }
-            set { SetValue(FontWeightProperty, value); }
+            get => GetValue(FontWeightProperty);
+            set => SetValue(FontWeightProperty, value);
         }
 
         /// <summary>
@@ -243,8 +258,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FontStretch FontStretch
         {
-            get { return GetValue(FontStretchProperty); }
-            set { SetValue(FontStretchProperty, value); }
+            get => GetValue(FontStretchProperty);
+            set => SetValue(FontStretchProperty, value);
         }
 
         /// <summary>
@@ -252,8 +267,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? Foreground
         {
-            get { return GetValue(ForegroundProperty); }
-            set { SetValue(ForegroundProperty, value); }
+            get => GetValue(ForegroundProperty);
+            set => SetValue(ForegroundProperty, value);
         }
 
         /// <summary>
@@ -263,6 +278,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(LineHeightProperty);
             set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the extra distance of each line to the next line.
+        /// </summary>
+        public double LineSpacing
+        {
+            get => GetValue(LineSpacingProperty);
+            set => SetValue(LineSpacingProperty, value);
         }
 
         /// <summary>
@@ -288,8 +312,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextWrapping TextWrapping
         {
-            get { return GetValue(TextWrappingProperty); }
-            set { SetValue(TextWrappingProperty, value); }
+            get => GetValue(TextWrappingProperty);
+            set => SetValue(TextWrappingProperty, value);
         }
 
         /// <summary>
@@ -297,8 +321,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextTrimming TextTrimming
         {
-            get { return GetValue(TextTrimmingProperty); }
-            set { SetValue(TextTrimmingProperty, value); }
+            get => GetValue(TextTrimmingProperty);
+            set => SetValue(TextTrimmingProperty, value);
         }
 
         /// <summary>
@@ -306,8 +330,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextAlignment TextAlignment
         {
-            get { return GetValue(TextAlignmentProperty); }
-            set { SetValue(TextAlignmentProperty, value); }
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
         }
 
         /// <summary>
@@ -317,6 +341,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(TextDecorationsProperty);
             set => SetValue(TextDecorationsProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font features.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => GetValue(FontFeaturesProperty);
+            set => SetValue(FontFeaturesProperty, value);
         }
 
         /// <summary>
@@ -338,8 +371,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double BaselineOffset
         {
-            get { return (double)GetValue(BaselineOffsetProperty); }
-            set { SetValue(BaselineOffsetProperty, value); }
+            get => (double)GetValue(BaselineOffsetProperty);
+            set => SetValue(BaselineOffsetProperty, value);
         }
 
         /// <summary>
@@ -615,12 +648,16 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
+                FontFeatures,
                 FontSize,
                 TextDecorations,
                 Foreground);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing);
+                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+            {
+                LineSpacing = LineSpacing
+            };
 
             ITextSource textSource;
 
@@ -647,12 +684,16 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateTextLayout()
         {
+            InvalidateMeasure();
+        }
+
+        protected override void OnMeasureInvalidated()
+        {
             _textLayout?.Dispose();
             _textLayout = null;
+            _textRuns = null;
 
-            InvalidateVisual();
-
-            InvalidateMeasure();
+            base.OnMeasureInvalidated();
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -661,6 +702,8 @@ namespace Avalonia.Controls
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
             _constraint = availableSize.Deflate(padding);
+
+            //Reset TextLayout otherwise constraint might be outdated.
             _textLayout?.Dispose();
             _textLayout = null;
 
@@ -668,8 +711,6 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
-                VisualChildren.Clear();
-
                 var textRuns = new List<TextRun>();
 
                 foreach (var inline in inlines!)
@@ -678,17 +719,6 @@ namespace Avalonia.Controls
                 }
 
                 _textRuns = textRuns;
-
-                foreach (var textRun in _textRuns)
-                {
-                    if (textRun is EmbeddedControlRun controlRun &&
-                    controlRun.Control is Control control)
-                    {
-                        VisualChildren.Add(control);
-
-                        control.Measure(Size.Infinity);
-                    }
-                }
             }
 
             var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
@@ -778,6 +808,7 @@ namespace Avalonia.Controls
 
                 case nameof(Text):
                 case nameof(TextDecorations):
+                case nameof(FontFeatures):
                 case nameof(Foreground):
                     {
                         InvalidateTextLayout();
@@ -796,29 +827,49 @@ namespace Avalonia.Controls
 
         private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;
 
+        private static bool IsValidLineSpacing(double lineSpacing) => !double.IsNaN(lineSpacing) && !double.IsInfinity(lineSpacing);
+
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
+            VisualChildren.Clear();
+
             if (oldValue is not null)
             {
                 oldValue.LogicalChildren = null;
                 oldValue.InlineHost = null;
-                oldValue.Invalidated -= (s, e) => InvalidateTextLayout();
+                oldValue.Invalidated -= Invalidated;
             }
 
             if (newValue is not null)
             {
                 newValue.LogicalChildren = LogicalChildren;
                 newValue.InlineHost = this;
-                newValue.Invalidated += (s, e) => InvalidateTextLayout();
+                newValue.Invalidated += Invalidated;
             }
+
+            return;
+
+            void Invalidated(object? sender, EventArgs e) => InvalidateMeasure();
         }
 
         void IInlineHost.Invalidate()
         {
-            InvalidateTextLayout();
+            InvalidateMeasure();
         }
 
-        private readonly record struct SimpleTextSource : ITextSource
+        IAvaloniaList<Visual> IInlineHost.VisualChildren => VisualChildren;
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Text), Text ?? Inlines?.Text, true);
+            }
+        }
+
+        protected readonly record struct SimpleTextSource : ITextSource
         {
             private readonly string _text;
             private readonly TextRunProperties _defaultProperties;
@@ -847,13 +898,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private readonly struct InlinesTextSource : ITextSource
+#pragma warning disable CA1815
+        protected readonly struct InlinesTextSource : ITextSource
+#pragma warning restore CA1815
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
+            private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 
-            public InlinesTextSource(IReadOnlyList<TextRun> textRuns)
+            public InlinesTextSource(IReadOnlyList<TextRun> textRuns, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier = null)
             {
                 _textRuns = textRuns;
+                _textModifier = textModifier;
             }
 
             public IReadOnlyList<TextRun> TextRuns => _textRuns;
@@ -876,11 +931,13 @@ namespace Avalonia.Controls
                         continue;
                     }
 
-                    if (textRun is TextCharacters)
+                    if (textRun is TextCharacters textCharacters)
                     {
                         var skip = Math.Max(0, textSourceIndex - currentPosition);
 
-                        return new TextCharacters(textRun.Text.Slice(skip), textRun.Properties!);
+                        var textStyleRun = FormattedTextSource.CreateTextStyleRun(textRun.Text.Slice(skip).Span, textSourceIndex, textCharacters.Properties, _textModifier);
+
+                        return new TextCharacters(textRun.Text.Slice(skip, textStyleRun.Length), textStyleRun.Value);
                     }
 
                     return textRun;
@@ -888,6 +945,6 @@ namespace Avalonia.Controls
 
                 return new TextEndOfParagraph();
             }
-        }
+         }
     }
 }

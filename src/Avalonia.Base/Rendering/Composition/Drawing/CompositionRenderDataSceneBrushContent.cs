@@ -7,7 +7,7 @@ namespace Avalonia.Rendering.Composition.Drawing;
 internal class CompositionRenderDataSceneBrushContent : ISceneBrushContent
 {
     public CompositionRenderData RenderData { get; }
-    private Rect? _rect;
+    private readonly Rect? _rect;
 
     public CompositionRenderDataSceneBrushContent(ITileBrush brush, CompositionRenderData renderData, Rect? rect,
         bool useScalableRasterization)
@@ -19,7 +19,7 @@ internal class CompositionRenderDataSceneBrushContent : ISceneBrushContent
     }
 
     public ITileBrush Brush { get; }
-    public Rect Rect => _rect ?? (RenderData.Server?.Bounds ?? default);
+    public Rect Rect => _rect ?? (RenderData.Server?.Bounds?.ToRect() ?? default);
 
     public double Opacity => Brush.Opacity;
     public ITransform? Transform => Brush.Transform;

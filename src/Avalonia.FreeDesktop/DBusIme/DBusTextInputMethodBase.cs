@@ -53,7 +53,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             _ = WatchAsync();
         }
 
-        public TextInputMethodClient Client => _client;
+        public TextInputMethodClient? Client => _client;
 
         public bool IsActive => _client is not null;
 
@@ -179,17 +179,30 @@ namespace Avalonia.FreeDesktop.DBusIme
                 _disposables.Add(d);
         }
 
-        public void Dispose()
+        public async void Dispose()
         {
             foreach(var d in _disposables)
                 d.Dispose();
             _disposables.Clear();
-            _ = DisconnectAsync();
+            if (!IsConnected)
+                return;
+            try
+            {
+                await DisconnectAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Error, "IME")
+                    ?.Log(this, "Error while destroying the context:\n" + ex);
+            }
+
             _currentName = null;
         }
 
         protected abstract Task SetCursorRectCore(PixelRect rect);
         protected abstract Task SetActiveCore(bool active);
+
+        protected virtual Task SetCapabilitiesCore(bool supportsPreedit, bool supportsSurroundingText) => Task.CompletedTask;
         protected abstract Task ResetContextCore();
         protected abstract Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode);
 
@@ -208,6 +221,17 @@ namespace Avalonia.FreeDesktop.DBusIme
                 }
             });
         }
+        
+        private void UpdateCapabilities(bool supportsPreedit, bool supportsSurroundingText)
+        {
+            _queue.Enqueue(async () =>
+            {
+                if(!IsConnected)
+                    return;
+
+                await SetCapabilitiesCore(supportsPreedit, supportsSurroundingText);
+            });
+        }
 
 
         void IX11InputMethodControl.SetWindowActive(bool active)
@@ -220,6 +244,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         {
             _client = client;
             UpdateActive();
+            UpdateCapabilities(client?.SupportsPreedit ?? false, client?.SupportsSurroundingText ?? false);
         }
 
         bool IX11InputMethodControl.IsEnabled => IsConnected && _imeActive == true;
@@ -294,9 +319,9 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         void ITextInputMethodImpl.Reset()
         {
-            Reset();
             _queue.Enqueue(async () =>
             {
+                Reset();
                 if (!IsConnected)
                     return;
                 await ResetContextCore();

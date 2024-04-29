@@ -222,6 +222,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Should_Close_When_Control_Detaches()
+        {
+            using (CreateServices())
+            {
+                var button = new Button();
+                var target = new Popup() {Placement = PlacementMode.Pointer, PlacementTarget = button};
+                var root = PreparedWindow(button);
+
+                target.Open();
+
+                Assert.True(target.IsOpen);
+                root.Content = null;
+                Assert.False(target.IsOpen);
+            }
+        }
+
+        [Fact]
         public void Popup_Open_Should_Raise_Single_Opened_Event()
         {
             using (CreateServices())
@@ -673,9 +690,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     PlacementTarget = window,
                     Child = tb
                 };
-                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
-                window.Show();
 
+                window.Content = p;
+                window.Show();
+                window.Focus();
                 p.Open();
 
                 if (p.Host is OverlayPopupHost host)
@@ -692,7 +710,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var focusManager = window.FocusManager;
                 var focus = focusManager.GetFocusedElement();
-                Assert.True(focus == window);
+                Assert.Same(window, focus);
             }
         }
 
@@ -1141,6 +1159,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(1, parentRaised);
             }
         }
+
+        [Fact]
+        public void Popup_Attached_To_Adorner_Respects_Adorner_Position()
+        {
+            using (CreateServices())
+            {
+                var popupTarget = new Border() { Height = 30, Background = Brushes.Red, [DockPanel.DockProperty] = Dock.Top };
+                var popupContent = new Border() { Height = 30, Width = 50, Background = Brushes.Yellow };
+                var popup = new Popup
+                {
+                    Child = popupContent,
+                    Placement = PlacementMode.AnchorAndGravity,
+                    PlacementTarget = popupTarget,
+                    PlacementAnchor = PopupAnchor.BottomRight,
+                    PlacementGravity = PopupGravity.BottomRight
+                };
+                var adorner = new DockPanel() { Children = { popupTarget, popup },
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Width = 40,
+                    Margin = new Thickness(50, 5, 0, 0) };
+
+                var adorned = new Border() {
+                    Width = 100,
+                    Height = 100,
+                    Background = Brushes.Blue,
+                    [Canvas.LeftProperty] = 20,
+                    [Canvas.TopProperty] = 40
+                };
+                var windowContent = new Canvas();
+                windowContent.Children.Add(adorned);
+
+                var root = PreparedWindow(windowContent);
+
+                var adornerLayer = AdornerLayer.GetAdornerLayer(adorned);
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, adorned);
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                popup.Open();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+
+                // X: Adorned Canvas.Left + Adorner Margin Left + Adorner Width
+                // Y: Adorned Canvas.Top + Adorner Margin Top + Adorner Height
+                Assert.Equal(new PixelPoint(110, 75), popupContent.PointToScreen(new Point(0, 0)));
+            }
+        }
+
 
         private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
         {

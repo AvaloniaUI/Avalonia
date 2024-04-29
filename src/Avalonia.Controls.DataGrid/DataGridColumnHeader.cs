@@ -3,18 +3,19 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
-using Avalonia.Input;
-using Avalonia.Collections;
-using Avalonia.Media;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using Avalonia.Utilities;
-using System;
-using Avalonia.Controls.Utils;
-using Avalonia.Controls.Mixins;
+using Avalonia.Automation.Peers;
+using Avalonia.Collections;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Utils;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -86,6 +87,11 @@ namespace Avalonia.Controls
             PointerMoved += DataGridColumnHeader_PointerMoved;
             PointerEntered += DataGridColumnHeader_PointerEntered;
             PointerExited += DataGridColumnHeader_PointerExited;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridColumnHeaderAutomationPeer(this);
         }
 
         private void OnAreSeparatorsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
@@ -195,8 +201,12 @@ namespace Avalonia.Controls
             }
         }
 
+        public event EventHandler<KeyModifiers> LeftClick;
+
         internal void OnMouseLeftButtonUp_Click(KeyModifiers keyModifiers, ref bool handled)
         {
+            LeftClick?.Invoke(this, keyModifiers);
+
             // completed a click without dragging, so we're sorting
             InvokeProcessSort(keyModifiers);
             handled = true;
@@ -441,7 +451,7 @@ namespace Avalonia.Controls
             }
 
             Debug.Assert(OwningGrid.Parent is InputElement);
-            
+
             OnMouseMove_Resize(ref handled, mousePositionHeaders);
 
             OnMouseMove_Reorder(ref handled, mousePosition, mousePositionHeaders);
@@ -669,7 +679,7 @@ namespace Avalonia.Controls
                 Content = Content,
                 ContentTemplate = ContentTemplate
             };
-            if (OwningGrid.ColumnHeaderTheme is {} columnHeaderTheme)
+            if (OwningGrid.ColumnHeaderTheme is { } columnHeaderTheme)
             {
                 dragIndicator.SetValue(ThemeProperty, columnHeaderTheme, BindingPriority.Template);
             }
@@ -786,7 +796,7 @@ namespace Avalonia.Controls
 
                 desiredWidth = Math.Max(_dragColumn.ActualMinWidth, Math.Min(_dragColumn.ActualMaxWidth, desiredWidth));
                 _dragColumn.Resize(_dragColumn.Width,
-                    new(_dragColumn.Width.Value, _dragColumn.Width.UnitType, _dragColumn.Width.DesiredValue, desiredWidth), 
+                    new(_dragColumn.Width.Value, _dragColumn.Width.UnitType, _dragColumn.Width.DesiredValue, desiredWidth),
                     true);
 
                 OwningGrid.UpdateHorizontalOffset(_originalHorizontalOffset);

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Data.Core;
 using Avalonia.Reactive;
 using ObservableEx = Avalonia.Reactive.Observable;
 
@@ -14,8 +15,12 @@ namespace Avalonia.Data
     /// *instanced* by calling <see cref="IBinding.Initiate(AvaloniaObject, AvaloniaProperty, object, bool)"/>
     /// on a target object.
     /// </remarks>
-    public class InstancedBinding
+    public sealed class InstancedBinding
     {
+        private readonly AvaloniaObject? _target;
+        private readonly UntypedBindingExpressionBase? _expression;
+        private IObservable<object?>? _observable;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
         /// </summary>
@@ -32,7 +37,29 @@ namespace Avalonia.Data
         {
             Mode = mode;
             Priority = priority;
-            Source = source ?? throw new ArgumentNullException(nameof(source));
+            _observable = source ?? throw new ArgumentNullException(nameof(source));
+        }
+
+        internal InstancedBinding(
+            UntypedBindingExpressionBase source,
+            BindingMode mode,
+            BindingPriority priority)
+        {
+            Mode = mode;
+            Priority = priority;
+            _expression = source ?? throw new ArgumentNullException(nameof(source));
+        }
+
+        internal InstancedBinding(
+            AvaloniaObject? target,
+            UntypedBindingExpressionBase source, 
+            BindingMode mode, 
+            BindingPriority priority)
+        {
+            Mode = mode;
+            Priority = priority;
+            _expression = source ?? throw new ArgumentNullException(nameof(source));
+            _target = target;
         }
 
         /// <summary>
@@ -48,10 +75,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the binding source observable.
         /// </summary>
-        public IObservable<object?> Source { get; }
+        public IObservable<object?> Source => _observable ??= _expression!.ToObservable(_target);
 
         [Obsolete("Use Source property"), EditorBrowsable(EditorBrowsableState.Never)]
         public IObservable<object?> Observable => Source;
+
+        internal UntypedBindingExpressionBase? Expression => _expression;
 
         /// <summary>
         /// Creates a new one-time binding with a fixed value.

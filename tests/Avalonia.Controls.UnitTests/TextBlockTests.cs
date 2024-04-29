@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
@@ -30,6 +31,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Calling_Measure_Should_Update_Constraint_And_TextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var textBlock = new TestTextBlock { Text = "Hello World" };
+
+                textBlock.Measure(new Size(100, 100));
+
+                var textLayout = textBlock.TextLayout;
+
+                Assert.Equal(new Size(100,100), textBlock.Constraint);
+
+                textBlock.Measure(new Size(50, 100));
+
+                Assert.Equal(new Size(50, 100), textBlock.Constraint);
+
+                Assert.NotEqual(textLayout, textBlock.TextLayout);
+            }
+        }
+
+        [Fact]
         public void Changing_InlinesCollection_Should_Invalidate_Measure()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -47,6 +69,74 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(Size.Infinity);
 
                 Assert.True(target.IsMeasureValid);
+            }
+        }
+
+        [Fact]
+        public void Changing_Inlines_Should_Attach_Embedded_Controls_To_Parents()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var control = new Border();
+
+                var inlineUIContainer = new InlineUIContainer { Child = control };
+
+                target.Inlines = new InlineCollection { inlineUIContainer };
+
+                Assert.Equal(inlineUIContainer, control.Parent);
+
+                Assert.Equal(target, control.VisualParent);
+            }
+        }
+
+        [Fact]
+        public void Can_Call_Measure_Without_InvalidateTextLayout()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                target.Inlines.Add(new TextBox { Text = "Hello"});
+
+                target.Measure(Size.Infinity);
+
+                target.InvalidateMeasure();
+
+                target.Measure(Size.Infinity);
+            }
+        }
+
+        [Fact]
+        public void Embedded_Control_Should_Keep_Focus()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new TextBlock();
+
+                var root = new TestRoot
+                {
+                    Child = target
+                };
+
+                var textBox = new TextBox { Text = "Hello", Template = TextBoxTests.CreateTemplate() };
+
+                target.Inlines.Add(textBox);
+
+                target.Measure(Size.Infinity);
+
+                textBox.Focus();
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
+
+                target.InvalidateMeasure();
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
+
+                target.Measure(Size.Infinity);
+
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -116,6 +206,42 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_InlineHost_Should_Propagate_To_Nested_Inlines()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var span = new Span { Inlines = new InlineCollection { new Run { Text = "World" } } };
+
+                var inlines = new InlineCollection{ new Run{Text = "Hello "}, span };
+
+                target.Inlines = inlines;
+
+                Assert.Equal(target, span.InlineHost);
+            }
+        }
+
+        [Fact]
+        public void Changing_Inlines_Should_Reset_VisualChildren()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                target.Inlines.Add(new Border());
+
+                target.Measure(Size.Infinity);
+
+                Assert.NotEmpty(target.VisualChildren);
+
+                target.Inlines = null;
+
+                Assert.Empty(target.VisualChildren);
+            }
+        }
+
+        [Fact]
         public void Changing_Inlines_Should_Reset_InlineUIContainer_VisualParent_On_Measure()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -170,6 +296,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Inlines.Add("123456");
 
                 target.Measure(Size.Infinity);
+                target.Arrange(new Rect(target.DesiredSize));
 
                 Assert.True(button.IsMeasureValid);
                 Assert.Equal(80, button.DesiredSize.Width);
@@ -222,6 +349,27 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(underline, target.Inlines[0].TextDecorations);
             }
+        }
+        
+        [Fact]
+        public void TextBlock_TextLines_Should_Be_Empty()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var textblock = new TextBlock();
+                textblock.Inlines?.Add(new Run("123"));
+                textblock.Measure(new Size(200, 200));
+                int count = textblock.TextLayout.TextLines[0].TextRuns.Count;
+                textblock.Inlines?.Clear();
+                textblock.Measure(new Size(200, 200));
+                int count1 = textblock.TextLayout.TextLines[0].TextRuns.Count;
+                Assert.NotEqual(count, count1);
+            }
+        }
+
+        private class TestTextBlock : TextBlock
+        {
+            public Size Constraint => _constraint;
         }
     }
 }

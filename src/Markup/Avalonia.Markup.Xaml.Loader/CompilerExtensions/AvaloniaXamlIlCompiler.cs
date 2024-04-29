@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
@@ -28,6 +30,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             void InsertBefore<T>(params IXamlAstTransformer[] t)
                 => Transformers.InsertRange(Transformers.FindIndex(x => x is T), t);
 
+            void InsertBeforeMany(Type[] types, params IXamlAstTransformer[] t)
+                => Transformers.InsertRange(types
+                    .Select(type => Transformers.FindIndex(x => x.GetType() == type))
+                    .Min(), t);
 
             // Before everything else
 
@@ -56,6 +62,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
+                new AvaloniaXamlIlStyleValidatorTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
@@ -67,20 +74,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertAfter<TypeReferenceResolver>(
                 new XDataTypeTransformer());
 
-            InsertBefore<DeferredContentTransformer>(
-                new AvaloniaXamlIlDeferredResourceTransformer()
-            );
-
             // After everything else
             InsertBefore<NewObjectTransformer>(
                 new AddNameScopeRegistration(),
+                new AvaloniaXamlIlControlTemplatePartsChecker(),
                 new AvaloniaXamlIlDataContextTypeTransformer(),
                 new AvaloniaXamlIlBindingPathTransformer(),
                 new AvaloniaXamlIlCompiledBindingsMetadataRemover()
                 );
 
+            InsertBeforeMany(new [] { typeof(DeferredContentTransformer), typeof(AvaloniaXamlIlCompiledBindingsMetadataRemover) },
+                new AvaloniaXamlIlDeferredResourceTransformer());
+
             Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
+            Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
             Emitters.Add(new AvaloniaNameScopeRegistrationXamlIlNodeEmitter());
@@ -125,9 +133,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public List<IXamlAstGroupTransformer> GroupTransformers { get; }
 
-        public void TransformGroup(IReadOnlyCollection<IXamlDocumentResource> documents, bool strict = true)
+        public void TransformGroup(IReadOnlyCollection<IXamlDocumentResource> documents)
         {
-            var ctx = new AstGroupTransformationContext(documents, _configuration, strict);
+            var ctx = new AstGroupTransformationContext(documents, _configuration);
             foreach (var transformer in GroupTransformers)
             {
                 foreach (var doc in documents)
@@ -143,6 +151,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public XamlDocument Parse(string xaml, IXamlType overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
@@ -162,8 +173,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     new XamlAstClrTypeReference(classDirective,
                         _configuration.TypeSystem.GetType(((XamlAstTextNode)classDirective.Values[0]).Text),
                         false) :
-                    TypeReferenceResolver.ResolveType(CreateTransformationContext(parsed, true),
-                        (XamlAstXmlTypeReference)rootObject.Type, true);
+                    TypeReferenceResolver.ResolveType(CreateTransformationContext(parsed),
+                        (XamlAstXmlTypeReference)rootObject.Type);
 
 
             if (overrideRootType != null)
@@ -181,17 +192,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string baseUri, IFileSource fileSource)
         {
-            var tb = typeBuilderProvider.TypeBuilder;
-
-            Compile(document, _contextType, typeBuilderProvider.PopulateMethod, typeBuilderProvider.BuildMethod,
+            Compile(
+                document,
+                _contextType,
+                typeBuilderProvider.PopulateMethod,
+                typeBuilderProvider.PopulateDeclaringType,
+                typeBuilderProvider.BuildMethod,
+                typeBuilderProvider.BuildDeclaringType,
                 _configuration.TypeMappings.XmlNamespaceInfoProvider == null ?
                     null :
-                    tb.DefineSubType(_configuration.WellKnownTypes.Object,
-                        "__AvaloniaXamlIlNsInfo", false), (name, bt) => tb.DefineSubType(bt, name, false),
-                (s, returnType, parameters) => tb.DefineDelegateSubType(s, false, returnType, parameters), baseUri,
+                    typeBuilderProvider.PopulateDeclaringType.DefineSubType(_configuration.WellKnownTypes.Object, "__AvaloniaXamlIlNsInfo", XamlVisibility.Private),
+                baseUri,
                 fileSource);
         }
-        
+
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
         {
             var parsed = Parse(xaml, overrideRootType);

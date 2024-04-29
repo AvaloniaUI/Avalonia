@@ -24,7 +24,7 @@ namespace Avalonia.Controls
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
     /// - <see cref="ContextRequestedEvent"/> and other context menu related members.
     /// </remarks>
-    public class Control : InputElement, IDataTemplateHost, INamed, IVisualBrushInitialize, ISetterValue
+    public class Control : InputElement, IDataTemplateHost, IVisualBrushInitialize, ISetterValue
     {
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.
@@ -371,19 +371,22 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
-            AddHandler(Gestures.HoldingEvent, OnHoldEvent);
-
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
+
+            Holding += OnHoldEvent;
         }
 
         private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
         {
-            if(e.HoldingState == HoldingState.Started)
+            if (e.Source == this && !e.Handled && e.HoldingState == HoldingState.Started)
             {
                 // Trigger ContentRequest when hold has started
-                RaiseEvent(new ContextRequestedEventArgs());
+                var contextEvent = e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs();
+                RaiseEvent(contextEvent);
+
+                e.Handled = contextEvent.Handled;
             }
         }
 
@@ -392,9 +395,9 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTreeCore(e);
 
-            RemoveHandler(Gestures.HoldingEvent, OnHoldEvent);
-
             OnUnloadedCore();
+
+            Holding -= OnHoldEvent;
         }
 
         /// <inheritdoc/>

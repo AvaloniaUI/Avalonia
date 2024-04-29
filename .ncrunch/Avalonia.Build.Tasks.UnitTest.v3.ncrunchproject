@@ -1,0 +1,8 @@
+﻿<ProjectConfiguration>
+  <Settings>
+    <CustomBuildProperties>
+      <Value>TargetFramework = net472</Value>
+    </CustomBuildProperties>
+    <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
+  </Settings>
+</ProjectConfiguration>

@@ -10,10 +10,9 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -58,7 +57,6 @@ namespace Avalonia.Native
         private readonly IKeyboardDevice _keyboard;
         private readonly ICursorFactory _cursorFactory;
         private Size _savedLogicalSize;
-        private Size _lastRenderedLogicalSize;
         private double _savedScaling;
         private NativeControlHostImpl _nativeControlHost;
         private IStorageProvider _storageProvider;
@@ -143,7 +141,7 @@ namespace Avalonia.Native
         class FramebufferRenderTarget : IFramebufferRenderTarget
         {
             private readonly WindowBaseImpl _parent;
-            private IAvnSoftwareRenderTarget? _target;
+            private IAvnSoftwareRenderTarget _target;
 
             public FramebufferRenderTarget(WindowBaseImpl parent, IAvnSoftwareRenderTarget target)
             {
@@ -172,7 +170,6 @@ namespace Avalonia.Native
                         if (_parent._native != null && _target != null)
                         {
                             cb(_parent._native);
-                            _parent._lastRenderedLogicalSize = _parent._savedLogicalSize;
                         }
                     }
                 }, (int)w, (int)h, new Vector(dpi, dpi));
@@ -247,9 +244,9 @@ namespace Avalonia.Native
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
-            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, uint key)
+            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol)
             {
-                return _parent.RawKeyEvent(type, timeStamp, modifiers, key).AsComBool();
+                return _parent.RawKeyEvent(type, timeStamp, modifiers, key, physicalKey, keySymbol).AsComBool();
             }
 
             int IAvnWindowBaseEvents.RawTextInputEvent(ulong timeStamp, string text)
@@ -322,14 +319,28 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
-        public bool RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, uint key)
+        public bool RawKeyEvent(
+            AvnRawKeyEventType type,
+            ulong timeStamp,
+            AvnInputModifiers modifiers,
+            AvnKey key,
+            AvnPhysicalKey physicalKey,
+            string keySymbol)
         {
             if (_inputRoot is null) 
                 return false;
             
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
+            var args = new RawKeyEventArgs(
+                _keyboard,
+                timeStamp,
+                _inputRoot,
+                (RawKeyEventType)type,
+                (Key)key,
+                (RawInputModifiers)modifiers,
+                (PhysicalKey)physicalKey,
+                keySymbol);
 
             Input?.Invoke(args);
 
@@ -569,6 +580,11 @@ namespace Avalonia.Native
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;

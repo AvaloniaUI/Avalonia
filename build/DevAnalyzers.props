@@ -3,12 +3,10 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\tools\DevAnalyzers\DevAnalyzers.csproj"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
-                      OutputItemType="Analyzer"
-                      SetTargetFramework="TargetFramework=netstandard2.0"/>
+                      OutputItemType="Analyzer" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Analyzers\Avalonia.Analyzers.csproj"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
-                      OutputItemType="Analyzer"
-                      SetTargetFramework="TargetFramework=netstandard2.0"/>
+                      OutputItemType="Analyzer" />
   </ItemGroup>
 </Project>

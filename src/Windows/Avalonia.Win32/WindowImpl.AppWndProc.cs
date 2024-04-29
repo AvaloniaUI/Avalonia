@@ -59,7 +59,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_NCCALCSIZE:
                     {
-                        if (ToInt32(wParam) == 1 && _windowProperties.Decorations == SystemDecorations.None ||  _isClientAreaExtended)
+                        if (ToInt32(wParam) == 1 && (_windowProperties.Decorations == SystemDecorations.None || _isClientAreaExtended))
                         {
                             return IntPtr.Zero;
                         }
@@ -100,7 +100,7 @@ namespace Avalonia.Win32
                         }
 
                         // Cleanup render targets
-                        (_gl as IDisposable)?.Dispose();
+                        (_glSurface as IDisposable)?.Dispose();
 
                         if (_dropTarget != null)
                         {
@@ -110,6 +110,7 @@ namespace Avalonia.Win32
                         }
 
                         _framebuffer.Dispose();
+                        _inputPane?.Dispose();
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
@@ -128,9 +129,10 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DPICHANGED:
                     {
-                        var dpi = ToInt32(wParam) & 0xffff;
+                        _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
-                        _scaling = dpi / 96.0;
+                        _scaling = _dpi / StandardDpi;
+                        RefreshIcon();
                         ScalingChanged?.Invoke(_scaling);
 
                         using (SetResizeReason(WindowResizeReason.DpiChange))
@@ -148,21 +150,26 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
 
+                case WindowsMessage.WM_GETICON:
+                    if (_iconImpl == null)
+                    {
+                        break;
+                    }
+
+                    var requestIcon = (Icons)wParam;
+                    var requestDpi = (uint) lParam;
+
+                    if (requestDpi == 0)
+                    {
+                        requestDpi = _dpi;
+                    }
+                                        
+                    return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
+
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
                     {
-                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
-
-                        if (key != Key.None)
-                        {
-                            e = new RawKeyEventArgs(
-                                WindowsKeyboardDevice.Instance,
-                                timestamp,
-                                Owner,
-                                RawKeyEventType.KeyDown,
-                                key,
-                                WindowsKeyboardDevice.Instance.Modifiers);
-                        }
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam);
                         break;
                     }
 
@@ -181,18 +188,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYUP:
                 case WindowsMessage.WM_SYSKEYUP:
                     {
-                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
-
-                        if (key != Key.None)
-                        {
-                            e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            Owner,
-                            RawKeyEventType.KeyUp,
-                            key,
-                            WindowsKeyboardDevice.Instance.Modifiers);
-                        }
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam);
                         break;
                     }
                 case WindowsMessage.WM_CHAR:
@@ -613,9 +609,27 @@ namespace Avalonia.Win32
                     _resizeReason = WindowResizeReason.User;
                     break;
 
+                case WindowsMessage.WM_SHOWWINDOW:
+                    _shown = wParam != default;
+                    break;
+
                 case WindowsMessage.WM_SIZE:
                     {
                         var size = (SizeCommand)wParam;
+
+                        var windowState = size switch
+                        {
+                            SizeCommand.Maximized => WindowState.Maximized,
+                            SizeCommand.Minimized => WindowState.Minimized,
+                            _ when _isFullScreenActive => WindowState.FullScreen,
+                            // Ignore state changes for unshown windows. We always tell Windows that we are hidden
+                            // until shown, so the OS value should be ignored while we are in the unshown state.
+                            _ when !_shown => _lastWindowState,
+                            _ => WindowState.Normal,
+                        };
+
+                        var stateChanged = windowState != _lastWindowState;
+                        _lastWindowState = windowState;
 
                         if (Resized != null &&
                             (size == SizeCommand.Restored ||
@@ -625,17 +639,14 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
-                        var windowState = size switch
-                        {
-                            SizeCommand.Maximized => WindowState.Maximized,
-                            SizeCommand.Minimized => WindowState.Minimized,
-                            _ when _isFullScreenActive => WindowState.FullScreen,
-                            _ => WindowState.Normal,
-                        };
 
-                        if (windowState != _lastWindowState)
+                        if (stateChanged)
                         {
-                            _lastWindowState = windowState;
+                            var newWindowProperties = _windowProperties;
+
+                            newWindowProperties.WindowState = windowState;
+
+                            UpdateWindowProperties(newWindowProperties);
 
                             WindowStateChanged?.Invoke(windowState);
 
@@ -745,7 +756,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
-                        Imm32InputMethod.Current.HandleCompositionEnd();
+                        Imm32InputMethod.Current.HandleCompositionEnd(timestamp);
 
                         return IntPtr.Zero;
                     }
@@ -775,12 +786,19 @@ namespace Avalonia.Win32
 
                 if (message == WindowsMessage.WM_KEYDOWN)
                 {
-                    // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
-                    // be ignored. This should be safe to do as WM_CHAR should only be produced in
-                    // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
-                    // is handled.
-                    _ignoreWmChar = e.Handled;
-                }
+                    if(e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
+                    {
+                        _ignoreWmChar = true;
+                    }
+                    else
+                    {
+                        // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
+                        // be ignored. This should be safe to do as WM_CHAR should only be produced in
+                        // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
+                        // is handled.
+                        _ignoreWmChar = e.Handled;
+                    }
+                 }
 
                 if (s_intermediatePointsPooledList.Count > 0)
                 {
@@ -1165,6 +1183,28 @@ namespace Avalonia.Win32
             }
 
             return modifiers;
+        }
+
+        private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam)
+        {
+            var virtualKey = ToInt32(wParam);
+            var keyData = ToInt32(lParam);
+            var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
+            var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
+            var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
+                return null;
+
+            return new RawKeyEventArgs(
+                WindowsKeyboardDevice.Instance,
+                timestamp,
+                Owner,
+                eventType,
+                key,
+                WindowsKeyboardDevice.Instance.Modifiers,
+                physicalKey,
+                keySymbol);
         }
     }
 }

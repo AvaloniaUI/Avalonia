@@ -4,8 +4,8 @@ namespace Avalonia.Rendering.Composition.Server;
 
 partial class ServerCompositor
 {
-    private Queue<IServerRenderResource> _renderResourcesInvalidationQueue = new();
-    private HashSet<IServerRenderResource> _renderResourcesInvalidationSet = new();
+    private readonly Queue<IServerRenderResource> _renderResourcesInvalidationQueue = new();
+    private readonly HashSet<IServerRenderResource> _renderResourcesInvalidationSet = new();
     
     public void ApplyEnqueuedRenderResourceChanges()
     {

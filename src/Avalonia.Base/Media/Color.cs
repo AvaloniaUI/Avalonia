@@ -346,7 +346,7 @@ namespace Avalonia.Media
 
             if (workingString.Length >= 11 &&
                 workingString.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal))
+                workingString.EndsWith(')'))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
                 prefixMatched = true;
@@ -355,7 +355,7 @@ namespace Avalonia.Media
             if (prefixMatched == false &&
                 workingString.Length >= 10 &&
                 workingString.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal))
+                workingString.EndsWith(')'))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
                 prefixMatched = true;
@@ -445,6 +445,20 @@ namespace Avalonia.Media
         {
             uint rgb = ToUInt32();
             return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb.ToString("x8", CultureInfo.InvariantCulture)}";
+        }
+
+        internal void ToString(System.Text.StringBuilder builder)
+        {
+            uint rgb = ToUInt32();
+            if(KnownColors.TryGetKnownColorName(rgb, out var name))
+            {
+                builder.Append(name);
+            }
+            else
+            {
+                builder.Append('#');
+                builder.AppendFormat(CultureInfo.InvariantCulture, "{0:x8}", rgb);
+            }
         }
 
         /// <summary>

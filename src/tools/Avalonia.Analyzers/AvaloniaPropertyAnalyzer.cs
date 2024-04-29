@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -242,10 +244,20 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// Follows assignments and conversions back to their source.
     /// </summary>
-    private static IOperation ResolveOperationSource(IOperation operation)
+    private static IOperation ResolveOperationSource(IOperation operation, CancellationToken cancellationToken)
     {
+        var seen = new HashSet<IOperation>();
+
         while (true)
         {
+            if (!seen.Add(operation)) // https://github.com/AvaloniaUI/Avalonia/issues/12864
+            {
+                Debug.Fail("Operation recursion detected.");
+                return operation;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             switch (operation)
             {
                 case IConversionOperation conversion:
@@ -260,10 +272,20 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static IOperation ResolveOperationTarget(IOperation operation)
+    private static IOperation ResolveOperationTarget(IOperation operation, CancellationToken cancellationToken)
     {
+        var seen = new HashSet<IOperation>();
+        
         while (true)
         {
+            if (!seen.Add(operation)) // https://github.com/AvaloniaUI/Avalonia/issues/12864
+            {
+                Debug.Fail("Operation recursion detected.");
+                return operation;
+            }
+            
+            cancellationToken.ThrowIfCancellationRequested();
+
             switch (operation)
             {
                 case IConversionOperation conversion:
@@ -278,16 +300,27 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static ISymbol? GetReferencedFieldOrProperty(IOperation? operation) => operation == null ? null : ResolveOperationSource(operation) switch
+    private static ISymbol? GetReferencedFieldOrProperty(IOperation? operation, CancellationToken cancellationToken) => operation == null ? null : ResolveOperationSource(operation, cancellationToken) switch
     {
         IFieldReferenceOperation fieldRef => fieldRef.Field,
         IPropertyReferenceOperation propertyRef => propertyRef.Property,
-        IArgumentOperation argument => GetReferencedFieldOrProperty(argument.Value),
+        IArgumentOperation argument => GetReferencedFieldOrProperty(argument.Value, cancellationToken),
         _ => null,
     };
 
     private static bool IsValidAvaloniaPropertyStorage(IFieldSymbol field) => field.IsStatic && field.IsReadOnly;
     private static bool IsValidAvaloniaPropertyStorage(IPropertySymbol field) => field.IsStatic && field.IsReadOnly;
+
+    /// <exception cref="AvaloniaAnalysisException"/>
+    private static void WrapAndThrowIfNotCancellation(Exception exception, string analysisContextMessage, CancellationToken cancellationToken)
+    {
+        if (exception is OperationCanceledException oce && oce.CancellationToken == cancellationToken)
+        {
+            return;
+        }
+
+        throw new AvaloniaAnalysisException(analysisContextMessage, exception);
+    }
 
     private static bool SymbolEquals(ISymbol? x, ISymbol? y, bool includeNullability = false)
     {

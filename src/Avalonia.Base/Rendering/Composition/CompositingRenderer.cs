@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
@@ -25,6 +26,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     private readonly Action _update;
 
     private bool _queuedUpdate;
+    private bool _queuedSceneInvalidation;
     private bool _updating;
     private bool _isDisposed;
 
@@ -111,7 +113,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 return true;
             };
 
-        var res = CompositionTarget.TryHitTest(p, rootVisual, f);
+        using var res = CompositionTarget.TryHitTest(p, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -170,15 +172,20 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 v.SynchronizeCompositionChildVisuals();
         _dirty.Clear();
         _recalculateChildren.Clear();
-        CompositionTarget.Size = _root.ClientSize;
+        
+        CompositionTarget.PixelSize = PixelSize.FromSizeRounded(_root.ClientSize, _root.RenderScaling);
         CompositionTarget.Scaling = _root.RenderScaling;
-        TriggerSceneInvalidatedOnBatchCompletion(_compositor.RequestCommitAsync());
-    }
-
-    private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
-    {
-        await batchCompletion;
-        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
+        
+        var commit = _compositor.RequestCommitAsync();
+        if (!_queuedSceneInvalidation)
+        {
+            _queuedSceneInvalidation = true;
+            commit.ContinueWith(_ => Dispatcher.UIThread.Post(() =>
+            {
+                _queuedSceneInvalidation = false;
+                SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
+            }, DispatcherPriority.Input), TaskContinuationOptions.ExecuteSynchronously);
+        }
     }
 
     public void TriggerSceneInvalidatedForUnitTests(Rect rect) =>
@@ -205,14 +212,15 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     }
 
     /// <inheritdoc />
-    public void Paint(Rect rect)
+    public void Paint(Rect rect) => Paint(rect, true);
+    public void Paint(Rect rect, bool catchExceptions)
     {
         if (_isDisposed)
             return;
 
         QueueUpdate();
         CompositionTarget.RequestRedraw();
-        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget);
+        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget, catchExceptions);
     }
 
     /// <inheritdoc />

@@ -48,6 +48,7 @@ namespace Avalonia.OpenGL.Egl
         public int SampleCount { get; }
         public int StencilSize { get; }
         public EglDisplay Display => _disp;
+        public EglInterface EglInterface => _egl;
 
         private class RestoreContext : IDisposable
         {
@@ -153,7 +154,7 @@ namespace Avalonia.OpenGL.Egl
                 ShareWith = _sharedWith ?? this
             });
 
-        public bool IsCurrent => _egl.GetCurrentDisplay() == _disp.Handle && _egl.GetCurrentContext() == Context;
+        public bool IsCurrent => _context != default && _egl.GetCurrentDisplay() == _disp.Handle && _egl.GetCurrentContext() == _context;
 
         public void Dispose()
         {

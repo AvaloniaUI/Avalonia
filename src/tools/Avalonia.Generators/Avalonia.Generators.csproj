@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <PackageId>Avalonia.Generators</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
     <DebugType>embedded</DebugType>
     <IsPackable>true</IsPackable>
@@ -20,7 +19,8 @@
     <Compile Link="Compiler\XamlX\filename" Include="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/*.cs" />
     <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/obj/**/*.cs" />
     <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/SreTypeSystem.cs" />
-    <Compile Include="..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" Visible="False" />
+    <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
   </ItemGroup>
 
   <ItemGroup>

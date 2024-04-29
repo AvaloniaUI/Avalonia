@@ -2,10 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.LogicalTree;
-using Avalonia.Metadata;
-using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -14,12 +10,13 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private TreeNode? _selectedNode;
         private ControlDetailsViewModel? _details;
+        private readonly ISet<string> _pinnedProperties;
 
-        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
+        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes, ISet<string> pinnedProperties)
         {
             MainView = mainView;
             Nodes = nodes;
-
+            _pinnedProperties = pinnedProperties;
             PropertiesFilter = new FilterViewModel();
             PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView?.Refresh();
 
@@ -28,7 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public event EventHandler<string>? ClipboardCopyRequested;
-        
+
         public MainViewModel MainView { get; }
 
         public FilterViewModel PropertiesFilter { get; }
@@ -45,7 +42,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
-                        new ControlDetailsViewModel(this, value.Visual) :
+                        new ControlDetailsViewModel(this, value.Visual, _pinnedProperties) :
                         null;
                     Details?.UpdatePropertiesView(MainView.ShowImplementedInterfaces);
                     Details?.UpdateStyleFilters();
@@ -120,11 +117,11 @@ namespace Avalonia.Diagnostics.ViewModels
             if (currentVisual is not null)
             {
                 var selector = GetVisualSelector(currentVisual);
-                
+
                 ClipboardCopyRequested?.Invoke(this, selector);
             }
         }
-        
+
         public void CopySelectorFromTemplateParent()
         {
             var parts = new List<string>();
@@ -133,7 +130,7 @@ namespace Avalonia.Diagnostics.ViewModels
             while (currentVisual is not null)
             {
                 parts.Add(GetVisualSelector(currentVisual));
-                
+
                 currentVisual = currentVisual.TemplatedParent as Visual;
             }
 
@@ -151,7 +148,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (SelectedNode is { } selectedNode)
             {
                 ExpandNode(selectedNode);
-                
+
                 var stack = new Stack<TreeNode>();
                 stack.Push(selectedNode);
 
@@ -195,8 +192,8 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             (SelectedNode?.Visual as Control)?.BringIntoView();
         }
-        
-        
+
+
         public void Focus()
         {
             (SelectedNode?.Visual as Control)?.Focus();
@@ -208,10 +205,10 @@ namespace Avalonia.Diagnostics.ViewModels
             var classes = string.Concat(visual.Classes
                 .Where(c => !c.StartsWith(":"))
                 .Select(c => '.' + c));
-            var typeName = StyledElement.GetStyleKey(visual);
-
-            return $"{typeName}{name}{classes}";
-        } 
+            var pseudo = string.Concat(visual.Classes.Where(c => c[0] == ':').Select(c => c));
+            var type = StyledElement.GetStyleKey(visual);
+            return $$"""{{{type.Assembly.FullName}}}{{type.Namespace}}|{{type.Name}}{{name}}{{classes}}{{pseudo}}""";
+        }
 
         private void ExpandNode(TreeNode? node)
         {

@@ -49,12 +49,12 @@ namespace Avalonia.Controls
         /// </summary>
         private Button? DecreaseButton
         {
-            get { return _decreaseButton; }
+            get => _decreaseButton;
             set
             {
                 if (_decreaseButton != null)
                 {
-                    _decreaseButton.Click  -= OnButtonClick;
+                    _decreaseButton.Click -= OnButtonClick;
                 }
                 _decreaseButton = value;
                 if (_decreaseButton != null)
@@ -70,10 +70,7 @@ namespace Avalonia.Controls
         /// </summary>
         private Button? IncreaseButton
         {
-            get
-            {
-                return _increaseButton;
-            }
+            get => _increaseButton;
             set
             {
                 if (_increaseButton != null)
@@ -101,8 +98,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AllowSpin
         {
-            get { return GetValue(AllowSpinProperty); }
-            set { SetValue(AllowSpinProperty, value); }
+            get => GetValue(AllowSpinProperty);
+            set => SetValue(AllowSpinProperty, value);
         }
 
         /// <summary>
@@ -110,8 +107,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ShowButtonSpinner
         {
-            get { return GetValue(ShowButtonSpinnerProperty); }
-            set { SetValue(ShowButtonSpinnerProperty, value); }
+            get => GetValue(ShowButtonSpinnerProperty);
+            set => SetValue(ShowButtonSpinnerProperty, value);
         }
 
         /// <summary>
@@ -119,8 +116,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Location ButtonSpinnerLocation
         {
-            get { return GetValue(ButtonSpinnerLocationProperty); }
-            set { SetValue(ButtonSpinnerLocationProperty, value); }
+            get => GetValue(ButtonSpinnerLocationProperty);
+            set => SetValue(ButtonSpinnerLocationProperty, value);
         }
 
         /// <inheritdoc />
@@ -160,6 +157,12 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            // If XY navigation is enabled - do not spin with arrow keys, instead use spinner buttons.
+            if (this.IsAllowedXYNavigationMode(e.KeyDeviceType))
+            {
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.Up:

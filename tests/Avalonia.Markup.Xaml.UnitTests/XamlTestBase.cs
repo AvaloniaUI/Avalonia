@@ -16,7 +16,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public static void Init()
         {
             var _ = typeof(Binding);
-            GC.KeepAlive(typeof(ItemsRepeater).Assembly);
         }
     }
     

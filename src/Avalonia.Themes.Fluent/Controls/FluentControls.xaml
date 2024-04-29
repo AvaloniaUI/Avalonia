@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:ClassModifier="internal">
+
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -22,6 +23,7 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CheckBox.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/FlyoutPresenter.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/HyperlinkButton.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBox.xaml" />
@@ -30,7 +32,6 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Menu.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuFlyoutPresenter.xaml" />
-                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NumericUpDown.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml" />
@@ -58,7 +59,6 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Window.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml" />
-                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DateTimePickerShared.xaml" />
@@ -72,9 +72,9 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RefreshContainer.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RefreshVisualizer.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ThemeVariantScope.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/HeaderedContentControl.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextSelectionHandle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>
-
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
 </Styles>

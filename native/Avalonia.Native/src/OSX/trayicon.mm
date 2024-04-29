@@ -45,6 +45,7 @@ HRESULT AvnTrayIcon::SetIcon (void* data, size_t length)
             size.width = originalSize.width * scaleFactor;
             
             [image setSize: size];
+            [image setTemplate: _isTemplateIcon];
             [_native setImage:image];
         }
         else
@@ -79,6 +80,42 @@ HRESULT AvnTrayIcon::SetIsVisible(bool isVisible)
     @autoreleasepool
     {
         [_native setVisible:isVisible];
+    }
+    
+    return  S_OK;
+}
+
+HRESULT AvnTrayIcon::SetToolTipText(char* text)
+{
+    START_COM_CALL;
+    
+    @autoreleasepool
+    {
+        if (text != nullptr)
+        {
+            [[_native button] setToolTip:[NSString stringWithUTF8String:(const char*)text]];
+        }
+    }
+    
+    return  S_OK;
+}
+
+HRESULT AvnTrayIcon::SetIsTemplateIcon(bool isTemplateIcon)
+{
+    START_COM_CALL;
+    
+    @autoreleasepool
+    {
+        if (_isTemplateIcon != isTemplateIcon)
+        {
+            _isTemplateIcon = isTemplateIcon;
+
+            NSImage *image = [_native image];
+            if (image)
+            {
+                [image setTemplate: _isTemplateIcon];
+            }
+        }
     }
     
     return  S_OK;

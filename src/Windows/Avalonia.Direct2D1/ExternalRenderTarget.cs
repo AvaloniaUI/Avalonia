@@ -21,11 +21,11 @@ namespace Avalonia.Direct2D1
             _externalRenderTargetProvider.DestroyRenderTarget();
         }
 
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
         {
             var target =  _externalRenderTargetProvider.GetOrCreateRenderTarget();
             _externalRenderTargetProvider.BeforeDrawing();
-            return new DrawingContextImpl( null, target, null, () =>
+            return new DrawingContextImpl( null, target, useScaledDrawing, null, () =>
             {
                 try
                 {

@@ -151,6 +151,79 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(4, target.CaretIndex);
             }
         }
+        
+        [Fact]
+        public void Control_Backspace_Should_Set_Caret_Position_To_The_Start_Of_The_Deletion()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First Second Third",
+                    SelectionStart = 13,
+                    SelectionEnd = 13
+                };
+
+                target.CaretIndex = 10;
+                target.ApplyTemplate();
+
+                // (First Second |Third)
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
+                // (First |Third)
+                
+                Assert.Equal(6, target.CaretIndex);
+            }
+        }
+        
+        [Fact]
+        public void Control_Backspace_Should_Remove_The_Double_Whitespace_If_Caret_Index_Was_At_The_End_Of_A_Word()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First Second Third",
+                    SelectionStart = 12,
+                    SelectionEnd = 12
+                };
+
+                target.ApplyTemplate();
+                
+                // (First Second| Third)
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
+                // (First| Third)
+
+                Assert.Equal("First Third", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Control_Backspace_Undo_Should_Return_Caret_Position()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "First Second Third",
+                    SelectionStart = 9,
+                    SelectionEnd = 9
+                };
+
+                target.ApplyTemplate();
+                
+                // (First Second| Third)
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
+                // (First| Third)
+                
+                target.Undo();
+                // (First Second| Third)
+
+                Assert.Equal(9, target.CaretIndex);
+            }
+        }
 
         [Fact]
         public void Press_Ctrl_A_Select_All_Text()
@@ -877,6 +950,44 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Insert_Multiline_Text_Should_Accept_Extra_Lines_When_AcceptsReturn_Is_True()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = true
+                };
+
+                RaiseTextEvent(target, $"123 {Environment.NewLine}456");
+
+                Assert.Equal($"123 {Environment.NewLine}456", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Insert_Multiline_Text_Should_Discard_Extra_Lines_When_AcceptsReturn_Is_False()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = false
+                };
+
+                RaiseTextEvent(target, $"123 {"\r"}456");
+
+                Assert.Equal("123 ", target.Text);
+
+                target.Text = "";
+
+                RaiseTextEvent(target, $"123 {"\r\n"}456");
+
+                Assert.Equal("123 ", target.Text);
+            }
+        }
+
+        [Fact]
         public void Should_Fullfill_MaxLines_Contraint()
         {
             using (UnitTestApplication.Start(Services))
@@ -990,6 +1101,118 @@ namespace Avalonia.Controls.UnitTests
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal((maxLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MaxHeight);
+            }
+        }
+
+        [Fact]
+        public void Should_Fullfill_MinLines_Contraint()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABC \n DEF \n GHI",
+                    MinLines = 3,
+                    AcceptsReturn = true
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate()
+                };
+                topLevel.Content = target;
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                target.ApplyTemplate();
+                target.Measure(Size.Infinity);
+
+                var initialHeight = target.DesiredSize.Height;
+
+                target.Text = "";
+
+                target.InvalidateMeasure();
+                target.Measure(Size.Infinity);
+
+                Assert.Equal(initialHeight, target.DesiredSize.Height);
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void MinLines_Sets_ScrollViewer_MinHeight(int minLines)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    MinLines = minLines,
+
+                    // Define explicit whole number line height for predictable calculations
+                    LineHeight = 20
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.Equal("PART_TextPresenter", textPresenter.Name);
+                Assert.Equal(new Thickness(0), textPresenter.Margin); // Test assumes no margin on TextPresenter
+
+                var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
+                Assert.Equal(minLines * target.LineHeight, scrollViewer.MinHeight);
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void MinLines_Sets_ScrollViewer_MinHeight_With_TextPresenter_Margin(int minLines)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    MinLines = minLines,
+
+                    // Define explicit whole number line height for predictable calculations
+                    LineHeight = 20
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.Equal("PART_TextPresenter", textPresenter.Name);
+                var textPresenterMargin = new Thickness(horizontal: 0, vertical: 3);
+                textPresenter.Margin = textPresenterMargin;
+
+                target.InvalidateMeasure();
+                target.Measure(Size.Infinity);
+
+                var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
+                Assert.Equal((minLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MinHeight);
             }
         }
 
@@ -1182,10 +1405,97 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Measure()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var button = new Button();
+                var root = new TestRoot()
+                {
+                    Child = new VisualLayerManager()
+                    {
+                        Child = button
+                    }
+                };
+                var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
+
+                var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, button);
+
+                root.Measure(Size.Infinity);
+            }
+        }
+
+        [Fact]
+        public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Arrange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var button = new Button();
+                var visualLayerManager = new VisualLayerManager() { Child = button };
+                var root = new TestRoot()
+                {
+                    Child = visualLayerManager
+                };
+                var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
+                var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+
+                root.Measure(new Size(10, 10));
+
+                adornerLayer.Children.Add(adorner);
+                AdornerLayer.SetAdornedElement(adorner, button);
+
+                root.Arrange(new Rect(0, 0, 10, 10));
+            }
+        }
+
+        [Theory]
+        [InlineData("A\nBB\nCCC\nDDDD", 0, 0)]
+        [InlineData("A\nBB\nCCC\nDDDD", 1, 2)]
+        [InlineData("A\nBB\nCCC\nDDDD", 2, 5)]
+        [InlineData("A\nBB\nCCC\nDDDD", 3, 9)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 0, 0)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 1, 5)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 2, 11)]
+        [InlineData("واحد\nاثنين\nثلاثة\nأربعة", 3, 17)]
+        public void Should_Scroll_Caret_To_Line(string text, int targetLineIndex, int expectedCaretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = text
+                };
+                tb.ApplyTemplate();
+                tb.ScrollToLine(targetLineIndex);
+                Assert.Equal(expectedCaretIndex, tb.CaretIndex);
+            }
+        }
+
+        [Fact]
+        public void Should_Throw_ArgumentOutOfRange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = string.Empty
+                };
+                tb.ApplyTemplate();
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(-1));
+                Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(1));
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
-            keyboardNavigation: new KeyboardNavigationHandler(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new HeadlessTextShaperStub(),
@@ -1197,7 +1507,7 @@ namespace Avalonia.Controls.UnitTests
             textShaperImpl: new HeadlessTextShaperStub(), 
             fontManagerImpl: new HeadlessFontManagerStub());
 
-        private IControlTemplate CreateTemplate()
+        internal static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<TextBox>((control, scope) =>
             new ScrollViewer

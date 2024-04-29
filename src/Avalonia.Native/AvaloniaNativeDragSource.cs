@@ -48,10 +48,9 @@ namespace Avalonia.Native
             using (var clipboard = new ClipboardImpl(clipboardImpl))
             using (var cb = new DndCallback(tcs))
             {
-                if (data.Contains(DataFormats.Text))
-                    // API is synchronous, so it's OK
-                    clipboard.SetTextAsync(data.GetText()).Wait();
-                
+                // Native API is synchronous, so it's OK. For now.
+                clipboard.SetDataObjectAsync(data).GetAwaiter().GetResult();
+
                 view.BeginDraggingSession((AvnDragDropEffects)allowedEffects,
                     triggerEvent.GetPosition(tl).ToAvnPoint(), clipboardImpl, cb,
                     GCHandle.ToIntPtr(GCHandle.Alloc(data)));

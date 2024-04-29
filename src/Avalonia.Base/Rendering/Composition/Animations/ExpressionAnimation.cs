@@ -16,7 +16,7 @@ namespace Avalonia.Rendering.Composition.Animations
     /// of Composition objects, mathematical functions and operators and Input.
     /// Use the <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> method to start the animation.
     /// </remarks>
-    public class ExpressionAnimation : CompositionAnimation
+    public sealed class ExpressionAnimation : CompositionAnimation
     {
         private string? _expression;
         private Expression? _parsedExpression;

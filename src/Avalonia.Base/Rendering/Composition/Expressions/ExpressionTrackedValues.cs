@@ -6,8 +6,8 @@ namespace Avalonia.Rendering.Composition.Expressions;
 
 internal class ExpressionTrackedObjects : IEnumerable<IExpressionObject>
 {
-    private List<IExpressionObject> _list = new();
-    private HashSet<IExpressionObject> _hashSet = new();
+    private readonly List<IExpressionObject> _list = new();
+    private readonly HashSet<IExpressionObject> _hashSet = new();
     
     public void Add(IExpressionObject obj, string member)
     {
@@ -35,7 +35,7 @@ internal class ExpressionTrackedObjects : IEnumerable<IExpressionObject>
     
     public struct Pool
     {
-        private Stack<ExpressionTrackedObjects> _stack = new();
+        private readonly Stack<ExpressionTrackedObjects> _stack = new();
 
         public Pool()
         {

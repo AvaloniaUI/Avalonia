@@ -86,11 +86,11 @@ namespace Avalonia.Skia.UnitTests.Media
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
         {
             var skTypeface = SKTypeface.FromStream(stream);
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
 
             return true;
         }

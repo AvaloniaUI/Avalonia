@@ -8,16 +8,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 internal sealed class XamlDocumentTypeBuilderProvider
 {
     public XamlDocumentTypeBuilderProvider(
-        IXamlTypeBuilder<IXamlILEmitter> typeBuilder,
+        IXamlTypeBuilder<IXamlILEmitter> populateDeclaringType,
         IXamlMethodBuilder<IXamlILEmitter> populateMethod,
+        IXamlTypeBuilder<IXamlILEmitter>? buildDeclaringType,
         IXamlMethodBuilder<IXamlILEmitter>? buildMethod)
     {
-        TypeBuilder = typeBuilder;
+        PopulateDeclaringType = populateDeclaringType;
         PopulateMethod = populateMethod;
+        BuildDeclaringType = buildDeclaringType;
         BuildMethod = buildMethod;
     }
 
-    public IXamlTypeBuilder<IXamlILEmitter> TypeBuilder { get; }
+    public IXamlTypeBuilder<IXamlILEmitter> PopulateDeclaringType { get; }
     public IXamlMethodBuilder<IXamlILEmitter> PopulateMethod { get; }
+    public IXamlTypeBuilder<IXamlILEmitter>? BuildDeclaringType { get; }
     public IXamlMethodBuilder<IXamlILEmitter>? BuildMethod { get; }
 }

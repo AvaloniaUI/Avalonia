@@ -9,6 +9,7 @@ namespace Avalonia.Headless;
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
 public sealed class AvaloniaTestApplicationAttribute : Attribute
 {
+    [DynamicallyAccessedMembers(HeadlessUnitTestSession.DynamicallyAccessed)]
     public Type AppBuilderEntryPointType { get; }
 
     /// <summary>

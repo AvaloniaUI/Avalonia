@@ -1,21 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Nuke.Common;
-using Nuke.Common.Git;
-using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Tools.Npm;
-using Nuke.Common.Utilities;
-using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -23,7 +17,9 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
+using static Serilog.Log;
 using MicroCom.CodeGenerator;
+using Nuke.Common.IO;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -39,10 +35,16 @@ partial class Build : NukeBuild
 
     [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
     Tool ApiCompatTool;
+    
+    [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
+    Tool ApiGenTool;
 
+
+    
     protected override void OnBuildInitialized()
     {
-        Parameters = new BuildParameters(this);
+        Parameters = new BuildParameters(this, ScheduledTargets.Contains(BuildToNuGetCache));
+
         Information("Building version {0} of Avalonia ({1}) using version {2} of Nuke.",
             Parameters.Version,
             Parameters.Configuration,
@@ -84,6 +86,12 @@ partial class Build : NukeBuild
         c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
             .SetVerbosity(DotNetVerbosity.Minimal);
+        if (Parameters.IsPackingToLocalCache)
+            c
+                .AddProperty("ForcePackAvaloniaNative", "True")
+                .AddProperty("SkipObscurePlatforms", "True")
+                .AddProperty("SkipBuildingSamples", "True")
+                .AddProperty("SkipBuildingTests", "True");
         return c;
     }
     DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
@@ -142,6 +150,21 @@ partial class Build : NukeBuild
             );
         });
 
+    Target OutputVersion => _ => _
+        .Requires(() => VersionOutputDir)
+        .Executes(() =>
+        {
+            var versionFile = Path.Combine(Parameters.VersionOutputDir, "version.txt");
+            var currentBuildVersion = Parameters.Version;
+            Console.WriteLine("Version is: " + currentBuildVersion);
+            File.WriteAllText(versionFile, currentBuildVersion);
+
+            var prIdFile = Path.Combine(Parameters.VersionOutputDir, "prId.txt");
+            var prId = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
+            Console.WriteLine("PR Number  is: " + prId);
+            File.WriteAllText(prIdFile, prId);
+        });
+
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
@@ -168,19 +191,29 @@ partial class Build : NukeBuild
 
         foreach (var fw in targetFrameworks)
         {
-            if (fw.StartsWith("net4")
+            var tfm = fw;
+            if (tfm == "$(AvsCurrentTargetFramework)")
+            {
+                tfm = "net8.0";
+            }
+            if (tfm == "$(AvsLegacyTargetFrameworks)")
+            {
+                tfm = "net6.0";
+            }
+            
+            if (tfm.StartsWith("net4")
                 && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
-                Information($"Skipping {projectName} ({fw}) tests on *nix - https://github.com/mono/mono/issues/13969");
+                Information($"Skipping {projectName} ({tfm}) tests on *nix - https://github.com/mono/mono/issues/13969");
                 continue;
             }
 
-            Information($"Running for {projectName} ({fw}) ...");
+            Information($"Running for {projectName} ({tfm}) ...");
 
             DotNetTest(c => ApplySetting(c)
                 .SetProjectFile(project)
-                .SetFramework(fw)
+                .SetFramework(tfm)
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
@@ -289,9 +322,19 @@ partial class Build : NukeBuild
         .Executes(async () =>
         {
             await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffValidation.ValidatePackage(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.ValidatePackage(
                     ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
                     Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
+        });
+    
+    Target OutputApiDiff => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(async () =>
+        {
+            await Task.WhenAll(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.GetDiff(
+                    ApiGenTool, RootDirectory / "api" / "diff",
+                    nugetPackage, Parameters.ApiValidationBaseline)));
         });
     
     Target RunTests => _ => _
@@ -316,6 +359,39 @@ partial class Build : NukeBuild
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
+
+    Target BuildToNuGetCache => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            if (!Parameters.IsPackingToLocalCache)
+                throw new InvalidOperationException();
+            
+            foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
+            {
+                using var f = File.Open(path.ToString(), FileMode.Open, FileAccess.Read);
+                using var zip = new ZipArchive(f, ZipArchiveMode.Read);
+                var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec") && e.FullName == e.Name);
+                var packageId = XDocument.Load(nuspecEntry.Open()).Document.Root
+                    .Elements().First(x => x.Name.LocalName == "metadata")
+                    .Elements().First(x => x.Name.LocalName == "id").Value;
+
+                var packagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".nuget",
+                    "packages",
+                    packageId.ToLowerInvariant(),
+                    BuildParameters.LocalBuildVersion);
+                if (Directory.Exists(packagePath))
+                    Directory.Delete(packagePath, true);
+                Directory.CreateDirectory(packagePath);
+                zip.ExtractToDirectory(packagePath);
+                File.WriteAllText(Path.Combine(packagePath, ".nupkg.metadata"), @"{
+  ""version"": 2,
+  ""contentHash"": ""e900dFK7jHJ2WcprLcgJYQoOMc6ejRTwAAMi0VGOFbSczcF98ZDaqwoQIiyqpAwnja59FSbV+GUUXfc3vaQ2Jg=="",
+  ""source"": ""https://api.nuget.org/v3/index.json""
+}");
+            }
+        });
 
     Target GenerateCppHeaders => _ => _.Executes(() =>
     {

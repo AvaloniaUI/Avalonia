@@ -12,7 +12,7 @@ namespace Avalonia.Media.TextFormatting
     internal sealed class TextFormatterImpl : TextFormatter
     {
         private static readonly char[] s_empty = { ' ' };
-        private static readonly char[] s_defaultText = new char[TextRun.DefaultTextSourceLength];
+        private static readonly string s_defaultText = new string('a', TextRun.DefaultTextSourceLength);
 
         [ThreadStatic] private static BidiData? t_bidiData;
         [ThreadStatic] private static BidiAlgorithm? t_bidiAlgorithm;
@@ -206,9 +206,11 @@ namespace Avalonia.Media.TextFormatting
                 if (!textRun.Text.IsEmpty)
                     text = textRun.Text.Span;
                 else if (textRun.Length == TextRun.DefaultTextSourceLength)
-                    text = s_defaultText;
+                    text = s_defaultText.AsSpan();
                 else
-                    text = new char[textRun.Length];
+                {
+                    text = new string('a', textRun.Length).AsSpan();
+                }
 
                 bidiData.Append(text);
             }
@@ -270,7 +272,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
 
                                 var shaperOptions = new TextShaperOptions(
-                                    properties.CachedGlyphTypeface,
+                                    properties.CachedGlyphTypeface, properties.FontFeatures,
                                     properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
                                     paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
@@ -607,19 +609,19 @@ namespace Avalonia.Media.TextFormatting
                                         }
 
                                         break;
-                                    }                              
+                                    }
 
                                     var clusterLength = Math.Max(0, nextInfo.GlyphCluster - currentInfo.GlyphCluster);
 
-                                    if(clusterLength == 0)
+                                    if (clusterLength == 0)
                                     {
                                         clusterLength = currentRun.Length - runLength;
                                     }
 
-                                    if(clusterLength == 0)
+                                    if (clusterLength == 0)
                                     {
                                         clusterLength = shapedTextCharacters.GlyphRun.Metrics.FirstCluster + currentRun.Length - currentInfo.GlyphCluster;
-                                    }   
+                                    }
 
                                     if (currentWidth + clusterWidth > paragraphWidth)
                                     {
@@ -715,7 +717,35 @@ namespace Avalonia.Media.TextFormatting
 
             if(measuredLength == 0)
             {
+                if(paragraphProperties.TextWrapping == TextWrapping.NoWrap)
+                {
+                    for (int i = 0; i < textRuns.Count; i++)
+                    {
+                        measuredLength += textRuns[i].Length;
+                    }
+                }
+                else
+                {
+                    var firstRun = textRuns[0];
 
+                    if(firstRun is ShapedTextRun)
+                    {
+                        var graphemeEnumerator = new GraphemeEnumerator(firstRun.Text.Span);
+
+                        if(graphemeEnumerator.MoveNext(out var grapheme))
+                        {
+                            measuredLength = grapheme.Length;
+                        }
+                        else
+                        {
+                            measuredLength = 1;
+                        }
+                    }
+                    else
+                    {
+                        measuredLength = firstRun.Length;
+                    }
+                }
             }
 
             var currentLength = 0;
@@ -819,7 +849,7 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap)
+                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRun.Length)
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
@@ -834,12 +864,6 @@ namespace Avalonia.Media.TextFormatting
                     currentLength += currentRun.Length;
 
                     continue;
-                }
-
-                //We don't want to surpass the measuredLength with trailing whitespace when we are in a right to left setting.
-                if(currentPosition > measuredLength && resolvedFlowDirection == FlowDirection.RightToLeft)
-                {
-                    break;
                 }
 
                 measuredLength = currentPosition;
@@ -952,7 +976,8 @@ namespace Avalonia.Media.TextFormatting
 
             var cultureInfo = textRun.Properties.CultureInfo;
 
-            var shaperOptions = new TextShaperOptions(glyphTypeface, fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
+            var shaperOptions = new TextShaperOptions(glyphTypeface, textRun.Properties.FontFeatures, 
+                fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
 
             var shapedBuffer = textShaper.ShapeText(textRun.Text, shaperOptions);
 

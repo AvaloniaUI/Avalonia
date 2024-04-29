@@ -334,15 +334,15 @@ public partial class DispatcherTimer
     }
 
     // This is the object we use to synchronize access.
-    private object _instanceLock = new object();
+    private readonly object _instanceLock = new object();
 
     // Note: We cannot BE a dispatcher-affinity object because we can be
     // created by a worker thread.  We are still associated with a
     // dispatcher (where we post the item) but we can be accessed
     // by any thread.
-    private Dispatcher _dispatcher;
+    private readonly Dispatcher _dispatcher;
 
-    private DispatcherPriority _priority; // NOTE: should be Priority
+    private readonly DispatcherPriority _priority; // NOTE: should be Priority
     private TimeSpan _interval;
     private DispatcherOperation? _operation;
     private bool _isEnabled;

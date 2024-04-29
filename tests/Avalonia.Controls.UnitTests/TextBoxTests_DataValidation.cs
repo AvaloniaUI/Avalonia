@@ -65,6 +65,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Setter_Exceptions_Should_Be_Converter_If_Error_Converter_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    DataContext = new ExceptionTest(),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    Template = CreateTemplate()  
+                };
+                DataValidationErrors.SetErrorConverter(target, err => "Error: " + err);
+
+                target.ApplyTemplate();
+
+                target.Text = "20";
+
+                IEnumerable<object> errors = DataValidationErrors.GetErrors(target);
+                Assert.Single(errors);
+                var error = Assert.IsType<string>(errors.Single());
+                Assert.StartsWith("Error: ", error);
+            }
+        }
+        
+        [Fact]
         public void Setter_Exceptions_Should_Set_DataValidationErrors_HasErrors()
         {
             using (UnitTestApplication.Start(Services))

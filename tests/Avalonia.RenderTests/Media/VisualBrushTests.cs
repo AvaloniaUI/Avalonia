@@ -21,7 +21,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         private string BitmapPath
         {
-            get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
+            get
+            {
+                return System.IO.Path.Combine(OutputPath, "github_icon.png");
+            }
         }
 
         private Control Visual
@@ -683,6 +686,29 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             await RenderToFile(target, dpi: 192);
             CompareImages();
+        }
+        
+        
+        [Theory,
+         InlineData(false),
+         InlineData(true)
+        ]
+        public async Task VisualBrush_Is_Properly_Mapped(bool relative)
+        {
+            var brush = new VisualBrush()
+            {
+                Stretch = Stretch.Fill,
+                TileMode = TileMode.Tile,
+                DestinationRect = relative
+                    ? new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative)
+                    : new RelativeRect(0, 0, 256, 256, RelativeUnit.Absolute),
+                Visual = Visual
+            };
+
+            var testName =
+                $"{nameof(VisualBrush_Is_Properly_Mapped)}_{brush.DestinationRect.Unit}";
+            await RenderToFile(new RelativePointTestPrimitivesHelper(brush), testName);
+            CompareImages(testName);
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
+
 /*
  We are keeping copies of core events here, so they can be used 
  without referencing Avalonia itself, e. g. from projects that
@@ -34,7 +37,7 @@ namespace Avalonia.Remote.Protocol.Input
 
     public abstract class InputEventMessageBase
     {
-        public InputModifiers[] Modifiers { get; set; }
+        public InputModifiers[]? Modifiers { get; set; }
     }
 
     public abstract class PointerEventMessageBase : InputEventMessageBase
@@ -73,12 +76,14 @@ namespace Avalonia.Remote.Protocol.Input
     {
         public bool IsDown { get; set; }
         public Key Key { get; set; }
+        public PhysicalKey PhysicalKey { get; set; }
+        public string? KeySymbol { get; set; }
     }
 
     [AvaloniaRemoteMessageGuid("C174102E-7405-4594-916F-B10B8248A17D")]
     public class TextInputEventMessage : InputEventMessageBase
     {
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
     }
 
 }

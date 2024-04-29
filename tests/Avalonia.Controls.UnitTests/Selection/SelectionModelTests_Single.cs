@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
@@ -515,6 +516,26 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 Assert.Equal(1, raised);
             }
+
+            [Fact]
+            public void CollectionChanged_Is_Raised_When_SelectedIndex_Changes()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+                var incc = Assert.IsAssignableFrom<INotifyCollectionChanged>(target.SelectedIndexes);
+
+                incc.CollectionChanged += (s, e) =>
+                {
+                    // For the moment, for simplicity, we raise a Reset event when the SelectedIndexes
+                    // collection changes - whatever the change. This can be improved later if necessary.
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
+                };
+
+                target.SelectedIndex = 1;
+
+                Assert.Equal(1, raised);
+            }
         }
 
         public class SelectedItems
@@ -531,6 +552,26 @@ namespace Avalonia.Controls.UnitTests.Selection
                     {
                         ++raised;
                     }
+                };
+
+                target.SelectedIndex = 1;
+
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void CollectionChanged_Is_Raised_When_SelectedIndex_Changes()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+                var incc = Assert.IsAssignableFrom<INotifyCollectionChanged>(target.SelectedIndexes);
+
+                incc.CollectionChanged += (s, e) =>
+                {
+                    // For the moment, for simplicity, we raise a Reset event when the SelectedItems
+                    // collection changes - whatever the change. This can be improved later if necessary.
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
                 };
 
                 target.SelectedIndex = 1;
@@ -1345,6 +1386,38 @@ namespace Avalonia.Controls.UnitTests.Selection
                 target.Source = null;
 
                 Assert.Equal(0, raised);
+            }
+
+            [Fact]
+            public void LostSelection_Is_Called_When_Source_Changed_While_CollectionChange_In_Progress()
+            {
+                // Issue #12733.
+                var data1 = new AvaloniaList<string> { "foo1", "bar1", "baz1" };
+                var data2 = new AvaloniaList<string> { "foo1", "bar1", "baz1" };
+                var target = new DerivedSelectionModel { Source = data1 };
+                var raised = 0;
+
+                target.LostSelection += (s, e) =>
+                {
+                    if (target.Source == data2)
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.UpdateSource(data2);
+
+                Assert.Equal(1, raised);
+            }
+
+            private class DerivedSelectionModel : SelectionModel<string?>
+            {
+                public void UpdateSource(IEnumerable? source)
+                {
+                    OnSourceCollectionChangeStarted();
+                    Source = source;
+                    OnSourceCollectionChangeFinished();
+                }
             }
         }
 

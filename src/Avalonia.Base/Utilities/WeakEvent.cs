@@ -7,7 +7,7 @@ namespace Avalonia.Utilities;
 /// <summary>
 /// Manages subscriptions to events using weak listeners.
 /// </summary>
-public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : EventArgs where TSender : class
+public sealed class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : EventArgs where TSender : class
 {
     private readonly Func<TSender, EventHandler<TEventArgs>, Action> _subscribe;
 
@@ -42,7 +42,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             subscription.Remove(subscriber);
     }
 
-    private class Subscription
+    private sealed class Subscription
     {
         private readonly WeakEvent<TSender, TEventArgs> _ev;
         private readonly TSender _target;

@@ -1,10 +1,17 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\src\Avalonia.Build.Tasks\bin\$(Configuration)\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
-    <AvaloniaUseExternalMSBuild>true</AvaloniaUseExternalMSBuild>
     <AvaloniaXamlIlVerifyIl>true</AvaloniaXamlIlVerifyIl>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">true</AvaloniaXamlVerboseExceptions>
   </PropertyGroup>
+
+  <!--TaskHostFactory is a built-in factory which causes the Avalonia.Build.Tasks assembly to always be loaded in an isolated process. This avoids build errors
+      when the project is rebuilt during a development session.-->
+  <UsingTask TaskName="GenerateAvaloniaResourcesTask" AssemblyFile="$(AvaloniaBuildTasksLocation)" TaskFactory="TaskHostFactory"/>
+  <UsingTask TaskName="CompileAvaloniaXamlTask" AssemblyFile="$(AvaloniaBuildTasksLocation)" TaskFactory="TaskHostFactory"/>
+  
+  <Import Project="$(MSBuildThisFileDirectory)\DevSingleProject.targets"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.targets"/>
 </Project>

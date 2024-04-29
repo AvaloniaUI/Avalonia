@@ -3,6 +3,12 @@
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Accents/BaseColorsPalette.xaml</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Accents/BaseResources.xaml</Target>
     <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
@@ -142,6 +148,12 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Controls/Expander.xaml</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Controls/FluentControls.xaml</Target>
     <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
   </Suppression>
@@ -405,6 +417,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Controls/UserControl.xaml</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Controls/Window.xaml</Target>
     <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
@@ -412,6 +430,18 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Controls/WindowNotificationManager.xaml</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/DensityStyles/Compact.xaml</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/FluentTheme.xaml</Target>
     <Left>baseline/netstandard2.0/Avalonia.Themes.Fluent.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Themes.Fluent.dll</Right>
   </Suppression>

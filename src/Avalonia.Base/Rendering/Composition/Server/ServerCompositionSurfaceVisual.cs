@@ -1,10 +1,12 @@
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
 internal partial class ServerCompositionSurfaceVisual
 {
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
+        IDirtyRectTracker dirtyRects)
     {
         if (Surface == null)
             return;

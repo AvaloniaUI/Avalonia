@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net461;net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>net461;$(AvsLegacyWindowsTargetFrameworks);$(AvsCurrentWindowsTargetFramework)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <PackageId>Avalonia.Win32.Interoperability</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

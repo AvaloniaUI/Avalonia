@@ -46,8 +46,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         [Content]
         public string? Text {
-            get { return GetValue (TextProperty); }
-            set { SetValue (TextProperty, value); }
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
         internal override void BuildTextRun(IList<TextRun> textRuns)

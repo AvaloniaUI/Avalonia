@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using XamlX;
 using XamlX.Ast;
 using XamlX.TypeSystem;
 
@@ -22,6 +23,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
 
         var mergeResourceIncludeType = context.GetAvaloniaTypes().MergeResourceInclude;
         var mergeSourceNodes = new List<XamlPropertyAssignmentNode>();
+        var shouldExit = false; // if any manipulation node has an error, we should stop processing further.
         foreach (var manipulationNode in resourceDictionaryManipulation.Children.ToArray())
         {
             void ProcessXamlPropertyAssignmentNode(XamlManipulationGroupNode parent, XamlPropertyAssignmentNode assignmentNode)
@@ -39,14 +41,16 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                         }
                         else
                         {
-                            throw new XamlDocumentParseException(context.CurrentDocument,
+                            shouldExit = true;
+                            context.ReportTransformError(
                                 "Invalid MergeResourceInclude node found. Make sure that Source property is set.",
                                 valueNode);
                         }
                     }
                     else if (mergeSourceNodes.Any())
                     {
-                        throw new XamlDocumentParseException(context.CurrentDocument,
+                        shouldExit = true;
+                        context.ReportTransformError(
                             "MergeResourceInclude should always be included last when mixing with other dictionaries inside of the ResourceDictionary.MergedDictionaries.",
                             valueNode);
                     }
@@ -66,7 +70,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
             }
         }
 
-        if (!mergeSourceNodes.Any())
+        if (shouldExit || !mergeSourceNodes.Any())
         {
             return node;
         }
@@ -78,7 +82,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                 AvaloniaXamlIncludeTransformer.ResolveSourceFromXamlInclude(context, "MergeResourceInclude", sourceNode, true);
             if (originalAssetPath is null)
             {
-                return context.ParseError(
+                return context.ReportTransformError(
                     $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
 
@@ -86,7 +90,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                 string.Equals(d.Uri, originalAssetPath, StringComparison.InvariantCultureIgnoreCase));
             if (targetDocument?.XamlDocument.Root is not XamlValueWithManipulationNode targetDocumentRoot)
             {
-                return context.ParseError(
+                return context.ReportTransformError(
                     $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
 
@@ -94,7 +98,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                 .Children.OfType<XamlObjectInitializationNode>().Single();
             if (singleRootObject.Type != resourceDictionaryType)
             {
-                return context.ParseError(
+                return context.ReportTransformError(
                     "MergeResourceInclude can only include another ResourceDictionary", propertyNode, node);
             }
             
@@ -158,14 +162,25 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                         && ThemeVariantNodeEquals(context, key, sameKeyPrevAssignmentNode.Values[0]))
                     {
                         sameKeyPrevValueGroup.Children.AddRange(valueGroup.Children);
+                        FixEnsureCapacityNodes(context, sameKeyPrevValueGroup);
                         children.RemoveAt(i);
                         break;
                     }
                 }
             }
         }
-        
+
+        FixEnsureCapacityNodes(context, resourceDictionaryManipulation);
+
         return node;
+    }
+
+    // // Removes all existing EnsureCapacityNode (from the merged dictionaries) and adds a new one.
+    private static void FixEnsureCapacityNodes(AstGroupTransformationContext context, XamlManipulationGroupNode manipulation)
+    {
+        var children = manipulation.Children;
+        children.RemoveAll(c => c is AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer.EnsureCapacityNode);
+        new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer().Apply(context, manipulation);
     }
 
     public static bool ThemeVariantNodeEquals(AstGroupTransformationContext context, IXamlAstValueNode left, IXamlAstValueNode right)

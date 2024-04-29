@@ -10,6 +10,8 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public abstract class RangeBase : TemplatedControl
     {
+        private bool _isDataContextChanging;
+        
         /// <summary>
         /// Defines the <see cref="Minimum"/> property.
         /// </summary>
@@ -74,7 +76,7 @@ namespace Avalonia.Controls.Primitives
 
         private void OnMinimumChanged()
         {
-            if (IsInitialized)
+            if (IsInitialized && !_isDataContextChanging)
             {
                 CoerceValue(MaximumProperty);
                 CoerceValue(ValueProperty);
@@ -99,8 +101,9 @@ namespace Avalonia.Controls.Primitives
 
         private void OnMaximumChanged()
         {
-            if (IsInitialized)
+            if (IsInitialized && !_isDataContextChanging)
             {
+                CoerceValue(MinimumProperty);
                 CoerceValue(ValueProperty);
             }
         }
@@ -169,6 +172,20 @@ namespace Avalonia.Controls.Primitives
                     ValueChangedEvent);
                 RaiseEvent(valueChangedEventArgs);
             }
+        }
+        
+        /// <inheritdoc />
+        protected override void OnDataContextBeginUpdate()
+        {
+            _isDataContextChanging = true;
+            base.OnDataContextBeginUpdate();
+        }
+
+        /// <inheritdoc />
+        protected override void OnDataContextEndUpdate()
+        {
+            base.OnDataContextEndUpdate();
+            _isDataContextChanging = false;
         }
 
         /// <summary>

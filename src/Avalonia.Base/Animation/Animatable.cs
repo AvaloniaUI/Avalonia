@@ -17,8 +17,8 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="Clock"/> property.
         /// </summary>
-        internal static readonly StyledProperty<IClock> ClockProperty =
-            AvaloniaProperty.Register<Animatable, IClock>(nameof(Clock), inherits: true);
+        internal static readonly StyledProperty<IClock?> ClockProperty =
+            AvaloniaProperty.Register<Animatable, IClock?>(nameof(Clock), inherits: true);
 
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.
@@ -36,7 +36,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets or sets the clock which controls the animations on the control.
         /// </summary>
-        internal IClock Clock
+        internal IClock? Clock
         {
             get => GetValue(ClockProperty);
             set => SetValue(ClockProperty, value);
@@ -123,8 +123,14 @@ namespace Avalonia.Animation
                         toAdd = newTransitions.Except(oldTransitions).ToList();
                     }
 
-                    newTransitions.CollectionChanged += TransitionsCollectionChangedHandler;
-                    _isSubscribedToTransitionsCollection = true;
+                    // Subscribe to collection changes only if transitions are already enabled,
+                    // i.e. control is attached to the visual tree
+                    if (_transitionsEnabled)
+                    {
+                        newTransitions.CollectionChanged += TransitionsCollectionChangedHandler;
+                        _isSubscribedToTransitionsCollection = true;
+                    }
+
                     AddTransitions(toAdd);
                 }
 

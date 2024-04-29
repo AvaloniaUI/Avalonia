@@ -35,8 +35,8 @@ namespace Avalonia.Controls
         [Content]
         public Control? Child
         {
-            get { return GetValue(ChildProperty); }
-            set { SetValue(ChildProperty, value); }
+            get => GetValue(ChildProperty);
+            set => SetValue(ChildProperty, value);
         }
 
         /// <summary>
@@ -44,8 +44,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Thickness Padding
         {
-            get { return GetValue(PaddingProperty); }
-            set { SetValue(PaddingProperty, value); }
+            get => GetValue(PaddingProperty);
+            set => SetValue(PaddingProperty, value);
         }
 
         /// <inheritdoc/>

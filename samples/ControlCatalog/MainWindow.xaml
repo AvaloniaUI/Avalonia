@@ -38,17 +38,13 @@
       <NativeMenuItem Header="Options">
         <NativeMenu>
           <NativeMenuItem Header="Check Me (None)" 
-                          Command="{Binding ToggleMenuItemCheckedCommand}"
-                          ToggleType="None"
-                          IsChecked="{Binding IsMenuItemChecked}"  />
+                          ToggleType="None" />
           <NativeMenuItem Header="Check Me (CheckBox)" 
-                          Command="{Binding ToggleMenuItemCheckedCommand}"
-                          ToggleType="CheckBox"
-                          IsChecked="{Binding IsMenuItemChecked}"  />
-          <NativeMenuItem Header="Check Me (Radio)" 
-                          Command="{Binding ToggleMenuItemCheckedCommand}"
-                          ToggleType="Radio"
-                          IsChecked="{Binding IsMenuItemChecked}"  />
+                          ToggleType="CheckBox" />
+          <NativeMenuItem Header="Check Me (Radio 1)" 
+                          ToggleType="Radio" />
+          <NativeMenuItem Header="Check Me (Radio 2)" 
+                          ToggleType="Radio" />
         </NativeMenu>
       </NativeMenuItem>
     </NativeMenu>

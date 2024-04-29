@@ -127,7 +127,10 @@ namespace Avalonia.Win32.Input
 
                 if (himc != IntPtr.Zero)
                 {
-                    _ignoreComposition = true;
+                    if (IsComposing)
+                    {
+                        _ignoreComposition = true;
+                    }
 
                     if (_parent != null)
                     {
@@ -327,17 +330,29 @@ namespace Avalonia.Win32.Input
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
                 {
-                    KeyPress(Key.Delete);
+                    KeyPress(Key.Delete, PhysicalKey.Delete);
                 }
             }
 
             IsComposing = true;
         }
 
-        public void HandleCompositionEnd()
+        public void HandleCompositionEnd(uint timestamp)
         {
             //Cleanup composition state.
             IsComposing = false;
+
+            if (_parent != null && !string.IsNullOrEmpty(Composition))
+            {
+                var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, Composition);
+
+                if (_parent.Input != null)
+                {
+                    _parent.Input(e);
+
+                    _parent._ignoreWmChar = true;
+                }
+            }
 
             Composition = null;
 
@@ -398,15 +413,15 @@ namespace Avalonia.Win32.Input
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
 
-        private void KeyPress(Key key)
+        private void KeyPress(Key key, PhysicalKey physicalKey)
         {
             if (_parent?.Input != null)
             {
                 _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
-                RawKeyEventType.KeyDown, key, RawInputModifiers.None));
+                RawKeyEventType.KeyDown, key, RawInputModifiers.None, physicalKey, null));
 
                 _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
-                RawKeyEventType.KeyUp, key, RawInputModifiers.None));
+                RawKeyEventType.KeyUp, key, RawInputModifiers.None, physicalKey, null));
 
             }
         }

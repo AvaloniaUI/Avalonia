@@ -15,7 +15,7 @@
 
   <ItemGroup Condition="'$(IncludeAvaloniaGenerators)' == 'true'">
     <ProjectReference
-      Include="../../src/tools/Avalonia.Generators/Avalonia.Generators.csproj"
+      Include="$(MSBuildThisFileDirectory)/../src/tools/Avalonia.Generators/Avalonia.Generators.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
       PrivateAssets="all" />

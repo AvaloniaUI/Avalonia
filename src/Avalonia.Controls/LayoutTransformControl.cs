@@ -39,8 +39,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ITransform? LayoutTransform
         {
-            get { return GetValue(LayoutTransformProperty); }
-            set { SetValue(LayoutTransformProperty, value); }
+            get => GetValue(LayoutTransformProperty);
+            set => SetValue(LayoutTransformProperty, value);
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool UseRenderTransform
         {
-            get { return GetValue(UseRenderTransformProperty); }
-            set { SetValue(UseRenderTransformProperty, value); }
+            get => GetValue(UseRenderTransformProperty);
+            set => SetValue(UseRenderTransformProperty, value);
         }
 
         public Control? TransformRoot => Child;

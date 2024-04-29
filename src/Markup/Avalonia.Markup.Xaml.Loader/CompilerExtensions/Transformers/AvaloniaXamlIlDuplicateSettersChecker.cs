@@ -36,7 +36,10 @@ class AvaloniaXamlIlDuplicateSettersChecker : IXamlAstTransformer
         {
             if (!index.Add(property))
             {
-                throw new XamlParseException($"Duplicate setter encountered for property '{property}'", node);
+                context.ReportDiagnostic(new XamlDiagnostic(
+                    AvaloniaXamlDiagnosticCodes.DuplicateSetterError,
+                    XamlDiagnosticSeverity.Warning,
+                    $"Duplicate setter encountered for property '{property}'", node));
             }
         }
 

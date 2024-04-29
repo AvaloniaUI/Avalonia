@@ -11,9 +11,9 @@ namespace Avalonia.Browser
     {
         private readonly JSObject _hostElement;
 
-        public BrowserNativeControlHost(JSObject element)
+        public BrowserNativeControlHost(JSObject nativeControlHost)
         {
-            _hostElement = element;
+            _hostElement = nativeControlHost ?? throw new ArgumentNullException(nameof(nativeControlHost));
         }
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)

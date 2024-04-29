@@ -28,13 +28,13 @@ internal class AngleExternalMemoryD3D11Texture2D : IGlExternalImageTexture
 
         InternalFormat = GL_RGBA8;
 
-        _eglSurface = _context.Display.CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, texture2D.GetNativeIntPtr(),
-            new[]
-            {
-                EGL_WIDTH, props.Width, EGL_HEIGHT, props.Height, EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGBA,
-                EGL_TEXTURE_TARGET, EGL_TEXTURE_2D, EGL_TEXTURE_INTERNAL_FORMAT_ANGLE, GL_RGBA, EGL_NONE, EGL_NONE,
-                EGL_NONE
-            });
+        var attrs = stackalloc[]
+        {
+            EGL_WIDTH, props.Width, EGL_HEIGHT, props.Height, EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGBA,
+            EGL_TEXTURE_TARGET, EGL_TEXTURE_2D, EGL_TEXTURE_INTERNAL_FORMAT_ANGLE, GL_RGBA, EGL_NONE, EGL_NONE,
+            EGL_NONE
+        };
+        _eglSurface = _context.Display.CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, texture2D.GetNativeIntPtr(), attrs);
         
         var gl = _context.GlInterface;
         int temp = 0;

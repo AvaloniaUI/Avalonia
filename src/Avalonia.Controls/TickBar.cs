@@ -62,8 +62,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? Fill
         {
-            get { return GetValue(FillProperty); }
-            set { SetValue(FillProperty, value); }
+            get => GetValue(FillProperty);
+            set => SetValue(FillProperty, value);
         }
 
         /// <summary>
@@ -77,11 +77,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double Minimum
         {
-            get { return GetValue(MinimumProperty); }
-            set
-            {
-                SetValue(MinimumProperty, value);
-            }
+            get => GetValue(MinimumProperty);
+            set => SetValue(MinimumProperty, value);
         }
 
         /// <summary>
@@ -95,8 +92,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double Maximum
         {
-            get { return GetValue(MaximumProperty); }
-            set { SetValue(MaximumProperty, value); }
+            get => GetValue(MaximumProperty);
+            set => SetValue(MaximumProperty, value);
         }
 
         /// <summary>
@@ -110,8 +107,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double TickFrequency
         {
-            get { return GetValue(TickFrequencyProperty); }
-            set { SetValue(TickFrequencyProperty, value); }
+            get => GetValue(TickFrequencyProperty);
+            set => SetValue(TickFrequencyProperty, value);
         }
 
         /// <summary>
@@ -125,8 +122,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         /// <summary>
@@ -142,8 +139,8 @@ namespace Avalonia.Controls
         /// </summary>
         public AvaloniaList<double>? Ticks
         {
-            get { return GetValue(TicksProperty); }
-            set { SetValue(TicksProperty, value); }
+            get => GetValue(TicksProperty);
+            set => SetValue(TicksProperty, value);
         }
 
         /// <summary>
@@ -160,8 +157,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsDirectionReversed
         {
-            get { return GetValue(IsDirectionReversedProperty); }
-            set { SetValue(IsDirectionReversedProperty, value); }
+            get => GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, value);
         }
 
         /// <summary>
@@ -177,8 +174,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TickBarPlacement Placement
         {
-            get { return GetValue(PlacementProperty); }
-            set { SetValue(PlacementProperty, value); }
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
         }
 
         /// <summary>
@@ -195,8 +192,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Rect ReservedSpace
         {
-            get { return GetValue(ReservedSpaceProperty); }
-            set { SetValue(ReservedSpaceProperty, value); }
+            get => GetValue(ReservedSpaceProperty);
+            set => SetValue(ReservedSpaceProperty, value);
         }
 
         /// <summary>

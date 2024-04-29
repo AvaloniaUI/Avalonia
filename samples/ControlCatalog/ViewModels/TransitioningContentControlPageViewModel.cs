@@ -19,8 +19,6 @@ namespace ControlCatalog.ViewModels
     {
         public TransitioningContentControlPageViewModel()
         {
-            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-
             var images = new string[] 
             { 
                 "delicate-arch-896885_640.jpg", 
@@ -31,7 +29,7 @@ namespace ControlCatalog.ViewModels
             foreach (var image in images)
             {
                 var path = $"avares://ControlCatalog/Assets/{image}";
-                Images.Add(new Bitmap(assetLoader.Open(new Uri(path))));
+                Images.Add(new Bitmap(AssetLoader.Open(new Uri(path))));
             }
 
             SetupTransitions();
@@ -46,6 +44,7 @@ namespace ControlCatalog.ViewModels
 
 
         private Bitmap _SelectedImage;
+        private bool _Reversed;
 
         /// <summary>
         /// Gets or Sets the selected image
@@ -97,6 +96,15 @@ namespace ControlCatalog.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the animation is reversed.
+        /// </summary>
+        public bool Reversed
+        {
+            get => _Reversed;
+            set => this.RaiseAndSetIfChanged(ref _Reversed, value);
+        }
+
         private void SetupTransitions()
         {
             if (PageTransitions.Count == 0)
@@ -127,6 +135,7 @@ namespace ControlCatalog.ViewModels
 
         public void NextImage()
         {
+            Reversed = false;
             var index = Images.IndexOf(SelectedImage) + 1;
             
             if (index >= Images.Count)
@@ -139,6 +148,7 @@ namespace ControlCatalog.ViewModels
 
         public void PrevImage()
         {
+            Reversed = true;
             var index = Images.IndexOf(SelectedImage) - 1;
 
             if (index < 0)
@@ -238,7 +248,7 @@ namespace ControlCatalog.ViewModels
                     },
                     Duration = Duration
                 };
-                tasks.Add(animation.RunAsync(from, null, cancellationToken));
+                tasks.Add(animation.RunAsync(from, cancellationToken));
             }
 
             if (to != null)
@@ -268,7 +278,7 @@ namespace ControlCatalog.ViewModels
                     },
                     Duration = Duration
                 };
-                tasks.Add(animation.RunAsync(to, null, cancellationToken));
+                tasks.Add(animation.RunAsync(to, cancellationToken));
             }
 
             await Task.WhenAll(tasks);

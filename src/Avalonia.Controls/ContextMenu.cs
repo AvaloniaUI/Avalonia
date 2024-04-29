@@ -7,11 +7,8 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Automation;
 using Avalonia.Reactive;
@@ -85,8 +82,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
-        private static readonly FuncTemplate<Panel?> DefaultPanel =
-            new(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
@@ -270,7 +265,7 @@ namespace Avalonia.Controls
             }
 
             control ??= _attachedControls![0];
-            Open(control, PlacementTarget ?? control, false);
+            Open(control, PlacementTarget ?? control, Placement);
         }
 
         /// <summary>
@@ -308,7 +303,7 @@ namespace Avalonia.Controls
             remove => _popupHostChangedHandler -= value;
         }
 
-        private void Open(Control control, Control placementTarget, bool requestedByPointer)
+        private void Open(Control control, Control placementTarget, PlacementMode placement)
         {
             if (IsOpen)
             {
@@ -329,15 +324,9 @@ namespace Avalonia.Controls
                 _popup.KeyUp += PopupKeyUp;
             }
 
-            if (_popup.Parent != control)
-            {
-                ((ISetLogicalParent)_popup).SetParent(null);
-                ((ISetLogicalParent)_popup).SetParent(control);
-            }
+            _popup.SetPopupParent(control);
 
-            _popup.Placement = !requestedByPointer && Placement == PlacementMode.Pointer
-                ? PlacementMode.Bottom
-                : Placement;
+            _popup.Placement = placement;
 
             //Position of the line below is really important. 
             //All styles are being applied only when control has logical parent.
@@ -390,11 +379,8 @@ namespace Avalonia.Controls
 
             if (_attachedControls is null || _attachedControls.Count == 0)
             {
-                ((ISetLogicalParent)_popup!).SetParent(null);
+                _popup!.SetPopupParent(null);
             }
-
-            // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            _previousFocus?.Focus();
 
             RaiseEvent(new RoutedEventArgs
             {
@@ -428,7 +414,10 @@ namespace Avalonia.Controls
                 && !contextMenu.CancelOpening())
             {
                 var requestedByPointer = e.TryGetPosition(null, out _);
-                contextMenu.Open(control, e.Source as Control ?? control, requestedByPointer);
+                contextMenu.Open(
+                    control, 
+                    e.Source as Control ?? control, 
+                    requestedByPointer ? contextMenu.Placement : PlacementMode.Bottom);
                 e.Handled = true;
             }
         }

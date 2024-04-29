@@ -122,6 +122,8 @@ public partial class AvaloniaPropertyAnalyzer
 
             while (namespaceStack.Count > 0)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var current = namespaceStack.Pop();
 
                 types.AddRange(current.GetTypeMembers());
@@ -168,9 +170,9 @@ public partial class AvaloniaPropertyAnalyzer
 
                             foreach (var descendant in node.DescendantNodes().Where(n => n.IsKind(SyntaxKind.SimpleAssignmentExpression)))
                             {
-                                var assignmentOperation = (IAssignmentOperation)model.GetOperation(descendant, cancellationToken)!;
 
-                                if (GetReferencedFieldOrProperty(assignmentOperation.Target) is { } target)
+                                if (model.GetOperation(descendant, cancellationToken) is IAssignmentOperation assignmentOperation &&
+                                    GetReferencedFieldOrProperty(assignmentOperation.Target, cancellationToken) is { } target)
                                 {
                                     RegisterAssignment(target, assignmentOperation.Value);
                                 }
@@ -178,9 +180,10 @@ public partial class AvaloniaPropertyAnalyzer
                         }
                     }
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (Exception ex)
                 {
-                    throw new AvaloniaAnalysisException($"Failed to find AvaloniaProperty objects in {type}.", ex);
+                    WrapAndThrowIfNotCancellation(ex, $"Failed to find AvaloniaProperty objects in {type}.", cancellationToken);
+                    throw;
                 }
             });
 
@@ -202,14 +205,23 @@ public partial class AvaloniaPropertyAnalyzer
             });
 
             // we have recorded every Register and AddOwner call. Now follow assignment chains.
-            Parallel.ForEach(fieldInitializations.Keys.Intersect(propertyDescriptions.Keys, SymbolEqualityComparer.Default).ToArray(), root =>
+            Parallel.ForEach(fieldInitializations.Keys.Intersect(propertyDescriptions.Keys, SymbolEqualityComparer.Default).ToArray(), parallelOptions, root =>
             {
                 var propertyDescription = propertyDescriptions[root];
                 var owner = propertyDescription.AssignedTo[root];
 
+                var seen = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+
                 var current = root;
                 do
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (!seen.Add(current))
+                    {
+                        break; // self-assignment, just stop processing if this happens
+                    }
+
                     var target = fieldInitializations[current];
 
                     propertyDescription.SetAssignment(target, new(owner.Type, target.Locations[0])); // This loop handles simple assignment operations, so do NOT change the owner type
@@ -225,7 +237,7 @@ public partial class AvaloniaPropertyAnalyzer
             var propertyDescriptionsByName = propertyDescriptions.Values.ToLookup(p => p.Name, p => (property: p, owners: p.OwnerTypes.Select(t => t.Type).ToImmutableHashSet(SymbolEqualityComparer.Default)));
 
             // Detect CLR properties that provide syntatic wrapping around an AvaloniaProperty (or potentially multiple, which leads to a warning diagnostic)
-            Parallel.ForEach(propertyDescriptions.Values, propertyDescription =>
+            Parallel.ForEach(propertyDescriptions.Values, parallelOptions, propertyDescription =>
             {
                 var nameMatches = propertyDescriptionsByName[propertyDescription.Name];
 
@@ -242,6 +254,8 @@ public partial class AvaloniaPropertyAnalyzer
                     var current = ownerType.BaseType;
                     while (current != null)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         foreach (var otherProp in nameMatches.Where(t => t.owners.Contains(current)).Select(t => t.property))
                         {
                             clrPropertyWrapCandidates.Add((clrProperty, otherProp));
@@ -259,10 +273,10 @@ public partial class AvaloniaPropertyAnalyzer
 
             void RegisterAssignment(ISymbol target, IOperation value)
             {
-                switch (ResolveOperationSource(value))
+                switch (ResolveOperationSource(value, cancellationToken))
                 {
                     case IInvocationOperation invocation:
-                        RegisterInitializer_Invocation(invocation, target, propertyDescriptions);
+                        RegisterInitializer_Invocation(invocation, target, propertyDescriptions, cancellationToken);
                         break;
                     case IFieldReferenceOperation fieldRef when IsAvaloniaPropertyStorage(fieldRef.Field):
                         fieldInitializations[fieldRef.Field] = target;
@@ -278,7 +292,7 @@ public partial class AvaloniaPropertyAnalyzer
         }
 
         // This method handles registration of a new AvaloniaProperty, and calls to AddOwner.
-        private void RegisterInitializer_Invocation(IInvocationOperation invocation, ISymbol target, ConcurrentDictionary<ISymbol, AvaloniaPropertyDescription> propertyDescriptions)
+        private void RegisterInitializer_Invocation(IInvocationOperation invocation, ISymbol target, ConcurrentDictionary<ISymbol, AvaloniaPropertyDescription> propertyDescriptions, CancellationToken cancellationToken)
         {
             try
             {
@@ -298,7 +312,7 @@ public partial class AvaloniaPropertyAnalyzer
                         ownerTypeRef = TypeReference.FromInvocationTypeParameter(invocation, ownerTypeParam);
                     }
                     else if (_ownerParams.TryGetValue(originalMethod, out var ownerParam) && // try extracting the runtime argument
-                        ResolveOperationSource(invocation.Arguments[ownerParam.Ordinal].Value) is ITypeOfOperation { Type: ITypeSymbol type } typeOf)
+                        ResolveOperationSource(invocation.Arguments[ownerParam.Ordinal].Value, cancellationToken) is ITypeOfOperation { Type: ITypeSymbol type } typeOf)
                     {
                         ownerTypeRef = new TypeReference(type, typeOf.Syntax.GetLocation());
                     }
@@ -318,7 +332,7 @@ public partial class AvaloniaPropertyAnalyzer
                     }
 
                     string name;
-                    switch (ResolveOperationSource(invocation.Arguments[0].Value))
+                    switch (ResolveOperationSource(invocation.Arguments[0].Value, cancellationToken))
                     {
                         case ILiteralOperation literal when SymbolEquals(literal.Type, _stringType):
                             name = (string)literal.ConstantValue.Value!;
@@ -368,7 +382,7 @@ public partial class AvaloniaPropertyAnalyzer
                         return;
                     }
 
-                    if (GetReferencedFieldOrProperty(invocation.Instance) is not { } sourceSymbol)
+                    if (GetReferencedFieldOrProperty(invocation.Instance, cancellationToken) is not { } sourceSymbol)
                     {
                         return;
                     }
@@ -411,7 +425,8 @@ public partial class AvaloniaPropertyAnalyzer
             }
             catch (Exception ex)
             {
-                throw new AvaloniaAnalysisException($"Failed to register the initializer of '{target}'.", ex);
+                WrapAndThrowIfNotCancellation(ex, $"Failed to register the initializer of '{target}'.", cancellationToken);
+                throw;
             }
         }
 
@@ -439,7 +454,8 @@ public partial class AvaloniaPropertyAnalyzer
                 }
                 catch (Exception ex)
                 {
-                    throw new AvaloniaAnalysisException($"Failed to process initialization of field '{field}'.", ex);
+                    WrapAndThrowIfNotCancellation(ex, $"Failed to process initialization of field '{field}'.", context.CancellationToken);
+                    throw;
                 }
             }
         }
@@ -467,7 +483,8 @@ public partial class AvaloniaPropertyAnalyzer
                 }
                 catch (Exception ex)
                 {
-                    throw new AvaloniaAnalysisException($"Failed to process initialization of property '{property}'.", ex);
+                    WrapAndThrowIfNotCancellation(ex, $"Failed to process initialization of property '{property}'.", context.CancellationToken);
+                    throw;
                 }
             }
         }
@@ -479,7 +496,7 @@ public partial class AvaloniaPropertyAnalyzer
 
             try
             {
-                var (target, isValid) = ResolveOperationSource(operation.Target) switch
+                var (target, isValid) = ResolveOperationSource(operation.Target, context.CancellationToken) switch
                 {
                     IFieldReferenceOperation fieldRef => (fieldRef.Field, IsValidAvaloniaPropertyStorage(fieldRef.Field)),
                     IPropertyReferenceOperation propertyRef => (propertyRef.Property, IsValidAvaloniaPropertyStorage(propertyRef.Property)),
@@ -500,7 +517,8 @@ public partial class AvaloniaPropertyAnalyzer
             }
             catch (Exception ex)
             {
-                throw new AvaloniaAnalysisException($"Failed to process assignment '{operation}'.", ex);
+                WrapAndThrowIfNotCancellation(ex, $"Failed to process assignment '{operation}'.", context.CancellationToken);
+                throw;
             }
         }
 
@@ -536,13 +554,13 @@ public partial class AvaloniaPropertyAnalyzer
         {
             var operation = (IAssignmentOperation)context.Operation;
 
-            if (ResolveOperationSource(operation) is IParameterReferenceOperation && context.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor })
+            if (ResolveOperationSource(operation, context.CancellationToken) is IParameterReferenceOperation && context.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor })
             {
                 // We can consider `new MyType(myValue)` functionally equivalent to `new MyType() { Value = myValue }`. Both set a local value with an external parameter.
                 return;
             }
 
-            if (ResolveOperationTarget(operation) is IPropertyReferenceOperation propertyRef &&
+            if (ResolveOperationTarget(operation, context.CancellationToken) is IPropertyReferenceOperation propertyRef &&
                 propertyRef.Instance is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance } &&
                 _clrPropertyToAvaloniaProperties.TryGetValue(propertyRef.Property, out var propertyDescriptions) &&
                 propertyDescriptions.Any(p => !SymbolEquals(p.PropertyType.OriginalDefinition, _directPropertyType)))
@@ -571,7 +589,7 @@ public partial class AvaloniaPropertyAnalyzer
             if (_allGetSetMethods.Contains(originalMethod))
             {
                 if (invocation.Instance is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance } &&
-                    GetReferencedProperty(invocation.Arguments[0]) is { } refProp &&
+                    GetReferencedProperty(invocation.Arguments[0], context.CancellationToken) is { } refProp &&
                     refProp.description.AssignedTo.TryGetValue(refProp.storageSymbol, out var ownerType) &&
                     !DerivesFrom(context.ContainingSymbol.ContainingType, ownerType.Type) &&
                     !DerivesFrom(context.ContainingSymbol.ContainingType, refProp.description.HostType?.Type))
@@ -596,7 +614,7 @@ public partial class AvaloniaPropertyAnalyzer
                         context.ReportDiagnostic(Diagnostic.Create(PropertyOwnedByGenericType, TypeReference.FromInvocationTypeParameter(invocation, typeParam).Location));
                     }
 
-                    if (_avaloniaPropertyAddOwnerMethods.Contains(originalMethod) && GetReferencedProperty(invocation.Instance!) is { } refProp)
+                    if (_avaloniaPropertyAddOwnerMethods.Contains(originalMethod) && GetReferencedProperty(invocation.Instance!, context.CancellationToken) is { } refProp)
                     {
                         var ownerMatches = refProp.description.AssignedTo.Where(kvp => !SymbolEquals(kvp.Key, context.ContainingSymbol) && DerivesFrom(newOwnerType, kvp.Value.Type)).ToArray();
 
@@ -619,7 +637,7 @@ public partial class AvaloniaPropertyAnalyzer
 
             bool IsStaticConstructorOrInitializer() =>
                 context.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor } ||
-                ResolveOperationTarget(invocation.Parent!) switch
+                ResolveOperationTarget(invocation.Parent!, context.CancellationToken) switch
                 {
                     IFieldInitializerOperation fieldInit when fieldInit.InitializedFields.All(f => f.IsStatic) => true,
                     IPropertyInitializerOperation propInit when propInit.InitializedProperties.All(p => p.IsStatic) => true,
@@ -627,9 +645,9 @@ public partial class AvaloniaPropertyAnalyzer
                 };
         }
 
-        private (AvaloniaPropertyDescription description, ISymbol storageSymbol)? GetReferencedProperty(IOperation operation)
+        private (AvaloniaPropertyDescription description, ISymbol storageSymbol)? GetReferencedProperty(IOperation operation, CancellationToken cancellationToken)
         {
-            if (GetReferencedFieldOrProperty(operation) is { } storageSymbol && _avaloniaPropertyDescriptions.TryGetValue(storageSymbol, out var result))
+            if (GetReferencedFieldOrProperty(operation, cancellationToken) is { } storageSymbol && _avaloniaPropertyDescriptions.TryGetValue(storageSymbol, out var result))
             {
                 return (result, storageSymbol);
             }
@@ -711,7 +729,8 @@ public partial class AvaloniaPropertyAnalyzer
             }
             catch (Exception ex)
             {
-                throw new AvaloniaAnalysisException($"Failed to analyse wrapper property '{property}'.", ex);
+                WrapAndThrowIfNotCancellation(ex, $"Failed to analyse wrapper property '{property}'.", context.CancellationToken);
+                throw;
             }
         }
 
@@ -762,7 +781,7 @@ public partial class AvaloniaPropertyAnalyzer
 
                 if (operation.Arguments.Length != 0)
                 {
-                    switch (ResolveOperationSource(operation.Arguments[0].Value))
+                    switch (ResolveOperationSource(operation.Arguments[0].Value, context.CancellationToken))
                     {
                         case IFieldReferenceOperation fieldRef when avaloniaPropertyDescription.AssignedTo.ContainsKey(fieldRef.Field):
                         case IPropertyReferenceOperation propertyRef when avaloniaPropertyDescription.AssignedTo.ContainsKey(propertyRef.Property):
@@ -793,7 +812,8 @@ public partial class AvaloniaPropertyAnalyzer
             }
             catch (Exception ex)
             {
-                throw new AvaloniaAnalysisException($"Failed to process property accessor '{method}'.", ex);
+                WrapAndThrowIfNotCancellation(ex, $"Failed to process property accessor '{method}'.", context.CancellationToken);
+                throw;
             }
         }
     }

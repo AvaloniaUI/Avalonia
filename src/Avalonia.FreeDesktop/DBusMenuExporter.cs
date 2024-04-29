@@ -38,8 +38,9 @@ namespace Avalonia.FreeDesktop
             private bool _resetQueued;
             private int _nextId = 1;
 
-            public DBusMenuExporterImpl(Connection connection, IntPtr xid) : this()
+            public DBusMenuExporterImpl(Connection connection, IntPtr xid)
             {
+                InitBackingProperties();
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
                 Path = GenerateDBusMenuObjPath;
@@ -47,8 +48,9 @@ namespace Avalonia.FreeDesktop
                 _ = InitializeAsync();
             }
 
-            public DBusMenuExporterImpl(Connection connection, string path) : this()
+            public DBusMenuExporterImpl(Connection connection, string path)
             {
+                InitBackingProperties();
                 Connection = connection;
                 _appMenu = false;
                 Path = path;
@@ -56,8 +58,9 @@ namespace Avalonia.FreeDesktop
                 _ = InitializeAsync();
             }
 
-            private DBusMenuExporterImpl()
+            private void InitBackingProperties()
             {
+                BackingProperties.Version = 4;
                 BackingProperties.Status = string.Empty;
                 BackingProperties.TextDirection = string.Empty;
                 BackingProperties.IconThemePath = Array.Empty<string>();
@@ -240,6 +243,13 @@ namespace Avalonia.FreeDesktop
                             return new DBusVariantItem("b", new DBusBoolItem(false));
                         return null;
                     }
+
+                    if (name == "visible") {
+                        if (!item.IsVisible)
+                            return new DBusVariantItem("b", new DBusBoolItem(false));
+                        return new DBusVariantItem("b", new DBusBoolItem(true));
+                    }
+
                     if (name == "shortcut")
                     {
                         if (item.Gesture is null)
@@ -280,11 +290,9 @@ namespace Avalonia.FreeDesktop
                             if (loader is not null)
                             {
                                 var icon = loader.LoadIcon(item.Icon.PlatformImpl.Item);
-
                                 using var ms = new MemoryStream();
                                 icon.Save(ms);
-                                return new DBusVariantItem("ay",
-                                    new DBusArrayItem(DBusType.Byte, ms.ToArray().Select(static x => new DBusByteItem(x))));
+                                return new DBusVariantItem("ay", new DBusByteArrayItem(ms.ToArray()));
                             }
                         }
                     }
@@ -325,7 +333,7 @@ namespace Avalonia.FreeDesktop
                         children[c] = new DBusVariantItem("(ia{sv}av)", new DBusStructItem(new DBusItem[]
                         {
                             new DBusInt32Item(layout.Item1),
-                            new DBusArrayItem(DBusType.DictEntry, layout.Item2.Select(static x => new DBusDictEntryItem(new DBusStringItem(x.Key), x.Value))),
+                            new DBusArrayItem(DBusType.DictEntry, layout.Item2.Select(static x => new DBusDictEntryItem(new DBusStringItem(x.Key), x.Value)).ToArray()),
                             new DBusArrayItem(DBusType.Variant, layout.Item3)
                         }));
                     }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using Avalonia.Compatibility;
 using Avalonia.Reactive;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Interop;
 
@@ -22,8 +24,23 @@ namespace Avalonia.Native.Interop.Impl
 
         public NativeMenuItemBase ManagedMenuItem { get; set; }
 
-        private void UpdateTitle(string title) => SetTitle(title ?? "");
+        private void UpdateTitle(string title)
+        {
+            if (OperatingSystemEx.IsMacOS())
+            {
+                // macOS does not process access key markers, so remove them.
+                title = AccessText.RemoveAccessKeyMarker(title);
+            }
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                title = "";
+            }
+            SetTitle(title);
+        }
 
+        private void UpdateToolTip(string toolTip) => SetToolTip(toolTip ?? "");
+
+        private void UpdateIsVisible(bool isVisible) => SetIsVisible(isVisible.AsComBool());
         private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
         private void UpdateToggleType(NativeMenuItemToggleType toggleType)
@@ -93,6 +110,8 @@ namespace Avalonia.Native.Interop.Impl
             {
                 UpdateTitle(item.Header);
 
+                UpdateToolTip(item.ToolTip);
+
                 UpdateGesture(item.Gesture);
 
                 UpdateAction(ManagedMenuItem as NativeMenuItem);
@@ -103,8 +122,13 @@ namespace Avalonia.Native.Interop.Impl
 
                 UpdateIsChecked(item.IsChecked);
 
+                UpdateIsVisible(item.IsVisible);
+
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
                     .Subscribe(x => UpdateTitle(x)));
+
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.ToolTipProperty)
+                    .Subscribe(x => UpdateToolTip(x)));
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
                     .Subscribe(x => UpdateGesture(x)));
@@ -117,6 +141,9 @@ namespace Avalonia.Native.Interop.Impl
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
                     .Subscribe(x => UpdateIsChecked(x)));
+
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IsVisibleProperty)
+                    .Subscribe(x => UpdateIsVisible(x)));
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IconProperty)
                     .Subscribe(x => UpdateIcon(x)));

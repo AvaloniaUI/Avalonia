@@ -19,6 +19,7 @@ using Avalonia.Vulkan;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
 using Avalonia.X11.Vulkan;
+using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -31,12 +32,13 @@ namespace Avalonia.X11
             new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
-        public IX11Screens X11Screens { get; private set; }
+        public X11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        public XResources Resources { get; private set; }
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
 
         public void Initialize(X11PlatformOptions options)
@@ -65,14 +67,19 @@ namespace Avalonia.X11
 
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
+            Resources = new XResources(this);
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
 
+            IRenderTimer timer = options.ShouldRenderOnUIThread
+               ? new UiThreadRenderTimer(60)
+               : new SleepLoopRenderTimer(60);
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
-                .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
@@ -82,8 +89,7 @@ namespace Avalonia.X11
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = X11.X11Screens.Init(this);
-            Screens = new X11Screens(X11Screens);
+            Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
                 var xi2 = new XI2Manager();
@@ -98,6 +104,7 @@ namespace Avalonia.X11
             }
 
             Compositor = new Compositor(graphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -296,7 +303,13 @@ namespace Avalonia
         /// Input method editor is a component that enables users to generate characters not natively available 
         /// on their input devices by using sequences of characters or mouse operations that are natively available on their input devices.
         /// </remarks>
-        public bool? EnableIme { get; set; }
+        public bool? EnableIme { get; set; } = true;
+
+        /// <summary>
+        /// Determines whether to use Input Focus Proxy.
+        /// The default value is false.
+        /// </summary> 
+        public bool EnableInputFocusProxy { get; set; }
         
         /// <summary>
         /// Determines whether to enable support for the
@@ -309,7 +322,14 @@ namespace Avalonia
         /// </remarks>
         public bool EnableSessionManagement { get; set; } = 
             Environment.GetEnvironmentVariable("AVALONIA_X11_USE_SESSION_MANAGEMENT") != "0";
-        
+
+        /// <summary>
+        /// Render directly on the UI thread instead of using a dedicated render thread.
+        /// This can be usable if your device don't have multiple cores to begin with.
+        /// This setting is false by default.
+        /// </summary>
+        public bool ShouldRenderOnUIThread { get; set; }
+
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),
@@ -338,6 +358,14 @@ namespace Avalonia
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
+
+        /// <summary>
+        /// Retain window framebuffer contents if using CPU rendering mode.
+        /// This will keep an offscreen bitmap for each window with contents of the previous frame
+        /// While improving performance by saving a blit, it will increase memory consumption
+        /// if you have many windows 
+        /// </summary>
+        public bool? UseRetainedFramebuffer { get; set; }
 
         public X11PlatformOptions()
         {

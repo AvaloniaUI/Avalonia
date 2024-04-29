@@ -63,7 +63,8 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ScrollBarButtonArrowForeground}"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentPresenter Background="{DynamicResource ScrollBarButtonBackground}"
+        <ContentPresenter x:Name="PART_ContentPresenter"
+                          Background="{DynamicResource ScrollBarButtonBackground}"
                           BorderBrush="{DynamicResource ScrollBarButtonBorderBrush}"
                           Content="{TemplateBinding Content}"/>
       </ControlTemplate>
@@ -146,6 +147,7 @@
                        Minimum="{TemplateBinding Minimum}"
                        Maximum="{TemplateBinding Maximum}"
                        Value="{TemplateBinding Value, Mode=TwoWay}"
+                       DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                        ViewportSize="{TemplateBinding ViewportSize}"
                        Orientation="{TemplateBinding Orientation}"
                        IsDirectionReversed="True">
@@ -223,6 +225,7 @@
                        Minimum="{TemplateBinding Minimum}"
                        Maximum="{TemplateBinding Maximum}"
                        Value="{TemplateBinding Value, Mode=TwoWay}"
+                       DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                        ViewportSize="{TemplateBinding ViewportSize}"
                        Orientation="{TemplateBinding Orientation}">
                   <Track.DecreaseButton>

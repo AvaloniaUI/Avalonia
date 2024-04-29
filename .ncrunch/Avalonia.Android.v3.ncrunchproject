@@ -1,5 +1,8 @@
 ﻿<ProjectConfiguration>
   <Settings>
+    <CustomBuildProperties>
+      <Value>TargetFramework = net8.0-android34.0</Value>
+    </CustomBuildProperties>
     <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
   </Settings>
 </ProjectConfiguration>

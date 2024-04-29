@@ -104,7 +104,7 @@ namespace Avalonia.Media
 
     public readonly record struct UnicodeRangeSegment
     {
-        private static Regex s_regex = new Regex(@"^(?:[uU]\+)?(?:([0-9a-fA-F](?:[0-9a-fA-F?]{1,5})?))$", RegexOptions.Compiled);
+        private static readonly Regex s_regex = new Regex(@"^(?:[uU]\+)?(?:([0-9a-fA-F](?:[0-9a-fA-F?]{1,5})?))$", RegexOptions.Compiled);
 
         public UnicodeRangeSegment(int start, int end)
         {
@@ -131,7 +131,7 @@ namespace Avalonia.Media
         /// </returns>
         public bool IsInRange(int value)
         {
-            return value - Start <= End - Start;
+            return Start <= value && value <= End;
         }
 
         /// <summary>

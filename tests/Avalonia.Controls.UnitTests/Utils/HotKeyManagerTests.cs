@@ -88,7 +88,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
                 Assert.True(expectedParameter == commandResult, $"{factoryName} HotKey did not carry the CommandParameter.");
             }
@@ -129,7 +131,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
                 Assert.True(isExecuted == false, $"{factoryName} Execution raised when IsEnabled is false.");
             }
@@ -171,7 +175,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
                 element.IsEnabled = false;
 
@@ -180,7 +186,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
 
                 Assert.True(clickExecutedCount == 1, $"{factoryName} Execution raised when IsEnabled is false.");
@@ -229,7 +237,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
                 element.IsEnabled = false;
 
@@ -238,7 +248,9 @@ namespace Avalonia.Controls.UnitTests.Utils
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
 
                 Assert.True(commandExecutedCount == 1, $"{factoryName} Execution raised when IsEnabled is false.");
                 Assert.True(clickExecutedCount == 0, $"{factoryName} Execution raised event Click.");

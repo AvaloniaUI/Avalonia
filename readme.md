@@ -2,20 +2,20 @@
 ![Header](https://user-images.githubusercontent.com/552074/235865745-2a8e7274-4f66-4f77-8f05-feeb76e7d478.png)
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) [![Discord](https://img.shields.io/badge/discord-join%20chat-46BC99)]( https://aka.ms/dotnet-discord) [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
+ [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia)  ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
 ## 📖 About 
 
-[Avalonia](https://avaloniaui.net) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [Github](https://avaloniaui.net/showcase#github).
+[Avalonia](https://avaloniaui.net) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [GitHub](https://avaloniaui.net/showcase#github).
 
 Considered by many to be the spiritual successor to WPF, Avalonia UI provides a familiar, modern development experience for XAML developers creating cross-platform applications. While Avalonia UI is [similar to WPF](https://docs.avaloniaui.net/docs/next/get-started/wpf/), it isn't a 1:1 copy, and you'll find plenty of improvements. 
 
 For those seeking a cross-platform WPF, we have created [Avalonia XPF](https://avaloniaui.net/xpf), enabling WPF applications to run on macOS and Linux with little to no code changes. Avalonia XPF is a commercial product and is licensed per-app, per-platform. 
 
-#### Roadmap
-To see the status of some of our features, look at our [Roadmap](https://github.com/AvaloniaUI/Avalonia/issues/2239). 
+#### Blog
+To see the latest announcements and read about the state of Avalonia, check out the [Avalonia UI Blog](https://www.avaloniaui.net/Blog/).
 
 #### Breaking Changes
 You can also see what [breaking changes](https://github.com/AvaloniaUI/Avalonia/issues/3538) we have planned and what our [past breaking changes](https://github.com/AvaloniaUI/Avalonia/wiki/Breaking-Changes) have been. 
@@ -80,7 +80,7 @@ Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a p
 ## Code of Conduct
 
 This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
-For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct). 
+For more information see the [Code of Conduct](CODE_OF_CONDUCT.md). 
 
 ## Licence
 
@@ -106,18 +106,6 @@ Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com
 
 Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/Avalonia#sponsor)]
 
-<a href="https://opencollective.com/Avalonia/sponsor/0/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/1/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/2/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/3/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/4/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/5/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/6/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
-<a href="https://baseheadinc.com/" target="_blank"><img height="50" src="https://baseheadinc.com/wp-content/uploads/2020/09/BH-Logo-for-Site-Header-New.png"></a>
-
 <a href="https://aws.amazon.com/developer/language/net/" target="_blank"><img src="https://github.com/AvaloniaUI/Avalonia/assets/552074/7771d8b9-ef84-4503-9889-033a87d2c852"></a>
 
 ## Commercial Support 
@@ -125,9 +113,6 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
 
 *Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
-## .NET Foundation
-
-This project is supported by the [.NET Foundation](https://dotnetfoundation.org).
 
 ## Avalonia XPF
 Unleash the full potential of your existing WPF apps with our cross-platform UI framework, enabling WPF apps to run on macOS and Linux without requiring expensive and risky rewrites.

@@ -22,6 +22,8 @@ using System.Text;
 using System.Linq;
 using Avalonia.Input.Platform;
 using System.ComponentModel.DataAnnotations;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
@@ -412,6 +414,21 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsScrollInertiaEnabledProperty =
+            ScrollViewer.IsScrollInertiaEnabledProperty.AddOwner<DataGrid>();
+
+        /// <summary>
+        /// Gets or sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public bool IsScrollInertiaEnabled
+        {
+            get => GetValue(IsScrollInertiaEnabledProperty);
+            set => SetValue(IsScrollInertiaEnabledProperty, value);
+        }
+
         private bool _isValid = true;
 
         public static readonly DirectProperty<DataGrid, bool> IsValidProperty =
@@ -701,6 +718,17 @@ namespace Avalonia.Controls
             set { SetValue(RowDetailsVisibilityModeProperty, value); }
         }
 
+
+        public static readonly DirectProperty<DataGrid, IDataGridCollectionView> CollectionViewProperty =
+            AvaloniaProperty.RegisterDirect<DataGrid, IDataGridCollectionView>(nameof(CollectionView),
+                o => o.CollectionView);
+
+        /// <summary>
+        /// Gets current <see cref="IDataGridCollectionView"/>.
+        /// </summary>
+        public IDataGridCollectionView CollectionView =>
+            DataConnection.CollectionView;
+
         static DataGrid()
         {
             AffectsMeasure<DataGrid>(
@@ -774,6 +802,11 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridAutomationPeer(this);
+        }
+
         private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
         {
             _areHandlersSuspended = true;
@@ -822,6 +855,8 @@ namespace Avalonia.Controls
             {
                 Debug.Assert(DataConnection != null);
 
+                var oldCollectionView = DataConnection.CollectionView;
+
                 var oldValue = (IEnumerable)e.OldValue;
                 var newItemsSource = (IEnumerable)e.NewValue;
 
@@ -850,14 +885,24 @@ namespace Avalonia.Controls
 
                 // Wrap an IEnumerable in an ICollectionView if it's not already one
                 bool setDefaultSelection = false;
-                if (newItemsSource != null && !(newItemsSource is IDataGridCollectionView))
+                if (newItemsSource is IDataGridCollectionView newCollectionView)
                 {
-                    DataConnection.DataSource = DataGridDataConnection.CreateView(newItemsSource);
+                    setDefaultSelection = true;
                 }
                 else
                 {
-                    DataConnection.DataSource = newItemsSource;
-                    setDefaultSelection = true;
+                    newCollectionView =  newItemsSource is not null
+                        ? DataGridDataConnection.CreateView(newItemsSource)
+                        : default;
+                }
+
+                DataConnection.DataSource = newCollectionView;
+
+                if (oldCollectionView != DataConnection.CollectionView)
+                {
+                    RaisePropertyChanged(CollectionViewProperty, 
+                        oldCollectionView, 
+                        newCollectionView);
                 }
 
                 if (DataConnection.DataSource != null)
@@ -1813,12 +1858,6 @@ namespace Avalonia.Controls
             private set;
         }
 
-        internal bool UpdatedStateOnMouseLeftButtonDown
-        {
-            get;
-            set;
-        }
-
         /// <summary>
         /// Indicates whether or not to use star-sizing logic.  If the DataGrid has infinite available space,
         /// then star sizing doesn't make sense.  In this case, all star columns grow to a predefined size of
@@ -2285,7 +2324,16 @@ namespace Avalonia.Controls
         /// <param name="e">PointerWheelEventArgs</param>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if(UpdateScroll(e.Delta * DATAGRID_mouseWheelDelta))
+            var delta = e.Delta;
+            
+            // KeyModifiers.Shift should scroll in horizontal direction. This does not work on every platform. 
+            // If Shift-Key is pressed and X is close to 0 we swap the Vector.
+            if (e.KeyModifiers == KeyModifiers.Shift && MathUtilities.IsZero(delta.X))
+            {
+                delta = new Vector(delta.Y, delta.X);
+            }
+            
+            if(UpdateScroll(delta * DATAGRID_mouseWheelDelta))
             {
                 e.Handled = true;
             }
@@ -2789,7 +2837,6 @@ namespace Avalonia.Controls
                         if (SelectionMode == DataGridSelectionMode.Extended && AnchorSlot != -1)
                         {
                             int anchorSlot = AnchorSlot;
-                            ClearRowSelection(slot, setAnchorSlot: false);
                             if (slot <= anchorSlot)
                             {
                                 SetRowsSelection(slot, anchorSlot);
@@ -4136,13 +4183,8 @@ namespace Avalonia.Controls
 
                         if (editingElement != null)
                         {
-                            var errorList =
-                                binding.ValidationErrors
-                                       .SelectMany(ValidationUtil.UnpackException)
-                                       .Select(ValidationUtil.UnpackDataValidationException)
-                                       .ToList();
-
-                            DataValidationErrors.SetErrors(editingElement, errorList);
+                            DataValidationErrors.SetError(editingElement,
+                                new AggregateException(binding.ValidationErrors));
                         }
                     }
                 }

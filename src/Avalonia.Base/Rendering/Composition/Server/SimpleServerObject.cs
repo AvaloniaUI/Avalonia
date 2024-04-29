@@ -17,7 +17,7 @@ class SimpleServerObject
 
     }
 
-    public void DeserializeChanges(BatchStreamReader reader, Batch batch)
+    public void DeserializeChanges(BatchStreamReader reader, CompositionBatch batch)
     {
         DeserializeChangesCore(reader, batch.CommittedAt);
         ValuesInvalidated();

@@ -140,8 +140,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? CommandParameter
         {
-            get { return GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
         }
 
         /// <summary>
@@ -182,6 +182,8 @@ namespace Avalonia.Controls
 
         public INativeMenuExporter? NativeMenuExporter => _impl?.MenuExporter;
 
+        internal ITrayIconImpl? Impl => _impl;
+        
         private static void Lifetime_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         {
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");

@@ -75,7 +75,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.Equal("Courier New", fontFamily.Name);
 
-            Assert.Equal(2, fontFamily.FamilyNames.Count());
+            Assert.Equal(2, fontFamily.FamilyNames.Count);
 
             Assert.Equal("Times New Roman", fontFamily.FamilyNames.Last());
         }

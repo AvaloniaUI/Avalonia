@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
     [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
-    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
+    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider, IInternalScroller
     {
         /// <summary>
         /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
@@ -141,6 +141,13 @@ namespace Avalonia.Controls
                 defaultValue: true);
 
         /// <summary>
+        /// Defines the <see cref="IsDeferredScrollingEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsDeferredScrollingEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(IsDeferredScrollingEnabled));
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -205,10 +212,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Size Extent
         {
-            get
-            {
-                return _extent;
-            }
+            get => _extent;
 
             internal set
             {
@@ -233,10 +237,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Size Viewport
         {
-            get
-            {
-                return _viewport;
-            }
+            get => _viewport;
 
             internal set
             {
@@ -262,8 +263,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ScrollBarVisibility HorizontalScrollBarVisibility
         {
-            get { return GetValue(HorizontalScrollBarVisibilityProperty); }
-            set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
+            get => GetValue(HorizontalScrollBarVisibilityProperty);
+            set => SetValue(HorizontalScrollBarVisibilityProperty, value);
         }
 
         /// <summary>
@@ -271,8 +272,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ScrollBarVisibility VerticalScrollBarVisibility
         {
-            get { return GetValue(VerticalScrollBarVisibilityProperty); }
-            set { SetValue(VerticalScrollBarVisibilityProperty, value); }
+            get => GetValue(VerticalScrollBarVisibilityProperty);
+            set => SetValue(VerticalScrollBarVisibilityProperty, value);
         }
 
         /// <summary>
@@ -280,16 +281,20 @@ namespace Avalonia.Controls
         /// </summary>
         protected bool CanHorizontallyScroll
         {
-            get { return HorizontalScrollBarVisibility != ScrollBarVisibility.Disabled; }
+            get => HorizontalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
+
+        bool IInternalScroller.CanHorizontallyScroll => CanHorizontallyScroll;
 
         /// <summary>
         /// Gets a value indicating whether the viewer can scroll vertically.
         /// </summary>
         protected bool CanVerticallyScroll
         {
-            get { return VerticalScrollBarVisibility != ScrollBarVisibility.Disabled; }
+            get => VerticalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
+
+        bool IInternalScroller.CanVerticallyScroll => CanVerticallyScroll;
 
         /// <inheritdoc/>
         public Control? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
@@ -374,6 +379,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsScrollInertiaEnabledProperty);
             set => SetValue(IsScrollInertiaEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether dragging of <see cref="Thumb"/> elements should update the <see cref="ScrollViewer"/> only when the user releases the mouse.
+        /// </summary>
+        public bool IsDeferredScrollingEnabled
+        {
+            get => GetValue(IsDeferredScrollingEnabledProperty);
+            set => SetValue(IsDeferredScrollingEnabledProperty, value);
         }
 
         /// <summary>
@@ -631,6 +645,16 @@ namespace Avalonia.Controls
         {
             control.SetValue(IsScrollInertiaEnabledProperty, value);
         }
+
+        /// <summary>
+        /// Gets whether dragging of <see cref="Thumb"/> elements should update the <see cref="ScrollViewer"/> only when the user releases the mouse.
+        /// </summary>
+        public static bool GetIsDeferredScrollingEnabled(Control control) => control.GetValue(IsDeferredScrollingEnabledProperty);
+
+        /// <summary>
+        /// Sets whether dragging of <see cref="Thumb"/> elements should update the <see cref="ScrollViewer"/> only when the user releases the mouse.
+        /// </summary>
+        public static void SetIsDeferredScrollingEnabled(Control control, bool value) => control.SetValue(IsDeferredScrollingEnabledProperty, value);
 
         /// <inheritdoc/>
         public void RegisterAnchorCandidate(Control element)

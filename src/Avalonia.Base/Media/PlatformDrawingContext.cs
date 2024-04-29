@@ -26,12 +26,6 @@ internal sealed class PlatformDrawingContext : DrawingContext
         _ownsImpl = ownsImpl;
     }
 
-    public RenderOptions RenderOptions
-    {
-        get => _impl.RenderOptions;
-        set => _impl.RenderOptions = value;
-    }
-
     protected override void DrawLineCore(IPen pen, Point p1, Point p2) =>
         _impl.DrawLine(pen, p1, p2);
 
@@ -90,6 +84,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
         _impl.Transform = matrix * current;
     }
 
+    protected override void PushRenderOptionsCore(RenderOptions renderOptions) => _impl.PushRenderOptions(renderOptions);
+
     protected override void PopClipCore() => _impl.PopClip();
 
     protected override void PopGeometryClipCore() => _impl.PopGeometryClip();
@@ -101,6 +97,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
     protected override void PopTransformCore() =>
         _impl.Transform =
             (_transforms ?? throw new ObjectDisposedException(nameof(PlatformDrawingContext))).Pop();
+
+    protected override void PopRenderOptionsCore() => _impl.PopRenderOptions();
 
     protected override void DisposeCore()
     {

@@ -11,7 +11,7 @@ namespace Avalonia.IntegrationTests.Appium
 {
     public class DefaultAppFixture : IDisposable
     {
-        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net7.0\IntegrationTestApp.exe";
+        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net8.0\IntegrationTestApp.exe";
         private const string TestAppBundleId = "net.avaloniaui.avalonia.integrationtestapp";
 
         public DefaultAppFixture()

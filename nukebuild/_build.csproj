@@ -6,7 +6,11 @@
     <IsPackable>False</IsPackable>
     <NoWarn>$(NoWarn);CS0649;CS0169;SYSLIB0011</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <!-- See https://github.com/nuke-build/nuke/issues/818 -->
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <!-- Necessary for Microsoft.DotNet.GenAPI.Tool -->
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8-transport/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
@@ -16,14 +20,15 @@
     <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
-    <PackageReference Include="SourceLink" Version="1.1.0" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Debugging.Tools.PdbStr" Version="20230731.1609.0" GeneratePathProperty="true" PrivateAssets="All"/>
     <PackageReference Include="Microsoft.Build.Framework" Version="17.3.2" PrivateAssets="All" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[7.0.305]" />
+    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[8.0.200]" />
+    <PackageDownload Include="Microsoft.DotNet.GenAPI.Tool" Version="[8.0.300-preview.24115.44]" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,7 +38,7 @@
     <!-- Common build related files -->
     <Compile Remove="Numerge/**/*.*" />
     <Compile Include="Numerge/Numerge/**/*.cs" Exclude="Numerge/Numerge/obj/**/*.cs" />
-    <EmbeddedResource Include="$(NuGetPackageRoot)sourcelink/1.1.0/tools/pdbstr.exe" />
+    <EmbeddedResource Include="$(PkgMicrosoft_Debugging_Tools_PdbStr)/content/x86/pdbstr.exe" />
     <EmbeddedResource Include="../build/avalonia.snk" />
     <Compile Remove="il-repack\ILRepack\Application.cs" />
   </ItemGroup>

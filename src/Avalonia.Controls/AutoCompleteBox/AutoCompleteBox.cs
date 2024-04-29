@@ -463,6 +463,7 @@ namespace Avalonia.Controls
         static AutoCompleteBox()
         {
             FocusableProperty.OverrideDefaultValue<AutoCompleteBox>(true);
+            IsTabStopProperty.OverrideDefaultValue<AutoCompleteBox>(false);
 
             MinimumPopulateDelayProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnMinimumPopulateDelayChanged(e));
             IsDropDownOpenProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnIsDropDownOpenChanged(e));
@@ -710,7 +711,9 @@ namespace Avalonia.Controls
             else
             {
                 // The drop down is not open, the Down key will toggle it open.
-                if (e.Key == Key.Down)
+                // Ignore key buttons, if they are used for XY focus.
+                if (e.Key == Key.Down
+                    && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, true);
                     e.Handled = true;
@@ -770,33 +773,7 @@ namespace Avalonia.Controls
         /// <returns>true to indicate the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> has focus;
         /// otherwise, false.</returns>
-        protected bool HasFocus()
-        {
-            Visual? focused = FocusManager.GetFocusManager(this)?.GetFocusedElement() as Visual;
-
-            while (focused != null)
-            {
-                if (object.ReferenceEquals(focused, this))
-                {
-                    return true;
-                }
-
-                // This helps deal with popups that may not be in the same
-                // visual tree
-                Visual? parent = focused.GetVisualParent();
-                if (parent == null)
-                {
-                    // Try the logical parent.
-                    Control? element = focused as Control;
-                    if (element != null)
-                    {
-                        parent = element.VisualParent;
-                    }
-                }
-                focused = parent;
-            }
-            return false;
-        }
+        protected bool HasFocus() => IsKeyboardFocusWithin;
 
         /// <summary>
         /// Handles the FocusChanged event.
@@ -820,18 +797,46 @@ namespace Avalonia.Controls
                 if (!wasFocused && TextBox != null && TextBoxSelectionLength <= 0)
                 {
                     TextBox.Focus();
-                    TextBox.SelectionStart = 0;
-                    TextBox.SelectionEnd = TextBox.Text?.Length ?? 0;
+                    TextBox.SelectAll();
                 }
             }
             else
             {
-                SetCurrentValue(IsDropDownOpenProperty, false);
+                // Check if we still have focus in the parent's focus scope
+                if (GetFocusScope() is { } scope &&
+                    (FocusManager.GetFocusManager(this)?.GetFocusedElement(scope) is not { } focused ||
+                    (focused != this &&
+                    (focused is Visual v && !this.IsVisualAncestorOf(v)))))
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+
                 _userCalledPopulate = false;
                 ClearTextBoxSelection();
             }
 
             _isFocused = hasFocus;
+
+            IFocusScope? GetFocusScope()
+            {
+                IInputElement? c = this;
+
+                while (c != null)
+                {
+                    if (c is IFocusScope scope &&
+                        c is Visual v &&
+                        v.VisualRoot is Visual root &&
+                        root.IsVisible)
+                    {
+                        return scope;
+                    }
+
+                    c = (c as Visual)?.GetVisualParent<IInputElement>() ??
+                        ((c as IHostedVisualTreeRoot)?.Host as IInputElement);
+                }
+
+                return null;
+            }
         }
 
         /// <summary>
@@ -904,8 +909,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged
         {
-            add { AddHandler(SelectionChangedEvent, value); }
-            remove { RemoveHandler(SelectionChangedEvent, value); }
+            add => AddHandler(SelectionChangedEvent, value);
+            remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
         /// <summary>
@@ -1461,10 +1466,7 @@ namespace Avalonia.Controls
             _view?.AddRange(_newViewItems);
 
             // Clear the evaluator to discard a reference to the last item
-            if (_valueBindingEvaluator != null)
-            {
-                _valueBindingEvaluator.ClearDataContext();
-            }
+            _valueBindingEvaluator?.ClearDataContext();
 
             // indicate that filtering is not ongoing anymore
             _filterInAction = false;
@@ -2068,7 +2070,7 @@ namespace Avalonia.Controls
                 {
                     _binding = value;
                     if (value is not null)
-                        AvaloniaObjectExtensions.Bind(this, ValueProperty, value);
+                        Bind(ValueProperty, value);
                 }
             }
 

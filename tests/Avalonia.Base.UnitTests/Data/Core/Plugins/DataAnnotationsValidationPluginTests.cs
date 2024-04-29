@@ -9,7 +9,8 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core.Plugins
 {
-    public class DataAnnotationsValidationPluginTests : IClassFixture<InvariantCultureFixture>
+    [InvariantCulture]
+    public class DataAnnotationsValidationPluginTests
     {
         [Fact]
         public void Should_Match_Property_With_ValidatorAttribute()

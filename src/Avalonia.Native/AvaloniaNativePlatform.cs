@@ -1,5 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia.Compatibility;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -39,14 +41,13 @@ namespace Avalonia.Native
         {
             if (options.AvaloniaNativeLibraryPath != null)
             {
-                var loader = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                    (IDynLoader)new Win32Loader() :
-                    new UnixLoader();
-
-                var lib = loader.LoadLibrary(options.AvaloniaNativeLibraryPath);
-                var proc = loader.GetProcAddress(lib, "CreateAvaloniaNative", false);
+                var lib = NativeLibraryEx.Load(options.AvaloniaNativeLibraryPath);
+                if (!NativeLibraryEx.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
+                {
+                    throw new InvalidOperationException(
+                        "Unable to get \"CreateAvaloniaNative\" export from AvaloniaNativeLibrary library");
+                }
                 var d = Marshal.GetDelegateForFunctionPointer<CreateAvaloniaNativeDelegate>(proc);
-
 
                 return Initialize(d(), options);
             }
@@ -108,11 +109,12 @@ namespace Avalonia.Native
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderTimer>().ToConstant(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer()))
+                .Bind<IRenderTimer>().ToConstant(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer())))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
-                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
+                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()))
+                .Bind<IActivatableLifetime>().ToSingleton<MacOSActivatableLifetime>();
 
             var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
@@ -136,15 +138,14 @@ namespace Avalonia.Native
                         // ignored
                     }
                 }
-#pragma warning disable CS0618
                 else if (mode == AvaloniaNativeRenderingMode.Metal)
-#pragma warning restore CS0618
                 {
                     try
                     {
                         var metal = new MetalPlatformGraphics(_factory);
                         metal.CreateContext().Dispose();
                         _platformGraphics = metal;
+                        break;
                     }
                     catch
                     {
@@ -161,6 +162,7 @@ namespace Avalonia.Native
             
 
             Compositor = new Compositor(_platformGraphics, true);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
 
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         }

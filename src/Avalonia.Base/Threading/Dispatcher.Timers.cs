@@ -6,7 +6,7 @@ namespace Avalonia.Threading;
 
 public partial class Dispatcher
 {
-    private List<DispatcherTimer> _timers = new();
+    private readonly List<DispatcherTimer> _timers = new();
     private long _timersVersion;
     private bool _dueTimeFound;
     private long _dueTimeInMs;

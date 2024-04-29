@@ -434,5 +434,55 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task GetWidenedPathGeometry_Line()
+        {
+            var pen = new Pen(Brushes.Black, 10);
+            var geometry = StreamGeometry.Parse("M 0,0 L 180,180").GetWidenedGeometry(pen);
+
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    Fill = Brushes.Green,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = geometry,
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task GetWidenedPathGeometry_Line_Dash()
+        {
+            var pen = new Pen(Brushes.Black, 10, DashStyle.Dash);
+            var geometry = StreamGeometry.Parse("M 0,0 L 180,180").GetWidenedGeometry(pen);
+
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    Fill = Brushes.Green,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = geometry,
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }

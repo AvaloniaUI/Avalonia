@@ -38,8 +38,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IPageTransition? PageTransition
         {
-            get { return GetValue(PageTransitionProperty); }
-            set { SetValue(PageTransitionProperty, value); }
+            get => GetValue(PageTransitionProperty);
+            set => SetValue(PageTransitionProperty, value);
         }
 
         /// <summary>

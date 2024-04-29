@@ -514,6 +514,41 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Control_Item_Should_Be_Removed_From_LogicalChildren()
+        {
+            using var app = Start();
+            var item = new Border();
+
+            var items = new ObservableCollection<Control>();
+            var target = CreateTarget(itemsSource: items);
+
+            items.Add(item);
+            items.Remove(item);
+
+            Assert.Empty(target.LogicalChildren);
+        }
+
+        [Fact]
+        public void Control_Item_Should_Be_Removed_From_LogicalChildren_Virtualizing()
+        {
+            using var app = Start();
+            var item = new Border();
+
+            var items = new ObservableCollection<Control>();
+            var itemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+            var target = CreateTarget(
+                itemsPanel: itemsPanel,
+                itemsSource: items);
+
+            items.Add(item);
+            Layout(target);
+
+            items.Remove(item);
+
+            Assert.Empty(target.LogicalChildren);
+        }
+
+        [Fact]
         public void Should_Clear_Containers_When_ItemsPresenter_Changes()
         {
             using var app = Start();
@@ -682,7 +717,7 @@ namespace Avalonia.Controls.UnitTests
             var target = CreateTarget(
                 dataContext: "Base",
                 itemsSource: items,
-                dataTemplates: new[] { dataTemplate });
+                itemTemplate: dataTemplate);
             var panel = Assert.IsAssignableFrom<Panel>(target.ItemsPanelRoot);
             var dataContexts = panel.Children
                 .Do(x => (x as ContentPresenter)?.UpdateChild())
@@ -1147,7 +1182,6 @@ namespace Avalonia.Controls.UnitTests
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
                         }.RegisterInNameScope(scope),
                         new ScrollBar
                         {
@@ -1179,7 +1213,7 @@ namespace Avalonia.Controls.UnitTests
                     focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
-                    keyboardNavigation: new KeyboardNavigationHandler(),
+                    keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
                     textShaperImpl: new HeadlessTextShaperStub()));

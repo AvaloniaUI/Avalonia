@@ -29,6 +29,14 @@ namespace Avalonia.Platform
         Rect GetRenderBounds(IPen? pen);
 
         /// <summary>
+        /// Gets a geometry that is the shape defined by the stroke on the geometry
+        /// produced by the specified Pen.
+        /// </summary>
+        /// <param name="pen">The pen to use.</param>
+        /// <returns>The outlined geometry.</returns>
+        IGeometryImpl GetWidenedGeometry(IPen pen);
+
+        /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.
         /// </summary>
         /// <param name="point">The point.</param>

@@ -145,7 +145,9 @@ namespace Avalonia.Controls
             RaiseCursorRectangleChanged();
         }
 
-        public override void SetPreeditText(string? preeditText)
+        public override void SetPreeditText(string? preeditText) => SetPreeditText(preeditText, null);
+
+        public override void SetPreeditText(string? preeditText, int? cursorPos)
         {
             if (_presenter == null || _parent == null)
             {
@@ -153,6 +155,7 @@ namespace Avalonia.Controls
             }
 
             _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
+            _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
         }
 
         private static string GetTextLineText(TextLine textLine)

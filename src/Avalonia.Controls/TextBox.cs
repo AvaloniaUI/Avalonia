@@ -16,6 +16,7 @@ using Avalonia.Utilities;
 using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Automation.Peers;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -23,7 +24,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a control that can be used to display or edit unformatted text.
     /// </summary>
-    [TemplatePart("PART_TextPresenter", typeof(TextPresenter))]
+    [TemplatePart("PART_TextPresenter", typeof(TextPresenter), IsRequired = true)]
     [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer))]
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
@@ -93,6 +94,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
         /// <summary>
+        /// Defines the <see cref="CaretBlinkInterval"/> property
+        /// </summary>
+        public static readonly StyledProperty<TimeSpan> CaretBlinkIntervalProperty =
+            AvaloniaProperty.Register<TextBox, TimeSpan>(nameof(CaretBlinkInterval), defaultValue: TimeSpan.FromMilliseconds(500));
+
+        /// <summary>
         /// Defines the <see cref="SelectionStart"/> property
         /// </summary>
         public static readonly StyledProperty<int> SelectionStartProperty =
@@ -117,6 +124,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<int> MaxLinesProperty =
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines));
+
+        /// <summary>
+        /// Defines the <see cref="MinLines"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> MinLinesProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(MinLines));
 
         /// <summary>
         /// Defines the <see cref="Text"/> property
@@ -181,14 +194,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="InnerLeftContent"/> property
         /// </summary>
-        public static readonly StyledProperty<object> InnerLeftContentProperty =
-            AvaloniaProperty.Register<TextBox, object>(nameof(InnerLeftContent));
+        public static readonly StyledProperty<object?> InnerLeftContentProperty =
+            AvaloniaProperty.Register<TextBox, object?>(nameof(InnerLeftContent));
 
         /// <summary>
         /// Defines the <see cref="InnerRightContent"/> property
         /// </summary>
-        public static readonly StyledProperty<object> InnerRightContentProperty =
-            AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
+        public static readonly StyledProperty<object?> InnerRightContentProperty =
+            AvaloniaProperty.Register<TextBox, object?>(nameof(InnerRightContent));
 
         /// <summary>
         /// Defines the <see cref="RevealPassword"/> property
@@ -318,6 +331,9 @@ namespace Avalonia.Controls
         private int _wordSelectionStart = -1;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
+        private static bool _isHolding;
+        private int _currentClickCount;
+        private bool _isDoubleTapped;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -440,6 +456,13 @@ namespace Avalonia.Controls
             set => SetValue(CaretBrushProperty, value);
         }
 
+        /// <inheritdoc cref="TextPresenter.CaretBlinkInterval"/>
+        public TimeSpan CaretBlinkInterval
+        {
+            get => GetValue(CaretBlinkIntervalProperty);
+            set => SetValue(CaretBlinkIntervalProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets the starting position of the text selected in the TextBox
         /// </summary>
@@ -485,7 +508,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of visible lines.
+        /// Gets or sets the maximum number of characters that the <see cref="TextBox"/> can accept.
+        /// This constraint only applies for manually entered (user-inputted) text.
         /// </summary>
         public int MaxLength
         {
@@ -494,12 +518,21 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of lines the TextBox can contain
+        /// Gets or sets the maximum number of visible lines to size to.
         /// </summary>
         public int MaxLines
         {
             get => GetValue(MaxLinesProperty);
             set => SetValue(MaxLinesProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the minimum number of visible lines to size to.
+        /// </summary>
+        public int MinLines
+        {
+            get => GetValue(MinLinesProperty);
+            set => SetValue(MinLinesProperty, value);
         }
 
         /// <summary>
@@ -620,7 +653,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets custom content that is positioned on the left side of the text layout box
         /// </summary>
-        public object InnerLeftContent
+        public object? InnerLeftContent
         {
             get => GetValue(InnerLeftContentProperty);
             set => SetValue(InnerLeftContentProperty, value);
@@ -629,7 +662,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets custom content that is positioned on the right side of the text layout box
         /// </summary>
-        public object InnerRightContent
+        public object? InnerRightContent
         {
             get => GetValue(InnerRightContentProperty);
             set => SetValue(InnerRightContentProperty, value);
@@ -798,7 +831,17 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
+            }
+
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            }
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -806,6 +849,11 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
+        }
+
+        private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            _presenter?.TextSelectionHandleCanvas?.MoveHandlesToSelection();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -839,9 +887,9 @@ namespace Avalonia.Controls
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if(e.Property == TextPresenter.PreeditTextProperty)
+            if (e.Property == TextPresenter.PreeditTextProperty)
             {
-                if(string.IsNullOrEmpty(e.OldValue as string) && !string.IsNullOrEmpty(e.NewValue as string))
+                if (string.IsNullOrEmpty(e.OldValue as string) && !string.IsNullOrEmpty(e.NewValue as string))
                 {
                     PseudoClasses.Set(":empty", false);
 
@@ -878,6 +926,10 @@ namespace Avalonia.Controls
                 OnSelectionEndChanged(change);
             }
             else if (change.Property == MaxLinesProperty)
+            {
+                InvalidateMeasure();
+            }
+            else if (change.Property == MinLinesProperty)
             {
                 InvalidateMeasure();
             }
@@ -962,7 +1014,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            input = RemoveInvalidCharacters(input);
+            input = SanitizeInputText(input);
 
             if (string.IsNullOrEmpty(input))
             {
@@ -1011,14 +1063,41 @@ namespace Avalonia.Controls
                     _undoRedoHelper.DiscardRedo();
                 }
 
-                SetCurrentValue(CaretIndexProperty, caretIndex + input.Length);
+                //Make sure updated text is in sync
+                _presenter?.SetCurrentValue(TextPresenter.TextProperty, text);
+
+                caretIndex += input.Length;
+
+                //Make sure caret is in sync
+                _presenter?.MoveCaretToTextPosition(caretIndex);
+
+                SetCurrentValue(CaretIndexProperty, caretIndex);
             }
         }
 
-        private string? RemoveInvalidCharacters(string? text)
+        private string? SanitizeInputText(string? text)
         {
             if (text is null)
                 return null;
+
+            if (!AcceptsReturn)
+            {
+                var lineBreakStart = 0;
+                var graphemeEnumerator = new GraphemeEnumerator(text.AsSpan());
+
+                while (graphemeEnumerator.MoveNext(out var grapheme))
+                {
+                    if (grapheme.FirstCodepoint.IsBreakChar)
+                    {
+                        break;
+                    }
+
+                    lineBreakStart += grapheme.Length;
+                }
+
+                // All lines except the first one are discarded when TextBox does not accept Return key
+                text = text.Substring(0, lineBreakStart);
+            }
 
             for (var i = 0; i < invalidCharacters.Length; i++)
             {
@@ -1096,7 +1175,16 @@ namespace Avalonia.Controls
             var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
             if (clipboard != null)
-                text = await clipboard.GetTextAsync();
+            {
+                try
+                {
+                    text = await clipboard.GetTextAsync();
+                }
+                catch (TimeoutException)
+                {
+                    // Silently ignore.
+                }
+            }
 
             if (string.IsNullOrEmpty(text))
             {
@@ -1275,14 +1363,20 @@ namespace Avalonia.Controls
                 {
                     case Key.Left:
                         selection = DetectSelection();
-                        MoveHorizontal(-1, hasWholeWordModifiers, selection);
-                        movement = true;
+                        MoveHorizontal(-1, hasWholeWordModifiers, selection, true);
+                        if (caretIndex != _presenter.CaretIndex)
+                        {
+                            movement = true;
+                        }
                         break;
 
                     case Key.Right:
                         selection = DetectSelection();
-                        MoveHorizontal(1, hasWholeWordModifiers, selection);
-                        movement = true;
+                        MoveHorizontal(1, hasWholeWordModifiers, selection, true);
+                        if (caretIndex != _presenter.CaretIndex)
+                        {
+                            movement = true;
+                        }
                         break;
 
                     case Key.Up:
@@ -1453,9 +1547,10 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
+            if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
+                _currentClickCount = e.ClickCount;
                 var point = e.GetPosition(_presenter);
 
                 _presenter.MoveCaretToPoint(point);
@@ -1491,6 +1586,12 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
+                        if (IsPasswordBox && !RevealPassword)
+                        {
+                            // double-clicking in a cloaked single-line password box selects all text
+                            // see https://github.com/AvaloniaUI/Avalonia/issues/14956
+                            goto case 3;
+                        }
 
                         if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
@@ -1519,13 +1620,14 @@ namespace Avalonia.Controls
                 }
             }
 
+            _isDoubleTapped = e.ClickCount == 2;
             e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter == null)
+            if (_presenter == null || _isHolding)
             {
                 return;
             }
@@ -1539,22 +1641,35 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
+                var previousIndex = _presenter.CaretIndex;
+
                 _presenter.MoveCaretToPoint(point);
 
                 var caretIndex = _presenter.CaretIndex;
 
-                var selectionStart = SelectionStart;
-                var selectionEnd = SelectionEnd;
+                if (Math.Abs(caretIndex - previousIndex) == 1)
+                    e.PreventGestureRecognition();
 
-                if (_wordSelectionStart >= 0)
+                if (e.Pointer.Type == PointerType.Mouse)
                 {
-                    UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
 
-                    SetCurrentValue(SelectionStartProperty, selectionStart);
-                    SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    if (_wordSelectionStart >= 0)
+                    {
+                        UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                        SetCurrentValue(SelectionStartProperty, selectionStart);
+                        SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                    }
                 }
                 else
                 {
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
             }
@@ -1598,7 +1713,52 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (e.InitialPressMouseButton == MouseButton.Right)
+            if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
+            {
+                var text = Text;
+                var clickInfo = e.GetCurrentPoint(this);
+                if (text != null && !(clickInfo.Pointer?.Captured is Border))
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
+
+                    if (clickToSelect)
+                    {
+                        if (_wordSelectionStart >= 0)
+                        {
+                            UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                            SetCurrentValue(SelectionStartProperty, selectionStart);
+                            SetCurrentValue(SelectionEndProperty, selectionEnd);
+                        }
+                        else
+                        {
+                            SetCurrentValue(SelectionEndProperty, caretIndex);
+                        }
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionStartProperty, caretIndex);
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                        _wordSelectionStart = -1;
+                    }
+
+                    _presenter.TextSelectionHandleCanvas?.MoveHandlesToSelection();
+                }
+            }
+
+            // Don't update selection if the pointer was held
+            if (_isHolding)
+            {
+                _isHolding = false;
+            }
+            else if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1617,6 +1777,24 @@ namespace Avalonia.Controls
                     SetCurrentValue(CaretIndexProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                     SetCurrentValue(SelectionStartProperty, caretIndex);
+                }
+            }
+            else if (e.Pointer.Type == PointerType.Touch)
+            {
+                if (_currentClickCount == 1)
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                }
+
+                if (SelectionStart != SelectionEnd)
+                {
+                    _presenter.TextSelectionHandleCanvas?.ShowContextMenu();
                 }
             }
 
@@ -1672,7 +1850,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void Clear() => SetCurrentValue(TextProperty, string.Empty);
 
-        private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
+        private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting, bool moveCaretPosition)
         {
             if (_presenter == null)
             {
@@ -1728,9 +1906,12 @@ namespace Avalonia.Controls
 
                 SetCurrentValue(SelectionEndProperty, SelectionEnd + offset);
 
-                _presenter.MoveCaretToTextPosition(SelectionEnd);
+                if (moveCaretPosition)
+                {
+                    _presenter.MoveCaretToTextPosition(SelectionEnd);
+                }
 
-                if (!isSelecting)
+                if (!isSelecting && moveCaretPosition)
                 {
                     SetCurrentValue(CaretIndexProperty, SelectionEnd);
                 }
@@ -1810,6 +1991,28 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Scroll the <see cref="TextBox"/> to the specified line index.
+        /// </summary>
+        /// <param name="lineIndex">The line index to scroll to.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="lineIndex"/> is less than zero. -or - <paramref name="lineIndex"/> is larger than or equal to the line count.</exception>
+        public void ScrollToLine(int lineIndex)
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (lineIndex < 0 || lineIndex >= _presenter.TextLayout.TextLines.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(lineIndex));
+            }
+
+            var textLine = _presenter.TextLayout.TextLines[lineIndex];
+            _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
+
+        }
+
+        /// <summary>
         /// Select all text in the TextBox
         /// </summary>
         public void SelectAll()
@@ -1845,7 +2048,7 @@ namespace Avalonia.Controls
 
                 _presenter?.MoveCaretToTextPosition(start);
 
-                SetCurrentValue(CaretIndexProperty, start);
+                SetCurrentValue(SelectionStartProperty, start);
 
                 ClearSelection();
 
@@ -1900,7 +2103,7 @@ namespace Avalonia.Controls
 
                     var margin = visual.GetValue<Thickness>(Layoutable.MarginProperty);
                     var padding = visual.GetValue<Thickness>(Decorator.PaddingProperty);
-                    
+
                     verticalSpace += margin.Top + padding.Top + padding.Bottom + margin.Bottom;
 
                     visual = visual.VisualParent;
@@ -1935,9 +2138,16 @@ namespace Avalonia.Controls
 
         private void SetSelectionForControlBackspace()
         {
+            var text = Text ?? string.Empty;
             var selectionStart = CaretIndex;
 
-            MoveHorizontal(-1, true, false);
+            MoveHorizontal(-1, true, false, false);
+
+            if (SelectionEnd > 0 &&
+                selectionStart < text.Length && text[selectionStart] == ' ')
+            {
+                SetCurrentValue(SelectionEndProperty, SelectionEnd - 1);
+            }
 
             SetCurrentValue(SelectionStartProperty, selectionStart);
         }
@@ -1952,7 +2162,7 @@ namespace Avalonia.Controls
 
             SetCurrentValue(SelectionStartProperty, CaretIndex);
 
-            MoveHorizontal(1, true, true);
+            MoveHorizontal(1, true, true, false);
 
             if (SelectionEnd < textLength && Text![SelectionEnd] == ' ')
             {
@@ -2053,7 +2263,7 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if(_scrollViewer != null)
+            if (_scrollViewer != null)
             {
                 var maxHeight = double.PositiveInfinity;
 
@@ -2061,31 +2271,47 @@ namespace Avalonia.Controls
                 {
                     var fontSize = FontSize;
                     var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
-                    var textLayout = new TextLayout(new MaxLinesTextSource(MaxLines), paragraphProperties);
+                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
+                    var textLayout = new TextLayout(new LineTextSource(MaxLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
 
                     maxHeight = Math.Ceiling(textLayout.Height + verticalSpace);
                 }
 
                 _scrollViewer.SetCurrentValue(MaxHeightProperty, maxHeight);
+
+
+                var minHeight = 0.0;
+
+                if (MinLines > 0 && double.IsNaN(Height))
+                {
+                    var fontSize = FontSize;
+                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
+                    var textLayout = new TextLayout(new LineTextSource(MinLines), paragraphProperties);
+                    var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
+
+                    minHeight = Math.Ceiling(textLayout.Height + verticalSpace);
+                }
+
+                _scrollViewer.SetCurrentValue(MinHeightProperty, minHeight);
             }
 
             return base.MeasureOverride(availableSize);
         }
 
-        private class MaxLinesTextSource : ITextSource
+        private class LineTextSource : ITextSource
         {
-            private readonly int _maxLines;
+            private readonly int _lines;
 
-            public MaxLinesTextSource(int maxLines)
+            public LineTextSource(int lines)
             {
-                _maxLines = maxLines;
+                _lines = lines;
             }
 
             public TextRun? GetTextRun(int textSourceIndex)
             {
-                if (textSourceIndex >= _maxLines)
+                if (textSourceIndex >= _lines)
                 {
                     return null;
                 }

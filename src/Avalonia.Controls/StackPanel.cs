@@ -72,8 +72,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double Spacing
         {
-            get { return GetValue(SpacingProperty); }
-            set { SetValue(SpacingProperty, value); }
+            get => GetValue(SpacingProperty);
+            set => SetValue(SpacingProperty, value);
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         /// <summary>
@@ -108,8 +108,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+            get => GetValue(AreHorizontalSnapPointsRegularProperty);
+            set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -117,8 +117,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+            get => GetValue(AreVerticalSnapPointsRegularProperty);
+            set => SetValue(AreVerticalSnapPointsRegularProperty, value);
         }
 
         /// <summary>

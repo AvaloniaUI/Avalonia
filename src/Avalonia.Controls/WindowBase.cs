@@ -36,20 +36,17 @@ namespace Avalonia.Controls
         private bool _isActive;
         private int _ignoreVisibilityChanges;
         private WindowBase? _owner;
-
-        protected bool IgnoreVisibilityChanges => _ignoreVisibilityChanges > 0; 
+        
+        protected bool IgnoreVisibilityChanges => _ignoreVisibilityChanges > 0;
 
         static WindowBase()
         {
             IsVisibleProperty.OverrideDefaultValue<WindowBase>(false);
-            IsVisibleProperty.Changed.AddClassHandler<WindowBase>((x,e) => x.IsVisibleChanged(e));
-
-            
-            TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue!));
         }
 
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
+            CreatePlatformImplBinding(TopmostProperty, topmost => PlatformImpl!.SetTopmost(topmost));
         }
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
@@ -105,10 +102,10 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsActive
         {
-            get { return _isActive; }
-            private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
+            get => _isActive;
+            private set => SetAndRaise(IsActiveProperty, ref _isActive, value);
         }
-        
+
         public Screens Screens { get; }
 
         /// <summary>
@@ -116,8 +113,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowBase? Owner
         {
-            get { return _owner; }
-            protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            get => _owner;
+            protected set => SetAndRaise(OwnerProperty, ref _owner, value);
         }
 
         /// <summary>
@@ -125,8 +122,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool Topmost
         {
-            get { return GetValue(TopmostProperty); }
-            set { SetValue(TopmostProperty, value); }
+            get => GetValue(TopmostProperty);
+            set => SetValue(TopmostProperty, value);
         }
 
         /// <summary>
@@ -192,6 +189,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsVisibleProperty)
+            {
+                IsVisibleChanged(change);
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnClosed(EventArgs e)
         {
@@ -226,7 +233,7 @@ namespace Avalonia.Controls
 
                 if (this is IFocusScope scope)
                 {
-                    ((FocusManager?)FocusManager)?.RemoveFocusScope(scope);
+                    ((FocusManager?)FocusManager)?.RemoveFocusRoot(scope);
                 }
 
                 base.HandleClosed();

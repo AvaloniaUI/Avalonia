@@ -235,7 +235,7 @@ namespace Avalonia.X11
         }
 
 
-        public long Now => (int)_clock.ElapsedMilliseconds;
+        public long Now => _clock.ElapsedMilliseconds;
         public bool CanQueryPendingInput => true;
 
         public bool HasPendingInput => _platform.EventGrouperDispatchQueue.HasJobs || XPending(_display) != 0;

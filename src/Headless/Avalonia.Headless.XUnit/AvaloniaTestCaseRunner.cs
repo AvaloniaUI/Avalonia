@@ -11,15 +11,17 @@ namespace Avalonia.Headless.XUnit;
 
 internal class AvaloniaTestCaseRunner : XunitTestCaseRunner
 {
+    private readonly HeadlessUnitTestSession _session;
     private readonly Action? _onAfterTestInvoked;
 
     public AvaloniaTestCaseRunner(
-        Action? onAfterTestInvoked,
+        HeadlessUnitTestSession session, Action? onAfterTestInvoked,
         IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments,
         object[] testMethodArguments, IMessageBus messageBus, ExceptionAggregator aggregator,
         CancellationTokenSource cancellationTokenSource) : base(testCase, displayName, skipReason, constructorArguments,
         testMethodArguments, messageBus, aggregator, cancellationTokenSource)
     {
+        _session = session;
         _onAfterTestInvoked = onAfterTestInvoked;
     }
 
@@ -29,43 +31,46 @@ internal class AvaloniaTestCaseRunner : XunitTestCaseRunner
         CancellationTokenSource cancellationTokenSource)
     {
         var afterTest = () => Dispatcher.UIThread.RunJobs();
-        return session.Dispatch(async () =>
-        {
-            var runner = new AvaloniaTestCaseRunner(afterTest, testCase, displayName,
-                skipReason, constructorArguments, testMethodArguments, messageBus, aggregator, cancellationTokenSource);
-            return await runner.RunAsync();
-        }, cancellationTokenSource.Token);
+
+        var runner = new AvaloniaTestCaseRunner(session, afterTest, testCase, displayName,
+            skipReason, constructorArguments, testMethodArguments, messageBus, aggregator, cancellationTokenSource);
+        return runner.RunAsync();
     }
-    
+
     protected override XunitTestRunner CreateTestRunner(ITest test, IMessageBus messageBus, Type testClass,
         object[] constructorArguments,
         MethodInfo testMethod, object[] testMethodArguments, string skipReason,
         IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes,
         ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
     {
-        return new AvaloniaTestRunner(_onAfterTestInvoked, test, messageBus, testClass, constructorArguments,
+        return new AvaloniaTestRunner(_session, _onAfterTestInvoked, test, messageBus, testClass, constructorArguments,
             testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource);
     }
 
     private class AvaloniaTestRunner : XunitTestRunner
     {
+        private readonly HeadlessUnitTestSession _session;
         private readonly Action? _onAfterTestInvoked;
 
         public AvaloniaTestRunner(
-            Action? onAfterTestInvoked,
+            HeadlessUnitTestSession session, Action? onAfterTestInvoked,
             ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod,
             object[] testMethodArguments, string skipReason,
             IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator,
             CancellationTokenSource cancellationTokenSource) : base(test, messageBus, testClass, constructorArguments,
             testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource)
         {
+            _session = session;
             _onAfterTestInvoked = onAfterTestInvoked;
         }
 
         protected override Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
         {
-            return new AvaloniaTestInvoker(_onAfterTestInvoked, Test, MessageBus, TestClass, ConstructorArguments,
-                TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource).RunAsync();
+            return _session.Dispatch(
+                () => new AvaloniaTestInvoker(_onAfterTestInvoked, Test, MessageBus, TestClass,
+                    ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator,
+                    CancellationTokenSource).RunAsync(),
+                CancellationTokenSource.Token);
         }
     }
 

@@ -16,6 +16,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
@@ -126,6 +127,7 @@ namespace Avalonia.Win32
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
             
             s_compositor = new Compositor( platformGraphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(s_compositor);
         }
         
         public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
@@ -224,13 +226,13 @@ namespace Avalonia.Win32
         {
             using (var stream = File.OpenRead(fileName))
             {
-                return CreateIconImpl(stream);
+                return new IconImpl(stream);
             }
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
-            return CreateIconImpl(stream);
+            return new IconImpl(stream);
         }
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
@@ -238,23 +240,8 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
-                return CreateIconImpl(memoryStream);
-            }
-        }
-
-        private static IconImpl CreateIconImpl(Stream stream)
-        {
-            try
-            {
-                // new Icon() will work only if stream is an "ico" file.
-                return new IconImpl(new System.Drawing.Icon(stream));
-            }
-            catch (ArgumentException)
-            {
-                // Fallback to Bitmap creation and converting into a windows icon. 
-                using var icon = new System.Drawing.Bitmap(stream);
-                var hIcon = icon.GetHicon();
-                return new IconImpl(System.Drawing.Icon.FromHandle(hIcon));
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return new IconImpl(memoryStream);
             }
         }
 

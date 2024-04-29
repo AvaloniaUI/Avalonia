@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Primitives
             return adorner.GetValue(AdornedElementProperty);
         }
 
-        public static void SetAdornedElement(Visual adorner, Visual adorned)
+        public static void SetAdornedElement(Visual adorner, Visual? adorned)
         {
             adorner.SetValue(AdornedElementProperty, adorned);
         }
@@ -174,7 +174,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             SetAdornedElement(adorner, visual);
-            SetIsClipEnabled(adorner, false);
 
             ((ISetLogicalParent) adorner).SetParent(visual);
             layer.Children.Add(adorner);

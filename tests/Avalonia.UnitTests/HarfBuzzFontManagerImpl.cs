@@ -57,7 +57,7 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
             glyphTypeface = new HarfBuzzGlyphTypefaceImpl(stream);
 

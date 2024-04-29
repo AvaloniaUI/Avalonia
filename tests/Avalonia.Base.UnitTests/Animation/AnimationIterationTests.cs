@@ -131,17 +131,23 @@ namespace Avalonia.Base.UnitTests.Animation
         }
         
         [Theory]
-        [InlineData(FillMode.Backward, 0, 0d, 0.7d)]
-        [InlineData(FillMode.Both, 0, 0d, 0.7d)]
-        [InlineData(FillMode.Forward, 100, 0d, 0.7d)]
-        [InlineData(FillMode.Backward, 0, 0.3d, 0.7d)]
-        [InlineData(FillMode.Both, 0, 0.3d, 0.7d)]
-        [InlineData(FillMode.Forward, 100, 0.3d, 0.7d)]
-        public void Check_FillMode_Start_Value(FillMode fillMode, double target, double startCue, double endCue)
+        [InlineData(FillMode.Backward, 50.0, 0.0, 0.7, false)]
+        [InlineData(FillMode.Backward, 50.0, 0.0, 0.7, true )]
+        [InlineData(FillMode.Both,     50.0, 0.0, 0.7, false)]
+        [InlineData(FillMode.Both,     50.0, 0.0, 0.7, true )]
+        [InlineData(FillMode.Forward,  50.0, 0.0, 0.7, false)] // no delay but cue 0.0: the animation has started normally, explaining the 50.0 target without fill
+        [InlineData(FillMode.Forward, 100.0, 0.0, 0.7, true )]
+        [InlineData(FillMode.Backward, 50.0, 0.3, 0.7, false)]
+        [InlineData(FillMode.Backward, 50.0, 0.3, 0.7, true )]
+        [InlineData(FillMode.Both,     50.0, 0.3, 0.7, false)]
+        [InlineData(FillMode.Both,     50.0, 0.3, 0.7, true )]
+        [InlineData(FillMode.Forward, 100.0, 0.3, 0.7, false)]
+        [InlineData(FillMode.Forward, 100.0, 0.3, 0.7, true )]
+        public void Check_FillMode_Start_Value(FillMode fillMode, double target, double startCue, double endCue, bool delay)
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters = { new Setter(Layoutable.WidthProperty, 0d), }, Cue = new Cue(startCue)
+                Setters = { new Setter(Layoutable.WidthProperty, 50d), }, Cue = new Cue(startCue)
             };
 
             var keyframe2 = new KeyFrame()
@@ -152,7 +158,7 @@ namespace Avalonia.Base.UnitTests.Animation
             var animation = new Animation()
             {
                 Duration = TimeSpan.FromSeconds(10d),
-                Delay = TimeSpan.FromSeconds(5d),
+                Delay = delay ? TimeSpan.FromSeconds(5d) : TimeSpan.Zero,
                 FillMode = fillMode,
                 Children = { keyframe1, keyframe2 }
             };
@@ -169,28 +175,34 @@ namespace Avalonia.Base.UnitTests.Animation
         }
         
         [Theory]
-        [InlineData(FillMode.Backward, 100, 0.3d, 1d)]
-        [InlineData(FillMode.Both, 300, 0.3d, 1d)]
-        [InlineData(FillMode.Forward, 300, 0.3d, 1d)]
-        [InlineData(FillMode.Backward, 100, 0.3d, 0.7d)]
-        [InlineData(FillMode.Both, 300, 0.3d, 0.7d)]
-        [InlineData(FillMode.Forward, 300, 0.3d, 0.7d)]
-        public void Check_FillMode_End_Value(FillMode fillMode, double target, double startCue, double endCue)
+        [InlineData(FillMode.Backward, 100.0, 0.3, 1.0, false)]
+        [InlineData(FillMode.Backward, 100.0, 0.3, 1.0, true )]
+        [InlineData(FillMode.Both,     300.0, 0.3, 1.0, false)]
+        [InlineData(FillMode.Both,     300.0, 0.3, 1.0, true )]
+        [InlineData(FillMode.Forward,  300.0, 0.3, 1.0, false)]
+        [InlineData(FillMode.Forward,  300.0, 0.3, 1.0, true )]
+        [InlineData(FillMode.Backward, 100.0, 0.3, 0.7, false)]
+        [InlineData(FillMode.Backward, 100.0, 0.3, 0.7, true )]
+        [InlineData(FillMode.Both,     300.0, 0.3, 0.7, false)]
+        [InlineData(FillMode.Both,     300.0, 0.3, 0.7, true )]
+        [InlineData(FillMode.Forward,  300.0, 0.3, 0.7, false)]
+        [InlineData(FillMode.Forward,  300.0, 0.3, 0.7, true )]
+        public void Check_FillMode_End_Value(FillMode fillMode, double target, double startCue, double endCue, bool delay)
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters = { new Setter(Layoutable.WidthProperty, 0d), }, Cue = new Cue(0.7d)
+                Setters = { new Setter(Layoutable.WidthProperty, 0d), }, Cue = new Cue(startCue)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters = { new Setter(Layoutable.WidthProperty, 300d), }, Cue = new Cue(1d)
+                Setters = { new Setter(Layoutable.WidthProperty, 300d), }, Cue = new Cue(endCue)
             };
 
             var animation = new Animation()
             {
                 Duration = TimeSpan.FromSeconds(10d),
-                Delay = TimeSpan.FromSeconds(5d),
+                Delay = delay ? TimeSpan.FromSeconds(5d) : TimeSpan.Zero,
                 FillMode = fillMode,
                 Children = { keyframe1, keyframe2 }
             };
@@ -439,6 +451,171 @@ namespace Avalonia.Base.UnitTests.Animation
 
             cancellationTokenSource.Cancel();
             animationRun.Wait();
+        }
+
+        // https://github.com/AvaloniaUI/Avalonia/issues/12582
+        [Fact]
+        public void Interpolator_Is_Not_Called_After_Last_Iteration()
+        {
+            var animator = new FakeAnimator();
+
+            Setter CreateWidthSetter(double value)
+            {
+                var setter = new Setter(Layoutable.WidthProperty, value);
+                Animation.SetAnimator(setter, animator);
+                return setter;
+            }
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(1),
+                Delay = TimeSpan.FromSeconds(0),
+                DelayBetweenIterations = TimeSpan.FromSeconds(0),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters = { CreateWidthSetter(100d) },
+                        Cue = new Cue(0d)
+                    },
+                    new KeyFrame
+                    {
+                        Setters = { CreateWidthSetter(200d) },
+                        Cue = new Cue(1d)
+                    }
+                }
+            };
+
+            var border = new Border
+            {
+                Height = 100d,
+                Width = 50d
+            };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(1, animator.CallCount);
+            Assert.Equal(0.0d, animator.LastProgress);
+            animator.LastProgress = double.NaN;
+
+            clock.Step(TimeSpan.FromSeconds(0.5d));
+            Assert.Equal(2, animator.CallCount);
+            Assert.Equal(0.5d, animator.LastProgress);
+            animator.LastProgress = double.NaN;
+
+            clock.Step(TimeSpan.FromSeconds(1.5d));
+            Assert.Equal(3, animator.CallCount);
+            Assert.Equal(1.0d, animator.LastProgress);
+
+            animationRun.Wait();
+        }
+
+        [Theory]
+        [InlineData(0, 1, 2)]
+        [InlineData(0, 2, 1)]
+        [InlineData(1, 0, 2)]
+        [InlineData(1, 2, 0)]
+        [InlineData(2, 0, 1)]
+        [InlineData(2, 1, 0)]
+        public void KeyFrames_Order_Does_Not_Matter(int index0, int index1, int index2)
+        {
+            static KeyFrame CreateKeyFrame(double width, double cue)
+                => new()
+                {
+                    Setters = { new Setter(Layoutable.WidthProperty, width) },
+                    Cue = new Cue(cue)
+                };
+
+            var keyFrames = new[]
+            {
+                CreateKeyFrame(100.0, 0.0),
+                CreateKeyFrame(200.0, 0.5),
+                CreateKeyFrame(300.0, 1.0)
+            };
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(1.0),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                FillMode = FillMode.Forward
+            };
+
+            animation.Children.Add(keyFrames[index0]);
+            animation.Children.Add(keyFrames[index1]);
+            animation.Children.Add(keyFrames[index2]);
+
+            var border = new Border
+            {
+                Height = 100.0,
+                Width = 50.0
+            };
+
+            var clock = new TestClock();
+            animation.RunAsync(border, clock);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(100.0, border.Width);
+
+            clock.Step(TimeSpan.FromSeconds(0.5));
+            Assert.Equal(200.0, border.Width);
+
+            clock.Step(TimeSpan.FromSeconds(1.0));
+            Assert.Equal(300.0, border.Width);
+        }
+
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(0.5)]
+        [InlineData(1.0)]
+        public void Single_KeyFrame_Works(double cue)
+        {
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(1.0),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters = { new Setter(Layoutable.WidthProperty, 100.0) },
+                        Cue = new Cue(cue)
+                    }
+                }
+            };
+
+            var border = new Border
+            {
+                Height = 100.0,
+                Width = 50.0
+            };
+
+            var clock = new TestClock();
+            animation.RunAsync(border, clock);
+
+            clock.Step(TimeSpan.Zero);
+            clock.Step(TimeSpan.FromSeconds(cue));
+            Assert.Equal(100.0, border.Width);
+        }
+
+        private sealed class FakeAnimator : InterpolatingAnimator<double>
+        {
+            public double LastProgress { get; set; } = double.NaN;
+
+            public int CallCount { get; set; }
+
+            public override double Interpolate(double progress, double oldValue, double newValue)
+            {
+                ++CallCount;
+                LastProgress = progress;
+                return newValue;
+            }
         }
     }
 }

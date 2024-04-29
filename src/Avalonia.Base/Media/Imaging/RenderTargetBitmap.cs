@@ -62,10 +62,24 @@ namespace Avalonia.Media.Imaging
             return factory.CreateRenderTargetBitmap(size, dpi);
         }
 
+        /// <summary>
+        /// Creates a <see cref="DrawingContext"/> for drawing to the <see cref="RenderTargetBitmap"/>. 
+        /// Clears the current image data to transparent.
+        /// </summary>
+        /// <returns>The drawing context.</returns>
         public DrawingContext CreateDrawingContext()
+            => CreateDrawingContext(true);
+
+        /// <summary>
+        /// Creates a <see cref="DrawingContext"/> for drawing to the <see cref="RenderTargetBitmap"/>.
+        /// </summary>
+        /// <param name="clear">If true, clears the current image data to transparent, if false, leaves the image data unchanged.</param>
+        /// <returns>The drawing context.</returns>
+        public DrawingContext CreateDrawingContext(bool clear)
         {
-            var platform = PlatformImpl.Item.CreateDrawingContext();
-            platform.Clear(Colors.Transparent);
+            var platform = PlatformImpl.Item.CreateDrawingContext(true);
+            if(clear)
+                platform.Clear(Colors.Transparent);
             return new PlatformDrawingContext(platform);
         }
 

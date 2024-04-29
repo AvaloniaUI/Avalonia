@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
-using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -44,7 +43,7 @@ namespace Avalonia.Media
         struct ArrayReader
         {
             private int _index;
-            private string[] _arr;
+            private readonly string[] _arr;
 
             public ArrayReader(string[] arr)
             {
@@ -90,27 +89,21 @@ namespace Avalonia.Media
                 sb.Append("inset ");
             }
 
-            if (OffsetX != 0.0)
-            {
-                sb.AppendFormat("{0} ", OffsetX.ToString(CultureInfo.InvariantCulture));
-            }
+            sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", OffsetX);
 
-            if (OffsetY != 0.0)
-            {
-                sb.AppendFormat("{0} ", OffsetY.ToString(CultureInfo.InvariantCulture));
-            }
+            sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", OffsetY);
 
-            if (Blur != 0.0)
+            if (Blur != 0.0 || Spread != 0.0)
             {
-                sb.AppendFormat("{0} ", Blur.ToString(CultureInfo.InvariantCulture));
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", Blur);
             }
 
             if (Spread != 0.0)
             {
-                sb.AppendFormat("{0} ", Spread.ToString(CultureInfo.InvariantCulture));
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", Spread);
             }
 
-            sb.AppendFormat("{0}", Color.ToString());
+            Color.ToString(sb);
         }
 
         public static unsafe BoxShadow Parse(string s)

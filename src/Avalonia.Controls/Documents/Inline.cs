@@ -32,8 +32,8 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public TextDecorationCollection? TextDecorations
         {
-            get { return GetValue(TextDecorationsProperty); }
-            set { SetValue(TextDecorationsProperty, value); }
+            get => GetValue(TextDecorationsProperty);
+            set => SetValue(TextDecorationsProperty, value);
         }
 
         /// <summary>
@@ -42,10 +42,10 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public BaselineAlignment BaselineAlignment
         {
-            get { return GetValue(BaselineAlignmentProperty); }
-            set { SetValue(BaselineAlignmentProperty, value); }
+            get => GetValue(BaselineAlignmentProperty);
+            set => SetValue(BaselineAlignmentProperty, value);
         }
-        
+
         /// <summary>
         /// Gets the value of the attached <see cref="TextDecorationsProperty"/> on a control.
         /// </summary>
@@ -102,8 +102,14 @@ namespace Avalonia.Controls.Documents
                 fontWeight = FontWeight.Bold;
             }
 
-            return new GenericTextRunProperties(new Typeface(FontFamily, fontStyle, fontWeight), FontSize,
-                textDecorations, Foreground, background, BaselineAlignment);
+            return new GenericTextRunProperties(
+                new Typeface(FontFamily, fontStyle, fontWeight),
+                FontFeatures, 
+                FontSize,
+                textDecorations, 
+                Foreground, 
+                background,
+                BaselineAlignment);
         }
 
         /// <inheritdoc />

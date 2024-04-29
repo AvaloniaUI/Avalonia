@@ -8,7 +8,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    internal class TrayIconImpl : ITrayIconImpl
+    internal class TrayIconImpl : ITrayIconWithIsTemplateImpl
     {
         private readonly IAvnTrayIcon _native;
 
@@ -50,12 +50,17 @@ namespace Avalonia.Native
 
         public void SetToolTipText(string? text)
         {
-            // NOP
+            _native.SetToolTipText(text);
         }
 
         public void SetIsVisible(bool visible)
         {
             _native.SetIsVisible(visible.AsComBool());
+        }
+
+        public void SetIsTemplateIcon(bool isTemplateIcon)
+        {
+            _native.SetIsTemplateIcon(isTemplateIcon.AsComBool());
         }
 
         public INativeMenuExporter? MenuExporter { get; }

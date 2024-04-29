@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.AzurePipelines;
@@ -24,9 +25,12 @@ public partial class Build
 
     [Parameter(Name = "api-baseline")]
     public string ApiValidationBaseline { get; set; }
-    
+
     [Parameter(Name = "update-api-suppression")]
     public bool? UpdateApiValidationSuppression { get; set; }
+
+    [Parameter(Name = "version-output-dir")]
+    public AbsolutePath VersionOutputDir { get; set; }
 
     public class BuildParameters
     {
@@ -38,7 +42,7 @@ public partial class Build
         public string RepositoryName { get; }
         public string RepositoryBranch { get; }
         public string ReleaseConfiguration { get; }
-        public string ReleaseBranchPrefix { get; }
+        public Regex ReleaseBranchRegex { get; }
         public string MSBuildSolution { get; }
         public bool IsLocalBuild { get; }
         public bool IsRunningOnUnix { get; }
@@ -52,7 +56,10 @@ public partial class Build
         public bool IsMyGetRelease { get; }
         public bool IsNuGetRelease { get; }
         public bool PublishTestResults { get; }
-        public string Version { get; }
+        public string Version { get; set; }
+        public const string LocalBuildVersion = "9999.0.0-localbuild";
+        public bool IsPackingToLocalCache { get; private set; }
+
         public AbsolutePath ArtifactsDir { get; }
         public AbsolutePath NugetIntermediateRoot { get; }
         public AbsolutePath NugetRoot { get; }
@@ -66,8 +73,9 @@ public partial class Build
         public string ApiValidationBaseline { get; }
         public bool UpdateApiValidationSuppression { get; }
         public AbsolutePath ApiValidationSuppressionFiles { get; }
+        public AbsolutePath VersionOutputDir { get; }
 
-        public BuildParameters(Build b)
+        public BuildParameters(Build b, bool isPackingToLocalCache)
         {
             // ARGUMENTS
             Configuration = b.Configuration ?? "Release";
@@ -77,7 +85,7 @@ public partial class Build
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
             MasterBranch = "refs/heads/master";
-            ReleaseBranchPrefix = "refs/heads/release/";
+            ReleaseBranchRegex = new("^refs/heads/release/(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
             ReleaseConfiguration = "Release";
             MSBuildSolution = RootDirectory / "dirs.proj";
 
@@ -101,8 +109,7 @@ public partial class Build
                     RepositoryName);
             IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch,
                 RepositoryBranch);
-            IsReleaseBranch = RepositoryBranch?.StartsWith(ReleaseBranchPrefix, StringComparison.OrdinalIgnoreCase) ==
-                              true;
+            IsReleaseBranch = RepositoryBranch is not null && ReleaseBranchRegex.IsMatch(RepositoryBranch);
 
             IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
             IsMyGetRelease = IsReleasable;
@@ -111,7 +118,7 @@ public partial class Build
             // VERSION
             Version = b.ForceNugetVersion ?? GetVersion();
 
-            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version).Major, 0).ToString();
+            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version.Split('-', StringSplitOptions.None).First()).Major, 0).ToString();
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
             if (IsRunningOnAzure)
@@ -119,10 +126,16 @@ public partial class Build
                 if (!IsNuGetRelease)
                 {
                     // Use AssemblyVersion with Build as version
-                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-beta";
+                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-alpha";
                 }
 
                 PublishTestResults = true;
+            }
+            
+            if (isPackingToLocalCache)
+            {
+                IsPackingToLocalCache = true;
+                Version = LocalBuildVersion;
             }
 
             // DIRECTORIES
@@ -137,6 +150,7 @@ public partial class Build
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
             ApiValidationSuppressionFiles = RootDirectory / "api";
+            VersionOutputDir = b.VersionOutputDir;
         }
 
         string GetVersion()

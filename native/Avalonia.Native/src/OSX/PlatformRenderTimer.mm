@@ -8,7 +8,7 @@ private:
 
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT RegisterTick (
+    virtual int RegisterTick (
         IAvnActionCallback* callback) override
     {
         START_COM_CALL;
@@ -24,13 +24,13 @@ public:
             auto result = CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
             if (result != 0)
             {
-                return E_FAIL;
+                return result;
             }
 
             result = CVDisplayLinkSetOutputCallback(_displayLink, OnTick, this);
             if (result != 0)
             {
-                return E_FAIL;
+                return result;
             }
         }
         return S_OK;

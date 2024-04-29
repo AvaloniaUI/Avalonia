@@ -71,8 +71,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool LastChildFill
         {
-            get { return GetValue(LastChildFillProperty); }
-            set { SetValue(LastChildFillProperty, value); }
+            get => GetValue(LastChildFillProperty);
+            set => SetValue(LastChildFillProperty, value);
         }
 
         /// <summary>

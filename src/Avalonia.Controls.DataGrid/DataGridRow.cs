@@ -15,6 +15,7 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
 using Avalonia.Reactive;
 
 namespace Avalonia.Controls
@@ -148,6 +149,11 @@ namespace Avalonia.Controls
             Cells = new DataGridCellCollection(this);
             Cells.CellAdded += DataGridCellCollection_CellAdded;
             Cells.CellRemoved += DataGridCellCollection_CellRemoved;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridRowAutomationPeer(this);
         }
 
         private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
@@ -771,14 +777,6 @@ namespace Avalonia.Controls
             if (OwningGrid != null)
             {
                 OwningGrid.IsDoubleClickRecordsClickOnCall(this);
-                if (OwningGrid.UpdatedStateOnMouseLeftButtonDown)
-                {
-                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = false;
-                }
-                else
-                {
-                    e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, -1, Slot, false);
-                }
             }
         }
 

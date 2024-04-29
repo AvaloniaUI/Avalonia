@@ -8,7 +8,7 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     public partial class CompositionVisualCollection : CompositionObject
     {
-        private CompositionVisual _owner;
+        private readonly CompositionVisual _owner;
         internal CompositionVisualCollection(CompositionVisual parent, ServerCompositionVisualCollection server) : base(parent.Compositor, server)
         {
             _owner = parent;

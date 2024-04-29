@@ -126,18 +126,16 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var rect = new Rectangle() { Width = 11, };
 
-            var originalValue = rect.Width;
-
             var clock = new TestClock();
             animation.RunAsync(rect, clock);
 
             clock.Step(TimeSpan.Zero);
-            Assert.Equal(rect.Width, 1);
+            Assert.Equal(1, rect.Width);
             clock.Step(TimeSpan.FromSeconds(2));
-            Assert.Equal(rect.Width, 2);
+            Assert.Equal(2, rect.Width);
             clock.Step(TimeSpan.FromSeconds(3));
             //here we have invalid value so value should be expected and set to initial original value
-            Assert.Equal(rect.Width, originalValue);
+            Assert.Equal(11, rect.Width);
         }
 
         [Fact]

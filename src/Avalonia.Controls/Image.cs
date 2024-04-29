@@ -45,8 +45,8 @@ namespace Avalonia.Controls
         [Content]
         public IImage? Source
         {
-            get { return GetValue(SourceProperty); }
-            set { SetValue(SourceProperty, value); }
+            get => GetValue(SourceProperty);
+            set => SetValue(SourceProperty, value);
         }
 
         /// <summary>
@@ -54,8 +54,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Stretch Stretch
         {
-            get { return GetValue(StretchProperty); }
-            set { SetValue(StretchProperty, value); }
+            get => GetValue(StretchProperty);
+            set => SetValue(StretchProperty, value);
         }
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace Avalonia.Controls
         /// </summary>
         public StretchDirection StretchDirection
         {
-            get { return GetValue(StretchDirectionProperty); }
-            set { SetValue(StretchDirectionProperty, value); }
+            get => GetValue(StretchDirectionProperty);
+            set => SetValue(StretchDirectionProperty, value);
         }
 
         /// <inheritdoc />

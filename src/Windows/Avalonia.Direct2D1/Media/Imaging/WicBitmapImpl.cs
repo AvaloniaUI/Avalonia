@@ -13,7 +13,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// A WIC implementation of a <see cref="Avalonia.Media.Imaging.Bitmap"/>.
     /// </summary>
-    internal class WicBitmapImpl : BitmapImpl, IReadableBitmapImpl
+    internal class WicBitmapImpl : BitmapImpl, IReadableBitmapWithAlphaImpl
     {
         private readonly BitmapDecoder _decoder;
 
@@ -87,10 +87,11 @@ namespace Avalonia.Direct2D1.Media
 
             if (!alphaFormat.HasValue)
             {
-                alphaFormat = AlphaFormat.Premul;
+                alphaFormat = Platform.AlphaFormat.Premul;
             }
 
             PixelFormat = pixelFormat;
+            AlphaFormat = alphaFormat;
             WicImpl = new Bitmap(
                 Direct2D1Platform.ImagingFactory,
                 size.Width,
@@ -106,6 +107,7 @@ namespace Avalonia.Direct2D1.Media
             WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, size.Width, size.Height, format.ToWic(alphaFormat), BitmapCreateCacheOption.CacheOnDemand);
             WicImpl.SetResolution(dpi.X, dpi.Y);
             PixelFormat = format;
+            AlphaFormat = alphaFormat;
             Dpi = dpi;
 
             using (var l = WicImpl.Lock(BitmapLockFlags.Write))
@@ -161,7 +163,9 @@ namespace Avalonia.Direct2D1.Media
 
         public override PixelSize PixelSize => WicImpl.Size.ToAvalonia();
 
-        protected APixelFormat? PixelFormat { get; }
+        public APixelFormat? PixelFormat { get; }
+
+        public AlphaFormat? AlphaFormat { get; }
 
         public override void Dispose()
         {

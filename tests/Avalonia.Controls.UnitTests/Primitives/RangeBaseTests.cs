@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Security.Cryptography.X509Certificates;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -27,6 +28,32 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(100, target.Maximum);
         }
 
+        [Fact]
+        public void ChangingDataContextShouldNotChangeOldDataContext()
+        {
+            var viewModel = new RangeTestViewModel()
+            {
+                Minimum = -5000, 
+                Maximum = 5000, 
+                Value = 4000
+            };
+            
+            var target = new TestRange
+            {
+                [!RangeBase.MinimumProperty] = new Binding(nameof(viewModel.Minimum)),
+                [!RangeBase.MaximumProperty] = new Binding(nameof(viewModel.Maximum)),
+                [!RangeBase.ValueProperty] = new Binding(nameof(viewModel.Value)),
+            };
+            
+            var root = new TestRoot(target);
+            target.DataContext = viewModel;
+            target.DataContext = null;
+            
+            Assert.Equal(4000, viewModel.Value);
+            Assert.Equal(-5000, viewModel.Minimum);
+            Assert.Equal(5000, viewModel.Maximum);
+        }
+        
         [Fact]
         public void Value_Should_Be_Coerced_To_Range()
         {
@@ -216,6 +243,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     }
                 }
             }
+        }
+
+        private class RangeTestViewModel
+        {
+            public double Minimum { get; set; }
+            public double Maximum { get; set; }
+            public double Value { get; set; }
         }
     }
 }

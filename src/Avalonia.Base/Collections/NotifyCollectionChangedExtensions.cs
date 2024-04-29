@@ -60,7 +60,7 @@ namespace Avalonia.Collections
         private class WeakCollectionChangedObservable : LightweightObservableBase<NotifyCollectionChangedEventArgs>,
             IWeakEventSubscriber<NotifyCollectionChangedEventArgs>
         {
-            private WeakReference<INotifyCollectionChanged> _sourceReference;
+            private readonly WeakReference<INotifyCollectionChanged> _sourceReference;
 
             public WeakCollectionChangedObservable(WeakReference<INotifyCollectionChanged> source)
             {

@@ -94,7 +94,7 @@
                     MinWidth="{DynamicResource TimePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
+                    VerticalAlignment="Stretch"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
@@ -110,6 +110,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_HourTextBlock"
+                             Text="{DynamicResource StringTimePickerHourText}"
                              Padding="{DynamicResource TimePickerHostPadding}"
                              HorizontalAlignment="Center"
                              FontFamily="{TemplateBinding FontFamily}"
@@ -128,6 +129,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_MinuteTextBlock"
+                             Text="{DynamicResource StringTimePickerMinuteText}"
                              Padding="{DynamicResource TimePickerHostPadding}"
                              HorizontalAlignment="Center"
                              FontFamily="{TemplateBinding FontFamily}"

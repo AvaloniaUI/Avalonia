@@ -23,6 +23,12 @@ namespace Avalonia.Controls.Primitives
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="BackgroundSizing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BackgroundSizing> BackgroundSizingProperty =
+            Border.BackgroundSizingProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> BorderBrushProperty =
@@ -46,6 +52,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<FontFamily> FontFamilyProperty =
             TextElement.FontFamilyProperty.AddOwner<TemplatedControl>();
 
+        /// <summary>
+        /// Defines the <see cref="FontFeaturesProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
+            TextElement.FontFeaturesProperty.AddOwner<TemplatedControl>();
+        
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
@@ -118,8 +130,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<TemplateAppliedEventArgs>? TemplateApplied
         {
-            add { AddHandler(TemplateAppliedEvent, value); }
-            remove { RemoveHandler(TemplateAppliedEvent, value); }
+            add => AddHandler(TemplateAppliedEvent, value);
+            remove => RemoveHandler(TemplateAppliedEvent, value);
         }
 
         /// <summary>
@@ -127,8 +139,17 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public IBrush? Background
         {
-            get { return GetValue(BackgroundProperty); }
-            set { SetValue(BackgroundProperty, value); }
+            get => GetValue(BackgroundProperty);
+            set => SetValue(BackgroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how the control's background is drawn relative to the control's border.
+        /// </summary>
+        public BackgroundSizing BackgroundSizing
+        {
+            get => GetValue(BackgroundSizingProperty);
+            set => SetValue(BackgroundSizingProperty, value);
         }
 
         /// <summary>
@@ -136,8 +157,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public IBrush? BorderBrush
         {
-            get { return GetValue(BorderBrushProperty); }
-            set { SetValue(BorderBrushProperty, value); }
+            get => GetValue(BorderBrushProperty);
+            set => SetValue(BorderBrushProperty, value);
         }
 
         /// <summary>
@@ -145,8 +166,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public Thickness BorderThickness
         {
-            get { return GetValue(BorderThicknessProperty); }
-            set { SetValue(BorderThicknessProperty, value); }
+            get => GetValue(BorderThicknessProperty);
+            set => SetValue(BorderThicknessProperty, value);
         }
 
         /// <summary>
@@ -154,8 +175,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public CornerRadius CornerRadius
         {
-            get { return GetValue(CornerRadiusProperty); }
-            set { SetValue(CornerRadiusProperty, value); }
+            get => GetValue(CornerRadiusProperty);
+            set => SetValue(CornerRadiusProperty, value);
         }
 
         /// <summary>
@@ -163,8 +184,17 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public FontFamily FontFamily
         {
-            get { return GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
+            get => GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font features turned on/off.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => GetValue(FontFeaturesProperty);
+            set => SetValue(FontFeaturesProperty, value);
         }
 
         /// <summary>
@@ -172,8 +202,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public double FontSize
         {
-            get { return GetValue(FontSizeProperty); }
-            set { SetValue(FontSizeProperty, value); }
+            get => GetValue(FontSizeProperty);
+            set => SetValue(FontSizeProperty, value);
         }
 
         /// <summary>
@@ -181,8 +211,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return GetValue(FontStyleProperty); }
-            set { SetValue(FontStyleProperty, value); }
+            get => GetValue(FontStyleProperty);
+            set => SetValue(FontStyleProperty, value);
         }
 
         /// <summary>
@@ -190,8 +220,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public FontWeight FontWeight
         {
-            get { return GetValue(FontWeightProperty); }
-            set { SetValue(FontWeightProperty, value); }
+            get => GetValue(FontWeightProperty);
+            set => SetValue(FontWeightProperty, value);
         }
 
         /// <summary>
@@ -199,8 +229,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public FontStretch FontStretch
         {
-            get { return GetValue(FontStretchProperty); }
-            set { SetValue(FontStretchProperty, value); }
+            get => GetValue(FontStretchProperty);
+            set => SetValue(FontStretchProperty, value);
         }
 
         /// <summary>
@@ -208,8 +238,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public IBrush? Foreground
         {
-            get { return GetValue(ForegroundProperty); }
-            set { SetValue(ForegroundProperty, value); }
+            get => GetValue(ForegroundProperty);
+            set => SetValue(ForegroundProperty, value);
         }
 
         /// <summary>
@@ -217,8 +247,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public Thickness Padding
         {
-            get { return GetValue(PaddingProperty); }
-            set { SetValue(PaddingProperty, value); }
+            get => GetValue(PaddingProperty);
+            set => SetValue(PaddingProperty, value);
         }
 
         /// <summary>
@@ -226,8 +256,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public IControlTemplate? Template
         {
-            get { return GetValue(TemplateProperty); }
-            set { SetValue(TemplateProperty, value); }
+            get => GetValue(TemplateProperty);
+            set => SetValue(TemplateProperty, value);
         }
 
         /// <summary>

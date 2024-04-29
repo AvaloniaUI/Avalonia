@@ -22,7 +22,15 @@
 
     <TextBlock Margin="0,20,0,0" Text="Pickers:" />
 
-    <CheckBox Name="UseFilters">Use filters</CheckBox>
+    <Label Target="FilterSelector" Content="Filter" />
+    <ComboBox Name="FilterSelector" SelectedIndex="0">
+      <ComboBoxItem>None</ComboBoxItem>
+      <ComboBoxItem>All + TXT + BinLog</ComboBoxItem>
+      <ComboBoxItem>Binlog</ComboBoxItem>
+      <ComboBoxItem>TXT extension only</ComboBoxItem>
+      <ComboBoxItem>TXT mime only</ComboBoxItem>
+      <ComboBoxItem>TXT apple type id only</ComboBoxItem>
+    </ComboBox>
     <Expander Header="FilePicker API">
       <StackPanel Spacing="4">
         <CheckBox Name="ForceManaged">Force managed dialog</CheckBox>
@@ -41,6 +49,15 @@
         <Button Name="SaveFile">_Save File</Button>
         <Button Name="SelectFolder">Select Fo_lder</Button>
         <Button Name="OpenBoth">Select _Both</Button>
+      </StackPanel>
+    </Expander>
+    
+    <Expander Header="Launcher dialogs">
+      <StackPanel Spacing="4">
+        <TextBox Name="UriToLaunch" Watermark="Uri to launch" Text="https://avaloniaui.net/" />
+        <Button Name="LaunchUri">Launch Uri</Button>
+        <Button Name="LaunchFile">Launch File</Button>
+        <TextBlock Name="LaunchStatus" />
       </StackPanel>
     </Expander>
 

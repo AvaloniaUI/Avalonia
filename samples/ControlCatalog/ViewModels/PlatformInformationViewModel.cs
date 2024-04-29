@@ -1,16 +1,22 @@
-using System;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Platform;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels;
-#nullable enable
 
 public class PlatformInformationViewModel : ViewModelBase
 {
     public PlatformInformationViewModel()
     {
+        /*  NOTE:
+        *   ------------
+        *   The below API is not meant to be used in production Apps. 
+        *   If you need to consume this info, please use:
+        *      - OperatingSystem ( https://learn.microsoft.com/en-us/dotnet/api/system.operatingsystem | if .NET 5 or greater)
+        *      - or RuntimeInformation ( https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.runtimeinformation )
+        */
+        
         var runtimeInfo = AvaloniaLocator.Current.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
 
         if (runtimeInfo is { } info)
@@ -46,11 +52,7 @@ public class PlatformInformationViewModel : ViewModelBase
                 }
             }
         }
-        else
-        {
-            
-        }
     }
     
-    public string PlatformInfo { get; }
+    public string? PlatformInfo { get; }
 }

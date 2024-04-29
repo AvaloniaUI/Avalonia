@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Avalonia.Headless;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
@@ -136,6 +138,127 @@ namespace Avalonia.Skia.UnitTests.Media
                     var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _);
 
                     Assert.False(result);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Load_Embedded_Fallbacks()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var fontFamily = FontFamily.Parse("NotFound, " + s_fontUri);
+
+                    var typeface = new Typeface(fontFamily);
+
+                    var glyphTypeface = typeface.GlyphTypeface;
+
+                    Assert.NotNull(glyphTypeface);
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Match_Chararcter_Width_Embedded_Fallbacks()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var fontFamily = FontFamily.Parse("NotFound, " + s_fontUri);
+
+                    Assert.True(FontManager.Current.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface));
+
+                    var glyphTypeface = typeface.GlyphTypeface;
+
+                    Assert.NotNull(glyphTypeface);
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Match_Chararcter_From_SystemFonts()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    Assert.True(FontManager.Current.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var typeface));
+
+                    var glyphTypeface = typeface.GlyphTypeface;
+
+                    Assert.NotNull(glyphTypeface);
+
+                    Assert.Equal(FontManager.Current.DefaultFontFamily.Name, glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("NotFound, Unknown", null)] // system fonts
+        [InlineData("/#NotFound, /#Unknown", "avares://some/path")] // embedded fonts
+        public void Should_Match_Character_With_Fallbacks(string familyName, string baseUri)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var fontFamily = FontFamily.Parse(familyName, baseUri is null ? null : new Uri(baseUri));
+
+                    Assert.True(FontManager.Current.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface));
+
+                    var glyphTypeface = typeface.GlyphTypeface;
+
+                    Assert.NotNull(glyphTypeface);
+
+                    Assert.Equal(FontManager.Current.DefaultFontFamily.Name, glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Use_Custom_SystemFont()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
+
+                    Assert.NotNull(systemFontCollection);
+
+                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono"), out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+
+        [Fact]
+        public void Should_Get_Nearest_Match_For_Custom_SystemFont()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
+
+                    Assert.NotNull(systemFontCollection);
+
+                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic), out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
                 }
             }
         }

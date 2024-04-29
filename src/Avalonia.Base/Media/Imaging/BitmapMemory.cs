@@ -9,9 +9,10 @@ internal class BitmapMemory : IDisposable
 {
     private readonly int _memorySize;
 
-    public BitmapMemory(PixelFormat format, PixelSize size)
+    public BitmapMemory(PixelFormat format, AlphaFormat alphaFormat, PixelSize size)
     {
         Format = format;
+        AlphaFormat = alphaFormat;
         Size = size;
         RowBytes = (size.Width * format.BitsPerPixel + 7) / 8;
         _memorySize = RowBytes * size.Height;
@@ -44,8 +45,19 @@ internal class BitmapMemory : IDisposable
     public int RowBytes { get; }
     public PixelFormat Format { get; }
 
+    public AlphaFormat AlphaFormat { get; }
 
-
-    public void CopyToRgba(IntPtr buffer, int rowBytes) =>
-        PixelFormatReader.Transcode(buffer, Address, Size, RowBytes, rowBytes, Format);
+    public void CopyToRgba(AlphaFormat alphaFormat, IntPtr buffer, int stride)
+    {
+        PixelFormatTranscoder.Transcode(
+            Address,
+            Size,
+            RowBytes,
+            Format,
+            AlphaFormat,
+            buffer,
+            stride,
+            PixelFormat.Rgba8888,
+            alphaFormat);
+    }
 }

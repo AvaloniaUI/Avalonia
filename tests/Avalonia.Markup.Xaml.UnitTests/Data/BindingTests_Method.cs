@@ -231,10 +231,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             object _parameter;
             public object Parameter
             {
-                get
-                {
-                    return _parameter;
-                }
+                get => _parameter;
                 set
                 {
                     if (_parameter == value)

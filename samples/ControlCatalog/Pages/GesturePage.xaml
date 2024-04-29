@@ -4,114 +4,167 @@
              d:DesignHeight="800"
              d:DesignWidth="400"
              x:Class="ControlCatalog.Pages.GesturePage">
-  <StackPanel Orientation="Vertical"
-              Spacing="4">
-    <TextBlock FontWeight="Bold"
-               FontSize="18"
-               Margin="5">Pull Gexture (Touch / Pen)</TextBlock>
-    <TextBlock Margin="5">Pull from colored rectangles</TextBlock>
-    <Border>
-      <DockPanel HorizontalAlignment="Stretch"
-                 ClipToBounds="True"
+  <TabControl>
+    <TabItem>
+      <TabItem.Header>
+        <TextBlock FontWeight="Bold"
+                   FontSize="18"
+                   Margin="5">Pull Gexture (Touch / Pen)</TextBlock>
+
+      </TabItem.Header>
+      <StackPanel>
+        <TextBlock Margin="5">Pull from colored rectangles</TextBlock>
+        <Border>
+          <DockPanel HorizontalAlignment="Stretch"
+                     ClipToBounds="True"
+                     Margin="5"
+                     Height="200">
+            <Border DockPanel.Dock="Top"
+                    Margin="2"
+                    Name="TopPullZone"
+                    Background="Transparent"
+                    BorderBrush="Red"
+                    HorizontalAlignment="Stretch"
+                    Height="50"
+                    BorderThickness="1">
+              <Border.GestureRecognizers>
+                <PullGestureRecognizer PullDirection="TopToBottom"/>
+              </Border.GestureRecognizers>
+              <Border Width="10"
+                      Height="10"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      CornerRadius="5"
+                      Name="TopBall"
+                      Background="Green"/>
+            </Border>
+            <Border DockPanel.Dock="Bottom"
+                    BorderBrush="Green"
+                    Margin="2"
+                    Background="Transparent"
+                    Name="BottomPullZone"
+                    HorizontalAlignment="Stretch"
+                    Height="50"
+                    BorderThickness="1">
+              <Border.GestureRecognizers>
+                <PullGestureRecognizer PullDirection="BottomToTop"/>
+              </Border.GestureRecognizers>
+              <Border Width="10"
+                      Name="BottomBall"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Height="10"
+                      CornerRadius="5"
+                      Background="Green"/>
+            </Border>
+            <Border DockPanel.Dock="Right"
+                    Margin="2"
+                    Background="Transparent"
+                    Name="RightPullZone"
+                    BorderBrush="Blue"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Width="50"
+                    BorderThickness="1">
+              <Border.GestureRecognizers>
+                <PullGestureRecognizer PullDirection="RightToLeft"/>
+              </Border.GestureRecognizers>
+              <Border Width="10"
+                      Height="10"
+                      Name="RightBall"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      CornerRadius="5"
+                      Background="Green"/>
+
+            </Border>
+            <Border DockPanel.Dock="Left"
+                    Margin="2"
+                    Background="Transparent"
+                    Name="LeftPullZone"
+                    BorderBrush="Orange"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch"
+                    Width="50"
+                    BorderThickness="1">
+              <Border.GestureRecognizers>
+                <PullGestureRecognizer PullDirection="LeftToRight"/>
+              </Border.GestureRecognizers>
+              <Border Width="10"
+                      Height="10"
+                      Name="LeftBall"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      CornerRadius="5"
+                      Background="Green"/>
+
+            </Border>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <TextBlock FontWeight="Bold"
+                   FontSize="18"
+                   Margin="5">Pinch/Zoom Gexture (Multi Touch)</TextBlock>
+      </TabItem.Header>
+      <StackPanel>
+        <Border ClipToBounds="True">
+          <Image Stretch="UniformToFill"
                  Margin="5"
-                 Height="200">
-        <Border DockPanel.Dock="Top"
-                Margin="2"
-                Name="TopPullZone"
-                Background="Transparent"
-                BorderBrush="Red"
-                HorizontalAlignment="Stretch"
-                Height="50"
-                BorderThickness="1">
-          <Border.GestureRecognizers>
-            <PullGestureRecognizer PullDirection="TopToBottom"/>
-          </Border.GestureRecognizers>
-          <Border Width="10"
-                  Height="10"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  CornerRadius="5"
-                  Name="TopBall"
-                  Background="Green"/>
+                 Name="PinchImage"
+                 Source="/Assets/delicate-arch-896885_640.jpg">
+            <Image.GestureRecognizers>
+              <PinchGestureRecognizer/>
+              <ScrollGestureRecognizer CanHorizontallyScroll="True" CanVerticallyScroll="True"/>
+            </Image.GestureRecognizers>
+          </Image>
         </Border>
-        <Border DockPanel.Dock="Bottom"
-                BorderBrush="Green"
-                Margin="2"
-                Background="Transparent"
-                Name="BottomPullZone"
-                HorizontalAlignment="Stretch"
-                Height="50"
-                BorderThickness="1">
-          <Border.GestureRecognizers>
-            <PullGestureRecognizer PullDirection="BottomToTop"/>
-          </Border.GestureRecognizers>
-          <Border Width="10"
-                  Name="BottomBall"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  Height="10"
-                  CornerRadius="5"
-                  Background="Green"/>
-        </Border>
-        <Border DockPanel.Dock="Right"
-                Margin="2"
-                Background="Transparent"
-                Name="RightPullZone"
-                BorderBrush="Blue"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Stretch"
-                Width="50"
-                BorderThickness="1">
-          <Border.GestureRecognizers>
-            <PullGestureRecognizer PullDirection="RightToLeft"/>
-          </Border.GestureRecognizers>
-          <Border Width="10"
-                  Height="10"
-                  Name="RightBall"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  CornerRadius="5"
-                  Background="Green"/>
+        <Button HorizontalAlignment="Center" Name="ResetButton">Reset</Button>
+      </StackPanel>
+    </TabItem>
 
-        </Border>
-        <Border DockPanel.Dock="Left"
-                Margin="2"
-                Background="Transparent"
-                Name="LeftPullZone"
-                BorderBrush="Orange"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Stretch"
-                Width="50"
-                BorderThickness="1">
-          <Border.GestureRecognizers>
-            <PullGestureRecognizer PullDirection="LeftToRight"/>
-          </Border.GestureRecognizers>
-          <Border Width="10"
-                  Height="10"
-                  Name="LeftBall"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  CornerRadius="5"
-                  Background="Green"/>
+    <TabItem>
+      <TabItem.Header>
+        <TextBlock FontWeight="Bold"
+                   FontSize="18"
+                   Margin="5">Pinch/Rotation Gexture (Multi Touch)</TextBlock>
+      </TabItem.Header>
+      <DockPanel>
+        <Slider Minimum="0"
+                Maximum="360"
+                DockPanel.Dock="Bottom"
+                x:Name="AngleSlider"
+                />
+        <Panel x:Name="RotationGesture">
+          <Panel.GestureRecognizers>
+            <PinchGestureRecognizer/>
+          </Panel.GestureRecognizers>
+          <Border BorderThickness="1.5" BorderBrush="LawnGreen"/>
+          <Panel HorizontalAlignment="Center"
+                 Width="100"
+                 Height="100">
+            <Panel.RenderTransform>
+              <RotateTransform Angle="{Binding #AngleSlider.Value}"/>
+            </Panel.RenderTransform>
+            <Rectangle Fill="SkyBlue"/>
+            <Rectangle HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Fill="Yellow"
+                       Width="5"
+                       Height="35"/>
+          </Panel>
 
-        </Border>
+          <TextBlock Text="{Binding #AngleSlider.Value, StringFormat=0°}"
+               VerticalAlignment="Center"
+               HorizontalAlignment="Center"
+               FontWeight="DemiBold"
+               FontSize="20"
+               />
+        </Panel>
       </DockPanel>
-    </Border>
-
-    <TextBlock FontWeight="Bold"
-               FontSize="18"
-               Margin="5">Pinch/Zoom Gexture (Multi Touch)</TextBlock>
-    <Border ClipToBounds="True">
-      <Image Stretch="UniformToFill"
-             Margin="5"
-             Name="PinchImage"
-             Source="/Assets/delicate-arch-896885_640.jpg">
-        <Image.GestureRecognizers>
-          <PinchGestureRecognizer/>
-          <ScrollGestureRecognizer CanHorizontallyScroll="True" CanVerticallyScroll="True"/>
-        </Image.GestureRecognizers>
-      </Image>
-    </Border>
-    <Button HorizontalAlignment="Center" Name="ResetButton">Reset</Button>
-  </StackPanel>
+    </TabItem>
+  </TabControl>
 </UserControl>

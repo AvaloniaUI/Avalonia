@@ -38,7 +38,9 @@ internal class EffectAnimator : Animator<IEffect?>
                 createdAnimator.Add(new AnimatorKeyFrame(typeof(TAnimator), () => new TAnimator(), keyFrame.Cue,
                     keyFrame.KeySpline)
                 {
-                    Value = keyFrame.Value
+                    Value = keyFrame.Value,
+                    FillBefore = keyFrame.FillBefore,
+                    FillAfter = keyFrame.FillAfter
                 });
             }
             else

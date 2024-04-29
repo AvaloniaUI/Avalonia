@@ -40,8 +40,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public object? Header
         {
-            get { return GetValue(HeaderProperty); }
-            set { SetValue(HeaderProperty, value); }
+            get => GetValue(HeaderProperty);
+            set => SetValue(HeaderProperty, value);
         }
 
         /// <summary>

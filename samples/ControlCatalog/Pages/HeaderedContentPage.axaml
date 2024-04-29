@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.HeaderedContentPage">
+  <WrapPanel ItemWidth="400">
+          <HeaderedContentControl Header="This is the text header!"
+                                  FontSize="16"
+                                  FontWeight="Bold"
+                                  BorderBrush="Gray"
+                                  BorderThickness="3"
+                                  CornerRadius="3">
+            <TextBlock Text="Some content"/>
+          </HeaderedContentControl>
+          <HeaderedContentControl Header="This is the image header!">
+            <Image Source="/Assets/delicate-arch-896885_640.jpg"/>
+          </HeaderedContentControl>
+          <HeaderedContentControl>
+           <HeaderedContentControl.Header>
+             <Image Source="/Assets/delicate-arch-896885_640.jpg"/>
+           </HeaderedContentControl.Header>
+            <TextBlock Text="This is the content. But the header can also be non textual"/>
+          </HeaderedContentControl>
+        </WrapPanel>
+</UserControl>
+

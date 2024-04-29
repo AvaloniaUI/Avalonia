@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -128,6 +129,36 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TransitionCompleted_Should_Be_Raised_When_Content_Changes()
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var (target, transition) = CreateTarget("foo");
+
+            var completedTransitions = new List<TransitionCompletedEventArgs>();
+            target.TransitionCompleted += (_, e) => completedTransitions.Add(e);
+
+            target.Content = "bar";
+            Layout(target);
+            VerifyCompletedTransitions();
+
+            transition.Complete();
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions(new TransitionCompletedEventArgs("foo", "bar", true));
+
+            target.Content = "foo";
+            Layout(target);
+            VerifyCompletedTransitions(new TransitionCompletedEventArgs("foo", "bar", true));
+
+            transition.Complete();
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions(new("foo", "bar", true), new("bar", "foo", true));
+
+            void VerifyCompletedTransitions(params TransitionCompletedEventArgs[] expected)
+                => Assert.Equal(expected, completedTransitions, TransitionCompletedEventArgsComparer.Instance);
+        }
+
+        [Fact]
         public void Transition_Should_Be_Canceled_If_Content_Changes_While_Running()
         {
             using var app = Start();
@@ -184,6 +215,61 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TransitionCompleted_Should_Be_Raised_If_Content_Changes_While_Running()
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var (target, _) = CreateTarget("foo");
+
+            var completedTransitions = new List<TransitionCompletedEventArgs>();
+            target.TransitionCompleted += (_, e) => completedTransitions.Add(e);
+
+            target.Content = "bar";
+            Layout(target);
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions();
+
+            target.Content = "baz";
+            Layout(target);
+            sync.ExecutePostedCallbacks();
+            VerifyCompletedTransitions(new TransitionCompletedEventArgs("foo", "bar", false));
+
+            void VerifyCompletedTransitions(params TransitionCompletedEventArgs[] expected)
+                => Assert.Equal(expected, completedTransitions, TransitionCompletedEventArgsComparer.Instance);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Transition_Should_Be_Reversed_If_Property_Is_Set(bool reversed)
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var (target, transition) = CreateTarget("foo");
+            var presenter2 = GetContentPresenters2(target);
+
+            target.IsTransitionReversed = reversed;
+
+            target.Content = "bar";
+
+            var startedRaised = 0;
+
+            transition.Started += (from, to, forward) =>
+            {
+                Assert.Equal(reversed, !forward);
+
+                ++startedRaised;
+            };
+
+            Layout(target);
+            sync.ExecutePostedCallbacks();
+
+            Assert.Equal(1, startedRaised);
+            Assert.Equal("foo", target.Presenter!.Content);
+            Assert.Equal("bar", presenter2.Content);
+        }
+
+        [Fact]
         public void Logical_Children_Should_Not_Be_Duplicated()
         {
             using var app = Start();
@@ -209,6 +295,28 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, target.LogicalChildren.Count);
             Assert.Equal(target.LogicalChildren[0], childControl);
+        }
+
+        [Fact]
+        public void Old_Content_Should_Be_Null_When_New_Content_Is_Old_one()
+        {
+            using var app = Start();
+            var (target, transition) = CreateTarget("");
+            var presenter2 = GetContentPresenters2(target);
+            target.PageTransition = null;
+
+            var childControl = new Control();
+            target.Presenter!.Content = childControl;
+
+            const string fakePage1 = "fakePage1";
+            const string fakePage2 = "fakePage2";
+
+            target.Presenter!.Content = fakePage1;
+            target.Presenter!.Content = fakePage2;
+            target.Presenter!.Content = fakePage1;
+
+            Assert.Equal(fakePage1, target.Presenter!.Content);
+            Assert.Equal(null, presenter2.Content);
         }
 
         private static IDisposable Start()
@@ -296,6 +404,25 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public void Complete() => _tcs!.TrySetResult();
+        }
+
+        private sealed class TransitionCompletedEventArgsComparer : IEqualityComparer<TransitionCompletedEventArgs>
+        {
+            public static TransitionCompletedEventArgsComparer Instance { get; } = new();
+
+            public bool Equals(TransitionCompletedEventArgs? x, TransitionCompletedEventArgs? y)
+            {
+                if (ReferenceEquals(x, y))
+                    return true;
+
+                if (x is null || y is null)
+                    return false;
+
+                return x.From == y.From && x.To == y.To && x.HasRunToCompletion == y.HasRunToCompletion;
+            }
+
+            public int GetHashCode(TransitionCompletedEventArgs obj)
+                => HashCode.Combine(obj.From, obj.To, obj.HasRunToCompletion);
         }
     }
 }

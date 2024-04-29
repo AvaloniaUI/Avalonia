@@ -4,8 +4,8 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
-using Avalonia.Reactive;
-using Avalonia.VisualTree;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -16,7 +16,6 @@ namespace Avalonia.Controls
     public class TabItem : HeaderedContentControl, ISelectable
     {
         private Dock? _tabStripPlacement;
-        private IDisposable? _ownerSubscriptions;
 
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
@@ -40,6 +39,7 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabItem>(AutomationControlType.TabItem);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<TabItem>((tabItem, args) => tabItem.TabItemActivated(args));
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         public Dock? TabStripPlacement
         {
             get => _tabStripPlacement;
-            private set => SetAndRaise(TabStripPlacementProperty, ref _tabStripPlacement, value);
+            internal set => SetAndRaise(TabStripPlacementProperty, ref _tabStripPlacement, value);
         }
 
         /// <summary>
@@ -56,28 +56,15 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            _ownerSubscriptions?.Dispose();
-            _ownerSubscriptions = null;
-
-            if (this.FindAncestorOfType<TabControl>() is { } owner && owner.IndexFromContainer(this) != -1)
-            {
-                SubscribeToOwnerProperties(owner);
-            }
-        }
-
+        [Obsolete("Owner manages its children properties by itself")]
         protected void SubscribeToOwnerProperties(AvaloniaObject owner)
         {
-            _ownerSubscriptions = owner.GetObservable(TabControl.TabStripPlacementProperty).Subscribe(v => TabStripPlacement = v);
         }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
@@ -88,14 +75,14 @@ namespace Avalonia.Controls
                 {
                     if (Header != headered.Header)
                     {
-                        Header = headered.Header;
+                        SetCurrentValue(HeaderProperty, headered.Header);
                     }
                 }
                 else
                 {
                     if (!(obj.NewValue is Control))
                     {
-                        Header = obj.NewValue;
+                        SetCurrentValue(HeaderProperty, obj.NewValue);
                     }
                 }
             }
@@ -103,9 +90,15 @@ namespace Avalonia.Controls
             {
                 if (Header == obj.OldValue)
                 {
-                    Header = obj.NewValue;
+                    SetCurrentValue(HeaderProperty, obj.NewValue);
                 }
             }
+        }
+
+        private void TabItemActivated(RoutedEventArgs args)
+        {
+            SetCurrentValue(IsSelectedProperty, true);
+            args.Handled = true;
         }
     }
 }

@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Rule Name="Avalonia" DisplayName="Avalonia" Order="70" PageTemplate="generic" xmlns="http://schemas.microsoft.com/build/2009/properties">
+
+  <Rule.Categories>
+    <Category Name="Compile" DisplayName="Compiling" />
+    <Category Name="Debug" DisplayName="Debug" />
+    <Category Name="NameGenerator" DisplayName="Name Generator" />
+  </Rule.Categories>
+
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" HasConfigurationCondition="false" Label="Avalonia" />
+  </Rule.DataSource>
+
+  <!-- Compile -->
+  
+  <BoolProperty Name="EnableAvaloniaXamlCompilation"
+                DisplayName="XAML Compiling"
+                Description="Enable/Disable XAML Compiling"
+                Category="Compile" />
+
+  <BoolProperty Name="AvaloniaUseCompiledBindingsByDefault"
+              DisplayName="Use CompiledBindings"
+              Description="Use compiled bindings by default"
+              HelpUrl="https://docs.avaloniaui.net/docs/next/basics/data/data-binding/compiled-bindings"
+              Category="Compile" />
+
+  <!-- Debug -->
+
+  <BoolProperty Name="AvaloniaXamlIlDebuggerLaunch"
+                DisplayName="Debug XAML Compiler"
+                Description="Allow debug XAML compilation"
+                Category="Debug" />
+
+  <BoolProperty Name="AvaloniaXamlVerboseExceptions"
+                DisplayName="Report verbose internal exceptions with stack traces"
+                Description="Also includes inner exceptions"
+                Category="Debug" />
+  
+  <EnumProperty Name="AvaloniaXamlReportImportance"
+                DisplayName="XAML Report Importance"
+                Description="Provides levels of importance for XAML Compiler messages"
+                Category="Debug">
+    <EnumValue Name="Low" DisplayName="Low" Description="Set XAML Compiler report message to Low importance" />
+    <EnumValue Name="Normal" DisplayName="Normal" Description="Set XAML Compiler report message to Normal importance" />
+    <EnumValue Name="High" DisplayName="High" Description="Set XAML Compiler report message to High importance" />
+  </EnumProperty>
+
+  <!-- NameGenerator -->
+
+  <BoolProperty Name="AvaloniaNameGeneratorIsEnabled"
+              DisplayName="Use Name Generator"
+              Description="Enable/Disable Avalonia Name Source Generator"
+              HelpUrl="https://github.com/AvaloniaUI/Avalonia/blob/master/src/tools/Avalonia.Generators/README.md#advanced-usage"
+              Category="NameGenerator" />
+
+  <EnumProperty Name="AvaloniaNameGeneratorBehavior"
+                DisplayName="Generator Behavior"
+                Description="Customize behavior of name generator"
+                Category="NameGenerator">
+    <EnumValue Name="InitializeComponent" DisplayName="InitializeComponent" Description="Generates get-only properties to access controls by name and an InitializeComponent method to set them automatically. This is closest to other XAML UI framework functionality" />
+    <EnumValue Name="OnlyProperties" DisplayName="OnlyProperties" Description="Generates get-only properties to access controls by name but does not generate an InitializeComponent method to set them. This allows custom InitializeComponent method implementations" />
+    <EnumProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
+      </NameValuePair>
+    </EnumProperty.Metadata>
+  </EnumProperty>
+
+  <BoolProperty Name="AvaloniaNameGeneratorAttachDevTools"
+              DisplayName="Attach Dev Tools"
+              Description="Allowed to automatic attach DevTools in Window InitializeComponent method."
+              Category="NameGenerator">
+    <BoolProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorBehavior" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorBehavior" "InitializeComponent")</NameValuePair.Value>
+      </NameValuePair>
+    </BoolProperty.Metadata>
+  </BoolProperty>
+
+  <EnumProperty Name="AvaloniaNameGeneratorDefaultFieldModifier"
+              DisplayName="Default Class Field/Property Modifier"
+              Description="Defines the access modifiers used for generated members"
+              Category="NameGenerator">
+    <EnumValue Name="Internal" DisplayName="Internal" Description="The type or member can be accessed by any code in the same assembly, but not from another assembly. In other words, internal types or members can be accessed from code that is part of the same compilation" />
+    <EnumValue Name="Public" DisplayName="Public" Description="The type or member can be accessed by any other code in the same assembly or another assembly that references it. The accessibility level of public members of a type is controlled by the accessibility level of the type itself" />
+    <EnumValue Name="Protected" DisplayName="Protected" Description="The type or member can be accessed only by code in the same class, or in a class that is derived from that class" />
+    <EnumValue Name="Private" DisplayName="Private" Description="TThe type or member can be accessed by types derived from the class that are declared within its containing assembly" />
+    <EnumProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
+      </NameValuePair>
+    </EnumProperty.Metadata>
+  </EnumProperty>
+
+  <StringProperty Name="AvaloniaNameGeneratorFilterByPath"
+                  DisplayName="Filter By Path"
+                  Description="The generator will process only XAML files with paths matching the specified glob pattern(s). Example: */Views/*View.xaml, *View.axaml;*Control.axaml"
+                  Category="NameGenerator">
+    <StringProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
+      </NameValuePair>
+    </StringProperty.Metadata>
+  </StringProperty>
+
+  <StringProperty Name="AvaloniaNameGeneratorFilterByNamespace"
+                DisplayName="Filter By Namespace"
+                Description="The generator will process only XAML files with base classes' namespaces matching the specified glob pattern(s).
+Example: MyApp.Presentation.*, MyApp.Presentation.Views;MyApp.Presentation.Controls"
+                Category="NameGenerator">
+    <StringProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
+      </NameValuePair>
+    </StringProperty.Metadata>
+  </StringProperty>
+
+  <EnumProperty Name="AvaloniaNameGeneratorViewFileNamingStrategy"
+              DisplayName="File Naming Strategy"
+              Description="Determines how the automatically generated view files should be named"
+              Category="NameGenerator">
+    <EnumValue Name="ClassName" DisplayName="ClassName" Description="Only Class name" />
+    <EnumValue Name="NamespaceAndClassName" DisplayName="NamespaceAndClassName" Description="Namespace And ClassName" />
+    <EnumProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
+      <NameValuePair Name="VisibilityCondition">
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
+      </NameValuePair>
+    </EnumProperty.Metadata>
+  </EnumProperty>
+
+</Rule>

@@ -48,7 +48,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The created text style run.
         /// </returns>
-        private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySpan<char> text, int firstTextSourceIndex,
+        internal static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySpan<char> text, int firstTextSourceIndex,
             TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
             if (textModifier == null || textModifier.Count == 0)

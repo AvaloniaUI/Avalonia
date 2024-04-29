@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
 using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Threading;
@@ -23,22 +22,24 @@ namespace Avalonia.Rendering.Composition
     {
         internal IRenderLoop Loop { get; }
         internal bool UseUiThreadForSynchronousCommits { get; }
-        private ServerCompositor _server;
-        private Batch? _nextCommit;
-        private BatchStreamObjectPool<object?> _batchObjectPool;
-        private BatchStreamMemoryPool _batchMemoryPool;
-        private Queue<ICompositorSerializable> _objectSerializationQueue = new();
-        private HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
+        private readonly ServerCompositor _server;
+        private CompositionBatch? _nextCommit;
+        private readonly BatchStreamObjectPool<object?> _batchObjectPool;
+        private readonly BatchStreamMemoryPool _batchMemoryPool;
+        private readonly Queue<ICompositorSerializable> _objectSerializationQueue = new();
+        private readonly HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
         private Queue<Action> _invokeBeforeCommitWrite = new(), _invokeBeforeCommitRead = new();
-        private HashSet<IDisposable> _disposeOnNextBatch = new();
+        private readonly HashSet<IDisposable> _disposeOnNextBatch = new();
         internal ServerCompositor Server => _server;
-        private Batch? _pendingBatch;
+        private CompositionBatch? _pendingBatch;
         private readonly object _pendingBatchLock = new();
-        private List<Action> _pendingServerCompositorJobs = new();
+        private readonly List<Action> _pendingServerCompositorJobs = new();
         private DiagnosticTextRenderer? _diagnosticTextRenderer;
-        private Action _triggerCommitRequested;
+        private readonly Action _triggerCommitRequested;
 
         internal IEasing DefaultEasing { get; }
+
+        internal Dispatcher Dispatcher { get; }
 
         private DiagnosticTextRenderer? DiagnosticTextRenderer
         {
@@ -69,46 +70,56 @@ namespace Avalonia.Rendering.Composition
         }
 
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
-            : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false)
+            : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false, Dispatcher.UIThread)
         {
         }
 
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
-            ICompositorScheduler scheduler, bool reclaimBuffersImmediately)
+            ICompositorScheduler scheduler, bool reclaimBuffersImmediately,
+            Dispatcher dispatcher, CompositionOptions? options = null)
         {
+            options ??= AvaloniaLocator.Current.GetService<CompositionOptions>() ?? new();
             Loop = loop;
             UseUiThreadForSynchronousCommits = useUiThreadForSynchronousCommits;
+            Dispatcher = dispatcher;
             _batchMemoryPool = new(reclaimBuffersImmediately);
             _batchObjectPool = new(reclaimBuffersImmediately);
-            _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
+            _server = new ServerCompositor(loop, gpu, options, _batchObjectPool, _batchMemoryPool);
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
-            DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
+            DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
         }
 
         /// <summary>
         /// Requests pending changes in the composition objects to be serialized and sent to the render thread
         /// </summary>
-        /// <returns>A task that completes when sent changes are applied and rendered on the render thread</returns>
-        public Task RequestCommitAsync()
+        /// <returns>A task that completes when sent changes are applied on the render thread</returns>
+        public Task RequestCommitAsync() => RequestCompositionBatchCommitAsync().Processed;
+
+        /// <summary>
+        /// Requests pending changes in the composition objects to be serialized and sent to the render thread
+        /// </summary>
+        /// <returns>A CompositionBatch object that provides batch lifetime information</returns>
+        public CompositionBatch RequestCompositionBatchCommitAsync()
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             if (_nextCommit == null)
             {
                 _nextCommit = new ();
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
-                        _ => Dispatcher.UIThread.Post(_triggerCommitRequested, DispatcherPriority.Send));
+                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
+                        TaskContinuationOptions.ExecuteSynchronously);
                 else
                     _triggerCommitRequested();
             }
 
-            return _nextCommit.Processed;
+            return _nextCommit;
         }
 
-        internal Batch Commit()
+        internal CompositionBatch Commit()
         {
             try
             {
@@ -122,9 +133,9 @@ namespace Avalonia.Rendering.Composition
             }
         }
         
-        Batch CommitCore()
+        CompositionBatch CommitCore()
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             using var noPump = NonPumpingLockHelper.Use();
             
             var commit = _nextCommit ??= new();
@@ -191,7 +202,7 @@ namespace Avalonia.Rendering.Composition
 
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             if(_objectSerializationHashSet.Add(compositionObject))
                 _objectSerializationQueue.Enqueue(compositionObject);
             RequestCommitAsync();
@@ -211,14 +222,14 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         public void RequestCompositionUpdate(Action action)
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             _invokeBeforeCommitWrite.Enqueue(action);
             RequestCommitAsync();
         }
 
         internal void PostServerJob(Action job)
         {
-            Dispatcher.UIThread.VerifyAccess();
+            Dispatcher.VerifyAccess();
             _pendingServerCompositorJobs.Add(job);
             RequestCommitAsync();
         }
@@ -247,33 +258,56 @@ namespace Avalonia.Rendering.Composition
             return tcs.Task;
         }
 
+        internal ValueTask<IReadOnlyDictionary<Type, object>> GetRenderInterfacePublicFeatures()
+        {
+            if (Server.AT_TryGetCachedRenderInterfaceFeatures() is { } rv)
+                return new(rv);
+            if (!Loop.RunsInBackground)
+                return new(Server.RT_GetRenderInterfaceFeatures());
+            return new(InvokeServerJobAsync(Server.RT_GetRenderInterfaceFeatures));
+        }
+
         /// <summary>
         /// Attempts to query for a feature from the platform render interface
         /// </summary>
-        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType) =>
-            new(InvokeServerJobAsync(() =>
-            {
-                using (Server.RenderInterface.EnsureCurrent())
-                {
-                    return Server.RenderInterface.Value.TryGetFeature(featureType);
-                }
-            }));
+        public async ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
+        {
+            (await GetRenderInterfacePublicFeatures().ConfigureAwait(false)).TryGetValue(featureType, out var rv);
+            return rv;
+        }
+        
+        /// <summary>
+        /// Attempts to query for GPU interop feature from the platform render interface
+        /// </summary>
+        /// <returns></returns>
+        public async ValueTask<ICompositionGpuInterop?> TryGetCompositionGpuInterop()
+        {
+            var externalObjects =
+                (IExternalObjectsRenderInterfaceContextFeature?)await TryGetRenderInterfaceFeature(
+                    typeof(IExternalObjectsRenderInterfaceContextFeature)).ConfigureAwait(false);
 
-        public ValueTask<ICompositionGpuInterop?> TryGetCompositionGpuInterop() =>
-            new(InvokeServerJobAsync<ICompositionGpuInterop?>(() =>
-            {
-                using (Server.RenderInterface.EnsureCurrent())
-                {
-                    var feature = Server.RenderInterface.Value
-                        .TryGetFeature<IExternalObjectsRenderInterfaceContextFeature>();
-                    if (feature == null)
-                        return null;
-                    return new CompositionInterop(this, feature);
-                }
-            }));
+            if (externalObjects == null)
+                return null;
+            return new CompositionInterop(this, externalObjects);
+        }
 
         internal bool UnitTestIsRegisteredForSerialization(ICompositorSerializable serializable) =>
             _objectSerializationHashSet.Contains(serializable);
+
+        /// <summary>
+        /// Attempts to get the Compositor instance that will be used by default for new TopLevels
+        /// created by the current platform backend.
+        ///
+        /// This won't work for every single platform backend and backend settings, e. g. with web we'll need to have
+        /// separate Compositor instances per output HTML canvas since they don't share OpenGL state.
+        /// Another case where default compositor won't be available is our planned multithreaded rendering mode
+        /// where each window would get its own Compositor instance
+        ///
+        /// This method is still useful for obtaining GPU device LUID to speed up initialization, but you should
+        /// always check if default Compositor matches one used by our control once it gets attached to a TopLevel
+        /// </summary>
+        /// <returns></returns>
+        public static Compositor? TryGetDefaultCompositor() => AvaloniaLocator.Current.GetService<Compositor>();
     }
     
     internal interface ICompositorScheduler

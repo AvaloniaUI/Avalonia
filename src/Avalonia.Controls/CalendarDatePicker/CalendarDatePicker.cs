@@ -432,13 +432,14 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if ((key == Key.Space || key == Key.Enter) && IsEffectivelyEnabled) // Key.GamepadA is not currently supported
+            if ((key == Key.Space || key == Key.Enter) && IsEffectivelyEnabled)
             {
                 // Since the TextBox is used for direct date entry,
                 // it isn't supported to open the popup/flyout using these keys.
                 // Other controls open the popup/flyout here.
             }
-            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
+            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 // It is only possible to open the popup using these keys.
                 // This is important as the down key is handled by calendar.
@@ -917,6 +918,14 @@ namespace Avalonia.Controls
         private static bool IsValidDateFormatString(string formatString)
         {
             return !string.IsNullOrWhiteSpace(formatString);
+        }
+
+        /// <summary>
+        /// Clear <see cref="SelectedDate"/>.
+        /// </summary>
+        public void Clear()
+        {
+            SetCurrentValue(SelectedDateProperty, null);
         }
     }
 }

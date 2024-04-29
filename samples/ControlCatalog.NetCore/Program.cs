@@ -9,7 +9,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
+using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using ControlCatalog.Pages;
@@ -51,8 +53,11 @@ namespace ControlCatalog.NetCore
             }
             if (s_useFramebuffer)
             {
-                 SilenceConsole(); 
-                 return builder.StartLinuxFbDev(args, scaling: GetScaling());
+                 SilenceConsole();
+                 return builder.StartLinuxFbDev(args, new FbDevOutputOptions()
+                 {
+                     Scaling = GetScaling()
+                 });
             }
             else if (args.Contains("--vnc"))
             {
@@ -138,6 +143,10 @@ namespace ControlCatalog.NetCore
                     {
                         UseDebug = true
                     }
+                })
+                .With(new CompositionOptions()
+                {
+                    UseRegionDirtyRectClipping = true
                 })
                 .UseSkia()
                 .WithInterFont()

@@ -25,7 +25,7 @@ internal class AvaloniaXamlIlSetterTargetTypeMetadataTransformer : IXamlAstTrans
 
             if (type is null)
             {
-                throw new XamlParseException("Unable to resolve SetterTargetType type", typeDirective);
+                throw new XamlTransformException("Unable to resolve SetterTargetType type", typeDirective);
             }
             return new AvaloniaXamlIlTargetTypeMetadataNode(on, type, AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
         }

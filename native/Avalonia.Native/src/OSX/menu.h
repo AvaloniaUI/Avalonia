@@ -43,13 +43,17 @@ public:
     virtual HRESULT SetSubMenu (IAvnMenu* menu) override;
     
     virtual HRESULT SetTitle (char* utf8String) override;
-    
+
+    virtual HRESULT SetToolTip (char* utf8String) override;
+
     virtual HRESULT SetGesture (AvnKey key, AvnInputModifiers modifiers) override;
     
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
     
     virtual HRESULT SetIsChecked (bool isChecked) override;
-    
+
+    virtual HRESULT SetIsVisible (bool isVisible) override;
+        
     virtual HRESULT SetToggleType (AvnMenuItemToggleType toggleType) override;
     
     virtual HRESULT SetIcon (void* data, size_t length) override;

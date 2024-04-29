@@ -594,6 +594,55 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Closing_Should_Restore_Focus()
+        {
+            using (Application())
+            {
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
+                popupImpl.Setup(x => x.Hide()).Verifiable();
+
+                var item = new MenuItem();
+                var sut = new ContextMenu
+                {
+                    Items = { item }
+                };
+
+                var button = new Button();
+                var target = new Panel
+                {
+                    Children =
+                    {
+                        button,
+                    },
+                    ContextMenu = sut
+                };
+
+                var window = PreparedWindow(target);
+                var focusManager = Assert.IsType<FocusManager>(window.FocusManager);
+
+                // Show the window and focus the button.
+                window.Show();
+                button.Focus();
+                Assert.Same(button, focusManager.GetFocusedElement());
+
+                // Click to show the context menu.
+                _mouse.Click(target, MouseButton.Right);
+                Assert.True(sut.IsOpen);
+
+                // Hover over the context menu item: this should focus it.
+                _mouse.Enter(item);
+                Assert.Same(item, focusManager.GetFocusedElement());
+
+                // Click the menu item to close the menu.
+                _mouse.Click(item);
+                Assert.False(sut.IsOpen);
+
+                // Focus should be restored to the button.
+                Assert.Same(button, focusManager.GetFocusedElement());
+            }
+        }
+
         private static Window PreparedWindow(object content = null)
         {
             
@@ -623,6 +672,8 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
+                                        focusManager: new FocusManager(),
+                                        keyboardDevice: () => new KeyboardDevice(),
                                         inputManager: new InputManager(),
                                         windowImpl: windowImpl.Object,
                                         windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));

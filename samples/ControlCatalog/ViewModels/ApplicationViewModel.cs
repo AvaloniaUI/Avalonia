@@ -16,11 +16,11 @@ namespace ControlCatalog.ViewModels
                 }
             });
 
-            ToggleCommand = MiniCommand.Create(() => { });
+            RestoreDefault = MiniCommand.Create(() => { });
         }
 
         public MiniCommand ExitCommand { get; }
 
-        public MiniCommand ToggleCommand { get; }
+        public MiniCommand RestoreDefault { get; }
     }
 }

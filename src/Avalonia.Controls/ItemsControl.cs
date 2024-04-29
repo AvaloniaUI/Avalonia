@@ -299,13 +299,38 @@ namespace Avalonia.Controls
         public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
 
         /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        public void ScrollIntoView(int index) => Presenter?.ScrollIntoView(index);
+
+        /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
+
+        /// <summary>
         /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <returns>
         /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
         /// </returns>
-        public static ItemsControl? ItemsControlFromItemContaner(Control container)
+        [Obsolete("Typo, use ItemsControlFromItemContainer instead")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
+        public static ItemsControl? ItemsControlFromItemContaner(Control container) =>
+            ItemsControlFromItemContainer(container);
+
+        /// <summary>
+        /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>
+        /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
+        /// </returns>
+        public static ItemsControl? ItemsControlFromItemContainer(Control container)
         {
             var c = container.Parent as Control;
 
@@ -513,6 +538,17 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
+        }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            // If the focus is coming from a child control, set the tab once active element to
+            // the focused control. This ensures that tabbing back into the control will focus
+            // the last focused control when TabNavigationMode == Once.
+            if (e.Source != this && e.Source is IInputElement ie)
+                KeyboardNavigation.SetTabOnceActiveElement(this, ie);
         }
 
         /// <summary>

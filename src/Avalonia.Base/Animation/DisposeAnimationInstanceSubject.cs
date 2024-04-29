@@ -10,11 +10,11 @@ namespace Avalonia.Animation
     {
         private IDisposable? _lastInstance;
         private bool _lastMatch;
-        private Animator<T> _animator;
-        private Animation _animation;
-        private Animatable _control;
-        private Action? _onComplete;
-        private IClock? _clock;
+        private readonly Animator<T> _animator;
+        private readonly Animation _animation;
+        private readonly Animatable _control;
+        private readonly Action? _onComplete;
+        private readonly IClock? _clock;
 
         public DisposeAnimationInstanceSubject(Animator<T> animator, Animation animation, Animatable control, IClock? clock, Action? onComplete)
         {

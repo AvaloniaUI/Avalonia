@@ -66,7 +66,8 @@
                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                     ColumnDefinitions="*,Auto">
-                <ContentPresenter Content="{TemplateBinding Content}"
+                <ContentPresenter x:Name="PART_ContentPresenter"
+                                  Content="{TemplateBinding Content}"
                                   ContentTemplate="{TemplateBinding ContentTemplate}" />
 
                 <Path Name="SortIcon"
@@ -335,10 +336,12 @@
 
               <DataGridRowsPresenter Name="PART_RowsPresenter"
                                      Grid.Row="1"
-                                     Grid.ColumnSpan="2">
+                                     Grid.ColumnSpan="2"
+                                     ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
                 <DataGridRowsPresenter.GestureRecognizers>
                   <ScrollGestureRecognizer CanHorizontallyScroll="True"
-                                           CanVerticallyScroll="True" />
+                                           CanVerticallyScroll="True"
+                                           IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_RowsPresenter}" />
                 </DataGridRowsPresenter.GestureRecognizers>
               </DataGridRowsPresenter>
               <Rectangle Name="PART_BottomRightCorner"

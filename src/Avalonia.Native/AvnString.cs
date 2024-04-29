@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -15,7 +17,7 @@ namespace Avalonia.Native.Interop
         string[] ToStringArray();
     }
 
-    internal class AvnString : NativeCallbackBase, IAvnString
+    internal sealed class AvnString : NativeCallbackBase, IAvnString
     {
         private IntPtr _native;
         private int _nativeLen;
@@ -58,6 +60,29 @@ namespace Avalonia.Native.Interop
                 fixed (char* chars = String)
                     Encoding.UTF8.GetBytes(chars, String.Length, ptr, _nativeLen);
                 ptr[_nativeLen] = 0;
+            }
+        }
+    }
+
+    internal sealed class AvnStringArray : NativeCallbackBase, IAvnStringArray
+    {
+        private readonly IAvnString[] _items;
+
+        public AvnStringArray(IEnumerable<string> items)
+        {
+            _items = items.Select(s => s.ToAvnString()).ToArray();
+        }
+
+        public string[] ToStringArray() => _items.Select(n => n.String).ToArray();
+
+        public uint Count => (uint)_items.Length;
+        public IAvnString Get(uint index) => _items[(int)index];
+
+        protected override void Destroyed()
+        {
+            foreach (var item in _items)
+            {
+                item.Dispose();
             }
         }
     }

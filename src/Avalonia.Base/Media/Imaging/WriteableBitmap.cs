@@ -11,7 +11,7 @@ namespace Avalonia.Media.Imaging
     public class WriteableBitmap : Bitmap
     {
         // Holds a buffer with pixel format that requires transcoding
-        private BitmapMemory? _pixelFormatMemory = null;
+        private readonly BitmapMemory? _pixelFormatMemory = null;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="WriteableBitmap"/> class.
@@ -20,7 +20,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">The pixel format (optional).</param>
         /// <param name="alphaFormat">The alpha format (optional).</param>
-        /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
+        /// <returns>An instance of the <see cref="WriteableBitmap"/> class.</returns>
         public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null) 
             : this(CreatePlatformImpl(size, dpi, format, alphaFormat))
         {
@@ -74,7 +74,7 @@ namespace Avalonia.Media.Imaging
                 Dpi, _pixelFormatMemory.Format, () =>
                 {
                     using var inner = ((IWriteableBitmapImpl)PlatformImpl.Item).Lock();
-                    _pixelFormatMemory.CopyToRgba(inner.Address, inner.RowBytes);
+                    _pixelFormatMemory.CopyToRgba(Platform.AlphaFormat.Unpremul, inner.Address, inner.RowBytes);
                 });
         }
 
@@ -137,9 +137,10 @@ namespace Avalonia.Media.Imaging
             if (!PixelFormatReader.SupportsFormat(finalFormat))
                 throw new NotSupportedException($"Pixel format {finalFormat} is not supported");
 
-            var impl = ri.CreateWriteableBitmap(size, dpi, PixelFormat.Rgba8888,
-                finalFormat.HasAlpha ? finalAlphaFormat : AlphaFormat.Opaque);
-            return (impl, new BitmapMemory(finalFormat, size));
+            finalAlphaFormat = finalFormat.HasAlpha ? finalAlphaFormat : Platform.AlphaFormat.Opaque;
+
+            var impl = ri.CreateWriteableBitmap(size, dpi, PixelFormat.Rgba8888, finalAlphaFormat);
+            return (impl, new BitmapMemory(finalFormat, finalAlphaFormat, size));
         }
 
         private static IPlatformRenderInterface GetFactory()

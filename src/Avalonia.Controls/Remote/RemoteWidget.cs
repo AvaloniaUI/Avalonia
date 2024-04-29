@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Remote
             Mode = SizingMode.Local;
 
             _connection = connection;
-            _connection.OnMessage += (t, msg) => Dispatcher.UIThread.Post(() => OnMessage(msg));
+            _connection.OnMessage += (t, msg) => Dispatcher.UIThread.Post(OnMessage, msg);
             _connection.Send(new ClientSupportedPixelFormatsMessage
             {
                 Formats = new[]
@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Remote
 
         public SizingMode Mode { get; set; }
 
-        private void OnMessage(object msg)
+        private void OnMessage(object? msg)
         {
             if (msg is FrameMessage frame)
             {

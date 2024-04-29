@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Utils;
@@ -32,6 +33,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
             TextBox.SelectionBrushProperty.AddOwner<SelectableTextBlock>();
 
+        public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
+            TextBox.SelectionForegroundBrushProperty.AddOwner<SelectableTextBlock>();
+
         public static readonly DirectProperty<SelectableTextBlock, bool> CanCopyProperty =
             TextBox.CanCopyProperty.AddOwner<SelectableTextBlock>(o => o.CanCopy);
 
@@ -61,6 +65,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(SelectionBrushProperty);
             set => SetValue(SelectionBrushProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a brush that is used for the foreground of selected text
+        /// </summary>
+        public IBrush? SelectionForegroundBrush
+        {
+            get => GetValue(SelectionForegroundBrushProperty);
+            set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
         /// <summary>
@@ -140,7 +153,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Clears the current selection/>
+        /// Clears the current selection
         /// </summary>
         public void ClearSelection()
         {
@@ -165,6 +178,59 @@ namespace Avalonia.Controls
             }
 
             UpdateCommandStates();
+        }
+
+        protected override TextLayout CreateTextLayout(string? text)
+        {
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+
+            var defaultProperties = new GenericTextRunProperties(
+                typeface,
+                FontFeatures,
+                FontSize,
+                TextDecorations,
+                Foreground);
+
+            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
+                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+            {
+                LineSpacing = LineSpacing
+            };
+
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+            var start = Math.Min(selectionStart, selectionEnd);
+            var length = Math.Max(selectionStart, selectionEnd) - start;
+
+            if (length > 0 && SelectionForegroundBrush != null)
+            {
+                textStyleOverrides = new[]
+                {
+                        new ValueSpan<TextRunProperties>(start, length,
+                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
+                            foregroundBrush: SelectionForegroundBrush))
+                    };
+            }
+
+            ITextSource textSource;
+
+            if (_textRuns != null)
+            {
+                textSource = new InlinesTextSource(_textRuns, textStyleOverrides);
+            }
+            else
+            {
+                textSource = new FormattedTextSource(text ?? "", defaultProperties, textStyleOverrides);
+            }
+
+            return new TextLayout(
+                textSource,
+                paragraphProperties,
+                TextTrimming,
+                _constraint.Width,
+                _constraint.Height,
+                MaxLines);
         }
 
         protected override void RenderTextLayout(DrawingContext context, Point origin)
@@ -220,10 +286,17 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
+            if (change.Property == SelectionStartProperty || 
+                change.Property == SelectionEndProperty)
             {
                 RaisePropertyChanged(SelectedTextProperty, "", "");
                 UpdateCommandStates();
+                InvalidateTextLayout();
+            }
+
+            if(change.Property == SelectionForegroundBrushProperty)
+            {
+                InvalidateTextLayout();
             }
         }
 

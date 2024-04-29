@@ -3,6 +3,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 
@@ -23,11 +24,11 @@ namespace Avalonia.Media
         private const double MaxFontEmSize = RealInfiniteWidth / GreatestMultiplierOfEm;
 
         // properties and format runs
-        private string _text;
+        private readonly string _text;
         private readonly SpanVector _formatRuns = new SpanVector(null);
         private SpanPosition _latestPosition;
 
-        private GenericTextParagraphProperties _defaultParaProps;
+        private readonly GenericTextParagraphProperties _defaultParaProps;
 
         private double _maxTextWidth = double.PositiveInfinity;
         private double[]? _maxTextWidths;
@@ -183,6 +184,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
+                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     foregroundBrush,
@@ -197,6 +199,62 @@ namespace Avalonia.Media
             }
         }
 
+        /// <summary>
+        /// Sets or changes the font features for the text object 
+        /// </summary>
+        /// <param name="fontFeatures">Feature collection</param>
+        public void SetFontFeatures(FontFeatureCollection? fontFeatures)
+        {
+            SetFontFeatures(fontFeatures, 0, _text.Length);
+        }
+        
+        /// <summary>
+        /// Sets or changes the font features for the text object 
+        /// </summary>
+        /// <param name="fontFeatures">Feature collection</param>
+        /// <param name="startIndex">The start index of initial character to apply the change to.</param>
+        /// <param name="count">The number of characters the change should be applied to.</param>
+        public void SetFontFeatures(FontFeatureCollection? fontFeatures, int startIndex, int count)
+        {
+            var limit = ValidateRange(startIndex, count);
+            for (var i = startIndex; i < limit;)
+            {
+                var formatRider = new SpanRider(_formatRuns, _latestPosition, i);
+                i = Math.Min(limit, i + formatRider.Length);
+
+#pragma warning disable 6506
+                // Presharp warns that runProps is not validated, but it can never be null 
+                // because the rider is already checked to be in range
+
+                if (!(formatRider.CurrentElement is GenericTextRunProperties runProps))
+                {
+                    throw new NotSupportedException($"{nameof(runProps)} can not be null.");
+                }
+
+                if ((fontFeatures == null && runProps.FontFeatures == null) ||
+                    (fontFeatures != null && runProps.FontFeatures != null && 
+                     fontFeatures.SequenceEqual(runProps.FontFeatures)))
+                {
+                    continue;
+                }
+
+                var newProps = new GenericTextRunProperties(
+                    runProps.Typeface,
+                    fontFeatures,
+                    runProps.FontRenderingEmSize,
+                    runProps.TextDecorations,
+                    runProps.ForegroundBrush,
+                    runProps.BackgroundBrush,
+                    runProps.BaselineAlignment,
+                    runProps.CultureInfo
+                );
+
+#pragma warning restore 6506
+                _latestPosition = _formatRuns.SetValue(formatRider.CurrentPosition, i - formatRider.CurrentPosition,
+                    newProps, formatRider.SpanPosition);
+            }
+        }
+        
         /// <summary>
         /// Sets or changes the font family for the text object 
         /// </summary>
@@ -270,6 +328,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     new Typeface(fontFamily, oldTypeface.Style, oldTypeface.Weight),
+                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -329,6 +388,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
+                    runProps.FontFeatures,
                     emSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -391,6 +451,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
+                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -450,6 +511,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     new Typeface(oldTypeface.FontFamily, oldTypeface.Style, weight),
+                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -506,6 +568,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     new Typeface(oldTypeface.FontFamily, style, oldTypeface.Weight),
+                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -562,6 +625,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     typeface,
+                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
@@ -619,6 +683,7 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
+                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     textDecorations,
                     runProps.ForegroundBrush,

@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Skia.Helpers;
+using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -11,6 +13,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal abstract class GeometryImpl : IGeometryImpl
     {
+        private readonly object _lock = new();
         private PathCache _pathCache;
         private SKPathMeasure? _cachedPathMeasure;
 
@@ -43,9 +46,12 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool StrokeContains(IPen? pen, Point point)
         {
-            _pathCache.UpdateIfNeeded(StrokePath, pen);
+            lock (_lock)
+            {
+                _pathCache.UpdateIfNeeded(StrokePath, pen);
 
-            return PathContainsCore(_pathCache.ExpandedPath, point);
+                return PathContainsCore(_pathCache.ExpandedPath, point);
+            }
         }
         
         /// <summary>
@@ -71,8 +77,24 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Rect GetRenderBounds(IPen? pen)
         {
-            _pathCache.UpdateIfNeeded(StrokePath, pen);
-            return _pathCache.RenderBounds;
+            lock (_lock)
+            {
+                _pathCache.UpdateIfNeeded(StrokePath, pen);
+                return _pathCache.RenderBounds;
+            }
+        }
+
+        public IGeometryImpl GetWidenedGeometry(IPen pen)
+        {
+            if (StrokePath is not null && SKPathHelper.CreateStrokedPath(StrokePath, pen) is { } path)
+            {
+                // The path returned to us by skia here does not have closed figures.
+                // Fix that by calling CreateClosedPath.
+                var closed = SKPathHelper.CreateClosedPath(path);
+                return new StreamGeometryImpl(closed, closed);
+            }
+            
+            return new StreamGeometryImpl(new SKPath(), null);
         }
 
         /// <inheritdoc />
@@ -139,62 +161,43 @@ namespace Avalonia.Skia
         /// </summary>
         protected void InvalidateCaches()
         {
-            _pathCache.Dispose();
-            _pathCache = default;
+            lock (_lock)
+            {
+                _pathCache.Dispose();
+                _pathCache = default;
+            }
         }
 
-        private struct PathCache
+        private struct PathCache : IDisposable
         {
-            private double _width, _miterLimit;
-            private PenLineCap _cap;
-            private PenLineJoin _join;
+            private int _penHash;
             private SKPath? _path, _cachedFor;
             private Rect? _renderBounds;
             private static readonly SKPath s_emptyPath = new();
             
-
             public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).Bounds.ToAvaloniaRect();
             public SKPath ExpandedPath => _path ?? s_emptyPath;
 
             public void UpdateIfNeeded(SKPath? strokePath, IPen? pen)
             {
-                var strokeWidth = pen?.Thickness ?? 0;
-                var miterLimit = pen?.MiterLimit ?? 0;
-                var cap = pen?.LineCap ?? default;
-                var join = pen?.LineJoin ?? default;
-                
-                if (_cachedFor == strokePath
-                    && _path != null
-                    && cap == _cap
-                    && join == _join
-                    && Math.Abs(_width - strokeWidth) < float.Epsilon
-                    && (join != PenLineJoin.Miter || Math.Abs(_miterLimit - miterLimit) > float.Epsilon))
-                    // We are up to date
-                    return;
-
-                _renderBounds = null;
-                _cachedFor = strokePath;
-                _width = strokeWidth;
-                _cap = cap;
-                _join = join;
-                _miterLimit = miterLimit;
-                
-                if (strokePath == null || Math.Abs(strokeWidth) < float.Epsilon)
+                if (PenHelper.GetHashCode(pen, includeBrush: false) is { } penHash &&
+                    penHash == _penHash &&
+                    strokePath == _cachedFor)
                 {
-                    _path = null;
+                    // We are up to date
                     return;
                 }
 
-                var paint = SKPaintCache.Shared.Get();
-                paint.IsStroke = true;
-                paint.StrokeWidth = (float)_width;
-                paint.StrokeCap = cap.ToSKStrokeCap();
-                paint.StrokeJoin = join.ToSKStrokeJoin();
-                paint.StrokeMiter = (float)miterLimit;
-                _path = new SKPath();
-                paint.GetFillPath(strokePath, _path);
+                _renderBounds = null;
+                _cachedFor = strokePath;
+                _penHash = penHash;
+                _path?.Dispose();
 
-                SKPaintCache.Shared.ReturnReset(paint);
+                if (strokePath is not null && pen is not null)
+                    _path = SKPathHelper.CreateStrokedPath(strokePath, pen);
+                else
+                    _path = null;
+
             }
 
             public void Dispose()
@@ -202,7 +205,6 @@ namespace Avalonia.Skia
                 _path?.Dispose();
                 _path = null;
             }
-
         }
     }
 }

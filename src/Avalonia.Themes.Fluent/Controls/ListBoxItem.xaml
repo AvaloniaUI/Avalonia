@@ -26,8 +26,6 @@
                           CornerRadius="{TemplateBinding CornerRadius}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
-                          FontWeight="Normal"
-                          FontSize="{DynamicResource ControlContentThemeFontSize}"
                           Padding="{TemplateBinding Padding}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />

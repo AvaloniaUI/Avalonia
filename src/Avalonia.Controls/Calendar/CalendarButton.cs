@@ -52,7 +52,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsCalendarButtonFocused
         {
-            get { return _isCalendarButtonFocused; }
+            get => _isCalendarButtonFocused;
             set
             {
                 if (_isCalendarButtonFocused != value)
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsInactive
         {
-            get { return _isInactive; }
+            get => _isInactive;
             set
             {
                 if (_isInactive != value)
@@ -84,7 +84,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal bool IsSelected
         {
-            get { return _isSelected; }
+            get => _isSelected;
             set
             {
                 if (_isSelected != value)

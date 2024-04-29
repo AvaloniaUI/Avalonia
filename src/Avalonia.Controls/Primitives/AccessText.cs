@@ -53,8 +53,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool ShowAccessKey
         {
-            get { return GetValue(ShowAccessKeyProperty); }
-            set { SetValue(ShowAccessKeyProperty, value); }
+            get => GetValue(ShowAccessKeyProperty);
+            set => SetValue(ShowAccessKeyProperty, value);
         }
 
         /// <summary>

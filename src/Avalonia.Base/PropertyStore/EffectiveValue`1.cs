@@ -17,16 +17,17 @@ namespace Avalonia.PropertyStore
     {
         private readonly StyledPropertyMetadata<T> _metadata;
         private T? _baseValue;
-        private UncommonFields? _uncommon;
+        private readonly UncommonFields? _uncommon;
 
         public EffectiveValue(
             AvaloniaObject owner,
             StyledProperty<T> property,
             EffectiveValue<T>? inherited)
+            : base(property)
         {
             Priority = BindingPriority.Unset;
             BasePriority = BindingPriority.Unset;
-            _metadata = property.GetMetadata(owner.GetType());
+            _metadata = property.GetMetadata(owner);
 
             var value = inherited is null ? _metadata.DefaultValue : inherited.Value;
 
@@ -64,6 +65,14 @@ namespace Avalonia.PropertyStore
             {
                 owner.Owner.OnUpdateDataValidation(value.Property, state, error);
             }
+        }
+
+        public override void SetLocalValueAndRaise(
+            ValueStore owner,
+            AvaloniaProperty property,
+            object? value)
+        {
+            SetLocalValueAndRaise(owner, (StyledProperty<T>)property, (T)value!);
         }
 
         public void SetLocalValueAndRaise(
@@ -138,6 +147,10 @@ namespace Avalonia.PropertyStore
 
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
         {
+            var clearDataValidation = ValueEntry?.GetDataValidationState(out _, out _) ??
+                BaseValueEntry?.GetDataValidationState(out _, out _) ??
+                false;
+
             ValueEntry?.Unsubscribe();
             BaseValueEntry?.Unsubscribe();
 
@@ -163,12 +176,8 @@ namespace Avalonia.PropertyStore
                     owner.OnInheritedEffectiveValueDisposed(p, Value, newValue);
             }
 
-            if (ValueEntry?.GetDataValidationState(out _, out _) ??
-                BaseValueEntry?.GetDataValidationState(out _, out _) ??
-                false)
-            {
+            if (clearDataValidation)
                 owner.Owner.OnUpdateDataValidation(p, BindingValueType.UnsetValue, null);
-            }
         }
 
         protected override void CoerceDefaultValueAndRaise(ValueStore owner, AvaloniaProperty property)

@@ -53,6 +53,8 @@ namespace Avalonia.Media
             set => SetValue(OpacityMaskProperty, value);
         }
 
+        internal RenderOptions? RenderOptions { get; set; }
+
         /// <summary>
         /// Gets or sets the collection that contains the child geometries.
         /// </summary>
@@ -75,6 +77,7 @@ namespace Avalonia.Media
             using (context.PushOpacity(Opacity))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
             using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
+            using (RenderOptions != null ? context.PushRenderOptions(RenderOptions.Value) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -313,6 +316,15 @@ namespace Avalonia.Media
                 drawingGroup.Transform = new MatrixTransform(matrix);
             }
 
+            protected override void PushRenderOptionsCore(RenderOptions renderOptions)
+            {
+                // Instantiate a new drawing group and set it as the _currentDrawingGroup
+                var drawingGroup = PushNewDrawingGroup();
+
+                // Set the render options on the new DrawingGroup
+                drawingGroup.RenderOptions = renderOptions;
+            }
+
             protected override void PopClipCore() => Pop();
 
             protected override void PopGeometryClipCore() => Pop();
@@ -322,6 +334,8 @@ namespace Avalonia.Media
             protected override void PopOpacityMaskCore() => Pop();
 
             protected override void PopTransformCore() => Pop();
+
+            protected override void PopRenderOptionsCore() => Pop();
 
             /// <summary>
             /// Creates a new DrawingGroup for a Push* call by setting the

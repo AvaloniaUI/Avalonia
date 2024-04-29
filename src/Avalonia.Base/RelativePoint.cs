@@ -148,7 +148,20 @@ namespace Avalonia
                 _point :
                 new Point(_point.X * size.Width, _point.Y * size.Height);
         }
-
+        
+#if !BUILDTASK
+        /// <summary>
+        /// Converts a <see cref="RelativePoint"/> into pixels.
+        /// </summary>
+        /// <param name="rect">The bounding box of the rendering primitive.</param>
+        /// <returns>The origin point in pixels.</returns>
+        public Point ToPixels(Rect rect)
+        {
+            return _unit == RelativeUnit.Absolute
+                ? _point
+                : new Point(rect.X + _point.X * rect.Width, rect.Y + _point.Y * rect.Height);
+        }
+#endif
         /// <summary>
         /// Parses a <see cref="RelativePoint"/> string.
         /// </summary>
@@ -164,9 +177,9 @@ namespace Avalonia
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;
 
-                if (x.EndsWith("%"))
+                if (x.EndsWith('%'))
                 {
-                    if (!y.EndsWith("%"))
+                    if (!y.EndsWith('%'))
                     {
                         throw new FormatException("If one coordinate is relative, both must be.");
                     }

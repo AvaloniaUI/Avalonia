@@ -363,8 +363,6 @@ namespace Avalonia.Controls.UnitTests
 
             root.Child = null;
 
-            Assert.Null(target.Template);
-
             target.Content = null;
 
             Assert.Empty(target.LogicalChildren);
