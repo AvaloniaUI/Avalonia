@@ -13,7 +13,7 @@ using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.LogicalTree;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
-
+using Avalonia.Vulkan;
 using ControlCatalog.Pages;
 
 namespace ControlCatalog.NetCore
@@ -133,7 +133,15 @@ namespace ControlCatalog.NetCore
                 {
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
-                    EnableIme = true
+                    EnableIme = true,
+                })
+
+                .With(new VulkanOptions
+                {
+                    VulkanInstanceCreationOptions = new ()
+                    {
+                        UseDebug = true
+                    }
                 })
                 .With(new CompositionOptions()
                 {
