@@ -9,7 +9,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class SliderTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public SliderTests(DefaultAppFixture fixture)
         {
@@ -72,7 +72,7 @@ namespace Avalonia.IntegrationTests.Appium
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, 100, 0, MoveToElementOffsetOrigin.Center).Click().Perform();
+            new Actions(_session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
@@ -93,7 +93,7 @@ namespace Avalonia.IntegrationTests.Appium
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, -100, 0, MoveToElementOffsetOrigin.Center).Click().Perform();
+            new Actions(_session).MoveToElementCenter(slider, -100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
