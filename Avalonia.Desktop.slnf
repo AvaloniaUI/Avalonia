@@ -30,6 +30,7 @@
       "src\\Avalonia.MicroCom\\Avalonia.MicroCom.csproj",
       "src\\Avalonia.Native\\Avalonia.Native.csproj",
       "src\\Avalonia.OpenGL\\Avalonia.OpenGL.csproj",
+      "src\\Avalonia.Vulkan\\Avalonia.Vulkan.csproj",
       "src\\Avalonia.ReactiveUI\\Avalonia.ReactiveUI.csproj",
       "src\\Avalonia.Remote.Protocol\\Avalonia.Remote.Protocol.csproj",
       "src\\Avalonia.Themes.Fluent\\Avalonia.Themes.Fluent.csproj",
