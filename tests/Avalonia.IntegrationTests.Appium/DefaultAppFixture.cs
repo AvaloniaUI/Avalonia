@@ -21,7 +21,7 @@ namespace Avalonia.IntegrationTests.Appium
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 ConfigureWin32Options(options);
-                Session = new WindowsDriver(
+                Session = new WindowsDriver<AppiumWebElement>(
                     new Uri("http://127.0.0.1:4723"),
                     options);
 
@@ -33,7 +33,7 @@ namespace Avalonia.IntegrationTests.Appium
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 ConfigureMacOptions(options);
-                Session = new MacDriver(
+                Session = new MacDriver<AppiumWebElement>(
                     new Uri("http://127.0.0.1:4723/wd/hub"),
                     options);
             }
@@ -46,20 +46,20 @@ namespace Avalonia.IntegrationTests.Appium
         protected virtual void ConfigureWin32Options(AppiumOptions options)
         {
             var path = Path.GetFullPath(TestAppPath);
-            options.AddAdditionalAppiumOption(MobileCapabilityType.App, path);
-            options.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
-            options.AddAdditionalAppiumOption(MobileCapabilityType.DeviceName, "WindowsPC");
+            options.AddAdditionalCapability(MobileCapabilityType.App, path);
+            options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
+            options.AddAdditionalCapability(MobileCapabilityType.DeviceName, "WindowsPC");
         }
 
         protected virtual void ConfigureMacOptions(AppiumOptions options)
         {
-            options.AddAdditionalAppiumOption("appium:bundleId", TestAppBundleId);
-            options.AddAdditionalAppiumOption("appium:showServerLogs", true);
-            options.AutomationName = "mac2";
-            options.PlatformName = MobilePlatform.MacOS;
+            options.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
+            options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
+            options.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
+            options.AddAdditionalCapability("appium:showServerLogs", true);
         }
 
-        public AppiumDriver Session { get; }
+        public AppiumDriver<AppiumWebElement> Session { get; }
 
         public void Dispose()
         {

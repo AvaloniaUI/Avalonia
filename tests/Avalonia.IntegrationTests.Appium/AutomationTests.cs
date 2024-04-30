@@ -1,5 +1,4 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
+﻿using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -7,14 +6,14 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class AutomationTests
     {
-        private readonly AppiumDriver _session;
+        private readonly AppiumDriver<AppiumWebElement> _session;
 
         public AutomationTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
-            var tabs = _session.FindElement(MobileBy.AccessibilityId("MainTabs"));
-            var tab = tabs.FindElement(MobileBy.Name("Automation"));
+            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tab = tabs.FindElementByName("Automation");
             tab.Click();
         }
 
@@ -23,15 +22,15 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // AutomationID can be specified by the Name or AutomationProperties.AutomationId
             // properties, with the latter taking precedence.
-            var byName = _session.FindElement(MobileBy.AccessibilityId("TextBlockWithName"));
-            var byAutomationId = _session.FindElement(MobileBy.AccessibilityId("TextBlockWithNameAndAutomationId"));
+            var byName = _session.FindElementByAccessibilityId("TextBlockWithName");
+            var byAutomationId = _session.FindElementByAccessibilityId("TextBlockWithNameAndAutomationId");
         }
 
         [Fact]
         public void LabeledBy()
         {
-            var label = _session.FindElement(MobileBy.AccessibilityId("TextBlockAsLabel"));
-            var labeledTextBox = _session.FindElement(MobileBy.AccessibilityId("LabeledByTextBox"));
+            var label = _session.FindElementByAccessibilityId("TextBlockAsLabel");
+            var labeledTextBox = _session.FindElementByAccessibilityId("LabeledByTextBox");
 
             Assert.Equal("Label for TextBox", label.Text);
             Assert.Equal("Label for TextBox", labeledTextBox.GetName());

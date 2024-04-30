@@ -1,5 +1,4 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
+﻿using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -7,21 +6,21 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class CheckBoxTests
     {
-        private readonly AppiumDriver _session;
+        private readonly AppiumDriver<AppiumWebElement> _session;
 
         public CheckBoxTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
-            var tabs = _session.FindElement(MobileBy.AccessibilityId("MainTabs"));
-            var tab = tabs.FindElement(MobileBy.Name("CheckBox"));
+            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tab = tabs.FindElementByName("CheckBox");
             tab.Click();
         }
 
         [Fact]
         public void UncheckedCheckBox()
         {
-            var checkBox = _session.FindElement(MobileBy.AccessibilityId("UncheckedCheckBox"));
+            var checkBox = _session.FindElementByAccessibilityId("UncheckedCheckBox");
 
             Assert.Equal("Unchecked", checkBox.GetName());
             Assert.Equal(false, checkBox.GetIsChecked());
@@ -33,7 +32,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void CheckedCheckBox()
         {
-            var checkBox = _session.FindElement(MobileBy.AccessibilityId("CheckedCheckBox"));
+            var checkBox = _session.FindElementByAccessibilityId("CheckedCheckBox");
 
             Assert.Equal("Checked", checkBox.GetName());
             Assert.Equal(true, checkBox.GetIsChecked());
@@ -45,7 +44,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void ThreeStateCheckBox()
         {
-            var checkBox = _session.FindElement(MobileBy.AccessibilityId("ThreeStateCheckBox"));
+            var checkBox = _session.FindElementByAccessibilityId("ThreeStateCheckBox");
 
             Assert.Equal("ThreeState", checkBox.GetName());
             Assert.Null(checkBox.GetIsChecked());
