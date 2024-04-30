@@ -611,7 +611,11 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_SHOWWINDOW:
                     _shown = wParam != default;
-                    ExtendClientArea();
+
+                    if (_isClientAreaExtended)
+                    {
+                        ExtendClientArea();
+                    }
                     break;
 
                 case WindowsMessage.WM_SIZE:
