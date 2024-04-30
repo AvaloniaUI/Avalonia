@@ -24,11 +24,6 @@ namespace Avalonia.IntegrationTests.Appium
                 Session = new WindowsDriver(
                     new Uri("http://127.0.0.1:4723"),
                     options);
-
-                // https://github.com/microsoft/WinAppDriver/issues/1025
-                SetForegroundWindow(new IntPtr(int.Parse(
-                    Session.WindowHandles[0].Substring(2),
-                    NumberStyles.AllowHexSpecifier)));
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -46,9 +41,8 @@ namespace Avalonia.IntegrationTests.Appium
         protected virtual void ConfigureWin32Options(AppiumOptions options)
         {
             var path = Path.GetFullPath(TestAppPath);
-            options.AddAdditionalAppiumOption(MobileCapabilityType.App, path);
-            options.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
-            options.AddAdditionalAppiumOption(MobileCapabilityType.DeviceName, "WindowsPC");
+            options.App = path;
+            options.AutomationName = "FlaUI";
         }
 
         protected virtual void ConfigureMacOptions(AppiumOptions options)
