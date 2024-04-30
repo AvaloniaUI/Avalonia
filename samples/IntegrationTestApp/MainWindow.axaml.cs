@@ -10,6 +10,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Microsoft.CodeAnalysis;
 
@@ -19,6 +21,9 @@ namespace IntegrationTestApp
     {
         public MainWindow()
         {
+            // Set name in code behind, so source generator will ignore it.
+            Name = "MainWindow";
+
             InitializeComponent();
             InitializeViewMenu();
             InitializeGesturesTab();
@@ -277,6 +282,47 @@ namespace IntegrationTestApp
                 WindowState = WindowState.Normal;
             if (source?.Name == nameof(RestoreAll))
                 OnRestoreAll();
+            if (source?.Name == nameof(ApplyWindowDecorations))
+                OnApplyWindowDecorations(this);
+            if (source?.Name == nameof(ShowNewWindowDecorations))
+                OnShowNewWindowDecorations();
+        }
+
+        private void OnApplyWindowDecorations(Window window)
+        {
+            window.ExtendClientAreaToDecorationsHint = WindowExtendClientAreaToDecorationsHint.IsChecked!.Value;
+            window.ExtendClientAreaTitleBarHeightHint =
+                int.TryParse(WindowTitleBarHeightHint.Text, out var val) ? val / DesktopScaling : -1;
+            window.ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome
+                | (WindowForceSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.SystemChrome : 0)
+                | (WindowPreferSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.PreferSystemChrome : 0)
+                | (WindowMacThickSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.OSXThickTitleBar : 0);
+            AdjustOffsets(window);
+
+            window.Background = Brushes.Transparent;
+            window.PropertyChanged += WindowOnPropertyChanged;
+
+            static void WindowOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+            {
+                var window = (Window)sender!;
+                if (e.Property == OffScreenMarginProperty || e.Property == WindowDecorationMarginProperty)
+                {
+                    AdjustOffsets(window);
+                }
+            }
+
+            static void AdjustOffsets(Window window)
+            {
+                window.Padding = window.OffScreenMargin;
+                ((Control)window.Content!).Margin = window.WindowDecorationMargin;
+            }
+        }
+
+        private void OnShowNewWindowDecorations()
+        {
+            var window = new ShowWindowTest();
+            OnApplyWindowDecorations(window);
+            window.Show();
         }
     }
 }
