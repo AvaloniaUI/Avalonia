@@ -72,7 +72,7 @@ namespace Avalonia.IntegrationTests.Appium
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, 100, 0).Click().Perform();
+            new Actions(_session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
@@ -93,7 +93,7 @@ namespace Avalonia.IntegrationTests.Appium
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, -100, 0).Click().Perform();
+            new Actions(_session).MoveToElementCenter(slider, -100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(

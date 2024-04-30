@@ -7,18 +7,21 @@ global using AppiumWebElement = OpenQA.Selenium.Appium.AppiumElement;
 global using AppiumDriver = OpenQA.Selenium.Appium.AppiumDriver;
 global using WindowsDriver = OpenQA.Selenium.Appium.Windows.WindowsDriver;
 global using MacDriver = OpenQA.Selenium.Appium.Mac.MacDriver;
+#endif
 
 using System;
 using System.Collections.Generic;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Internal;
 
 namespace Avalonia.IntegrationTests.Appium;
 
 public static class AppiumDriverEx
 {
+#if APPIUM2
     public static AppiumElement FindElement(this IFindsElement @this, By by)
     {
         return @this switch
@@ -79,5 +82,15 @@ public static class AppiumDriverEx
             options.AddAdditionalAppiumOption(name, value);
         }
     }
-}
 #endif
+
+    public static Actions MoveToElementCenter(this Actions actions, AppiumWebElement element, int xOffset, int yOffset)
+    {
+#if APPIUM2
+        // It's always Center in Appium 2
+        return actions.MoveToElement(element, xOffset, yOffset);
+#else
+        return actions.MoveToElement(element, xOffset, yOffset, MoveToElementOffsetOrigin.Center);
+#endif
+    }
+}
