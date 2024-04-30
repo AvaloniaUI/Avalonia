@@ -4,6 +4,7 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);AVP1012</NoWarn>
+    <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -30,5 +31,6 @@
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
+  <Import Project="..\..\build\SourceGenerators.props" />
   
 </Project>
