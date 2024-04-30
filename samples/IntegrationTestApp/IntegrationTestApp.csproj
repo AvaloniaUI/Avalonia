@@ -4,8 +4,6 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);AVP1012</NoWarn>
-    <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
-<!--    <RuntimeIdentifier>osx-arm64</RuntimeIdentifier>-->
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,8 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.8" />
-
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
