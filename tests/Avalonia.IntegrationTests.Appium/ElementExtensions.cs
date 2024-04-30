@@ -45,14 +45,20 @@ namespace Avalonia.IntegrationTests.Appium
         
         public static string GetName(this AppiumElement element) => GetAttribute(element, "Name", "title");
 
-        public static bool? GetIsChecked(this AppiumElement element) =>
-            GetAttribute(element, "Toggle.ToggleState", "value") switch
+        public static bool? GetIsChecked(this AppiumElement element)
+        {
+            var value = GetAttribute(element, "Toggle.ToggleState", "value");
+            return value switch
             {
                 "0" => false,
                 "1" => true,
                 "2" => null,
+                "On" => true,
+                "Off" => false,
+                "Indeterminate" => null,
                 _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
             };
+        }
 
         public static bool GetIsFocused(this AppiumElement element)
         {
@@ -156,8 +162,15 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
             // such as list items don't support this action, so instead simulate a physical click as VoiceOver
-            // does. On Windows, Click() seems to fail with the WindowState checkbox for some reason.
-            new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
+            // does.
+            if (OperatingSystem.IsMacOS())
+            {
+                new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
+            }
+            else
+            {
+                element.Click();
+            }
         }
 
         public static void MovePointerOver(this AppiumElement element)
