@@ -7,13 +7,13 @@ namespace Avalonia.IntegrationTests.Appium
         protected override void ConfigureWin32Options(AppiumOptions options)
         {
             base.ConfigureWin32Options(options);
-            options.AddAdditionalCapability("appArguments", "--overlayPopups");
+            options.AddAdditionalAppiumOption("appArguments", "--overlayPopups");
         }
 
         protected override void ConfigureMacOptions(AppiumOptions options)
         {
             base.ConfigureMacOptions(options);
-            options.AddAdditionalCapability("appium:arguments", new[] { "--overlayPopups" });
+            options.AddAdditionalAppiumOption("appium:arguments", new[] { "--overlayPopups" });
         }
     }
 }

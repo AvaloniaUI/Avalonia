@@ -9,14 +9,14 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class ListBoxTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public ListBoxTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("ListBox");
+            var tabs = _session.FindElement(MobileBy.AccessibilityId("MainTabs"));
+            var tab = tabs.FindElement(MobileBy.Name("ListBox"));
             tab.Click();
         }
 
@@ -24,8 +24,8 @@ namespace Avalonia.IntegrationTests.Appium
         public void Can_Select_Item_By_Clicking()
         {
             var listBox = GetTarget();
-            var item2 = listBox.FindElementByName("Item 2");
-            var item4 = listBox.FindElementByName("Item 4");
+            var item2 = listBox.FindElement(MobileBy.Name("Item 2"));
+            var item4 = listBox.FindElement(MobileBy.Name("Item 4"));
 
             Assert.False(item2.Selected);
             Assert.False(item4.Selected);
@@ -43,8 +43,8 @@ namespace Avalonia.IntegrationTests.Appium
         public void Can_Select_Items_By_Ctrl_Clicking()
         {
             var listBox = GetTarget();
-            var item2 = listBox.FindElementByName("Item 2");
-            var item4 = listBox.FindElementByName("Item 4");
+            var item2 = listBox.FindElement(MobileBy.Name("Item 2"));
+            var item4 = listBox.FindElement(MobileBy.Name("Item 4"));
 
             Assert.False(item2.Selected);
             Assert.False(item4.Selected);
@@ -65,9 +65,9 @@ namespace Avalonia.IntegrationTests.Appium
         public void Can_Select_Range_By_Shift_Clicking()
         {
             var listBox = GetTarget();
-            var item2 = listBox.FindElementByName("Item 2");
-            var item3 = listBox.FindElementByName("Item 3");
-            var item4 = listBox.FindElementByName("Item 4");
+            var item2 = listBox.FindElement(MobileBy.Name("Item 2"));
+            var item3 = listBox.FindElement(MobileBy.Name("Item 3"));
+            var item4 = listBox.FindElement(MobileBy.Name("Item 4"));
 
             Assert.False(item2.Selected);
             Assert.False(item3.Selected);
@@ -94,10 +94,10 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(children.Count < 100);
         }
 
-        private AppiumWebElement GetTarget()
+        private AppiumElement GetTarget()
         {
-            _session.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
-            return _session.FindElementByAccessibilityId("BasicListBox");
+            _session.FindElement(MobileBy.AccessibilityId("ListBoxSelectionClear")).Click();
+            return _session.FindElement(MobileBy.AccessibilityId("BasicListBox"));
         }
     }
 }

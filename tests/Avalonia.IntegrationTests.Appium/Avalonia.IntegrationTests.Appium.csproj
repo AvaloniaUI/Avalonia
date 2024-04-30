@@ -10,7 +10,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="4.4.0" />
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.8" />
     <PackageReference Include="Xunit.Extensions.Ordering" Version="1.4.5" />
   </ItemGroup>
 

@@ -6,27 +6,27 @@ namespace Avalonia.IntegrationTests.Appium
 {
     public abstract class ComboBoxTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public ComboBoxTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("ComboBox");
+            var tabs = _session.FindElement(MobileBy.AccessibilityId("MainTabs"));
+            var tab = tabs.FindElement(MobileBy.Name("ComboBox"));
             tab.Click();
         }
 
         [Fact]
         public void Can_Change_Selection_Using_Mouse()
         {
-            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
+            var comboBox = _session.FindElement(MobileBy.AccessibilityId("BasicComboBox"));
 
-            _session.FindElementByAccessibilityId("ComboBoxSelectFirst").Click();
+            _session.FindElement(MobileBy.AccessibilityId("ComboBoxSelectFirst")).Click();
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
 
             comboBox.Click();
-            _session.FindElementByName("Item 1").SendClick();
+            _session.FindElement(MobileBy.Name("Item 1")).SendClick();
 
             Assert.Equal("Item 1", comboBox.GetComboBoxValue());
         }
@@ -34,13 +34,13 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Can_Change_Selection_From_Unselected_Using_Mouse()
         {
-            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
+            var comboBox = _session.FindElement(MobileBy.AccessibilityId("BasicComboBox"));
 
-            _session.FindElementByAccessibilityId("ComboBoxSelectionClear").Click();
+            _session.FindElement(MobileBy.AccessibilityId("ComboBoxSelectionClear")).Click();
             Assert.Equal(string.Empty, comboBox.GetComboBoxValue());
 
             comboBox.Click();
-            _session.FindElementByName("Item 0").SendClick();
+            _session.FindElement(MobileBy.Name("Item 0")).SendClick();
 
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
         }
@@ -48,13 +48,13 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Can_Change_Selection_With_Keyboard_When_Closed()
         {
-            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
-            var wrap = _session.FindElementByAccessibilityId("ComboBoxWrapSelection");
+            var comboBox = _session.FindElement(MobileBy.AccessibilityId("BasicComboBox"));
+            var wrap = _session.FindElement(MobileBy.AccessibilityId("ComboBoxWrapSelection"));
 
             if (wrap.GetIsChecked() != false)
                 wrap.Click();
 
-            _session.FindElementByAccessibilityId("ComboBoxSelectionClear").Click();
+            _session.FindElement(MobileBy.AccessibilityId("ComboBoxSelectionClear")).Click();
 
             comboBox.SendKeys(Keys.ArrowDown);
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
@@ -75,13 +75,13 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Can_Change_Wrapping_Selection_With_Keyboard_When_Closed()
         {
-            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
-            var wrap = _session.FindElementByAccessibilityId("ComboBoxWrapSelection");
+            var comboBox = _session.FindElement(MobileBy.AccessibilityId("BasicComboBox"));
+            var wrap = _session.FindElement(MobileBy.AccessibilityId("ComboBoxWrapSelection"));
 
             if (wrap.GetIsChecked() != true)
                 wrap.Click();
 
-            _session.FindElementByAccessibilityId("ComboBoxSelectionClear").Click();
+            _session.FindElement(MobileBy.AccessibilityId("ComboBoxSelectionClear")).Click();
 
             comboBox.SendKeys(Keys.ArrowDown);
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
@@ -105,15 +105,15 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Can_Change_Selection_When_Open_With_Keyboard()
         {
-            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
+            var comboBox = _session.FindElement(MobileBy.AccessibilityId("BasicComboBox"));
 
-            _session.FindElementByAccessibilityId("ComboBoxSelectFirst").Click();
+            _session.FindElement(MobileBy.AccessibilityId("ComboBoxSelectFirst")).Click();
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
 
             comboBox.SendKeys(Keys.LeftAlt + Keys.ArrowDown);
             comboBox.SendKeys(Keys.ArrowDown);
 
-            var item = _session.FindElementByName("Item 1");
+            var item = _session.FindElement(MobileBy.Name("Item 1"));
             item.SendKeys(Keys.Enter);
 
             Assert.Equal("Item 1", comboBox.GetComboBoxValue());
@@ -122,15 +122,15 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Can_Change_Selection_When_Open_With_Keyboard_From_Unselected()
         {
-            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
+            var comboBox = _session.FindElement(MobileBy.AccessibilityId("BasicComboBox"));
 
-            _session.FindElementByAccessibilityId("ComboBoxSelectionClear").Click();
+            _session.FindElement(MobileBy.AccessibilityId("ComboBoxSelectionClear")).Click();
             Assert.Equal(string.Empty, comboBox.GetComboBoxValue());
 
             comboBox.SendKeys(Keys.LeftAlt + Keys.ArrowDown);
             comboBox.SendKeys(Keys.ArrowDown);
 
-            var item = _session.FindElementByName("Item 0");
+            var item = _session.FindElement(MobileBy.Name("Item 0"));
             item.SendKeys(Keys.Enter);
 
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
@@ -139,15 +139,15 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Can_Cancel_Keyboard_Selection_With_Escape()
         {
-            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
+            var comboBox = _session.FindElement(MobileBy.AccessibilityId("BasicComboBox"));
 
-            _session.FindElementByAccessibilityId("ComboBoxSelectionClear").Click();
+            _session.FindElement(MobileBy.AccessibilityId("ComboBoxSelectionClear")).Click();
             Assert.Equal(string.Empty, comboBox.GetComboBoxValue());
 
             comboBox.SendKeys(Keys.LeftAlt + Keys.ArrowDown);
             comboBox.SendKeys(Keys.ArrowDown);
 
-            var item = _session.FindElementByName("Item 0");
+            var item = _session.FindElement(MobileBy.Name("Item 0"));
             item.SendKeys(Keys.Escape);
 
             Assert.Equal(string.Empty, comboBox.GetComboBoxValue());
