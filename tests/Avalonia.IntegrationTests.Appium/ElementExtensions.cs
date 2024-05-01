@@ -50,10 +50,10 @@ namespace Avalonia.IntegrationTests.Appium
 
             if (OperatingSystem.IsWindows())
             {
-                var titlebar = window.FindElementByTagName("TitleBar");
-                var closeButton = titlebar.FindElementByName("Close");
-                var minimizeButton = titlebar.FindElementByName("Minimize");
-                var maximizeButton = titlebar.FindElementByName("Maximize");
+                var titlebar = window.FindElementsByTagName("TitleBar").FirstOrDefault();
+                var closeButton = titlebar?.FindElementByName("Close");
+                var minimizeButton = titlebar?.FindElementByName("Minimize");
+                var maximizeButton = titlebar?.FindElementByName("Maximize");
                 return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
             }
 
@@ -62,18 +62,11 @@ namespace Avalonia.IntegrationTests.Appium
 
         public static WindowChrome GetClientChromeButtons(this AppiumWebElement window)
         {
-            try
-            {
-                var titlebar = window.FindElementByAccessibilityId("AvaloniaTitleBar");
-                var closeButton = titlebar.FindElementByName("Close");
-                var minimizeButton = titlebar.FindElementByName("Minimize");
-                var maximizeButton = titlebar.FindElementByName("Maximize");
-                return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
-            }
-            catch (NoSuchElementException)
-            {
-                return new(null, null, null, null, null);
-            }
+            var titlebar = window.FindElementsByAccessibilityId("AvaloniaTitleBar")?.FirstOrDefault();
+            var closeButton = titlebar?.FindElementByName("Close");
+            var minimizeButton = titlebar?.FindElementByName("Minimize");
+            var maximizeButton = titlebar?.FindElementByName("Maximize");
+            return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
         }
 
         public static string GetComboBoxValue(this AppiumWebElement element)
