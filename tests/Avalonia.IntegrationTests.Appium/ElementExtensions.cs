@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
 
