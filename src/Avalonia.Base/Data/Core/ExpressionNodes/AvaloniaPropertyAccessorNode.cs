@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal sealed class AvaloniaPropertyAccessorNode : ExpressionNode, ISettableNode
+internal sealed class AvaloniaPropertyAccessorNode :
+    ExpressionNode,
+    ISettableNode,
+    IWeakEventSubscriber<AvaloniaPropertyChangedEventArgs>
 {
-    private readonly EventHandler<AvaloniaPropertyChangedEventArgs> _onValueChanged;
-
     public AvaloniaPropertyAccessorNode(AvaloniaProperty property)
     {
         Property = property;
-        _onValueChanged = OnValueChanged;
     }
 
     public AvaloniaProperty Property { get; }
@@ -39,7 +40,7 @@ internal sealed class AvaloniaPropertyAccessorNode : ExpressionNode, ISettableNo
     {
         if (source is AvaloniaObject newObject)
         {
-            newObject.PropertyChanged += _onValueChanged;
+            WeakEvents.AvaloniaPropertyChanged.Subscribe(newObject, this);
             SetValue(newObject.GetValue(Property));
         }
     }
@@ -47,12 +48,12 @@ internal sealed class AvaloniaPropertyAccessorNode : ExpressionNode, ISettableNo
     protected override void Unsubscribe(object oldSource)
     {
         if (oldSource is AvaloniaObject oldObject)
-            oldObject.PropertyChanged -= _onValueChanged;
+            WeakEvents.AvaloniaPropertyChanged.Unsubscribe(oldObject, this);
     }
 
-    private void OnValueChanged(object? source, AvaloniaPropertyChangedEventArgs e)
+    public void OnEvent(object? sender, WeakEvent ev, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == Property && source is AvaloniaObject o)
+        if (e.Property == Property && Source is AvaloniaObject o)
             SetValue(o.GetValue(Property));
     }
 }

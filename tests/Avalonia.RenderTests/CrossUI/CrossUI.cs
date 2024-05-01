@@ -8,6 +8,11 @@ using Avalonia;
 
 namespace CrossUI;
 
+public partial class CrossGlobals
+{
+
+}
+
 public class CrossBrush
 {
     public double Opacity = 1;
@@ -108,6 +113,23 @@ public class CrossEllipseGeometry : CrossGeometry
     public Rect Rect { get; set; }
 }
 
+public class CrossStreamGeometry : CrossGeometry
+{
+    private ICrossStreamGeometryContextImpl? _contextImpl;
+
+    public CrossStreamGeometry()
+    {
+
+    }
+
+    public ICrossStreamGeometryContextImpl GetContext()
+    {
+        _contextImpl ??= CrossGlobals.GetContextImplProvider().Create();
+
+        return _contextImpl;
+    }
+}
+
 public class CrossRectangleGeometry : CrossGeometry
 {
     public Rect Rect;
@@ -116,6 +138,26 @@ public class CrossRectangleGeometry : CrossGeometry
     {
         Rect = rect;
     }
+}
+
+public class CrossPathGeometry : CrossGeometry
+{
+    public List<CrossPathFigure> Figures { get; set; } = new();
+}
+
+public class CrossPathFigure
+{
+    public Point Start { get; set; }
+    public List<CrossPathSegment> Segments { get; set; } = new();
+    public bool Closed { get; set; }
+}
+
+public abstract record class CrossPathSegment(bool IsStroked)
+{
+    public record Line(Point To, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record Arc(Point Point, Size Size, double RotationAngle, bool IsLargeArc, SweepDirection SweepDirection, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record CubicBezier(Point Point1, Point Point2, Point Point3, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record QuadraticBezier(Point Point1, Point Point2, bool IsStroked) : CrossPathSegment(IsStroked);
 }
 
 public class CrossDrawingBrush : CrossTileBrush
@@ -127,6 +169,24 @@ public class CrossPen
 {
     public CrossBrush Brush;
     public double Thickness = 1;
+    public PenLineJoin LineJoin { get; set; } = PenLineJoin.Miter;
+    public PenLineCap LineCap { get; set; } = PenLineCap.Flat;
+}
+
+public interface ICrossStreamGeometryContextImpl : IDisposable
+{
+    object GetGeometry();
+    void BeginFigure(Point point, bool isFilled, bool isClosed);
+    void EndFigure();
+    void LineTo(Point point, bool isStroked);
+    void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked);
+    void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked);
+    void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked);
+}
+
+public interface ICrossStreamGeometryContextImplProvider
+{
+    ICrossStreamGeometryContextImpl Create();
 }
 
 public interface ICrossDrawingContext

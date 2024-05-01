@@ -29,7 +29,7 @@
             DockPanel.Dock="Top" 
             Classes="h2"
             Text="A tab control that displays a tab strip along with the content of the selected tab"
-            Margin="4">          
+            Margin="4">
         </TextBlock>
         <Grid 
             ColumnDefinitions="*,*" 
@@ -45,19 +45,19 @@
                 <TabControl
                     Margin="0 16"
                     TabStripPlacement="{Binding TabPlacement}">
-                    <TabItem Header="Arch">
+                    <TabItem Header="_Arch">
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the first page in the TabControl.</TextBlock>
                             <Image Source="/Assets/delicate-arch-896885_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
-                    <TabItem Header="Leaf">                       
+                    <TabItem Header="_Leaf">
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the second page in the TabControl.</TextBlock>
                             <Image Source="/Assets/maple-leaf-888807_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
-                    <TabItem Header="Disabled" IsEnabled="False">
+                    <TabItem Header="_Disabled" IsEnabled="False">
                         <TextBlock>You should not see this.</TextBlock>
                     </TabItem>
                 </TabControl>

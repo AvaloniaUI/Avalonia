@@ -136,7 +136,18 @@ namespace Avalonia.Controls
         /// <inheritdoc cref="ICommandSource.CanExecuteChanged"/>
         private void CanExecuteChanged(object? sender, EventArgs e)
         {
-            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+            (var command, var parameter) = (Command, CommandParameter);
+            CanExecuteChanged(command, parameter);
+        }
+
+        private void CanExecuteChanged(ICommand? command, object? parameter)
+        {
+            if (!((ILogical)this).IsAttachedToLogicalTree)
+            {
+                return;
+            }
+
+            var canExecute = command is null || command.CanExecute(parameter);
 
             if (canExecute != _commandCanExecute)
             {
@@ -282,10 +293,11 @@ namespace Avalonia.Controls
         {
             if (e.Property == CommandProperty)
             {
+                // Must unregister events here while a reference to the old command still exists
+                var (oldValue, newValue) = e.GetOldAndNewValue<ICommand?>();
+
                 if (_isAttachedToLogicalTree)
                 {
-                    // Must unregister events here while a reference to the old command still exists
-                    var (oldValue, newValue) = e.GetOldAndNewValue<ICommand?>();
 
                     if (oldValue is ICommand oldCommand)
                     {
@@ -298,11 +310,11 @@ namespace Avalonia.Controls
                     }
                 }
 
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(newValue, CommandParameter);
             }
-            else if (e.Property == CommandParameterProperty)
+            else if (e.Property == CommandParameterProperty && IsLoaded)
             {
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(Command, e.NewValue);
             }
             else if (e.Property == FlyoutProperty)
             {
@@ -386,15 +398,16 @@ namespace Avalonia.Controls
         /// <param name="e">The event args from the internal Click event.</param>
         protected virtual void OnClickPrimary(RoutedEventArgs? e)
         {
+            (var command, var parameter) = (Command, CommandParameter);
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
                 var eventArgs = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(eventArgs);
 
-                if (!eventArgs.Handled && Command?.CanExecute(CommandParameter) == true)
+                if (!eventArgs.Handled && command?.CanExecute(parameter) == true)
                 {
-                    Command.Execute(CommandParameter);
+                    command.Execute(parameter);
                     eventArgs.Handled = true;
                 }
             }

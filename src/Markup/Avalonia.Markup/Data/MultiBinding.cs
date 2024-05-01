@@ -75,7 +75,7 @@ namespace Avalonia.Data
         {
             var input = InstanceCore(target, targetProperty);
             var mode = Mode == BindingMode.Default ?
-                targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
+                targetProperty?.GetMetadata(target).DefaultBindingMode : Mode;
 
             switch (mode)
             {

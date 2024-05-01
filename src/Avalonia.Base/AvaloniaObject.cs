@@ -9,8 +9,8 @@ using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
-using Avalonia.Reactive;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -126,7 +126,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void ClearValue(AvaloniaProperty property)
         {
-            _ = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
             _values.ClearValue(property);
         }
@@ -137,7 +137,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void ClearValue<T>(AvaloniaProperty<T> property)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             switch (property)
@@ -159,7 +159,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void ClearValue<T>(StyledProperty<T> property)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             _values.ClearValue(property);
@@ -171,11 +171,11 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void ClearValue<T>(DirectPropertyBase<T> property)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             var p = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
-            p.InvokeSetter(this, p.GetUnsetValue(GetType()));
+            p.InvokeSetter(this, p.GetUnsetValue(this));
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public object? GetValue(AvaloniaProperty property)
         {
-            _ = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
 
             if (property.IsDirect)
                 return property.RouteGetValue(this);
@@ -232,7 +232,7 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public T GetValue<T>(StyledProperty<T> property)
         {
-            _ = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
             return _values.GetValue(property);
         }
@@ -245,7 +245,7 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public T GetValue<T>(DirectPropertyBase<T> property)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             var registered = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
@@ -262,7 +262,7 @@ namespace Avalonia
         /// </remarks>
         public Optional<T> GetBaseValue<T>(StyledProperty<T> property)
         {
-            _ = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
             return _values.GetBaseValue(property);
         }
@@ -274,7 +274,7 @@ namespace Avalonia
         /// <returns>True if the property is animating, otherwise false.</returns>
         public bool IsAnimating(AvaloniaProperty property)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
 
             VerifyAccess();
 
@@ -292,7 +292,7 @@ namespace Avalonia
         /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
 
             VerifyAccess();
 
@@ -310,7 +310,7 @@ namespace Avalonia
             object? value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
 
             return property.RouteSetValue(this, value, priority);
         }
@@ -330,7 +330,7 @@ namespace Avalonia
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            _ = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
             ValidatePriority(priority);
 
@@ -357,7 +357,7 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         public void SetValue<T>(DirectPropertyBase<T> property, T value)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
@@ -401,7 +401,7 @@ namespace Avalonia
         /// </remarks>
         public void SetCurrentValue<T>(StyledProperty<T> property, T value)
         {
-            _ = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             LogPropertySet(property, value, BindingPriority.LocalValue);
@@ -458,8 +458,8 @@ namespace Avalonia
             IObservable<object?> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
+            ThrowHelper.ThrowIfNull(source, nameof(source));
             VerifyAccess();
             ValidatePriority(priority);
 
@@ -495,8 +495,8 @@ namespace Avalonia
             IObservable<T> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
+            ThrowHelper.ThrowIfNull(source, nameof(source));
             VerifyAccess();
             ValidatePriority(priority);
 
@@ -518,8 +518,8 @@ namespace Avalonia
             IObservable<BindingValue<T>> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
+            ThrowHelper.ThrowIfNull(source, nameof(source));
             VerifyAccess();
             ValidatePriority(priority);
 
@@ -539,7 +539,7 @@ namespace Avalonia
             DirectPropertyBase<T> property,
             IObservable<object?> source)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
@@ -574,7 +574,7 @@ namespace Avalonia
             DirectPropertyBase<T> property,
             IObservable<T> source)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
@@ -600,7 +600,7 @@ namespace Avalonia
             DirectPropertyBase<T> property,
             IObservable<BindingValue<T>> source)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
+            ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
@@ -796,7 +796,7 @@ namespace Avalonia
         {
             if (value is UnsetValueType)
             {
-                property.InvokeSetter(this, property.GetUnsetValue(GetType()));
+                property.InvokeSetter(this, property.GetUnsetValue(this));
             }
             else if (!(value is DoNothingType))
             {
@@ -815,7 +815,7 @@ namespace Avalonia
             {
                 case BindingValueType.UnsetValue:
                 case BindingValueType.BindingError:
-                    var fallback = value.HasValue ? value : value.WithValue(property.GetUnsetValue(GetType()));
+                    var fallback = value.HasValue ? value : value.WithValue(property.GetUnsetValue(this));
                     property.InvokeSetter(this, fallback);
                     break;
                 case BindingValueType.DataValidationError:
@@ -828,7 +828,7 @@ namespace Avalonia
                     break;
             }
 
-            var metadata = property.GetMetadata(GetType());
+            var metadata = property.GetMetadata(this);
 
             if (metadata.EnableDataValidation == true)
             {

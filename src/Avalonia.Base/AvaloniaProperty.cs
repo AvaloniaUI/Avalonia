@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
@@ -28,10 +29,11 @@ namespace Avalonia
         /// <summary>
         /// Provides a fast path when the property has no metadata overrides.
         /// </summary>
-        private KeyValuePair<Type, AvaloniaPropertyMetadata>? _singleMetadata;
+        private Type? _singleHostType;
+        private AvaloniaPropertyMetadata? _singleMetadata;
 
-        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata;
-        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadataCache = new Dictionary<Type, AvaloniaPropertyMetadata>();
+        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata = new(ReferenceEqualityComparer.Instance);
+        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadataCache = new(ReferenceEqualityComparer.Instance);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
@@ -60,8 +62,6 @@ namespace Avalonia
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
-
             Name = name;
             PropertyType = valueType;
             OwnerType = ownerType;
@@ -71,7 +71,8 @@ namespace Avalonia
             metadata.Freeze();
             _metadata.Add(hostType, metadata);
             _defaultMetadata = metadata.GenerateTypeSafeMetadata();
-            _singleMetadata = new(hostType, metadata);
+            _singleHostType = hostType;
+            _singleMetadata = metadata;
         }
 
         /// <summary>
@@ -85,8 +86,6 @@ namespace Avalonia
             Type ownerType,
             AvaloniaPropertyMetadata? metadata)
         {
-            _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
-
             Name = source?.Name ?? throw new ArgumentNullException(nameof(source));
             PropertyType = source.PropertyType;
             OwnerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
@@ -151,7 +150,7 @@ namespace Avalonia
         /// </summary>
         /// <remarks>
         /// When a property changes, change notifications are sent to all property subscribers;
-        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and and the
+        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and the
         /// <see cref="AvaloniaObject.PropertyChanged"/> event. If this callback is set for a property,
         /// then it will be called before and after these notifications take place. The bool argument
         /// will be true before the property change notifications are sent and false afterwards. This
@@ -474,11 +473,39 @@ namespace Avalonia
         /// Gets the <see cref="AvaloniaPropertyMetadata"/> which applies to this property when it is used with the specified type.
         /// </summary>
         /// <typeparam name="T">The type for which to retrieve metadata.</typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AvaloniaPropertyMetadata GetMetadata<T>() where T : AvaloniaObject => GetMetadata(typeof(T));
 
         /// <inheritdoc cref="GetMetadata{T}"/>
         /// <param name="type">The type for which to retrieve metadata.</param>
-        public AvaloniaPropertyMetadata GetMetadata(Type type) => GetMetadataWithOverrides(type);
+        /// <remarks>
+        /// For performance, prefer the <see cref="GetMetadata(Avalonia.AvaloniaObject)"/> overload when possible.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AvaloniaPropertyMetadata GetMetadata(Type type)
+        {
+            if (_singleMetadata == _defaultMetadata)
+            {
+                return _defaultMetadata;
+            }
+
+            return GetMetadataFromCache(type);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="AvaloniaPropertyMetadata"/> which applies to this property when it is used with the specified object.
+        /// </summary>
+        /// <param name="owner">The object for which to retrieve metadata.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AvaloniaPropertyMetadata GetMetadata(AvaloniaObject owner)
+        {
+            if (_singleMetadata == _defaultMetadata)
+            {
+                return _defaultMetadata;
+            }
+
+            return GetMetadataFromCache(owner);
+        }
 
         /// <summary>
         /// Checks whether the <paramref name="value"/> is valid for the property.
@@ -593,42 +620,65 @@ namespace Avalonia
             _metadataCache.Clear();
 
             _singleMetadata = null;
+            _singleHostType = null;
         }
 
         private protected abstract IObservable<AvaloniaPropertyChangedEventArgs> GetChanged();
 
-        private AvaloniaPropertyMetadata GetMetadataWithOverrides(Type type)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private AvaloniaPropertyMetadata GetMetadataFromCache(AvaloniaObject obj)
         {
-            if (type is null)
+            // Don't cache if we have _singleMetadata: IsInstanceOfType is faster than a dictionary lookup.
+            if (_singleMetadata is not null)
             {
-                throw new ArgumentNullException(nameof(type));
+                return _singleHostType!.IsInstanceOfType(obj) ? _singleMetadata : _defaultMetadata;
             }
 
-            if (_metadataCache.TryGetValue(type, out var result))
+            var type = obj.GetType();
+            if (!_metadataCache.TryGetValue(type, out var result))
             {
-                return result;
+                _metadataCache[type] = result = GetMetadataUncached(type);
             }
 
-            if (_singleMetadata is { } singleMetadata)
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private AvaloniaPropertyMetadata GetMetadataFromCache(Type type)
+        {
+            if (!_metadataCache.TryGetValue(type, out var result))
             {
-                return _metadataCache[type] = singleMetadata.Key.IsAssignableFrom(type) ? singleMetadata.Value : _defaultMetadata;
+                _metadataCache[type] = result = GetMetadataUncached(type);
+            }
+
+            return result;
+        }
+
+        private AvaloniaPropertyMetadata GetMetadataUncached(Type type)
+        {
+            if (_singleMetadata == _defaultMetadata)
+            {
+                return _defaultMetadata;
+            }
+
+            if (_singleMetadata is not null)
+            {
+                return _singleHostType!.IsAssignableFrom(type) ? _singleMetadata : _defaultMetadata;
             }
 
             var currentType = type;
 
-            while (currentType != null)
+            while (currentType is not null)
             {
-                if (_metadata.TryGetValue(currentType, out result))
+                if (_metadata.TryGetValue(currentType, out var result))
                 {
-                    _metadataCache[type] = result;
-
                     return result;
                 }
 
                 currentType = currentType.BaseType;
             }
 
-            return _metadataCache[type] = _defaultMetadata;
+            return _defaultMetadata;
         }
 
         bool IPropertyInfo.CanGet => true;

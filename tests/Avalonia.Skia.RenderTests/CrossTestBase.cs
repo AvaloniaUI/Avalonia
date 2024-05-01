@@ -19,7 +19,7 @@ class CrossFactAttribute : FactAttribute
     
 }
 
-class CrossThreoryAttribute : TheoryAttribute
+class CrossTheoryAttribute : TheoryAttribute
 {
     
 }

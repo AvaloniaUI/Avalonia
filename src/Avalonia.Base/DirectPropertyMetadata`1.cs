@@ -49,6 +49,11 @@ namespace Avalonia
         /// <inheritdoc />
         public override AvaloniaPropertyMetadata GenerateTypeSafeMetadata()
         {
+            if (IsReadOnly)
+            {
+                return this;
+            }
+
             var copy = new DirectPropertyMetadata<TValue>(UnsetValue, DefaultBindingMode, EnableDataValidation);
             copy.Freeze();
             return copy;

@@ -22,8 +22,7 @@ namespace Avalonia.Controls
             _subscriptions = new CompositeDisposable(
                 inputManager.Process.Subscribe(InputManager_OnProcess),
                 ToolTip.ServiceEnabledProperty.Changed.Subscribe(ServiceEnabledChanged),
-                ToolTip.TipProperty.Changed.Subscribe(TipChanged),
-                ToolTip.IsOpenProperty.Changed.Subscribe(TipOpenChanged));
+                ToolTip.TipProperty.Changed.Subscribe(TipChanged));
         }
 
         public void Dispose()
@@ -122,30 +121,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var control = (Control)e.Sender;
-
-            if (e.OldValue is false && e.NewValue is true)
-            {
-                control.DetachedFromVisualTree += ControlDetaching;
-                control.EffectiveViewportChanged += ControlEffectiveViewportChanged;
-            }
-            else if (e.OldValue is true && e.NewValue is false)
-            {
-                control.DetachedFromVisualTree -= ControlDetaching;
-                control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
-            }
-        }
-
-        private void ControlDetaching(object? sender, VisualTreeAttachmentEventArgs e)
-        {
-            var control = (Control)sender!;
-            control.DetachedFromVisualTree -= ControlDetaching;
-            control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
-            Close(control);
-        }
-
         private void OnTipControlChanged(Control? oldValue, Control? newValue)
         {
             StopTimer();
@@ -182,13 +157,6 @@ namespace Avalonia.Controls
                     StartShowTimer(showDelay, newValue);
                 }
             }
-        }
-
-        private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
-        {
-            var control = (Control)sender!;
-            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
-            toolTip?.RecalculatePosition(control);
         }
 
         private void ToolTipClosed(object? sender, EventArgs e)
