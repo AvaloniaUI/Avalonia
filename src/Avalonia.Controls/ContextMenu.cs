@@ -344,11 +344,7 @@ namespace Avalonia.Controls
             IsOpen = true;
             _popup.IsOpen = true;
 
-            RaiseEvent(new RoutedEventArgs
-            {
-                RoutedEvent = OpenedEvent,
-                Source = this,
-            });
+            RaiseEvent(OpenedEvent);
         }
 
         private void PopupOpened(object? sender, EventArgs e)
@@ -382,11 +378,7 @@ namespace Avalonia.Controls
                 _popup!.SetPopupParent(null);
             }
 
-            RaiseEvent(new RoutedEventArgs
-            {
-                RoutedEvent = ClosedEvent,
-                Source = this,
-            });
+            RaiseEvent(ClosedEvent);
             
             _popupHostChangedHandler?.Invoke(null);
         }

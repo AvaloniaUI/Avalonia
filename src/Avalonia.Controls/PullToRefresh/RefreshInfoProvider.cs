@@ -112,12 +112,12 @@ namespace Avalonia.Controls.PullToRefresh
 
         public void OnRefreshStarted()
         {
-            RaiseEvent(new RoutedEventArgs(RefreshStartedEvent));
+            RaiseEvent(RefreshStartedEvent);
         }
 
         public void OnRefreshCompleted()
         {
-            RaiseEvent(new RoutedEventArgs(RefreshCompletedEvent));
+            RaiseEvent(RefreshCompletedEvent);
         }
 
         internal void ValuesChanged(Vector value)

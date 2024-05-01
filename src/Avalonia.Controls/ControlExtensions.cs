@@ -30,14 +30,15 @@ namespace Avalonia.Controls
 
             if (control.IsEffectivelyVisible)
             {
-                var ev = new RequestBringIntoViewEventArgs
-                {
-                    RoutedEvent = Control.RequestBringIntoViewEvent,
-                    TargetObject = control,
-                    TargetRect = rect,
-                };
-
-                control.RaiseEvent(ev);
+                control.RaiseEvent(
+                    Control.RequestBringIntoViewEvent,
+                    static (e, ctx) => new RequestBringIntoViewEventArgs
+                    {
+                        RoutedEvent = e,
+                        TargetObject = ctx.control,
+                        TargetRect = ctx.rect
+                    },
+                    (control, rect));
             }
         }
 

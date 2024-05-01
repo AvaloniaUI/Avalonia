@@ -50,10 +50,7 @@ namespace Avalonia.Controls.Mixins
                 {
                     ((IPseudoClasses)sender.Classes).Set(":selected", x.NewValue.GetValueOrDefault());
 
-                    sender.RaiseEvent(new RoutedEventArgs
-                    {
-                        RoutedEvent = SelectingItemsControl.IsSelectedChangedEvent
-                    });
+                    sender.RaiseEvent(SelectingItemsControl.IsSelectedChangedEvent);
                 }
             });
         }

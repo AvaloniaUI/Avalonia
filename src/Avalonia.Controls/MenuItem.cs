@@ -378,7 +378,7 @@ namespace Avalonia.Controls
         public void Close() => SetCurrentValue(IsSubMenuOpenProperty, false);
 
         /// <inheritdoc/>
-        void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
+        void IMenuItem.RaiseClick() => RaiseEvent(ClickEvent);
 
         protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
@@ -805,7 +805,7 @@ namespace Avalonia.Controls
                     item.TryUpdateCanExecute();
                 }
 
-                RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
+                RaiseEvent(SubmenuOpenedEvent);
                 SetCurrentValue(IsSelectedProperty, true);
                 PseudoClasses.Add(":open");
             }
@@ -855,7 +855,7 @@ namespace Avalonia.Controls
         {
             if (IsEffectivelyEnabled)
             {
-                RaiseEvent(new RoutedEventArgs(ClickEvent));
+                RaiseEvent(ClickEvent);
             }
         }
 

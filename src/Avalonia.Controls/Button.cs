@@ -343,14 +343,17 @@ namespace Avalonia.Controls
                     OpenFlyout();
                 }
 
-                var e = new RoutedEventArgs(ClickEvent);
-                RaiseEvent(e);
+                var e = RaiseEvent(ClickEvent);
+                var handled = e?.Handled ?? false;
 
                 (var command, var parameter) = (Command, CommandParameter);
-                if (!e.Handled && command is not null && command.CanExecute(parameter))
+                if (!handled && command is not null && command.CanExecute(parameter))
                 {
                     command.Execute(parameter);
-                    e.Handled = true;
+                    if (e is not null)
+                    {
+                        e.Handled = true;
+                    }
                 }
             }
         }

@@ -93,7 +93,7 @@ namespace Avalonia.Controls
                     .FirstOrDefault(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
                         && x.Element.IsEffectivelyVisible).Element;
 
-                focus?.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+                focus?.RaiseEvent(AccessKeyHandler.AccessKeyPressedEvent);
 
                 e.Handled = true;
             }

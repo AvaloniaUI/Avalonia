@@ -334,19 +334,22 @@ namespace Avalonia.Controls.Primitives
                         flyout.VerticalOffset = topLeft.Y - verticalOffset;
                         flyout.HorizontalOffset = topLeft.X;
                         flyout.Placement = PlacementMode.TopEdgeAlignedLeft;
-                        _textBox.RaiseEvent(new ContextRequestedEventArgs());
+                        RaiseContextRequested();
 
                         return true;
                     }
                 }
                 else
                 {
-                    _textBox.RaiseEvent(new ContextRequestedEventArgs());
+                    RaiseContextRequested();
                 }
             }
 
             return false;
         }
+
+        private void RaiseContextRequested()
+            => _textBox?.RaiseEvent(ContextRequestedEvent, static _ => new ContextRequestedEventArgs());
 
         private void TextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
         {

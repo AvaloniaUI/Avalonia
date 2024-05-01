@@ -341,7 +341,7 @@ namespace Avalonia.Controls
                 ArrangeChild(child, rcChild, finalSize, Orientation);
             }
 
-            RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
+            RaiseEvent(fHorizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent);
 
             return finalSize;
         }

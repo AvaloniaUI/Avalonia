@@ -52,7 +52,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
             ListBox.SelectionModeProperty.AddOwner<TreeView>();
 
-        private static readonly IList Empty = Array.Empty<object>();
         private object? _selectedItem;
         private IList? _selectedItems;
         private bool _syncingSelectedItems;
@@ -449,11 +448,13 @@ namespace Avalonia.Controls
 
             if (added?.Count > 0 || removed?.Count > 0)
             {
-                var changed = new SelectionChangedEventArgs(
+                RaiseEvent(
                     SelectingItemsControl.SelectionChangedEvent,
-                    removed ?? Empty,
-                    added ?? Empty);
-                RaiseEvent(changed);
+                    static (evnt, ctx) => new SelectionChangedEventArgs(
+                        evnt,
+                        ctx.removed ?? Array.Empty<object>(),
+                        ctx.added ?? Array.Empty<object>()),
+                    (removed, added));
             }
         }
 

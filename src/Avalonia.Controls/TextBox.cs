@@ -1119,9 +1119,10 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var eventArgs = new RoutedEventArgs(CuttingToClipboardEvent);
-            RaiseEvent(eventArgs);
-            if (!eventArgs.Handled)
+            var eventArgs = RaiseEvent(CuttingToClipboardEvent);
+            var handled = eventArgs?.Handled ?? false;
+
+            if (!handled)
             {
                 SnapshotUndoRedo();
 
@@ -1147,9 +1148,10 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var eventArgs = new RoutedEventArgs(CopyingToClipboardEvent);
-            RaiseEvent(eventArgs);
-            if (!eventArgs.Handled)
+            var eventArgs = RaiseEvent(CopyingToClipboardEvent);
+            var handled = eventArgs?.Handled ?? false;
+
+            if (!handled)
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
@@ -1163,9 +1165,10 @@ namespace Avalonia.Controls
         /// </summary>
         public async void Paste()
         {
-            var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
-            RaiseEvent(eventArgs);
-            if (eventArgs.Handled)
+            var eventArgs = RaiseEvent(PastingFromClipboardEvent);
+            var handled = eventArgs?.Handled ?? false;
+
+            if (handled)
             {
                 return;
             }
@@ -2126,13 +2129,11 @@ namespace Avalonia.Controls
             //    This occurs after the Text property is set.
             // 2. TextChanged occurs asynchronously after text changes and the new text is rendered.
 
-            var textChangingEventArgs = new TextChangingEventArgs(TextChangingEvent);
-            RaiseEvent(textChangingEventArgs);
+            RaiseEvent(TextChangingEvent, static e =>  new TextChangingEventArgs(e));
 
             Dispatcher.UIThread.Post(() =>
             {
-                var textChangedEventArgs = new TextChangedEventArgs(TextChangedEvent);
-                RaiseEvent(textChangedEventArgs);
+                RaiseEvent(TextChangedEvent, static e =>  new TextChangedEventArgs(e));
             }, DispatcherPriority.Normal);
         }
 

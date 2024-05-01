@@ -166,11 +166,10 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ValueProperty)
             {
-                var valueChangedEventArgs = new RangeBaseValueChangedEventArgs(
-                    change.GetOldValue<double>(),
-                    change.GetNewValue<double>(),
-                    ValueChangedEvent);
-                RaiseEvent(valueChangedEventArgs);
+                RaiseEvent(
+                    ValueChangedEvent,
+                    static (e, ctx) => new RangeBaseValueChangedEventArgs(ctx.oldValue, ctx.newValue, e),
+                    (oldValue: change.GetOldValue<double>(), newValue: change.GetNewValue<double>()));
             }
         }
         
