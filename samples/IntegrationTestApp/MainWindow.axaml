@@ -186,6 +186,7 @@
           <TextBox Name="WindowTitleBarHeightHint" Text="-1" Watermark="In dips" />
           <Button Name="ApplyWindowDecorations" Content="Apply decorations on this Window"  />
           <Button Name="ShowNewWindowDecorations" Content="Show new Window with decorations" />
+          <TextBox Name="WindowDecorationProperties" AcceptsReturn="True" />
         </StackPanel>
       </TabItem>
 

@@ -302,7 +302,7 @@ namespace IntegrationTestApp
             window.Background = Brushes.Transparent;
             window.PropertyChanged += WindowOnPropertyChanged;
 
-            static void WindowOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+            void WindowOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
             {
                 var window = (Window)sender!;
                 if (e.Property == OffScreenMarginProperty || e.Property == WindowDecorationMarginProperty)
@@ -311,10 +311,13 @@ namespace IntegrationTestApp
                 }
             }
 
-            static void AdjustOffsets(Window window)
+            void AdjustOffsets(Window window)
             {
                 window.Padding = window.OffScreenMargin;
                 ((Control)window.Content!).Margin = window.WindowDecorationMargin;
+
+                WindowDecorationProperties.Text =
+                    $"{window.OffScreenMargin.Top * DesktopScaling} {window.WindowDecorationMargin.Top * DesktopScaling} {window.IsExtendedIntoWindowDecorations}";
             }
         }
 

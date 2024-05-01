@@ -1,3 +1,4 @@
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Chrome;
 
@@ -15,6 +16,8 @@ internal class TitleBarAutomationPeer : ControlAutomationPeer
     {
         return "TitleBar";
     }
+
+    protected override string? GetAutomationIdCore() => base.GetAutomationIdCore() ?? "AvaloniaTitleBar";
 
     protected override AutomationControlType GetAutomationControlTypeCore()
     {
