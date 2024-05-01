@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium;
 
-[Collection("Default")]
+[Collection("WindowDecorations")]
 public class WindowDecorationsTests : IDisposable
 {
     private readonly AppiumDriver _session;
