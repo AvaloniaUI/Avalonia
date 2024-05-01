@@ -54,7 +54,10 @@ namespace Avalonia.FreeDesktop
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
-
+           
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
+            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+            
             WatchAsync();
         }
 
@@ -109,9 +112,6 @@ namespace Avalonia.FreeDesktop
             var tid = s_trayIconInstanceId++;
 
             _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
-
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
             await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
@@ -126,19 +126,6 @@ namespace Avalonia.FreeDesktop
                 return;
 
             _dBus!.ReleaseNameAsync(_sysTrayServiceName);
-            
-            //  HACK / TODO: Hack for making sure that toggling IsVisible on the 
-            //  tray icon wont crash the whole app.
-            //  May need https://github.com/tmds/Tmds.DBus/issues/225 to remove this hack.
-            //  I think it might be better if we can dispose _statusNotifierItemDbusObj instead 
-            //  but that's not possible at the moment.
-            
-            var connType = _connection.GetType();
-            var getDbusCon = connType.GetField("_connection", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(_connection);
-            var pathNodes = getDbusCon?.GetType()?.GetField("_pathNodes", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?.GetValue(getDbusCon);
-            pathNodes?.GetType()?.GetMethod("RemoveMethodHandlers", BindingFlags.Instance | BindingFlags.NonPublic)?
-                .Invoke(pathNodes, [new List<IMethodHandler>() { _statusNotifierItemDbusObj }, 1]);
         }
 
         public void Dispose()
