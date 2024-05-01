@@ -75,10 +75,13 @@ namespace Avalonia.Input
                 }
 
                 _pullInProgress = true;
-                var pullEventArgs = new PullGestureEventArgs(_gestureId, delta, PullDirection);
-                Target?.RaiseEvent(pullEventArgs);
 
-                e.Handled = pullEventArgs.Handled;
+                var pullEventArgs = Target.RaiseEvent(
+                    Gestures.PullGestureEvent,
+                    static (_, ctx) => new PullGestureEventArgs(ctx.gestureId, ctx.delta, ctx.pullDirection),
+                    (gestureId: _gestureId, delta, pullDirection: PullDirection));
+
+                e.Handled = pullEventArgs?.Handled ?? false;
             }
         }
 
@@ -131,7 +134,10 @@ namespace Avalonia.Input
             _initialPosition = default;
             _pullInProgress = false;
 
-            Target?.RaiseEvent(new PullGestureEndedEventArgs(_gestureId, PullDirection));
+            Target?.RaiseEvent(
+                Gestures.PullGestureEndedEvent,
+                static (_, ctx) => new PullGestureEndedEventArgs(ctx.gestureId, ctx.pullDirection),
+                (gestureId: _gestureId, pullDirection: PullDirection));
         }
     }
 }

@@ -42,10 +42,16 @@ namespace Avalonia.Input
 
                     var degree = GetAngleDegreeFromPoints(_firstPoint, _secondPoint);
 
-                    var pinchEventArgs = new PinchEventArgs(scale, _origin, degree, _previousAngle - degree);
+                    var angleDelta = _previousAngle - degree;
+
+                    var pinchEventArgs = Target?.RaiseEvent(
+                        Gestures.PinchEvent,
+                        static (_, ctx) => new PinchEventArgs(ctx.scale, ctx.origin, ctx.degree, ctx.angleDelta),
+                        (scale, origin: _origin, degree, angleDelta));
+
                     _previousAngle = degree;
-                    Target?.RaiseEvent(pinchEventArgs);
-                    e.Handled = pinchEventArgs.Handled;
+
+                    e.Handled = pinchEventArgs?.Handled ?? false;
                     e.PreventGestureRecognition();
                 }
             }
@@ -111,7 +117,7 @@ namespace Avalonia.Input
                     _secondContact = null;
                 }
 
-                Target?.RaiseEvent(new PinchEndedEventArgs());
+                Target?.RaiseEvent(Gestures.PinchEndedEvent, static _ => new PinchEndedEventArgs());
                 return true;
             }
             return false;

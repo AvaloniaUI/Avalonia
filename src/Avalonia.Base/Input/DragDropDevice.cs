@@ -27,18 +27,19 @@ namespace Avalonia.Input
             if (target == null)
                 return DragDropEffects.None;
 
-            var p = ((Visual)inputRoot).TranslatePoint(point, target);
-
-            if (!p.HasValue)
+            if ((inputRoot as Visual)?.TranslatePoint(point, target) is not { } translatedPoint)
                 return DragDropEffects.None;
 
-            var args = new DragEventArgs(routedEvent, data, target, p.Value, modifiers)
-            {
-                RoutedEvent = routedEvent,
-                DragEffects = operation
-            };
-            target.RaiseEvent(args);
-            return args.DragEffects;
+            var args = target.RaiseEvent(
+                routedEvent,
+                static (e, ctx) =>
+                    new DragEventArgs(e, ctx.data, ctx.target, ctx.translatedPoint, ctx.modifiers)
+                    {
+                        DragEffects = ctx.operation
+                    },
+                (data, target, translatedPoint, modifiers, operation));
+
+            return args?.DragEffects ?? operation;
         }
         
         private DragDropEffects DragEnter(IInputRoot inputRoot, Point point, IDataObject data, DragDropEffects effects, KeyModifiers modifiers)

@@ -11,6 +11,26 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
+    using PointerMovedContext = (
+        IInputElement source,
+        Pointer pointer,
+        Visual rootVisual,
+        Point rootVisualPosition,
+        ulong timestamp,
+        PointerPointProperties properties,
+        KeyModifiers modifiers,
+        Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints);
+
+    using PointerReleasedContext = (
+        IInputElement source,
+        IPointer pointer,
+        Visual rootVisual,
+        Point rootVisualPosition,
+        ulong timestamp,
+        PointerPointProperties properties,
+        KeyModifiers modifiers,
+        MouseButton initialPressMouseButton);
+
     /// <summary>
     /// Represents a pen/stylus device.
     /// </summary>
@@ -115,9 +135,29 @@ namespace Avalonia.Input
                 }
 
                 _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                var e = new PointerPressedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers, _clickCount);
-                source.RaiseEvent(e);
-                return e.Handled;
+
+                var eventArgs = source.RaiseEvent(
+                    InputElement.PointerPressedEvent,
+                    static (_, ctx) => new PointerPressedEventArgs(
+                        ctx.source,
+                        ctx.pointer,
+                        ctx.rootVisual,
+                        ctx.rootVisualPosition,
+                        ctx.timestamp,
+                        ctx.properties,
+                        ctx.inputModifiers,
+                        ctx.clickCount),
+                    (source,
+                        pointer,
+                        rootVisual: (Visual)root,
+                        rootVisualPosition: p,
+                        timestamp,
+                        properties,
+                        inputModifiers,
+                        clickCount: _clickCount)
+                );
+
+                return eventArgs?.Handled ?? false;
             }
 
             return false;
@@ -132,14 +172,41 @@ namespace Avalonia.Input
 
             if (source is not null)
             {
-                var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, pointer, (Visual)root,
-                    p, timestamp, properties, inputModifiers, intermediatePoints);
+                PointerMovedContext context = (
+                    source,
+                    pointer,
+                    (Visual)root,
+                    p,
+                    timestamp,
+                    properties,
+                    inputModifiers,
+                    intermediatePoints);
 
-                if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
-                    gestureRecognizer.PointerMovedInternal(e);
+                static PointerEventArgs CreateEventArgs(RoutedEvent<PointerEventArgs> e, PointerMovedContext ctx)
+                    => new(
+                        e,
+                        ctx.source,
+                        ctx.pointer,
+                        ctx.rootVisual,
+                        ctx.rootVisualPosition,
+                        ctx.timestamp,
+                        ctx.properties,
+                        ctx.modifiers,
+                        ctx.previousPoints);
+
+                PointerEventArgs? eventArgs;
+
+                if (pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+                {
+                    eventArgs = CreateEventArgs(InputElement.PointerMovedEvent, context);
+                    gestureRecognizer.PointerMovedInternal(eventArgs);
+                }
                 else
-                    source.RaiseEvent(e);
-                return e.Handled;
+                {
+                    eventArgs = source.RaiseEvent(InputElement.PointerMovedEvent, CreateEventArgs, context);
+                }
+
+                return eventArgs?.Handled ?? false;
             }
 
             return false;
@@ -153,15 +220,40 @@ namespace Avalonia.Input
 
             if (source is not null)
             {
-                var e = new PointerReleasedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
+                PointerReleasedContext context = (
+                    source,
+                    pointer,
+                    (Visual)root,
+                    p,
+                    timestamp,
+                    properties,
+                    inputModifiers,
                     _lastMouseDownButton);
+
+                static PointerReleasedEventArgs CreateEventArgs(RoutedEvent<PointerReleasedEventArgs> e, PointerReleasedContext ctx)
+                    => new(
+                        ctx.source,
+                        ctx.pointer,
+                        ctx.rootVisual,
+                        ctx.rootVisualPosition,
+                        ctx.timestamp,
+                        ctx.properties,
+                        ctx.modifiers,
+                        ctx.initialPressMouseButton);
+
+                PointerReleasedEventArgs? eventArgs;
 
                 try
                 {
-                    if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
-                        gestureRecognizer.PointerReleasedInternal(e);
+                    if (pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+                    {
+                        eventArgs = CreateEventArgs(InputElement.PointerReleasedEvent, context);
+                        gestureRecognizer.PointerReleasedInternal(eventArgs);
+                    }
                     else
-                        source.RaiseEvent(e);
+                    {
+                        eventArgs = source.RaiseEvent(InputElement.PointerReleasedEvent, CreateEventArgs, context);
+                    }
                 }
                 finally
                 {
@@ -171,7 +263,7 @@ namespace Avalonia.Input
                     _lastMouseDownButton = default;
                 }
 
-                return e.Handled;
+                return eventArgs?.Handled ?? false;
             }
 
             return false;

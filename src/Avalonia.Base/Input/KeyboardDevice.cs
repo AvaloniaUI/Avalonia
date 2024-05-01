@@ -149,18 +149,18 @@ namespace Avalonia.Input
                 _focusedElement = element;
                 _focusedRoot = ((Visual?)_focusedElement)?.VisualRoot as IInputRoot;
 
-                interactive?.RaiseEvent(new RoutedEventArgs
-                {
-                    RoutedEvent = InputElement.LostFocusEvent,
-                });
+                interactive?.RaiseEvent(InputElement.LostFocusEvent);
 
                 interactive = element as Interactive;
 
-                interactive?.RaiseEvent(new GotFocusEventArgs
-                {
-                    NavigationMethod = method,
-                    KeyModifiers = keyModifiers,
-                });
+                interactive?.RaiseEvent(
+                    InputElement.GotFocusEvent,
+                    static (_, ctx) => new GotFocusEventArgs
+                    {
+                        NavigationMethod = ctx.method,
+                        KeyModifiers = ctx.keyModifiers,
+                    },
+                    (method, keyModifiers));
 
                 _textInputManager.SetFocusedElement(element);
                 RaisePropertyChanged(nameof(FocusedElement));
@@ -241,15 +241,17 @@ namespace Avalonia.Input
 
             if (e is RawTextInputEventArgs text)
             {
-                var ev = new TextInputEventArgs()
-                {
-                    Text = text.Text,
-                    Source = element,
-                    RoutedEvent = InputElement.TextInputEvent
-                };
+                var eventArgs = element.RaiseEvent(
+                    InputElement.TextInputEvent,
+                    static (e, ctx) => new TextInputEventArgs
+                    {
+                        Text = ctx.Text,
+                        Source = ctx.element,
+                        RoutedEvent = e
+                    },
+                    (text.Text, element));
 
-                element.RaiseEvent(ev);
-                e.Handled = ev.Handled;
+                e.Handled = eventArgs?.Handled ?? false;
             }
         }
     }

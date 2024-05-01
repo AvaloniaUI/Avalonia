@@ -47,7 +47,11 @@ namespace Avalonia.Input
                 {
                     if (notifyTarget == commonParent)
                         break;
-                    notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
+
+                    notifyTarget.RaiseEvent(
+                        InputElement.PointerCaptureLostEvent,
+                        static (_, ctx) => new PointerCaptureLostEventArgs(ctx.notifyTarget, ctx.pointer),
+                        (notifyTarget, pointer: this));
                 }
             }
 

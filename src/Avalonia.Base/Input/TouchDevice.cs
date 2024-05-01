@@ -1,17 +1,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 #pragma warning disable CS0618
 
 namespace Avalonia.Input
 {
+    using PointerMovedContext = (
+        IInputElement source,
+        Pointer pointer,
+        Visual rootVisual,
+        Point rootVisualPosition,
+        ulong timestamp,
+        PointerPointProperties properties,
+        KeyModifiers modifiers,
+        Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints);
+
+    using PointerReleasedContext = (
+        IInputElement source,
+        IPointer pointer,
+        Visual rootVisual,
+        Point rootVisualPosition,
+        ulong timestamp,
+        PointerPointProperties properties,
+        KeyModifiers modifiers,
+        MouseButton initialPressMouseButton);
+
     /// <summary>
     /// Handles raw touch events
     /// </summary>
@@ -85,34 +103,68 @@ namespace Avalonia.Input
                     }
                 }
 
-                target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
-                    (Visual)args.Root, args.Position, ev.Timestamp,
-                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
-                    keyModifier, _clickCount));
+                target.RaiseEvent(
+                    InputElement.PointerPressedEvent,
+                    static (_, ctx) => new PointerPressedEventArgs(
+                        ctx.source,
+                        ctx.pointer,
+                        ctx.rootVisual,
+                        ctx.rootVisualPosition,
+                        ctx.timestamp,
+                        ctx.properties,
+                        ctx.modifiers,
+                        ctx.clickCount),
+                    (source: target,
+                        pointer,
+                        rootVisual: (Visual)args.Root,
+                        rootVisualPosition: args.Position,
+                        timestamp: args.Timestamp,
+                        properties: new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
+                        modifiers: keyModifier,
+                        clickCount: _clickCount));
             }
 
-            if (args.Type == RawPointerEventType.TouchEnd)
+            else if (args.Type == RawPointerEventType.TouchEnd)
             {
                 _pointers.Remove(args.RawPointerId);
                 using (pointer)
                 {
+                    static PointerReleasedEventArgs CreateEventArgs(RoutedEvent<PointerReleasedEventArgs> e, PointerReleasedContext ctx)
+                        => new(
+                            ctx.source,
+                            ctx.pointer,
+                            ctx.rootVisual,
+                            ctx.rootVisualPosition,
+                            ctx.timestamp,
+                            ctx.properties,
+                            ctx.modifiers,
+                            ctx.initialPressMouseButton);
+
                     target = gestureTarget ?? target;
-                    var e = new PointerReleasedEventArgs(target, pointer,
-                            (Visual)args.Root, args.Position, ev.Timestamp,
-                            new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind, args.Point),
-                            keyModifier, MouseButton.Left);
+
+                    PointerReleasedContext context = (
+                        target,
+                        pointer,
+                        (Visual)args.Root,
+                        args.Position,
+                        args.Timestamp,
+                        new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind, args.Point),
+                        keyModifier,
+                        MouseButton.Left);
+
                     if (gestureTarget != null)
                     {
-                        pointer?.CapturedGestureRecognizer?.PointerReleasedInternal(e);
+                        var eventArgs = CreateEventArgs(InputElement.PointerReleasedEvent, context);
+                        pointer.CapturedGestureRecognizer?.PointerReleasedInternal(eventArgs);
                     }
                     else
                     {
-                        target.RaiseEvent(e);
+                        target.RaiseEvent(InputElement.PointerReleasedEvent, CreateEventArgs, context);
                     }
                 }
             }
 
-            if (args.Type == RawPointerEventType.TouchCancel)
+            else if (args.Type == RawPointerEventType.TouchCancel)
             {
                 _pointers.Remove(args.RawPointerId);
                 using (pointer)
@@ -124,21 +176,40 @@ namespace Avalonia.Input
                 }
             }
 
-            if (args.Type == RawPointerEventType.TouchUpdate)
+            else if (args.Type == RawPointerEventType.TouchUpdate)
             {
                 target = gestureTarget ?? target;
-                var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer!, (Visual)args.Root,
-                    args.Position, ev.Timestamp,
+
+                PointerMovedContext context = (
+                    target,
+                    pointer,
+                    (Visual)args.Root,
+                    args.Position,
+                    args.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
-                    keyModifier, args.IntermediatePoints);
+                    keyModifier,
+                    args.IntermediatePoints);
+
+                static PointerEventArgs CreateEventArgs(RoutedEvent<PointerEventArgs> e, PointerMovedContext ctx)
+                    => new(
+                        e,
+                        ctx.source,
+                        ctx.pointer,
+                        ctx.rootVisual,
+                        ctx.rootVisualPosition,
+                        ctx.timestamp,
+                        ctx.properties,
+                        ctx.modifiers,
+                        ctx.previousPoints);
 
                 if (gestureTarget != null)
                 {
-                    pointer?.CapturedGestureRecognizer?.PointerMovedInternal(e);
+                    var eventArgs = CreateEventArgs(InputElement.PointerMovedEvent, context);
+                    pointer.CapturedGestureRecognizer?.PointerMovedInternal(eventArgs);
                 }
                 else
                 {
-                    target.RaiseEvent(e);
+                    target.RaiseEvent(InputElement.PointerMovedEvent, CreateEventArgs, context);
                 }
             }
         }
