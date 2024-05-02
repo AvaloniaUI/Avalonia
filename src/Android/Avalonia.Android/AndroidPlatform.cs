@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
+using Avalonia.Android.Platform.Vulkan;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -11,6 +12,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Vulkan;
 
 namespace Avalonia
 {
@@ -38,7 +40,12 @@ namespace Avalonia
         /// <summary>
         /// Enables android EGL rendering.
         /// </summary>
-        Egl = 2
+        Egl = 2,
+
+        /// <summary>
+        /// Enables Vulkan rendering
+        /// </summary>
+        Vulkan = 3
     }
 
     public sealed class AndroidPlatformOptions
@@ -113,6 +120,13 @@ namespace Avalonia.Android
                     {
                         return egl;
                     }
+                }
+
+                if (renderingMode == AndroidRenderingMode.Vulkan)
+                {
+                    var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                    if (vulkan != null)
+                        return vulkan;
                 }
             }
 
