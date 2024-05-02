@@ -16,6 +16,7 @@ namespace Avalonia.Controls
         private Control? _tipControl;
         private long _lastTipCloseTime;
         private DispatcherTimer? _timer;
+        private ulong _lastTipEventTime;
 
         public ToolTipService(IInputManager inputManager)
         {
@@ -36,24 +37,34 @@ namespace Avalonia.Controls
         {
             if (e is RawPointerEventArgs pointerEvent)
             {
-                if (e.Root == _tipControl?.GetValue(ToolTip.ToolTipProperty)?.PopupHost)
-                {
-                    return; // pointer is over the current tooltip
-                }
+                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root == currentTip.PopupHost)
+                    _lastTipEventTime = pointerEvent.Timestamp;
+
+                var simultaneousTipEvent = _lastTipEventTime == pointerEvent.Timestamp;
 
                 switch (pointerEvent.Type)
                 {
-                    case RawPointerEventType.Move:
+                    // sometimes there is a null hit test as soon as the pointer enters a tooltip
+                    case RawPointerEventType.Move when !(simultaneousTipEvent && pointerEvent.InputHitTestResult.element == null): 
                         Update(pointerEvent.InputHitTestResult.element as Visual);
+                        break;
+                    case RawPointerEventType.LeaveWindow when e.Root == _tipControl?.VisualRoot && !simultaneousTipEvent:
+                        ClearTip();
+                        _tipControl = null;
                         break;
                     case RawPointerEventType.LeftButtonDown:
                     case RawPointerEventType.RightButtonDown:
                     case RawPointerEventType.MiddleButtonDown:
                     case RawPointerEventType.XButton1Down:
                     case RawPointerEventType.XButton2Down:
-                        StopTimer();
-                        _tipControl?.ClearValue(ToolTip.IsOpenProperty);
+                        ClearTip();
                         break;
+                }
+
+                void ClearTip()
+                {
+                    StopTimer();
+                    _tipControl?.ClearValue(ToolTip.IsOpenProperty);
                 }
             }
         }
