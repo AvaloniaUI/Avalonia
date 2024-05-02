@@ -101,8 +101,10 @@ public unsafe class VulkanContext : IDisposable
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (!gpuInterop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes
+                if (!(gpuInterop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes
                         .D3D11TextureGlobalSharedHandle)
+                    || gpuInterop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes
+                        .VulkanOpaqueNtHandle))
                    )
                     return (null, "Image sharing is not supported by the current backend");
                 requireDeviceExtensions.Add(KhrExternalMemoryWin32.ExtensionName);
@@ -240,10 +242,13 @@ public unsafe class VulkanContext : IDisposable
                         }
                     });
                     
+                    
 
                     D3DDevice? d3dDevice = null;
                     if (physicalDeviceIDProperties.DeviceLuidvalid &&
-                        RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                        !gpuInterop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaqueNtHandle)
+                        )
                         d3dDevice = D3DMemoryHelper.CreateDeviceByLuid(
                             new Span<byte>(physicalDeviceIDProperties.DeviceLuid, 8));
 

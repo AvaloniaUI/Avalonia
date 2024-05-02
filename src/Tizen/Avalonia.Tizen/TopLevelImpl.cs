@@ -104,6 +104,11 @@ internal class TopLevelImpl : ITopLevelImpl
             return _clipboard;
         }
 
+        if (featureType == typeof(ILauncher))
+        {
+            return new TizenLauncher();
+        }
+
         return null;
     }
 

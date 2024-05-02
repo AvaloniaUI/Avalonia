@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Android.App;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
@@ -8,13 +9,14 @@ using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
+using Avalonia.Threading;
 using AndroidWindow = Android.Views.Window;
 
 namespace Avalonia.Android.Platform
 {
     internal sealed class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
     {
-        private readonly AvaloniaMainActivity _activity;
+        private readonly Activity _activity;
         private readonly TopLevelImpl _topLevel;
         private bool _displayEdgeToEdge;
         private bool? _systemUiVisibility;
@@ -27,8 +29,8 @@ namespace Avalonia.Android.Platform
 
         private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
         
-        public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
-        public event EventHandler<InputPaneStateEventArgs> StateChanged;
+        public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
+        public event EventHandler<InputPaneStateEventArgs>? StateChanged;
 
         public InputPaneState State
         {
@@ -40,7 +42,7 @@ namespace Avalonia.Android.Platform
                 if (oldState != value && Build.VERSION.SdkInt <= BuildVersionCodes.Q)
                 {
                     var currentRect = OccludedRect;
-                    StateChanged?.Invoke(this, new InputPaneStateEventArgs(value, _previousRect, currentRect, TimeSpan.Zero, null));
+                    NotifyStateChanged(value, _previousRect, currentRect, TimeSpan.Zero, null);
                     _previousRect = currentRect;
                 }
             }
@@ -72,7 +74,7 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        internal AndroidInsetsManager(AvaloniaMainActivity activity, TopLevelImpl topLevel) : base(DispatchModeStop)
+        internal AndroidInsetsManager(Activity activity, TopLevelImpl topLevel) : base(DispatchModeStop)
         {
             _activity = activity;
             _topLevel = topLevel;
@@ -151,7 +153,12 @@ namespace Avalonia.Android.Platform
 
         private void NotifySafeAreaChanged(Thickness safeAreaPadding)
         {
-            SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding));
+            Dispatcher.UIThread.Send(_ => SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding)));
+        }
+        
+        private void NotifyStateChanged(InputPaneState newState, Rect? startRect, Rect endRect, TimeSpan animationDuration, IEasing? easing)
+        {
+            Dispatcher.UIThread.Send(_ => StateChanged?.Invoke(this, new InputPaneStateEventArgs(newState, startRect, endRect, animationDuration, easing)));
         }
 
         public void OnGlobalLayout()
@@ -294,7 +301,8 @@ namespace Avalonia.Android.Platform
                     var duration = TimeSpan.FromMilliseconds(animation.DurationMillis);
 
                     bool isOpening = State == InputPaneState.Open;
-                    StateChanged?.Invoke(this, new InputPaneStateEventArgs(State, isOpening ? upperRect : lowerRect, isOpening ? lowerRect : upperRect, duration, new AnimationEasing(animation.Interpolator)));
+                    NotifyStateChanged(State, isOpening ? upperRect : lowerRect, isOpening ? lowerRect : upperRect, duration,
+                        animation.Interpolator is { } interpolator ? new AnimationEasing(interpolator) : null);
                 }
             }
 

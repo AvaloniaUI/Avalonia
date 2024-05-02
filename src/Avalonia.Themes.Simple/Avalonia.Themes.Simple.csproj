@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
@@ -8,6 +8,9 @@
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <AvaloniaResource Include="**/*.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="..\Avalonia.Themes.Fluent\Strings\InvariantResources.xaml" Link="Strings\InvariantResources.xaml" />
   </ItemGroup>
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\BuildTargets.targets" />

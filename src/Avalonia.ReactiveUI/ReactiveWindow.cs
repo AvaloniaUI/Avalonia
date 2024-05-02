@@ -1,8 +1,4 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using Avalonia;
-using Avalonia.VisualTree;
 using Avalonia.Controls;
 using ReactiveUI;
 
@@ -29,8 +25,6 @@ namespace Avalonia.ReactiveUI
             // This WhenActivated block calls ViewModel's WhenActivated
             // block if the ViewModel implements IActivatableViewModel.
             this.WhenActivated(disposables => { });
-            this.GetObservable(DataContextProperty).Subscribe(OnDataContextChanged);
-            this.GetObservable(ViewModelProperty).Subscribe(OnViewModelChanged);
         }
             
         /// <summary>
@@ -48,27 +42,24 @@ namespace Avalonia.ReactiveUI
             set => ViewModel = (TViewModel?)value;
         }
 
-        private void OnDataContextChanged(object? value)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (value is TViewModel viewModel)
-            {
-                ViewModel = viewModel;
-            }
-            else
-            {
-                ViewModel = null;
-            }
-        }
+            base.OnPropertyChanged(change);
 
-        private void OnViewModelChanged(object? value)
-        {
-            if (value == null)
+            if (change.Property == DataContextProperty)
             {
-                ClearValue(DataContextProperty);
+                if (ReferenceEquals(change.OldValue, ViewModel)
+                    && change.NewValue is null or TViewModel)
+                {
+                    SetCurrentValue(ViewModelProperty, change.NewValue);
+                }
             }
-            else if (DataContext != value)
+            else if (change.Property == ViewModelProperty)
             {
-                DataContext = value;
+                if (ReferenceEquals(change.OldValue, DataContext))
+                {
+                    SetCurrentValue(DataContextProperty, change.NewValue);
+                }
             }
         }
     }

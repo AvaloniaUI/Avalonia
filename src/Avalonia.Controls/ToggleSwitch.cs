@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A Toggle Switch control.
     /// </summary>
-    [TemplatePart("PART_MovingKnobs",         typeof(Panel))]
+    [TemplatePart("PART_MovingKnobs",         typeof(Panel), IsRequired = true)]
     [TemplatePart("PART_OffContentPresenter", typeof(ContentPresenter))]
     [TemplatePart("PART_OnContentPresenter",  typeof(ContentPresenter))]
     [TemplatePart("PART_SwitchKnob",          typeof(Panel))]

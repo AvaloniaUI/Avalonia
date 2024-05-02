@@ -1,14 +1,17 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Platform;
 using Foundation;
 using UIKit;
 
-#nullable enable
 namespace Avalonia.iOS;
 
-internal sealed class UIKitInputPane : IInputPane
+[UnsupportedOSPlatform("tvos")]
+[SupportedOSPlatform("maccatalyst")]
+[SupportedOSPlatform("ios")]
+internal sealed class UIKitInputPane : InputPaneBase
 {
     public static UIKitInputPane Instance { get; } = new();
     
@@ -21,11 +24,7 @@ internal sealed class UIKitInputPane : IInputPane
             .DefaultCenter
             .AddObserver(UIKeyboard.WillHideNotification, KeyboardDownNotification);
     }
-
-    public InputPaneState State { get; private set; }
-    public Rect OccludedRect { get; private set; }
-    public event EventHandler<InputPaneStateEventArgs>? StateChanged;
-
+    
     private void KeyboardDownNotification(NSNotification obj) => RaiseEventFromNotification(false, obj);
 
     private void KeyboardUpNotification(NSNotification obj) => RaiseEventFromNotification(true, obj);
@@ -33,7 +32,11 @@ internal sealed class UIKitInputPane : IInputPane
     private void RaiseEventFromNotification(bool isUp, NSNotification notification)
     {
         State = isUp ? InputPaneState.Open : InputPaneState.Closed;
-
+#if MACCATALYST
+        OccludedRect = default;
+        OnStateChanged(new InputPaneStateEventArgs(
+            State, null, OccludedRect));
+#else
         var startFrame = UIKeyboard.FrameBeginFromNotification(notification);
         var endFrame = UIKeyboard.FrameEndFromNotification(notification);
         var duration = UIKeyboard.AnimationDurationFromNotification(notification);
@@ -48,7 +51,8 @@ internal sealed class UIKitInputPane : IInputPane
         var startRect = new Rect(startFrame.X, startFrame.Y, startFrame.Width, startFrame.Height);
         OccludedRect = new Rect(endFrame.X, endFrame.Y, endFrame.Width, endFrame.Height);
 
-        StateChanged?.Invoke(this, new InputPaneStateEventArgs(
+        OnStateChanged(new InputPaneStateEventArgs(
             State, startRect, OccludedRect, TimeSpan.FromSeconds(duration), easing));
+#endif
     }
 }

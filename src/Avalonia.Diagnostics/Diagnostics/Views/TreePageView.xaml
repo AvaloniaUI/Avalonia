@@ -8,7 +8,8 @@
               BorderThickness="0"
               ItemsSource="{Binding Nodes}"
               SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
-              PointerMoved="UpdateAdorner">
+              PointerMoved="UpdateAdorner"
+              PointerExited="RemoveAdorner">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">

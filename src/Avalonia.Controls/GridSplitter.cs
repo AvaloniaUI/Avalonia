@@ -60,6 +60,7 @@ namespace Avalonia.Controls
         private static readonly Cursor s_rowSplitterCursor = new Cursor(StandardCursorType.SizeNorthSouth);
 
         private ResizeData? _resizeData;
+        private bool _isFocusEngaged;
 
         /// <summary>
         /// Indicates whether the Splitter resizes the Columns, Rows, or Both.
@@ -449,11 +450,17 @@ namespace Avalonia.Controls
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            Key key = e.Key;
+            var usingXyNavigation = this.IsAllowedXYNavigationMode(e.KeyDeviceType);
+            var allowArrowKeys = _isFocusEngaged || !usingXyNavigation; 
 
-            switch (key)
+            switch (e.Key)
             {
+                case Key.Enter when usingXyNavigation:
+                    _isFocusEngaged = !_isFocusEngaged;
+                    e.Handled = true;
+                    break;
                 case Key.Escape:
+                    _isFocusEngaged = false;
                     if (_resizeData != null)
                     {
                         CancelResize();
@@ -462,16 +469,16 @@ namespace Avalonia.Controls
 
                     break;
 
-                case Key.Left:
+                case Key.Left when allowArrowKeys:
                     e.Handled = KeyboardMoveSplitter(-KeyboardIncrement, 0);
                     break;
-                case Key.Right:
+                case Key.Right when allowArrowKeys:
                     e.Handled = KeyboardMoveSplitter(KeyboardIncrement, 0);
                     break;
-                case Key.Up:
+                case Key.Up when allowArrowKeys:
                     e.Handled = KeyboardMoveSplitter(0, -KeyboardIncrement);
                     break;
-                case Key.Down:
+                case Key.Down when allowArrowKeys:
                     e.Handled = KeyboardMoveSplitter(0, KeyboardIncrement);
                     break;
             }

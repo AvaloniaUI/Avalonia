@@ -438,5 +438,117 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Theory,
+         InlineData(false),
+         InlineData(true)
+        ]
+        public async Task ImageBrush_Is_Properly_Mapped(bool relative)
+        {
+            var brush = new ImageBrush
+            {
+                Stretch = Stretch.Fill,
+                TileMode = TileMode.Tile,
+                DestinationRect = relative
+                    ? new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative)
+                    : new RelativeRect(0, 0, 256, 256, RelativeUnit.Absolute),
+                Source = new Bitmap(BitmapPath),
+            };
+
+            var testName =
+                $"{nameof(ImageBrush_Is_Properly_Mapped)}_{brush.DestinationRect.Unit}";
+            await RenderToFile(new RelativePointTestPrimitivesHelper(brush), testName);
+            CompareImages(testName);
+        }
+
+        [Fact]
+        public async Task ImageBrush_Should_Render_With_Transform()
+        {
+            var image = new Image
+            {
+                Width = 200,
+                Height = 200,
+                Source = new DrawingImage
+                {
+                    Drawing = new GeometryDrawing
+                    {
+                        Brush = new DrawingBrush
+                        {
+                            Transform = new TranslateTransform { X = 10, Y = 10 },
+                            Drawing = new GeometryDrawing
+                            {
+                                Brush = Brushes.MediumBlue,
+                                Geometry = new RectangleGeometry { Rect = new Rect(0, 0, 48, 48) }
+                            }
+                        },
+                        Geometry = new RectangleGeometry { Rect = new Rect(0, 0, 48, 48) }
+                    }
+                }
+            };
+            
+            await RenderToFile(image);
+            
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task ImageBrush_Should_Render_With_TransformOrigin()
+        {
+            var image = new Image
+            {
+                Width = 200,
+                Height = 200,
+                Source = new DrawingImage
+                {
+                    Drawing = new GeometryDrawing
+                    {
+                        Brush = new DrawingBrush
+                        {
+                            Transform = new RotateTransform(45),
+                            TransformOrigin = new RelativePoint(.5,.5, RelativeUnit.Relative),
+                            Drawing = new GeometryDrawing
+                            {
+                                Brush = Brushes.MediumBlue,
+                                Geometry = new RectangleGeometry { Rect = new Rect(0, 0, 48, 48) }
+                            }
+                        },
+                        Geometry = new RectangleGeometry { Rect = new Rect(0, 0, 48, 48) }
+                    }
+                }
+            };
+
+            await RenderToFile(image);
+
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task ImageBrush_Tile_Small_Image_With_Transform()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new DrawingBrush
+                    {
+                        DestinationRect = new RelativeRect(0,0,32,32, RelativeUnit.Absolute),
+                        Transform = new TranslateTransform(10,10),
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.Tile,
+                        Drawing = new ImageDrawing
+                        {
+                            Rect = new Rect(0,0,32,32),
+                            ImageSource = new Bitmap(SmallBitmapPath)
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }

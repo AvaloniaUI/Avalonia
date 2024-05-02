@@ -2292,6 +2292,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         }
 
+        [Fact]
+        public void Changing_DataContext_Respects_AlwaysSelected()
+        {
+            // Issue #12733
+            var target = new ListBox 
+            { 
+                DataContext = Enumerable.Range(0, 10).ToList(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+                Template = Template(),
+                [!ListBox.ItemsSourceProperty] = new Binding(),
+            };
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.DataContext = Enumerable.Range(10, 10).ToList();
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
         [Theory]
         [MemberData(nameof(GetSelectionFieldPermutationParameters))]
         public void SelectedItem_And_Selection_Properties_Work_In_Any_Order_When_Initializing(SelectionField[] fields)

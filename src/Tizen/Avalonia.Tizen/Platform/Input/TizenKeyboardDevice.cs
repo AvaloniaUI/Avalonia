@@ -46,7 +46,7 @@ internal class TizenKeyboardDevice : KeyboardDevice, IKeyboardDevice
         { "XF86PowerOff", Key.Sleep },
         { "XF86PlayBack", Key.MediaPlayPause },
         { "XF86Home", Key.MediaHome },
-        { "XF86Back", Key.Back },
+        { "XF86Back", Key.Escape }, // Back button should be mapped as Esc
         { "XF86Exit", Key.Cancel },
 
         { "Shift_L", Key.LeftShift },

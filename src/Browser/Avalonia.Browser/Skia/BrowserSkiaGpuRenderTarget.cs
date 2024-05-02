@@ -1,3 +1,5 @@
+using System;
+using Avalonia.Browser.Rendering;
 using Avalonia.Skia;
 using SkiaSharp;
 
@@ -6,20 +8,20 @@ namespace Avalonia.Browser.Skia
     internal class BrowserSkiaGpuRenderTarget : ISkiaGpuRenderTarget
     {
         private readonly GRBackendRenderTarget _renderTarget;
-        private readonly BrowserSkiaSurface _browserSkiaSurface;
+        private readonly BrowserGlSurface _browserGlSurface;
         private readonly PixelSize _size;
 
-        public BrowserSkiaGpuRenderTarget(BrowserSkiaSurface browserSkiaSurface)
+        public BrowserSkiaGpuRenderTarget(BrowserGlSurface browserGlSurface)
         {
-            _size = browserSkiaSurface.Size;
+            _size = browserGlSurface.RenderSize;
 
-            var glFbInfo = new GRGlFramebufferInfo(browserSkiaSurface.GlInfo.FboId, browserSkiaSurface.ColorType.ToGlSizedFormat());
-            _browserSkiaSurface = browserSkiaSurface;
+            var glFbInfo = new GRGlFramebufferInfo(browserGlSurface.GlInfo.FboId, browserGlSurface.PixelFormat.ToSkColorType().ToGlSizedFormat());
+            _browserGlSurface = browserGlSurface;
             _renderTarget = new GRBackendRenderTarget(
-                (int)(browserSkiaSurface.Size.Width * browserSkiaSurface.Scaling),
-                (int)(browserSkiaSurface.Size.Height * browserSkiaSurface.Scaling),
-                browserSkiaSurface.GlInfo.Samples,
-                browserSkiaSurface.GlInfo.Stencils, glFbInfo);
+                _size.Width,
+                _size.Height,
+                browserGlSurface.GlInfo.Samples,
+                browserGlSurface.GlInfo.Stencils, glFbInfo);
         }
 
         public void Dispose()
@@ -29,9 +31,9 @@ namespace Avalonia.Browser.Skia
 
         public ISkiaGpuRenderSession BeginRenderingSession()
         {
-            return new BrowserSkiaGpuRenderSession(_browserSkiaSurface, _renderTarget);
+            return new BrowserSkiaGpuRenderSession(_browserGlSurface, _renderTarget);
         }
 
-        public bool IsCorrupted => _browserSkiaSurface.Size != _size;
+        public bool IsCorrupted => _browserGlSurface.RenderSize != _size;
     }
 }

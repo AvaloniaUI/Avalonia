@@ -129,6 +129,12 @@ namespace Avalonia.Utilities
         [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
         public static bool TryConvert(Type to, object? value, CultureInfo? culture, out object? result)
         {
+            if (to == typeof(object))
+            {
+                result = value;
+                return true;
+            }
+
             if (value == null)
             {
                 result = null;
@@ -382,7 +388,7 @@ namespace Avalonia.Utilities
         }
 
         [Flags]
-        private enum OperatorType
+        internal enum OperatorType
         {
             Implicit = 1,
             Explicit = 2
@@ -393,7 +399,7 @@ namespace Avalonia.Utilities
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-        private static MethodInfo? FindTypeConversionOperatorMethod(
+        internal static MethodInfo? FindTypeConversionOperatorMethod(
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type fromType,
             Type toType, OperatorType operatorType)
         {
@@ -422,6 +428,26 @@ namespace Avalonia.Utilities
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether the specified object instances are "identity" equal which means
+        /// reference equal for reference types and <see cref="object.Equals(object?)"/> for value
+        /// types.
+        /// </summary>
+        /// <param name="a">The first object to compare.</param>
+        /// <param name="b">The second object to compare.</param>
+        /// <param name="type">
+        /// The type which determines whether the objects should be treated as a reference or
+        /// value type.
+        /// </param>
+        /// <returns>True if the objects are considered equal; otherwise false.</returns>
+        internal static bool IdentityEquals(object? a, object? b, Type type)
+        {
+            if (type.IsValueType || type == typeof(string))
+                return Equals(a, b);
+            else
+                return ReferenceEquals(a, b);
         }
     }
 }

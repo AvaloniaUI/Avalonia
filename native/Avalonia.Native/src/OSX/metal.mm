@@ -112,6 +112,7 @@ public:
 - (MetalRenderTarget *)initWithDevice:(IAvnMetalDevice *)device {
     _device = dynamic_cast<AvnMetalDevice*>(device);
     _layer = [CAMetalLayer new];
+    _layer.opaque = false;
     _layer.device = _device->device;
     _target.setNoAddRef(new AvnMetalRenderTarget(_layer, _device));
     return self;

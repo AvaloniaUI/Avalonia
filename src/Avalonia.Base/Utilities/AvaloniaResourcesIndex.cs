@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Avalonia.Utilities
@@ -66,20 +67,45 @@ namespace Avalonia.Utilities
             }
         }
 
+        [Obsolete]
         public static void WriteResources(Stream output, List<(string Path, int Size, Func<Stream> Open)> resources)
         {
-            var entries = new List<AvaloniaResourcesIndexEntry>(resources.Count);
+            WriteResources(output,
+                resources.Select(r => new AvaloniaResourcesEntry { Path = r.Path, Open = r.Open, Size = r.Size })
+                    .ToList());
+        }
+
+        public static void WriteResources(Stream output, IReadOnlyList<AvaloniaResourcesEntry> resources)
+        {
+            var entries = new List<AvaloniaResourcesIndexEntry>();
+            var index = new Dictionary<string, (AvaloniaResourcesIndexEntry entry, Func<Stream> open)>();
             var offset = 0;
 
             foreach (var resource in resources)
             {
-                entries.Add(new AvaloniaResourcesIndexEntry
+                // Try to combine resources with the same system path, if present.
+                if (!string.IsNullOrEmpty(resource.SystemPath)
+                    && index.TryGetValue(resource.SystemPath, out var existingResource))
                 {
-                    Path = resource.Path,
-                    Offset = offset,
-                    Size = resource.Size
-                });
-                offset += resource.Size;
+                    entries.Add(new AvaloniaResourcesIndexEntry
+                    {
+                        Path = resource.Path,
+                        Offset = existingResource.entry.Offset,
+                        Size = existingResource.entry.Size
+                    });
+                }
+                else
+                {
+                    var entry = new AvaloniaResourcesIndexEntry
+                    {
+                        Path = resource.Path,
+                        Offset = offset,
+                        Size = resource.Size
+                    };
+                    index[resource.SystemPath ?? offset.ToString()] = (entry, resource.Open!);
+                    entries.Add(entry);
+                    offset += resource.Size;
+                }
             }
 
             using var writer = new BinaryWriter(output, Encoding.UTF8, leaveOpen: true);
@@ -94,9 +120,9 @@ namespace Avalonia.Utilities
             writer.Write(indexSize);
             output.Position = posAfterEntries;
 
-            foreach (var resource in resources)
+            foreach (var pair in index)
             {
-                using var resourceStream = resource.Open();
+                using var resourceStream = pair.Value.open();
                 resourceStream.CopyTo(output);
             }
         }
@@ -112,5 +138,16 @@ namespace Avalonia.Utilities
         public int Offset { get; set; }
 
         public int Size { get; set; }
+    }
+
+#if !BUILDTASK
+    public
+#endif
+    class AvaloniaResourcesEntry
+    {
+        public string? Path { get; init; }
+        public Func<Stream>? Open { get; init; }
+        public int Size { get; init; }
+        public string? SystemPath { get; init; }
     }
 }

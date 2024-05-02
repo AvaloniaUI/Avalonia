@@ -20,7 +20,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">The pixel format (optional).</param>
         /// <param name="alphaFormat">The alpha format (optional).</param>
-        /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
+        /// <returns>An instance of the <see cref="WriteableBitmap"/> class.</returns>
         public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null) 
             : this(CreatePlatformImpl(size, dpi, format, alphaFormat))
         {

@@ -29,7 +29,7 @@ namespace Avalonia
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
     [UsableDuringInitialization]
-    public partial class Visual : StyledElement
+    public partial class Visual : StyledElement, IAvaloniaListItemValidator<Visual>
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -150,7 +150,7 @@ namespace Avalonia
 
             var visualChildren = new AvaloniaList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = visual => ValidateVisualChild(visual);
+            visualChildren.Validator = this;
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -195,23 +195,32 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
-        public bool IsEffectivelyVisible
+        public bool IsEffectivelyVisible { get; private set; } = true;
+        
+        /// <summary>
+        /// Updates the <see cref="IsEffectivelyVisible"/> property based on the parent's
+        /// <see cref="IsEffectivelyVisible"/>.
+        /// </summary>
+        /// <param name="parentState">The effective visibility of the parent control.</param>
+        private void UpdateIsEffectivelyVisible(bool parentState)
         {
-            get
+            var isEffectivelyVisible = parentState && IsVisible;
+
+            if (IsEffectivelyVisible == isEffectivelyVisible)
+                return;
+
+            IsEffectivelyVisible = isEffectivelyVisible;
+
+            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // will cause extra allocations and overhead.
+            
+            var children = VisualChildren;
+
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < children.Count; ++i)
             {
-                Visual? node = this;
-
-                while (node != null)
-                {
-                    if (!node.IsVisible)
-                    {
-                        return false;
-                    }
-
-                    node = node.VisualParent;
-                }
-
-                return true;
+                var child = children[i];
+                child.UpdateIsEffectivelyVisible(isEffectivelyVisible);
             }
         }
 
@@ -453,7 +462,11 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == FlowDirectionProperty)
+            if (change.Property == IsVisibleProperty)
+            {
+                UpdateIsEffectivelyVisible(VisualParent?.IsEffectivelyVisible ?? true);
+            } 
+            else if (change.Property == FlowDirectionProperty)
             {
                 InvalidateMirrorTransform();
 
@@ -463,7 +476,7 @@ namespace Avalonia
                 }
             }
         }
-
+ 
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
@@ -492,14 +505,16 @@ namespace Avalonia
                 AttachToCompositor(compositingRenderer.Compositor);
             }
             InvalidateMirrorTransform();
+            UpdateIsEffectivelyVisible(_visualParent!.IsEffectivelyVisible);
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
+            
             _visualRoot.Renderer.RecalculateChildren(_visualParent!);
-
-            if (ZIndex != 0 && VisualParent is Visual parent)
-                parent.HasNonUniformZIndexChildren = true;
-
+            
+            if (ZIndex != 0 && _visualParent is { })
+                _visualParent.HasNonUniformZIndexChildren = true;
+            
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
 
@@ -529,6 +544,7 @@ namespace Avalonia
             }
 
             DisableTransitions();
+            UpdateIsEffectivelyVisible(true);
             OnDetachedFromVisualTree(e);
             DetachFromCompositor();
 
@@ -573,26 +589,6 @@ namespace Avalonia
             RaisePropertyChanged(VisualParentProperty, oldParent, newParent);
         }
 
-        internal override ParametrizedLogger? GetBindingWarningLogger(
-            AvaloniaProperty property,
-            Exception? e)
-        {
-            // Don't log a binding error unless the control is attached to the logical tree.
-            if (!((ILogical)this).IsAttachedToLogicalTree)
-                return null;
-
-            if (e is BindingChainException b &&
-                string.IsNullOrEmpty(b.ExpressionErrorPoint) &&
-                DataContext == null)
-            {
-                // The error occurred at the root of the binding chain and DataContext is null;
-                // don't log this - the DataContext probably hasn't been set up yet.
-                return null;
-            }
-
-            return Logger.TryGet(LogEventLevel.Warning, LogArea.Binding);
-        }
-
         /// <summary>
         /// Called when a visual's <see cref="RenderTransform"/> changes.
         /// </summary>
@@ -622,17 +618,19 @@ namespace Avalonia
         /// <summary>
         /// Ensures a visual child is not null and not already parented.
         /// </summary>
-        /// <param name="c">The visual child.</param>
-        private static void ValidateVisualChild(Visual c)
+        /// <param name="item">The visual child.</param>
+        void IAvaloniaListItemValidator<Visual>.Validate(Visual item)
         {
-            if (c == null)
+            if (item is null)
             {
-                throw new ArgumentNullException(nameof(c), "Cannot add null to VisualChildren.");
+                throw new ArgumentNullException(nameof(item), $"Cannot add null to {nameof(VisualChildren)}.");
             }
 
-            if (c.VisualParent != null)
+            if (item.VisualParent is { } parent)
             {
-                throw new InvalidOperationException("The control already has a visual parent.");
+                throw new InvalidOperationException(
+                    $"The control {item.DebugDisplay} already has a visual parent {parent.GetDebugDisplay(false)} " +
+                    $"while trying to add it as a child of {GetDebugDisplay(false)}.");
             }
         }
 

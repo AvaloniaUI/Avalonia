@@ -4,14 +4,12 @@ using System.IO;
 using System.Runtime.InteropServices;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
-using OpenQA.Selenium.Appium.Mac;
-using OpenQA.Selenium.Appium.Windows;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     public class DefaultAppFixture : IDisposable
     {
-        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net7.0\IntegrationTestApp.exe";
+        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net8.0\IntegrationTestApp.exe";
         private const string TestAppBundleId = "net.avaloniaui.avalonia.integrationtestapp";
 
         public DefaultAppFixture()
@@ -21,7 +19,7 @@ namespace Avalonia.IntegrationTests.Appium
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 ConfigureWin32Options(options);
-                Session = new WindowsDriver<AppiumWebElement>(
+                Session = new WindowsDriver(
                     new Uri("http://127.0.0.1:4723"),
                     options);
 
@@ -33,7 +31,7 @@ namespace Avalonia.IntegrationTests.Appium
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 ConfigureMacOptions(options);
-                Session = new MacDriver<AppiumWebElement>(
+                Session = new MacDriver(
                     new Uri("http://127.0.0.1:4723/wd/hub"),
                     options);
             }
@@ -59,7 +57,7 @@ namespace Avalonia.IntegrationTests.Appium
             options.AddAdditionalCapability("appium:showServerLogs", true);
         }
 
-        public AppiumDriver<AppiumWebElement> Session { get; }
+        public AppiumDriver Session { get; }
 
         public void Dispose()
         {

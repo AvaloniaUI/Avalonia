@@ -102,6 +102,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_HourTextBlock"
+                      Text="{DynamicResource StringTimePickerHourText}"
                       HorizontalAlignment="Center"
                       Padding="{DynamicResource TimePickerHostPadding}" />
                 </Border>
@@ -117,6 +118,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_MinuteTextBlock"
+                             Text="{DynamicResource StringTimePickerMinuteText}"
                              HorizontalAlignment="Center"
                              Padding="{DynamicResource TimePickerHostPadding}"/>
                 </Border>

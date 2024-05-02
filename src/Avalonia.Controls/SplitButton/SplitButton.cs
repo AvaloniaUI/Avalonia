@@ -16,7 +16,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PrimaryButton",   typeof(Button))]
     [TemplatePart("PART_SecondaryButton", typeof(Button))]
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
-    public class SplitButton : ContentControl, ICommandSource
+    public class SplitButton : ContentControl, ICommandSource, IClickableControl
     {
         internal const string pcChecked    = ":checked";
         internal const string pcPressed    = ":pressed";
@@ -57,8 +57,15 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
             Button.FlyoutProperty.AddOwner<SplitButton>();
 
+        /// <summary>
+        /// Defines the <see cref="HotKey"/> property.
+        /// </summary>
+        public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
+            Button.HotKeyProperty.AddOwner<SplitButton>();
+
         private Button? _primaryButton   = null;
         private Button? _secondaryButton = null;
+        private KeyGesture? _hotkey = default;
 
         private bool _commandCanExecute       = true;
         private bool _isAttachedToLogicalTree = false;
@@ -102,6 +109,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets an <see cref="KeyGesture"/> associated with this control
+        /// </summary>
+        public KeyGesture? HotKey
+        {
+            get => GetValue(HotKeyProperty);
+            set => SetValue(HotKeyProperty, value);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the button is currently checked.
         /// </summary>
         /// <remarks>
@@ -120,7 +136,18 @@ namespace Avalonia.Controls
         /// <inheritdoc cref="ICommandSource.CanExecuteChanged"/>
         private void CanExecuteChanged(object? sender, EventArgs e)
         {
-            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+            (var command, var parameter) = (Command, CommandParameter);
+            CanExecuteChanged(command, parameter);
+        }
+
+        private void CanExecuteChanged(ICommand? command, object? parameter)
+        {
+            if (!((ILogical)this).IsAttachedToLogicalTree)
+            {
+                return;
+            }
+
+            var canExecute = command is null || command.CanExecute(parameter);
 
             if (canExecute != _commandCanExecute)
             {
@@ -232,6 +259,9 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToLogicalTree(e);
 
+            // Control attached again, set Hotkey to create a hotkey manager for this control
+            SetCurrentValue(HotKeyProperty, _hotkey);
+            
             if (Command != null)
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
@@ -246,6 +276,10 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromLogicalTree(e);
 
+            // This will cause the hotkey manager to dispose the observer and the reference to this control
+            _hotkey = HotKey;
+            SetCurrentValue(HotKeyProperty, null);
+
             if (Command != null)
             {
                 Command.CanExecuteChanged -= CanExecuteChanged;
@@ -259,10 +293,11 @@ namespace Avalonia.Controls
         {
             if (e.Property == CommandProperty)
             {
+                // Must unregister events here while a reference to the old command still exists
+                var (oldValue, newValue) = e.GetOldAndNewValue<ICommand?>();
+
                 if (_isAttachedToLogicalTree)
                 {
-                    // Must unregister events here while a reference to the old command still exists
-                    var (oldValue, newValue) = e.GetOldAndNewValue<ICommand?>();
 
                     if (oldValue is ICommand oldCommand)
                     {
@@ -275,11 +310,11 @@ namespace Avalonia.Controls
                     }
                 }
 
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(newValue, CommandParameter);
             }
-            else if (e.Property == CommandParameterProperty)
+            else if (e.Property == CommandParameterProperty && IsLoaded)
             {
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(Command, e.NewValue);
             }
             else if (e.Property == FlyoutProperty)
             {
@@ -309,7 +344,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
+            if (key == Key.Space || key == Key.Enter)
             {
                 _isKeyboardPressed = true;
                 UpdatePseudoClasses();
@@ -323,7 +358,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
+            if (key == Key.Space || key == Key.Enter)
             {
                 _isKeyboardPressed = false;
                 UpdatePseudoClasses();
@@ -335,7 +370,8 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
-            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
+            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 OpenFlyout();
                 e.Handled = true;
@@ -362,15 +398,16 @@ namespace Avalonia.Controls
         /// <param name="e">The event args from the internal Click event.</param>
         protected virtual void OnClickPrimary(RoutedEventArgs? e)
         {
+            (var command, var parameter) = (Command, CommandParameter);
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
                 var eventArgs = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(eventArgs);
 
-                if (!eventArgs.Handled && Command?.CanExecute(CommandParameter) == true)
+                if (!eventArgs.Handled && command?.CanExecute(parameter) == true)
                 {
-                    Command.Execute(CommandParameter);
+                    command.Execute(parameter);
                     eventArgs.Handled = true;
                 }
             }
@@ -471,5 +508,8 @@ namespace Avalonia.Controls
                 OnFlyoutClosed();
             }
         }
+
+        void IClickableControl.RaiseClick() => 
+            (_primaryButton as IClickableControl)?.RaiseClick();    
     }
 }

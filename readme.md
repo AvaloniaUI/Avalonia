@@ -2,7 +2,7 @@
 ![Header](https://user-images.githubusercontent.com/552074/235865745-2a8e7274-4f66-4f77-8f05-feeb76e7d478.png)
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) [![Discord](https://img.shields.io/badge/discord-join%20chat-46BC99)]( https://aka.ms/dotnet-discord) [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
+ [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia)  ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
@@ -80,7 +80,7 @@ Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a p
 ## Code of Conduct
 
 This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
-For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct). 
+For more information see the [Code of Conduct](CODE_OF_CONDUCT.md). 
 
 ## Licence
 
@@ -113,9 +113,6 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
 
 *Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
-## .NET Foundation
-
-This project is supported by the [.NET Foundation](https://dotnetfoundation.org).
 
 ## Avalonia XPF
 Unleash the full potential of your existing WPF apps with our cross-platform UI framework, enabling WPF apps to run on macOS and Linux without requiring expensive and risky rewrites.

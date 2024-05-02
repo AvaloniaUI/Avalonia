@@ -97,12 +97,12 @@
                     VerticalAlignment="Stretch"
                     TemplatedControl.IsTemplateFocusTarget="True">
               <Grid Name="PART_ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
-                <TextBlock Name="PART_DayTextBlock" Text="day" HorizontalAlignment="Center"
-                           Padding="{DynamicResource DatePickerHostPadding}"/>
-                <TextBlock Name="PART_MonthTextBlock" Text="month" TextAlignment="Left"
-                           Padding="{DynamicResource DatePickerHostMonthPadding}"/>
-                <TextBlock Name="PART_YearTextBlock" Text="year" HorizontalAlignment="Center"
-                           Padding="{DynamicResource DatePickerHostPadding}"/>
+                <TextBlock Name="PART_DayTextBlock" Text="{DynamicResource StringDatePickerDayText}" HorizontalAlignment="Center"
+                           Padding="{DynamicResource DatePickerHostPadding}" />
+                <TextBlock Name="PART_MonthTextBlock" Text="{DynamicResource StringDatePickerMonthText}" TextAlignment="Left"
+                           Padding="{DynamicResource DatePickerHostMonthPadding}" />
+                <TextBlock Name="PART_YearTextBlock" Text="{DynamicResource StringDatePickerYearText}" HorizontalAlignment="Center"
+                           Padding="{DynamicResource DatePickerHostPadding}" />
                 <Rectangle x:Name="PART_FirstSpacer"
                       Fill="{DynamicResource DatePickerSpacerFill}"
                       HorizontalAlignment="Center"

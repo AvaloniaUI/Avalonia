@@ -13,32 +13,33 @@ namespace Avalonia.Rendering.Composition.Server
     internal partial class ServerCompositionContainerVisual : ServerCompositionVisual
     {
         public ServerCompositionVisualCollection Children { get; private set; } = null!;
-        private Rect? _transformedContentBounds;
+        private LtrbRect? _transformedContentBounds;
         private IImmutableEffect? _oldEffect;
         
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+        protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
+            IDirtyRectTracker dirtyRects)
         {
-            base.RenderCore(canvas, currentTransformedClip);
+            base.RenderCore(canvas, currentTransformedClip, dirtyRects);
 
             foreach (var ch in Children)
             {
-                ch.Render(canvas, currentTransformedClip);
+                ch.Render(canvas, currentTransformedClip, dirtyRects);
             }
         }
 
-        public override UpdateResult Update(ServerCompositionTarget root)
+        public override UpdateResult Update(ServerCompositionTarget root, Matrix parentCombinedTransform)
         {
-            var (combinedBounds, oldInvalidated, newInvalidated) = base.Update(root);
+            var (combinedBounds, oldInvalidated, newInvalidated) = base.Update(root, parentCombinedTransform);
             foreach (var child in Children)
             {
                 if (child.AdornedVisual != null)
                     root.EnqueueAdornerUpdate(child);
                 else
                 {
-                    var res = child.Update(root);
+                    var res = child.Update(root, GlobalTransformMatrix);
                     oldInvalidated |= res.InvalidatedOld;
                     newInvalidated |= res.InvalidatedNew;
-                    combinedBounds = Rect.Union(combinedBounds, res.Bounds);
+                    combinedBounds = LtrbRect.FullUnion(combinedBounds, res.Bounds);
                 }
             }
             
@@ -62,7 +63,7 @@ namespace Avalonia.Rendering.Composition.Server
             return new(_transformedContentBounds, oldInvalidated, newInvalidated);
         }
 
-        void AddEffectPaddedDirtyRect(IImmutableEffect effect, Rect transformedBounds)
+        void AddEffectPaddedDirtyRect(IImmutableEffect effect, LtrbRect transformedBounds)
         {
             var padding = effect.GetEffectOutputPadding();
             if (padding == default)

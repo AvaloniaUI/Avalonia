@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Media.Fonts;
@@ -141,22 +142,7 @@ namespace Avalonia.Media
 
         private bool TryGetGlyphTypefaceByKeyAndName(Typeface typeface, FontFamilyKey key, string familyName, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            var source = key.Source;
-
-            if (!source.IsAbsoluteUri)
-            {
-                if (key.BaseUri == null)
-                {
-                    throw new NotSupportedException($"{nameof(key.BaseUri)} can't be null.");
-                }
-
-                source = new Uri(key.BaseUri, source);
-            }
-
-            if (source.Scheme == SystemFontScheme)
-            {
-                return SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
-            }
+            var source = key.Source.EnsureAbsolute(key.BaseUri);
 
             if (TryGetFontCollection(source, out var fontCollection) &&
                 fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
@@ -248,8 +234,9 @@ namespace Avalonia.Media
                 {
                     var key = compositeKey.Keys[i];
                     var familyName = fontFamily.FamilyNames[i];
+                    var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                    if (TryGetFontCollection(key.Source, out var fontCollection) &&
+                    if (TryGetFontCollection(source, out var fontCollection) &&
                         fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
                     {
                         return true;
@@ -263,6 +250,8 @@ namespace Avalonia.Media
 
         private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
         {
+            Debug.Assert(source.IsAbsoluteUri);
+
             if (source.Scheme == SystemFontScheme)
             {
                 source = SystemFontsKey;

@@ -45,7 +45,7 @@ namespace Avalonia.PropertyStore
             Frame = frame;
             Property = property;
             Source = source;
-            if (property.GetMetadata(target.GetType()).EnableDataValidation == true)
+            if (property.GetMetadata(target).EnableDataValidation == true)
                 _uncommon = new() { _hasDataValidation = true };
         }
 
@@ -112,7 +112,7 @@ namespace Avalonia.PropertyStore
 
         protected abstract BindingValue<TValue> ConvertAndValidate(TSource value);
         protected abstract BindingValue<TValue> ConvertAndValidate(BindingValue<TSource> value);
-        protected abstract TValue GetDefaultValue(Type ownerType);
+        protected abstract TValue GetDefaultValue(AvaloniaObject owner);
 
         protected virtual void Start(bool produceValue)
         {
@@ -138,8 +138,6 @@ namespace Avalonia.PropertyStore
                 var owner = valueStore.Owner;
                 var property = instance.Property;
                 var originalType = value.Type;
-
-                LoggingUtils.LogIfNecessary(owner, property, value);
 
                 if (!value.HasValue && value.Type != BindingValueType.DataValidationError)
                     value = value.WithValue(instance.GetCachedDefaultValue());
@@ -188,7 +186,7 @@ namespace Avalonia.PropertyStore
             if (_uncommon?._isDefaultValueInitialized != true)
             {
                 _uncommon ??= new();
-                _uncommon._defaultValue = GetDefaultValue(Frame.Owner!.Owner.GetType());
+                _uncommon._defaultValue = GetDefaultValue(Frame.Owner!.Owner);
                 _uncommon._isDefaultValueInitialized = true;
             }
 

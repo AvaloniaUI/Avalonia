@@ -10,10 +10,12 @@ internal static partial class InputHelper
     [JSImport("InputHelper.subscribeKeyEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeKeyEvents(
         JSObject htmlElement,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
-        Func<string, string, int, bool> keyDown,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
-        Func<string, string, int, bool> keyUp);
+        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.String, JSType.Boolean>>]
+        // TODO: this callback should be <string, string, int, bool>. Revert after next .NET 9 preview.  
+        Func<string, string, string, bool> keyDown,
+        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.String, JSType.Boolean>>]
+        // TODO: this callback should be <string, string, int, bool>. Revert after next .NET 9 preview.
+        Func<string, string, string, bool> keyUp);
 
     [JSImport("InputHelper.subscribeTextEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeTextEvents(
@@ -91,6 +93,12 @@ internal static partial class InputHelper
 
     [JSImport("InputHelper.readClipboardText", AvaloniaModule.MainModuleName)]
     public static partial Task<string> ReadClipboardTextAsync();
+
+    [JSImport("InputHelper.setPointerCapture", AvaloniaModule.MainModuleName)]
+    public static partial void SetPointerCapture(JSObject containerElement, [JSMarshalAs<JSType.Number>] long pointerId);
+
+    [JSImport("InputHelper.releasePointerCapture", AvaloniaModule.MainModuleName)]
+    public static partial void ReleasePointerCapture(JSObject containerElement, [JSMarshalAs<JSType.Number>] long pointerId);
 
     [JSImport("globalThis.navigator.clipboard.writeText")]
     public static partial Task WriteClipboardTextAsync(string text);

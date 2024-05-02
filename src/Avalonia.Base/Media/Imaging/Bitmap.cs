@@ -182,12 +182,15 @@ namespace Avalonia.Media.Imaging
         private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
             ILockedFramebuffer fb)
         {
+            if (Format == null)
+                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
+
             if ((sourceRect.Width <= 0 || sourceRect.Height <= 0) && (sourceRect.X != 0 || sourceRect.Y != 0))
                 throw new ArgumentOutOfRangeException(nameof(sourceRect));
 
             if (sourceRect.X < 0 || sourceRect.Y < 0)
                 throw new ArgumentOutOfRangeException(nameof(sourceRect));
-            
+
             if (sourceRect.Width <= 0)
                 sourceRect = sourceRect.WithWidth(PixelSize.Width);
             if (sourceRect.Height <= 0)
@@ -195,7 +198,7 @@ namespace Avalonia.Media.Imaging
 
             if (sourceRect.Right > PixelSize.Width || sourceRect.Bottom > PixelSize.Height)
                 throw new ArgumentOutOfRangeException(nameof(sourceRect));
-            
+
             int minStride = checked(((sourceRect.Width * fb.Format.BitsPerPixel) + 7) / 8);
             if (stride < minStride)
                 throw new ArgumentOutOfRangeException(nameof(stride));
@@ -204,14 +207,16 @@ namespace Avalonia.Media.Imaging
             if (minBufferSize > bufferSize)
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
 
+            var offsetX = checked(((sourceRect.X * Format.Value.BitsPerPixel) + 7) / 8);
+
             for (var y = 0; y < sourceRect.Height; y++)
             {
-                var srcAddress = fb.Address + fb.RowBytes * y;
+                var srcAddress = fb.Address + fb.RowBytes * (sourceRect.Y + y) + offsetX;
                 var dstAddress = buffer + stride * y;
                 Unsafe.CopyBlock(dstAddress.ToPointer(), srcAddress.ToPointer(), (uint)minStride);
             }
         }
-        
+
         public virtual void CopyPixels(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride)
         {
             if (
