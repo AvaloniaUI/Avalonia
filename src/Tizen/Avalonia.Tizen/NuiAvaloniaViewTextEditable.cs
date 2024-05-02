@@ -20,9 +20,7 @@ internal class NuiAvaloniaViewTextEditable
 
     public bool IsActive => _client != null && _keyboardPresented;
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public NuiAvaloniaViewTextEditable(NuiAvaloniaView avaloniaView)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         _avaloniaView = avaloniaView;
         _singleLineTextInput = new NuiSingleLineTextInput

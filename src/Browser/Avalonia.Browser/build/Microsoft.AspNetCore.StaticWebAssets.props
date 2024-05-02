@@ -1,0 +1,22 @@
+<Project>
+  <PropertyGroup>
+    <_AvaloniaWebAssetsFolder>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../staticwebassets/))</_AvaloniaWebAssetsFolder>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ShouldIncludeAvaloniaStaticAssets)' == 'True'">
+    <!-- This file repricates how StaticWebAsset SDK generates static web assets for Blazor nuget packages, which we don't use here. -->
+    <_AvaloniaWebAssets Include="$(_AvaloniaWebAssetsFolder)**/*.*" />
+    <StaticWebAsset Include="@(_AvaloniaWebAssets)">
+      <SourceType>Package</SourceType>
+      <SourceId>Avalonia.Browser</SourceId>
+      <ContentRoot>$(_AvaloniaWebAssetsFolder)</ContentRoot>
+      <BasePath>/</BasePath>
+      <RelativePath>$(WasmRuntimeAssetsLocation)/%(FileName)%(Extension)</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$(_AvaloniaWebAssetsFolder)%(FileName)%(Extension)</OriginalItemSpec>
+    </StaticWebAsset>
+  </ItemGroup>
+</Project>

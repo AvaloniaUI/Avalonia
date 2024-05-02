@@ -104,13 +104,18 @@ internal class TopLevelImpl : ITopLevelImpl
             return _clipboard;
         }
 
+        if (featureType == typeof(ILauncher))
+        {
+            return new TizenLauncher();
+        }
+
         return null;
     }
 
     internal void TextInput(string text)
     {
         if (Input == null) return;
-        var args = new RawTextInputEventArgs(TizenKeyboardDevice.Instance, (ulong)DateTime.Now.Ticks, _view.InputRoot, text);
+        var args = new RawTextInputEventArgs(TizenKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _view.InputRoot, text);
 
         Input(args);
     }

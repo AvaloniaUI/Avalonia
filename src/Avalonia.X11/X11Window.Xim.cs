@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using Avalonia.FreeDesktop;
@@ -6,6 +8,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.Platform.Interop;
 using Avalonia.Threading;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11
 {
     internal partial class X11Window
@@ -62,7 +65,7 @@ namespace Avalonia.X11
                 UpdateActive();
             }
 
-            public void SetClient(TextInputMethodClient client)
+            public void SetClient(TextInputMethodClient? client)
             {
                 _client = client;
                 UpdateActive();

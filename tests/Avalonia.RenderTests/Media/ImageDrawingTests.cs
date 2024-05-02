@@ -19,7 +19,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         private string BitmapPath
         {
-            get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
+            get
+            {
+                return System.IO.Path.Combine(OutputPath, "github_icon.png");
+            }
         }
 
         [Fact]
@@ -79,6 +82,62 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             await RenderToFile(target);
             CompareImages();
+        }
+
+        [Fact]
+        public async Task Should_Render_DrawingBrushTransform()
+        {
+            var target = new Border
+            {
+                Width = 400, 
+                Height = 400,
+                Child = new DrawingBrushTransformTest()
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        public class DrawingBrushTransformTest : Control
+        {
+            private readonly DrawingBrush _brush;
+
+            public DrawingBrushTransformTest()
+            {
+                _brush = new DrawingBrush()
+                {
+                    TileMode = TileMode.None,
+                    SourceRect = new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative),
+                    DestinationRect = new RelativeRect(0, 0, 50, 50, RelativeUnit.Absolute),
+                    Transform = new TranslateTransform(150, 150),
+                    Drawing = new DrawingGroup()
+                    {
+                        Children = new DrawingCollection()
+                        {
+                            new GeometryDrawing
+                            {
+                                Brush = Brushes.Crimson,
+                                Geometry = new RectangleGeometry(new(0, 0, 100, 100))
+                            },
+                            new GeometryDrawing
+                            {
+                                Brush = Brushes.Blue,
+                                Geometry = new RectangleGeometry(new(20, 20, 60, 60))
+                            }
+                        }
+                    }
+                };
+            }
+
+            public override void Render(DrawingContext drawingContext)
+            {
+                var pop = drawingContext.PushTransform(Matrix.CreateTranslation(100, 100));
+                var rc = new Rect(0, 0, 200, 200);
+                drawingContext.DrawRectangle(new SolidColorBrush(Colors.DimGray), null, rc);
+                drawingContext.DrawRectangle(_brush, null, rc);
+
+                pop.Dispose();
+            }
         }
     }
 }

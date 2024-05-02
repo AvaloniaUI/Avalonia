@@ -9,10 +9,10 @@ namespace Avalonia.Controls
             AffectsRender<PathIcon>(DataProperty);
         }
 
-        public static readonly StyledProperty<Geometry> DataProperty =
-            AvaloniaProperty.Register<PathIcon, Geometry>(nameof(Data));
+        public static readonly StyledProperty<Geometry?> DataProperty =
+            AvaloniaProperty.Register<PathIcon, Geometry?>(nameof(Data));
 
-        public Geometry Data
+        public Geometry? Data
         {
             get => GetValue(DataProperty);
             set => SetValue(DataProperty, value);

@@ -281,6 +281,26 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.True(target.IsVisible);
         }
 
+        [Fact]
+        public void Can_Bind_Int_Property_To_Double()
+        {
+            var source = new Button
+            {
+                Opacity = 42,
+                Template = new FuncControlTemplate<Button>((parent, _) =>
+                    new ContentPresenter
+                    {
+                        [~ContentPresenter.MaxLinesProperty] = new TemplateBinding(ContentControl.OpacityProperty)
+                    }),
+            };
+
+            source.ApplyTemplate();
+
+            var target = (ContentPresenter)source.GetVisualChildren().Single();
+
+            Assert.Equal(42, target.MaxLines);
+        }
+
         private class PrefixConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

@@ -16,8 +16,13 @@
                    BorderBrush="{TemplateBinding BorderBrush}"
                    BorderThickness="{TemplateBinding BorderThickness}"
                    CornerRadius="{TemplateBinding CornerRadius}"
+                   CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                   Watermark="{TemplateBinding Watermark}" />
+                   Watermark="{TemplateBinding Watermark}"
+                   MaxLength="{TemplateBinding MaxLength}"                   
+                   InnerLeftContent="{TemplateBinding InnerLeftContent}"
+                   InnerRightContent="{TemplateBinding InnerRightContent}"
+                   />
 
           <Popup Name="PART_Popup"
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"

@@ -11,21 +11,21 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Dialogs
 {
-    [TemplatePart("PART_QuickLinks", typeof(Control))]
-    [TemplatePart("PART_Files",      typeof(ListBox))]
+    [TemplatePart("PART_QuickLinks", typeof(Control), IsRequired = true)]
+    [TemplatePart("PART_Files",      typeof(ListBox), IsRequired = true)]
     public class ManagedFileChooser : TemplatedControl
     {
-        private Control _quickLinksRoot;
-        private ListBox _filesView;
+        private Control? _quickLinksRoot;
+        private ListBox? _filesView;
 
         public ManagedFileChooser()
         {
             AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
         }
 
-        ManagedFileChooserViewModel Model => DataContext as ManagedFileChooserViewModel;
+        ManagedFileChooserViewModel? Model => DataContext as ManagedFileChooserViewModel;
 
-        private void OnPointerPressed(object sender, PointerPressedEventArgs e)
+        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var model = (e.Source as StyledElement)?.DataContext as ManagedFileChooserItemViewModel;
 

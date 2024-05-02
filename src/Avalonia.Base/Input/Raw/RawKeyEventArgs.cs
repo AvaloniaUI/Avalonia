@@ -20,7 +20,7 @@ namespace Avalonia.Input.Raw
             RawKeyEventType type,
             Key key,
             RawInputModifiers modifiers)
-            : this(device, timestamp, root, type, key, modifiers, PhysicalKey.None, null)
+            : this(device, timestamp, root, type, key, modifiers, PhysicalKey.None, KeyDeviceType.Keyboard, null)
         {
             Key = key;
             Type = type;
@@ -36,6 +36,18 @@ namespace Avalonia.Input.Raw
             RawInputModifiers modifiers,
             PhysicalKey physicalKey,
             string? keySymbol)
+            : this(device, timestamp, root, type, key, modifiers, physicalKey, KeyDeviceType.Keyboard, keySymbol) { }
+
+        public RawKeyEventArgs(
+            IInputDevice device,
+            ulong timestamp,
+            IInputRoot root,
+            RawKeyEventType type,
+            Key key,
+            RawInputModifiers modifiers,
+            PhysicalKey physicalKey,
+            KeyDeviceType keyDeviceType,
+            string? keySymbol)
             : base(device, timestamp, root)
         {
             Key = key;
@@ -43,6 +55,7 @@ namespace Avalonia.Input.Raw
             Type = type;
             PhysicalKey = physicalKey;
             KeySymbol = keySymbol;
+            KeyDeviceType = keyDeviceType;
         }
 
         public Key Key { get; set; }
@@ -52,6 +65,8 @@ namespace Avalonia.Input.Raw
         public RawKeyEventType Type { get; set; }
 
         public PhysicalKey PhysicalKey { get; set; }
+
+        public KeyDeviceType KeyDeviceType { get; set; }
 
         public string? KeySymbol { get; set; }
     }

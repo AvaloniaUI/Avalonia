@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Reactive;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Layout;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -20,9 +20,12 @@ namespace Avalonia.Controls
     /// A menu item control.
     /// </summary>
     [TemplatePart("PART_Popup", typeof(Popup))]
-    [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource, IClickableControl
+    [PseudoClasses(":separator", ":radio", ":toggle", ":checked", ":icon", ":open", ":pressed", ":selected")]
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource, IClickableControl, IRadioButton
     {
+        private EventHandler? _canExecuteChangeHandler = default;
+        private EventHandler CanExecuteChangedHandler => _canExecuteChangeHandler ??= new(CanExecuteChanged);
+
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
@@ -64,6 +67,24 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> StaysOpenOnClickProperty =
             AvaloniaProperty.Register<MenuItem, bool>(nameof(StaysOpenOnClick));
+
+        /// <summary>
+        /// Defines the <see cref="ToggleType"/> property.
+        /// </summary>
+        public static readonly StyledProperty<MenuItemToggleType> ToggleTypeProperty =
+            AvaloniaProperty.Register<MenuItem, MenuItemToggleType>(nameof(ToggleType));
+
+        /// <summary>
+        /// Defines the <see cref="IsChecked"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsCheckedProperty =
+            AvaloniaProperty.Register<MenuItem, bool>(nameof(IsChecked));
+
+        /// <summary>
+        /// Defines the <see cref="GroupName"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> GroupNameProperty =
+            RadioButton.GroupNameProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="Click"/> event.
@@ -116,16 +137,10 @@ namespace Avalonia.Controls
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             PressedMixin.Attach<MenuItem>();
-            CommandProperty.Changed.Subscribe(CommandChanged);
-            CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
-            HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
-            IconProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IconChanged(e));
-            IsSelectedProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IsSelectedChanged(e));
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
             ClickEvent.AddClassHandler<MenuItem>((x, e) => x.OnClick(e));
             SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
-            IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.SubMenuOpenChanged(e));
         }
 
         public MenuItem()
@@ -280,6 +295,33 @@ namespace Avalonia.Controls
             set => SetValue(StaysOpenOnClickProperty, value);
         }
 
+        /// <inheritdoc cref="IMenuItem.ToggleType" />
+        public MenuItemToggleType ToggleType
+        {
+            get => GetValue(ToggleTypeProperty);
+            set => SetValue(ToggleTypeProperty, value);
+        }
+
+        /// <inheritdoc cref="IMenuItem.IsChecked"/>
+        public bool IsChecked
+        {
+            get => GetValue(IsCheckedProperty);
+            set => SetValue(IsCheckedProperty, value);
+        }
+
+        bool IRadioButton.IsChecked
+        {
+            get => IsChecked;
+            set => SetCurrentValue(IsCheckedProperty, value);
+        }
+
+        /// <inheritdoc cref="IMenuItem.GroupName"/>
+        public string? GroupName
+        {
+            get => GetValue(GroupNameProperty);
+            set => SetValue(GroupNameProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets a value that indicates whether the <see cref="MenuItem"/> has a submenu.
         /// </summary>
@@ -315,7 +357,9 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
+        IEnumerable<IMenuItem> IMenuElement.SubItems => LogicalChildren.OfType<IMenuItem>();
+
+        private IMenuInteractionHandler? MenuInteractionHandler => this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler;
 
         /// <summary>
         /// Opens the submenu.
@@ -371,15 +415,16 @@ namespace Avalonia.Controls
             {
                 SetCurrentValue(HotKeyProperty, _hotkey);
             }
-            
+
             base.OnAttachedToLogicalTree(e);
 
-            if (Command != null)
+            (var command, var parameter) = (Command, CommandParameter);
+            if (command is not null)
             {
-                Command.CanExecuteChanged += CanExecuteChanged;
+                command.CanExecuteChanged += CanExecuteChangedHandler;
             }
-            
-            TryUpdateCanExecute();
+
+            TryUpdateCanExecute(command, parameter);
 
             var parent = Parent;
 
@@ -395,7 +440,7 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            
+
             TryUpdateCanExecute();
         }
 
@@ -412,7 +457,7 @@ namespace Avalonia.Controls
 
             if (Command != null)
             {
-                Command.CanExecuteChanged -= CanExecuteChanged;
+                Command.CanExecuteChanged -= CanExecuteChangedHandler;
             }
         }
 
@@ -422,9 +467,10 @@ namespace Avalonia.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
+            (var command, var parameter) = (Command, CommandParameter);
+            if (!e.Handled && command is not null && command.CanExecute(parameter) == true)
             {
-                Command.Execute(CommandParameter);
+                command.Execute(parameter);
                 e.Handled = true;
             }
         }
@@ -535,21 +581,25 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private static void CommandChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Sender is MenuItem menuItem &&
-                ((ILogical)menuItem).IsAttachedToLogicalTree)
+            var newCommand = e.NewValue as ICommand;
+            if (e.Sender is MenuItem menuItem)
+
             {
-                if (e.OldValue is ICommand oldCommand)
+                if (((ILogical)menuItem).IsAttachedToLogicalTree)
                 {
-                    oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
-                }
+                    if (e.OldValue is ICommand oldCommand)
+                    {
+                        oldCommand.CanExecuteChanged -= menuItem.CanExecuteChangedHandler;
+                    }
 
-                if (e.NewValue is ICommand newCommand)
-                {
-                    newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                    if (newCommand is not null)
+                    {
+                        newCommand.CanExecuteChanged += menuItem.CanExecuteChangedHandler;
+                    }
                 }
-
-                menuItem.TryUpdateCanExecute();
+                menuItem.TryUpdateCanExecute(newCommand, menuItem.CommandParameter);
             }
+
         }
 
         /// <summary>
@@ -560,7 +610,8 @@ namespace Avalonia.Controls
         {
             if (e.Sender is MenuItem menuItem)
             {
-                menuItem.TryUpdateCanExecute();
+                (var command, var parameter) = (menuItem.Command, e.NewValue);
+                menuItem.TryUpdateCanExecute(command, parameter);
             }
         }
 
@@ -579,25 +630,109 @@ namespace Avalonia.Controls
         /// </summary>
         private void TryUpdateCanExecute()
         {
-            if (Command == null)
+            TryUpdateCanExecute(Command, CommandParameter);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private void TryUpdateCanExecute(ICommand? command, object? parameter)
+        {
+            if (command == null)
             {
                 _commandCanExecute = !_commandBindingError;
                 UpdateIsEffectivelyEnabled();
                 return;
             }
-            
+
             //Perf optimization - only raise CanExecute event if the menu is open
             if (!((ILogical)this).IsAttachedToLogicalTree ||
                 Parent is MenuItem { IsSubMenuOpen: false })
             {
                 return;
             }
-            
-            var canExecute = Command.CanExecute(CommandParameter);
+
+            var canExecute = command.CanExecute(parameter);
             if (canExecute != _commandCanExecute)
             {
                 _commandCanExecute = canExecute;
                 UpdateIsEffectivelyEnabled();
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == HeaderProperty)
+            {
+                HeaderChanged(change);
+            }
+            else if (change.Property == IconProperty)
+            {
+                IconChanged(change);
+            }
+            else if (change.Property == IsSelectedProperty)
+            {
+                IsSelectedChanged(change);
+            }
+            else if (change.Property == IsSubMenuOpenProperty)
+            {
+                SubMenuOpenChanged(change);
+            }
+            else if (change.Property == CommandProperty)
+            {
+                CommandChanged(change);
+            }
+            else if (change.Property == CommandParameterProperty)
+            {
+                CommandParameterChanged(change);
+            }
+            else if (change.Property == IsCheckedProperty)
+            {
+                IsCheckedChanged(change);
+            }
+            else if (change.Property == ToggleTypeProperty)
+            {
+                ToggleTypeChanged(change);
+            }
+            else if (change.Property == GroupNameProperty)
+            {
+                GroupNameChanged(change);
+            }
+        }
+        /// <summary>
+        /// Called when the <see cref="GroupName"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void GroupNameChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            (MenuInteractionHandler as DefaultMenuInteractionHandler)?.OnGroupOrTypeChanged(this, e.GetOldValue<string>());
+        }
+
+        /// <summary>
+        /// Called when the <see cref="ToggleType"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void ToggleTypeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var newValue = e.GetNewValue<MenuItemToggleType>();
+            PseudoClasses.Set(":radio", newValue == MenuItemToggleType.Radio);
+            PseudoClasses.Set(":toggle", newValue == MenuItemToggleType.CheckBox);
+
+            (MenuInteractionHandler as DefaultMenuInteractionHandler)?.OnGroupOrTypeChanged(this, GroupName);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="IsChecked"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void IsCheckedChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var newValue = e.GetNewValue<bool>();
+            PseudoClasses.Set(":checked", newValue);
+
+            if (newValue)
+            {
+                (MenuInteractionHandler as DefaultMenuInteractionHandler)?.OnCheckedChanged(this);
             }
         }
 
@@ -607,12 +742,13 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.NewValue is string newValue && newValue == "-")
+            var (oldValue, newValue) = e.GetOldAndNewValue<object?>();
+            if (Equals(newValue, "-"))
             {
                 PseudoClasses.Add(":separator");
                 Focusable = false;
             }
-            else if (e.OldValue is string oldValue && oldValue == "-")
+            else if (Equals(oldValue, "-"))
             {
                 PseudoClasses.Remove(":separator");
                 Focusable = true;
@@ -625,18 +761,17 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IconChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldValue = e.OldValue as ILogical;
-            var newValue = e.NewValue as ILogical;
+            var (oldValue, newValue) = e.GetOldAndNewValue<object?>();
 
-            if (oldValue != null)
+            if (oldValue is ILogical oldLogical)
             {
-                LogicalChildren.Remove(oldValue);
+                LogicalChildren.Remove(oldLogical);
                 PseudoClasses.Remove(":icon");
             }
 
-            if (newValue != null)
+            if (newValue is ILogical newLogical)
             {
-                LogicalChildren.Add(newValue);
+                LogicalChildren.Add(newLogical);
                 PseudoClasses.Add(":icon");
             }
         }
@@ -714,12 +849,7 @@ namespace Avalonia.Controls
             SelectedItem = null;
         }
 
-        private void UpdateLayout()
-        {
-            (VisualRoot as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
-        }
-
-        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => CanExecuteChangedHandler(sender, e);
 
         void IClickableControl.RaiseClick()
         {

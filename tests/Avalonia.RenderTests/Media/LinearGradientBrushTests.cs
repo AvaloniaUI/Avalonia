@@ -110,5 +110,29 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             public DrawnControl(Action<DrawingContext> render) => _render = render;
             public override void Render(DrawingContext context) => _render(context);
         }
+
+        [Theory,
+            InlineData(false),
+            InlineData(true)
+        ]
+        public async Task LinearGradientBrushIsProperlyMapped(bool relative)
+        {
+            var brush = new LinearGradientBrush
+            {
+                StartPoint = relative ? new RelativePoint(0, 0, RelativeUnit.Relative) : new RelativePoint(50,0, RelativeUnit.Absolute),
+                EndPoint = relative ? new RelativePoint(1, 1, RelativeUnit.Relative) : new RelativePoint(150,0, RelativeUnit.Absolute),
+                GradientStops =
+                {
+                    new GradientStop { Color = Colors.Red, Offset = 0 },
+                    new GradientStop { Color = Colors.Blue, Offset = 1 }
+                },
+                SpreadMethod = GradientSpreadMethod.Repeat
+            };
+            
+            var testName =
+                $"{nameof(LinearGradientBrushIsProperlyMapped)}_{brush.StartPoint.Unit}";
+            await RenderToFile(new RelativePointTestPrimitivesHelper(brush), testName);
+            CompareImages(testName);
+        }
     }
 }

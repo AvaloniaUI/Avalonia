@@ -20,6 +20,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Transform?> TransformProperty =
             AvaloniaProperty.Register<PopupRoot, Transform?>(nameof(Transform));
 
+        /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
+            Popup.WindowManagerAddShadowHintProperty.AddOwner<PopupRoot>();
+
         private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
@@ -50,6 +56,7 @@ namespace Avalonia.Controls.Primitives
             : base(impl, dependencyResolver)
         {
             ParentTopLevel = parent;
+            impl.SetWindowManagerAddShadowHint(WindowManagerAddShadowHint);
         }
 
         /// <summary>
@@ -67,6 +74,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
+        /// </summary>
+        public bool WindowManagerAddShadowHint
+        {
+            get => GetValue(WindowManagerAddShadowHintProperty);
+            set => SetValue(WindowManagerAddShadowHintProperty, value);
+        }
+
+        /// <summary>
         /// Gets the parent control in the event route.
         /// </summary>
         /// <remarks>
@@ -77,7 +93,21 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        Visual? IHostedVisualTreeRoot.Host => VisualParent;
+        Visual? IHostedVisualTreeRoot.Host
+        {
+            get
+            {
+                // If the parent is attached to a visual tree, then return that. However the parent
+                // will possibly be a standalone Popup (i.e. a Popup not attached to a visual tree,
+                // created by e.g. a ContextMenu): if this is the case, return the ParentTopLevel
+                // if set. This helps to allow the focus manager to restore the focus to the outer
+                // scope when the popup is closed.
+                var parentVisual = Parent as Visual;
+                if (parentVisual?.IsAttachedToVisualTree == true)
+                    return parentVisual;
+                return ParentTopLevel ?? parentVisual;
+            }
+        }
 
         /// <summary>
         /// Gets the styling parent of the popup root.
@@ -164,6 +194,16 @@ namespace Avalonia.Controls.Primitives
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new PopupRootAutomationPeer(this);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == WindowManagerAddShadowHintProperty)
+            {
+                PlatformImpl?.SetWindowManagerAddShadowHint(change.GetNewValue<bool>());
+            }
         }
     }
 }

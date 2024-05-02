@@ -9,7 +9,6 @@
   <ControlTheme x:Key="{x:Type NotificationCard}" TargetType="NotificationCard">
     <Setter Property="UseLayoutRounding" Value="True"/>
     <Setter Property="Width" Value="350"/>
-    <Setter Property="FontSize" Value="14"/>
     <Setter Property="Foreground" Value="{DynamicResource NotificationCardForegroundBrush}"/>
     <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
     <Setter Property="BorderThickness" Value="0" />
@@ -26,7 +25,7 @@
                     ClipToBounds="True">
               <DockPanel>
                 <Panel x:Name="PART_HeaderBar" Height="4" Background="{DynamicResource NotificationCardProgressBackgroundBrush}" DockPanel.Dock="Top" />
-                <ContentControl Name="PART_Content" MinHeight="64" Content="{TemplateBinding Content}" />
+                <ContentPresenter Name="PART_ContentPresenter" MinHeight="64" Content="{TemplateBinding Content}" />
               </DockPanel>
             </Border>
           </Border>

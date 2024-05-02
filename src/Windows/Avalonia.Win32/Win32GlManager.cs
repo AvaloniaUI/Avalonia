@@ -3,9 +3,12 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Vulkan;
+using Avalonia.Win32.DComposition;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.OpenGl.Angle;
+using Avalonia.Win32.Vulkan;
 using Avalonia.Win32.WinRT.Composition;
 
 namespace Avalonia.Win32;
@@ -61,6 +64,13 @@ static class Win32GlManager
                     return wgl;
                 }
             }
+
+            if (renderingMode == Win32RenderingMode.Vulkan)
+            {
+                var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                if (vulkan != null)
+                    return vulkan;
+            }
         }
 
         throw new InvalidOperationException($"{nameof(Win32PlatformOptions)}.{nameof(Win32PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
@@ -83,6 +93,13 @@ static class Win32GlManager
             if (compositionMode == Win32CompositionMode.WinUIComposition
                 && WinUiCompositorConnection.IsSupported()
                 && WinUiCompositorConnection.TryCreateAndRegister())
+            {
+                return;
+            }
+
+            if (compositionMode == Win32CompositionMode.DirectComposition
+                && DirectCompositionConnection.IsSupported()
+                && DirectCompositionConnection.TryCreateAndRegister())
             {
                 return;
             }

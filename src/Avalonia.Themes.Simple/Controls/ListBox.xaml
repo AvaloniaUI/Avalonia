@@ -22,6 +22,7 @@
                         Background="{TemplateBinding Background}"
                         HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                         IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                        IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
                         VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                         VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
                         HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}">

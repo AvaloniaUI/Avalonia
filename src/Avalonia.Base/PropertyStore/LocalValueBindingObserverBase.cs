@@ -18,7 +18,7 @@ namespace Avalonia.PropertyStore
         {
             _owner = owner;
             Property = property;
-            _hasDataValidation = property.GetMetadata(owner.Owner.GetType()).EnableDataValidation ?? false;
+            _hasDataValidation = property.GetMetadata(owner.Owner).EnableDataValidation ?? false;
         }
 
         public StyledProperty<T> Property { get;}
@@ -88,8 +88,6 @@ namespace Avalonia.PropertyStore
                 var property = instance.Property;
                 var originalType = value.Type;
 
-                LoggingUtils.LogIfNecessary(owner.Owner, property, value);
-
                 // Revert to the default value if the binding value fails validation, or if
                 // there was no value (though not if there was a data validation error).
                 if ((value.HasValue && property.ValidateValue?.Invoke(value.Value) == false) ||
@@ -123,7 +121,7 @@ namespace Avalonia.PropertyStore
         {
             if (!_isDefaultValueInitialized)
             {
-                _defaultValue = Property.GetDefaultValue(_owner.Owner.GetType());
+                _defaultValue = Property.GetDefaultValue(_owner.Owner);
                 _isDefaultValueInitialized = true;
             }
 

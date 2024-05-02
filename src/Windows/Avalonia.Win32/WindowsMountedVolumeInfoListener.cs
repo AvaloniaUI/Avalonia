@@ -33,6 +33,7 @@ namespace Avalonia.Win32
                                     try
                                     {
                                         var ret = p.IsReady;
+                                        _ = p.TotalSize; // try to read size as a proof of read access.
                                         return ret;
                                     }
                                     catch (Exception e)

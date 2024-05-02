@@ -21,11 +21,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             => new IndexerAccessor(target, property, argument);
     }
 
-    internal class AvaloniaPropertyAccessor : PropertyAccessorBase
+    internal class AvaloniaPropertyAccessor : PropertyAccessorBase, IWeakEventSubscriber<AvaloniaPropertyChangedEventArgs>
     {
         private readonly WeakReference<AvaloniaObject?> _reference;
         private readonly AvaloniaProperty _property;
-        private IDisposable? _subscription;
 
         public AvaloniaPropertyAccessor(WeakReference<AvaloniaObject?> reference, AvaloniaProperty property)
         {
@@ -56,15 +55,31 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return false;
         }
 
+        public void OnEvent(object? sender, WeakEvent ev, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == _property)
+            {
+                PublishValue(Value);
+            }
+        }
+
         protected override void SubscribeCore()
         {
-            _subscription = Instance?.GetObservable(_property).Subscribe(PublishValue);
+            if (_reference.TryGetTarget(out var reference))
+            {
+                var value = reference.GetValue(_property);
+                PublishValue(value);
+
+                WeakEvents.AvaloniaPropertyChanged.Subscribe(reference, this);
+            }
         }
 
         protected override void UnsubscribeCore()
         {
-            _subscription?.Dispose();
-            _subscription = null;
+            if (_reference.TryGetTarget(out var reference))
+            {
+                WeakEvents.AvaloniaPropertyChanged.Unsubscribe(reference, this);
+            }
         }
     }
 
@@ -132,7 +147,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                 var value = Value;
                 PublishValue(value);
             }
-            catch { }
+            catch (Exception e)
+            {
+                PublishValue(new BindingNotification(e, BindingErrorType.Error));
+            }
         }
 
         private void SubscribeToChanges()

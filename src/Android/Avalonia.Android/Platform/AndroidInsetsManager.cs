@@ -1,46 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
+using Android.App;
 using Android.OS;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.Core.View;
 using Avalonia.Android.Platform.SkiaPlatform;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
+using Avalonia.Threading;
+using AndroidWindow = Android.Views.Window;
 
 namespace Avalonia.Android.Platform
 {
-    internal class AndroidInsetsManager : Java.Lang.Object, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener
+    internal sealed class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
     {
-        private readonly AvaloniaMainActivity _activity;
+        private readonly Activity _activity;
         private readonly TopLevelImpl _topLevel;
-        private readonly InsetsAnimationCallback _callback;
         private bool _displayEdgeToEdge;
-        private bool _usesLegacyLayouts;
         private bool? _systemUiVisibility;
         private SystemBarTheme? _statusBarTheme;
         private bool? _isDefaultSystemBarLightTheme;
         private Color? _systemBarColor;
+        private InputPaneState _state;
+        private Rect _previousRect;
+        private readonly bool _usesLegacyLayouts;
 
-        public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
+        private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
+        
+        public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
+        public event EventHandler<InputPaneStateEventArgs>? StateChanged;
+
+        public InputPaneState State
+        {
+            get => _state; set
+            {
+                var oldState = _state;
+                _state = value;
+
+                if (oldState != value && Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+                {
+                    var currentRect = OccludedRect;
+                    NotifyStateChanged(value, _previousRect, currentRect, TimeSpan.Zero, null);
+                    _previousRect = currentRect;
+                }
+            }
+        }
 
         public bool DisplayEdgeToEdge
         {
-            get => _displayEdgeToEdge; 
+            get => _displayEdgeToEdge;
             set
             {
                 _displayEdgeToEdge = value;
 
-                if(Build.VERSION.SdkInt >= BuildVersionCodes.P)
+                if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
                 {
-                    _activity.Window.Attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
+                    attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
                 }
 
-                WindowCompat.SetDecorFitsSystemWindows(_activity.Window, !value);
+                WindowCompat.SetDecorFitsSystemWindows(Window, !value);
 
-                if(value)
+                if (value)
                 {
-                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentStatus);
-                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+                    Window.AddFlags(WindowManagerFlags.TranslucentStatus);
+                    Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
                 }
                 else
                 {
@@ -49,51 +74,62 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public AndroidInsetsManager(AvaloniaMainActivity activity, TopLevelImpl topLevel)
+        internal AndroidInsetsManager(Activity activity, TopLevelImpl topLevel) : base(DispatchModeStop)
         {
             _activity = activity;
             _topLevel = topLevel;
-            _callback = new InsetsAnimationCallback(WindowInsetsAnimationCompat.Callback.DispatchModeStop);
 
-            _callback.InsetsManager = this;
+            ViewCompat.SetOnApplyWindowInsetsListener(Window.DecorView, this);
 
-            ViewCompat.SetOnApplyWindowInsetsListener(_activity.Window.DecorView, this);
-
-            ViewCompat.SetWindowInsetsAnimationCallback(_activity.Window.DecorView, _callback);
-
-            if(Build.VERSION.SdkInt < BuildVersionCodes.R)
+            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
             {
                 _usesLegacyLayouts = true;
-                _activity.Window.DecorView.ViewTreeObserver.AddOnGlobalLayoutListener(this);
+                _activity.Window?.DecorView.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
             }
 
             DisplayEdgeToEdge = false;
+
+            ViewCompat.SetWindowInsetsAnimationCallback(Window.DecorView, this);
         }
 
         public Thickness SafeAreaPadding
         {
             get
             {
-                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
 
                 if (insets != null)
                 {
                     var renderScaling = _topLevel.RenderScaling;
 
                     var inset = insets.GetInsets(
-                        (_displayEdgeToEdge ?
+                        _displayEdgeToEdge ?
                             WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() |
-                            WindowInsetsCompat.Type.DisplayCutout() :
-                            0) | WindowInsetsCompat.Type.Ime());
-                    var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
-                    var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+                            WindowInsetsCompat.Type.DisplayCutout() : 0);
 
                     return new Thickness(inset.Left / renderScaling,
                         inset.Top / renderScaling,
                         inset.Right / renderScaling,
-                        (imeInset.Bottom > 0 && ((_usesLegacyLayouts && !_displayEdgeToEdge) || !_usesLegacyLayouts) ?
-                            imeInset.Bottom - (_displayEdgeToEdge ? 0 : navBarInset.Bottom) :
-                            inset.Bottom) / renderScaling);
+                        inset.Bottom / renderScaling);
+                }
+
+                return default;
+            }
+        }
+
+        public Rect OccludedRect
+        {
+            get
+            {
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
+
+                if (insets != null)
+                {
+                    var navbarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars()).Bottom;
+
+                    var height = Math.Max((float)((insets.GetInsets(WindowInsetsCompat.Type.Ime()).Bottom - navbarInset) / _topLevel.RenderScaling), 0);
+
+                    return new Rect(0, _topLevel.ClientSize.Height - SafeAreaPadding.Bottom - height, _topLevel.ClientSize.Width, height);
                 }
 
                 return default;
@@ -102,19 +138,38 @@ namespace Avalonia.Android.Platform
 
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
-            NotifySafeAreaChanged(SafeAreaPadding);
             insets = ViewCompat.OnApplyWindowInsets(v, insets);
+            NotifySafeAreaChanged(SafeAreaPadding);
+
+            if (_previousRect == default)
+            {
+                _previousRect = OccludedRect;
+            }
+
+            State = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? InputPaneState.Open : InputPaneState.Closed;
+
             return insets;
         }
 
         private void NotifySafeAreaChanged(Thickness safeAreaPadding)
         {
-            SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding));
+            Dispatcher.UIThread.Send(_ => SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(safeAreaPadding)));
+        }
+        
+        private void NotifyStateChanged(InputPaneState newState, Rect? startRect, Rect endRect, TimeSpan animationDuration, IEasing? easing)
+        {
+            Dispatcher.UIThread.Send(_ => StateChanged?.Invoke(this, new InputPaneStateEventArgs(newState, startRect, endRect, animationDuration, easing)));
         }
 
         public void OnGlobalLayout()
         {
             NotifySafeAreaChanged(SafeAreaPadding);
+
+            if (_usesLegacyLayouts)
+            {
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
+                State = insets?.IsVisible(WindowInsetsCompat.Type.Ime()) == true ? InputPaneState.Open : InputPaneState.Closed;
+            }
         }
 
         public SystemBarTheme? SystemBarTheme
@@ -123,11 +178,11 @@ namespace Avalonia.Android.Platform
             {
                 try
                 {
-                    var compat = new WindowInsetsControllerCompat(_activity.Window, _topLevel.View);
+                    var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                     return compat.AppearanceLightStatusBars ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
-                catch (Exception _)
+                catch (Exception)
                 {
                     return Controls.Platform.SystemBarTheme.Light;
                 }
@@ -136,23 +191,21 @@ namespace Avalonia.Android.Platform
             {
                 _statusBarTheme = value;
 
-                var isDefault = _statusBarTheme == null;
-
                 if (!_topLevel.View.IsShown)
                 {
                     return;
                 }
 
-                var compat = new WindowInsetsControllerCompat(_activity.Window, _topLevel.View);
+                var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                 if (_isDefaultSystemBarLightTheme == null)
                 {
                     _isDefaultSystemBarLightTheme = compat.AppearanceLightStatusBars;
                 }
 
-                if (value == null && _isDefaultSystemBarLightTheme != null)
+                if (value == null)
                 {
-                    value = (bool)_isDefaultSystemBarLightTheme ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
+                    value = _isDefaultSystemBarLightTheme.Value ? Controls.Platform.SystemBarTheme.Light : Controls.Platform.SystemBarTheme.Dark;
                 }
 
                 compat.AppearanceLightStatusBars = value == Controls.Platform.SystemBarTheme.Light;
@@ -164,7 +217,7 @@ namespace Avalonia.Android.Platform
         {
             get
             {
-                if(_activity.Window == null)
+                if (_activity.Window == null)
                 {
                     return true;
                 }
@@ -181,7 +234,7 @@ namespace Avalonia.Android.Platform
                     return;
                 }
 
-                var compat = WindowCompat.GetInsetsController(_activity.Window, _topLevel.View);
+                var compat = WindowCompat.GetInsetsController(Window, _topLevel.View);
 
                 if (value == null || value.Value)
                 {
@@ -201,7 +254,7 @@ namespace Avalonia.Android.Platform
 
         public Color? SystemBarColor
         {
-            get => _systemBarColor; 
+            get => _systemBarColor;
             set
             {
                 _systemBarColor = value;
@@ -231,40 +284,49 @@ namespace Avalonia.Android.Platform
             SystemBarColor = _systemBarColor;
         }
 
-        private class InsetsAnimationCallback : WindowInsetsAnimationCompat.Callback
+        public override WindowInsetsAnimationCompat.BoundsCompat OnStart(WindowInsetsAnimationCompat animation, WindowInsetsAnimationCompat.BoundsCompat bounds)
         {
-            public InsetsAnimationCallback(int dispatchMode) : base(dispatchMode)
+            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
             {
-            }
+                var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
 
-            public AndroidInsetsManager InsetsManager { get; set; }
-
-            public override WindowInsetsCompat OnProgress(WindowInsetsCompat insets, IList<WindowInsetsAnimationCompat> runningAnimations)
-            {
-                foreach (var anim in runningAnimations)
+                if (insets != null)
                 {
-                    if ((anim.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-                    {
-                        var renderScaling = InsetsManager._topLevel.RenderScaling;
+                    var navbarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars()).Bottom;
+                    var height = Math.Max(0, (float)((bounds.LowerBound.Bottom - navbarInset) / _topLevel.RenderScaling));
+                    var upperRect = new Rect(0, _topLevel.ClientSize.Height - SafeAreaPadding.Bottom - height, _topLevel.ClientSize.Width, height);
+                    height = Math.Max(0, (float)((bounds.UpperBound.Bottom - navbarInset) / _topLevel.RenderScaling));
+                    var lowerRect = new Rect(0, _topLevel.ClientSize.Height - SafeAreaPadding.Bottom - height, _topLevel.ClientSize.Width, height);
 
-                        var inset = insets.GetInsets((InsetsManager.DisplayEdgeToEdge ? WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() | WindowInsetsCompat.Type.DisplayCutout() : 0) | WindowInsetsCompat.Type.Ime());
-                        var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
-                        var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+                    var duration = TimeSpan.FromMilliseconds(animation.DurationMillis);
 
-
-                        var bottomPadding = (imeInset.Bottom > 0 && !InsetsManager.DisplayEdgeToEdge ? imeInset.Bottom - navBarInset.Bottom : inset.Bottom);
-                        bottomPadding = (int)(bottomPadding * anim.InterpolatedFraction);
-
-                        var padding = new Thickness(inset.Left / renderScaling,
-                            inset.Top / renderScaling,
-                            inset.Right / renderScaling,
-                            bottomPadding / renderScaling);
-                        InsetsManager?.NotifySafeAreaChanged(padding);
-                        break;
-                    }
+                    bool isOpening = State == InputPaneState.Open;
+                    NotifyStateChanged(State, isOpening ? upperRect : lowerRect, isOpening ? lowerRect : upperRect, duration,
+                        animation.Interpolator is { } interpolator ? new AnimationEasing(interpolator) : null);
                 }
-                return insets;
             }
+
+            return base.OnStart(animation, bounds);
+        }
+
+        public override WindowInsetsCompat OnProgress(WindowInsetsCompat insets, IList<WindowInsetsAnimationCompat> runningAnimations)
+        {
+            return insets;
+        }
+    }
+
+    internal sealed class AnimationEasing : Easing
+    {
+        private readonly IInterpolator _interpolator;
+
+        public AnimationEasing(IInterpolator interpolator)
+        {
+            _interpolator = interpolator;
+        }
+
+        public override double Ease(double progress)
+        {
+            return _interpolator.GetInterpolation((float)progress);
         }
     }
 }

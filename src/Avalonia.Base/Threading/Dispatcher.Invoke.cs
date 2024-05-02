@@ -120,6 +120,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -138,6 +139,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -158,6 +160,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -185,6 +188,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -319,6 +323,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -357,6 +362,7 @@ public partial class Dispatcher
     ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
+    /// <typeparam name="TResult">The type of the <paramref name="callback"/> return value.</typeparam>
     /// <param name="callback">
     ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
@@ -618,6 +624,40 @@ public partial class Dispatcher
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         InvokeAsyncImpl(new SendOrPostCallbackDispatcherOperation(this, priority, action, arg, true), CancellationToken.None);
+    }
+    
+    /// <summary>
+    /// Sends an action that will be invoked on the dispatcher thread.
+    /// </summary>
+    /// <param name="action">The method.</param>
+    /// <param name="arg">The argument of method to call.</param>
+    /// <param name="priority">The priority with which to invoke the method. If null, Send is default.</param>
+    /// <remarks>
+    /// When on the same thread with Send priority, callback is executed immediately, without changing synchronization context.
+    /// </remarks>
+    internal void Send(SendOrPostCallback action, object? arg = null, DispatcherPriority? priority = null)
+    {
+        _ = action ?? throw new ArgumentNullException(nameof(action));
+        priority ??= DispatcherPriority.Send;
+
+        if (priority == DispatcherPriority.Send && CheckAccess())
+        {
+            try
+            {
+                action(arg);
+            }
+            catch (Exception ex) when (ExceptionFilter(ex))
+            {
+                if (!CatchException(ex))
+                    throw;
+            }
+        }
+        else
+        {
+            InvokeImpl(new SendOrPostCallbackDispatcherOperation(this, priority.Value, action, arg, true),
+                CancellationToken.None,
+                TimeSpan.FromMilliseconds(-1));
+        }
     }
 
     /// <summary>

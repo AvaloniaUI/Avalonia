@@ -4,6 +4,8 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -37,6 +39,7 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabItem>(AutomationControlType.TabItem);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<TabItem>((tabItem, args) => tabItem.TabItemActivated(args));
         }
 
         /// <summary>
@@ -72,14 +75,14 @@ namespace Avalonia.Controls
                 {
                     if (Header != headered.Header)
                     {
-                        Header = headered.Header;
+                        SetCurrentValue(HeaderProperty, headered.Header);
                     }
                 }
                 else
                 {
                     if (!(obj.NewValue is Control))
                     {
-                        Header = obj.NewValue;
+                        SetCurrentValue(HeaderProperty, obj.NewValue);
                     }
                 }
             }
@@ -87,9 +90,15 @@ namespace Avalonia.Controls
             {
                 if (Header == obj.OldValue)
                 {
-                    Header = obj.NewValue;
+                    SetCurrentValue(HeaderProperty, obj.NewValue);
                 }
             }
+        }
+
+        private void TabItemActivated(RoutedEventArgs args)
+        {
+            SetCurrentValue(IsSelectedProperty, true);
+            args.Handled = true;
         }
     }
 }

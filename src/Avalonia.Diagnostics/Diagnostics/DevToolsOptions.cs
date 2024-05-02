@@ -1,5 +1,5 @@
-﻿using System;
-using Avalonia.Input;
+﻿using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Styling;
 
 namespace Avalonia.Diagnostics
@@ -47,5 +47,15 @@ namespace Avalonia.Diagnostics
         /// Gets or sets whether DevTools theme.
         /// </summary>
         public ThemeVariant? ThemeVariant { get; set; }
+
+        /// <summary>
+        /// Get or set Focus Highlighter <see cref="Brush"/>
+        /// </summary>
+        public IBrush? FocusHighlighterBrush { get; set; }
+
+        /// <summary>
+        /// Set the <see cref="DevToolsViewKind">kind</see> of diagnostic view that show at launch of DevTools
+        /// </summary>
+        public DevToolsViewKind LaunchView { get; init; }
     }
 }

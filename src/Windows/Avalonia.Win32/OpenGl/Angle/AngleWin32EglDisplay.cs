@@ -46,8 +46,7 @@ namespace Avalonia.Win32.OpenGl.Angle
             }, AngleOptions.PlatformApi.DirectX11);
         }
 
-        public static unsafe AngleWin32EglDisplay CreateD3D11Display(Win32AngleEglInterface egl,
-            bool preferDiscreteAdapter = false)
+        public static unsafe AngleWin32EglDisplay CreateD3D11Display(Win32AngleEglInterface egl)
         {
             var featureLevels = new[]
             {
@@ -65,7 +64,9 @@ namespace Avalonia.Win32.OpenGl.Angle
                 using var factory = MicroComRuntime.CreateProxyFor<IDXGIFactory1>(pDxgiFactory, true);
 
                 void* pAdapter = null;
-                if (preferDiscreteAdapter)
+                // As for now, we only need to redefine default adapter only on ARM64 just in case of Adreno GPU.
+                var redefineDefaultAdapter = RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+                if (redefineDefaultAdapter)
                 {
                     ushort adapterIndex = 0;
                     var adapters = new List<(IDXGIAdapter1 adapter, string name)>();
@@ -80,9 +81,14 @@ namespace Avalonia.Win32.OpenGl.Angle
 
                     if (adapters.Count == 0)
                         throw new OpenGlException("No adapters found");
+
                     chosenAdapter = adapters
-                        .OrderByDescending(x => x.name.Contains("nvidia") ? 2 : x.name.Contains("amd") ? 1 : 0)
-                        .First().adapter.CloneReference();
+                        .OrderByDescending(x =>
+                            // Put adreno in lower priority - it's broken in Avalonia.
+                            x.name.Contains("adreno") ? -1 : 0)
+                        .First().adapter
+                        .CloneReference();
+
                     foreach (var a in adapters)
                         a.adapter.Dispose();
                 }

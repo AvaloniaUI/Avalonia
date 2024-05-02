@@ -6,7 +6,7 @@ namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserFilterViewModel : AvaloniaDialogsInternalViewModelBase
     {
-        private readonly Regex[] _patterns;
+        private readonly Regex[]? _patterns;
         public string Name { get; }
 
         public ManagedFileChooserFilterViewModel(FilePickerFileType filter)

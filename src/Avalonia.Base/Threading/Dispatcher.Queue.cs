@@ -65,22 +65,34 @@ public partial class Dispatcher
                 job = _queue.Peek();
             if (job == null)
                 return;
-            if (priority != null && job.Priority < priority.Value)
+            if (job.Priority < priority.Value)
                 return;
             ExecuteJob(job);
         }
     }
 
-    class DummyShuttingDownUnitTestDispatcherImpl : IDispatcherImpl
+    private sealed class DummyShuttingDownUnitTestDispatcherImpl : IDispatcherImpl
     {
         public bool CurrentThreadIsLoopThread => true;
+
         public void Signal()
         {
         }
 
-        public event Action? Signaled;
-        public event Action? Timer;
+        public event Action? Signaled
+        {
+            add { }
+            remove { }
+        }
+
+        public event Action? Timer
+        {
+            add { }
+            remove { }
+        }
+
         public long Now => 0;
+
         public void UpdateTimer(long? dueTimeInMs)
         {
         }
@@ -182,7 +194,6 @@ public partial class Dispatcher
                 
                 if (Now - backgroundJobExecutionStartedAt.Value > _maximumInputStarvationTime)
                 {
-                    _signaled = true;
                     RequestBackgroundProcessing();
                     return;
                 }

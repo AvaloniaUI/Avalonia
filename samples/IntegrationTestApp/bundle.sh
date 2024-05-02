@@ -9,4 +9,4 @@ arch="arm64"
 fi
 
 dotnet restore -r osx-$arch
-dotnet msbuild -t:BundleApp -p:RuntimeIdentifier=osx-$arch -p:_AvaloniaUseExternalMSBuild=false
+dotnet msbuild -t:BundleApp -p:RuntimeIdentifier=osx-$arch

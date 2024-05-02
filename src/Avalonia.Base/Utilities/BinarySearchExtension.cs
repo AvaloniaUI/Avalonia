@@ -44,7 +44,7 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
-        /// Performs a binary search on a a subset of an IReadOnlyList
+        /// Performs a binary search on a subset of an IReadOnlyList
         /// </summary>
         /// <typeparam name="T">The list element type</typeparam>
         /// <param name="list">The list to be searched</param>

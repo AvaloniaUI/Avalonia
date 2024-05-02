@@ -113,7 +113,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 return true;
             };
 
-        var res = CompositionTarget.TryHitTest(p, rootVisual, f);
+        using var res = CompositionTarget.TryHitTest(p, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -172,7 +172,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 v.SynchronizeCompositionChildVisuals();
         _dirty.Clear();
         _recalculateChildren.Clear();
-        CompositionTarget.Size = _root.ClientSize;
+        
+        CompositionTarget.PixelSize = PixelSize.FromSizeRounded(_root.ClientSize, _root.RenderScaling);
         CompositionTarget.Scaling = _root.RenderScaling;
         
         var commit = _compositor.RequestCommitAsync();
@@ -183,7 +184,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             {
                 _queuedSceneInvalidation = false;
                 SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
-            }, DispatcherPriority.Input));
+            }, DispatcherPriority.Input), TaskContinuationOptions.ExecuteSynchronously);
         }
     }
 
@@ -211,14 +212,15 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     }
 
     /// <inheritdoc />
-    public void Paint(Rect rect)
+    public void Paint(Rect rect) => Paint(rect, true);
+    public void Paint(Rect rect, bool catchExceptions)
     {
         if (_isDisposed)
             return;
 
         QueueUpdate();
         CompositionTarget.RequestRedraw();
-        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget);
+        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget, catchExceptions);
     }
 
     /// <inheritdoc />

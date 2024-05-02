@@ -102,6 +102,25 @@
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled"
                       ResourceKey="SystemControlDisabledTransparentBrush" />
 
+      <!-- Resources for HyperlinkButton.xaml -->
+      <Color x:Key="HyperlinkVisitedColor">#FF681DA8</Color>
+      <SolidColorBrush x:Key="HyperlinkVisitedBrush" Color="{StaticResource HyperlinkVisitedColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForeground" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPressed" Color="{DynamicResource SystemAccentColorDark1}" />
+      <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="{StaticResource HyperlinkVisitedColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPointerOver" Color="{StaticResource HyperlinkVisitedColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPressed" Color="{StaticResource HyperlinkVisitedColor}" Opacity="0.9" />
+      <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonBackgroundPointerOver" Color="#09000000" />
+      <SolidColorBrush x:Key="HyperlinkButtonBackgroundPressed" Color="#06000000" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+
       <!-- Resources for ComboBox.xaml -->
       <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
       <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
@@ -207,6 +226,10 @@
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+      <!-- Mobile Resources for MenuFlyout.xaml -->
+      <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
+      <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
+      <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
       <!-- Resources for TextBox.xaml -->
       <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -381,6 +404,9 @@
       <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver"
                       ResourceKey="SystemControlHighlightTransparentBrush" />
       <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+      <x:Double x:Key="CalendarFontSize">20</x:Double>
+      <x:Double x:Key="CalendarDayButtonFontSize">12</x:Double>
+      <FontWeight x:Key="CalendarViewTodayFontWeight">SemiBold</FontWeight>
 
       <!-- Resources for Expander.xaml -->
       <!-- Expander:Header -->
@@ -784,6 +810,11 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+      
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="Black" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <!-- Resources for Button.xaml -->
@@ -884,6 +915,25 @@
                       ResourceKey="SystemControlHighlightTransparentBrush" />
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled"
                       ResourceKey="SystemControlDisabledTransparentBrush" />
+
+      <!-- Resources for HyperlinkButton.xaml -->
+      <Color x:Key="HyperlinkVisitedColor">#FFC58AF9</Color>
+      <SolidColorBrush x:Key="HyperlinkVisitedBrush" Color="{StaticResource HyperlinkVisitedColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForeground" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPointerOver" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundPressed" Color="{DynamicResource SystemAccentColorLight1}" />
+      <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="{StaticResource HyperlinkVisitedColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPointerOver" Color="{StaticResource HyperlinkVisitedColor}" />
+      <SolidColorBrush x:Key="HyperlinkButtonForegroundVisitedPressed" Color="{StaticResource HyperlinkVisitedColor}" Opacity="0.9" />
+      <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+      <SolidColorBrush x:Key="HyperlinkButtonBackgroundPointerOver" Color="#0FFFFFFF" />
+      <SolidColorBrush x:Key="HyperlinkButtonBackgroundPressed" Color="#0AFFFFFF" />
+      <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
 
       <!-- Resources for ComboBox.xaml -->
       <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
@@ -991,6 +1041,10 @@
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+      <!-- Mobile Resources for MenuFlyout.xaml -->
+      <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
+      <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
+      <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
       <!-- Resources for TextBox.xaml -->
       <!-- Copied from FluentBaseDark.xaml -->
@@ -1167,6 +1221,9 @@
       <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver"
                       ResourceKey="SystemControlHighlightTransparentBrush" />
       <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+      <x:Double x:Key="CalendarFontSize">20</x:Double>
+      <x:Double x:Key="CalendarDayButtonFontSize">12</x:Double>
+      <FontWeight x:Key="CalendarViewTodayFontWeight">SemiBold</FontWeight>
 
       <!-- Resources for Expander.xaml -->
       <!-- Expander:Header -->
@@ -1571,6 +1628,11 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+
+      <!-- BaseResources for CaptionButtons.xaml -->
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

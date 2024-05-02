@@ -6,7 +6,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -31,9 +30,7 @@ namespace Avalonia.Base.UnitTests.Styling
         {
             var control = new TextBlock();
             var subject = new BehaviorSubject<object>("foo");
-            var descriptor = InstancedBinding.OneWay(subject);
-            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TagProperty, null, false) == descriptor);
-            var style = Mock.Of<IStyle>();
+            var binding = subject.ToBinding();
             var setter = new Setter(TextBlock.TagProperty, binding);
 
             Apply(setter, control);
@@ -46,9 +43,7 @@ namespace Avalonia.Base.UnitTests.Styling
         {
             var control = new TextBlock();
             var subject = new BehaviorSubject<object>(AvaloniaProperty.UnsetValue);
-            var descriptor = InstancedBinding.OneWay(subject);
-            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TagProperty, null, false) == descriptor);
-            var style = Mock.Of<IStyle>();
+            var binding = subject.ToBinding();
             var setter = new Setter(TextBlock.TagProperty, binding);
 
             Apply(setter, control);
@@ -525,12 +520,12 @@ namespace Avalonia.Base.UnitTests.Styling
 
         private class TestConverter : IValueConverter
         {
-            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
-                return value.ToString() + "bar";
+                return value + "bar";
             }
 
-            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 throw new NotImplementedException();
             }

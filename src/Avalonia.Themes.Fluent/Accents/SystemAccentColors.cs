@@ -6,7 +6,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Themes.Fluent.Accents;
 
-internal class SystemAccentColors : IResourceProvider
+internal sealed class SystemAccentColors : ResourceProvider
 {
     public const string AccentKey = "SystemAccentColor";
     public const string AccentDark1Key = "SystemAccentColorDark1";
@@ -22,8 +22,8 @@ internal class SystemAccentColors : IResourceProvider
     private Color _systemAccentColorDark1, _systemAccentColorDark2, _systemAccentColorDark3;
     private Color _systemAccentColorLight1, _systemAccentColorLight2, _systemAccentColorLight3;
 
-    public bool HasResources => true;
-    public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
+    public override bool HasResources => true;
+    public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
         if (key is string strKey)
         {
@@ -81,38 +81,24 @@ internal class SystemAccentColors : IResourceProvider
         return false;
     }
 
-    public IResourceHost? Owner { get; private set; }
-    public event EventHandler? OwnerChanged;
-    public void AddOwner(IResourceHost owner)
+    protected override void OnAddOwner(IResourceHost owner)
     {
-        if (Owner != owner)
+        if (GetFromOwner(owner) is { } platformSettings)
         {
-            Owner = owner;
-            OwnerChanged?.Invoke(this, EventArgs.Empty);
-
-            if (GetFromOwner(owner) is { } platformSettings)
-            {
-                platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
-            }
-
-            _invalidateColors = true;
+            platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
         }
+
+        _invalidateColors = true;
     }
 
-    public void RemoveOwner(IResourceHost owner)
+    protected override void OnRemoveOwner(IResourceHost owner)
     {
-        if (Owner == owner)
+        if (GetFromOwner(owner) is { } platformSettings)
         {
-            Owner = null;
-            OwnerChanged?.Invoke(this, EventArgs.Empty);
-            
-            if (GetFromOwner(owner) is { } platformSettings)
-            {
-                platformSettings.ColorValuesChanged -= PlatformSettingsOnColorValuesChanged;
-            }
-
-            _invalidateColors = true;
+            platformSettings.ColorValuesChanged -= PlatformSettingsOnColorValuesChanged;
         }
+
+        _invalidateColors = true;
     }
 
     private void EnsureColors()

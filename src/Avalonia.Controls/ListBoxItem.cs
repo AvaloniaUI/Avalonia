@@ -55,7 +55,7 @@ namespace Avalonia.Controls
             if (e.Handled)
                 return;
 
-            if (!e.Handled && ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
+            if (!e.Handled && ItemsControl.ItemsControlFromItemContainer(this) is ListBox owner)
             {
                 var p = e.GetCurrentPoint(this);
 
@@ -97,14 +97,18 @@ namespace Avalonia.Controls
 
                 if (new Rect(Bounds.Size).ContainsExclusive(point.Position) &&
                     tapRect.ContainsExclusive(point.Position) &&
-                    ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
+                    ItemsControl.ItemsControlFromItemContainer(this) is ListBox owner)
                 {
                     if (owner.UpdateSelectionFromPointerEvent(this, e))
                     {
                         // As we only update selection from touch/pen on pointer release, we need to raise
                         // the pointer event on the owner to trigger a commit.
                         if (e.Pointer.Type != PointerType.Mouse)
+                        {
+                            var sourceBackup = e.Source;
                             owner.RaiseEvent(e);
+                            e.Source = sourceBackup;
+                        }
 
                         e.Handled = true;
                     }

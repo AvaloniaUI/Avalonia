@@ -1,6 +1,5 @@
-#nullable enable
-
 using System;
+using System.Runtime.Versioning;
 using Android.Views;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -21,9 +20,9 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             HandleEvents = true;
         }
 
-        public bool? DispatchKeyEvent(KeyEvent e, out bool callBase)
+        public bool? DispatchKeyEvent(KeyEvent? e, out bool callBase)
         {
-            if (!HandleEvents)
+            if (!HandleEvents || e is null)
             {
                 callBase = true;
                 return null;
@@ -32,6 +31,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return DispatchKeyEventInternal(e, out callBase);
         }
 
+        [ObsoletedOSPlatform("android29.0")]
         static string? UnicodeTextInput(KeyEvent keyEvent)
         {
             return keyEvent.Action == KeyEventActions.Multiple
@@ -43,9 +43,11 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
         private bool? DispatchKeyEventInternal(KeyEvent e, out bool callBase)
         {
-            var unicodeTextInput = UnicodeTextInput(e);
+            var unicodeTextInput = OperatingSystem.IsAndroidVersionAtLeast(29) ? null : UnicodeTextInput(e);
+            var inputRoot = _view.InputRoot;
 
-            if (e.Action == KeyEventActions.Multiple && unicodeTextInput == null)
+            if ((e.Action == KeyEventActions.Multiple && unicodeTextInput == null)
+                || inputRoot is null)
             {
                 callBase = true;
                 return null;
@@ -53,29 +55,31 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
             var physicalKey = AndroidKeyInterop.PhysicalKeyFromScanCode(e.ScanCode);
             var keySymbol = GetKeySymbol(e.UnicodeChar, physicalKey);
+            var keyDeviceType = GetKeyDeviceType(e);
 
             var rawKeyEvent = new RawKeyEventArgs(
-                          AndroidKeyboardDevice.Instance,
+                          AndroidKeyboardDevice.Instance!,
                           Convert.ToUInt64(e.EventTime),
-                          _view.InputRoot,
+                          inputRoot,
                           e.Action == KeyEventActions.Down ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                           AndroidKeyboardDevice.ConvertKey(e.KeyCode),
                           GetModifierKeys(e),
                           physicalKey,
+                          keyDeviceType,
                           keySymbol);
 
-            _view.Input(rawKeyEvent);
+            _view.Input?.Invoke(rawKeyEvent);
 
             if ((e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
                 || unicodeTextInput != null)
             {
                 var rawTextEvent = new RawTextInputEventArgs(
-                  AndroidKeyboardDevice.Instance,
+                  AndroidKeyboardDevice.Instance!,
                   Convert.ToUInt64(e.EventTime),
-                  _view.InputRoot,
+                  inputRoot,
                   unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
                   );
-                _view.Input(rawTextEvent);
+                _view.Input?.Invoke(rawTextEvent);
             }
 
             if (e.Action == KeyEventActions.Up)
@@ -122,6 +126,25 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     }
                     return char.ConvertFromUtf32(unicodeChar);
             }
+        }
+
+        private KeyDeviceType GetKeyDeviceType(KeyEvent e)
+        {
+            var source = e.Device?.Sources ?? InputSourceType.Unknown;
+
+            // Remote controller reports itself as "DPad | Keyboard", which is confusing,
+            // so we need to double-check KeyboardType as well.
+
+            if (source.HasAnyFlag(InputSourceType.Dpad)
+                && e.Device?.KeyboardType == InputKeyboardType.NonAlphabetic)
+                return KeyDeviceType.Remote;
+
+            // ReSharper disable BitwiseOperatorOnEnumWithoutFlags - it IS flags enum under the hood.
+            if (source.HasAnyFlag(InputSourceType.Joystick | InputSourceType.Gamepad))
+                return KeyDeviceType.Gamepad;
+            // ReSharper restore BitwiseOperatorOnEnumWithoutFlags
+
+            return KeyDeviceType.Keyboard; // fallback to the keyboard, if unknown.
         }
 
         public void Dispose()

@@ -717,7 +717,7 @@ namespace Avalonia.Controls.UnitTests
             var target = CreateTarget(
                 dataContext: "Base",
                 itemsSource: items,
-                dataTemplates: new[] { dataTemplate });
+                itemTemplate: dataTemplate);
             var panel = Assert.IsAssignableFrom<Panel>(target.ItemsPanelRoot);
             var dataContexts = panel.Children
                 .Do(x => (x as ContentPresenter)?.UpdateChild())
@@ -1213,7 +1213,7 @@ namespace Avalonia.Controls.UnitTests
                     focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
-                    keyboardNavigation: new KeyboardNavigationHandler(),
+                    keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
                     textShaperImpl: new HeadlessTextShaperStub()));

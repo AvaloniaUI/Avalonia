@@ -38,8 +38,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
 
         if (valueNode.Manipulation is not XamlObjectInitializationNode initializationNode)
         {
-            throw new XamlDocumentParseException(context.CurrentDocument,
-                $"Invalid \"{nodeTypeName}\" node initialization.", valueNode);
+            throw new InvalidOperationException($"Invalid \"{nodeTypeName}\" node initialization.");
         }
 
         var additionalProperties = new List<IXamlAstManipulationNode>();
@@ -56,8 +55,9 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
             }
             else
             {
-                throw new XamlDocumentParseException(context.CurrentDocument,
+                context.ReportTransformError(
                     $"Source property must be set on the \"{nodeTypeName}\" node.", valueNode);
+                return node;
             }
         }
 
@@ -89,22 +89,25 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
                 return FromType(context, targetDocument.ClassType, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly, additionalProperties);
             }
 
-            return context.ParseError(
+            context.ReportTransformError(
                 $"Unable to resolve XAML resource \"{assetPathUri}\" in the current assembly.",
-                sourceUriNode, node);
+                sourceUriNode);
+            return node;
         }
 
         // If resource wasn't found in the current assembly, search in the others.
         if (context.Configuration.TypeSystem.FindAssembly(assembly) is not { } assetAssembly)
         {
-            return context.ParseError($"Assembly \"{assembly}\" was not found from the \"{assetPathUri}\" source.", sourceUriNode, node);
+            context.ReportTransformError($"Assembly \"{assembly}\" was not found from the \"{assetPathUri}\" source.", sourceUriNode);
+            return node;
         }
 
         var avaResType = assetAssembly.FindType("CompiledAvaloniaXaml.!AvaloniaResources");
         if (avaResType is null)
         {
-            return context.ParseError(
-                $"Unable to resolve \"!AvaloniaResources\" type on \"{assembly}\" assembly.", sourceUriNode, node);
+            context.ReportTransformError(
+                $"Unable to resolve \"!AvaloniaResources\" type on \"{assembly}\" assembly.", sourceUriNode);
+            return node;
         }
 
         var relativeName = "Build:" + assetPath.Substring(assemblyNameSeparator);
@@ -118,20 +121,22 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
             return FromType(context, type, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly, additionalProperties);
         }
 
-        return context.ParseError(
+        context.ReportTransformError(
             $"Unable to resolve XAML resource \"{assetPathUri}\" in the \"{assembly}\" assembly. Make sure this file exists and is public.",
-            sourceUriNode, node);
+            sourceUriNode);
+        return node;
     }
 
-    private static IXamlAstNode FromType(AstTransformationContext context, IXamlType type, IXamlAstNode li,
+    private static IXamlAstNode FromType(AstGroupTransformationContext context, IXamlType type, IXamlAstNode li,
         IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly,
         IEnumerable<IXamlAstManipulationNode> manipulationNodes)
     {
         if (!expectedLoadedType.IsAssignableFrom(type))
         {
-            return context.ParseError(
+            context.ReportTransformError(
                 $"Resource \"{assetPathUri}\" is defined as \"{type}\" type in the \"{assembly}\" assembly, but expected \"{expectedLoadedType}\".",
-                li, fallbackNode);
+                li);
+            return fallbackNode;
         }
 
         IXamlAstNode newObjNode = new XamlAstObjectNode(li, new XamlAstClrTypeReference(li, type, false));
@@ -141,15 +146,16 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         return new NewObjectTransformer().Transform(context, newObjNode);
     }
 
-    private static IXamlAstNode FromMethod(AstTransformationContext context, IXamlMethod method, IXamlAstNode li,
+    private static IXamlAstNode FromMethod(AstGroupTransformationContext context, IXamlMethod method, IXamlAstNode li,
         IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly,
         IEnumerable<IXamlAstManipulationNode> manipulationNodes)
     {
         if (!expectedLoadedType.IsAssignableFrom(method.ReturnType))
         {
-            return context.ParseError(
+            context.ReportTransformError(
                 $"Resource \"{assetPathUri}\" is defined as \"{method.ReturnType}\" type in the \"{assembly}\" assembly, but expected \"{expectedLoadedType}\".",
-                li, fallbackNode);
+                li);
+            return fallbackNode;
         }
         
         var sp = context.Configuration.TypeMappings.ServiceProvider;
@@ -164,6 +170,13 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         AstGroupTransformationContext context, string nodeTypeName, XamlPropertyAssignmentNode sourceProperty,
         bool strictSourceValueType)
     {
+        void OnInvalidSource(IXamlAstNode? node) =>
+            context.ReportDiagnostic(
+                AvaloniaXamlDiagnosticCodes.TransformError,
+                strictSourceValueType ? XamlDiagnosticSeverity.Error : XamlDiagnosticSeverity.Warning,
+                $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri. This {nodeTypeName} will be resolved in runtime instead.",
+                node);
+        
         // We expect that AvaloniaXamlIlLanguageParseIntrinsics has already parsed the Uri and created node like: `new Uri(assetPath, uriKind)`.
         if (sourceProperty.Values.OfType<XamlAstNewClrObjectNode>().FirstOrDefault() is not { } sourceUriNode
             || sourceUriNode.Type.GetClrType() != context.GetAvaloniaTypes().Uri
@@ -172,16 +185,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         {
             // Source value can be set with markup extension instead of the Uri object node, we don't support it here yet.
             var anyPropValue = sourceProperty.Values.FirstOrDefault();
-            if (strictSourceValueType)
-            {
-                context.Error(anyPropValue,
-                    new XamlDocumentParseException(context.CurrentDocument,
-                        $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri.", anyPropValue));
-            }
-            else
-            {
-                // TODO: make it a compiler warning
-            }
+            OnInvalidSource(anyPropValue);
             return (null, anyPropValue);
         }
 
@@ -193,9 +197,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         }
         else if (!uriPath.Scheme.Equals("avares", StringComparison.CurrentCultureIgnoreCase))
         {
-            context.Error(sourceUriNode,
-                new XamlDocumentParseException(context.CurrentDocument,
-                    $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri.", sourceUriNode));
+            OnInvalidSource(sourceUriNode);
             return (null, sourceUriNode);
         }
 

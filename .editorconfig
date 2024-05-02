@@ -159,12 +159,12 @@ dotnet_diagnostic.CA1815.severity = warning
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = warning
 # CA1821: Remove empty finalizers
-dotnet_diagnostic.CA1821.severity = warning
+dotnet_diagnostic.CA1821.severity = error
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = suggestion
-# CA1823: Avoid unused private fields
-dotnet_diagnostic.CA1823.severity = warning
 dotnet_code_quality.CA1822.api_surface = private, internal
+# CA1823: Avoid unused private fields
+dotnet_diagnostic.CA1823.severity = error
 # CA1825: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = warning
 # CA1826: Use property instead of Linq Enumerable method
@@ -208,6 +208,18 @@ dotnet_diagnostic.AVA2001.severity = error
 # Xaml files
 [*.{xaml,axaml}]
 indent_size = 2
+# DuplicateSetterError
+avalonia_xaml_diagnostic.AVLN2203.severity = error
+# StyleInMergedDictionaries
+avalonia_xaml_diagnostic.AVLN2204.severity = error
+# RequiredTemplatePartMissing
+avalonia_xaml_diagnostic.AVLN2205.severity = error
+# OptionalTemplatePartMissing
+avalonia_xaml_diagnostic.AVLN2206.severity = info
+# TemplatePartWrongType
+avalonia_xaml_diagnostic.AVLN2207.severity = error
+# Obsolete
+avalonia_xaml_diagnostic.AVLN5001.severity = error
 
 # Xml project files
 [*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]

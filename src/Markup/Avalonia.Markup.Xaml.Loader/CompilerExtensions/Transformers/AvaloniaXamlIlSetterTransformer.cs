@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using XamlX;
@@ -9,6 +10,14 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
+    class XamlStyleTransformException : XamlTransformException
+    {
+        public XamlStyleTransformException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
+            : base(message, lineInfo, innerException)
+        {
+        }
+    }
+
     class AvaloniaXamlIlSetterTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -27,13 +36,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (styleParent != null)
             {
                 targetType = styleParent.TargetType.GetClrType()
-                             ?? throw new XamlParseException("Can not find parent Style Selector or ControlTemplate TargetType. If setter is not part of the style, you can set x:SetterTargetType directive on its parent.", node);
+                             ?? throw new XamlStyleTransformException("Can not find parent Style Selector or ControlTemplate TargetType. If setter is not part of the style, you can set x:SetterTargetType directive on its parent.", node);
                 lineInfo = on;
             }
 
             if (targetType == null)
             {
-                throw new XamlParseException("Could not determine target type of Setter", node);
+                throw new XamlStyleTransformException("Could not determine target type of Setter", node);
             }
 
             IXamlType propType = null;
@@ -43,7 +52,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 var propertyName = property.Values.OfType<XamlAstTextNode>().FirstOrDefault()?.Text;
                 if (propertyName == null)
-                    throw new XamlParseException("Setter.Property must be a string", node);
+                    throw new XamlStyleTransformException("Setter.Property must be a string", node);
 
                 var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
                     new XamlAstClrTypeReference(lineInfo, targetType, false), property.Values[0]);
@@ -55,12 +64,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var propertyPath = on.Children.OfType<XamlAstXamlPropertyValueNode>()
                     .FirstOrDefault(x => x.Property.GetClrProperty().Name == "PropertyPath");
                 if (propertyPath == null)
-                    throw new XamlX.XamlParseException("Setter without a property or property path is not valid", node);
+                    throw new XamlStyleTransformException("Setter without a property or property path is not valid", node);
                 if (propertyPath.Values[0] is IXamlIlPropertyPathNode ppn
                     && ppn.PropertyType != null)
                     propType = ppn.PropertyType;
                 else
-                    throw new XamlX.XamlParseException("Unable to get the property path property type", node);
+                    throw new XamlStyleTransformException("Unable to get the property path property type", node);
             }
 
             var valueProperty = on.Children
@@ -69,7 +78,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context, valueProperty.Values[0],
                         propType, out var converted))
-                    throw new XamlParseException(
+                    throw new XamlStyleTransformException(
                         $"Unable to convert property value to {propType.GetFqn()}",
                         valueProperty.Values[0]);
 
@@ -100,6 +109,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public IXamlType TargetType { get; }
                 public PropertySetterBinderParameters BinderParameters { get; }
                 public IReadOnlyList<IXamlType> Parameters { get; }
+                public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => _method.CustomAttributes;
+
                 public void Emit(IXamlILEmitter codegen)
                 {
                     if (_type.IsValueType)

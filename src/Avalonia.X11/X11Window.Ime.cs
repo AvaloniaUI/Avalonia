@@ -317,8 +317,25 @@ namespace Avalonia.X11
                 while (_imeQueue.Count != 0)
                 {
                     var ev = _imeQueue.Dequeue();
-                    if (_imeControl == null || !await _imeControl.HandleEventAsync(ev.args, ev.keyval, ev.keycode))
-                        ScheduleInput(ev.args);
+                    if (_imeControl != null)
+                    {
+                        var handledByIme = await _imeControl.HandleEventAsync(ev.args, ev.keyval, ev.keycode);
+                        if (handledByIme && ev.args is not
+                            {
+                                // We let filtered modifier-key KeyUp events through
+                                // since some apps rely on the order of events to track individual (left/right)
+                                // modifier keys states rather than relying on general key modifiers
+                                Type: RawKeyEventType.KeyUp,
+                                Key: Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt
+                                or Key.RightAlt or Key.LeftShift or Key.RightShift
+                                or Key.LWin or Key.RWin
+                            })
+                            continue;
+
+                    }
+
+                    ScheduleInput(ev.args);
+
                 }
             }
             finally

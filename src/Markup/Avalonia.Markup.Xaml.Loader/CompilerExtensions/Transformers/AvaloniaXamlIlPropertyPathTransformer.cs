@@ -12,6 +12,14 @@ using XamlX.IL;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
+    class XamlPropertyPathException : XamlTransformException
+    {
+        public XamlPropertyPathException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
+            : base(message, lineInfo, innerException)
+        {
+        }
+    }
+
     class AvaloniaXamlIlPropertyPathTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -26,9 +34,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var parentScope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                     .FirstOrDefault();
                 if(parentScope == null)
-                    throw new XamlX.XamlParseException("No target type scope found for property path", text);
+                    throw new XamlPropertyPathException("No target type scope found for property path", text);
                 if (parentScope.ScopeType != AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style)
-                    throw new XamlX.XamlParseException("PropertyPath is currently only valid for styles", pv);
+                    throw new XamlPropertyPathException("PropertyPath is currently only valid for styles", pv);
 
 
                 IEnumerable<PropertyPathGrammar.ISyntax> parsed;
@@ -38,7 +46,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
                 catch (Exception e)
                 {
-                    throw new XamlX.XamlParseException("Unable to parse PropertyPath: " + e.Message, text);
+                    throw new XamlPropertyPathException("Unable to parse PropertyPath: " + e.Message, text, innerException: e);
                 }
 
                 var elements = new List<IXamlIlPropertyPathElementNode>();
@@ -59,7 +67,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 void HandleProperty(string name, string typeNamespace, string typeName)
                 {
                     if(!expectProperty || currentType == null)
-                        throw new XamlX.XamlParseException("Unexpected property node", text);
+                        throw new XamlPropertyPathException("Unexpected property node", text);
 
                     var propertySearchType =
                         typeName != null ? GetType(typeNamespace, typeName) : currentType;
@@ -80,7 +88,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
 
                     if (prop == null)
-                        throw new XamlX.XamlParseException(
+                        throw new XamlPropertyPathException(
                             $"Unable to resolve property {name} on type {propertySearchType.GetFqn()}",
                             text);
                     
@@ -95,7 +103,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     if (ge is PropertyPathGrammar.ChildTraversalSyntax)
                     {
                         if (!expectTraversal)
-                            throw new XamlX.XamlParseException("Unexpected child traversal .", text);
+                            throw new XamlPropertyPathException("Unexpected child traversal .", text);
                         elements.Add(new XamlIlChildTraversalPropertyPathElementNode());
                         expectTraversal = expectCast = false;
                         expectProperty = true;
@@ -103,7 +111,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     else if (ge is PropertyPathGrammar.EnsureTypeSyntax ets)
                     {
                         if(!expectCast)
-                            throw new XamlX.XamlParseException("Unexpected cast node", text);
+                            throw new XamlPropertyPathException("Unexpected cast node", text);
                         currentType = GetType(ets.TypeNamespace, ets.TypeName);
                         elements.Add(new XamlIlCastPropertyPathElementNode(currentType, true));
                         expectProperty = false;
@@ -112,7 +120,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     else if (ge is PropertyPathGrammar.CastTypeSyntax cts)
                     {
                         if(!expectCast)
-                            throw new XamlX.XamlParseException("Unexpected cast node", text);
+                            throw new XamlPropertyPathException("Unexpected cast node", text);
                         //TODO: Check if cast can be done
                         currentType = GetType(cts.TypeNamespace, cts.TypeName);
                         elements.Add(new XamlIlCastPropertyPathElementNode(currentType, false));
@@ -128,12 +136,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         HandleProperty(tqps.Name, tqps.TypeNamespace, tqps.TypeName);
                     }
                     else
-                        throw new XamlX.XamlParseException("Unexpected node " + ge, text);
+                        throw new XamlPropertyPathException("Unexpected node " + ge, text);
                     
                 }
                 var propertyPathNode = new XamlIlPropertyPathNode(text, elements, types);
                 if (propertyPathNode.Type == null)
-                    throw new XamlX.XamlParseException("Unexpected end of the property path", text);
+                    throw new XamlPropertyPathException("Unexpected end of the property path", text);
                 pv.Values[0] = propertyPathNode;
             }
 

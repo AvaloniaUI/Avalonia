@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control used to indicate the progress of an operation.
     /// </summary>
-    [TemplatePart("PART_Indicator", typeof(Border))]
+    [TemplatePart("PART_Indicator", typeof(Border), IsRequired = true)]
     [PseudoClasses(":vertical", ":horizontal", ":indeterminate")]
     public class ProgressBar : RangeBase
     {
@@ -111,7 +111,7 @@ namespace Avalonia.Controls
                     (p, o) => p.IndeterminateEndingOffset = o);
 
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's width.
+            /// Used by Avalonia.Themes.Fluent to define the first indeterminate indicator's width.
             /// </summary>
             public double ContainerWidth
             {
@@ -120,7 +120,7 @@ namespace Avalonia.Controls
             }
             
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's width.
+            /// Used by Avalonia.Themes.Fluent to define the second indeterminate indicator's width.
             /// </summary>
             public double Container2Width
             {
@@ -129,7 +129,7 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's start position when animated.
+            /// Used by Avalonia.Themes.Fluent to define the first indeterminate indicator's start position when animated.
             /// </summary>
             public double ContainerAnimationStartPosition
             {
@@ -139,7 +139,7 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's end position when animated.
+            /// Used by Avalonia.Themes.Fluent to define the first indeterminate indicator's end position when animated.
             /// </summary>
             public double ContainerAnimationEndPosition
             {
@@ -148,7 +148,7 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's start position when animated.
+            /// Used by Avalonia.Themes.Fluent to define the second indeterminate indicator's start position when animated.
             /// </summary>
             public double Container2AnimationStartPosition
             {
@@ -158,7 +158,7 @@ namespace Avalonia.Controls
             }
             
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's end position when animated.
+            /// Used by Avalonia.Themes.Fluent to define the second indeterminate indicator's end position when animated.
             /// </summary>
             public double Container2AnimationEndPosition
             {
@@ -167,7 +167,7 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Simple"/>  to define the starting point of its indeterminate animation.
+            /// Used by Avalonia.Themes.Simple  to define the starting point of its indeterminate animation.
             /// </summary>
             public double IndeterminateStartingOffset
             {
@@ -176,7 +176,7 @@ namespace Avalonia.Controls
             }
             
             /// <summary>
-            /// Used by <see cref="Avalonia.Themes.Simple"/> to define the ending point of its indeterminate animation.
+            /// Used by Avalonia.Themes.Simple to define the ending point of its indeterminate animation.
             /// </summary>
             public double IndeterminateEndingOffset
             {
@@ -336,6 +336,7 @@ namespace Avalonia.Controls
             UpdateIndicator();
         }
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new ProgressBarAutomationPeer(this);

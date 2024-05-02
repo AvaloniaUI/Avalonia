@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Threading.Tasks;
+using Avalonia.Utilities;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
@@ -57,17 +58,11 @@ internal class BclStorageFolder : IStorageBookmarkFolder
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
-    {
-        var items = DirectoryInfo.EnumerateDirectories()
+    public IAsyncEnumerable<IStorageItem> GetItemsAsync()
+        => DirectoryInfo.EnumerateDirectories()
             .Select(d => (IStorageItem)new BclStorageFolder(d))
-            .Concat(DirectoryInfo.EnumerateFiles().Select(f => new BclStorageFile(f)));
-
-        foreach (var item in items)
-        {
-            yield return item;
-        }
-    }
+            .Concat(DirectoryInfo.EnumerateFiles().Select(f => new BclStorageFile(f)))
+            .AsAsyncEnumerable();
 
     public virtual Task<string?> SaveBookmarkAsync()
     {
@@ -95,38 +90,39 @@ internal class BclStorageFolder : IStorageBookmarkFolder
         GC.SuppressFinalize(this);
     }
 
-    public async Task DeleteAsync()
+    public Task DeleteAsync()
     {
         DirectoryInfo.Delete(true);
+        return Task.CompletedTask;
     }
 
-    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    public Task<IStorageItem?> MoveAsync(IStorageFolder destination)
     {
         if (destination is BclStorageFolder storageFolder)
         {
             var newPath = System.IO.Path.Combine(storageFolder.DirectoryInfo.FullName, DirectoryInfo.Name);
             DirectoryInfo.MoveTo(newPath);
 
-            return new BclStorageFolder(new DirectoryInfo(newPath));
+            return Task.FromResult<IStorageItem?>(new BclStorageFolder(new DirectoryInfo(newPath)));
         }
 
-        return null;
+        return Task.FromResult<IStorageItem?>(null);
     }
 
-    public async Task<IStorageFile?> CreateFileAsync(string name)
+    public Task<IStorageFile?> CreateFileAsync(string name)
     {
         var fileName = System.IO.Path.Combine(DirectoryInfo.FullName, name);
         var newFile = new FileInfo(fileName);
         
         using var stream = newFile.Create();
 
-        return new BclStorageFile(newFile);
+        return Task.FromResult<IStorageFile?>(new BclStorageFile(newFile));
     }
 
-    public async Task<IStorageFolder?> CreateFolderAsync(string name)
+    public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         var newFolder = DirectoryInfo.CreateSubdirectory(name);
 
-        return new BclStorageFolder(newFolder);
+        return Task.FromResult<IStorageFolder?>(new BclStorageFolder(newFolder));
     }
 }

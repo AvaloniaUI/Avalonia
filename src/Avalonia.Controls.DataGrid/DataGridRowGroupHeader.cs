@@ -49,6 +49,20 @@ namespace Avalonia.Controls
             set { SetValue(IsItemCountVisibleProperty, value); }
         }
 
+
+        public static readonly StyledProperty<string> ItemCountFormatProperty =
+            AvaloniaProperty.Register<DataGridRowGroupHeader, string>(nameof(ItemCountFormat));
+
+        /// <summary>
+        /// Gets or sets a value that indicates number format of items count
+        /// </summary>
+        public string ItemCountFormat
+        {
+            get { return GetValue(ItemCountFormatProperty); }
+            set { SetValue(ItemCountFormatProperty, value); }
+        }
+
+
         public static readonly StyledProperty<string> PropertyNameProperty =
             AvaloniaProperty.Register<DataGridRowGroupHeader, string>(nameof(PropertyName));
 
@@ -444,10 +458,10 @@ namespace Avalonia.Controls
             if (_itemCountElement != null && RowGroupInfo != null && RowGroupInfo.CollectionViewGroup != null)
             {
                 string formatString;
-                if(RowGroupInfo.CollectionViewGroup.ItemCount == 1)
-                    formatString = "({0} Item)";
+                if (RowGroupInfo.CollectionViewGroup.ItemCount == 1)
+                    formatString = (ItemCountFormat == null ? "({0} Item)" : ItemCountFormat);
                 else
-                    formatString = "({0} Items)";
+                    formatString = (ItemCountFormat == null ? "({0} Items)" : ItemCountFormat);
 
                 _itemCountElement.Text = String.Format(formatString, RowGroupInfo.CollectionViewGroup.ItemCount);
             }

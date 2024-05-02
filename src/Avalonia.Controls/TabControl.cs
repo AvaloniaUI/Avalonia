@@ -17,8 +17,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
-    [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
     [Avalonia.Metadata.ItemType(typeof(TabItem))]
+    [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
+    [TemplatePart("PART_SelectedContentHost", typeof(ContentPresenter))]
     public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         private object? _selectedContent;
@@ -74,7 +75,6 @@ namespace Avalonia.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
-            TabStripPlacementProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateTabStripPlacement());
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
@@ -155,7 +155,7 @@ namespace Avalonia.Controls
 
         protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
-            return new TabItem { TabStripPlacement = TabStripPlacement };
+            return new TabItem();
         }
 
         protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -167,6 +167,11 @@ namespace Avalonia.Controls
         {
             base.PrepareContainerForItemOverride(element, item, index);
 
+            if (element is TabItem tabItem)
+            {
+                tabItem.TabStripPlacement = TabStripPlacement;
+            }
+            
             if (index == SelectedIndex)
             {
                 UpdateSelectedContent(element);

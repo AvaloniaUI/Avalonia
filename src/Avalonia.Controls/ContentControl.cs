@@ -1,9 +1,10 @@
+using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -39,6 +40,24 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             AvaloniaProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
+
+        static ContentControl()
+        {
+            TemplateProperty.OverrideDefaultValue<ContentControl>(new FuncControlTemplate((_, ns) => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [~BackgroundProperty] = new TemplateBinding(BackgroundProperty),
+                [~BackgroundSizingProperty] = new TemplateBinding(BackgroundSizingProperty),
+                [~BorderBrushProperty] = new TemplateBinding(BorderBrushProperty),
+                [~BorderThicknessProperty] = new TemplateBinding(BorderThicknessProperty),
+                [~CornerRadiusProperty] = new TemplateBinding(CornerRadiusProperty),
+                [~ContentTemplateProperty] = new TemplateBinding(ContentTemplateProperty),
+                [~ContentProperty] = new TemplateBinding(ContentProperty),
+                [~PaddingProperty] = new TemplateBinding(PaddingProperty),
+                [~VerticalContentAlignmentProperty] = new TemplateBinding(VerticalContentAlignmentProperty),
+                [~HorizontalContentAlignmentProperty] = new TemplateBinding(HorizontalContentAlignmentProperty)
+            }.RegisterInNameScope(ns)));
+        }
 
         /// <summary>
         /// Gets or sets the content to display.
@@ -131,6 +150,16 @@ namespace Avalonia.Controls
             if (e.NewValue is ILogical newChild)
             {
                 LogicalChildren.Add(newChild);
+            }
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Content), Content, includeContent);
             }
         }
     }

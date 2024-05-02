@@ -8,12 +8,15 @@ namespace Avalonia.PropertyStore
     /// </summary>
     internal interface IValueEntry
     {
-        bool HasValue { get; }
-
         /// <summary>
         /// Gets the property that this value applies to.
         /// </summary>
         AvaloniaProperty Property { get; }
+
+        /// <summary>
+        /// Checks whether the entry has a value, starting the entry if necessary.
+        /// </summary>
+        bool HasValue();
 
         /// <summary>
         /// Gets the value associated with the entry.

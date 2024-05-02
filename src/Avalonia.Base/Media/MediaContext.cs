@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Layout;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -15,7 +16,7 @@ internal partial class MediaContext : ICompositorScheduler
     private TimeSpan _inputMarkerAddedAt;
     private bool _isRendering;
     private bool _animationsAreWaitingForComposition;
-    private const double MaxSecondsWithoutInput = 1;
+    private readonly double MaxSecondsWithoutInput;
     private readonly Action _render;
     private readonly Action _inputMarkerHandler;
     private readonly HashSet<Compositor> _requestedCommits = new();
@@ -36,12 +37,13 @@ internal partial class MediaContext : ICompositorScheduler
 
     private readonly Dictionary<object, TopLevelInfo> _topLevels = new();
 
-    private MediaContext(Dispatcher dispatcher)
+    private MediaContext(Dispatcher dispatcher, TimeSpan inputStarvationTimeout)
     {
         _render = Render;
         _inputMarkerHandler = InputMarkerHandler;
         _clock = new(this);
         _dispatcher = dispatcher;
+        MaxSecondsWithoutInput = inputStarvationTimeout.TotalSeconds;
         _animationsTimer.Tick += (_, _) =>
         {
             _animationsTimer.Stop();
@@ -56,8 +58,14 @@ internal partial class MediaContext : ICompositorScheduler
             // Technically it's supposed to be a thread-static singleton, but we don't have multiple threads
             // and need to do a full reset for unit tests
             var context = AvaloniaLocator.Current.GetService<MediaContext>();
+
             if (context == null)
-                AvaloniaLocator.CurrentMutable.Bind<MediaContext>().ToConstant(context = new(Dispatcher.UIThread));
+            {
+                var opts = AvaloniaLocator.Current.GetService<DispatcherOptions>() ?? new();
+                context = new MediaContext(Dispatcher.UIThread, opts.InputStarvationTimeout);
+                AvaloniaLocator.CurrentMutable.Bind<MediaContext>().ToConstant(context);
+            }
+
             return context;
         }
     }
@@ -90,9 +98,10 @@ internal partial class MediaContext : ICompositorScheduler
         {
             priority = DispatcherPriority.Input;
         }
-        
 
-        _nextRenderOp = _dispatcher.InvokeAsync(_render, priority);
+        var renderOp = new DispatcherOperation(_dispatcher, priority, _render, throwOnUiThread: true);
+        _nextRenderOp = renderOp;
+        _dispatcher.InvokeAsyncImpl(renderOp, CancellationToken.None);
     }
     
     /// <summary>

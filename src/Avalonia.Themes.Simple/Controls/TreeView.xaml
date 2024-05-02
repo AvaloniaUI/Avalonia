@@ -20,6 +20,7 @@
                         Background="{TemplateBinding Background}"
                         HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                         IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                        IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
                         VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Margin="{TemplateBinding Padding}"

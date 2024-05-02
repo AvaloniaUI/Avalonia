@@ -6,7 +6,6 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using Avalonia.Native.Interop;
 using Avalonia.Threading;
-using MicroCom.Runtime;
 
 namespace Avalonia.Native;
 
@@ -24,9 +23,9 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherImplWithEx
         _native.SetEvents(events);
     }
     
-    public event Action Signaled;
-    public event Action Timer;
-    public event Action ReadyForBackgroundProcessing;
+    public event Action? Signaled;
+    public event Action? Timer;
+    public event Action? ReadyForBackgroundProcessing;
     
     private class Events : NativeCallbackBase, IAvnPlatformThreadingInterfaceEvents
     {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Avalonia.Markup.Xaml.PortableXaml;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Avalonia.Utilities;
 using Microsoft.Build.Framework;
 using SPath = System.IO.Path;
@@ -79,7 +80,13 @@ namespace Avalonia.Build.Tasks
         {
             AvaloniaResourcesIndexReaderWriter.WriteResources(
                 output,
-                sources.Select(source => (source.Path, source.Size, (Func<Stream>) source.Open)).ToList());
+                sources.Select(source => new AvaloniaResourcesEntry
+                {
+                    Path = source.Path,
+                    Size = source.Size,
+                    SystemPath = source.SystemPath,
+                    Open = source.Open
+                }).ToList());
         }
 
         private bool PreProcessXamlFiles(List<Source> sources)
@@ -100,7 +107,7 @@ namespace Avalonia.Build.Tasks
                     }
                     catch (Exception e)
                     {
-                        BuildEngine.LogError(BuildEngineErrorCode.InvalidXAML, s.SystemPath, "File doesn't contain valid XAML: " + e);
+                        BuildEngine.LogError(AvaloniaXamlDiagnosticCodes.InvalidXAML, s.SystemPath, "File doesn't contain valid XAML: " + e);
                         return false;
                     }
 
@@ -109,7 +116,7 @@ namespace Avalonia.Build.Tasks
                         if (typeToXamlIndex.ContainsKey(info.XClass))
                         {
 
-                            BuildEngine.LogError(BuildEngineErrorCode.DuplicateXClass, s.SystemPath,
+                            BuildEngine.LogError(AvaloniaXamlDiagnosticCodes.DuplicateXClass, s.SystemPath,
                                 $"Duplicate x:Class directive, {info.XClass} is already used in {typeToXamlIndex[info.XClass]}");
                             return false;
                         }

@@ -15,9 +15,9 @@ namespace Avalonia.Styling
             Property = property;
         }
 
-        public bool HasValue => true;
         public AvaloniaProperty Property { get; }
 
+        public bool HasValue() => true;
         public object? GetValue() => _value ??= _template.Build();
 
         bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)

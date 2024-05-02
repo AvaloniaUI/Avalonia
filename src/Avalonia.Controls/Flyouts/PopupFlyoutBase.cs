@@ -47,6 +47,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
             Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
         
+        /// <summary>
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property
+        /// </summary>
+        public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
+            Popup.PlacementConstraintAdjustmentProperty.AddOwner<PopupFlyoutBase>();
+        
         private readonly Lazy<Popup> _popupLazy;
         private Rect? _enlargedPopupRect;
         private PixelRect? _enlargePopupRectScreenPixelRect;
@@ -119,6 +125,13 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(OverlayInputPassThroughElementProperty, value);
         }
 
+        /// <inheritdoc cref="Popup.PlacementConstraintAdjustment"/>
+        public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
+        {
+            get => GetValue(PlacementConstraintAdjustmentProperty);
+            set => SetValue(PlacementConstraintAdjustmentProperty, value);
+        }
+        
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
 
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged
@@ -176,7 +189,8 @@ namespace Avalonia.Controls.Primitives
             IsOpen = false;
             Popup.IsOpen = false;
 
-            ((ISetLogicalParent)Popup).SetParent(null);
+            Popup.PlacementTarget = null;
+            Popup.SetPopupParent(null);
 
             // Ensure this isn't active
             _transientDisposable?.Dispose();
@@ -191,6 +205,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             OnClosed();
+
+            Target = null;
 
             return true;
         }
@@ -215,17 +231,8 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (Popup.Parent != null && Popup.Parent != placementTarget)
-            {
-                ((ISetLogicalParent)Popup).SetParent(null);
-            }
-
-            if (Popup.Parent == null || Popup.PlacementTarget != placementTarget)
-            {
-                Popup.PlacementTarget = Target = placementTarget;
-                ((ISetLogicalParent)Popup).SetParent(placementTarget);
-                Popup.TemplatedParent = placementTarget.TemplatedParent;
-            }
+            Popup.PlacementTarget = Target = placementTarget;
+            Popup.SetPopupParent(placementTarget);
 
             if (Popup.Child == null)
             {
@@ -424,9 +431,7 @@ namespace Avalonia.Controls.Primitives
             else
             {
                 Popup.Placement = Placement;
-                Popup.PlacementConstraintAdjustment =
-                    PopupPositioning.PopupPositionerConstraintAdjustment.SlideX |
-                    PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
+                Popup.PlacementConstraintAdjustment = PlacementConstraintAdjustment;
             }
         }
 

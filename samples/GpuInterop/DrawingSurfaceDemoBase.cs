@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -13,12 +12,12 @@ public abstract class DrawingSurfaceDemoBase : Control, IGpuDemo
 {
     private CompositionSurfaceVisual? _visual;
     private Compositor? _compositor;
-    private Action _update;
-    private string _info;
+    private readonly Action _update;
+    private string _info = string.Empty;
     private bool _updateQueued;
     private bool _initialized;
     
-    protected CompositionDrawingSurface Surface { get; private set; }
+    protected CompositionDrawingSurface? Surface { get; private set; }
 
     public DrawingSurfaceDemoBase()
     {
@@ -113,7 +112,7 @@ public abstract class DrawingSurfaceDemoBase : Control, IGpuDemo
     protected abstract void RenderFrame(PixelSize pixelSize);
     protected virtual bool SupportsDisco => false;
 
-    public void Update(GpuDemo parent, float yaw, float pitch, float roll, float disco)
+    public void Update(GpuDemo? parent, float yaw, float pitch, float roll, float disco)
     {
         ParentControl = parent;
         if (ParentControl != null)

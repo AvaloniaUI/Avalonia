@@ -9,7 +9,7 @@ internal class WindowingPlatformStub : IWindowingPlatform
 
     public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
-    public ITrayIconImpl CreateTrayIcon() => null;
+    public ITrayIconImpl? CreateTrayIcon() => null;
 }
 
 internal class PlatformIconLoaderStub : IPlatformIconLoader

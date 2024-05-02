@@ -209,11 +209,47 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
             var trampolineBuilder = _sreBuilder.DefineType("Trampolines_" + Guid.NewGuid().ToString("N"));
 
+            var diagnostics = new List<XamlDiagnostic>();
+            var diagnosticsHandler = new XamlDiagnosticsHandler()
+            {
+                HandleDiagnostic = (diagnostic) =>
+                {
+                    var runtimeDiagnostic = new RuntimeXamlDiagnostic(diagnostic.Code.ToString(),
+                        diagnostic.Severity switch
+                        {
+                            XamlDiagnosticSeverity.None => RuntimeXamlDiagnosticSeverity.Info,
+                            XamlDiagnosticSeverity.Warning => RuntimeXamlDiagnosticSeverity.Warning,
+                            XamlDiagnosticSeverity.Error => RuntimeXamlDiagnosticSeverity.Error,
+                            XamlDiagnosticSeverity.Fatal => RuntimeXamlDiagnosticSeverity.Fatal,
+                            _ => throw new ArgumentOutOfRangeException()
+                        },
+                        diagnostic.Title, diagnostic.LineNumber, diagnostic.LinePosition)
+                    {
+                        Document = diagnostic.Document
+                    };
+                    var newSeverity =
+                        configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) switch
+                        {
+                            RuntimeXamlDiagnosticSeverity.Info => XamlDiagnosticSeverity.None,
+                            RuntimeXamlDiagnosticSeverity.Warning => XamlDiagnosticSeverity.Warning,
+                            RuntimeXamlDiagnosticSeverity.Error => XamlDiagnosticSeverity.Error,
+                            RuntimeXamlDiagnosticSeverity.Fatal => XamlDiagnosticSeverity.Fatal,
+                            _ => (XamlDiagnosticSeverity?)null
+                        } ?? diagnostic.Severity;
+                    diagnostic = diagnostic with { Severity = newSeverity };
+                    diagnostics.Add(diagnostic);
+                    return newSeverity;
+                },
+                CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia
+            };
+
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                     _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
                     new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
                     new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType)),
-                    new XamlIlTrampolineBuilder(_sreTypeSystem.CreateTypeBuilder(trampolineBuilder))),
+                    new XamlIlTrampolineBuilder(_sreTypeSystem.CreateTypeBuilder(trampolineBuilder)),
+                    null,
+                    diagnosticsHandler),
                 _sreEmitMappings,
                 _sreContextType)
             {
@@ -236,8 +272,9 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 {
                     overrideType = _sreTypeSystem.GetType(document.RootInstance.GetType());
                 }
-                
+
                 var parsed = compiler.Parse(xaml, overrideType);
+                parsed.Document = "runtimexaml:" + parsedDocuments.Count;
                 compiler.Transform(parsed);
 
                 var xamlName = GetSafeUriIdentifier(document.BaseUri)
@@ -254,19 +291,22 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     true,
                     () => new XamlDocumentTypeBuilderProvider(
                         builder,
-                        compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, true),
+                        compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, XamlVisibility.Public),
+                        document.RootInstance is null ? builder : null,
                         document.RootInstance is null ?
-                            compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true) :
+                            compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, XamlVisibility.Public) :
                             null)));
                 originalDocuments.Add(document);
             }
 
             compiler.TransformGroup(parsedDocuments);
 
+            diagnostics.ThrowExceptionIfAnyError();
+
             var createdTypes = parsedDocuments.Select(document =>
             {
                 compiler.Compile(document.XamlDocument, document.TypeBuilderProvider, document.Uri, document.FileSource);
-                return _sreTypeSystem.GetType(document.TypeBuilderProvider.TypeBuilder.CreateType());
+                return _sreTypeSystem.GetType(document.TypeBuilderProvider.PopulateDeclaringType.CreateType());
             }).ToArray();
             
             clrPropertyBuilder.CreateTypeInfo();

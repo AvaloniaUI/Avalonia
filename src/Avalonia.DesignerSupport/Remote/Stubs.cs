@@ -63,9 +63,14 @@ namespace Avalonia.DesignerSupport.Remote
                     }));
         }
 
-        class DummyRenderTimer : IRenderTimer
+        private sealed class DummyRenderTimer : IRenderTimer
         {
-            public event Action<TimeSpan> Tick;
+            public event Action<TimeSpan> Tick
+            {
+                add { }
+                remove { }
+            }
+
             public bool RunsInBackground => false;
         }
 
@@ -172,6 +177,8 @@ namespace Avalonia.DesignerSupport.Remote
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
         }
+
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
 
         public IPopupPositioner PopupPositioner { get; }
 

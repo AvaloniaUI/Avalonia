@@ -25,9 +25,9 @@ namespace Avalonia.Direct2D1
         /// Creates a drawing context for a rendering session.
         /// </summary>
         /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
         {
-            return new DrawingContextImpl(this, _renderTarget);
+            return new DrawingContextImpl(this, _renderTarget, useScaledDrawing);
         }
 
         public bool IsCorrupted => false;

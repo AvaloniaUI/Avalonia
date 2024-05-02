@@ -43,13 +43,21 @@
           Unknown values should be treated as 0 (no preference).
         </para></listitem>
       </varlistentry>
+      <varlistentry>
+        <term>org.freedesktop.appearance accent-color (ddd)</term>
+        <listitem><para>
+          Indicates the system's preferred accent color as a tuple of RGB values
+          in the sRGB color space, in the range [0,1].
+          Out-of-range RGB values should be treated as an unset accent color.
+        </para></listitem>
+      </varlistentry>
     </variablelist>
 
     Implementations can provide other keys; they are entirely
     implementation details that are undocumented. If you are a
     toolkit and want to use this please open an issue.
 
-    This documentation describes version 1 of this interface.
+    This documentation describes version 2 of this interface.
   -->
   <interface name="org.freedesktop.portal.Settings">
 
@@ -73,8 +81,31 @@
       @value: The value @key is set to.
 
       Reads a single value. Returns an error on any unknown namespace or key.
+
+      Deprecated, use ReadOne instead. The value argument was intended to have
+      the value inside one layer of variant as it is in ReadOne, for example
+      `&lt;string "hello"&gt;` in GVariant text notation; but it is actually
+      returned inside two layers of variant, for example
+      `&lt;&lt;string "hello"&gt;&gt;`.
     -->
     <method name='Read'>
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+      <arg name='namespace' type='s'/>
+      <arg name='key' type='s'/>
+      <arg name='value' direction='out' type='v'/>
+    </method>
+
+    <!--
+      ReadOne:
+      @namespace: Namespace to look up @key in.
+      @key: The key to get.
+      @value: The value @key is set to.
+
+      Reads a single value which may be any valid DBus type. Returns an error on any unknown namespace or key.
+
+      This method was added in version 2.
+    -->
+    <method name='ReadOne'>
       <arg name='namespace' type='s'/>
       <arg name='key' type='s'/>
       <arg name='value' direction='out' type='v'/>

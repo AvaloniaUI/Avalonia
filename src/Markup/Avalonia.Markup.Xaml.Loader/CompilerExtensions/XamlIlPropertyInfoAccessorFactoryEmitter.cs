@@ -77,7 +77,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     {
                         IsStatic = true
                     });
-            var indexField = _indexerClosureTypeBuilder.DefineField(intType, "_index", false, false);
+            var indexField = _indexerClosureTypeBuilder.DefineField(intType, "_index", XamlVisibility.Private, false);
             var ctor = _indexerClosureTypeBuilder.DefineConstructor(false, intType);
             ctor.Generator
                 .Ldarg_0()
@@ -88,7 +88,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 types.IPropertyAccessor,
                 new[] { weakReferenceType, types.IPropertyInfo },
                 IndexerClosureFactoryMethodName,
-                isPublic: true,
+                visibility: XamlVisibility.Public,
                 isStatic: false,
                 isInterfaceImpl: false)
                 .Generator

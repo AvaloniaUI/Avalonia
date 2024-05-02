@@ -92,7 +92,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public async void Show(object content)
+        public void Show(object content)
         {
             if (content is INotification notification)
             {

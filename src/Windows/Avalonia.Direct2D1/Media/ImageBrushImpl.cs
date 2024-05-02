@@ -13,11 +13,15 @@ namespace Avalonia.Direct2D1.Media
             ITileBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
             BitmapImpl bitmap,
-            Size targetSize)
+            Rect destinationRect)
         {
             var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
-            var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSizeWithDpi(dpi), targetSize);
+            var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSizeWithDpi(dpi), destinationRect.Size);
 
+            Vector brushOffset = default;
+            if (brush.DestinationRect.Unit == RelativeUnit.Relative)
+                brushOffset = new Vector(destinationRect.X, destinationRect.Y);
+            
             if (!calc.NeedsIntermediate)
             {
                 _bitmap = bitmap.GetDirect2DBitmap(target);
@@ -25,7 +29,7 @@ namespace Avalonia.Direct2D1.Media
                     target,
                     _bitmap.Value,
                     GetBitmapBrushProperties(brush),
-                    GetBrushProperties(brush, calc.DestinationRect));
+                    GetBrushProperties(brush, calc.DestinationRect, brushOffset));
             }
             else
             {
@@ -35,7 +39,7 @@ namespace Avalonia.Direct2D1.Media
                         target,
                         intermediate.Bitmap,
                         GetBitmapBrushProperties(brush),
-                        GetBrushProperties(brush, calc.DestinationRect));
+                        GetBrushProperties(brush, calc.DestinationRect, brushOffset));
                 }
             }
         }
@@ -57,12 +61,23 @@ namespace Avalonia.Direct2D1.Media
             };
         }
 
-        private static BrushProperties GetBrushProperties(ITileBrush brush, Rect destinationRect)
+        private static BrushProperties GetBrushProperties(ITileBrush brush, Rect destinationRect, Vector offset)
         {
             var tileTransform =
                 brush.TileMode != TileMode.None ?
                 Matrix.CreateTranslation(destinationRect.X, destinationRect.Y) :
                 Matrix.Identity;
+
+            if (offset != default)
+                tileTransform = Matrix.CreateTranslation(offset);
+
+            if (brush.Transform != null && brush.TileMode != TileMode.None)
+            {
+                var transformOrigin = brush.TransformOrigin.ToPixels(destinationRect);
+                var originOffset = Matrix.CreateTranslation(transformOrigin);
+
+                tileTransform = -originOffset * brush.Transform.Value * originOffset * tileTransform;
+            }
 
             return new BrushProperties
             {
@@ -91,7 +106,7 @@ namespace Avalonia.Direct2D1.Media
                 CompatibleRenderTargetOptions.None,
                 calc.IntermediateSize.ToSharpDX());
 
-            using (var context = new RenderTarget(result).CreateDrawingContext())
+            using (var context = new RenderTarget(result).CreateDrawingContext(true))
             {
                 var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
                 var rect = new Rect(bitmap.PixelSize.ToSizeWithDpi(dpi));

@@ -12,14 +12,14 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
         public int Int
         {
-            get { return GetValue(IntProperty); }
-            set { SetValue(IntProperty, value); }
+            get => GetValue(IntProperty);
+            set => SetValue(IntProperty, value);
         }
 
         public string String
         {
-            get { return GetValue(StringProperty); }
-            set { SetValue(StringProperty, value); }
+            get => GetValue(StringProperty);
+            set => SetValue(StringProperty, value);
         }
     }
 }

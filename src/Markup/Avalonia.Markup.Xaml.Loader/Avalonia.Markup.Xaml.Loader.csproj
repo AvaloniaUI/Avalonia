@@ -1,25 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
+    <IsAotCompatible>false</IsAotCompatible>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL;XAML_RUNTIME_LOADER</DefineConstants>
   </PropertyGroup>
-  <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
-  <PropertyGroup>
-    <EnableNETAnalyzers>false</EnableNETAnalyzers>
-  </PropertyGroup>
-  <Import Project="IncludeXamlIlSre.props" />
-  <ItemGroup>
-    <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
-    <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
+
+  <Import Project="IncludeXamlIlSre.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\..\build\SourceGenerators.props" />

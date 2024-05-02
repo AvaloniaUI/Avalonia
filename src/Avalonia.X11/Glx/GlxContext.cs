@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,17 +11,17 @@ namespace Avalonia.X11.Glx
 {
     internal class GlxContext : IGlContext
     {
-        public  IntPtr Handle { get; }
+        public IntPtr Handle { get; }
         public GlxInterface Glx { get; }
-        private readonly GlxContext _sharedWith;
+        private readonly GlxContext? _sharedWith;
         private readonly X11Info _x11;
         private readonly IntPtr _defaultXid;
         private readonly bool _ownsPBuffer;
         private readonly object _lock = new object();
-        private ExternalObjectsOpenGlExtensionFeature? _externalObjects;
+        private readonly ExternalObjectsOpenGlExtensionFeature? _externalObjects;
 
         public GlxContext(GlxInterface glx, IntPtr handle, GlxDisplay display,
-            GlxContext sharedWith,
+            GlxContext? sharedWith,
             GlVersion version, int sampleCount, int stencilSize,
             X11Info x11, IntPtr defaultXid,
             bool ownsPBuffer)
@@ -49,13 +51,13 @@ namespace Avalonia.X11.Glx
 
         private class RestoreContext : IDisposable
         {
-            private GlxInterface _glx;
-            private IntPtr _defaultDisplay;
+            private readonly GlxInterface _glx;
+            private readonly IntPtr _defaultDisplay;
             private readonly object _l;
-            private IntPtr _display;
-            private IntPtr _context;
-            private IntPtr _read;
-            private IntPtr _draw;
+            private readonly IntPtr _display;
+            private readonly IntPtr _context;
+            private readonly IntPtr _read;
+            private readonly IntPtr _draw;
 
             public RestoreContext(GlxInterface glx, IntPtr defaultDisplay, object l)
             {
@@ -97,7 +99,7 @@ namespace Avalonia.X11.Glx
 
         public bool CanCreateSharedContext => true;
 
-        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null) =>
+        public IGlContext CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null) =>
             Display.CreateContext(_sharedWith ?? this);
 
         public IDisposable MakeCurrent(IntPtr xid)
@@ -129,7 +131,7 @@ namespace Avalonia.X11.Glx
                 Glx.DestroyPbuffer(_x11.DeferredDisplay, _defaultXid);
         }
 
-        public object TryGetFeature(Type featureType)
+        public object? TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IGlContextExternalObjectsFeature))
                 return _externalObjects;

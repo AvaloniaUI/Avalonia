@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -54,5 +56,8 @@ namespace Avalonia.Platform.Interop
                 ArrayPool<byte>.Shared.Return(bytes);
             }
         }
+
+        public static implicit operator IntPtr(Utf8Buffer b) => b.handle;
+        public static unsafe implicit operator byte*(Utf8Buffer b) => (byte*)b.handle;
     }
 }

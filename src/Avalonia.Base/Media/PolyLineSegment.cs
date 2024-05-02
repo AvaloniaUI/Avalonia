@@ -39,6 +39,8 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="PolyLineSegment"/> class.
         /// </summary>
         /// <param name="points">The points.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public PolyLineSegment(IEnumerable<Point> points)
         {
             Points = new Points(points);

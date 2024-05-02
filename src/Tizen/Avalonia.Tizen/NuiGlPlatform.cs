@@ -54,7 +54,7 @@ class GlContext : IGlContext
 
     public bool IsSharedWith(IGlContext context) => true;
     public bool CanCreateSharedContext => true;
-    public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null)
+    public IGlContext CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null)
     {
         return this;
     }
@@ -78,7 +78,7 @@ class GlContext : IGlContext
         }
     }
 
-    public object TryGetFeature(Type featureType) => null;
+    public object? TryGetFeature(Type featureType) => null;
 
     public IntPtr GetProcAddress(string procName)
     {

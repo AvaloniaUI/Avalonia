@@ -277,6 +277,34 @@ public class StyleIncludeTests
         Assert.IsType<SimpleTheme>(control.Styles[0]);
         Assert.IsType<SimpleTheme>(control.Styles[1]);
     }
+    
+    [Fact]
+    public void Style_Inside_Resources_Should_Produce_Warning()
+    {
+        var diagnostics = new List<RuntimeXamlDiagnostic>();
+        var control = (ContentControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(@"
+<ContentControl xmlns='https://github.com/avaloniaui'
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                xmlns:themes='clr-namespace:Avalonia.Themes.Simple;assembly=Avalonia.Themes.Simple'>
+    <ContentControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:SimpleTheme />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentControl.Resources>
+</ContentControl>"), new RuntimeXamlLoaderConfiguration
+        {
+            DiagnosticHandler = diagnostic =>
+            {
+                diagnostics.Add(diagnostic);
+                return diagnostic.Severity;
+            } 
+        });
+        Assert.IsAssignableFrom<IStyle>(((ResourceDictionary)control.Resources)!.MergedDictionaries[0]);
+        var warning = Assert.Single(diagnostics);
+        Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
+    }
 
     [Fact]
     public void StyleInclude_From_CodeBehind_Resolves_Compiled()
@@ -298,7 +326,10 @@ public class StyleIncludeTests
     }
 }
 
-public class TestServiceProvider : IServiceProvider, IUriContext, IAvaloniaXamlIlParentStackProvider
+public class TestServiceProvider :
+    IServiceProvider,
+    IUriContext,
+    IAvaloniaXamlIlEagerParentStackProvider
 {
     private IServiceProvider _root = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
     public object GetService(Type serviceType)
@@ -317,4 +348,6 @@ public class TestServiceProvider : IServiceProvider, IUriContext, IAvaloniaXamlI
     public Uri BaseUri { get; set; }
     public List<object> Parents { get; set; } = new List<object> { new ContentControl() };
     IEnumerable<object> IAvaloniaXamlIlParentStackProvider.Parents => Parents;
+    public IReadOnlyList<object> DirectParents => Parents;
+    public IAvaloniaXamlIlEagerParentStackProvider ParentProvider => null;
 }

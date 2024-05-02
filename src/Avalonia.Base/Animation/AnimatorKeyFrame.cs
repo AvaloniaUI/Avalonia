@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Avalonia.Animation.Animators;
 using Avalonia.Data;
 using Avalonia.Reactive;
@@ -16,19 +17,6 @@ namespace Avalonia.Animation
         public static readonly DirectProperty<AnimatorKeyFrame, object?> ValueProperty =
             AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object?>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
 
-        public AnimatorKeyFrame()
-        {
-
-        }
-
-        public AnimatorKeyFrame(Type? animatorType, Func<IAnimator>? animatorFactory, Cue cue)
-        {
-            AnimatorType = animatorType;
-            AnimatorFactory = animatorFactory;
-            Cue = cue;
-            KeySpline = null;
-        }
-
         public AnimatorKeyFrame(Type? animatorType, Func<IAnimator>? animatorFactory, Cue cue, KeySpline? keySpline)
         {
             AnimatorType = animatorType;
@@ -37,11 +25,12 @@ namespace Avalonia.Animation
             KeySpline = keySpline;
         }
 
-        internal bool isNeutral;
         public Type? AnimatorType { get; }
         public Func<IAnimator>? AnimatorFactory { get; }
         public Cue Cue { get; }
         public KeySpline? KeySpline { get; }
+        public bool FillBefore { get; set; }
+        public bool FillAfter { get; set; }
         public AvaloniaProperty? Property { get; private set; }
 
         private object? _value;
@@ -59,11 +48,11 @@ namespace Avalonia.Animation
 
             if (value is IBinding binding)
             {
-                return this.Bind(ValueProperty, binding, targetControl);
+                return Bind(ValueProperty, binding, targetControl);
             }
             else
             {
-                return this.Bind(ValueProperty, Observable.SingleValue(value).ToBinding(), targetControl);
+                return Bind(ValueProperty, Observable.SingleValue(value).ToBinding(), targetControl);
             }
         }
 
@@ -86,6 +75,14 @@ namespace Avalonia.Animation
             }
 
             return (T)typeConv.ConvertTo(Value, typeof(T))!;
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Property), Property, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Cue), Cue, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Value), Value, includeContent);
         }
     }
 }

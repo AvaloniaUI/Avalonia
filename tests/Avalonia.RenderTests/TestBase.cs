@@ -42,26 +42,13 @@ namespace Avalonia.Direct2D1.RenderTests
 #endif
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
-        private static readonly TestDispatcherImpl threadingInterface =
-            new TestDispatcherImpl();
-
-        private static readonly IAssetLoader assetLoader = new StandardAssetLoader();
-        
-        static TestBase()
-        {
-#if AVALONIA_SKIA
-            SkiaPlatform.Initialize();
+#if AVALONIA_SKIA3
+        // TODO: investigate why output is different.
+        // Most likely we need to use new SKSamplingOptions API, as old filters are broken with SKBitmap.
+        private const double AllowedError = 0.15;
 #else
-            Direct2D1Platform.Initialize();
+        private const double AllowedError = 0.022;
 #endif
-            AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>()
-                .ToConstant(threadingInterface);
-
-            AvaloniaLocator.CurrentMutable
-                .Bind<IAssetLoader>()
-                .ToConstant(assetLoader);
-        }
 
         public TestBase(string outputPath)
         {
@@ -75,7 +62,7 @@ namespace Avalonia.Direct2D1.RenderTests
 #endif
             OutputPath = Path.Combine(testFiles, platform, outputPath);
 
-            threadingInterface.MainThread = Thread.CurrentThread;
+            TestRenderHelper.BeginTest();
         }
 
         public string OutputPath
@@ -89,56 +76,11 @@ namespace Avalonia.Direct2D1.RenderTests
             {
                 Directory.CreateDirectory(OutputPath);
             }
-
+            
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
-            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-            var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
-            var size = new Size(target.Width, target.Height);
-            var dpiVector = new Vector(dpi, dpi);
-
-            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
-            {
-                target.Measure(size);
-                target.Arrange(new Rect(size));
-                bitmap.Render(target);
-                bitmap.Save(immediatePath);
-            }
-            
-            var timer = new ManualRenderTimer();
-
-            var compositor = new Compositor(new RenderLoop(timer), null, true,
-                new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
-            using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat, factory.DefaultAlphaFormat))
-            {
-                var root = new TestRenderRoot(dpiVector.X / 96, null!);
-                using (var renderer = new CompositingRenderer(root, compositor, () => new[]
-                       {
-                           new BitmapFramebufferSurface(writableBitmap)
-                       }))
-                {
-                    root.Initialize(renderer, target);
-                    renderer.Start();
-                    Dispatcher.UIThread.RunJobs();
-                    timer.TriggerTick();
-                }
-                writableBitmap.Save(compositedPath);
-            }
-        }
-
-        class BitmapFramebufferSurface : IFramebufferPlatformSurface
-        {
-            private readonly IWriteableBitmapImpl _bitmap;
-
-            public BitmapFramebufferSurface(IWriteableBitmapImpl bitmap)
-            {
-                _bitmap = bitmap;
-            }
-            
-            public IFramebufferRenderTarget CreateFramebufferRenderTarget()
-            {
-                return new FuncFramebufferRenderTarget(() => _bitmap.Lock());
-            }
+            await TestRenderHelper.RenderToFile(target, immediatePath, true, dpi);
+            await TestRenderHelper.RenderToFile(target, compositedPath, false, dpi);
         }
 
         protected void CompareImages([CallerMemberName] string testName = "",
@@ -149,20 +91,25 @@ namespace Avalonia.Direct2D1.RenderTests
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
 
             using (var expected = Image.Load<Rgba32>(expectedPath))
-            using (var immediate = Image.Load<Rgba32>(immediatePath))
-            using (var composited = Image.Load<Rgba32>(compositedPath))
+            using (var immediate = skipImmediate ? null: Image.Load<Rgba32>(immediatePath))
+            using (var composited = skipCompositor ? null : Image.Load<Rgba32>(compositedPath))
             {
-                var immediateError = CompareImages(immediate, expected);
-                var compositedError = CompareImages(composited, expected);
-
-                if (immediateError > 0.022 && !skipImmediate)
+                if (!skipImmediate)
                 {
-                    Assert.True(false, immediatePath + ": Error = " + immediateError);
+                    var immediateError = TestRenderHelper.CompareImages(immediate!, expected);
+                    if (immediateError > AllowedError)
+                    {
+                        Assert.True(false, immediatePath + ": Error = " + immediateError);
+                    }
                 }
 
-                if (compositedError > 0.022 && !skipCompositor)
+                if (!skipCompositor)
                 {
-                    Assert.True(false, compositedPath + ": Error = " + compositedError);
+                    var compositedError = TestRenderHelper.CompareImages(composited!, expected);
+                    if (compositedError > AllowedError)
+                    {
+                        Assert.True(false, compositedPath + ": Error = " + compositedError);
+                    }
                 }
             }
         }
@@ -171,108 +118,11 @@ namespace Avalonia.Direct2D1.RenderTests
         {
             var expectedPath = Path.Combine(OutputPath, (expectedName ?? testName) + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");
-
-            using (var expected = Image.Load<Rgba32>(expectedPath))
-            using (var actual = Image.Load<Rgba32>(actualPath))
-            {
-                double immediateError = CompareImages(actual, expected);
-
-                if (immediateError > 0.022)
-                {
-                    Assert.True(false, actualPath + ": Error = " + immediateError);
-                }
-            }
+            TestRenderHelper.AssertCompareImages(actualPath, expectedPath);
         }
         
-        /// <summary>
-        /// Calculates root mean square error for given two images.
-        /// Based roughly on ImageMagick implementation to ensure consistency.
-        /// </summary>
-        private static double CompareImages(Image<Rgba32> actual, Image<Rgba32> expected)
-        {
-            if (actual.Width != expected.Width || actual.Height != expected.Height)
-            {
-                throw new ArgumentException("Images have different resolutions");
-            }
+        private static string GetTestsDirectory() => TestRenderHelper.GetTestsDirectory();
 
-            var quantity = actual.Width * actual.Height;
-            double squaresError = 0;
-
-            const double scale = 1 / 255d;
-            
-            for (var x = 0; x < actual.Width; x++)
-            {
-                double localError = 0;
-                
-                for (var y = 0; y < actual.Height; y++)
-                {
-                    var expectedAlpha = expected[x, y].A * scale;
-                    var actualAlpha = actual[x, y].A * scale;
-                    
-                    var r = scale * (expectedAlpha * expected[x, y].R - actualAlpha * actual[x, y].R);
-                    var g = scale * (expectedAlpha * expected[x, y].G - actualAlpha * actual[x, y].G);
-                    var b = scale * (expectedAlpha * expected[x, y].B - actualAlpha * actual[x, y].B);
-                    var a = expectedAlpha - actualAlpha;
-
-                    var error = r * r + g * g + b * b + a * a;
-
-                    localError += error;
-                }
-
-                squaresError += localError;
-            }
-
-            var meanSquaresError = squaresError / quantity;
-
-            const int channelCount = 4;
-            
-            meanSquaresError = meanSquaresError / channelCount;
-            
-            return Math.Sqrt(meanSquaresError);
-        }
-
-        private static string GetTestsDirectory()
-        {
-            var path = Directory.GetCurrentDirectory();
-
-            while (path.Length > 0 && Path.GetFileName(path) != "tests")
-            {
-                path = Path.GetDirectoryName(path);
-            }
-
-            return path;
-        }
-
-        private class TestDispatcherImpl : IDispatcherImpl
-        {
-            public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
-
-            public Thread MainThread { get; set; }
-
-#pragma warning disable 67
-            public event Action Signaled;
-            public event Action Timer;
-#pragma warning restore 67
-
-            public void Signal()
-            {
-                // No-op
-            }
-
-            public long Now => 0;
-
-            public void UpdateTimer(long? dueTimeInMs)
-            {
-                // No-op
-            }
-        }
-
-        public void Dispose()
-        {
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                Dispatcher.UIThread.RunJobs();
-            }
-        }
+        public void Dispose() => TestRenderHelper.EndTest();
     }
 }

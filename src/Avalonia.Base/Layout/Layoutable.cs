@@ -791,7 +791,7 @@ namespace Avalonia.Layout
                     InvalidateMeasure();
 
                     // If any descendant had its measure/arrange invalidated while we were hidden,
-                    // they will need to to be registered with the layout manager now that they
+                    // they will need to be registered with the layout manager now that they
                     // are again effectively visible. If IsEffectivelyVisible becomes an observable
                     // property then we can piggy-pack on that; for the moment we do this manually.
                     if (VisualRoot is ILayoutRoot layoutRoot)

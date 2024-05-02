@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls;
 
@@ -15,6 +15,7 @@ namespace Avalonia.Controls;
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _currentTransition;
+    private ContentPresenter? _lastPresenter;
     private ContentPresenter? _presenter2;
     private bool _isFirstFull;
     private bool _shouldAnimate;
@@ -28,12 +29,47 @@ public class TransitioningContentControl : ContentControl
             defaultValue: new ImmutableCrossFade(TimeSpan.FromMilliseconds(125)));
 
     /// <summary>
+    /// Defines the <see cref="IsTransitionReversed"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsTransitionReversedProperty =
+        AvaloniaProperty.Register<TransitioningContentControl, bool>(
+            nameof(IsTransitionReversed),
+            defaultValue: false);
+
+    /// <summary>
+    /// Defines the <see cref="TransitionCompleted"/> routed event.
+    /// </summary>
+    public static readonly RoutedEvent<TransitionCompletedEventArgs> TransitionCompletedEvent =
+        RoutedEvent.Register<TransitioningContentControl, TransitionCompletedEventArgs>(
+            nameof(TransitionCompleted),
+            RoutingStrategies.Direct);
+
+    /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
     /// </summary>
     public IPageTransition? PageTransition
     {
         get => GetValue(PageTransitionProperty);
         set => SetValue(PageTransitionProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the control will be animated in the reverse direction.
+    /// </summary>
+    /// <remarks>May not apply to all transitions.</remarks>
+    public bool IsTransitionReversed
+    {
+        get => GetValue(IsTransitionReversedProperty);
+        set => SetValue(IsTransitionReversedProperty, value);
+    }
+
+    /// <summary>
+    /// Raised when the old content isn't needed anymore by the control, because the transition has completed.
+    /// </summary>
+    public event EventHandler<TransitionCompletedEventArgs> TransitionCompleted
+    {
+        add => AddHandler(TransitionCompletedEvent, value);
+        remove => RemoveHandler(TransitionCompletedEvent, value);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -45,7 +81,7 @@ public class TransitioningContentControl : ContentControl
             _currentTransition?.Cancel();
 
             if (_presenter2 is not null &&
-                Presenter is Visual presenter &&
+                Presenter is { } presenter &&
                 PageTransition is { } transition)
             {   
                 _shouldAnimate = false;
@@ -55,9 +91,14 @@ public class TransitioningContentControl : ContentControl
 
                 var from = _isFirstFull ? _presenter2 : presenter;
                 var to = _isFirstFull ? presenter : _presenter2;
+                var fromContent = from.Content;
+                var toContent = to.Content;
 
-                transition.Start(from, to, true, cancel.Token).ContinueWith(x =>
+                transition.Start(from, to, !IsTransitionReversed, cancel.Token).ContinueWith(task =>
                 {
+                    OnTransitionCompleted(new TransitionCompletedEventArgs(
+                        fromContent, toContent, task.Status == TaskStatus.RanToCompletion && !cancel.IsCancellationRequested));
+
                     if (!cancel.IsCancellationRequested)
                     {
                         HideOldPresenter();
@@ -115,8 +156,19 @@ public class TransitioningContentControl : ContentControl
         }
 
         var currentPresenter = _isFirstFull ? _presenter2 : Presenter;
-        currentPresenter.Content = Content;
+        var fromContent = _lastPresenter?.Content;
+        var toContent = Content;
+
+        if (_lastPresenter != null &&
+            _lastPresenter != currentPresenter &&
+            _lastPresenter.Content == toContent)
+        {
+            _lastPresenter.Content = null;
+        }
+
+        currentPresenter.Content = toContent;
         currentPresenter.IsVisible = true;
+        _lastPresenter = currentPresenter;
 
         _isFirstFull = !_isFirstFull;
 
@@ -128,6 +180,7 @@ public class TransitioningContentControl : ContentControl
         else
         {
             HideOldPresenter();
+            OnTransitionCompleted(new TransitionCompletedEventArgs(fromContent, toContent, false));
         }
     }
 
@@ -140,6 +193,9 @@ public class TransitioningContentControl : ContentControl
             oldPresenter.IsVisible = false;
         }
     }
+
+    private void OnTransitionCompleted(TransitionCompletedEventArgs e)
+        => RaiseEvent(e);
 
     private class ImmutableCrossFade : IPageTransition
     {

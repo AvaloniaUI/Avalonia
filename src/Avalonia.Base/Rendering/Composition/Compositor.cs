@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -75,17 +77,18 @@ namespace Avalonia.Rendering.Composition
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
             ICompositorScheduler scheduler, bool reclaimBuffersImmediately,
-            Dispatcher dispatcher)
+            Dispatcher dispatcher, CompositionOptions? options = null)
         {
+            options ??= AvaloniaLocator.Current.GetService<CompositionOptions>() ?? new();
             Loop = loop;
             UseUiThreadForSynchronousCommits = useUiThreadForSynchronousCommits;
             Dispatcher = dispatcher;
             _batchMemoryPool = new(reclaimBuffersImmediately);
             _batchObjectPool = new(reclaimBuffersImmediately);
-            _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
+            _server = new ServerCompositor(loop, gpu, options, _batchObjectPool, _batchMemoryPool);
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
-            DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
+            DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
         }
 
         /// <summary>
@@ -107,7 +110,8 @@ namespace Avalonia.Rendering.Composition
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
-                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send));
+                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
+                        TaskContinuationOptions.ExecuteSynchronously);
                 else
                     _triggerCommitRequested();
             }
@@ -254,33 +258,56 @@ namespace Avalonia.Rendering.Composition
             return tcs.Task;
         }
 
+        internal ValueTask<IReadOnlyDictionary<Type, object>> GetRenderInterfacePublicFeatures()
+        {
+            if (Server.AT_TryGetCachedRenderInterfaceFeatures() is { } rv)
+                return new(rv);
+            if (!Loop.RunsInBackground)
+                return new(Server.RT_GetRenderInterfaceFeatures());
+            return new(InvokeServerJobAsync(Server.RT_GetRenderInterfaceFeatures));
+        }
+
         /// <summary>
         /// Attempts to query for a feature from the platform render interface
         /// </summary>
-        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType) =>
-            new(InvokeServerJobAsync(() =>
-            {
-                using (Server.RenderInterface.EnsureCurrent())
-                {
-                    return Server.RenderInterface.Value.TryGetFeature(featureType);
-                }
-            }));
+        public async ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
+        {
+            (await GetRenderInterfacePublicFeatures().ConfigureAwait(false)).TryGetValue(featureType, out var rv);
+            return rv;
+        }
+        
+        /// <summary>
+        /// Attempts to query for GPU interop feature from the platform render interface
+        /// </summary>
+        /// <returns></returns>
+        public async ValueTask<ICompositionGpuInterop?> TryGetCompositionGpuInterop()
+        {
+            var externalObjects =
+                (IExternalObjectsRenderInterfaceContextFeature?)await TryGetRenderInterfaceFeature(
+                    typeof(IExternalObjectsRenderInterfaceContextFeature)).ConfigureAwait(false);
 
-        public ValueTask<ICompositionGpuInterop?> TryGetCompositionGpuInterop() =>
-            new(InvokeServerJobAsync<ICompositionGpuInterop?>(() =>
-            {
-                using (Server.RenderInterface.EnsureCurrent())
-                {
-                    var feature = Server.RenderInterface.Value
-                        .TryGetFeature<IExternalObjectsRenderInterfaceContextFeature>();
-                    if (feature == null)
-                        return null;
-                    return new CompositionInterop(this, feature);
-                }
-            }));
+            if (externalObjects == null)
+                return null;
+            return new CompositionInterop(this, externalObjects);
+        }
 
         internal bool UnitTestIsRegisteredForSerialization(ICompositorSerializable serializable) =>
             _objectSerializationHashSet.Contains(serializable);
+
+        /// <summary>
+        /// Attempts to get the Compositor instance that will be used by default for new TopLevels
+        /// created by the current platform backend.
+        ///
+        /// This won't work for every single platform backend and backend settings, e. g. with web we'll need to have
+        /// separate Compositor instances per output HTML canvas since they don't share OpenGL state.
+        /// Another case where default compositor won't be available is our planned multithreaded rendering mode
+        /// where each window would get its own Compositor instance
+        ///
+        /// This method is still useful for obtaining GPU device LUID to speed up initialization, but you should
+        /// always check if default Compositor matches one used by our control once it gets attached to a TopLevel
+        /// </summary>
+        /// <returns></returns>
+        public static Compositor? TryGetDefaultCompositor() => AvaloniaLocator.Current.GetService<Compositor>();
     }
     
     internal interface ICompositorScheduler

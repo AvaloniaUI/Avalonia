@@ -35,20 +35,20 @@ internal partial class X11Screens
     internal interface IX11RawScreenInfoProvider
     {
         X11Screen[] Screens { get; }
-        event Action Changed;
+        event Action? Changed;
     }
 
     
     private class Randr15ScreensImpl : IX11RawScreenInfoProvider
     {
-        private X11Screen[] _cache;
+        private X11Screen[]? _cache;
         private readonly X11Info _x11;
         private readonly IntPtr _window;
 
         // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
         private const int EDIDStructureLength = 32; 
 
-        public event Action Changed;
+        public event Action? Changed;
         
         public Randr15ScreensImpl(AvaloniaX11Platform platform)
         {
@@ -129,7 +129,7 @@ internal partial class X11Screens
                         }
                     }
 
-                    screens[c] = new X11Screen(bounds, mon.Primary != 0, name, pSize);
+                    screens[c] = new X11Screen(bounds, mon.Primary != 0, name ?? string.Empty, pSize);
                 }
 
                 XFree(new IntPtr(monitors));
@@ -142,8 +142,13 @@ internal partial class X11Screens
     private class FallbackScreensImpl : IX11RawScreenInfoProvider
     {
         private readonly X11Info _info;
-        public event Action? Changed;
-        
+
+        public event Action? Changed
+        {
+            add { }
+            remove { }
+        }
+
         public FallbackScreensImpl(AvaloniaX11Platform platform)
         {
             _info = platform.Info;

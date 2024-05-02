@@ -166,22 +166,18 @@ namespace Avalonia.DesignerSupport.Remote
             };
         }
 
-        private const string BuilderMethodName = "BuildAvaloniaApp";
-        
         public static void Main(string[] cmdline)
         {
             var args = ParseCommandLineArgs(cmdline);
             var transport = CreateTransport(args);
             if (transport is ITransportWithEnforcedMethod enforcedMethod)
                 args.Method = enforcedMethod.PreviewerMethod;
-            var asm = Assembly.LoadFile(System.IO.Path.GetFullPath(args.AppPath));
-            var entryPoint = asm.EntryPoint;
-            if (entryPoint == null)
-                throw Die($"Assembly {args.AppPath} doesn't have an entry point");
+            var asm = Assembly.LoadFrom(System.IO.Path.GetFullPath(args.AppPath));
+            var entryPoint = asm.EntryPoint ?? throw Die($"Assembly {args.AppPath} doesn't have an entry point");
+            Log($"Initializing application in design mode");
+            Design.IsDesignMode = true;
             Log($"Obtaining AppBuilder instance from {entryPoint.DeclaringType!.FullName}");
             var appBuilder = AppBuilder.Configure(entryPoint.DeclaringType);
-            Design.IsDesignMode = true;
-            Log($"Initializing application in design mode");
             var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer));
             transport = initializer.ConfigureApp(transport, args, appBuilder);
             s_transport = transport;
@@ -206,24 +202,24 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         private static Window s_currentWindow;
-        private static void OnTransportMessage(IAvaloniaRemoteTransportConnection transport, object obj) => Dispatcher.UIThread.Post(() =>
+        private static void OnTransportMessage(IAvaloniaRemoteTransportConnection transport, object obj) => Dispatcher.UIThread.Post(static arg =>
         {
-            if (obj is ClientSupportedPixelFormatsMessage formats)
+            if (arg is ClientSupportedPixelFormatsMessage formats)
             {
                 s_supportedPixelFormats = formats;
                 RebuildPreFlight();
             }
-            if (obj is ClientRenderInfoMessage renderInfo)
+            if (arg is ClientRenderInfoMessage renderInfo)
             {
                 s_renderInfoMessage = renderInfo;
                 RebuildPreFlight();
             }
-            if (obj is ClientViewportAllocatedMessage viewport)
+            if (arg is ClientViewportAllocatedMessage viewport)
             {
                 s_viewportAllocatedMessage = viewport;
                 RebuildPreFlight();
             }
-            if (obj is UpdateXamlMessage xaml)
+            if (arg is UpdateXamlMessage xaml)
             {
                 if (s_currentWindow is not null)
                     s_lastRenderScaling = s_currentWindow.RenderScaling;
@@ -251,6 +247,6 @@ namespace Avalonia.DesignerSupport.Remote
                     });
                 }
             }
-        });
+        }, obj);
     }
 }

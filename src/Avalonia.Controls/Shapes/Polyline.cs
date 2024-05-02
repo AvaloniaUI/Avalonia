@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Data;
@@ -28,7 +29,7 @@ namespace Avalonia.Controls.Shapes
 
         protected override Geometry CreateDefiningGeometry()
         {
-            return new PolylineGeometry(Points, false);
+            return new PolylineGeometry { Points = Points, IsFilled = false };
         }
     }
 }

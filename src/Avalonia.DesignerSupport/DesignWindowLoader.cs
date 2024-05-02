@@ -35,7 +35,7 @@ namespace Avalonia.DesignerSupport
                         new Uri($"avares://{Path.GetFileNameWithoutExtension(assemblyPath)}{xamlFileProjectPath}");
                 }
 
-                var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
+                var localAsm = assemblyPath != null ? Assembly.LoadFrom(Path.GetFullPath(assemblyPath)) : null;
                 var useCompiledBindings = localAsm?.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .FirstOrDefault(a => a.Key == "AvaloniaUseCompiledBindingsByDefault")?.Value;
 
@@ -90,7 +90,7 @@ namespace Avalonia.DesignerSupport
                         };
                 }
                 else if (loaded is Application)
-                    control = new TextBlock { Text = "Application can't be previewed in design view" };
+                    control = new TextBlock { Text = "This file cannot be previewed in design view" };
                 else
                     control = (Control)loaded;
 

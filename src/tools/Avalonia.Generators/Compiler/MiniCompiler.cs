@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using XamlX.Compiler;
 using XamlX.Emit;
@@ -13,16 +13,20 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
 {
     public const string AvaloniaXmlnsDefinitionAttribute = "Avalonia.Metadata.XmlnsDefinitionAttribute";
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = TrimmingMessages.Roslyn)]
     public static MiniCompiler CreateDefault(RoslynTypeSystem typeSystem, params string[] additionalTypes)
     {
         var mappings = new XamlLanguageTypeMappings(typeSystem);
         foreach (var additionalType in additionalTypes)
             mappings.XmlnsAttributes.Add(typeSystem.GetType(additionalType));
 
+        var diagnosticsHandler = new XamlDiagnosticsHandler();
+
         var configuration = new TransformerConfiguration(
             typeSystem,
             typeSystem.Assemblies.First(),
-            mappings);
+            mappings,
+            diagnosticsHandler: diagnosticsHandler);
         return new MiniCompiler(configuration);
     }
         
@@ -39,10 +43,7 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
 
     protected override XamlEmitContext<object, IXamlEmitResult> InitCodeGen(
         IFileSource file,
-        Func<string, IXamlType,
-        IXamlTypeBuilder<object>> createSubType,
-        Func<string, IXamlType, IEnumerable<IXamlType>,
-        IXamlTypeBuilder<object>> createDelegateType,
+        IXamlTypeBuilder<object> declaringType,
         object codeGen,
         XamlRuntimeContext<object, IXamlEmitResult> context,
         bool needContextLocal) =>

@@ -242,9 +242,11 @@ namespace Avalonia.Headless
             return true;
         }
 
-        public virtual bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
             glyphTypeface = new HeadlessGlyphTypefaceImpl();
+
+            TryCreateGlyphTypefaceCount++;
 
             return true;
         }
@@ -301,7 +303,7 @@ namespace Avalonia.Headless
             return true;
         }
 
-        public virtual bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
             glyphTypeface = new HeadlessGlyphTypefaceImpl();
 

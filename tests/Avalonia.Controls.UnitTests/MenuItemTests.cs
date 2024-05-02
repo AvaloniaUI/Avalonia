@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Controls.Utils;
+using Avalonia.Controls.UnitTests.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -100,7 +99,9 @@ namespace Avalonia.Controls.UnitTests
                 [!MenuItem.CommandProperty] = new Binding("Command"),
             };
             var root = new TestRoot { Child = target };
-                
+
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
 
@@ -165,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = null;
             Assert.Equal(0, command.SubscriptionCount);
         }
-        
+
         [Fact]
         public void MenuItem_Invokes_CanExecute_When_Added_To_Logical_Tree_And_CommandParameter_Changed()
         {
@@ -173,13 +174,15 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem { Command = command };
             var root = new TestRoot { Child = target };
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
             target.CommandParameter = true;
             Assert.True(target.IsEffectivelyEnabled);
 
             target.CommandParameter = false;
             Assert.False(target.IsEffectivelyEnabled);
         }
-        
+
         [Fact]
         public void MenuItem_Does_Not_Invoke_CanExecute_When_ContextMenu_Closed()
         {
@@ -197,7 +200,8 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
-                
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -207,8 +211,9 @@ namespace Avalonia.Controls.UnitTests
 
                 command.RaiseCanExecuteChanged();
                 Assert.Equal(0, canExecuteCallCount);
-                
+
                 contextMenu.Open();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.Equal(3, canExecuteCallCount);// 3 because popup is changing logical child and moreover we need to invalidate again after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -218,7 +223,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(5, canExecuteCallCount);
             }
         }
-        
+
         [Fact]
         public void MenuItem_Does_Not_Invoke_CanExecute_When_MenuFlyout_Closed()
         {
@@ -237,7 +242,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
-                
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -249,6 +254,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.Equal(2, canExecuteCallCount); // 2 because we need to invalidate after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -258,7 +264,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(4, canExecuteCallCount);
             }
         }
-        
+
         [Fact]
         public void MenuItem_Does_Not_Invoke_CanExecute_When_Parent_MenuItem_Closed()
         {
@@ -278,7 +284,9 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 contextMenu.Open();
-                
+
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -377,7 +385,7 @@ namespace Avalonia.Controls.UnitTests
             var panel = Assert.IsType<StackPanel>(menu.Presenter.Panel);
             Assert.Equal(2, panel.Children.Count);
 
-            for (var i = 0; i <  panel.Children.Count; i++)
+            for (var i = 0; i < panel.Children.Count; i++)
             {
                 var menuItem = Assert.IsType<MenuItem>(panel.Children[i]);
 
@@ -473,12 +481,335 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(items[0].Children, children[0].ItemsSource);
         }
 
+        [Fact]
+        public void Radio_MenuItem_In_Same_Group_Is_Unchecked()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+
+            menuItem3.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_Menu_Group_Can_Be_Changed_In_Runtime()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+
+            menuItem3.GroupName = "A";
+            menuItem3.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+
+            menuItem3.GroupName = null;
+            menuItem1.IsChecked = true;
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_MenuItem_In_Same_Group_But_Submenu_Is_Unchecked()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = "A",
+                        IsChecked = true,
+                        ToggleType = MenuItemToggleType.Radio,
+                        Items =
+                        {
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = "A",
+                                IsChecked = true,
+                                ToggleType = MenuItemToggleType.Radio
+                            })
+                        }
+                    }),
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.True(menuItem4.IsChecked);
+
+            menuItem2.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_MenuItem_In_Same_Group_But_Submenu_Is_Checked()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = "A",
+                        IsChecked = false,
+                        ToggleType = MenuItemToggleType.Radio,
+                        Items =
+                        {
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = "A",
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            })
+                        }
+                    }),
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+
+            menuItem4.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.True(menuItem4.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_MenuItem_Empty_GroupName_Not_Influence_Other_Groups()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = "A", IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem3 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = false, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem4 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.True(menuItem4.IsChecked);
+
+            menuItem3.IsChecked = true;
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+        }
+
+        [Fact]
+        public void Radio_Menus_With_Empty_Group_On_Different_Levels_Can_Be_Checked_Simultaneously()
+        {
+            using var app = Application();
+
+            MenuItem menuItem1, menuItem2, menuItem3, menuItem4;
+
+            var menu = new Menu
+            {
+                Items =
+                {
+                    (menuItem1 = new MenuItem
+                    {
+                        GroupName = null, IsChecked = true, ToggleType = MenuItemToggleType.Radio
+                    }),
+                    (menuItem2 = new MenuItem
+                    {
+                        GroupName = null,
+                        IsChecked = false,
+                        ToggleType = MenuItemToggleType.Radio,
+                        Items =
+                        {
+                            (menuItem3 = new MenuItem
+                            {
+                                GroupName = null,
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            }),
+                            (menuItem4 = new MenuItem
+                            {
+                                GroupName = null,
+                                IsChecked = false,
+                                ToggleType = MenuItemToggleType.Radio
+                            }),
+                        }
+                    })
+                }
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.False(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+
+            menuItem3.IsChecked = true;
+
+            Assert.True(menuItem1.IsChecked);
+            Assert.False(menuItem2.IsChecked);
+            Assert.True(menuItem3.IsChecked);
+            Assert.False(menuItem4.IsChecked);
+        }
+
+        [Fact]
+        public void MenuItem_CommandParameter_Does_Not_Change_While_Execution()
+        {
+            var target = new MenuItem();
+            object lastParamenter = "A";
+            var generator = new Random();
+            var onlyOnce = false;
+            var command = new TestCommand(parameter =>
+            {
+                if (!onlyOnce)
+                {
+                    onlyOnce = true;
+                    target.CommandParameter = generator.Next();
+                }
+                lastParamenter = parameter;
+                return true;
+            },
+            parameter =>
+            {
+                Assert.Equal(lastParamenter, parameter);
+            });
+            target.CommandParameter = lastParamenter;
+            target.Command = command;
+            var root = new TestRoot { Child = target };
+
+            (target as IClickableControl).RaiseClick();
+        }
+
         private IDisposable Application()
         {
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
             var screenImpl = new Mock<IScreenImpl>();
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
-            screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(1, screen, screen, true) });
+            screenImpl.Setup(X => X.AllScreens).Returns(new[] { new Screen(1, screen, screen, true) });
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
@@ -495,41 +826,10 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(services);
         }
 
-        private class TestCommand : ICommand
-        {
-            private readonly Func<object, bool> _canExecute;
-            private readonly Action<object> _execute;
-            private EventHandler _canExecuteChanged;
-
-            public TestCommand(bool enabled = true)
-                : this(_ => enabled, _ => { })
-            {
-            }
-
-            public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
-            {
-                _canExecute = canExecute;
-                _execute = execute ?? (_ => { });
-            }
-
-            public int SubscriptionCount { get; private set; }
-
-            public event EventHandler CanExecuteChanged
-            {
-                add { _canExecuteChanged += value; ++SubscriptionCount; }
-                remove { _canExecuteChanged -= value; --SubscriptionCount; }
-            }
-
-            public bool CanExecute(object parameter) => _canExecute(parameter);
-
-            public void Execute(object parameter) => _execute(parameter);
-
-            public void RaiseCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
 
         private record MenuViewModel(string Header)
         {
-            public IList<MenuViewModel> Children { get; set;}
+            public IList<MenuViewModel> Children { get; set; }
         }
     }
 }

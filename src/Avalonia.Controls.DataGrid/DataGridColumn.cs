@@ -3,19 +3,20 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using Avalonia.Data;
-using Avalonia.Interactivity;
-using Avalonia.VisualTree;
-using Avalonia.Collections;
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Diagnostics;
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -37,6 +38,15 @@ namespace Avalonia.Controls
         private ControlTheme _cellTheme;
         private Classes _cellStyleClasses;
         private bool _setWidthInternalNoCallback;
+
+        /// <summary>
+        /// Occurs when the pointer is pressed over the column's header
+        /// </summary>
+        public event EventHandler<PointerPressedEventArgs> HeaderPointerPressed;
+        /// <summary>
+        /// Occurs when the pointer is released over the column's header
+        /// </summary>
+        public event EventHandler<PointerReleasedEventArgs> HeaderPointerReleased;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridColumn" /> class.
@@ -331,7 +341,7 @@ namespace Avalonia.Controls
                     }
 
                     // return whether or not the property type can be compared
-                    return (typeof(IComparable).IsAssignableFrom(propertyType)) ? true : false;
+                    return typeof(IComparable).IsAssignableFrom(propertyType) ? true : false;
                 }
                 else
                 {
@@ -604,7 +614,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the value of a cell according to the the specified binding.
+        /// Gets the value of a cell according to the specified binding.
         /// </summary>
         /// <param name="item">The item associated with a cell.</param>
         /// <param name="binding">The binding to get the value of.</param>
@@ -810,7 +820,7 @@ namespace Avalonia.Controls
         /// <param name="source"></param>
         /// <param name="width">The DataGridLength to coerce.</param>
         /// <returns>The resultant (coerced) DataGridLength.</returns>
-        static DataGridLength CoerceWidth(AvaloniaObject source, DataGridLength width)
+        private static DataGridLength CoerceWidth(AvaloniaObject source, DataGridLength width)
         {
             var target = (DataGridColumn)source;
 
@@ -911,6 +921,8 @@ namespace Avalonia.Controls
                 result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.Template);
             }
 
+            result.PointerPressed += (s, e) => { HeaderPointerPressed?.Invoke(this, e); };
+            result.PointerReleased += (s, e) => { HeaderPointerReleased?.Invoke(this, e); };
             return result;
         }
 
@@ -1008,7 +1020,7 @@ namespace Avalonia.Controls
                 {
                     // Recalculate star weight of this column based on the new desired value
                     InheritsWidth = false;
-                    newValue = (Width.Value * newDisplayValue) / ActualWidth;
+                    newValue = Width.Value * newDisplayValue / ActualWidth;
                 }
             }
 
@@ -1049,7 +1061,7 @@ namespace Avalonia.Controls
             _settingWidthInternally = true;
             try
             {
-                Width = width;
+                SetCurrentValue(WidthProperty, width);
             }
             finally
             {
@@ -1067,7 +1079,7 @@ namespace Avalonia.Controls
             _setWidthInternalNoCallback = true;
             try
             {
-                Width = width;
+                SetCurrentValue(WidthProperty, width);
             }
             finally
             {

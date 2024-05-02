@@ -23,6 +23,12 @@ namespace Avalonia.Controls.Primitives
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="BackgroundSizing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BackgroundSizing> BackgroundSizingProperty =
+            Border.BackgroundSizingProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> BorderBrushProperty =
@@ -46,6 +52,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<FontFamily> FontFamilyProperty =
             TextElement.FontFamilyProperty.AddOwner<TemplatedControl>();
 
+        /// <summary>
+        /// Defines the <see cref="FontFeaturesProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
+            TextElement.FontFeaturesProperty.AddOwner<TemplatedControl>();
+        
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
@@ -132,6 +144,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets how the control's background is drawn relative to the control's border.
+        /// </summary>
+        public BackgroundSizing BackgroundSizing
+        {
+            get => GetValue(BackgroundSizingProperty);
+            set => SetValue(BackgroundSizingProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the brush used to draw the control's border.
         /// </summary>
         public IBrush? BorderBrush
@@ -165,6 +186,15 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(FontFamilyProperty);
             set => SetValue(FontFamilyProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font features turned on/off.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => GetValue(FontFeaturesProperty);
+            set => SetValue(FontFeaturesProperty, value);
         }
 
         /// <summary>

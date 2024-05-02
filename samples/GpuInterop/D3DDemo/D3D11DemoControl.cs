@@ -20,21 +20,21 @@ namespace GpuInterop.D3DDemo;
 
 public class D3D11DemoControl : DrawingSurfaceDemoBase
 {
-    private D3DDevice _device;
-    private D3D11Swapchain _swapchain;
-    private SharpDX.Direct3D11.DeviceContext _context;
+    private D3DDevice? _device;
+    private D3D11Swapchain? _swapchain;
+    private DeviceContext? _context;
     private Matrix _view;
     private PixelSize _lastSize;
-    private Texture2D _depthBuffer;
-    private DepthStencilView _depthView;
+    private Texture2D? _depthBuffer;
+    private DepthStencilView? _depthView;
     private Matrix _proj;
-    private Buffer _constantBuffer;
-    private Stopwatch _st = Stopwatch.StartNew();
+    private Buffer? _constantBuffer;
+    private readonly Stopwatch _st = Stopwatch.StartNew();
 
     protected override (bool success, string info) InitializeGraphicsResources(Compositor compositor,
         CompositionDrawingSurface surface, ICompositionGpuInterop interop)
     {
-        if (interop?.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes
+        if (interop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes
                 .D3D11TextureGlobalSharedHandle) != true)
             return (false, "DXGI shared handle import is not supported by the current graphics backend");
         
@@ -60,8 +60,12 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
 
     protected override void FreeGraphicsResources()
     {
-        _swapchain.DisposeAsync();
-        _swapchain = null!;
+        if (_swapchain is not null)
+        {
+            _swapchain.DisposeAsync().GetAwaiter().GetResult();
+            _swapchain = null;
+        }
+
         Utilities.Dispose(ref _depthView);
         Utilities.Dispose(ref _depthBuffer);
         Utilities.Dispose(ref _constantBuffer);
@@ -80,10 +84,10 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
             _lastSize = pixelSize;
             Resize(pixelSize);
         }
-        using (_swapchain.BeginDraw(pixelSize, out var renderView))
+        using (_swapchain!.BeginDraw(pixelSize, out var renderView))
         {
             
-            _device.ImmediateContext.OutputMerger.SetTargets(_depthView, renderView);
+            _device!.ImmediateContext.OutputMerger.SetTargets(_depthView, renderView);
             var viewProj = Matrix.Multiply(_view, _proj);
             var context = _device.ImmediateContext;
 
@@ -101,10 +105,10 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
             
             var ypr = Matrix4x4.CreateFromYawPitchRoll(Yaw, Pitch, Roll);
             // Update WorldViewProj Matrix
-            var worldViewProj = Matrix.RotationX((float)Yaw) * Matrix.RotationY((float)Pitch)
-                                                                          * Matrix.RotationZ((float)Roll)
-                                                                          * Matrix.Scaling(new Vector3(scaleX, scaleY, 1))
-                                                                          * viewProj;
+            var worldViewProj = Matrix.RotationX(Yaw) * Matrix.RotationY(Pitch)
+                                                      * Matrix.RotationZ(Roll)
+                                                      * Matrix.Scaling(new Vector3(scaleX, scaleY, 1))
+                                                      * viewProj;
             worldViewProj.Transpose();
             context.UpdateSubresource(ref worldViewProj, _constantBuffer);
 
@@ -112,21 +116,25 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
             context.Draw(36, 0);
             
             
-            _context.Flush();
+            _context!.Flush();
         }
     }
 
     private void Resize(PixelSize size)
     {
         Utilities.Dispose(ref _depthBuffer);
+
+        if (_device is null)
+            return;
+
         _depthBuffer = new Texture2D(_device,
             new Texture2DDescription()
             {
                 Format = Format.D32_Float_S8X24_UInt,
                 ArraySize = 1,
                 MipLevels = 1,
-                Width = (int)size.Width,
-                Height = (int)size.Height,
+                Width = size.Width,
+                Height = size.Height,
                 SampleDescription = new SampleDescription(1, 0),
                 Usage = ResourceUsage.Default,
                 BindFlags = BindFlags.DepthStencil,
@@ -138,9 +146,9 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
         _depthView = new DepthStencilView(_device, _depthBuffer);
 
         // Setup targets and viewport for rendering
-        _device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, (int)size.Width, (int)size.Height, 0.0f, 1.0f));
+        _device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, size.Width, size.Height, 0.0f, 1.0f));
         
         // Setup new projection matrix with correct aspect ratio
-        _proj = Matrix.PerspectiveFovLH((float)Math.PI / 4.0f, (float)(size.Width / size.Height), 0.1f, 100.0f);
+        _proj = Matrix.PerspectiveFovLH((float)Math.PI / 4.0f, size.Width / (float) size.Height, 0.1f, 100.0f);
     }
 }

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -10,33 +10,34 @@
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <Import Project="..\..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\..\build\SkiaSharp.props" />
-  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-  <Import Project="..\..\..\build\NullableEnable.props" />
-  <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="../../../build/BuildTargets.targets" />
+  <Import Project="../../../build/SkiaSharp.props" />
+  <Import Project="../../../build/HarfBuzzSharp.props" />
+  <Import Project="../../../build/NullableEnable.props" />
+  <Import Project="../../../build/TrimmingEnable.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
-    <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="../../../packages/Avalonia/Avalonia.csproj" />
+    <ProjectReference Include="../../Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="*.props">
+    <!-- See https://github.com/dotnet/sdk/blob/9d4d2c4ca35b0856af7df63d6a38b3259aa6917c/src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.Pack.targets#L64-L66 -->
+    <Content Include="build\Microsoft.AspNetCore.StaticWebAssets.props">
       <Pack>true</Pack>
-      <PackagePath>build\</PackagePath>
+      <PackagePath>build/</PackagePath>
     </Content>
-    <Content Include="*.targets">
+    <Content Include="build\Avalonia.Browser.props">
       <Pack>true</Pack>
-      <PackagePath>build\;buildTransitive\</PackagePath>
+      <PackagePath>build/;buildTransitive/;buildMultiTargeting/</PackagePath>
     </Content>
-    <Content Include="interop.js">
+    <Content Include="build\Avalonia.Browser.targets">
       <Pack>true</Pack>
-      <PackagePath>build/interop.js;buildTransitive/interop.js</PackagePath>
+      <PackagePath>build/;buildTransitive/</PackagePath>
     </Content>
-    <Content Include="wwwroot/**/*.*">
+    <Content Include="staticwebassets/**/*.*">
       <Pack>true</Pack>
-      <PackagePath>build\wwwroot;buildTransitive\wwwroot</PackagePath>
+      <PackagePath>staticwebassets/</PackagePath>
     </Content>
   </ItemGroup>
 

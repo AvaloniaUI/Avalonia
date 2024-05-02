@@ -3,11 +3,9 @@ using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
-using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
-using Avalonia.Threading;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 
@@ -22,21 +20,32 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
     private readonly NuiTouchHandler _touchHandler;
     private readonly NuiAvaloniaViewTextEditable _textEditor;
     private TizenRenderTimer? _renderTimer;
-    private TopLevelImpl _topLevelImpl;
-    private EmbeddableControlRoot _topLevel;
-    private TouchDevice _device = new();
-    private ServerCompositionTarget _compositionTargetServer;
+    private TopLevelImpl? _topLevelImpl;
+    private EmbeddableControlRoot? _topLevel;
+    private readonly TouchDevice _device = new();
+    private ServerCompositionTarget? _compositionTargetServer;
+    private IInputRoot? _inputRoot;
 
-    public IInputRoot InputRoot { get; set; }
     public INativeControlHostImpl NativeControlHost { get; }
-    internal TopLevelImpl TopLevelImpl => _topLevelImpl;
     public double Scaling => 1;
     public Size ClientSize => new(Size.Width, Size.Height);
 
+    public IInputRoot InputRoot
+    {
+        get => _inputRoot ?? throw new InvalidOperationException($"{nameof(InputRoot)} hasn't been set");
+        set => _inputRoot = value;
+    }
+
+    internal TopLevel TopLevel
+        => _topLevel ?? throw new InvalidOperationException($"{nameof(NuiAvaloniaView)} hasn't been initialized");
+
+    internal TopLevelImpl TopLevelImpl
+        => _topLevelImpl ?? throw new InvalidOperationException($"{nameof(NuiAvaloniaView)} hasn't been initialized");
+
     public Control? Content
     {
-        get => _topLevel.Content as Control;
-        set => _topLevel.Content = value;
+        get => TopLevel.Content as Control;
+        set => TopLevel.Content = value;
     }
 
     internal NuiAvaloniaViewTextEditable TextEditor => _textEditor;
@@ -44,7 +53,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     #region Setup
 
-    public event Action OnSurfaceInit;
+    public event Action? OnSurfaceInit;
 
     public NuiAvaloniaView() : base(ColorFormat.RGBA8888)
     {
@@ -73,7 +82,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     private int GlRenderFrame()
     {
-        if (_renderTimer == null || _topLevel == null)
+        if (_renderTimer == null || _compositionTargetServer == null)
             return 0;
 
         var rev = _compositionTargetServer.Revision;
@@ -141,13 +150,13 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     private bool OnTouchEvent(object source, TouchEventArgs e)
     {
-        _touchHandler?.Handle(e);
+        _touchHandler.Handle(e);
         return true;
     }
 
     private bool OnWheelEvent(object source, WheelEventArgs e)
     {
-        _touchHandler?.Handle(e);
+        _touchHandler.Handle(e);
         return true;
     }
 
@@ -169,9 +178,9 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
     {
         if (disposing)
         {
-            _topLevel.StopRendering();
-            _topLevel.Dispose();
-            _topLevelImpl.Dispose();
+            _topLevel?.StopRendering();
+            _topLevel?.Dispose();
+            _topLevelImpl?.Dispose();
             _device.Dispose();
         }
         base.Dispose(disposing);

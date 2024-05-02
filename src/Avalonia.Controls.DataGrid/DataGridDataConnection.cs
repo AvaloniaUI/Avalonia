@@ -193,18 +193,17 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>Try get number of DataSource itmes.</summary>
+        /// <summary>Try get number of DataSource items.</summary>
         /// <param name="allowSlow">When "allowSlow" is false, method will not use Linq.Count() method and will return 0 or 1 instead.</param>
         /// <param name="getAny">If "getAny" is true, method can use Linq.Any() method to speedup.</param>
-        /// <param name="count">number of DataSource itmes.</param>
-        /// <returns>true if able to retrieve number of DataSource itmes; otherwise, false.</returns>
+        /// <param name="count">number of DataSource items.</param>
+        /// <returns>true if able to retrieve number of DataSource items; otherwise, false.</returns>
         internal bool TryGetCount(bool allowSlow, bool getAny, out int count)
         {
             bool result;
             (result, count) = DataSource switch
             {
                 ICollection collection => (true, collection.Count),
-                DataGridCollectionView cv => (true, cv.Count),
                 IEnumerable enumerable when allowSlow && !getAny => (true, enumerable.Cast<object>().Count()),
                 IEnumerable enumerable when getAny => (true, enumerable.Cast<object>().Any() ? 1 : 0),
                 _ => (false, 0)
@@ -350,15 +349,15 @@ namespace Avalonia.Controls
         {
             Debug.Assert(index >= 0);
 
+            if (DataSource is DataGridCollectionView collectionView)
+            {
+                return (index < collectionView.Count) ? collectionView.GetItemAt(index) : null;
+            }
+
             IList list = List;
             if (list != null)
             {
                 return (index < list.Count) ? list[index] : null;
-            }
-
-            if (DataSource is DataGridCollectionView collectionView)
-            {
-                return (index < collectionView.Count) ? collectionView.GetItemAt(index) : null;
             }
 
             IEnumerable enumerable = DataSource;
@@ -420,15 +419,15 @@ namespace Avalonia.Controls
 
         public int IndexOf(object dataItem)
         {
+            if (DataSource is DataGridCollectionView cv)
+            {
+                return cv.IndexOf(dataItem);
+            }
+
             IList list = List;
             if (list != null)
             {
                 return list.IndexOf(dataItem);
-            }
-
-            if (DataSource is DataGridCollectionView cv)
-            {
-                return cv.IndexOf(dataItem);
             }
 
             IEnumerable enumerable = DataSource;

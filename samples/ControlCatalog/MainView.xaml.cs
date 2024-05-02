@@ -59,7 +59,7 @@ namespace ControlCatalog
             {
                 if (flowDirections.SelectedItem is FlowDirection flowDirection)
                 {
-                    TopLevel.GetTopLevel(this).FlowDirection = flowDirection;
+                    TopLevel.GetTopLevel(this)!.FlowDirection = flowDirection;
                 }
             };
 

@@ -164,7 +164,7 @@ namespace Avalonia.Skia
         }
 
         public SKFont CreateSKFont(float size)
-            => new(_typeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.2f : 0.0f)
+            => new(_typeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
             {
                 LinearMetrics = true,
                 Embolden = (FontSimulations & FontSimulations.Bold) != 0

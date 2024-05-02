@@ -38,7 +38,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                 {
                     if (objectNode.Arguments.Count > 1)
                     {
-                        throw new XamlParseException("Options MarkupExtensions allow only single argument", objectNode);
+                        throw new XamlTransformException("Options MarkupExtensions allow only single argument", objectNode);
                     }
 
                     defaultValue = TransformNode(new[] { argument }, typeArgument, objectNode);
@@ -68,20 +68,20 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                             ?? Array.Empty<string>();
                         if (options.Length == 0)
                         {
-                            throw new XamlParseException("On.Options string must be set", onObj);
+                            throw new XamlTransformException("On.Options string must be set", onObj);
                         }
 
                         var content = onObj.Children.OfType<XamlAstXamlPropertyValueNode>()
                             .SingleOrDefault(v => v.Property.GetClrProperty().Name == "Content");
                         if (content is null)
                         {
-                            throw new XamlParseException("On content object must be set", onObj);
+                            throw new XamlTransformException("On content object must be set", onObj);
                         }
 
                         var propertiesSet = options
                             .Select(o => type.GetAllProperties()
                                 .FirstOrDefault(p => o.Equals(p.Name, StringComparison.Ordinal))
-                                ?? throw new XamlParseException($"Property \"{o}\" wasn't found on the \"{type.Name}\" type", onObj))
+                                ?? throw new XamlTransformException($"Property \"{o}\" wasn't found on the \"{type.Name}\" type", onObj))
                             .ToArray();
                         foreach (var propertySet in propertiesSet)
                         {
@@ -102,7 +102,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
 
             if (defaultValue is null && !values.Any())
             {
-                throw new XamlParseException("Options markup extension requires at least one option to be set", objectNode);
+                throw new XamlTransformException("Options markup extension requires at least one option to be set", objectNode);
             }
 
             return new OptionsMarkupExtensionNode(
@@ -125,7 +125,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                     var option = optAttr.Parameters.Single();
                     if (option is null)
                     {
-                        throw new XamlParseException("MarkupExtension option must not be null", li);
+                        throw new XamlTransformException("MarkupExtension option must not be null", li);
                     }
 
                     var optionAsString = option.ToString();
@@ -173,7 +173,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                         }
                     }
 
-                    throw new XamlParseException($"Option value \"{optionAsString}\" is not assignable to any of existing ShouldProvideOption methods", li);
+                    throw new XamlTransformException($"Option value \"{optionAsString}\" is not assignable to any of existing ShouldProvideOption methods", li);
                 }
 
                 return false;
@@ -198,7 +198,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
 
             if (values.Count > 1)
             {
-                throw new XamlParseException("Options markup extension supports only a singular value", line);
+                throw new XamlTransformException("Options markup extension supports only a singular value", line);
             }
 
             return values.Single();
@@ -330,12 +330,16 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
 
         public string Name => "ProvideValue";
         public bool IsPublic => true;
+        public bool IsPrivate => false;
+        public bool IsFamily => false;
         public bool IsStatic => false;
         public IXamlType ReturnType => ExtensionNodeContainer.GetReturnType();
         public IReadOnlyList<IXamlType> Parameters { get; }
         public IXamlType DeclaringType { get; }
         public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) => throw new NotImplementedException();
         public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
+
+        public IXamlParameterInfo GetParameterInfo(int index) => new AnonymousParameterInfo(Parameters[index], index);
 
         public void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {

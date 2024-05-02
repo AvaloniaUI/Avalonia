@@ -42,22 +42,20 @@ namespace IntegrationTestApp
         private void InitializeViewMenu()
         {
             var mainTabs = this.Get<TabControl>("MainTabs");
-            var viewMenu = (NativeMenuItem)NativeMenu.GetMenu(this).Items[1];
+            var viewMenu = (NativeMenuItem?)NativeMenu.GetMenu(this)?.Items[1];
 
-            if (mainTabs.Items is not null)
+            foreach (var tabItem in mainTabs.Items.Cast<TabItem>())
             {
-                foreach (TabItem tabItem in mainTabs.Items)
+                var menuItem = new NativeMenuItem
                 {
-                    var menuItem = new NativeMenuItem
-                    {
-                        Header = (string)tabItem.Header!,
-                        IsChecked = tabItem.IsSelected,
-                        ToggleType = NativeMenuItemToggleType.Radio,
-                    };
+                    Header = (string?)tabItem.Header,
+                    ToolTip = $"Tip:{(string?)tabItem.Header}",
+                    IsChecked = tabItem.IsSelected,
+                    ToggleType = NativeMenuItemToggleType.Radio,
+                };
 
-                    menuItem.Click += (s, e) => tabItem.IsSelected = true;
-                    viewMenu?.Menu?.Items.Add(menuItem);
-                }
+                menuItem.Click += (_, _) => tabItem.IsSelected = true;
+                viewMenu?.Menu?.Items.Add(menuItem);
             }
         }
 
@@ -76,7 +74,7 @@ namespace IntegrationTestApp
             var window = new ShowWindowTest
             {
                 WindowStartupLocation = (WindowStartupLocation)locationComboBox.SelectedIndex,
-                CanResize = canResizeCheckBox.IsChecked.Value,
+                CanResize = canResizeCheckBox.IsChecked ?? false,
             };
 
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
@@ -226,9 +224,9 @@ namespace IntegrationTestApp
             var gestureBorder2 = this.GetControl<Border>("GestureBorder2");
             var lastGesture = this.GetControl<TextBlock>("LastGesture");
             var resetGestures = this.GetControl<Button>("ResetGestures");
-            gestureBorder.Tapped += (s, e) => lastGesture.Text = "Tapped";
+            gestureBorder.Tapped += (_, _) => lastGesture.Text = "Tapped";
             
-            gestureBorder.DoubleTapped += (s, e) =>
+            gestureBorder.DoubleTapped += (_, _) =>
             {
                 lastGesture.Text = "DoubleTapped";
 
@@ -237,14 +235,14 @@ namespace IntegrationTestApp
                 gestureBorder2.IsVisible = true;
             };
 
-            gestureBorder2.DoubleTapped += (s, e) =>
+            gestureBorder2.DoubleTapped += (_, _) =>
             {
                 lastGesture.Text = "DoubleTapped2";
             };
 
-            Gestures.AddRightTappedHandler(gestureBorder, (s, e) => lastGesture.Text = "RightTapped");
+            Gestures.AddRightTappedHandler(gestureBorder, (_, _) => lastGesture.Text = "RightTapped");
             
-            resetGestures.Click += (s, e) =>
+            resetGestures.Click += (_, _) =>
             {
                 lastGesture.Text = string.Empty;
                 gestureBorder.IsVisible = true;

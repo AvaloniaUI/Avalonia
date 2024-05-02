@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -1273,5 +1275,50 @@ namespace Avalonia.Base.UnitTests.Input
 
             Assert.True(button.IsFocused);
         }
+
+        [Fact]
+        public void Next_Skip_Button_When_Command_CanExecute_Is_False()
+        {
+            Button current;
+            Button expected;
+            bool executed = false;
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var top = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    new StackPanel
+                    {
+                        Children =
+                        {
+                            (current = new Button { Name = "Button1" }),
+                            new Button
+                            {
+                                Name = "Button2",
+                                Command = new Utilities.DelegateCommand(()=>executed = true,
+                                    _ => false),
+                            },
+                            (expected = new Button { Name = "Button3" }),
+                        }
+                    }
+                }
+            };
+
+            var testRoot = new TestRoot(top);
+
+            top.ApplyTemplate();
+
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next) as Button;
+
+            Assert.Equal(expected.Name, result?.Name);
+            Assert.False(executed);
+        }
+
+
     }
 }

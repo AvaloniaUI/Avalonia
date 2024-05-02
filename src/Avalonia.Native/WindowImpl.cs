@@ -1,21 +1,17 @@
 ﻿using System;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
-using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
     internal class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly AvaloniaNativeGlPlatformGraphics _graphics;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
@@ -106,6 +102,8 @@ namespace Avalonia.Native
         public Thickness ExtendedMargins { get; private set; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
+
+        public IntPtr? ZOrder => _native.WindowZOrder;
 
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;
@@ -219,7 +217,7 @@ namespace Avalonia.Native
 
         public void SetParent(IWindowImpl parent)
         {
-            _native.SetParent(((WindowImpl)parent).Native);
+            _native.SetParent(((WindowImpl)parent)?.Native);
         }
 
         public void SetEnabled(bool enable)
@@ -240,6 +238,14 @@ namespace Avalonia.Native
             }
             
             return base.TryGetFeature(featureType);
+        }
+
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        {
+            for (int i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = (windows[i].PlatformImpl as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
+            }
         }
     }
 }

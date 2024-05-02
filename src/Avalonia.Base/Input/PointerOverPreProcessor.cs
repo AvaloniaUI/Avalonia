@@ -41,14 +41,16 @@ namespace Avalonia.Input
                     _lastActivePointerDevice = pointerDevice;
                 }
 
-                if (args.Type is RawPointerEventType.LeaveWindow or RawPointerEventType.NonClientLeftButtonDown 
-                    or RawPointerEventType.TouchCancel or RawPointerEventType.TouchEnd
-                    && _currentPointer is var (lastPointer, lastPosition))
+                if (args.Type is RawPointerEventType.LeaveWindow or RawPointerEventType.NonClientLeftButtonDown
+                    or RawPointerEventType.TouchCancel or RawPointerEventType.TouchEnd)
                 {
-                    _currentPointer = null;
-                    ClearPointerOver(lastPointer, args.Root, 0, PointToClient(args.Root, lastPosition),
-                        new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
-                        args.InputModifiers.ToKeyModifiers());
+                    if (_currentPointer is var (lastPointer, lastPosition))
+                    {
+                        _currentPointer = null;
+                        ClearPointerOver(lastPointer, args.Root, 0, PointToClient(args.Root, lastPosition),
+                            new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
+                            args.InputModifiers.ToKeyModifiers());
+                    }
                 }
                 else if (args.Type is RawPointerEventType.TouchBegin or RawPointerEventType.TouchUpdate && args.Root is Visual visual)
                 {
@@ -65,7 +67,7 @@ namespace Avalonia.Input
                 else if (pointerDevice.TryGetPointer(args) is { } pointer &&
                     pointer.Type != PointerType.Touch)
                 {
-                    var element = pointer.Captured ?? args.InputHitTestResult;
+                    var element = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor;
 
                     SetPointerOver(pointer, args.Root, element, args.Timestamp, args.Position,
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),

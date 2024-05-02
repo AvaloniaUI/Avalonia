@@ -323,17 +323,17 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     header.Length64 = (ulong) IPAddress.HostToNetworkOrder((long) length);
                 }
 
-                var endOfMessage = true;
-                header.Mask = (byte) (((endOfMessage ? 1u : 0u) << 7) | ((byte) (type) & 0xf));
-                unsafe
-                {
-                    Marshal.Copy(new IntPtr(&header), _sendHeaderBuffer, 0, headerLength);
-                }
+                const byte endOfMessageBit = (byte)1u << 7;
+                header.Mask = (byte) (endOfMessageBit | ((byte) type & 0xf));
+                CopyHeaderToBuffer(header, _sendHeaderBuffer, headerLength);
 
                 await _stream.WriteAsync(_sendHeaderBuffer, 0, headerLength);
                 await _stream.WriteAsync(data, offset, length);
             }
         }
+
+        private static unsafe void CopyHeaderToBuffer(WebSocketHeader source, byte[] destination, int headerLength)
+            => Marshal.Copy(new IntPtr(&source), destination, 0, headerLength);
 
         struct Frame
         {
