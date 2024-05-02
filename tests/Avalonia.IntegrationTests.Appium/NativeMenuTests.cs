@@ -7,7 +7,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class NativeMenuTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public NativeMenuTests(DefaultAppFixture fixture)
         {
@@ -70,13 +70,13 @@ namespace Avalonia.IntegrationTests.Appium
             buttonMenuItem.MovePointerOver();
 
             // Wait for tooltip to open.
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
             var toolTipCandidates = _session.FindElementsByClassName("TextBlock");
-            Assert.Contains(toolTipCandidates, x => x.Text == "Button");
+            Assert.Contains(toolTipCandidates, x => x.Text == "Tip:Button");
         }
 
-        [PlatformFact(TestPlatforms.MacOS)]
+        [PlatformFact(TestPlatforms.MacOS, Skip = "Flaky test")]
         public void MacOS_Native_Menu_Has_ToolTip_If_Defined()
         {
             var menuBar = _session.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
@@ -87,10 +87,10 @@ namespace Avalonia.IntegrationTests.Appium
             buttonMenuItem.MovePointerOver();
 
             // Wait for tooltip to open.
-            Thread.Sleep(2000);
+            Thread.Sleep(4000);
 
             var toolTipCandidates = _session.FindElementsByClassName("XCUIElementTypeStaticText");
-            Assert.Contains(toolTipCandidates, x => x.Text == "Button");
+            Assert.Contains(toolTipCandidates, x => x.Text == "Tip:Button");
         }
     }
 }

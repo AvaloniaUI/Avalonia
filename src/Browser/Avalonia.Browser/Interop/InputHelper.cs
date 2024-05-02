@@ -10,10 +10,12 @@ internal static partial class InputHelper
     [JSImport("InputHelper.subscribeKeyEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeKeyEvents(
         JSObject htmlElement,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
-        Func<string, string, int, bool> keyDown,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
-        Func<string, string, int, bool> keyUp);
+        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.String, JSType.Boolean>>]
+        // TODO: this callback should be <string, string, int, bool>. Revert after next .NET 9 preview.  
+        Func<string, string, string, bool> keyDown,
+        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.String, JSType.Boolean>>]
+        // TODO: this callback should be <string, string, int, bool>. Revert after next .NET 9 preview.
+        Func<string, string, string, bool> keyUp);
 
     [JSImport("InputHelper.subscribeTextEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeTextEvents(

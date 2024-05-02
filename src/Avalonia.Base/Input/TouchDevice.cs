@@ -119,6 +119,8 @@ namespace Avalonia.Input
                 {
                     pointer?.Capture(null);
                     pointer?.CaptureGestureRecognizer(null);
+                    if (pointer != null)
+                        pointer.IsGestureRecognitionSkipped = false;
                 }
             }
 

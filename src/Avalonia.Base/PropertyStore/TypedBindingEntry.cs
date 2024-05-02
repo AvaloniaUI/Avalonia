@@ -51,6 +51,6 @@ namespace Avalonia.PropertyStore
             return value;
         }
 
-        protected override T GetDefaultValue(Type ownerType) => Property.GetDefaultValue(ownerType);
+        protected override T GetDefaultValue(AvaloniaObject owner) => Property.GetDefaultValue(owner);
     }
 }

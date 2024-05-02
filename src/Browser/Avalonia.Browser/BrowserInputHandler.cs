@@ -250,9 +250,9 @@ internal class BrowserInputHandler
                && dropEffect != DragDropEffects.None;
     }
 
-    private bool OnKeyDown(string code, string key, int modifier)
+    private bool OnKeyDown(string code, string key, string modifier)
     {
-        var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
+        var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)int.Parse(modifier));
 
         if (!handled && key.Length == 1)
         {
@@ -262,9 +262,9 @@ internal class BrowserInputHandler
         return handled;
     }
 
-    private bool OnKeyUp(string code, string key, int modifier)
+    private bool OnKeyUp(string code, string key, string modifier)
     {
-        return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
+        return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)int.Parse(modifier));
     }
 
     private bool RawPointerEvent(

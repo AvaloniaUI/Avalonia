@@ -52,7 +52,7 @@ class VulkanSwapchainImage : ISwapchainImage
         _interop = interop;
         _target = target;
         Size = size;
-        _image = new VulkanImage(vk, (uint)Format.R8G8B8A8Unorm, size, true);
+        _image = new VulkanImage(vk, (uint)Format.R8G8B8A8Unorm, size, true, interop.SupportedImageHandleTypes);
         _semaphorePair = new VulkanSemaphorePair(vk, true);
     }
 
@@ -83,7 +83,7 @@ class VulkanSwapchainImage : ISwapchainImage
             ImageLayout.Undefined, AccessFlags.None,
             ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentReadBit);
 
-        if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if(_image.IsDirectXBacked)
             buffer.Submit(null,null,null, null, new VulkanCommandBufferPool.VulkanCommandBuffer.KeyedMutexSubmitInfo
             {
                 AcquireKey = 0,
@@ -111,8 +111,7 @@ class VulkanSwapchainImage : ISwapchainImage
         _image.TransitionLayout(buffer.InternalHandle, ImageLayout.TransferSrcOptimal, AccessFlags.TransferWriteBit);
 
         
-        
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (_image.IsDirectXBacked)
         {
             buffer.Submit(null, null, null, null,
                 new VulkanCommandBufferPool.VulkanCommandBuffer.KeyedMutexSubmitInfo
@@ -123,15 +122,11 @@ class VulkanSwapchainImage : ISwapchainImage
         else
             buffer.Submit(null, null, new[] { _semaphorePair.RenderFinishedSemaphore });
 
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (!_image.IsDirectXBacked)
         {
-            _availableSemaphore ??= _interop.ImportSemaphore(new PlatformHandle(
-                new IntPtr(_semaphorePair.ExportFd(false)),
-                KnownPlatformGraphicsExternalSemaphoreHandleTypes.VulkanOpaquePosixFileDescriptor));
+            _availableSemaphore ??= _interop.ImportSemaphore(_semaphorePair.Export(false));
             
-            _renderCompletedSemaphore ??= _interop.ImportSemaphore(new PlatformHandle(
-                new IntPtr(_semaphorePair.ExportFd(true)),
-                KnownPlatformGraphicsExternalSemaphoreHandleTypes.VulkanOpaquePosixFileDescriptor));
+            _renderCompletedSemaphore ??= _interop.ImportSemaphore(_semaphorePair.Export(true));
         }
 
         _importedImage ??= _interop.ImportImage(_image.Export(),
@@ -143,7 +138,7 @@ class VulkanSwapchainImage : ISwapchainImage
                 MemorySize = _image.MemorySize
             });
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (_image.IsDirectXBacked)
             _lastPresent = _target.UpdateWithKeyedMutexAsync(_importedImage, 1, 0);
         else
             _lastPresent = _target.UpdateWithSemaphoresAsync(_importedImage, _renderCompletedSemaphore!, _availableSemaphore!);
