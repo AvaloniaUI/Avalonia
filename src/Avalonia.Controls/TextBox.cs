@@ -1633,7 +1633,7 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.Pointer.Type == PointerType.Mouse)
             {
                 var point = e.GetPosition(_presenter);
 
