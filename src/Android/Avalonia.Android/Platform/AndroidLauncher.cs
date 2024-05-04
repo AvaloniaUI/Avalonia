@@ -27,6 +27,7 @@ internal class AndroidLauncher : ILauncher
                 var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
                 intent.SetFlags(flags);
                 _context.StartActivity(intent);
+                return Task.FromResult(true);
             }
         }
         return Task.FromResult(false);
@@ -49,6 +50,7 @@ internal class AndroidLauncher : ILauncher
                 var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
                 chooserIntent.SetFlags(flags);
                 _context.StartActivity(chooserIntent);
+                return Task.FromResult(true);
             }
         }
         return Task.FromResult(false);
