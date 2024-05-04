@@ -978,6 +978,12 @@ namespace Avalonia.Controls
             _imClient.SetPresenter(_presenter, this);
 
             _presenter?.ShowCaret();
+
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel?.InputPane is { } inputPanel)
+            {
+                inputPanel.StateChanged += InputPanel_StateChanged;
+            }
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -996,6 +1002,20 @@ namespace Avalonia.Controls
             _presenter?.HideCaret();
 
             _imClient.SetPresenter(null, null);
+
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel?.InputPane is { } inputPanel)
+            {
+                inputPanel.StateChanged -= InputPanel_StateChanged;
+            }
+        }
+
+        private void InputPanel_StateChanged(object? sender, Platform.InputPaneStateEventArgs e)
+        {
+            if (e.NewState == Platform.InputPaneState.Closed && IsFocused)
+            {
+                FocusManager.GetFocusManager(this)?.ClearFocus();
+            }
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
