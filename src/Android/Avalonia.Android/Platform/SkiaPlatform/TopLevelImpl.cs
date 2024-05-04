@@ -685,16 +685,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             switch (id)
             {
                 case global::Android.Resource.Id.SelectAll:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.A, RawInputModifiers.Control, PhysicalKey.A, "a"));
+                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.A, RawInputModifiers.Control, PhysicalKey.None, "a"));
                     return true;
                 case global::Android.Resource.Id.Cut:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.X, RawInputModifiers.Control, PhysicalKey.X, "x"));
+                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.X, RawInputModifiers.Control, PhysicalKey.None, "x"));
                     return true;
                 case global::Android.Resource.Id.Copy:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.C, RawInputModifiers.Control, PhysicalKey.C, "c"));
+                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.C, RawInputModifiers.Control, PhysicalKey.None, "c"));
                     return true;
                 case global::Android.Resource.Id.Paste:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.V, RawInputModifiers.Control, PhysicalKey.V, "v"));
+                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.V, RawInputModifiers.Control, PhysicalKey.None, "v"));
                     return true;
                 default:
                     break;
