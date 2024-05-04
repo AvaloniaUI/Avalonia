@@ -84,8 +84,6 @@ namespace Avalonia.Direct2D1
 
                 var featureLevels = new[]
                 {
-                    SharpDX.Direct3D.FeatureLevel.Level_12_1,
-                    SharpDX.Direct3D.FeatureLevel.Level_12_0,
                     SharpDX.Direct3D.FeatureLevel.Level_11_1,
                     SharpDX.Direct3D.FeatureLevel.Level_11_0,
                     SharpDX.Direct3D.FeatureLevel.Level_10_1,
