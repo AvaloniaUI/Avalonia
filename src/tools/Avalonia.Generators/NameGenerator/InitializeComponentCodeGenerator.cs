@@ -6,6 +6,8 @@ namespace Avalonia.Generators.NameGenerator;
 
 internal class InitializeComponentCodeGenerator : ICodeGenerator
 {
+    private string _generatorName = typeof(InitializeComponentCodeGenerator).FullName;
+    private string _generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version.ToString();
     private readonly bool _diagnosticsAreConnected;
     private const string AttachDevToolsCodeBlock = @"
 #if DEBUG
@@ -31,6 +33,7 @@ internal class InitializeComponentCodeGenerator : ICodeGenerator
         var initializations = new List<string>();
         const string thisFindNameScopeVariable = "            var __thisNameScope__ = this.FindNameScope();";
         bool hasNames = false;
+
         foreach (var resolvedName in names)
         {
             if (!hasNames)
@@ -39,7 +42,12 @@ internal class InitializeComponentCodeGenerator : ICodeGenerator
             }
 
             var (typeName, name, fieldModifier) = resolvedName;
-            properties.Add($"        {fieldModifier} {typeName} {name};");
+            var propertySource =
+            $"""
+                    [global::System.CodeDom.Compiler.GeneratedCode("{_generatorName}", "{_generatorVersion}")]
+                    {fieldModifier} {typeName} {name};
+            """;
+            properties.Add(propertySource);
             initializations.Add($"            {name} = __thisNameScope__?.Find<{typeName}>(\"{name}\");");
 
             hasNames = true;
@@ -64,6 +72,8 @@ namespace {nameSpace}
         /// </summary>
         /// <param name=""loadXaml"">Should the XAML be loaded into the component.</param>
 {(attachDevTools ? AttachDevToolsParameterDocumentation : string.Empty)}
+        [global::System.CodeDom.Compiler.GeneratedCode(""{_generatorName}"", ""{_generatorVersion}"")]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public void InitializeComponent(bool loadXaml = true{(attachDevTools ? ", bool attachDevTools = true" : string.Empty)})
         {{
             if (loadXaml)
