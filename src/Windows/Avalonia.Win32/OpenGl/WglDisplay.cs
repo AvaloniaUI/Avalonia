@@ -127,8 +127,8 @@ namespace Avalonia.Win32.OpenGl
                     using (shareContext?.Lock())
                     {
                         var profileMask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
-                        if (version.EnableCompatibilityProfile &&
-                            version.Major * 10 + version.Minor >= 32)
+                        if (version.IsCompatibilityProfile &&
+                            (version.Major > 3 || version.Major == 3 && version.Minor >= 2))
                             profileMask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 
                         context = s_wglCreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,

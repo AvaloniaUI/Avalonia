@@ -127,8 +127,8 @@ namespace Avalonia.X11.Glx
             {
                 var profileMask = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
                 if (profile.Type == GlProfileType.OpenGL && 
-                    profile.EnableCompatibilityProfile && 
-                    profile.Major * 10 + profile.Minor >= 32)
+                    profile.IsCompatibilityProfile &&
+                    (profile.Major > 3 || profile.Major == 3 && profile.Minor >= 2))
                     profileMask = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
                 else if (profile.Type == GlProfileType.OpenGLES) 
                     profileMask = GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
