@@ -1633,7 +1633,7 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !_isDoubleTapped)
+            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1650,7 +1650,7 @@ namespace Avalonia.Controls
                 if (Math.Abs(caretIndex - previousIndex) == 1)
                     e.PreventGestureRecognition();
 
-                if (e.Pointer.Type == PointerType.Mouse)
+                if (e.Pointer.Type == PointerType.Mouse || _isDoubleTapped)
                 {
                     var selectionStart = SelectionStart;
                     var selectionEnd = SelectionEnd;
