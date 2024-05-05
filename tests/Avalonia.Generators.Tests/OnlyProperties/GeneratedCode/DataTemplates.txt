@@ -6,7 +6,9 @@ namespace Sample.App
 {
     partial class SampleView
     {
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBox UserNameTextBox => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("UserNameTextBox");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.ListBox NamedListBox => this.FindNameScope()?.Find<global::Avalonia.Controls.ListBox>("NamedListBox");
     }
 }
