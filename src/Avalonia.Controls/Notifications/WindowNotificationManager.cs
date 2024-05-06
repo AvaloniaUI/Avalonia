@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
@@ -19,6 +19,8 @@ namespace Avalonia.Controls.Notifications
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
+        private Dictionary<object, NotificationCard> _notificationCards = new ();
+
         /// <summary>
         /// Defines the <see cref="Position"/> property.
         /// </summary>
@@ -86,24 +88,24 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public void Show(INotification content)
+        public void Show(INotification content, CancellationToken? cancellationToken = null)
         {
-            Show(content, content.Type, content.Expiration, content.OnClick, content.OnClose);
+            Show(content, content.Type, content.Expiration, content.OnClick, content.OnClose, cancellationToken: cancellationToken);
         }
 
         /// <inheritdoc/>
-        public void Show(object content)
+        public void Show(object content, CancellationToken? cancellationToken = null)
         {
             if (content is INotification notification)
             {
-                Show(notification, notification.Type, notification.Expiration, notification.OnClick, notification.OnClose);
+                Show(notification, notification.Type, notification.Expiration, notification.OnClick, notification.OnClose, cancellationToken: cancellationToken);
             }
             else
             {
-                Show(content, NotificationType.Information);
+                Show(content, NotificationType.Information, cancellationToken: cancellationToken);
             }
         }
-        
+
         /// <summary>
         /// Shows a Notification
         /// </summary>
@@ -113,15 +115,17 @@ namespace Avalonia.Controls.Notifications
         /// <param name="onClick">an Action to be run when the notification is clicked</param>
         /// <param name="onClose">an Action to be run when the notification is closed</param>
         /// <param name="classes">style classes to apply</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         public async void Show(object content, 
             NotificationType type, 
             TimeSpan? expiration = null,
             Action? onClick = null, 
             Action? onClose = null, 
-            string[]? classes = null)
+            string[]? classes = null,
+            CancellationToken? cancellationToken = null)
         {
             Dispatcher.UIThread.VerifyAccess();
-            
+
             var notificationControl = new NotificationCard
             {
                 Content = content,
@@ -154,6 +158,7 @@ namespace Avalonia.Controls.Notifications
             Dispatcher.UIThread.Post(() =>
             {
                 _items?.Add(notificationControl);
+                _notificationCards.Add(content, notificationControl);
 
                 if (_items?.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
                 {
@@ -166,9 +171,54 @@ namespace Avalonia.Controls.Notifications
                 return;
             }
 
-            await Task.Delay(expiration ?? TimeSpan.FromSeconds(5));
+            if (cancellationToken is not null)
+            {
+                await Task.Delay(expiration ?? TimeSpan.FromSeconds(5), cancellationToken.Value);
+            }
+            else
+
+            {
+                await Task.Delay(expiration ?? TimeSpan.FromSeconds(5));
+            }
 
             notificationControl.Close();
+ 
+            _notificationCards.Remove(content);
+        }
+
+        /// <inheritdoc/>
+        public void Close(INotification notification)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            if (_notificationCards.Remove(notification, out var notificationCard))
+            {
+                notificationCard.Close();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Close(object content)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            if (_notificationCards.Remove(content, out var notificationCard))
+            {
+                notificationCard.Close();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ClearAll()
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            foreach (var kvp in _notificationCards)
+            {
+                kvp.Value.Close();
+            }
+            
+            _notificationCards.Clear();
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
