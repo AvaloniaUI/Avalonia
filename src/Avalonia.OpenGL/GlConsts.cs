@@ -1282,8 +1282,8 @@ namespace Avalonia.OpenGL
 //        public const int GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER = 0x8A46;
 //        public const int GL_INVALID_INDEX = -1;
 //        public const int GL_VERSION_3_2 = 1;
-//        public const int GL_CONTEXT_CORE_PROFILE_BIT = 0x00000001;
-//        public const int GL_CONTEXT_COMPATIBILITY_PROFILE_BIT = 0x00000002;
+        public const int GL_CONTEXT_CORE_PROFILE_BIT = 0x00000001;
+        public const int GL_CONTEXT_COMPATIBILITY_PROFILE_BIT = 0x00000002;
 //        public const int GL_LINES_ADJACENCY = 0x000A;
 //        public const int GL_LINE_STRIP_ADJACENCY = 0x000B;
 //        public const int GL_TRIANGLES_ADJACENCY = 0x000C;
@@ -1303,7 +1303,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_MAX_GEOMETRY_INPUT_COMPONENTS = 0x9123;
 //        public const int GL_MAX_GEOMETRY_OUTPUT_COMPONENTS = 0x9124;
 //        public const int GL_MAX_FRAGMENT_INPUT_COMPONENTS = 0x9125;
-//        public const int GL_CONTEXT_PROFILE_MASK = 0x9126;
+        public const int GL_CONTEXT_PROFILE_MASK = 0x9126;
 //        public const int GL_DEPTH_CLAMP = 0x864F;
 //        public const int GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION = 0x8E4C;
 //        public const int GL_FIRST_VERTEX_CONVENTION = 0x8E4D;
