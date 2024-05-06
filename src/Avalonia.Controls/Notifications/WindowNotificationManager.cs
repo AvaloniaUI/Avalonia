@@ -19,7 +19,7 @@ namespace Avalonia.Controls.Notifications
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
-        private Dictionary<object, NotificationCard> _notificationCards = new ();
+        private readonly Dictionary<object, NotificationCard> _notificationCards = new ();
 
         /// <summary>
         /// Defines the <see cref="Position"/> property.
@@ -140,7 +140,7 @@ namespace Avalonia.Controls.Notifications
                     notificationControl.Classes.Add(@class);
                 }
             }
-            
+
             notificationControl.NotificationClosed += (sender, args) =>
             {
                 onClose?.Invoke();
