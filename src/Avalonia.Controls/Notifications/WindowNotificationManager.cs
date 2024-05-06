@@ -146,6 +146,7 @@ namespace Avalonia.Controls.Notifications
                 onClose?.Invoke();
 
                 _items?.Remove(sender);
+                _notificationCards.Remove(content);
             };
 
             notificationControl.PointerPressed += (sender, args) =>
