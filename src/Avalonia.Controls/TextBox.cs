@@ -1650,7 +1650,7 @@ namespace Avalonia.Controls
                 if (Math.Abs(caretIndex - previousIndex) == 1)
                     e.PreventGestureRecognition();
 
-                if (e.Pointer.Type == PointerType.Mouse)
+                if (e.Pointer.Type == PointerType.Mouse || _isDoubleTapped)
                 {
                     var selectionStart = SelectionStart;
                     var selectionEnd = SelectionEnd;
