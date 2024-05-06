@@ -232,6 +232,13 @@ namespace Avalonia.Controls.Notifications
             }
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _notificationCards.Clear();
+        }
+
         /// <summary>
         /// Installs the <see cref="WindowNotificationManager"/> within the <see cref="AdornerLayer"/>
         /// </summary>
