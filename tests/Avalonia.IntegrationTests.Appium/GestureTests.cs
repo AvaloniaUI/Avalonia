@@ -144,7 +144,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("RightTapped", lastGesture.Text);
         }
 
-        [PlatformFact(TestPlatforms.MacOS)]
+        [Fact]
         public void RightTapped_Is_Raised_2()
         {
             var border = _session.FindElement(MobileBy.AccessibilityId("GestureBorder"));
@@ -161,7 +161,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("RightTapped", lastGesture.Text);
         }
 
-        [PlatformFact(TestPlatforms.MacOS)]
+        [Fact]
         public void RightTapped_Is_Not_Raised_For_Drag()
         {
             var border = _session.FindElement(MobileBy.AccessibilityId("GestureBorder"));
