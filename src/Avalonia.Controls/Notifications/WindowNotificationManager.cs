@@ -88,13 +88,13 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public void Show(INotification content, CancellationToken? cancellationToken = null)
+        public void Show(INotification content, CancellationToken cancellationToken = default)
         {
             Show(content, content.Type, content.Expiration, content.OnClick, content.OnClose, cancellationToken: cancellationToken);
         }
 
         /// <inheritdoc/>
-        public void Show(object content, CancellationToken? cancellationToken = null)
+        public void Show(object content, CancellationToken cancellationToken = default)
         {
             if (content is INotification notification)
             {
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Notifications
             Action? onClick = null, 
             Action? onClose = null, 
             string[]? classes = null,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             Dispatcher.UIThread.VerifyAccess();
 
@@ -172,15 +172,7 @@ namespace Avalonia.Controls.Notifications
                 return;
             }
 
-            if (cancellationToken is not null)
-            {
-                await Task.Delay(expiration ?? TimeSpan.FromSeconds(5), cancellationToken.Value);
-            }
-            else
-
-            {
-                await Task.Delay(expiration ?? TimeSpan.FromSeconds(5));
-            }
+            await Task.Delay(expiration ?? TimeSpan.FromSeconds(5), cancellationToken);
 
             notificationControl.Close();
  

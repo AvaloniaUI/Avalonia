@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         /// <param name="content">The content to be displayed.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void Show(object content, CancellationToken? cancellationToken = null);
+        void Show(object content, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Closes a notification.
