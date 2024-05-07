@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -88,21 +87,21 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public void Show(INotification content, CancellationToken cancellationToken = default)
+        public void Show(INotification content)
         {
-            Show(content, content.Type, content.Expiration, content.OnClick, content.OnClose, cancellationToken: cancellationToken);
+            Show(content, content.Type, content.Expiration, content.OnClick, content.OnClose);
         }
 
         /// <inheritdoc/>
-        public void Show(object content, CancellationToken cancellationToken = default)
+        public void Show(object content)
         {
             if (content is INotification notification)
             {
-                Show(notification, notification.Type, notification.Expiration, notification.OnClick, notification.OnClose, cancellationToken: cancellationToken);
+                Show(notification, notification.Type, notification.Expiration, notification.OnClick, notification.OnClose);
             }
             else
             {
-                Show(content, NotificationType.Information, cancellationToken: cancellationToken);
+                Show(content, NotificationType.Information);
             }
         }
 
@@ -115,14 +114,12 @@ namespace Avalonia.Controls.Notifications
         /// <param name="onClick">an Action to be run when the notification is clicked</param>
         /// <param name="onClose">an Action to be run when the notification is closed</param>
         /// <param name="classes">style classes to apply</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         public async void Show(object content, 
             NotificationType type, 
             TimeSpan? expiration = null,
             Action? onClick = null, 
             Action? onClose = null, 
-            string[]? classes = null,
-            CancellationToken cancellationToken = default)
+            string[]? classes = null)
         {
             Dispatcher.UIThread.VerifyAccess();
 
@@ -172,7 +169,7 @@ namespace Avalonia.Controls.Notifications
                 return;
             }
 
-            await Task.Delay(expiration ?? TimeSpan.FromSeconds(5), cancellationToken);
+            await Task.Delay(expiration ?? TimeSpan.FromSeconds(5));
 
             notificationControl.Close();
  
