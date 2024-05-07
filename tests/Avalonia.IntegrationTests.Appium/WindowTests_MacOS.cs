@@ -400,7 +400,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(
+        private OpenedWindowContext OpenWindow(
             PixelSize? size = null,
             ShowWindowMode mode = ShowWindowMode.NonOwned,
             WindowStartupLocation location = WindowStartupLocation.Manual,

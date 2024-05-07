@@ -74,6 +74,14 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
+        public static void CloseWindow(this IWebElement element)
+        {
+            if (OperatingSystem.IsWindows())
+                element.SendKeys(Keys.Alt + Keys.F4);
+            else
+                throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Clicks a button which is expected to open a new window.
         /// </summary>
@@ -81,88 +89,11 @@ namespace Avalonia.IntegrationTests.Appium
         /// <returns>
         /// An object which when disposed will cause the newly opened window to close.
         /// </returns>
-        public static IDisposable OpenWindowWithClick(this AppiumElement element)
+        public static OpenedWindowContext OpenWindowWithClick(this AppiumElement element)
         {
-            var session = element.WrappedDriver;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var oldHandle = session.CurrentWindowHandle;
-                var oldHandles = session.WindowHandles.ToList();
-                var oldChildWindows = session.FindElements(MobileBy.XPath("//Window"));
-
-                element.Click();
-
-                var newHandle = session.WindowHandles.Except(oldHandles).SingleOrDefault();
-
-                if (newHandle is not null)
-                {
-                    // A new top-level window was opened. We need to switch to it.
-                    session.SwitchTo().Window(newHandle);
-
-                    return Disposable.Create(() =>
-                    {
-                        session.Close();
-                        session.SwitchTo().Window(oldHandle);
-                    });
-                }
-                else
-                {
-                    // If a new window handle hasn't been added to the session then it's likely
-                    // that a child window was opened. These don't appear in session.WindowHandles
-                    // so we have to use an XPath query to get hold of it.
-                    var newChildWindows = session.FindElements(MobileBy.XPath("//Window"));
-                    var childWindow = Assert.Single(newChildWindows.Except(oldChildWindows));
-
-                    return Disposable.Create(() =>
-                    {
-                        new Actions(session)
-                            .KeyDown(Keys.Alt)
-                            .KeyDown(Keys.F4)
-                            .KeyUp(Keys.F4)
-                            .KeyUp(Keys.Alt)
-                            .Perform();
-                    });
-                }
-            }
-            else
-            {
-                var oldWindows = session.FindElements(MobileBy.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
-                var oldWindowTitles = oldWindows.ToDictionary(x => x.Text);
-
-                element.Click();
-                
-                // Wait for animations to run.
-                Thread.Sleep(1000);
-
-                var newWindows = session.FindElements(MobileBy.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
-                
-                // Try to find the new window by looking for a window with a title that didn't exist before the button
-                // was clicked. Sometimes it seems that when a window becomes fullscreen, all other windows in the
-                // application lose their titles, so filter out windows with no title (this may have started happening
-                // with macOS 13.1?)
-                var newWindowTitles = newWindows
-                    .Select(x => (x.Text, x))
-                    .Where(x => !string.IsNullOrEmpty(x.Text))
-                    .ToDictionary(x => x.Text, x => x.x);
-
-                var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
-
-                return Disposable.Create(() =>
-                {
-                    // TODO: We should be able to use Cmd+W here but Avalonia apps don't seem to have this shortcut
-                    // set up by default.
-                    var windows = session.FindElements(MobileBy.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
-                    var text = windows.Select(x => x.Text).ToList();
-                    var newWindow = session.FindElements(MobileBy.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
-                        .First(x => x.Text == newWindowTitle);
-                    var close = ((AppiumElement)newWindow).FindElement(MobileBy.AccessibilityId("_XCUI:CloseWindow"));
-                    close!.Click();
-                    Thread.Sleep(1000);
-                });
-            }
+            return OpenedWindowContext.OpenFromInteraction(element.WrappedDriver, element.Click);
         }
-    
+
         public static void SendClick(this AppiumElement element)
         {
             // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls

@@ -263,26 +263,23 @@ namespace Avalonia.IntegrationTests.Appium
         [InlineData(ShowWindowMode.Modal, false)]
         public void Window_Has_Disabled_Maximize_Button_When_CanResize_Is_False(ShowWindowMode mode, bool extendClientArea)
         {
-            using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false, extendClientArea: extendClientArea))
+            using var secondaryWindow = OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false, extendClientArea: extendClientArea);
+            IWebElement? maximizeButton;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var secondaryWindow = GetWindow(_session, "SecondaryWindow");
-                AppiumElement? maximizeButton;
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    maximizeButton = extendClientArea ?
-                        secondaryWindow.FindElement(MobileBy.XPath("//Button[@Name='Maximize']")) :
-                        secondaryWindow.FindElement(MobileBy.XPath("//TitleBar/Button[2]"));
-                }
-                else
-                {
-                    maximizeButton = mode == ShowWindowMode.NonOwned ?
-                        secondaryWindow.FindElement(MobileBy.AccessibilityId("_XCUI:FullScreenWindow")) :
-                        secondaryWindow.FindElement(MobileBy.AccessibilityId("_XCUI:ZoomWindow"));
-                }
-
-                Assert.False(maximizeButton.Enabled);
+                maximizeButton = extendClientArea ?
+                    secondaryWindow.FindElement(MobileBy.XPath("//Button[@Name='Maximize']")) :
+                    secondaryWindow.FindElement(MobileBy.XPath("//TitleBar/Button[2]"));
             }
+            else
+            {
+                maximizeButton = mode == ShowWindowMode.NonOwned ?
+                    secondaryWindow.FindElement(MobileBy.AccessibilityId("_XCUI:FullScreenWindow")) :
+                    secondaryWindow.FindElement(MobileBy.AccessibilityId("_XCUI:ZoomWindow"));
+            }
+
+            Assert.False(maximizeButton.Enabled);
         }
 
         public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation, bool> StartupLocationData()
@@ -364,7 +361,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(
+        private OpenedWindowContext OpenWindow(
             Size? size,
             ShowWindowMode mode,
             WindowStartupLocation location = WindowStartupLocation.Manual,
