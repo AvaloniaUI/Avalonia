@@ -202,7 +202,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public void ClearAll()
+        public void CloseAll()
         {
             Dispatcher.UIThread.VerifyAccess();
 

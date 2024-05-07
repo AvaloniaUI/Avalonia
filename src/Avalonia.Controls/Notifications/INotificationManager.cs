@@ -24,8 +24,8 @@ namespace Avalonia.Controls.Notifications
         void Close(INotification notification);
 
         /// <summary>
-        /// Clears all notifications.
+        /// Closes all notifications.
         /// </summary>
-        void ClearAll();
+        void CloseAll();
     }
 }
