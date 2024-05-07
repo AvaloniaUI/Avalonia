@@ -116,7 +116,12 @@ namespace Avalonia.IntegrationTests.Appium
 
                     return Disposable.Create(() =>
                     {
-                        childWindow.SendKeys(Keys.Alt + Keys.F4 + Keys.Alt);
+                        new Actions(session)
+                            .KeyDown(Keys.Alt)
+                            .KeyDown(Keys.F4)
+                            .KeyUp(Keys.F4)
+                            .KeyUp(Keys.Alt)
+                            .Perform();
                     });
                 }
             }
