@@ -114,9 +114,6 @@ namespace Avalonia.IntegrationTests.Appium
 
                 Assert.Equal("Normal", windowState.GetComboBoxValue());
                 
-                
-                var window = _session.FindElements(MobileBy.XPath("//Window")).First();
-                
                 new Actions(_session)
                     .KeyDown(Keys.Meta)
                     .SendKeys(Keys.Left)
