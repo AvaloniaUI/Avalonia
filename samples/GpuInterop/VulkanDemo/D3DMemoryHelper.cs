@@ -8,7 +8,7 @@ namespace GpuInterop.VulkanDemo;
 
 public class D3DMemoryHelper
 {
-    public static ID3D11Device? CreateDeviceByLuid(Span<byte> luid)
+    public static ID3D11Device CreateDeviceByLuid(Span<byte> luid)
     {
         DXGI.CreateDXGIFactory1<IDXGIFactory1>(out var factory).CheckError();
         var longLuid = MemoryMarshal.Cast<byte, long>(luid)[0];
@@ -21,14 +21,14 @@ public class D3DMemoryHelper
                 if (adapter.Description1.Luid != longLuid)
                     continue;
 
-                D3D11.D3D11CreateDevice(adapter, DriverType.Hardware, DeviceCreationFlags.None,
+                D3D11.D3D11CreateDevice(adapter, DriverType.Unknown, DeviceCreationFlags.None,
                     [
                         FeatureLevel.Level_12_1, FeatureLevel.Level_12_0, FeatureLevel.Level_11_1,
                         FeatureLevel.Level_11_0, FeatureLevel.Level_10_0, FeatureLevel.Level_9_3,
                         FeatureLevel.Level_9_2, FeatureLevel.Level_9_1,
                     ],
-                    out var device);
-                return device;
+                    out var device).CheckError();
+                return device!;
             }
             finally
             {
