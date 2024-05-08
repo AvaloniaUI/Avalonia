@@ -45,13 +45,16 @@ namespace Avalonia.FreeDesktop
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetItem(0);
-                return ToColorScheme(value.GetUInt32());
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
+
+                if (value.Type == VariantValueType.Int32)
+                    return ToColorScheme(value.GetUInt32()); 
             }
             catch (DBusException)
             {
-                return null;
+                
             }
+            return null;
         }
 
         private async Task<Color?> TryGetAccentColorAsync()
