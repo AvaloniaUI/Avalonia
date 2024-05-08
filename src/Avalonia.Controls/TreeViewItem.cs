@@ -94,6 +94,7 @@ namespace Avalonia.Controls
 
         internal TreeView? TreeViewOwner => _treeView;
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new TreeViewItemAutomationPeer(this);
