@@ -25,10 +25,6 @@ namespace Avalonia.Input.TextInput
             {
                 if(_client == value)
                 {
-                    if (_client != null)
-                    {
-                        PopulateImWithInitialValues();
-                    }
                     return;
                 }
 
@@ -123,10 +119,7 @@ namespace Avalonia.Input.TextInput
         public void SetFocusedElement(IInputElement? element)
         {
             if(_focusedElement == element)
-            {
-                TryFindAndApplyClient();
                 return;
-            }
 
             if (_visualRoot != null)
                 InputMethod.RemoveTextInputMethodClientRequeryRequestedHandler(_visualRoot,

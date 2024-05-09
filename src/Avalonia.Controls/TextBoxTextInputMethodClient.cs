@@ -13,6 +13,7 @@ namespace Avalonia.Controls
         private TextPresenter? _presenter;
         private bool _selectionChanged;
         private bool _isInChange;
+        private ITextInputMethodImpl? _im;
 
         public override Visual TextViewVisual => _presenter!;
 
@@ -24,7 +25,7 @@ namespace Avalonia.Controls
                 {
                     return "";
                 }
-                
+
                 if (_parent.CaretIndex != _presenter.CaretIndex)
                 {
                     _presenter.SetCurrentValue(TextPresenter.CaretIndexProperty, _parent.CaretIndex);
@@ -34,7 +35,7 @@ namespace Avalonia.Controls
                 {
                     _presenter.SetCurrentValue(TextPresenter.TextProperty, _parent.Text);
                 }
-                
+
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
 
                 var textLine = _presenter.TextLayout.TextLines[lineIndex];
@@ -125,6 +126,11 @@ namespace Avalonia.Controls
             if (_parent != null)
             {
                 _parent.PropertyChanged += OnParentPropertyChanged;
+                _im = (_parent.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+            }
+            else
+            {
+                _im = null;
             }
 
             var oldPresenter = _presenter;
@@ -133,7 +139,7 @@ namespace Avalonia.Controls
             {
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
-                oldPresenter.CaretBoundsChanged -= (s,e) => RaiseCursorRectangleChanged();
+                oldPresenter.CaretBoundsChanged -= (s, e) => RaiseCursorRectangleChanged();
             }
 
             _presenter = presenter;
@@ -159,6 +165,17 @@ namespace Avalonia.Controls
 
             _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
             _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
+        }
+
+        public override void ShowInputPanel()
+        {
+            base.ShowInputPanel();
+
+            if (_parent is { } && _im is { })
+            {
+                _im.SetOptions(TextInputOptions.FromStyledElement(_parent));
+                _im.SetClient(this);
+            }
         }
 
         private static string GetTextLineText(TextLine textLine)

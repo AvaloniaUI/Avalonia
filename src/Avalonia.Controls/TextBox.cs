@@ -1724,7 +1724,7 @@ namespace Avalonia.Controls
 
             if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
             {
-                Focus();
+                _imClient.ShowInputPanel();
 
                 var text = Text;
                 var clickInfo = e.GetCurrentPoint(this);

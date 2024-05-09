@@ -71,6 +71,8 @@ namespace Avalonia.Input.TextInput
         {
             SetPreeditText(preeditText);
         }
+
+        public virtual void ShowInputPanel() { }
         
         protected virtual void RaiseTextViewVisualChanged()
         {
