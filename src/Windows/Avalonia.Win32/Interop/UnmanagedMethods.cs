@@ -105,18 +105,58 @@ namespace Avalonia.Win32.Interop
 
         public enum ShowWindowCommand
         {
+            /// <summary>
+            /// Hides the window and activates another window.
+            /// </summary>
             Hide = 0,
+            /// <summary>
+            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original 
+            /// size and position. An application should specify this flag when displaying the window for the first time.
+            /// </summary>
             Normal = 1,
+            /// <summary>
+            /// Activates the window and displays it as a minimized window.
+            /// </summary>
             ShowMinimized = 2,
+            /// <summary>
+            /// Activates the window and displays it as a maximized window.
+            /// </summary>
             Maximize = 3,
-            ShowMaximized = 3,
+            /// <inheritdoc cref="Maximize"/>
+            ShowMaximized = Maximize,
+            /// <summary>
+            /// Displays a window in its most recent size and position. This value is similar to <see cref="Normal"/>, except that the window is not activated.
+            /// </summary>
             ShowNoActivate = 4,
+            /// <summary>
+            /// Activates the window and displays it in its current size and position.
+            /// </summary>
             Show = 5,
+            /// <summary>
+            /// Minimizes the specified window and activates the next top-level window in the Z order.
+            /// </summary>
             Minimize = 6,
+            /// <summary>
+            /// Displays the window as a minimized window. This value is similar to <see cref="ShowMinimized"/>, except the window is not activated.
+            /// </summary>
             ShowMinNoActive = 7,
+            /// <summary>
+            /// Displays the window in its current size and position. This value is similar to <see cref="Show"/>, except that the window is not activated.
+            /// </summary>
             ShowNA = 8,
+            /// <summary>
+            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. 
+            /// An application should specify this flag when restoring a minimized window.
+            /// </summary>
             Restore = 9,
+            /// <summary>
+            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function 
+            /// by the program that started the application.
+            /// </summary>
             ShowDefault = 10,
+            /// <summary>
+            /// Minimizes a window, even if the thread that owns the window is not responding. This flag should only be used when minimizing windows from a different thread.
+            /// </summary>
             ForceMinimize = 11
         }
 
@@ -456,10 +496,9 @@ namespace Avalonia.Win32.Interop
             WS_MINIMIZE = 0x20000000,
             WS_MINIMIZEBOX = 0x20000,
             WS_OVERLAPPED = 0x0,
-            WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+            WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
             WS_POPUP = 0x80000000u,
             WS_POPUPWINDOW = WS_POPUP | WS_BORDER | WS_SYSMENU,
-            WS_SIZEFRAME = 0x40000,
             WS_SYSMENU = 0x80000,
             WS_TABSTOP = 0x10000,
             WS_THICKFRAME = 0x40000,
@@ -1160,6 +1199,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu, uint dwExStyle);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool AdjustWindowRectExForDpi(ref RECT lpRect, WindowStyles dwStyle, bool bMenu, WindowStyles dwExStyle, uint dpi);
+
         [DllImport("user32.dll")]
         public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT lpPaint);
 
@@ -1183,7 +1225,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
         public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
+        
+        public const int SC_MOUSEMOVE = 0xf012;
+ 
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+        
         [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
         public static extern IntPtr DispatchMessage(ref MSG lpmsg);
 
@@ -1226,6 +1273,11 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool EnumChildWindows(IntPtr parentHwnd, EnumWindowsProc enumFunc, IntPtr lParam);
+
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLongPtrW", ExactSpelling = true)]
         public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
@@ -1282,7 +1334,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+        public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
@@ -1369,6 +1421,8 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, SetWindowPosFlags uFlags);
         [DllImport("user32.dll")]
+        public static extern bool SetWindowPlacement(IntPtr hWnd, in WINDOWPLACEMENT windowPlacement);
+        [DllImport("user32.dll")]
         public static extern bool SetFocus(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern IntPtr GetFocus();
@@ -1448,6 +1502,9 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
+
+        [DllImport("shell32", CharSet = CharSet.Auto)]
+        public static extern nint SHAppBarMessage(AppBarMessage dwMessage, ref APPBARDATA lpData);
 
         [DllImport("user32.dll", EntryPoint = "SetClassLongPtrW", ExactSpelling = true)]
         private static extern IntPtr SetClassLong64(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
@@ -1599,6 +1656,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
+        public static extern bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
         [DllImport("gdi32.dll")]
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
@@ -1711,14 +1772,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("dwmapi.dll", SetLastError = false)]
         public static extern int DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
-        
+
         [Flags]
         public enum LayeredWindowFlags
         {
             LWA_ALPHA = 0x00000002,
             LWA_COLORKEY = 0x00000001,
         }
-        
+
         [DllImport("user32.dll")]
         public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, LayeredWindowFlags dwFlags);
 
@@ -1815,7 +1876,7 @@ namespace Avalonia.Win32.Interop
         private static extern int IntMsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds,
             QueueStatusFlags dwWakeMask, MsgWaitForMultipleObjectsFlags dwFlags);
 
-        internal static int MsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds, 
+        internal static int MsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds,
             QueueStatusFlags dwWakeMask, MsgWaitForMultipleObjectsFlags dwFlags)
         {
             int result = IntMsgWaitForMultipleObjectsEx(nCount, pHandles, dwMilliseconds, dwWakeMask, dwFlags);
@@ -2228,6 +2289,14 @@ namespace Avalonia.Win32.Interop
             public int dwHoverTime;
         }
 
+        [Flags]
+        public enum WindowPlacementFlags : uint
+        {
+            SetMinPosition = 0x0001,
+            RestoreToMaximized = 0x0002,
+            AsyncWindowPlacement = 0x0004,
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct WINDOWPLACEMENT
         {
@@ -2242,7 +2311,7 @@ namespace Avalonia.Win32.Interop
             /// <summary>
             /// Specifies flags that control the position of the minimized window and the method by which the window is restored.
             /// </summary>
-            public int Flags;
+            public WindowPlacementFlags Flags;
 
             /// <summary>
             /// The current show state of the window.
@@ -2383,7 +2452,9 @@ namespace Avalonia.Win32.Interop
         public enum Icons
         {
             ICON_SMALL = 0,
-            ICON_BIG = 1
+            ICON_BIG = 1,
+            /// <summary>The small icon, but with the system theme variant rather than the window's own theme. Requested by other processes, e.g. the taskbar and Task Manager.</summary>
+            ICON_SMALL2 = 2,
         }
 
         public static class ShellIds
@@ -2406,9 +2477,10 @@ namespace Avalonia.Win32.Interop
         }
 
         public delegate void MarkFullscreenWindow(IntPtr This, IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fullscreen);
+        public delegate void SetOverlayIcon(IntPtr This, IntPtr hWnd, IntPtr hIcon, [MarshalAs(UnmanagedType.LPWStr)] string? pszDescription);
         public delegate HRESULT HrInit(IntPtr This);
 
-        public struct ITaskBarList2VTable
+        public struct ITaskBarList3VTable
         {
             public IntPtr IUnknown1;
             public IntPtr IUnknown2;
@@ -2419,6 +2491,36 @@ namespace Avalonia.Win32.Interop
             public IntPtr ActivateTab;
             public IntPtr SetActiveAlt;
             public IntPtr MarkFullscreenWindow;
+            public IntPtr SetProgressValue;
+            public IntPtr SetProgressState;
+            public IntPtr RegisterTab;
+            public IntPtr UnregisterTab;
+            public IntPtr SetTabOrder;
+            public IntPtr SetTabActive;
+            public IntPtr ThumbBarAddButtons;
+            public IntPtr ThumbBarUpdateButtons;
+            public IntPtr ThumbBarSetImageList;
+            public IntPtr SetOverlayIcon;
+            public IntPtr SetThumbnailTooltip;
+            public IntPtr SetThumbnailClip;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct APPBARDATA
+        {
+            private static readonly int s_size = Marshal.SizeOf<APPBARDATA>();
+
+            public int cbSize;
+            public nint hWnd;
+            public uint uCallbackMessage;
+            public uint uEdge;
+            public RECT rc;
+            public int lParam;
+
+            public APPBARDATA()
+            {
+                cbSize = s_size;
+            }
         }
     }
 
@@ -2510,6 +2612,12 @@ namespace Avalonia.Win32.Interop
         DELETE = 0x00000002,
         SETFOCUS = 0x00000003,
         SETVERSION = 0x00000004
+    }
+
+    internal enum AppBarMessage : uint
+    {
+        ABM_GETSTATE = 0x00000004,
+        ABM_GETTASKBARPOS = 0x00000005,
     }
 
     [Flags]

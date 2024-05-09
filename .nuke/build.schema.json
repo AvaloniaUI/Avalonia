@@ -73,6 +73,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildToNuGetCache",
               "CiAzureLinux",
               "CiAzureOSX",
               "CiAzureWindows",
@@ -83,6 +84,8 @@
               "CreateIntermediateNugetPackages",
               "CreateNugetPackages",
               "GenerateCppHeaders",
+              "OutputApiDiff",
+              "OutputVersion",
               "Package",
               "RunCoreLibsTests",
               "RunHtmlPreviewerTests",
@@ -107,6 +110,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildToNuGetCache",
               "CiAzureLinux",
               "CiAzureOSX",
               "CiAzureWindows",
@@ -117,6 +121,8 @@
               "CreateIntermediateNugetPackages",
               "CreateNugetPackages",
               "GenerateCppHeaders",
+              "OutputApiDiff",
+              "OutputVersion",
               "Package",
               "RunCoreLibsTests",
               "RunHtmlPreviewerTests",
@@ -141,6 +147,9 @@
             "Quiet",
             "Verbose"
           ]
+        },
+        "version-output-dir": {
+          "type": "string"
         }
       }
     }

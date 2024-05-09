@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <Nullable>enable</Nullable>
     <EmccTotalMemory>16777216</EmccTotalMemory>
@@ -22,8 +22,8 @@
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
 
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.props" />
-  <Import Project="..\..\src\Browser\Avalonia.Browser\Avalonia.Browser.targets" />
+  <Import Project="..\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.props" />
+  <Import Project="..\..\src\Browser\Avalonia.Browser\build\Avalonia.Browser.targets" />
 
 </Project>
 

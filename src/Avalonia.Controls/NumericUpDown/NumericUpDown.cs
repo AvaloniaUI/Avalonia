@@ -19,7 +19,7 @@ namespace Avalonia.Controls
     /// Control that represents a TextBox with button spinners that allow incrementing and decrementing numeric values.
     /// </summary>
     [TemplatePart("PART_Spinner", typeof(Spinner))]
-    [TemplatePart("PART_TextBox", typeof(TextBox))]
+    [TemplatePart("PART_TextBox", typeof(TextBox), IsRequired = true)]
     public class NumericUpDown : TemplatedControl
     {
         /// <summary>
@@ -132,11 +132,24 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Media.TextAlignment> TextAlignmentProperty =
             TextBox.TextAlignmentProperty.AddOwner<NumericUpDown>();
 
+        /// <summary>
+        /// Defines the <see cref="InnerLeftContent"/> property
+        /// </summary>
+        public static readonly StyledProperty<object?> InnerLeftContentProperty =
+            TextBox.InnerLeftContentProperty.AddOwner<NumericUpDown>();
+
+        /// <summary>
+        /// Defines the <see cref="InnerRightContent"/> property
+        /// </summary>
+        public static readonly StyledProperty<object?> InnerRightContentProperty =
+            TextBox.InnerRightContentProperty.AddOwner<NumericUpDown>();
+
         private IDisposable? _textBoxTextChangedSubscription;
 
         private bool _internalValueSet;
         private bool _isSyncingTextAndValueProperties;
         private bool _isTextChangedFromUI;
+        private bool _isFocused;
 
         /// <summary>
         /// Gets the Spinner template part.
@@ -331,6 +344,25 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets custom content that is positioned on the left side of the text layout box
+        /// </summary>
+        public object? InnerLeftContent
+        {
+            get => GetValue(InnerLeftContentProperty);
+            set => SetValue(InnerLeftContentProperty, value);
+        }
+
+
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the right side of the text layout box
+        /// </summary>
+        public object? InnerRightContent
+        {
+            get => GetValue(InnerRightContentProperty);
+            set => SetValue(InnerRightContentProperty, value);
+        }
+
+        /// <summary>
         /// Initializes static members of the <see cref="NumericUpDown"/> class.
         /// </summary>
         static NumericUpDown()
@@ -344,6 +376,16 @@ namespace Avalonia.Controls
             TextProperty.Changed.Subscribe(OnTextChanged);
             TextConverterProperty.Changed.Subscribe(OnTextConverterChanged);
             ValueProperty.Changed.Subscribe(OnValueChanged);
+
+            FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
+            IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
+        }
+
+        /// <inheritdoc />
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+            FocusChanged(IsKeyboardFocusWithin);
         }
 
         /// <inheritdoc />
@@ -351,6 +393,7 @@ namespace Avalonia.Controls
         {
             CommitInput(true);
             base.OnLostFocus(e);
+            FocusChanged(IsKeyboardFocusWithin);
         }
 
         /// <inheritdoc />
@@ -1163,6 +1206,28 @@ namespace Avalonia.Controls
                 return !isText;
             }
             return false;
+        }
+
+        private void FocusChanged(bool hasFocus)
+        {
+            // The OnGotFocus & OnLostFocus are asynchronously and cannot
+            // reliably tell you that have the focus.  All they do is let you
+            // know that the focus changed sometime in the past.  To determine
+            // if you currently have the focus you need to do consult the
+            // FocusManager.
+
+            bool wasFocused = _isFocused;
+            _isFocused = hasFocus;
+
+            if (hasFocus)
+            {
+
+                if (!wasFocused && TextBox != null)
+                {
+                    TextBox.Focus();
+                    TextBox.SelectAll();
+                }
+            }
         }
     }
 }

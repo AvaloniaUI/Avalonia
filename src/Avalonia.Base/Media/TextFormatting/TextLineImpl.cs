@@ -1336,6 +1336,10 @@ namespace Avalonia.Media.TextFormatting
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
+                var offset = (height - lineHeight) / 2;
+
+                ascent += offset;
+
                 height = lineHeight;
             }
 

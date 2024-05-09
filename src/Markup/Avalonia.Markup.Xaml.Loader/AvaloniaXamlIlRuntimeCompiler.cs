@@ -215,21 +215,34 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 HandleDiagnostic = (diagnostic) =>
                 {
                     var runtimeDiagnostic = new RuntimeXamlDiagnostic(diagnostic.Code.ToString(),
-                        (RuntimeXamlDiagnosticSeverity)diagnostic.Severity,
+                        diagnostic.Severity switch
+                        {
+                            XamlDiagnosticSeverity.None => RuntimeXamlDiagnosticSeverity.Info,
+                            XamlDiagnosticSeverity.Warning => RuntimeXamlDiagnosticSeverity.Warning,
+                            XamlDiagnosticSeverity.Error => RuntimeXamlDiagnosticSeverity.Error,
+                            XamlDiagnosticSeverity.Fatal => RuntimeXamlDiagnosticSeverity.Fatal,
+                            _ => throw new ArgumentOutOfRangeException()
+                        },
                         diagnostic.Title, diagnostic.LineNumber, diagnostic.LinePosition)
                     {
                         Document = diagnostic.Document
                     };
                     var newSeverity =
-                        (XamlDiagnosticSeverity?)configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) ??
-                        diagnostic.Severity;
+                        configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) switch
+                        {
+                            RuntimeXamlDiagnosticSeverity.Info => XamlDiagnosticSeverity.None,
+                            RuntimeXamlDiagnosticSeverity.Warning => XamlDiagnosticSeverity.Warning,
+                            RuntimeXamlDiagnosticSeverity.Error => XamlDiagnosticSeverity.Error,
+                            RuntimeXamlDiagnosticSeverity.Fatal => XamlDiagnosticSeverity.Fatal,
+                            _ => (XamlDiagnosticSeverity?)null
+                        } ?? diagnostic.Severity;
                     diagnostic = diagnostic with { Severity = newSeverity };
                     diagnostics.Add(diagnostic);
                     return newSeverity;
                 },
                 CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia
             };
-            
+
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                     _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
                     new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
@@ -279,6 +292,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     () => new XamlDocumentTypeBuilderProvider(
                         builder,
                         compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, XamlVisibility.Public),
+                        document.RootInstance is null ? builder : null,
                         document.RootInstance is null ?
                             compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, XamlVisibility.Public) :
                             null)));
@@ -292,7 +306,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var createdTypes = parsedDocuments.Select(document =>
             {
                 compiler.Compile(document.XamlDocument, document.TypeBuilderProvider, document.Uri, document.FileSource);
-                return _sreTypeSystem.GetType(document.TypeBuilderProvider.TypeBuilder.CreateType());
+                return _sreTypeSystem.GetType(document.TypeBuilderProvider.PopulateDeclaringType.CreateType());
             }).ToArray();
             
             clrPropertyBuilder.CreateTypeInfo();

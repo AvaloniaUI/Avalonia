@@ -49,7 +49,7 @@ namespace Avalonia.Rendering.Composition.Server
     
     partial class ServerCompositionSimpleRadialGradientBrush : IRadialGradientBrush
     {
-        
+        public double Radius => RadiusX.Scalar;
     }
     
     partial class ServerCompositionSimpleSolidColorBrush : ISolidColorBrush

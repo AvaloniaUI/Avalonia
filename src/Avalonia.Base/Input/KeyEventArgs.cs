@@ -71,4 +71,9 @@ public class KeyEventArgs : RoutedEventArgs
     /// <see cref="Key"/>
     /// <see cref="PhysicalKey"/>
     public string? KeySymbol { get; init; }
+
+    /// <summary>
+    /// Type of the device that fire the event
+    /// </summary>
+    public KeyDeviceType KeyDeviceType { get; init; }
 }

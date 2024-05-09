@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
-using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -10,7 +9,6 @@ using Avalonia.Reactive;
 using Avalonia.Rendering;
 using System.Collections.Generic;
 using Avalonia.Media;
-using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -67,7 +65,6 @@ namespace Avalonia.Diagnostics.ViewModels
                             }
                         });
             }
-            Console = new ConsoleViewModel(UpdateConsoleContext);
         }
 
         public bool FreezePopups
@@ -152,8 +149,6 @@ namespace Avalonia.Diagnostics.ViewModels
         public void ToggleRenderTimeGraphOverlay()
             => ShowRenderTimeGraphOverlay = !ShowRenderTimeGraphOverlay;
 
-        public ConsoleViewModel Console { get; }
-
         public ViewModelBase? Content
         {
             get { return _content; }
@@ -236,16 +231,6 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _pointerOverElementName, value);
         }
 
-        private void UpdateConsoleContext(ConsoleContext context)
-        {
-            context.root = _root;
-
-            if (Content is TreePageViewModel tree)
-            {
-                context.e = tree.SelectedNode?.Visual;
-            }
-        }
-
         public void SelectControl(Control control)
         {
             var tree = Content as TreePageViewModel;
@@ -282,13 +267,9 @@ namespace Avalonia.Diagnostics.ViewModels
             _currentFocusHighlightAdorner?.Dispose();
             if (FocusHighlighter is IBrush brush
                 && element is InputElement input
-                && TopLevel.GetTopLevel(input) is { } topLevel
-                && (topLevel is not Views.MainWindow))
+                && !input.DoesBelongToDevTool()
+                )
             {
-                if (topLevel is PopupRoot pr && pr.ParentTopLevel is Views.MainWindow)
-                {
-                    return;
-                }
                 _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(input, brush);
             }
         }
@@ -351,6 +332,7 @@ namespace Avalonia.Diagnostics.ViewModels
             StartupScreenIndex = options.StartupScreenIndex;
             ShowImplementedInterfaces = options.ShowImplementedInterfaces;
             FocusHighlighter = options.FocusHighlighterBrush;
+            SelectedTab = (int)options.LaunchView;
         }
 
         public bool ShowImplementedInterfaces

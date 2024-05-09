@@ -60,7 +60,6 @@
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
     <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
     <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePaddingNarrow}" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Panel>
@@ -73,6 +72,8 @@
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"
+                                  SharedSizeGroup="ToggleIcon" />
+                <ColumnDefinition Width="Auto"
                                   SharedSizeGroup="MenuItemIcon" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto"
@@ -81,15 +82,18 @@
                                   SharedSizeGroup="MenuItemChevron" />
               </Grid.ColumnDefinitions>
 
-              <Viewbox Name="PART_IconPresenter"
-                       Margin="{DynamicResource MenuIconPresenterMargin}"
-                       StretchDirection="DownOnly"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       IsVisible="False"
-                       Width="16" Height="16">
-                <ContentPresenter Content="{TemplateBinding Icon}"/>
-              </Viewbox>
+              <ContentControl Grid.Column="0"
+                              x:Name="PART_ToggleIconPresenter"
+                              IsVisible="False"
+                              Theme="{StaticResource FluentMenuItemIconTheme}"
+                              Margin="{DynamicResource MenuIconPresenterMargin}" />
+
+              <ContentControl Grid.Column="1"
+                              x:Name="PART_IconPresenter"
+                              IsVisible="False"
+                              Theme="{StaticResource FluentMenuItemIconTheme}"
+                              Content="{TemplateBinding Icon}"
+                              Margin="{DynamicResource MenuIconPresenterMargin}" />
 
               <ContentPresenter Name="PART_HeaderPresenter"
                                 Content="{TemplateBinding Header}"
@@ -97,10 +101,9 @@
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 RecognizesAccessKey="True"
-                                Grid.Column="1"/>
+                                Grid.Column="2"/>
               <TextBlock x:Name="PART_InputGestureText"
-                         Grid.Column="2"
-                         Classes="CaptionTextBlockStyle"
+                         Grid.Column="3"
                          Margin="{DynamicResource MenuInputGestureTextMargin}"
                          Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
                          HorizontalAlignment="Right"
@@ -114,7 +117,7 @@
                     Fill="{DynamicResource MenuFlyoutSubItemChevron}"
                     Margin="{DynamicResource MenuFlyoutItemChevronMargin}"
                     VerticalAlignment="Center"
-                    Grid.Column="3" />
+                    Grid.Column="4" />
             </Grid>
           </Border>
           <Popup Name="PART_Popup"
@@ -143,7 +146,7 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:icon /template/ Viewbox#PART_IconPresenter">
+    <Style Selector="^:icon /template/ ContentControl#PART_IconPresenter">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="^:selected">
@@ -205,9 +208,51 @@
         </ControlTemplate>
       </Setter>
     </Style>
+    
+    <Style Selector="^ /template/ Image#PART_ToggleIconImage">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:checked:toggle /template/ ContentControl#PART_ToggleIconPresenter">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="Content">
+        <Template>
+          <Path Fill="{Binding $parent[MenuItem].Foreground}"
+                Width="16"
+                Data="{StaticResource CheckMarkPathData}" />
+        </Template>
+      </Setter>
+    </Style>
+    <Style Selector="^:checked:radio /template/ ContentControl#PART_ToggleIconPresenter">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="Content">
+        <Template>
+          <Ellipse Fill="{Binding $parent[MenuItem].Foreground}"
+                   Margin="4" Width="8" Height="8" />
+        </Template>
+      </Setter>
+    </Style>
   </ControlTheme>
   <ControlTheme x:Key="HorizontalMenuItem" TargetType="MenuItem" BasedOn="{StaticResource FluentTopLevelMenuItem}">
     <Setter Property="Padding" Value="{DynamicResource HorizontalMenuFlyoutItemThemePaddingNarrow}" />
     <Setter Property="Margin" Value="{DynamicResource HorizontalMenuFlyoutItemMargin}" />
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentMenuItemIconTheme"
+                TargetType="ContentControl">
+    <Setter Property="Width"
+            Value="16" />
+    <Setter Property="Height"
+            Value="16" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Viewbox
+          StretchDirection="DownOnly"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center">
+          <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" />
+        </Viewbox>
+      </ControlTemplate>
+    </Setter>
   </ControlTheme>
 </ResourceDictionary>

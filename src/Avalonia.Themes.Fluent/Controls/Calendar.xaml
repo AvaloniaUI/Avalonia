@@ -21,6 +21,7 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontSize" Value="{DynamicResource CalendarFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel

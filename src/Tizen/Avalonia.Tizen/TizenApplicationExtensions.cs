@@ -1,4 +1,7 @@
-﻿namespace Avalonia.Tizen;
+﻿using System.Reflection;
+using Avalonia.Platform;
+
+namespace Avalonia.Tizen;
 
 /// <summary>
 /// Extension to setup app builder with tizen backend 
@@ -13,8 +16,8 @@ public static class TizenApplicationExtensions
     public static AppBuilder UseTizen(this AppBuilder builder)
     {
         return builder
+            .UseTizenRuntimePlatformSubsystem()
             .UseWindowingSubsystem(TizenPlatform.Initialize, "Tizen")
-            .UseStandardRuntimePlatformSubsystem()
             .UseSkia();
     }
 }

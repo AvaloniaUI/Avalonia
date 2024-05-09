@@ -525,6 +525,10 @@ namespace Avalonia.Collections.Pooled
         public ReadOnlyCollection<T> AsReadOnly()
             => new ReadOnlyCollection<T>(this);
 
+        /// <summary>Gets a <see cref="T:System.Span`1" /> view over the data in a list.
+        /// Items should not be added or removed from the list while the returned span is in use.</summary>
+        public Span<T> AsSpan() => new(_items, 0, _size);
+
         /// <summary>
         /// Searches a section of the list for a given element using a binary search
         /// algorithm. 

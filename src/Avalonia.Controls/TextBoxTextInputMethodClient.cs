@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -10,6 +11,8 @@ namespace Avalonia.Controls
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
+        private bool _selectionChanged;
+        private bool _isInChange;
 
         public override Visual TextViewVisual => _presenter!;
 
@@ -190,8 +193,30 @@ namespace Avalonia.Controls
 
             if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
             {
-                RaiseSelectionChanged();
+                if (_isInChange)
+                    _selectionChanged = true;
+                else
+                    RaiseSelectionChanged();
             }
+        }
+
+        internal IDisposable BeginChange()
+        {
+            if (_isInChange)
+                return Disposable.Empty;
+
+            _isInChange = true;
+            return Disposable.Create(RaiseEvents);
+        }
+
+        private void RaiseEvents()
+        {
+            _isInChange = false;
+
+            if (_selectionChanged)
+                RaiseSelectionChanged();
+
+            _selectionChanged = false;
         }
     }
 }

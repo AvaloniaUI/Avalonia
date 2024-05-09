@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Specialized;
+using Avalonia.Collections;
 
 namespace Avalonia.Controls.Selection
 {
-    internal class SelectedItems<T> : IReadOnlyList<T?>
+    internal class SelectedItems<T> : ReadOnlySelectionListBase<T>
     {
         private readonly SelectionModel<T>? _owner;
         private readonly ItemsSourceView<T>? _items;
@@ -19,7 +20,7 @@ namespace Avalonia.Controls.Selection
             _items = items;
         }
 
-        public T? this[int index]
+        public override T? this[int index]
         {
             get
             {
@@ -43,7 +44,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public int Count
+        public override int Count
         {
             get
             {
@@ -61,7 +62,7 @@ namespace Avalonia.Controls.Selection
         private ItemsSourceView<T>? Items => _items ?? _owner?.ItemsView;
         private IReadOnlyList<IndexRange>? Ranges => _ranges ?? _owner!.Ranges;
 
-        public IEnumerator<T?> GetEnumerator()
+        public override IEnumerator<T?> GetEnumerator()
         {
             if (_owner?.SingleSelect == true)
             {
@@ -84,8 +85,6 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
         public static SelectedItems<T>? Create(
             IReadOnlyList<IndexRange>? ranges,
             ItemsSourceView<T>? items)
@@ -93,14 +92,13 @@ namespace Avalonia.Controls.Selection
             return ranges is object ? new SelectedItems<T>(ranges, items) : null;
         }
 
-        public class Untyped : IReadOnlyList<object?>
+        public class Untyped : ReadOnlySelectionListBase<object?>
         {
             private readonly IReadOnlyList<T?> _source;
             public Untyped(IReadOnlyList<T?> source) => _source = source;
-            public object? this[int index] => _source[index];
-            public int Count => _source.Count;
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-            public IEnumerator<object?> GetEnumerator()
+            public override object? this[int index] => _source[index];
+            public override int Count => _source.Count;
+            public override IEnumerator<object?> GetEnumerator()
             {
                 foreach (var i in _source)
                 {

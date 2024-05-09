@@ -11,7 +11,6 @@ namespace Avalonia.Controls;
 /// This is a helper interface for the XAML compiler to make Key property accessibly by the markup extensions.
 /// Which means, it can only be used with ResourceDictionaries and markup extensions in the XAML code.
 /// </remarks>
-[Unstable("This XAML-only API might be removed in the future minor updates.")]
 public interface IThemeVariantProvider : IResourceProvider
 {
     /// <summary>

@@ -1,8 +1,5 @@
 using System;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text.RegularExpressions;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform;
 
@@ -30,10 +27,12 @@ internal class BrowserRuntimePlatform : StandardRuntimePlatform
     private static readonly Lazy<RuntimePlatformInfo> Info = new(() =>
     {
         var isMobile = AvaloniaModule.IsMobile();
+        var isTv = AvaloniaModule.IsTv();
         var result = new RuntimePlatformInfo
         {
-            IsMobile = isMobile,
-            IsDesktop = !isMobile
+            IsMobile = isMobile && !isTv,
+            IsDesktop = !isMobile && !isTv,
+            IsTV = isTv
         };
         
         return result;

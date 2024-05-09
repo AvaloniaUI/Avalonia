@@ -11,20 +11,20 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a time. Intended for use with
     /// <see cref="TimePicker"/> but can be used independently
     /// </summary>
-    [TemplatePart("PART_AcceptButton",     typeof(Button))]
+    [TemplatePart("PART_AcceptButton",     typeof(Button), IsRequired = true)]
     [TemplatePart("PART_DismissButton",    typeof(Button))]
     [TemplatePart("PART_HourDownButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_HourSelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_HourSelector",     typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_HourUpButton",     typeof(RepeatButton))]
     [TemplatePart("PART_MinuteDownButton", typeof(RepeatButton))]
-    [TemplatePart("PART_MinuteSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_MinuteSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_MinuteUpButton",   typeof(RepeatButton))]
     [TemplatePart("PART_PeriodDownButton", typeof(RepeatButton))]
-    [TemplatePart("PART_PeriodHost",       typeof(Panel))]
-    [TemplatePart("PART_PeriodSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_PeriodHost",       typeof(Panel), IsRequired = true)]
+    [TemplatePart("PART_PeriodSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_PeriodUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_PickerContainer",  typeof(Grid))]
-    [TemplatePart("PART_SecondSpacer",     typeof(Rectangle))]
+    [TemplatePart("PART_PickerContainer",  typeof(Grid), IsRequired = true)]
+    [TemplatePart("PART_SecondSpacer",     typeof(Rectangle), IsRequired = true)]
     public class TimePickerPresenter : PickerPresenterBase
     {
         /// <summary>

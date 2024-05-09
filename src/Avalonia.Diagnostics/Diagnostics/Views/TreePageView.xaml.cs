@@ -1,101 +1,60 @@
-using System;
-using System.Diagnostics;
-using System.Linq;
 using Avalonia.Controls;
-using Avalonia.Controls.Generators;
-using Avalonia.Controls.Primitives;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
 {
     internal class TreePageView : UserControl
     {
-        private readonly Panel _adorner;
-        private AdornerLayer? _currentLayer;
+        private TreeViewItem? _hovered;
         private TreeView _tree;
+        private System.IDisposable? _adorner;
 
         public TreePageView()
         {
             InitializeComponent();
             _tree = this.GetControl<TreeView>("tree");
-
-            _adorner = new Panel
-            {
-                ClipToBounds = false,
-                Children =
-                {
-                    //Padding frame
-                    new Border { BorderBrush = new SolidColorBrush(Colors.Green, 0.5) },
-                    //Content frame
-                    new Border { Background = new SolidColorBrush(Color.FromRgb(160, 197, 232), 0.5) },
-                    //Margin frame
-                    new Border { BorderBrush = new SolidColorBrush(Colors.Yellow, 0.5) }
-                },
-            };
-            AdornerLayer.SetIsClipEnabled(_adorner, false);
         }
 
-        protected void AddAdorner(object? sender, PointerEventArgs e)
+        protected void UpdateAdorner(object? sender, PointerEventArgs e)
         {
-            var node = (TreeNode?)((Control)sender!).DataContext;
-            var vm = (TreePageViewModel?)DataContext;
-            if (node is null || vm is null)
+            if (e.Source is not StyledElement source)
             {
                 return;
             }
 
-            var visual = node.Visual as Visual;
-
-            if (visual is null)
+            var item = source.FindLogicalAncestorOfType<TreeViewItem>();
+            if (item == _hovered)
             {
                 return;
             }
 
-            _currentLayer = AdornerLayer.GetAdornerLayer(visual);
+            _adorner?.Dispose();
 
-            if (_currentLayer == null ||
-                _currentLayer.Children.Contains(_adorner))
+            if (item is null || item.TreeViewOwner != _tree)
+            {
+                _hovered = null;
+                return;
+            }
+
+            _hovered = item;
+
+            var visual = (item.DataContext as TreeNode)?.Visual as Visual;
+            var shouldVisualizeMarginPadding = (DataContext as TreePageViewModel)?.MainView.ShouldVisualizeMarginPadding;
+            if (visual is null || shouldVisualizeMarginPadding is null)
             {
                 return;
             }
 
-            _currentLayer.Children.Add(_adorner);
-            AdornerLayer.SetAdornedElement(_adorner, visual);
-
-            if (vm.MainView.ShouldVisualizeMarginPadding)
-            {
-                var paddingBorder = (Border)_adorner.Children[0];
-                paddingBorder.BorderThickness = visual.GetValue(PaddingProperty);
-
-                var contentBorder = (Border)_adorner.Children[1];
-                contentBorder.Margin = visual.GetValue(PaddingProperty);
-
-                var marginBorder = (Border)_adorner.Children[2];
-                marginBorder.BorderThickness = visual.GetValue(MarginProperty);
-                marginBorder.Margin = InvertThickness(visual.GetValue(MarginProperty));
-            }
+            _adorner = Controls.ControlHighlightAdorner.Add(visual, visualizeMarginPadding: shouldVisualizeMarginPadding == true);
         }
 
-        private static Thickness InvertThickness(Thickness input)
+        private void RemoveAdorner(object? sender, PointerEventArgs e)
         {
-            return new Thickness(-input.Left, -input.Top, -input.Right, -input.Bottom);
-        }
-
-        protected void RemoveAdorner(object? sender, PointerEventArgs e)
-        {
-            foreach (var border in _adorner.Children.OfType<Border>())
-            {
-                border.Margin = default;
-                border.Padding = default;
-                border.BorderThickness = default;
-            }
-
-            _currentLayer?.Children.Remove(_adorner);
-            _currentLayer = null;
+            _adorner?.Dispose();
+            _adorner = null;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -116,9 +75,40 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void OnClipboardCopyRequested(object? sender, string e)
+        private void OnClipboardCopyRequested(object? sender, string selector)
         {
-            TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(e);
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            {
+                var @do = new DataObject();
+                var text = ToText(selector);
+                @do.Set(DataFormats.Text, text);
+                @do.Set(Constants.DataFormats.Avalonia_DevTools_Selector, selector);
+                clipboard.SetDataObjectAsync(@do);
+            }
+        }
+
+        private static string ToText(string text)
+        {
+            var sb = new System.Text.StringBuilder();
+            var bufferStartIndex = -1;
+            for (var ic = 0; ic < text.Length; ic++)
+            {
+                var c = text[ic];
+                switch (c)
+                {
+                    case '{':
+                        bufferStartIndex = sb.Length;
+                        break;
+                    case '}' when bufferStartIndex > -1:
+                        sb.Remove(bufferStartIndex, sb.Length - bufferStartIndex);
+                        bufferStartIndex = sb.Length;
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+            return sb.ToString();
         }
     }
 }

@@ -8,11 +8,6 @@ namespace Avalonia.Platform.Storage;
 public class FilePickerSaveOptions : PickerOptions
 {
     /// <summary>
-    /// Gets or sets the file name that the file save picker suggests to the user.
-    /// </summary>
-    public string? SuggestedFileName { get; set; }
-
-    /// <summary>
     /// Gets or sets the default extension to be used to save the file.
     /// </summary>
     public string? DefaultExtension { get; set; }

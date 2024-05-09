@@ -1,21 +1,13 @@
 using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
-using UIKit;
 
 namespace Avalonia.iOS;
-#nullable enable
 
-internal class InsetsManager : IInsetsManager
+internal class InsetsManager : InsetsManagerBase
 {
-    private readonly AvaloniaView _view;
     private IAvaloniaViewController? _controller;
     private bool _displayEdgeToEdge = true;
-
-    public InsetsManager(AvaloniaView view)
-    {
-        _view = view;
-    }
 
     internal void InitWithController(IAvaloniaViewController controller)
     {
@@ -24,13 +16,13 @@ internal class InsetsManager : IInsetsManager
         {
             _controller.SafeAreaPaddingChanged += (_, _) =>
             {
-                SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
+                OnSafeAreaChanged(new SafeAreaChangedArgs(SafeAreaPadding));
                 DisplayEdgeToEdgeChanged?.Invoke(this, _displayEdgeToEdge);
             };
         }
     }
 
-    public bool? IsSystemBarVisible
+    public override bool? IsSystemBarVisible
     {
         get => _controller?.PrefersStatusBarHidden == false;
         set
@@ -41,10 +33,9 @@ internal class InsetsManager : IInsetsManager
             }
         }
     }
-    public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
     public event EventHandler<bool>? DisplayEdgeToEdgeChanged;
 
-    public bool DisplayEdgeToEdge
+    public override bool DisplayEdgeToEdge
     {
         get => _displayEdgeToEdge;
         set
@@ -53,12 +44,12 @@ internal class InsetsManager : IInsetsManager
             {
                 _displayEdgeToEdge = value;
                 DisplayEdgeToEdgeChanged?.Invoke(this, value);
-                SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
+                OnSafeAreaChanged(new SafeAreaChangedArgs(SafeAreaPadding));
             }
         }
     }
 
-    public Thickness SafeAreaPadding => _displayEdgeToEdge ? _controller?.SafeAreaPadding ?? default : default;
+    public override Thickness SafeAreaPadding => _displayEdgeToEdge ? _controller?.SafeAreaPadding ?? default : default;
 
-    public Color? SystemBarColor { get; set; }
+    public override Color? SystemBarColor { get; set; }
 }

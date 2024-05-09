@@ -8,6 +8,8 @@ using Avalonia.Media;
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -124,6 +126,11 @@ namespace Avalonia.Controls.Primitives
         {
             count = OwningGrid.ColumnsInternal.VisibleColumnCount;
             return true;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridColumnHeadersPresenterAutomationPeer(this);
         }
 
         /// <summary>
