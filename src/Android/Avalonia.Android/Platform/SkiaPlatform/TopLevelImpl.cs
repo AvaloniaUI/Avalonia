@@ -684,19 +684,21 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public override bool PerformContextMenuAction(int id)
         {
+            if (InputMethod.Client is not { } client) return false;
+
             switch (id)
             {
                 case global::Android.Resource.Id.SelectAll:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.A, RawInputModifiers.Control, PhysicalKey.None, "a"));
+                    client.ExecuteContextMenuAction(ContextMenuAction.SelectAll);
                     return true;
                 case global::Android.Resource.Id.Cut:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.X, RawInputModifiers.Control, PhysicalKey.None, "x"));
+                    client.ExecuteContextMenuAction(ContextMenuAction.Cut);
                     return true;
                 case global::Android.Resource.Id.Copy:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.C, RawInputModifiers.Control, PhysicalKey.None, "c"));
+                    client.ExecuteContextMenuAction(ContextMenuAction.Copy);
                     return true;
                 case global::Android.Resource.Id.Paste:
-                    Toplevel.Input?.Invoke(new RawKeyEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, Toplevel.InputRoot!, RawKeyEventType.KeyDown, Key.V, RawInputModifiers.Control, PhysicalKey.None, "v"));
+                    client.ExecuteContextMenuAction(ContextMenuAction.Paste);
                     return true;
                 default:
                     break;
