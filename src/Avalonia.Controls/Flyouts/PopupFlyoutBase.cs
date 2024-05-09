@@ -30,10 +30,14 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc cref="Popup.PlacementAnchorProperty"/>
         public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
             Popup.PlacementAnchorProperty.AddOwner<PopupFlyoutBase>();
-        
+
         /// <inheritdoc cref="Popup.PlacementAnchorProperty"/>
         public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
             Popup.PlacementGravityProperty.AddOwner<PopupFlyoutBase>();
+
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallbackProperty"/>
+        public static readonly StyledProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+            Popup.CustomPopupPlacementCallbackProperty.AddOwner<PopupFlyoutBase>();
 
         /// <summary>
         /// Defines the <see cref="ShowMode"/> property
@@ -104,6 +108,13 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(VerticalOffsetProperty);
             set => SetValue(VerticalOffsetProperty, value);
+        }
+
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallback"/>
+        public CustomPopupPlacementCallback? CustomPopupPlacementCallback
+        {
+            get => GetValue(CustomPopupPlacementCallbackProperty);
+            set => SetValue(CustomPopupPlacementCallbackProperty, value);
         }
 
         /// <summary>
@@ -424,6 +435,7 @@ namespace Avalonia.Controls.Primitives
             Popup.HorizontalOffset = HorizontalOffset;
             Popup.PlacementAnchor = PlacementAnchor;
             Popup.PlacementGravity = PlacementGravity;
+            Popup.CustomPopupPlacementCallback = CustomPopupPlacementCallback;
             if (showAtPointer)
             {
                 Popup.Placement = PlacementMode.Pointer;
