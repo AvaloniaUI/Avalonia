@@ -1206,6 +1206,52 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Custom_Placement_Callback_Is_Executed()
+        {
+            using (CreateServices())
+            {
+                var callbackExecuted = 0;
+                var popupContent = new Border { Width = 100, Height = 100 };
+                var popup = new Popup
+                {
+                    Child = popupContent,
+                    Placement = PlacementMode.Custom,
+                    HorizontalOffset = 42,
+                    VerticalOffset = 21
+                };
+                var popupParent = new Border { Child = popup };
+                var root = PreparedWindow(popupParent);
+
+                popup.CustomPopupPlacementCallback = (popupSize, targetRect, offset) =>
+                {
+                    Assert.Equal(popupContent.Width, popupSize.Width);
+                    Assert.Equal(popupContent.Height, popupSize.Height);
+
+                    Assert.Equal(root.Width, targetRect.Width);
+                    Assert.Equal(root.Height, targetRect.Height);
+
+                    Assert.Equal(popup.HorizontalOffset, offset.X);
+                    Assert.Equal(popup.VerticalOffset, offset.Y);
+
+                    callbackExecuted++;
+
+                    return new CustomPopupPlacement
+                    {
+                        Anchor = PopupAnchor.Top, Gravity = PopupGravity.Bottom, Offset = offset
+                    };
+                };
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                popup.Open();
+                root.LayoutManager.ExecuteLayoutPass();
+
+                // Ideally, callback should be executed only once for this test.
+                // But currently PlacementTargetLayoutUpdated triggers second update either way.
+                Assert.Equal(2, callbackExecuted);
+            }
+        }
+
 
         private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
         {
