@@ -2,9 +2,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
-    <TargetFramework>net7.0-ios</TargetFramework>
-<!--    <TargetFramework>net7.0-tvos</TargetFramework>-->
-    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <TargetFramework>$(AvsCurrentIOSTargetFramework)</TargetFramework>
+<!--    <TargetFramework>$(AvsCurrentTvOSTargetFramework)</TargetFramework>-->
+    <SupportedOSPlatformVersion>$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />

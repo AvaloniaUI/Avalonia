@@ -15,6 +15,8 @@ namespace Sample.App
         /// </summary>
         /// <param name="loadXaml">Should the XAML be loaded into the component.</param>
 
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public void InitializeComponent(bool loadXaml = true)
         {
             if (loadXaml)

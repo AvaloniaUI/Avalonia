@@ -150,6 +150,21 @@ partial class Build : NukeBuild
             );
         });
 
+    Target OutputVersion => _ => _
+        .Requires(() => VersionOutputDir)
+        .Executes(() =>
+        {
+            var versionFile = Path.Combine(Parameters.VersionOutputDir, "version.txt");
+            var currentBuildVersion = Parameters.Version;
+            Console.WriteLine("Version is: " + currentBuildVersion);
+            File.WriteAllText(versionFile, currentBuildVersion);
+
+            var prIdFile = Path.Combine(Parameters.VersionOutputDir, "prId.txt");
+            var prId = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
+            Console.WriteLine("PR Number  is: " + prId);
+            File.WriteAllText(prIdFile, prId);
+        });
+
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
@@ -176,19 +191,29 @@ partial class Build : NukeBuild
 
         foreach (var fw in targetFrameworks)
         {
-            if (fw.StartsWith("net4")
+            var tfm = fw;
+            if (tfm == "$(AvsCurrentTargetFramework)")
+            {
+                tfm = "net8.0";
+            }
+            if (tfm == "$(AvsLegacyTargetFrameworks)")
+            {
+                tfm = "net6.0";
+            }
+            
+            if (tfm.StartsWith("net4")
                 && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
-                Information($"Skipping {projectName} ({fw}) tests on *nix - https://github.com/mono/mono/issues/13969");
+                Information($"Skipping {projectName} ({tfm}) tests on *nix - https://github.com/mono/mono/issues/13969");
                 continue;
             }
 
-            Information($"Running for {projectName} ({fw}) ...");
+            Information($"Running for {projectName} ({tfm}) ...");
 
             DotNetTest(c => ApplySetting(c)
                 .SetProjectFile(project)
-                .SetFramework(fw)
+                .SetFramework(tfm)
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _

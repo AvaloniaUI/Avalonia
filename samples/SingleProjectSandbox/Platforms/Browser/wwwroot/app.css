@@ -1,0 +1,38 @@
+﻿/* HTML styles for the splash screen */
+.avalonia-splash {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #1b2a4e;
+    font-family: 'Nunito', sans-serif;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    pointer-events: none;
+}
+
+.avalonia-splash h2 {
+    font-size: 1.5rem;
+    color: #8b44ac;
+}
+
+.avalonia-splash a {
+    color: white;
+    text-decoration: none;
+    font-size: 2.5rem;
+    display: block;
+}
+
+.avalonia-splash img {
+    opacity: 0.05;
+    height: 35%;
+    position: absolute;
+    right: 3%;
+    bottom: 3%;
+}
+
+.avalonia-splash.splash-close {
+    transition: opacity 200ms, display 200ms;
+    display: none;
+    opacity: 0;
+}

@@ -496,10 +496,9 @@ namespace Avalonia.Win32.Interop
             WS_MINIMIZE = 0x20000000,
             WS_MINIMIZEBOX = 0x20000,
             WS_OVERLAPPED = 0x0,
-            WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+            WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
             WS_POPUP = 0x80000000u,
             WS_POPUPWINDOW = WS_POPUP | WS_BORDER | WS_SYSMENU,
-            WS_SIZEFRAME = 0x40000,
             WS_SYSMENU = 0x80000,
             WS_TABSTOP = 0x10000,
             WS_THICKFRAME = 0x40000,
@@ -1274,6 +1273,11 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool EnumChildWindows(IntPtr parentHwnd, EnumWindowsProc enumFunc, IntPtr lParam);
+
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLongPtrW", ExactSpelling = true)]
         public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
@@ -2504,7 +2508,7 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal struct APPBARDATA
         {
-            private static readonly int s_size = Marshal.SizeOf(typeof(APPBARDATA));
+            private static readonly int s_size = Marshal.SizeOf<APPBARDATA>();
 
             public int cbSize;
             public nint hWnd;

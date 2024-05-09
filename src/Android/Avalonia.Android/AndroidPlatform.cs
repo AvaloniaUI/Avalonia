@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Controls;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
+using Avalonia.Android.Platform.Vulkan;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.OpenGL;
+using Avalonia.Vulkan;
 
 namespace Avalonia
 {
@@ -39,7 +40,12 @@ namespace Avalonia
         /// <summary>
         /// Enables android EGL rendering.
         /// </summary>
-        Egl = 2
+        Egl = 2,
+
+        /// <summary>
+        /// Enables Vulkan rendering
+        /// </summary>
+        Vulkan = 3
     }
 
     public sealed class AndroidPlatformOptions
@@ -65,9 +71,9 @@ namespace Avalonia.Android
     class AndroidPlatform
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
-        public static AndroidPlatformOptions Options { get; private set; }
+        public static AndroidPlatformOptions? Options { get; private set; }
 
-        internal static Compositor Compositor { get; private set; }
+        internal static Compositor? Compositor { get; private set; }
 
         public static void Initialize()
         {
@@ -81,7 +87,8 @@ namespace Avalonia.Android
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());
 
             var graphics = InitializeGraphics(Options);
             if (graphics is not null)
@@ -93,7 +100,7 @@ namespace Avalonia.Android
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
         
-        private static IPlatformGraphics InitializeGraphics(AndroidPlatformOptions opts)
+        private static IPlatformGraphics? InitializeGraphics(AndroidPlatformOptions opts)
         {
             if (opts.RenderingMode is null || !opts.RenderingMode.Any())
             {
@@ -113,6 +120,13 @@ namespace Avalonia.Android
                     {
                         return egl;
                     }
+                }
+
+                if (renderingMode == AndroidRenderingMode.Vulkan)
+                {
+                    var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                    if (vulkan != null)
+                        return vulkan;
                 }
             }
 

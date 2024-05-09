@@ -614,7 +614,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the value of a cell according to the the specified binding.
+        /// Gets the value of a cell according to the specified binding.
         /// </summary>
         /// <param name="item">The item associated with a cell.</param>
         /// <param name="binding">The binding to get the value of.</param>
@@ -1061,7 +1061,7 @@ namespace Avalonia.Controls
             _settingWidthInternally = true;
             try
             {
-                Width = width;
+                SetCurrentValue(WidthProperty, width);
             }
             finally
             {
@@ -1079,7 +1079,7 @@ namespace Avalonia.Controls
             _setWidthInternalNoCallback = true;
             try
             {
-                Width = width;
+                SetCurrentValue(WidthProperty, width);
             }
             finally
             {

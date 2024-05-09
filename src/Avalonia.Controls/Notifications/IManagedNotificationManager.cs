@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Threading;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Notifications
@@ -20,5 +20,11 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         /// <param name="content">The content to be displayed.</param>
         void Show(object content);
+
+        /// <summary>
+        /// Closes a notification.
+        /// </summary>
+        /// <param name="content">The content to be closed.</param>
+        void Close(object content);
     }
 }

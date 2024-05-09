@@ -20,8 +20,9 @@ namespace Avalonia.Skia
             var matrix = transform.ToSKMatrix();
 
             var transformedPath = StrokePath =  source.StrokePath.Clone();
-            transformedPath?.Transform(matrix);
-            
+            if (transformedPath is not null)
+                transformedPath.Transform(matrix);
+
             Bounds = transformedPath?.TightBounds.ToAvaloniaRect() ?? default;
             
             if (ReferenceEquals(source.StrokePath, source.FillPath))

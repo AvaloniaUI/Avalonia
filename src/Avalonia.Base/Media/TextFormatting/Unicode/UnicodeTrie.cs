@@ -16,98 +16,25 @@
 // Copied from: https://github.com/toptensoftware/RichTextKit
 
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
-    internal class UnicodeTrie
+    internal ref struct UnicodeTrie
     {
-        private readonly uint[] _data;
-        private readonly int _highStart;
-        private readonly uint _errorValue;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UnicodeTrie"/> class.
-        /// </summary>
-        /// <param name="rawData">The uncompressed trie data.</param>
-        public UnicodeTrie(ReadOnlySpan<byte> rawData)
+        public UnicodeTrie(ReadOnlySpan<uint> data, int highStart, uint errorValue)
         {
-            var header = UnicodeTrieHeader.Parse(rawData);
-            int length = header.DataLength;
-            uint[] data = new uint[length / sizeof(uint)];
-
-            MemoryMarshal.Cast<byte, uint>(rawData.Slice(rawData.Length - length))
-                .CopyTo(data);
-
-            _highStart = header.HighStart;
-           _errorValue = header.ErrorValue;
-            _data = data;
+            Data = data;
+            HighStart = highStart;
+            ErrorValue = errorValue;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UnicodeTrie"/> class.
-        /// </summary>
-        /// <param name="stream">The stream containing the data.</param>
-        public UnicodeTrie(Stream stream)
-        {
-            // Read the header info
-            using (var br = new BinaryReader(stream, Encoding.UTF8, true))
-            {
-                _highStart = br.ReadInt32();
-                _errorValue = br.ReadUInt32();
-                _data = new uint[br.ReadInt32() / sizeof(uint)];
-            }
+        public ReadOnlySpan<uint> Data { get; }
 
-            // Read the data in compressed format.
-            using (var br = new BinaryReader(stream, Encoding.UTF8, true))
-            {
-                for (int i = 0; i < _data.Length; i++)
-                {
-                    _data[i] = br.ReadUInt32();
-                }
-            }
-        }
+        public int HighStart { get; }
 
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UnicodeTrie"/> class.
-        /// </summary>
-        /// <param name="data">The uncompressed trie data.</param>
-        /// <param name="highStart">The start of the last range which ends at U+10ffff.</param>
-        /// <param name="errorValue">The value for out-of-range code points and illegal UTF-8.</param>
-        public UnicodeTrie(uint[] data, int highStart, uint errorValue)
-        {
-            _data = data;
-            _highStart = highStart;
-            _errorValue = errorValue;
-        }
-
-        /// <summary>
-        /// Saves the <see cref="UnicodeTrie"/> to the stream in a compressed format.
-        /// </summary>
-        /// <param name="stream">The output stream.</param>
-        internal void Save(Stream stream)
-        {
-            // Write the header info
-            using (var bw = new BinaryWriter(stream, Encoding.UTF8, true))
-            {
-                bw.Write(_highStart);
-                bw.Write(_errorValue);
-                bw.Write(_data.Length * sizeof(uint));
-            }
-
-            // Write the data.
-            using (var bw = new BinaryWriter(stream, Encoding.UTF8, true))
-            {
-                for (int i = 0; i < _data.Length; i++)
-                {
-                    bw.Write(_data[i]);
-                }
-            }
-        }
+        public uint ErrorValue { get; }
 
         /// <summary>
         /// Get the value for a code point as stored in the trie.
@@ -118,14 +45,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public uint Get(uint codePoint)
         {
             uint index;
-            ref uint dataBase = ref MemoryMarshal.GetReference(_data.AsSpan());
+            ref uint dataBase = ref MemoryMarshal.GetReference(Data);
 
             if (codePoint is < 0x0d800 or (> 0x0dbff and <= 0x0ffff))
             {
                 // Ordinary BMP code point, excluding leading surrogates.
                 // BMP uses a single level lookup.  BMP index starts at offset 0 in the Trie2 index.
                 // 16 bit data is stored in the index array itself.
-                index = _data[codePoint >> UnicodeTrieBuilder.SHIFT_2];
+                index = Data[(int)(codePoint >> UnicodeTrieBuilder.SHIFT_2)];
                 index = (index << UnicodeTrieBuilder.INDEX_SHIFT) + (codePoint & UnicodeTrieBuilder.DATA_MASK);
                 return Unsafe.Add(ref dataBase, (nint)index);
             }
@@ -138,55 +65,29 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 //   For this function, we need the code point data.
                 // Note: this expression could be refactored for slightly improved efficiency, but
                 //       surrogate code points will be so rare in practice that it's not worth it.
-                index = _data[UnicodeTrieBuilder.LSCP_INDEX_2_OFFSET + ((codePoint - 0xd800) >> UnicodeTrieBuilder.SHIFT_2)];
+                index = Data[(int)(UnicodeTrieBuilder.LSCP_INDEX_2_OFFSET + ((codePoint - 0xd800) >> UnicodeTrieBuilder.SHIFT_2))];
                 index = (index << UnicodeTrieBuilder.INDEX_SHIFT) + (codePoint & UnicodeTrieBuilder.DATA_MASK);
                 return Unsafe.Add(ref dataBase, (nint)index);
             }
 
-            if (codePoint < _highStart)
+            if (codePoint < HighStart)
             {
                 // Supplemental code point, use two-level lookup.
                 index = UnicodeTrieBuilder.INDEX_1_OFFSET - UnicodeTrieBuilder.OMITTED_BMP_INDEX_1_LENGTH + (codePoint >> UnicodeTrieBuilder.SHIFT_1);
-                index = _data[index];
+                index = Data[(int)index];
                 index += (codePoint >> UnicodeTrieBuilder.SHIFT_2) & UnicodeTrieBuilder.INDEX_2_MASK;
-                index = _data[index];
+                index = Data[(int)index];
                 index = (index << UnicodeTrieBuilder.INDEX_SHIFT) + (codePoint & UnicodeTrieBuilder.DATA_MASK);
                 return Unsafe.Add(ref dataBase, (nint)index);
             }
 
             if (codePoint <= 0x10ffff)
             {
-                return Unsafe.Add(ref dataBase, (nint)(_data.Length - UnicodeTrieBuilder.DATA_GRANULARITY));
+                return Data[Data.Length - UnicodeTrieBuilder.DATA_GRANULARITY];
             }
 
             // Fall through.  The code point is outside of the legal range of 0..0x10ffff.
-            return _errorValue;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct UnicodeTrieHeader
-        {
-            public int HighStart
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get;
-            }
-
-            public uint ErrorValue
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get;
-            }
-
-            public int DataLength
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static UnicodeTrieHeader Parse(ReadOnlySpan<byte> data)
-                => MemoryMarshal.Cast<byte, UnicodeTrieHeader>(data)[0];
+            return ErrorValue;
         }
     }
 }

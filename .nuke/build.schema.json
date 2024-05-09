@@ -85,6 +85,7 @@
               "CreateNugetPackages",
               "GenerateCppHeaders",
               "OutputApiDiff",
+              "OutputVersion",
               "Package",
               "RunCoreLibsTests",
               "RunHtmlPreviewerTests",
@@ -121,6 +122,7 @@
               "CreateNugetPackages",
               "GenerateCppHeaders",
               "OutputApiDiff",
+              "OutputVersion",
               "Package",
               "RunCoreLibsTests",
               "RunHtmlPreviewerTests",
@@ -145,6 +147,9 @@
             "Quiet",
             "Verbose"
           ]
+        },
+        "version-output-dir": {
+          "type": "string"
         }
       }
     }

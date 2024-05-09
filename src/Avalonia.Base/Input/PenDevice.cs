@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 #pragma warning disable CS0618
@@ -20,12 +18,18 @@ namespace Avalonia.Input
     public class PenDevice : IPenDevice, IDisposable
     {
         private readonly Dictionary<long, Pointer> _pointers = new();
+        private readonly bool _releasePointerOnPenUp;
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
         private MouseButton _lastMouseDownButton;
 
         private bool _disposed;
+
+        public PenDevice(bool releasePointerOnPenUp = false)
+        {
+            _releasePointerOnPenUp = releasePointerOnPenUp;
+        }
 
         public void ProcessRawEvent(RawInputEventArgs e)
         {
@@ -52,26 +56,35 @@ namespace Avalonia.Input
             var keyModifiers = e.InputModifiers.ToKeyModifiers();
 
             bool shouldReleasePointer = false;
-            switch (e.Type)
+            try
             {
-                case RawPointerEventType.LeaveWindow:
-                    shouldReleasePointer = true;
-                    break;
-                case RawPointerEventType.LeftButtonDown:
-                    e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
-                    break;
-                case RawPointerEventType.LeftButtonUp:
-                    e.Handled = PenUp(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
-                    break;
-                case RawPointerEventType.Move:
-                    e.Handled = PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult, e.IntermediatePoints);
-                    break;
+                switch (e.Type)
+                {
+                    case RawPointerEventType.LeaveWindow:
+                        shouldReleasePointer = true;
+                        break;
+                    case RawPointerEventType.LeftButtonDown:
+                        e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                        break;
+                    case RawPointerEventType.LeftButtonUp:
+                        if (_releasePointerOnPenUp)
+                        {
+                            shouldReleasePointer = true;
+                        }
+                        e.Handled = PenUp(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                        break;
+                    case RawPointerEventType.Move:
+                        e.Handled = PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor, e.IntermediatePoints);
+                        break;
+                }
             }
-
-            if (shouldReleasePointer)
+            finally
             {
-                pointer.Dispose();
-                _pointers.Remove(e.RawPointerId);
+                if (shouldReleasePointer)
+                {
+                    pointer.Dispose();
+                    _pointers.Remove(e.RawPointerId);
+                }
             }
         }
 
@@ -154,6 +167,7 @@ namespace Avalonia.Input
                 {
                     pointer.Capture(null);
                     pointer.CaptureGestureRecognizer(null);
+                    pointer.IsGestureRecognitionSkipped = false;
                     _lastMouseDownButton = default;
                 }
 

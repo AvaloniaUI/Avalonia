@@ -43,9 +43,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         private static bool ShouldBeDeferred(IXamlAstValueNode node)
         {
+            var clrType = node.Type.GetClrType();
+
             // XAML compiler is currently strict about value types, allowing them to be created only through converters.
             // At the moment it should be safe to not defer structs.
-            if (node.Type.GetClrType().IsValueType)
+            if (clrType.IsValueType)
+            {
+                return false;
+            }
+
+            // Never defer strings.
+            if (clrType.FullName == "System.String")
             {
                 return false;
             }

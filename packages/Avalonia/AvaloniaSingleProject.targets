@@ -1,0 +1,292 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- For projects that want to treat "netx.0-windows" as a "netx.0" -->
+    <AvaloniaSingleProjectTreatWindowsAsShared Condition="'$(AvaloniaSingleProjectTreatWindowsAsShared)' == ''">false</AvaloniaSingleProjectTreatWindowsAsShared>
+    <!-- "net8.0" target without specific platform should be treated as a desktop target by default for executable projects.  -->
+    <AvaloniaSingleProjectTreatSharedAsDesktop Condition="'$(AvaloniaSingleProjectTreatSharedAsDesktop)' == '' AND ('$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe')">true</AvaloniaSingleProjectTreatSharedAsDesktop>
+  </PropertyGroup>
+
+  <!-- Include targets into AvaloniaSingleProjectTargets -->
+  <PropertyGroup Condition="'$(AvaloniaSingleProject)' == 'true'">
+    <_AvaloniaWindowsTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</_AvaloniaWindowsTarget>
+    <_AvaloniaMacOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">true</_AvaloniaMacOSTarget>
+    <_AvaloniaAndroidTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</_AvaloniaAndroidTarget>
+    <_AvaloniaIOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">true</_AvaloniaIOSTarget>
+    <_AvaloniaTvOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">true</_AvaloniaTvOSTarget>
+    <_AvaloniaBrowserTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">true</_AvaloniaBrowserTarget>
+    <_AvaloniaTizenTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">true</_AvaloniaTizenTarget>
+    <!-- This target isn't yet supported by .NET -->
+    <_AvaloniaLinuxTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'linux'" >true</_AvaloniaLinuxTarget>
+  </PropertyGroup>
+
+  <!-- See AvaloniaSingleProjectTreatWindowsAsShared and AvaloniaSingleProjectTreatSharedAsDesktop props comments -->
+  <PropertyGroup Condition="'$(AvaloniaSingleProject)' == 'true'
+      AND (('$(AvaloniaSingleProjectTreatSharedAsDesktop)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == '')
+      OR ('$(AvaloniaSingleProjectTreatWindowsAsShared)' == 'true' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'))">
+    <_AvaloniaDesktopTarget>true</_AvaloniaDesktopTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaWindowsTarget)' == 'true' ">
+    <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaBrowserTarget)' == 'true' ">
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">browser-wasm</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
+    <PlatformsProjectFolder Condition=" '$(PlatformsProjectFolder)' == '' ">Platforms\</PlatformsProjectFolder>
+    <PlatformsProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(PlatformsProjectFolder)'))</PlatformsProjectFolder>
+    <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
+    <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
+    <!-- Android -->
+    <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
+    <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">$(PlatformsProjectFolder)Android\</AndroidProjectFolder>
+    <AndroidProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(AndroidProjectFolder)'))</AndroidProjectFolder>
+    <!-- iOS/tvOS -->
+    <EnableDefaultiOSItems>false</EnableDefaultiOSItems>
+    <EnableDefaulttvOSItems>false</EnableDefaulttvOSItems>
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' AND '$(_AvaloniaIOSTarget)' == 'true'">$(PlatformsProjectFolder)iOS\</iOSProjectFolder>
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' AND '$(_AvaloniaTvOSTarget)' == 'true'">$(PlatformsProjectFolder)tvOS\</iOSProjectFolder>
+    <iOSProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(iOSProjectFolder)'))</iOSProjectFolder>
+    <!-- MacCatalyst -->
+    <EnableDefaultMacCatalystItems>false</EnableDefaultMacCatalystItems>
+    <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">$(PlatformsProjectFolder)MacCatalyst\</MacCatalystProjectFolder>
+    <MacCatalystProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(MacCatalystProjectFolder)'))</MacCatalystProjectFolder>
+    <!-- macOS -->
+    <EnableDefaultmacOSItems>false</EnableDefaultmacOSItems>
+    <macOSProjectFolder Condition=" '$(macOSProjectFolder)' == '' ">$(PlatformsProjectFolder)macOS\</macOSProjectFolder>
+    <macOSProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(macOSProjectFolder)'))</macOSProjectFolder>
+    <!-- Windows -->
+    <EnableDefaultWindowsItems>false</EnableDefaultWindowsItems>
+    <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)Windows\</WindowsProjectFolder>
+    <WindowsProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(WindowsProjectFolder)'))</WindowsProjectFolder>
+    <!-- Linux -->
+    <LinuxProjectFolder Condition=" '$(LinuxProjectFolder)' == '' ">$(PlatformsProjectFolder)Linux\</LinuxProjectFolder>
+    <LinuxProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(LinuxProjectFolder)'))</LinuxProjectFolder>
+    <!-- Browser -->
+    <BrowserProjectFolder Condition=" '$(BrowserProjectFolder)' == '' ">$(PlatformsProjectFolder)Browser\</BrowserProjectFolder>
+    <BrowserProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(BrowserProjectFolder)'))</BrowserProjectFolder>
+    <!-- Tizen -->
+    <EnableDefaultTizenItems>false</EnableDefaultTizenItems>
+    <TizenProjectFolder Condition=" '$(TizenProjectFolder)' == '' ">$(PlatformsProjectFolder)Tizen\</TizenProjectFolder>
+    <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
+    <!-- Desktop (NET8.0 without specific target) -->
+    <DesktopProjectFolder Condition=" '$(DesktopProjectFolder)' == '' ">$(PlatformsProjectFolder)Desktop\</DesktopProjectFolder>
+    <DesktopProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(DesktopProjectFolder)'))</DesktopProjectFolder>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
+    <!-- Compatability with VS tooling -->
+    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
+    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
+    <MauiPlatformSpecificFolder Include="$(tvOSProjectFolder)" TargetPlatformIdentifier="tvos" />
+    <MauiPlatformSpecificFolder Include="$(macOSProjectFolder)" TargetPlatformIdentifier="macos" />
+    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
+    <MauiPlatformSpecificFolder Include="$(LinuxProjectFolder)" TargetPlatformIdentifier="linux" />
+    <MauiPlatformSpecificFolder Include="$(BrowserProjectFolder)" TargetPlatformIdentifier="browser" />
+    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
+    <MauiPlatformSpecificFolder Include="$(DesktopProjectFolder)" TargetPlatformIdentifier="" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(SupportedOSPlatformVersion)' == '' AND '$(AvaloniaSingleProject)' == 'true'">
+    <!-- Keep in sync with TargetFrameworks.props -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">13.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">13.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">10.15</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaAndroidTarget)' == 'true' ">
+    <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
+    <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
+    <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaIOSTarget)' == 'true' OR '$(_AvaloniaTvOSTarget)' == 'true'">
+    <IPhoneResourcePrefix>$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
+    <CodesignEntitlements Condition=" Exists('$(iOSProjectFolder)Entitlements.plist') ">$(iOSProjectFolder)Entitlements.plist</CodesignEntitlements>
+    <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DesktopProjectFolder)' == 'true'">
+    <ApplicationManifest Condition=" Exists('$(DesktopProjectFolder)app.manifest') ">$(DesktopProjectFolder)app.manifest</ApplicationManifest>
+    <PackageManifest Condition=" Exists('$(DesktopProjectFolder)Package.appxmanifest') ">$(DesktopProjectFolder)Package.appxmanifest</PackageManifest>
+    <CodesignEntitlements Condition=" Exists('$(DesktopProjectFolder)Entitlements.plist') ">$(DesktopProjectFolder)Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_AvaloniaMacOSTarget)' == 'true' ">
+    <CodesignEntitlements Condition=" Exists('$(macOSProjectFolder)Entitlements.plist') ">$(macOSProjectFolder)Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_AvaloniaWindowsTarget)' == 'true'">
+    <ApplicationManifest Condition=" Exists('$(WindowsProjectFolder)app.manifest') ">$(WindowsProjectFolder)app.manifest</ApplicationManifest>
+    <PackageManifest Condition=" Exists('$(WindowsProjectFolder)Package.appxmanifest') ">$(WindowsProjectFolder)Package.appxmanifest</PackageManifest>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaTizenTarget)' == 'true' ">
+    <TizenManifestFile Condition=" Exists('$(TizenProjectFolder)tizen-manifest.xml') ">$(TizenProjectFolder)tizen-manifest.xml</TizenManifestFile>
+    <TizenResourcePrefix>$(TizenProjectFolder)res</TizenResourcePrefix>
+    <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaBrowserTarget)' == 'true' ">
+    <WasmMainJSPath Condition=" Exists('$(BrowserProjectFolder)/wwwroot/main.js') ">$(BrowserProjectFolder)/wwwroot/main.js</WasmMainJSPath>
+    <WasmMainHtmlPath Condition=" Exists('$(BrowserProjectFolder)/wwwroot/index.html') ">$(BrowserProjectFolder)wwwroot/index.html</WasmMainHtmlPath>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
+    <!-- Add metadata indicating that the platform-specific files are not part of every build configuration. -->
+    <Compile Update="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+    </Compile>
+
+    <!-- Add metadata for the files that are actually part of the current build configuration. -->
+    <Compile Condition=" '$(_AvaloniaAndroidTarget)' == 'true' " Update="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaIOSTarget)' == 'true' OR '$(_AvaloniaTvOSTarget)' == 'true'" Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaTvOSTarget)' == 'true' " Update="$(tvOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaDesktopTarget)' == 'true' " Update="$(DesktopProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaMacOSTarget)' == 'true' " Update="$(macOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaWindowsTarget)' == 'true' " Update="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaLinuxTarget)' == 'true' " Update="$(LinuxProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaBrowserTarget)' == 'true' " Update="$(BrowserProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaTizenTarget)' == 'true' " Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+  </ItemGroup>
+
+  <Target Name="_AvaloniaRemovePlatformCompileItems" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun" Condition=" '$(EnableDefaultItems)' == 'true' and '$(AvaloniaSingleProject)' == 'true' ">
+    <ItemGroup>
+      <Compile Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' " Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- IDE capabilities -->
+  <!-- Keep synced with https://github.com/dotnet/maui/blob/f0c4dd19d4c4cba7c6060ec5ceb8ba150bbdf9a5/src/Workload/Microsoft.Maui.Sdk/Sdk/Microsoft.Maui.Sdk.After.targets#L25 -->
+  <!-- Otherwise Visual Studio single project support might be broken. -->
+  <ItemGroup Condition=" '$(AvaloniaSingleProject)' == 'true' ">
+    <ProjectCapability Include="Msix" />
+    <ProjectCapability Include="MauiSingleProject" />
+    <ProjectCapability Include="LaunchProfiles" />
+    <!-- If VS is older than Dev17 -->
+    <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
+    <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
+    <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
+    <ProjectCapability Include="SingleTargetBuildForStartupProjects" Condition=" '$(EnableSingleTargetBuildForStartupProjects)' != 'false' " />
+
+    <ProjectCapability Include="UseMauiCore" />
+
+    <!-- .NET MAUI features (also required for single project) -->
+    <ProjectCapability Include="MauiCore" />
+    <ProjectCapability Include="Maui" />
+  </ItemGroup>
+
+  <!-- Android -->
+  <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' and '$(_AvaloniaAndroidTarget)' == 'true' and '$(MonoAndroidResourcePrefix)' != '' ">
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.xml" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.axml" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.png" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.jpg" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.gif" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/font/*.ttf" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/font/*.otf" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/font/*.ttc" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/raw/*" Exclude="$(MonoAndroidResourcePrefix)/raw/.*" />
+    <AndroidAsset Include="$(MonoAndroidAssetsPrefix)/**/*" Exclude="$(MonoAndroidAssetsPrefix)/**/.*/**" />
+<!--    <AndroidResource Condition="Exists('$(ApplicationIcon)')" Include="$(ApplicationIcon)">-->
+<!--      <Link>$(MonoAndroidResourcePrefix)\drawable\Icon.png</Link>-->
+<!--    </AndroidResource>-->
+  </ItemGroup>
+
+  <!-- iOS -->
+  <ItemGroup Condition=" '$(EnableDefaulItems)' == 'true' and ('$(_AvaloniaIOSTarget)' == 'true' OR '$(_AvaloniaTvOSTarget)' == 'true') and '$(iOSProjectFolder)' != ''">
+    <None
+      Include="$(iOSProjectFolder)Info.plist"
+      Condition="Exists('$(iOSProjectFolder)Info.plist')"
+      Exclude="$(_SingleProjectiOSExcludes)"
+      LogicalName="Info.plist"
+      IsDefaultItem="true"
+    />
+    <BundleResource
+      Include="$(iOSProjectFolder)Resources\**"
+      Exclude="$(_SingleProjectiOSExcludes)"
+      IsDefaultItem="true"
+    />
+    <ImageAsset
+      Include="$(iOSProjectFolder)**/*.xcassets/**/*.*"
+      Exclude="$(_SingleProjectiOSExcludes)"
+      Link="%(RecursiveDir)%(FileName)%(Extension)"
+      Visible="false"
+      IsDefaultItem="true"
+    />
+    <SceneKitAsset
+      Include="$(iOSProjectFolder)**/*.scnassets/*"
+      Exclude="$(_SingleProjectiOSExcludes)"
+      Link="%(RecursiveDir)%(FileName)%(Extension)"
+      IsDefaultItem="true"
+    />
+    <InterfaceDefinition
+      Include="$(iOSProjectFolder)**/*.storyboard;$(iOSProjectFolder)**/*.xib"
+      Exclude="$(_SingleProjectiOSExcludes)"
+      Link="%(RecursiveDir)%(FileName)%(Extension)"
+      IsDefaultItem="true"
+    />
+  </ItemGroup>
+
+  <!-- Windows -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaWindowsTarget)' == 'true' ">
+    <Manifest
+      Include="$(ApplicationManifest)"
+      Condition="Exists('$(ApplicationManifest)')" />
+    <AppxManifest
+      Include="$(PackageManifest)"
+      Condition="Exists('$(PackageManifest)')" />
+  </ItemGroup>
+
+  <!-- Browser -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaBrowserTarget)' == 'true' and '$(BrowserProjectFolder)' != '' ">
+    <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/wwwroot/**/*.*" />
+  </ItemGroup>
+
+  <!-- Tizen -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaTizenTarget)' == 'true' and '$(TizenProjectFolder)' != '' ">
+    <TizenResource
+      Include="$(TizenResourcePrefix)\**\*"
+      Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+    <TizenSharedResource
+      Include="$(TizenSharedPrefix)\**\*"
+      Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+  </ItemGroup>
+  
+  <!-- Android workaround to allow projects without AndroidManifest.xml, as it used to be supported -->
+  <Target Name="BeforeGetAndroidPackageName"
+          BeforeTargets="_GetAndroidPackageName">
+    <PropertyGroup>
+      <_AndroidManifestAbsTemp Condition=" '$(AndroidManifest)' != '' ">$(ProjectDir)$(AndroidManifest)</_AndroidManifestAbsTemp>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(_AndroidManifestAbsTemp)' != '' and !Exists ('$(_AndroidManifestAbsTemp)') ">
+      <AndroidManifest></AndroidManifest>
+    </PropertyGroup>
+  </Target>
+</Project>

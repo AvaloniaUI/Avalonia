@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0-tizen</TargetFramework>
+    <TargetFramework>$(AvsCurrentTizenTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   

@@ -445,7 +445,7 @@ namespace Avalonia.Build.Tasks
                             populateBuilder,
                             document.TypeBuilderProvider.BuildMethod,
                             builder,
-                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, XamlVisibility.Public),
+                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, XamlVisibility.Assembly),
                             res.Uri, res
                         );
 

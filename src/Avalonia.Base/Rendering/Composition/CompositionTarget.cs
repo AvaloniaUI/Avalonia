@@ -29,6 +29,7 @@ namespace Avalonia.Rendering.Composition
         /// <returns></returns>
         public PooledList<CompositionVisual>? TryHitTest(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
         {
+            point *= Scaling;
             Server.Readback.NextRead();
             root ??= Root;
             if (root == null)

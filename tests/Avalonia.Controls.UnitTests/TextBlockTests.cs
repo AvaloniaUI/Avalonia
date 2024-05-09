@@ -206,6 +206,23 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_InlineHost_Should_Propagate_To_Nested_Inlines()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var span = new Span { Inlines = new InlineCollection { new Run { Text = "World" } } };
+
+                var inlines = new InlineCollection{ new Run{Text = "Hello "}, span };
+
+                target.Inlines = inlines;
+
+                Assert.Equal(target, span.InlineHost);
+            }
+        }
+
+        [Fact]
         public void Changing_Inlines_Should_Reset_VisualChildren()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

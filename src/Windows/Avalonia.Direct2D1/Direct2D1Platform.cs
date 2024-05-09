@@ -9,7 +9,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
-using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
 using SharpDX.Mathematics.Interop;
 
@@ -296,5 +295,8 @@ namespace Avalonia.Direct2D1
         public bool IsSupportedBitmapPixelFormat(PixelFormat format) =>
             format == PixelFormats.Bgra8888 
             || format == PixelFormats.Rgba8888;
+
+        public bool SupportsRegions => false;
+        public IPlatformRenderInterfaceRegion CreateRegion() => throw new NotSupportedException();
     }
 }

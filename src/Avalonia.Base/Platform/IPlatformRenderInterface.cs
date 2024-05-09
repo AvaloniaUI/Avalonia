@@ -199,6 +199,9 @@ namespace Avalonia.Platform
         public PixelFormat DefaultPixelFormat { get; }
 
         bool IsSupportedBitmapPixelFormat(PixelFormat format);
+        
+        bool SupportsRegions { get; }
+        IPlatformRenderInterfaceRegion CreateRegion();
     }
 
     [Unstable, PrivateApi]

@@ -42,7 +42,7 @@ namespace Avalonia.Media
 
         internal override void ApplyTo(StreamGeometryContext ctx)
         {
-            ctx.QuadraticBezierTo(Point1, Point2);
+            ctx.QuadraticBezierTo(Point1, Point2, IsStroked);
         }
 
         public override string ToString()

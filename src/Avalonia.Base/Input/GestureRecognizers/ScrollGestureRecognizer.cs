@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Input.GestureRecognizers
@@ -13,7 +14,8 @@ namespace Avalonia.Input.GestureRecognizers
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private bool _isScrollInertiaEnabled;
-        private int _scrollStartDistance = 30;
+        private readonly static int s_defaultScrollStartDistance = (int)((AvaloniaLocator.Current?.GetService<IPlatformSettings>()?.GetTapSize(PointerType.Touch).Height ?? 10) / 2);
+        private int _scrollStartDistance = s_defaultScrollStartDistance;
 
         private bool _scrolling;
         private Point _trackedRootPoint;
@@ -54,7 +56,7 @@ namespace Avalonia.Input.GestureRecognizers
         public static readonly DirectProperty<ScrollGestureRecognizer, int> ScrollStartDistanceProperty =
             AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, int>(nameof(ScrollStartDistance),
                 o => o.ScrollStartDistance, (o, v) => o.ScrollStartDistance = v,
-                unsetValue: 30);
+                unsetValue: s_defaultScrollStartDistance);
 
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
@@ -66,7 +68,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// Gets or sets a value indicating whether the content can be scrolled vertically.
         /// </summary>
         public bool CanVerticallyScroll
         {
@@ -94,14 +96,15 @@ namespace Avalonia.Input.GestureRecognizers
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (e.Pointer.IsPrimary && 
-                (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen)
             {
                 EndGesture();
                 _tracking = e.Pointer;
                 _gestureId = ScrollGestureEventArgs.GetNextFreeId();
                 _rootTarget = (Visual?)(Target as Visual)?.VisualRoot;
                 _trackedRootPoint = _pointerPressedPoint = e.GetPosition(_rootTarget);
+                _velocityTracker = new VelocityTracker();
+                _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), default);
             }
         }
 
@@ -117,9 +120,7 @@ namespace Avalonia.Input.GestureRecognizers
                     if (CanVerticallyScroll && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > ScrollStartDistance)
                         _scrolling = true;
                     if (_scrolling)
-                    {
-                        _velocityTracker = new VelocityTracker();
-                        
+                    {                        
                         // Correct _trackedRootPoint with ScrollStartDistance, so scrolling does not start with a skip of ScrollStartDistance
                         _trackedRootPoint = new Point(
                             _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? ScrollStartDistance : -ScrollStartDistance),

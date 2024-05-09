@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +7,6 @@ using Android.App;
 using Android.Content;
 using Android.Provider;
 using Avalonia.Platform.Storage;
-using Java.Lang;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
 using JavaFile = Java.IO.File;
@@ -150,10 +147,7 @@ internal class AndroidStorageProvider : IStorageProvider
             intent = intent.PutExtra(Intent.ExtraMimeTypes, mimeTypes);
         }
 
-        if (TryGetInitialUri(options.SuggestedStartLocation) is { } initialUri)
-        {
-            intent = intent.PutExtra(DocumentsContract.ExtraInitialUri, initialUri);
-        }
+        intent = TryAddExtraInitialUri(intent, options.SuggestedStartLocation);
 
         var pickerIntent = Intent.CreateChooser(intent, options.Title ?? "Select file");
 
@@ -183,10 +177,7 @@ internal class AndroidStorageProvider : IStorageProvider
             intent = intent.PutExtra(Intent.ExtraTitle, fileName);
         }
 
-        if (TryGetInitialUri(options.SuggestedStartLocation) is { } initialUri)
-        {
-            intent = intent.PutExtra(DocumentsContract.ExtraInitialUri, initialUri);
-        }
+        intent = TryAddExtraInitialUri(intent, options.SuggestedStartLocation);
 
         var pickerIntent = Intent.CreateChooser(intent, options.Title ?? "Save file");
 
@@ -198,10 +189,8 @@ internal class AndroidStorageProvider : IStorageProvider
     {
         var intent = new Intent(Intent.ActionOpenDocumentTree)
             .PutExtra(Intent.ExtraAllowMultiple, options.AllowMultiple);
-        if (TryGetInitialUri(options.SuggestedStartLocation) is { } initialUri)
-        {
-            intent = intent.PutExtra(DocumentsContract.ExtraInitialUri, initialUri);
-        }
+
+        intent = TryAddExtraInitialUri(intent, options.SuggestedStartLocation);
 
         var pickerIntent = Intent.CreateChooser(intent, options.Title ?? "Select folder");
 
@@ -252,7 +241,7 @@ internal class AndroidStorageProvider : IStorageProvider
 
         return resultList;
 
-        void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        void OnActivityResult(int requestCode, Result resultCode, Intent? data)
         {
             if (currentRequestCode != requestCode)
             {
@@ -265,15 +254,15 @@ internal class AndroidStorageProvider : IStorageProvider
         }
     }
 
-    private static AndroidUri? TryGetInitialUri(IStorageFolder? folder)
+    private static Intent TryAddExtraInitialUri(Intent intent, IStorageFolder? folder)
     {
         if (OperatingSystem.IsAndroidVersionAtLeast(26)
             && (folder as AndroidStorageItem)?.Uri is { } uri)
         {
-            return uri;
+            return intent.PutExtra(DocumentsContract.ExtraInitialUri, uri);
         }
 
-        return null;
+        return intent;
     }
 
     private async Task EnsureUriReadPermission(AndroidUri androidUri)

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -117,7 +118,7 @@ public class DispatcherOperation
     /// </summary>
     /// <returns>
     ///     The status of the operation.  To obtain the return value
-    ///     of the invoked delegate, use the the Result property.
+    ///     of the invoked delegate, use the Result property.
     /// </returns>
     public void Wait() => Wait(TimeSpan.FromMilliseconds(-1));
 

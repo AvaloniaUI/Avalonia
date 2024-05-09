@@ -192,7 +192,7 @@ namespace Avalonia.X11
             var surfaces = new List<object>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
-                   depth, () => RenderScaling)
+                   depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
             
             if (egl != null)
@@ -297,6 +297,12 @@ namespace Avalonia.X11
             if (!IsEnabled)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
+
+                UpdateSizeHints(null, true);
+            }
+            else
+            {
+                UpdateSizeHints(null);
             }
 
             var hints = new MotifWmHints
@@ -311,14 +317,14 @@ namespace Avalonia.X11
                 PropertyMode.Replace, ref hints, 5);
         }
 
-        private void UpdateSizeHints(PixelSize? preResize)
+        private void UpdateSizeHints(PixelSize? preResize, bool forceDisableResize = false)
         {
             if (_overrideRedirect)
                 return;
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
-            if (!_canResize)
+            if (!_canResize || forceDisableResize)
             {
                 if (preResize.HasValue)
                 {
@@ -1026,7 +1032,11 @@ namespace Avalonia.X11
 
 
         public void Resize(Size clientSize, WindowResizeReason reason) => Resize(clientSize, false, reason);
-        public void Move(PixelPoint point) => Position = point;
+        public void Move(PixelPoint point)
+        {
+            Position = point;
+            UpdateScaling();
+        }
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
@@ -1289,6 +1299,13 @@ namespace Avalonia.X11
 
             UpdateWMHints();
             UpdateMotifHints();
+
+            if (enable)
+            {
+                // Some window managers ignore Motif hints when switching from disabled to enabled on the first update
+                // so setting it again forces the update
+                UpdateMotifHints();
+            }
         }
 
         private void UpdateWMHints()
@@ -1442,6 +1459,80 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] { atom }, 1);
 
+        }
+
+        /// <inheritdoc/>
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> outputZOrder)
+        {
+            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
+            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
+
+            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
+            for (var i = 0; i < windows.Length; i++)
+                if (windows[i].PlatformImpl is { } platformImpl)
+                    indexInWindowsSpan[platformImpl.Handle.Handle] = i;
+
+            foreach (var window in windows)
+            {
+                if (window.PlatformImpl is not X11Window x11Window)
+                    continue;
+
+                var node = x11Window.Handle.Handle;
+                while (node != IntPtr.Zero)
+                {
+                    if (windowsChildren.ContainsKey(node))
+                    {
+                        break;
+                    }
+
+                    if (XQueryTree(_x11.Display, node, out _, out var parent,
+                            out var childrenPtr, out var childrenCount) == 0)
+                    {
+                        break;
+                    }
+
+                    if (childrenPtr != IntPtr.Zero)
+                    {
+                        var children = (IntPtr*)childrenPtr;
+                        windowsChildren[node] = new List<IntPtr>(childrenCount);
+                        for (var i = 0; i < childrenCount; i++)
+                        {
+                            windowsChildren[node].Add(children[i]);
+                        }
+                        XFree(childrenPtr);
+                    }
+
+                    node = parent;
+                }
+            }
+
+            var stack = new Stack<IntPtr>();
+            var zOrder = 0;
+            stack.Push(_x11.RootWindow);
+
+            while (stack.Count > 0)
+            {
+                var currentWindow = stack.Pop();
+
+                if (!windowsChildren.TryGetValue(currentWindow, out var children))
+                {
+                    continue;
+                }
+
+                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
+                {
+                    outputZOrder[index] = zOrder;
+                }
+
+                zOrder++;
+
+                // Children are returned bottom to top, so we need to push them in reverse order
+                // In order to traverse bottom children first
+                for (int i = children.Count - 1; i >= 0; i--)
+                {
+                    stack.Push(children[i]);
+                }
+            }
         }
     }
 }

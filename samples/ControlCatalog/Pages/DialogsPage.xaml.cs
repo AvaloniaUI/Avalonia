@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -43,7 +44,7 @@ namespace ControlCatalog.Pages
                 {
                     lastSelectedDirectory = await GetStorageProvider().TryGetWellKnownFolderAsync(folderEnum);
                 }
-                else
+                else if (!string.IsNullOrWhiteSpace(currentFolderBox.Text))
                 {
                     if (!Uri.TryCreate(currentFolderBox.Text, UriKind.Absolute, out var folderLink))
                     {
@@ -52,7 +53,14 @@ namespace ControlCatalog.Pages
 
                     if (folderLink is not null)
                     {
-                        lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPathAsync(folderLink);
+                        try
+                        {
+                            lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPathAsync(folderLink);
+                        }
+                        catch (SecurityException)
+                        {
+                            
+                        }
                     }
                 }
             };
@@ -239,7 +247,6 @@ namespace ControlCatalog.Pages
                     FileTypeChoices = fileTypes,
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
-                    DefaultExtension = fileTypes?.Any() == true ? "txt" : null,
                     ShowOverwritePrompt = true
                 });
 
@@ -468,8 +475,8 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         private IStorageProvider GetStorageProvider()
         {
             var forceManaged = this.Get<CheckBox>("ForceManaged").IsChecked ?? false;
-            return forceManaged
-                ? new ManagedStorageProvider(GetWindow())
+            return forceManaged 
+                ? new ManagedStorageProvider(GetWindow()) // NOTE: In your production App use 'AppBuilder.UseManagedSystemDialogs()'
                 : GetTopLevel().StorageProvider;
         }
 

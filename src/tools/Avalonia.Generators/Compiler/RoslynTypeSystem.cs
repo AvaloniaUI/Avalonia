@@ -152,7 +152,7 @@ internal class RoslynType : IXamlType
         _symbol.Constructors
             .Select(method => new RoslynConstructor(method, _assembly))
             .ToList();
-        
+
     public IReadOnlyList<IXamlCustomAttribute> CustomAttributes { get; } = Array.Empty<IXamlCustomAttribute>();
 
     public IReadOnlyList<IXamlType> GenericArguments { get; private set; } = new List<IXamlType>();
@@ -189,6 +189,8 @@ internal class RoslynType : IXamlType
     public IXamlType GetEnumUnderlyingType() => null;
 
     public IReadOnlyList<IXamlType> GenericParameters { get; } = new List<IXamlType>();
+
+    public bool IsFunctionPointer => false;
 }
 
 internal class RoslynConstructor : IXamlConstructor
@@ -243,7 +245,7 @@ internal class RoslynProperty : IXamlProperty
     public IXamlMethod Getter => _symbol.GetMethod == null ? null : new RoslynMethod(_symbol.GetMethod, _assembly);
         
     public IXamlMethod Setter => _symbol.SetMethod == null ? null : new RoslynMethod(_symbol.SetMethod, _assembly); 
-        
+
     public IReadOnlyList<IXamlCustomAttribute> CustomAttributes { get; } = Array.Empty<IXamlCustomAttribute>();
 
     public IReadOnlyList<IXamlType> IndexerParameters { get; } = new List<IXamlType>();
@@ -295,7 +297,7 @@ internal class RoslynMethod : IXamlMethod
     public IReadOnlyList<IXamlType> Parameters =>
         _symbol.Parameters.Select(parameter => new RoslynParameter(_assembly, parameter).ParameterType)
             .ToList();
-        
+
     public IXamlType DeclaringType => new RoslynType((INamedTypeSymbol)_symbol.ReceiverType, _assembly);
         
     public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) => null;

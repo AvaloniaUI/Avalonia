@@ -45,7 +45,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_DecreaseButton", typeof(Button))]
     [TemplatePart("PART_IncreaseButton", typeof(Button))]
-    [TemplatePart("PART_Track",          typeof(Track), IsRequired = true)]
+    [TemplatePart("PART_Track",          typeof(Track))]
     [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {
@@ -203,22 +203,26 @@ namespace Avalonia.Controls
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
 
-            _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
-            _track = e.NameScope.Get<Track>("PART_Track");
-            _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
+            _track = e.NameScope.Find<Track>("PART_Track");
 
-            _track.IgnoreThumbDrag = true;
-
-            if (_decreaseButton != null)
+            if (_track != null)
             {
-                _decreaseButtonPressDispose = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _decreaseButtonReleaseDispose = _decreaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
-            }
+                _track.IgnoreThumbDrag = true;
 
-            if (_increaseButton != null)
-            {
-                _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
+                _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
+
+                if (_decreaseButton != null)
+                {
+                    _decreaseButtonPressDispose = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                    _decreaseButtonReleaseDispose = _decreaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                }
+
+                if (_increaseButton != null)
+                {
+                    _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                    _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                }
             }
 
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);

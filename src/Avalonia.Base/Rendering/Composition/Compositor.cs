@@ -77,14 +77,15 @@ namespace Avalonia.Rendering.Composition
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
             ICompositorScheduler scheduler, bool reclaimBuffersImmediately,
-            Dispatcher dispatcher)
+            Dispatcher dispatcher, CompositionOptions? options = null)
         {
+            options ??= AvaloniaLocator.Current.GetService<CompositionOptions>() ?? new();
             Loop = loop;
             UseUiThreadForSynchronousCommits = useUiThreadForSynchronousCommits;
             Dispatcher = dispatcher;
             _batchMemoryPool = new(reclaimBuffersImmediately);
             _batchObjectPool = new(reclaimBuffersImmediately);
-            _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
+            _server = new ServerCompositor(loop, gpu, options, _batchObjectPool, _batchMemoryPool);
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
             DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));

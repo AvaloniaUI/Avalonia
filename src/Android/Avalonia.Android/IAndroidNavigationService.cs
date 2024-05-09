@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android
 {

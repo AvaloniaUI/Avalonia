@@ -160,8 +160,12 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
-            foreach (var l in _layers)
+            for (var index = 0; index < _layers.Count; index++)
+            {
+                var l = _layers[index];
                 l.Arrange(new Rect(finalSize));
+            }
+
             return base.ArrangeOverride(finalSize);
         }
     }
