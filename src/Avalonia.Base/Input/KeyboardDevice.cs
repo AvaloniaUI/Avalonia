@@ -165,6 +165,10 @@ namespace Avalonia.Input
                 _textInputManager.SetFocusedElement(element);
                 RaisePropertyChanged(nameof(FocusedElement));
             }
+            else
+            {
+                _textInputManager.SetFocusedElement(element);
+            }
         }
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = "")
