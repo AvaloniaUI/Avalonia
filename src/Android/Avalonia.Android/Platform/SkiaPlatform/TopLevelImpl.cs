@@ -532,8 +532,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 if (_inputMethod.IsActive && !_commitInProgress)
                 {
                     if (string.IsNullOrEmpty(compositionText))
-                        _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-
+                    {
+                        if (_editable.CurrentComposition.Start > -1)
+                            _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+                    }
                     else
                         _toplevel.TextInput(compositionText);
                 }

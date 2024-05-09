@@ -9,7 +9,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
-using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
 using SharpDX.Mathematics.Interop;
 

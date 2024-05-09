@@ -896,12 +896,12 @@ namespace Avalonia.Controls
 
         private void UpdateToolTip(Rect dirtyRect)
         {
-            if (_tooltipService != null && _pointerOverPreProcessor?.LastPosition is { } lastPos)
+            if (_tooltipService != null && IsPointerOver && _pointerOverPreProcessor?.LastPosition is { } lastPos)
             {
                 var clientPoint = this.PointToClient(lastPos);
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    _tooltipService.Update(HitTester.HitTestFirst(clientPoint, this, null));
+                    _tooltipService.Update(this, HitTester.HitTestFirst(clientPoint, this, null));
                 }
             }
         }
