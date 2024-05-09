@@ -48,15 +48,17 @@ public class InitializeComponentTests
         var names = nameResolver.ResolveNames(classInfo.Xaml);
 
         var generator = new InitializeComponentCodeGenerator(types, devToolsMode);
+        var generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version.ToString();
 
         var code = generator
             .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
             .Replace("\r", string.Empty);
 
-        var expected = await InitializeComponentCode.Load(expectation);
-            
+        var expected = (await InitializeComponentCode.Load(expectation))
+            .Replace("\r", string.Empty)
+            .Replace("$GeneratorVersion", generatorVersion);
             
         CSharpSyntaxTree.ParseText(code);
-        Assert.Equal(expected.Replace("\r", string.Empty), code);
+        Assert.Equal(expected, code);
     }
 }
