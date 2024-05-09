@@ -843,10 +843,10 @@ namespace Avalonia.PropertyStore
             var effectiveLocalValues = new List<ValueEntryDiagnostic>(_effectiveValues.Count);
             for (var i = 0; i < _effectiveValues.Count; i++)
             {
-                _effectiveValues.GetKeyValue(i, out var key, out var effectiveValue);
-                if (effectiveValue.Priority == BindingPriority.LocalValue)
+                if (_effectiveValues.GetValue(i) is { } effectiveValue
+                    && effectiveValue.Priority == BindingPriority.LocalValue)
                 {
-                    effectiveLocalValues.Add(new ValueEntryDiagnostic(key, effectiveValue.Value));
+                    effectiveLocalValues.Add(new ValueEntryDiagnostic(effectiveValue.Property, effectiveValue.Value));
                 }
             }
 
