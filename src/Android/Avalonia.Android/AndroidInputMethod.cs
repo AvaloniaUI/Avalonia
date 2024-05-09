@@ -117,16 +117,20 @@ namespace Avalonia.Android
 
         private void OnSelectionChanged()
         {
-            if (Client is null)
+            if (Client is null || _inputConnection is null)
             {
                 return;
             }
 
+            OnSurroundingTextChanged();
+
             var selection = Client.Selection;
 
-            _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
+            _inputConnection.SetSelection(selection.Start, selection.End);
 
-            _inputConnection?.SetSelection(selection.Start, selection.End);
+            var composition = _inputConnection.EditableWrapper.CurrentComposition;
+
+            _imm.UpdateSelection(_host, selection.Start, selection.End, composition.Start, composition.End);
         }
 
         private void _client_SurroundingTextChanged(object? sender, EventArgs e)
@@ -140,8 +144,6 @@ namespace Avalonia.Android
         {
             if (_inputConnection is null || _inputConnection.IsInBatchEdit)
                 return;
-
-            OnSurroundingTextChanged();
             OnSelectionChanged();
         }
 
