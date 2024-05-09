@@ -6,9 +6,9 @@ using UIKit;
 
 namespace Avalonia.iOS;
 
-internal class IOSLauncher : ILauncher
+internal class IOSLauncher : Launcher
 {
-    public Task<bool> LaunchUriAsync(Uri uri)
+    protected override Task<bool> LaunchUriAsyncImpl(Uri uri)
     {
         _ = uri ?? throw new ArgumentNullException(nameof(uri));
 
@@ -20,7 +20,7 @@ internal class IOSLauncher : ILauncher
         return Task.FromResult(false);
     }
 
-    public Task<bool> LaunchFileAsync(IStorageItem storageItem)
+    protected override Task<bool> LaunchFileAsyncImpl(IStorageItem storageItem)
     {
         _ = storageItem ?? throw new ArgumentNullException(nameof(storageItem));
 

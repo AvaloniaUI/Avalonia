@@ -5,9 +5,9 @@ using MiniMvvm;
 
 namespace ControlCatalog.ViewModels;
 
-public class PlatformInformationViewModel : ViewModelBase
+public class PlatformViewModel : ViewModelBase
 {
-    public PlatformInformationViewModel()
+    public PlatformViewModel()
     {
         /*  NOTE:
         *   ------------

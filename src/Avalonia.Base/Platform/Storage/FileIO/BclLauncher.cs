@@ -3,13 +3,12 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Compatibility;
-using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
-internal class BclLauncher : ILauncher
+internal class BclLauncher : Launcher
 {
-    public virtual Task<bool> LaunchUriAsync(Uri uri)
+    protected override Task<bool> LaunchUriAsyncImpl(Uri uri)
     {
         _ = uri ?? throw new ArgumentNullException(nameof(uri));
         if (uri.IsAbsoluteUri)
@@ -24,7 +23,7 @@ internal class BclLauncher : ILauncher
     /// This Process based implementation doesn't handle the case, when there is no app to handle link.
     /// It will still return true in this case.
     /// </summary>
-    public virtual Task<bool> LaunchFileAsync(IStorageItem storageItem)
+    protected override Task<bool> LaunchFileAsyncImpl(IStorageItem storageItem)
     {
         _ = storageItem ?? throw new ArgumentNullException(nameof(storageItem));
         if (storageItem.TryGetLocalPath() is { } localPath

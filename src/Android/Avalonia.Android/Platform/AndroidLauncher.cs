@@ -7,7 +7,7 @@ using AndroidUri = Android.Net.Uri;
 
 namespace Avalonia.Android.Platform;
 
-internal class AndroidLauncher : ILauncher
+internal class AndroidLauncher : Launcher
 {
     private readonly Context _context;
 
@@ -16,7 +16,7 @@ internal class AndroidLauncher : ILauncher
         _context = context;
     }
     
-    public Task<bool> LaunchUriAsync(Uri uri)
+    protected override Task<bool> LaunchUriAsyncImpl(Uri uri)
     {
         _ = uri ?? throw new ArgumentNullException(nameof(uri));
         if (uri.IsAbsoluteUri && _context.PackageManager is { } packageManager)
@@ -33,7 +33,7 @@ internal class AndroidLauncher : ILauncher
         return Task.FromResult(false);
     }
 
-    public Task<bool> LaunchFileAsync(IStorageItem storageItem)
+    protected override Task<bool> LaunchFileAsyncImpl(IStorageItem storageItem)
     {
         _ = storageItem ?? throw new ArgumentNullException(nameof(storageItem));
         var androidUri = (storageItem as AndroidStorageItem)?.Uri
