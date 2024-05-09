@@ -81,7 +81,7 @@ namespace Avalonia.Controls.Primitives
         /// Configures the position of the popup according to a target control and a set of
         /// placement parameters.
         /// </summary>
-        internal void ConfigurePosition(PopupPositionRequest positionRequest);
+        void ConfigurePosition(PopupPositionRequest positionRequest);
 
         /// <summary>
         /// Sets the control to display in the popup.

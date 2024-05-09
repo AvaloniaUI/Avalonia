@@ -52,7 +52,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("VerticalOffset", 20);
 
         /// <inheritdoc cref="Popup.CustomPopupPlacementCallbackProperty"/>
-        public static readonly StyledProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+        public static readonly AttachedProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, CustomPopupPlacementCallback?>("CustomPopupPlacementCallback");
 
         /// <summary>
