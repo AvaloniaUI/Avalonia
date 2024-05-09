@@ -394,12 +394,22 @@ namespace Avalonia.Controls
 
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                IsPressed = true;
-                e.Handled = true;
-
-                if (ClickMode == ClickMode.Press)
+                if (_isFlyoutOpen && IsEffectivelyEnabled)
                 {
+                    // When a flyout is open with OverlayDismissEventPassThrough enabled and the button is pressed,
+                    // close the flyout, but do not transition to a pressed state
+                    e.Handled = true;
                     OnClick();
+                }
+                else
+                {
+                    IsPressed = true;
+                    e.Handled = true;
+
+                    if (ClickMode == ClickMode.Press)
+                    {
+                        OnClick();
+                    }
                 }
             }
         }
