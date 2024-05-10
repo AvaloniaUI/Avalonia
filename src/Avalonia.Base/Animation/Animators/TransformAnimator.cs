@@ -14,7 +14,7 @@ namespace Avalonia.Animation.Animators
         DoubleAnimator? _doubleAnimator;
 
         /// <inheritdoc/>
-        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> obsMatch, Action? onComplete)
+        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var ctrl = (Visual)control;
 
@@ -65,7 +65,7 @@ namespace Avalonia.Animation.Animators
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
+                    return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? control.Clock, match, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -74,7 +74,7 @@ namespace Avalonia.Animation.Animators
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return _doubleAnimator.Apply(animation, transform, clock ?? control.Clock, obsMatch, onComplete);
+                            return _doubleAnimator.Apply(animation, transform, clock ?? control.Clock, match, onComplete);
                         }
                     }
                 }
@@ -93,6 +93,6 @@ namespace Avalonia.Animation.Animators
         }
 
         /// <inheritdoc/> 
-        public override double Interpolate(double p, double o, double n) => 0;
+        public override double Interpolate(double progress, double o, double n) => 0;
     }
 }
