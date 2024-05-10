@@ -346,8 +346,8 @@ public class TestServiceProvider :
     }
 
     public Uri BaseUri { get; set; }
-    public List<object> Parents { get; set; } = new List<object> { new ContentControl() };
-    IEnumerable<object> IAvaloniaXamlIlParentStackProvider.Parents => Parents;
-    public IReadOnlyList<object> DirectParents => Parents;
-    public IAvaloniaXamlIlEagerParentStackProvider ParentProvider => null;
+    public List<object> ParentsStack { get; set; } = [new ContentControl()];
+    IEnumerable<object> IAvaloniaXamlIlParentStackProvider.Parents => ParentsStack.AsEnumerable().Reverse();
+    IReadOnlyList<object> IAvaloniaXamlIlEagerParentStackProvider.DirectParentsStack => ParentsStack;
+    IAvaloniaXamlIlEagerParentStackProvider IAvaloniaXamlIlEagerParentStackProvider.ParentProvider => null;
 }
