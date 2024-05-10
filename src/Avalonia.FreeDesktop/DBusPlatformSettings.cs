@@ -45,7 +45,7 @@ namespace Avalonia.FreeDesktop
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetItem(0);
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
                 return ToColorScheme(value.GetUInt32());
             }
             catch (DBusException)
@@ -63,7 +63,7 @@ namespace Avalonia.FreeDesktop
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color")).GetItem(0);
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
                 return ToAccentColor(value);
             }
             catch (DBusException)
