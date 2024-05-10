@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -135,7 +136,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;
-       
+
+        // TODO12: mark PrivateAPI or internal.
+        [Unstable("PopupHost is consireded an internal API. Use Popup or any Popup-based controls (Flyout, Tooltip) instead.")]
         public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
         {
             if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)

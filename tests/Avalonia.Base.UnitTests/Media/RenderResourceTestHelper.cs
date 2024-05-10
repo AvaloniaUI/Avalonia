@@ -42,7 +42,7 @@ internal class RenderResourceTestHelper : IDisposable
         Assert.True(Compositor.UnitTestIsRegisteredForSerialization(resource));
         
         Compositor.Commit();
-        Compositor.Server.Render();
+        Compositor.Server.Render(false);
         
         Assert.False(Compositor.UnitTestIsRegisteredForSerialization(resource));
         cb();

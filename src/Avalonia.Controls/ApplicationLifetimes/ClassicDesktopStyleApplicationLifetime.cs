@@ -163,6 +163,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             _exitCode = exitCode;
             _isShuttingDown = true;
+            var shutdownCancelled = false;
 
             try
             {
@@ -180,6 +181,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 if (!force && Windows.Count > 0)
                 {
                     e.Cancel = true;
+                    shutdownCancelled = true;
                     return false;
                 }
 
@@ -189,10 +191,14 @@ namespace Avalonia.Controls.ApplicationLifetimes
             }
             finally
             {
-                _cts?.Cancel();
-                _cts = null;
                 _isShuttingDown = false;
-                Dispatcher.UIThread.InvokeShutdown();
+
+                if (!shutdownCancelled)
+                {
+                    _cts?.Cancel();
+                    _cts = null;
+                    Dispatcher.UIThread.InvokeShutdown();
+                }
             }
 
             return true;
@@ -217,8 +223,7 @@ namespace Avalonia
         private static ClassicDesktopStyleApplicationLifetime PrepareLifetime(AppBuilder builder, string[] args,
             Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder)
         {
-            var lifetime = builder.LifetimeOverride?.Invoke(typeof(ClassicDesktopStyleApplicationLifetime)) as ClassicDesktopStyleApplicationLifetime 
-                ?? new ClassicDesktopStyleApplicationLifetime();
+            var lifetime = new ClassicDesktopStyleApplicationLifetime();
             lifetime.SubscribeGlobalEvents();
 
             lifetime.Args = args;

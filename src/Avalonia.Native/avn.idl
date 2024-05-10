@@ -2,6 +2,7 @@
 @clr-access internal
 @clr-map bool int
 @clr-map u_int64_t ulong
+@clr-map long IntPtr
 @cpp-preamble @@
 #pragma once
 #include "com.h"
@@ -750,6 +751,7 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints);
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
+     HRESULT GetWindowZOrder(long*ret);
 }
 
 [uuid(939b6599-40a8-4710-a4c8-5d72d8f174fb)]
@@ -1000,6 +1002,7 @@ interface IAvnTrayIcon : IUnknown
     HRESULT SetMenu(IAvnMenu* menu);
     HRESULT SetIsVisible(bool isVisible);
     HRESULT SetToolTipText(char* text);
+    HRESULT SetIsTemplateIcon(bool text);
 }
 
 [uuid(a7724dc1-cf6b-4fa8-9d23-228bf2593edc)]
@@ -1026,6 +1029,7 @@ interface IAvnMenuItem : IUnknown
      HRESULT SetGesture(AvnKey key, AvnInputModifiers modifiers);
      HRESULT SetAction(IAvnPredicateCallback* predicate, IAvnActionCallback* callback);
      HRESULT SetIsChecked(bool isChecked);
+     HRESULT SetIsVisible(bool isVisible);
      HRESULT SetToggleType(AvnMenuItemToggleType toggleType);
      HRESULT SetIcon(void* data, size_t length);
 }
@@ -1200,7 +1204,7 @@ interface IAvnPlatformBehaviorInhibition : IUnknown
 [uuid(22edf20d-5803-2d3f-9247-b4842e5e9322)]
 interface IAvnPlatformRenderTimer : IUnknown
 {
-    HRESULT RegisterTick(IAvnActionCallback* callback);
+    int RegisterTick(IAvnActionCallback* callback);
     void Start();
     void Stop();
     bool RunsInBackground();

@@ -1,3 +1,4 @@
+using System;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -44,6 +45,25 @@ namespace Avalonia.Base.UnitTests
             var p2 = p1.AddOwner<Class2>(o => null, (o, v) => { });
 
             Assert.Same(p1.Changed, p2.Changed);
+        }
+
+        [Fact]
+        public void Default_GetMetadata_Cannot_Be_Changed()
+        {
+            var p1 = Class1.FooProperty;
+            var metadata = p1.GetMetadata<Class1>();
+
+            Assert.Throws<InvalidOperationException>(() => metadata.Merge(new DirectPropertyMetadata<string>(), p1));
+        }
+
+        [Fact]
+        public void AddOwnered_GetMetadata_Cannot_Be_Changed()
+        {
+            var p1 = Class1.FooProperty;
+            var p2 = p1.AddOwner<Class2>(_ => null, (_, _) => { });
+            var metadata = p2.GetMetadata<Class2>();
+
+            Assert.Throws<InvalidOperationException>(() => metadata.Merge(new DirectPropertyMetadata<string>(), p2));
         }
 
         private class Class1 : AvaloniaObject

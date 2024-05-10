@@ -1,0 +1,28 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <!-- DatePicker -->
+  <x:String x:Key="StringDatePickerDayText">day</x:String>
+  <x:String x:Key="StringDatePickerMonthText">month</x:String>
+  <x:String x:Key="StringDatePickerYearText">year</x:String>
+  <!-- TimePicker -->
+  <x:String x:Key="StringTimePickerHourText">hour</x:String>
+  <x:String x:Key="StringTimePickerMinuteText">minute</x:String>
+  <!-- TextBox/SelectableTextBox flyout -->
+  <x:String x:Key="StringTextFlyoutCutText">Cut</x:String>
+  <x:String x:Key="StringTextFlyoutCopyText">Copy</x:String>
+  <x:String x:Key="StringTextFlyoutPasteText">Paste</x:String>
+  <!-- ManagedFileChooser -->
+  <x:String x:Key="StringManagedFileChooserFileNameWatermark">File name</x:String>
+  <x:String x:Key="StringManagedFileChooserShowHiddenFilesText">Show hidden files</x:String>
+  <x:String x:Key="StringManagedFileChooserOkText">OK</x:String>
+  <x:String x:Key="StringManagedFileChooserCancelText">Cancel</x:String>
+  <x:String x:Key="StringManagedFileChooserNameColumn">Name</x:String>
+  <x:String x:Key="StringManagedFileChooserDateModifiedColumn">Date Modified</x:String>
+  <x:String x:Key="StringManagedFileChooserTypeColumn">Type</x:String>
+  <x:String x:Key="StringManagedFileChooserSizeColumn">Size</x:String>
+  <x:String x:Key="StringManagedFileChooserOverwritePromptFileAlreadyExistsText">{0} already exists. Do you want to replace it?</x:String>
+  <x:String x:Key="StringManagedFileChooserOverwritePromptConfirmText">Yes</x:String>
+  <x:String x:Key="StringManagedFileChooserOverwritePromptCancelText">No</x:String>
+</ResourceDictionary>
+

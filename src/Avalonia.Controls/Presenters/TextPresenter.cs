@@ -461,6 +461,7 @@ namespace Avalonia.Controls.Presenters
 
         public void ShowCaret()
         {
+            EnsureCaretTimer();
             _caretBlink = true;
             _caretTimer?.Start();
             InvalidateVisual();
@@ -483,6 +484,8 @@ namespace Avalonia.Controls.Presenters
             {
                 return;
             }
+
+            EnsureCaretTimer();
 
             if (_caretTimer?.IsEnabled ?? false)
             {
@@ -727,6 +730,14 @@ namespace Avalonia.Controls.Presenters
             _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
 
             CaretChanged();
+        }
+        
+        private void EnsureCaretTimer()
+        {
+            if (_caretTimer == null)
+            {
+                ResetCaretTimer();
+            }
         }
 
         private void ResetCaretTimer()

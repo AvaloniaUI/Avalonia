@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +7,6 @@ using Android.App;
 using Android.Content;
 using Android.Provider;
 using Avalonia.Platform.Storage;
-using Java.Lang;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
 using JavaFile = Java.IO.File;
@@ -55,12 +52,8 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        var hasPerms = await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
-        if (!hasPerms)
-        {
-            throw new SecurityException("Application doesn't have ReadExternalStorage permission. Make sure android manifest has this permission defined and user allowed it.");
-        }
-        
+        await EnsureUriReadPermission(androidUri);
+
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsFile)
         {
@@ -88,11 +81,7 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        var hasPerms = await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
-        if (!hasPerms)
-        {
-            throw new SecurityException("Application doesn't have ReadExternalStorage permission. Make sure android manifest has this permission defined and user allowed it.");
-        }
+        await EnsureUriReadPermission(androidUri);
 
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsDirectory)
@@ -158,10 +147,7 @@ internal class AndroidStorageProvider : IStorageProvider
             intent = intent.PutExtra(Intent.ExtraMimeTypes, mimeTypes);
         }
 
-        if (TryGetInitialUri(options.SuggestedStartLocation) is { } initialUri)
-        {
-            intent = intent.PutExtra(DocumentsContract.ExtraInitialUri, initialUri);
-        }
+        intent = TryAddExtraInitialUri(intent, options.SuggestedStartLocation);
 
         var pickerIntent = Intent.CreateChooser(intent, options.Title ?? "Select file");
 
@@ -191,10 +177,7 @@ internal class AndroidStorageProvider : IStorageProvider
             intent = intent.PutExtra(Intent.ExtraTitle, fileName);
         }
 
-        if (TryGetInitialUri(options.SuggestedStartLocation) is { } initialUri)
-        {
-            intent = intent.PutExtra(DocumentsContract.ExtraInitialUri, initialUri);
-        }
+        intent = TryAddExtraInitialUri(intent, options.SuggestedStartLocation);
 
         var pickerIntent = Intent.CreateChooser(intent, options.Title ?? "Save file");
 
@@ -206,10 +189,8 @@ internal class AndroidStorageProvider : IStorageProvider
     {
         var intent = new Intent(Intent.ActionOpenDocumentTree)
             .PutExtra(Intent.ExtraAllowMultiple, options.AllowMultiple);
-        if (TryGetInitialUri(options.SuggestedStartLocation) is { } initialUri)
-        {
-            intent = intent.PutExtra(DocumentsContract.ExtraInitialUri, initialUri);
-        }
+
+        intent = TryAddExtraInitialUri(intent, options.SuggestedStartLocation);
 
         var pickerIntent = Intent.CreateChooser(intent, options.Title ?? "Select folder");
 
@@ -260,7 +241,7 @@ internal class AndroidStorageProvider : IStorageProvider
 
         return resultList;
 
-        void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        void OnActivityResult(int requestCode, Result resultCode, Intent? data)
         {
             if (currentRequestCode != requestCode)
             {
@@ -273,14 +254,40 @@ internal class AndroidStorageProvider : IStorageProvider
         }
     }
 
-    private static AndroidUri? TryGetInitialUri(IStorageFolder? folder)
+    private static Intent TryAddExtraInitialUri(Intent intent, IStorageFolder? folder)
     {
         if (OperatingSystem.IsAndroidVersionAtLeast(26)
             && (folder as AndroidStorageItem)?.Uri is { } uri)
         {
-            return uri;
+            return intent.PutExtra(DocumentsContract.ExtraInitialUri, uri);
         }
 
-        return null;
+        return intent;
+    }
+
+    private async Task EnsureUriReadPermission(AndroidUri androidUri)
+    {
+        bool hasPerms = false;
+        Exception? innerEx = null;
+        try
+        {
+            hasPerms = _activity.CheckUriPermission(androidUri,
+                global::Android.OS.Process.MyPid(),
+                global::Android.OS.Process.MyUid(),
+                ActivityFlags.GrantReadUriPermission)
+                == global::Android.Content.PM.Permission.Granted;
+
+            // TODO: call RequestPermission or add proper permissions API, something like in Browser File API.
+            hasPerms = hasPerms || await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
+        }
+        catch (Exception ex)
+        {
+            innerEx = ex;
+        }
+
+        if (!hasPerms)
+        {
+            throw new InvalidOperationException("Application doesn't have READ_EXTERNAL_STORAGE permission. Make sure android manifest has this permission defined and user allowed it.", innerEx);
+        }
     }
 }

@@ -5,6 +5,8 @@ using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Skia.Vulkan;
+using Avalonia.Vulkan;
 using SkiaSharp;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metal;
@@ -36,6 +38,8 @@ namespace Avalonia.Skia
                 return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes));
             if (graphicsContext is IMetalDevice metal)
                 return new SkiaContext(new SkiaMetalGpu(metal, _maxResourceBytes));
+            if (graphicsContext is IVulkanPlatformGraphicsContext vulkanContext)
+                return new SkiaContext(new VulkanSkiaGpu(vulkanContext, _maxResourceBytes));
             throw new ArgumentException("Graphics context of type is not supported");
         }
 
@@ -49,6 +53,9 @@ namespace Avalonia.Skia
             format == PixelFormats.Rgb565
             || format == PixelFormats.Bgra8888
             || format == PixelFormats.Rgba8888;
+
+        public bool SupportsRegions => true;
+        public IPlatformRenderInterfaceRegion CreateRegion() => new SkiaRegionImpl();
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
 

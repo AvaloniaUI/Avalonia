@@ -24,6 +24,7 @@ namespace Avalonia.Controls.Primitives
         /// Generates a new bitmap of the specified size by changing a specific color component.
         /// This will produce a gradient representing a sweep of all possible values of the color component.
         /// </summary>
+        /// <param name="bgraPixelData">The target buffer which will contain the bitmap data on return.</param>
         /// <param name="width">The pixel width (X, horizontal) of the resulting bitmap.</param>
         /// <param name="height">The pixel height (Y, vertical) of the resulting bitmap.</param>
         /// <param name="orientation">The orientation of the resulting bitmap (gradient direction).</param>

@@ -77,7 +77,7 @@ namespace Avalonia.Data
             AvaloniaObject target,
             object? anchor)
         {
-            var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
+            var enableDataValidation = targetProperty.GetMetadata(target).EnableDataValidation ?? false;
             return InstanceCore(targetProperty, target, anchor, enableDataValidation);
         }
 

@@ -33,7 +33,7 @@
                      Opacity="0.5" />
 
           <!--  Focusable="False"  -->
-          <ContentPresenter Name="Content"
+          <ContentPresenter x:Name="PART_ContentPresenter"
                             Margin="1,0,1,1"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -63,7 +63,7 @@
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <Style Selector="^:inactive /template/ ContentPresenter#Content">
+    <Style Selector="^:inactive /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     </Style>
 

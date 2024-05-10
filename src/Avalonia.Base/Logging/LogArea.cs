@@ -78,6 +78,11 @@ namespace Avalonia.Logging
         /// <summary>
         /// The log event comes from Browser Platform
         /// </summary>
-        public static string BrowserPlatform => nameof(BrowserPlatform);
+        public const string BrowserPlatform = nameof(BrowserPlatform);
+
+        /// <summary>
+        /// The log event comes from VNC Platform
+        /// </summary>
+        public const string VncPlatform = nameof(VncPlatform);
     }
 }

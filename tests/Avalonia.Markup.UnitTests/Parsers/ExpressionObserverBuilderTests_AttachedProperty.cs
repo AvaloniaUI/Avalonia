@@ -66,6 +66,22 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public async Task Should_Get_Chained_Attached_Property_Value_With_TypeCast()
+        {
+            var expected = new Class1();
+
+            var data = new Class1();
+            data.SetValue(Owner.SomethingProperty, new Class1() { Next = expected });
+
+            var target = Build(data, "((Class1)(Owner.Something)).Next", typeResolver: (ns, name) => name == "Class1" ? typeof(Class1) : _typeResolver(ns, name));
+            var result = await target.Take(1);
+
+            Assert.Equal(expected, result);
+
+            Assert.Null(((IAvaloniaObjectDebug)data).GetPropertyChangedSubscribers());
+        }
+
+        [Fact]
         public void Should_Track_Simple_Attached_Value()
         {
             var data = new Class1();
@@ -159,6 +175,11 @@ namespace Avalonia.Markup.UnitTests.Parsers
                     "Foo",
                     typeof(Owner),
                     defaultValue: "foo");
+
+            public static readonly AttachedProperty<AvaloniaObject> SomethingProperty =
+                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject>(
+                    "Something",
+                    typeof(Owner));
         }
 
         private class Class1 : AvaloniaObject

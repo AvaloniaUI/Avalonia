@@ -26,13 +26,16 @@ internal class NativeMenuBarPresenter : Menu
                 [!MenuItem.IconProperty] = nativeItem.GetObservable(NativeMenuItem.IconProperty)
                     .Select(i => i is { } bitmap ? new Image { Source = bitmap } : null).ToBinding(),
                 [!MenuItem.IsEnabledProperty] = nativeItem.GetObservable(NativeMenuItem.IsEnabledProperty).ToBinding(),
+                [!MenuItem.IsVisibleProperty] = nativeItem.GetObservable(NativeMenuItem.IsVisibleProperty).ToBinding(),
                 [!MenuItem.CommandProperty] = nativeItem.GetObservable(NativeMenuItem.CommandProperty).ToBinding(),
                 [!MenuItem.CommandParameterProperty] =
                     nativeItem.GetObservable(NativeMenuItem.CommandParameterProperty).ToBinding(),
                 [!MenuItem.InputGestureProperty] = nativeItem.GetObservable(NativeMenuItem.GestureProperty).ToBinding(),
                 [!MenuItem.ToggleTypeProperty] = nativeItem.GetObservable(NativeMenuItem.ToggleTypeProperty)
                     // TODO12 remove NativeMenuItemToggleType
-                    .Select(v => (MenuItemToggleType)v).ToBinding()
+                    .Select(v => (MenuItemToggleType)v).ToBinding(),
+                [!ToolTip.TipProperty] =
+                    nativeItem.GetObservable(NativeMenuItem.ToolTipProperty).ToBinding(),
             };
 
             BindingOperations.Apply(newItem, MenuItem.IsCheckedProperty, InstancedBinding.TwoWay(

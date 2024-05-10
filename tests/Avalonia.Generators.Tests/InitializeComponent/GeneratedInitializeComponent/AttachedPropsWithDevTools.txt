@@ -8,6 +8,7 @@ namespace Sample.App
 {
     partial class SampleView
     {
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBox UserNameTextBox;
 
         /// <summary>
@@ -16,6 +17,8 @@ namespace Sample.App
         /// <param name="loadXaml">Should the XAML be loaded into the component.</param>
         /// <param name="attachDevTools">Should the dev tools be attached.</param>
 
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public void InitializeComponent(bool loadXaml = true, bool attachDevTools = true)
         {
             if (loadXaml)
@@ -30,7 +33,8 @@ namespace Sample.App
             }
 #endif
 
-            UserNameTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("UserNameTextBox");
+            var __thisNameScope__ = this.FindNameScope();
+            UserNameTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("UserNameTextBox");
         }
     }
 }

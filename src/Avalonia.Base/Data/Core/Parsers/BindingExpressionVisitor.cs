@@ -15,7 +15,7 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
 {
     private static readonly PropertyInfo AvaloniaObjectIndexer;
     private static readonly MethodInfo CreateDelegateMethod;
-    private static readonly string IndexerGetterName = "get_Item";
+    private const string IndexerGetterName = "get_Item";
     private const string MultiDimensionalArrayGetterMethodName = "Get";
     private readonly bool _enableDataValidation;
     private readonly LambdaExpression _rootExpression;

@@ -129,7 +129,8 @@ namespace Avalonia.Animation.Animators
                         CreateStopsFromSolidColorBrush(solidColorBrush, oldRadial.GradientStops), solidColorBrush.Opacity,
                         oldRadial.Transform is { } ? new ImmutableTransform(oldRadial.Transform.Value) : null,
                         oldRadial.TransformOrigin,
-                        oldRadial.SpreadMethod, oldRadial.Center, oldRadial.GradientOrigin, oldRadial.Radius);
+                        oldRadial.SpreadMethod, oldRadial.Center, oldRadial.GradientOrigin,
+                        oldRadial.RadiusX, oldRadial.RadiusY);
 
                 case IConicGradientBrush oldConic:
                     return new ImmutableConicGradientBrush(

@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER;XAMLX_INTERNAL</DefineConstants>
     <UseCecil>false</UseCecil>
     <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AvaloniaXamlLoader.cs" />
@@ -15,6 +16,7 @@
     <Compile Include="Converters\FontFamilyTypeConverter.cs" />
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
     <Compile Include="Data\DynamicResourceExpression.cs" />
+    <Compile Include="EagerParentStackEnumerator.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MarkupExtension.cs" />
     <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />

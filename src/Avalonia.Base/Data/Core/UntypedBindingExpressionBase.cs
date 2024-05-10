@@ -140,8 +140,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     }
 
     /// <summary>
-    /// Starts the binding expression following a call to 
-    /// <see cref="AttachCore(IBindingExpressionSink, AvaloniaObject, AvaloniaProperty, BindingPriority)"/>.
+    /// Starts the binding expression following a call to <see cref="AttachCore"/>.
     /// </summary>
     public void Start() => Start(produceValue: true);
 
@@ -404,6 +403,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="error">The new binding or data validation error.</param>
     private protected void PublishValue(object? value, BindingError? error = null)
     {
+        if (!IsRunning)
+            return;
+
         // When binding to DataContext and the expression results in a binding error, the binding
         // expression should produce null rather than UnsetValue in order to not propagate
         // incorrect DataContexts from parent controls while things are being set up.
@@ -530,9 +532,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         if (TargetProperty is not null && _target?.TryGetTarget(out var target) == true)
         {
             if (TargetProperty.IsDirect)
-                _defaultValue = ((IDirectPropertyAccessor)TargetProperty).GetUnsetValue(target.GetType());
+                _defaultValue = ((IDirectPropertyAccessor)TargetProperty).GetUnsetValue(target);
             else
-                _defaultValue = ((IStyledPropertyAccessor)TargetProperty).GetDefaultValue(target.GetType());
+                _defaultValue = ((IStyledPropertyAccessor)TargetProperty).GetDefaultValue(target);
 
             _isDefaultValueInitialized = true;
             return _defaultValue;

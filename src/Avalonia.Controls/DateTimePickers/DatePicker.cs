@@ -373,10 +373,11 @@ namespace Avalonia.Controls
             }
             else
             {
+                // By clearing local value, we reset text property to the value from the template.
+                _monthText!.ClearValue(TextBlock.TextProperty);
+                _yearText!.ClearValue(TextBlock.TextProperty);
+                _dayText!.ClearValue(TextBlock.TextProperty);
                 PseudoClasses.Set(":hasnodate", true);
-                _monthText!.Text = "month";
-                _yearText!.Text = "year";
-                _dayText!.Text = "day";
             }
         }
 

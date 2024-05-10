@@ -1,45 +1,46 @@
-﻿using System;
-using Android.App;
+﻿using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
-namespace Avalonia.Android
+namespace Avalonia.Android;
+
+internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
 {
-    internal class SingleViewLifetime : ISingleViewApplicationLifetime, IActivatableApplicationLifetime
-    {
-        private readonly Activity _activity;
-        private AvaloniaView _view;
-
-        public SingleViewLifetime(Activity activity)
-        {
-            _activity = activity;
-
-            if (activity is IAvaloniaActivity activableActivity)
-            { 
-                activableActivity.Activated += (_, args) => Activated?.Invoke(this, args);
-                activableActivity.Deactivated += (_, args) => Deactivated?.Invoke(this, args);
-            }
-        }
+    private Control? _mainView;
+    private AvaloniaMainActivity? _activity;
         
-        public AvaloniaView View
+    /// <summary>
+    /// Since Main Activity can be swapped, we should adjust litetime as well.  
+    /// </summary>
+    public AvaloniaMainActivity Activity
+    {
+        [return: MaybeNull] get => _activity!;
+        internal set
         {
-            get => _view; internal set
+            if (_activity != null)
             {
-                if (_view != null)
+                _activity.Content = null;
+            }
+            _activity = value;
+            _activity.Content = _mainView;
+        }
+    }
+
+    public Control? MainView
+    {
+        get => _mainView;
+        set
+        {
+            if (_mainView != value)
+            {
+                _mainView = value;
+                if (_activity != null)
                 {
-                    _view.Content = null;
-                    _view.Dispose();
+                    _activity.Content = _mainView;
                 }
-                _view = value;
-                _view.Content = MainView;
             }
         }
-
-        public Control MainView { get; set; }
-        public event EventHandler<ActivatedEventArgs> Activated;
-        public event EventHandler<ActivatedEventArgs> Deactivated;
-
-        public bool TryLeaveBackground() => _activity.MoveTaskToBack(true);
-        public bool TryEnterBackground() => false;
     }
+
+    public TopLevel? TopLevel => _activity?._view?.TopLevel;
 }

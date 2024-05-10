@@ -1,27 +1,45 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.iOS;
 
-internal class SingleViewLifetime : ISingleViewApplicationLifetime, IActivatableApplicationLifetime
+internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
 {
-    public SingleViewLifetime(IAvaloniaAppDelegate avaloniaAppDelegate)
+    private Control? _mainView;
+    private AvaloniaView? _view;
+
+    public AvaloniaView View
     {
-        avaloniaAppDelegate.Activated += (_, args) => Activated?.Invoke(this, args);
-        avaloniaAppDelegate.Deactivated += (_, args) => Deactivated?.Invoke(this, args);
+        [return: MaybeNull] get => _view!;
+        internal set
+        {
+            if (_view != null)
+            {
+                _view.Content = null;
+                _view.Dispose();
+            }
+            _view = value;
+            _view.Content = _mainView;
+        }
     }
-            
-    public AvaloniaView? View;
 
     public Control? MainView
     {
-        get => View!.Content;
-        set => View!.Content = value;
+        get => _mainView;
+        set
+        {
+            if (_mainView != value)
+            {
+                _mainView = value;
+                if (_view != null)
+                {
+                    _view.Content = _mainView;
+                }
+            }
+        }
     }
 
-    public event EventHandler<ActivatedEventArgs>? Activated;
-    public event EventHandler<ActivatedEventArgs>? Deactivated;
-    public bool TryLeaveBackground() => false;
-    public bool TryEnterBackground() => false;
+    public TopLevel? TopLevel => View?.TopLevel;
 }

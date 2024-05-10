@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
-using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -10,7 +9,6 @@ using Avalonia.Reactive;
 using Avalonia.Rendering;
 using System.Collections.Generic;
 using Avalonia.Media;
-using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -244,7 +242,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (Content is TreePageViewModel treeVm && treeVm.Details != null)
             {
-                treeVm.Details.SnapshotStyles = enable;
+                treeVm.Details.SnapshotFrames = enable;
             }
         }
 
@@ -269,13 +267,9 @@ namespace Avalonia.Diagnostics.ViewModels
             _currentFocusHighlightAdorner?.Dispose();
             if (FocusHighlighter is IBrush brush
                 && element is InputElement input
-                && TopLevel.GetTopLevel(input) is { } topLevel
-                && (topLevel is not Views.MainWindow))
+                && !input.DoesBelongToDevTool()
+                )
             {
-                if (topLevel is PopupRoot pr && pr.ParentTopLevel is Views.MainWindow)
-                {
-                    return;
-                }
                 _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(input, brush);
             }
         }

@@ -24,7 +24,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a control that can be used to display or edit unformatted text.
     /// </summary>
-    [TemplatePart("PART_TextPresenter", typeof(TextPresenter))]
+    [TemplatePart("PART_TextPresenter", typeof(TextPresenter), IsRequired = true)]
     [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer))]
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
@@ -405,6 +405,8 @@ namespace Avalonia.Controls
             UndoRedoState state;
             if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
                 _undoRedoHelper.UpdateLastState();
+
+            using var _ = _imClient.BeginChange();
 
             var newValue = e.GetNewValue<int>();
             SetCurrentValue(SelectionStartProperty, newValue);
@@ -1063,7 +1065,15 @@ namespace Avalonia.Controls
                     _undoRedoHelper.DiscardRedo();
                 }
 
-                SetCurrentValue(CaretIndexProperty, caretIndex + input.Length);
+                //Make sure updated text is in sync
+                _presenter?.SetCurrentValue(TextPresenter.TextProperty, text);
+
+                caretIndex += input.Length;
+
+                //Make sure caret is in sync
+                _presenter?.MoveCaretToTextPosition(caretIndex);
+
+                SetCurrentValue(CaretIndexProperty, caretIndex);
             }
         }
 
@@ -1207,6 +1217,8 @@ namespace Avalonia.Controls
             var modifiers = e.KeyModifiers;
 
             var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
+
+            using var _ = _imClient.BeginChange();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
             bool DetectSelection() => e.KeyModifiers.HasAllFlags(keymap.SelectionModifiers);
@@ -1539,6 +1551,8 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
+            using var _ = _imClient.BeginChange();
+
             if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
@@ -1578,6 +1592,13 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
+                        if (IsPasswordBox && !RevealPassword)
+                        {
+                            // double-clicking in a cloaked single-line password box selects all text
+                            // see https://github.com/AvaloniaUI/Avalonia/issues/14956
+                            goto case 3;
+                        }
+
                         if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
                             selectionStart = StringUtils.PreviousWord(text, caretIndex);
@@ -1616,6 +1637,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
+            using var _ = _imClient.BeginChange();
 
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -1635,7 +1657,7 @@ namespace Avalonia.Controls
                 if (Math.Abs(caretIndex - previousIndex) == 1)
                     e.PreventGestureRecognition();
 
-                if (e.Pointer.Type == PointerType.Mouse)
+                if (e.Pointer.Type == PointerType.Mouse || _isDoubleTapped)
                 {
                     var selectionStart = SelectionStart;
                     var selectionEnd = SelectionEnd;
@@ -1697,6 +1719,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
+            using var _ = _imClient.BeginChange();
 
             if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
             {
@@ -1841,6 +1865,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
+            using var _ = _imClient.BeginChange();
 
             var text = Text ?? string.Empty;
             var selectionStart = SelectionStart;
@@ -2002,6 +2028,8 @@ namespace Avalonia.Controls
         /// </summary>
         public void SelectAll()
         {
+            using var _ = _imClient.BeginChange();
+
             SetCurrentValue(SelectionStartProperty, 0);
             SetCurrentValue(SelectionEndProperty, Text?.Length ?? 0);
         }
@@ -2018,6 +2046,8 @@ namespace Avalonia.Controls
         {
             if (IsReadOnly)
                 return true;
+
+            using var _ = _imClient.BeginChange();
 
             var (start, end) = GetSelectionRange();
 
@@ -2126,6 +2156,8 @@ namespace Avalonia.Controls
             var text = Text ?? string.Empty;
             var selectionStart = CaretIndex;
 
+            using var _ = _imClient.BeginChange();
+
             MoveHorizontal(-1, true, false, false);
 
             if (SelectionEnd > 0 &&
@@ -2144,6 +2176,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
+            using var _ = _imClient.BeginChange();
 
             SetCurrentValue(SelectionStartProperty, CaretIndex);
 

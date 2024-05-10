@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Reflection.Emit;
 using Avalonia.Markup.Parsers;
@@ -12,7 +11,6 @@ using XamlX.TypeSystem;
 using XamlX;
 using XamlX.Emit;
 using XamlX.IL;
-using Avalonia.Utilities;
 
 using XamlIlEmitContext = XamlX.Emit.XamlEmitContextWithLocals<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
 using System.Xml.Linq;
@@ -667,7 +665,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     // In this case, we need to emit our own delegate type.
                     string delegateTypeName = context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
-                    specificDelegateType = newDelegateTypeBuilder = context.DefineDelegateSubType(delegateTypeName, Method.ReturnType, Method.Parameters);
+                    specificDelegateType = newDelegateTypeBuilder = context.DeclaringType.DefineDelegateSubType(
+                        delegateTypeName,
+                        XamlVisibility.Private,
+                        Method.ReturnType,
+                        Method.Parameters);
                 }
 
                 codeGen

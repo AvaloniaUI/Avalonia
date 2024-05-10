@@ -257,8 +257,10 @@ namespace Avalonia.Markup.Parsers
                 }
 
                 result = ParseBeforeMember(ref r, nodes);
+                if (result == State.AttachedProperty)
+                    result = ParseAttachedProperty(ref r, nodes);
 
-                if(r.Peek == '[')
+                if (r.Peek == '[')
                 {
                     result = ParseIndexer(ref r, nodes);
                 }

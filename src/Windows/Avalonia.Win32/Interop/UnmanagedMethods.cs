@@ -105,18 +105,58 @@ namespace Avalonia.Win32.Interop
 
         public enum ShowWindowCommand
         {
+            /// <summary>
+            /// Hides the window and activates another window.
+            /// </summary>
             Hide = 0,
+            /// <summary>
+            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original 
+            /// size and position. An application should specify this flag when displaying the window for the first time.
+            /// </summary>
             Normal = 1,
+            /// <summary>
+            /// Activates the window and displays it as a minimized window.
+            /// </summary>
             ShowMinimized = 2,
+            /// <summary>
+            /// Activates the window and displays it as a maximized window.
+            /// </summary>
             Maximize = 3,
-            ShowMaximized = 3,
+            /// <inheritdoc cref="Maximize"/>
+            ShowMaximized = Maximize,
+            /// <summary>
+            /// Displays a window in its most recent size and position. This value is similar to <see cref="Normal"/>, except that the window is not activated.
+            /// </summary>
             ShowNoActivate = 4,
+            /// <summary>
+            /// Activates the window and displays it in its current size and position.
+            /// </summary>
             Show = 5,
+            /// <summary>
+            /// Minimizes the specified window and activates the next top-level window in the Z order.
+            /// </summary>
             Minimize = 6,
+            /// <summary>
+            /// Displays the window as a minimized window. This value is similar to <see cref="ShowMinimized"/>, except the window is not activated.
+            /// </summary>
             ShowMinNoActive = 7,
+            /// <summary>
+            /// Displays the window in its current size and position. This value is similar to <see cref="Show"/>, except that the window is not activated.
+            /// </summary>
             ShowNA = 8,
+            /// <summary>
+            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. 
+            /// An application should specify this flag when restoring a minimized window.
+            /// </summary>
             Restore = 9,
+            /// <summary>
+            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function 
+            /// by the program that started the application.
+            /// </summary>
             ShowDefault = 10,
+            /// <summary>
+            /// Minimizes a window, even if the thread that owns the window is not responding. This flag should only be used when minimizing windows from a different thread.
+            /// </summary>
             ForceMinimize = 11
         }
 
@@ -456,10 +496,9 @@ namespace Avalonia.Win32.Interop
             WS_MINIMIZE = 0x20000000,
             WS_MINIMIZEBOX = 0x20000,
             WS_OVERLAPPED = 0x0,
-            WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+            WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
             WS_POPUP = 0x80000000u,
             WS_POPUPWINDOW = WS_POPUP | WS_BORDER | WS_SYSMENU,
-            WS_SIZEFRAME = 0x40000,
             WS_SYSMENU = 0x80000,
             WS_TABSTOP = 0x10000,
             WS_THICKFRAME = 0x40000,
@@ -1160,6 +1199,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu, uint dwExStyle);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool AdjustWindowRectExForDpi(ref RECT lpRect, WindowStyles dwStyle, bool bMenu, WindowStyles dwExStyle, uint dpi);
+
         [DllImport("user32.dll")]
         public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT lpPaint);
 
@@ -1232,6 +1274,11 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool EnumChildWindows(IntPtr parentHwnd, EnumWindowsProc enumFunc, IntPtr lParam);
+
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLongPtrW", ExactSpelling = true)]
         public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
@@ -1287,7 +1334,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+        public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
@@ -1373,6 +1420,8 @@ namespace Avalonia.Win32.Interop
         public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         [DllImport("user32.dll")]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, SetWindowPosFlags uFlags);
+        [DllImport("user32.dll")]
+        public static extern bool SetWindowPlacement(IntPtr hWnd, in WINDOWPLACEMENT windowPlacement);
         [DllImport("user32.dll")]
         public static extern bool SetFocus(IntPtr hWnd);
         [DllImport("user32.dll")]
@@ -2240,6 +2289,14 @@ namespace Avalonia.Win32.Interop
             public int dwHoverTime;
         }
 
+        [Flags]
+        public enum WindowPlacementFlags : uint
+        {
+            SetMinPosition = 0x0001,
+            RestoreToMaximized = 0x0002,
+            AsyncWindowPlacement = 0x0004,
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct WINDOWPLACEMENT
         {
@@ -2254,7 +2311,7 @@ namespace Avalonia.Win32.Interop
             /// <summary>
             /// Specifies flags that control the position of the minimized window and the method by which the window is restored.
             /// </summary>
-            public int Flags;
+            public WindowPlacementFlags Flags;
 
             /// <summary>
             /// The current show state of the window.
@@ -2451,7 +2508,7 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal struct APPBARDATA
         {
-            private static readonly int s_size = Marshal.SizeOf(typeof(APPBARDATA));
+            private static readonly int s_size = Marshal.SizeOf<APPBARDATA>();
 
             public int cbSize;
             public nint hWnd;

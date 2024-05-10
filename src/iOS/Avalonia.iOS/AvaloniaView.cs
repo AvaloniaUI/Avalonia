@@ -29,6 +29,7 @@ namespace Avalonia.iOS
     {
         internal IInputRoot InputRoot
             => _inputRoot ?? throw new InvalidOperationException($"{nameof(IWindowImpl.SetInputRoot)} must have been called");
+        internal TopLevel TopLevel => _topLevel;
 
         private readonly TopLevelImpl _topLevelImpl;
         private readonly EmbeddableControlRoot _topLevel;
@@ -98,6 +99,7 @@ namespace Avalonia.iOS
 #endif
             if (l is CAMetalLayer metalLayer)
             {
+                metalLayer.Opaque = false;
                 _topLevelImpl.Surfaces = new[] { new Metal.MetalPlatformSurface(metalLayer, this) };
             }
         }

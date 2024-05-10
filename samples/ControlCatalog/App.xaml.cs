@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.Themes.Fluent;
@@ -51,7 +52,7 @@ namespace ControlCatalog
                 singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
             }
 
-            if (ApplicationLifetime is IActivatableApplicationLifetime activatableApplicationLifetime)
+            if (this.TryGetFeature<IActivatableLifetime>() is {} activatableApplicationLifetime)
             {
                 activatableApplicationLifetime.Activated += (sender, args) =>
                     Console.WriteLine($"App activated: {args.Kind}");

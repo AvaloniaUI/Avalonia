@@ -131,7 +131,7 @@ namespace Avalonia.Win32
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
-                        _scaling = _dpi / 96.0;
+                        _scaling = _dpi / StandardDpi;
                         RefreshIcon();
                         ScalingChanged?.Invoke(_scaling);
 
@@ -609,9 +609,32 @@ namespace Avalonia.Win32
                     _resizeReason = WindowResizeReason.User;
                     break;
 
+                case WindowsMessage.WM_SHOWWINDOW:
+                    _shown = wParam != default;
+
+                    if (_isClientAreaExtended)
+                    {
+                        ExtendClientArea();
+                    }
+                    break;
+
                 case WindowsMessage.WM_SIZE:
                     {
                         var size = (SizeCommand)wParam;
+
+                        var windowState = size switch
+                        {
+                            SizeCommand.Maximized => WindowState.Maximized,
+                            SizeCommand.Minimized => WindowState.Minimized,
+                            _ when _isFullScreenActive => WindowState.FullScreen,
+                            // Ignore state changes for unshown windows. We always tell Windows that we are hidden
+                            // until shown, so the OS value should be ignored while we are in the unshown state.
+                            _ when !_shown => _lastWindowState,
+                            _ => WindowState.Normal,
+                        };
+
+                        var stateChanged = windowState != _lastWindowState;
+                        _lastWindowState = windowState;
 
                         if (Resized != null &&
                             (size == SizeCommand.Restored ||
@@ -621,18 +644,9 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
-                        var windowState = size switch
-                        {
-                            SizeCommand.Maximized => WindowState.Maximized,
-                            SizeCommand.Minimized => WindowState.Minimized,
-                            _ when _isFullScreenActive => WindowState.FullScreen,
-                            _ => WindowState.Normal,
-                        };
 
-                        if (windowState != _lastWindowState)
+                        if (stateChanged)
                         {
-                            _lastWindowState = windowState;
-
                             var newWindowProperties = _windowProperties;
 
                             newWindowProperties.WindowState = windowState;
@@ -1182,11 +1196,10 @@ namespace Avalonia.Win32
             var keyData = ToInt32(lParam);
             var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
-
-            if (key == Key.None && physicalKey == PhysicalKey.None)
-                return null;
-
             var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
+                return null;
 
             return new RawKeyEventArgs(
                 WindowsKeyboardDevice.Instance,

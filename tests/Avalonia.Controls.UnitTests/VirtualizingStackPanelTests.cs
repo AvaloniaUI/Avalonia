@@ -23,6 +23,13 @@ namespace Avalonia.Controls.UnitTests
 {
     public class VirtualizingStackPanelTests : ScopedTestBase
     {
+        private static FuncDataTemplate<ItemWithHeight> CanvasWithHeightTemplate = new((_, _) =>
+            new Canvas
+            {
+                Width = 100,
+                [!Layoutable.HeightProperty] = new Binding("Height"),
+            });
+
         [Fact]
         public void Creates_Initial_Items()
         {
@@ -744,14 +751,7 @@ namespace Avalonia.Controls.UnitTests
             var items = Enumerable.Range(0, 1000).Select(x => new ItemWithHeight(x)).ToList();
             items[20].Height = 200;
 
-            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
-                new Canvas
-                {
-                    Width = 100,
-                    [!Canvas.HeightProperty] = new Binding("Height"),
-                });
-
-            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: itemTemplate);
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
             var index = target.FirstRealizedIndex;
 
@@ -780,14 +780,7 @@ namespace Avalonia.Controls.UnitTests
             var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x)).ToList();
             items[20].Height = 200;
 
-            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
-                new Canvas
-                {
-                    Width = 100,
-                    [!Canvas.HeightProperty] = new Binding("Height"),
-                });
-
-            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: itemTemplate);
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
             // Scroll past the larger element.
             scroll.Offset = new Vector(0, 600);
@@ -817,14 +810,7 @@ namespace Avalonia.Controls.UnitTests
             var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 30)).ToList();
             items[20].Height = 25;
 
-            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
-                new Canvas
-                {
-                    Width = 100,
-                    [!Canvas.HeightProperty] = new Binding("Height"),
-                });
-
-            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: itemTemplate);
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
             // Scroll past the larger element.
             scroll.Offset = new Vector(0, 25 * items[0].Height);
@@ -1144,7 +1130,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 ev.Container.AddHandler(Control.RequestBringIntoViewEvent, (_, e) =>
                 {
-                    var dataContext = e.TargetObject.DataContext as ItemWithHeight;
+                    var dataContext = (ItemWithHeight)e.TargetObject!.DataContext!;
                     e.TargetRect = new Rect(dataContext.Height - 50, 0, 50, 10);
                 });
             };
@@ -1152,6 +1138,58 @@ namespace Avalonia.Controls.UnitTests
             target.ScrollIntoView(100);
 
             Assert.Equal(9901, scroll.Offset.X);
+        }
+
+        [Fact]
+        public void ScrollIntoView_Correctly_Scrolls_Down_To_A_Page_Of_Smaller_Items()
+        {
+            using var app = App();
+
+            // First 10 items have height of 20, next 10 have height of 10.
+            var items = Enumerable.Range(0, 20).Select(x => new ItemWithHeight(x, ((29 - x) / 10) * 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Scroll the last item into view.
+            target.ScrollIntoView(19);
+
+            // At the time of the scroll, the average item height is 20, so the requested item
+            // should be placed at 380 (19 * 20) which therefore results in an extent of 390 to
+            // accommodate the item height of 10. This is obviously not a perfect answer, but
+            // it's the best we can do without knowing the actual item heights.
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
+            Assert.Equal(new Rect(0, 380, 100, 10), container.Bounds);
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
+            Assert.Equal(new Size(100, 390), scroll.Extent);
+            Assert.Equal(new Vector(0, 290), scroll.Offset);
+
+            // Items 10-19 should be visible.
+            AssertRealizedItems(target, itemsControl, 10, 10);
+        }
+
+        [Fact]
+        public void ScrollIntoView_Correctly_Scrolls_Down_To_A_Page_Of_Larger_Items()
+        {
+            using var app = App();
+
+            // First 10 items have height of 10, next 10 have height of 20.
+            var items = Enumerable.Range(0, 20).Select(x => new ItemWithHeight(x, ((x / 10) + 1) * 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Scroll the last item into view.
+            target.ScrollIntoView(19);
+
+            // At the time of the scroll, the average item height is 10, so the requested item
+            // should be placed at 190 (19 * 10) which therefore results in an extent of 210 to
+            // accommodate the item height of 20. This is obviously not a perfect answer, but
+            // it's the best we can do without knowing the actual item heights.
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
+            Assert.Equal(new Rect(0, 190, 100, 20), container.Bounds);
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
+            Assert.Equal(new Size(100, 210), scroll.Extent);
+            Assert.Equal(new Vector(0, 110), scroll.Offset);
+
+            // Items 15-19 should be visible.
+            AssertRealizedItems(target, itemsControl, 15, 5);
         }
 
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
@@ -1176,6 +1214,11 @@ namespace Avalonia.Controls.UnitTests
                 .OrderBy(x => x)
                 .ToList();
             Assert.Equal(Enumerable.Range(firstIndex, count), childIndexes);
+
+            var visibleChildren = target.Children
+                .Where(x => x.IsVisible)
+                .ToList();
+            Assert.Equal(count, visibleChildren.Count);
         }
 
         private static void AssertRealizedControlItems<TContainer>(

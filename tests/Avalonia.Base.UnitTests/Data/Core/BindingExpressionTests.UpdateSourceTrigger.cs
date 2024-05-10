@@ -1,3 +1,5 @@
+#nullable enable
+
 using Avalonia.Data;
 using Avalonia.UnitTests;
 using Xunit;

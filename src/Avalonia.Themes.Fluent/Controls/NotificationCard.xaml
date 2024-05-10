@@ -25,7 +25,7 @@
                     ClipToBounds="True">
               <DockPanel>
                 <Panel x:Name="PART_HeaderBar" Height="4" Background="{DynamicResource NotificationCardProgressBackgroundBrush}" DockPanel.Dock="Top" />
-                <ContentControl Name="PART_Content" MinHeight="64" Content="{TemplateBinding Content}" />
+                <ContentPresenter Name="PART_ContentPresenter" MinHeight="64" Content="{TemplateBinding Content}" />
               </DockPanel>
             </Border>
           </Border>

@@ -15,7 +15,7 @@ namespace Avalonia.Data.Core.ExpressionNodes.Reflection;
 [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
 internal sealed class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
 {
-    private static readonly BindingFlags InstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly;
+    private const BindingFlags InstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly;
     private MethodInfo? _getter;
     private MethodInfo? _setter;
     private object?[]? _indexes;

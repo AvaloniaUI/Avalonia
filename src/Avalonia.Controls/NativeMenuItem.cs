@@ -1,5 +1,7 @@
 using System;
+using System.Text;
 using System.Windows.Input;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -65,11 +67,11 @@ namespace Avalonia.Controls
             set => SetValue(IconProperty, value);
         }
 
-        /// <inheritdoc cref="MenuItem.HeaderProperty"/>
+        /// <inheritdoc cref="HeaderedSelectingItemsControl.HeaderProperty"/>
         public static readonly StyledProperty<string?> HeaderProperty =
             AvaloniaProperty.Register<NativeMenuItem, string?>(nameof(Header));
 
-        /// <inheritdoc cref="MenuItem.Header"/>
+        /// <inheritdoc cref="HeaderedSelectingItemsControl.Header"/>
         public string? Header
         {
             get => GetValue(HeaderProperty);
@@ -134,14 +136,30 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object?> CommandParameterProperty =
             MenuItem.CommandParameterProperty.AddOwner<NativeMenuItem>();
 
+        /// <inheritdoc cref="InputElement.IsEnabledProperty"/>
         public static readonly StyledProperty<bool> IsEnabledProperty =
            AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsEnabled), true);
 
-        /// <inheritdoc cref="MenuItem.IsEnabled"/>
+        /// <inheritdoc cref="InputElement.IsEnabled"/>
         public bool IsEnabled
         {
             get => GetValue(IsEnabledProperty);
             set => SetValue(IsEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="IsVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsVisibleProperty =
+           Visual.IsVisibleProperty.AddOwner<NativeMenuItem>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this menu item is visible.
+        /// </summary>
+        public bool IsVisible
+        {
+            get => GetValue(IsVisibleProperty);
+            set => SetValue(IsVisibleProperty, value);
         }
 
         void CanExecuteChanged()
@@ -197,6 +215,16 @@ namespace Avalonia.Controls
                 if (change.NewValue is ICommand newCommand)
                     WeakEvents.CommandCanExecuteChanged.Subscribe(newCommand, _canExecuteChangedSubscriber);
                 CanExecuteChanged();
+            }
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, true);
             }
         }
     }

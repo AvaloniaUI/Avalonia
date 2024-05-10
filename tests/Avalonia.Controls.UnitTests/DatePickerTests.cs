@@ -192,16 +192,16 @@ namespace Avalonia.Controls.UnitTests
                 DateTimeOffset value = new DateTimeOffset(2000, 10, 10, 0, 0, 0, TimeSpan.Zero);
                 datePicker.SelectedDate = value;
 
-                Assert.False(dayText.Text == "day");
-                Assert.False(monthText.Text == "month");
-                Assert.False(yearText.Text == "year");
+                Assert.NotNull(dayText.Text);
+                Assert.NotNull(monthText.Text);
+                Assert.NotNull(yearText.Text);
                 Assert.False(datePicker.Classes.Contains(":hasnodate"));
 
                 datePicker.SelectedDate = null;
 
-                Assert.True(dayText.Text == "day");
-                Assert.True(monthText.Text == "month");
-                Assert.True(yearText.Text == "year");
+                Assert.Null(dayText.Text);
+                Assert.Null(monthText.Text);
+                Assert.Null(yearText.Text);
                 Assert.True(datePicker.Classes.Contains(":hasnodate"));
             }
         }

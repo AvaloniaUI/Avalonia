@@ -29,25 +29,25 @@ namespace Avalonia.DesignerSupport.Tests
 
         [SkippableTheory,
          InlineData(
-            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/net6.0/",
+            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/net8.0/",
             "Avalonia.DesignerSupport.TestApp",
             "Avalonia.DesignerSupport.TestApp.dll",
             @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
             "win32"),
          InlineData(
-            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net6.0\",
+            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net8.0\",
             "ControlCatalog.NetCore",
             "ControlCatalog.dll",
             @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
             "win32"),
         InlineData(
-            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/net6.0/",
+            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/net8.0/",
             "Avalonia.DesignerSupport.TestApp",
             "Avalonia.DesignerSupport.TestApp.dll",
             @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
             "avalonia-remote"),
         InlineData(
-            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net6.0\",
+            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net8.0\",
             "ControlCatalog.NetCore",
             "ControlCatalog.dll",
             @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
@@ -73,6 +73,9 @@ namespace Avalonia.DesignerSupport.Tests
             buildType = "Release";
 #endif
             outputDir = outputDir.Replace("$BUILD", buildType);
+
+            var assemblyPath = Path.Combine(outputDir, assemblyName);
+            Assert.True(File.Exists(assemblyPath), "File.Exists(assemblyPath)");
 
             var sessionId = Guid.NewGuid();
             long handle = 0;
@@ -107,7 +110,7 @@ namespace Avalonia.DesignerSupport.Tests
 
                         await conn.Send(new UpdateXamlMessage
                         {
-                            AssemblyPath = Path.Combine(outputDir, assemblyName),
+                            AssemblyPath = assemblyPath,
                             Xaml = xaml
                         });
                     }

@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Browser.Interop;
+﻿using Avalonia.Browser.Interop;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
-using static Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.Browser
 {
-    internal class BrowserInsetsManager : IInsetsManager
+    internal class BrowserInsetsManager : InsetsManagerBase
     {
-        public bool? IsSystemBarVisible
+        public BrowserInsetsManager()
+        {
+            DomHelper.InitSafeAreaPadding();
+        }
+
+        public override bool? IsSystemBarVisible
         {
             get
             {
@@ -24,11 +23,9 @@ namespace Avalonia.Browser
             }
         }
 
-        public bool DisplayEdgeToEdge { get; set; }
+        public override bool DisplayEdgeToEdge { get; set; }
 
-        public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
-
-        public Thickness SafeAreaPadding
+        public override Thickness SafeAreaPadding
         {
             get
             {
@@ -38,11 +35,11 @@ namespace Avalonia.Browser
             }
         }
 
-        public Color? SystemBarColor { get; set; }
+        public override Color? SystemBarColor { get; set; }
 
         public void NotifySafeAreaPaddingChanged()
         {
-            SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
+            OnSafeAreaChanged(new SafeAreaChangedArgs(SafeAreaPadding));
         }
     }
 }

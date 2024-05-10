@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Text;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Documents;
@@ -15,7 +15,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    [DebuggerDisplay("Text = {" + nameof(DebugText) + "}")]
     public class TextBlock : Control, IInlineHost
     {
         /// <summary>
@@ -217,8 +216,6 @@ namespace Avalonia.Controls
             get => GetValue(TextProperty);
             set => SetValue(TextProperty, value);
         }
-
-        private string? DebugText => Text ?? Inlines?.Text;
 
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.
@@ -694,7 +691,6 @@ namespace Avalonia.Controls
         {
             _textLayout?.Dispose();
             _textLayout = null;
-
             _textRuns = null;
 
             base.OnMeasureInvalidated();
@@ -706,6 +702,10 @@ namespace Avalonia.Controls
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
             _constraint = availableSize.Deflate(padding);
+
+            //Reset TextLayout otherwise constraint might be outdated.
+            _textLayout?.Dispose();
+            _textLayout = null;
 
             var inlines = Inlines;
 
@@ -837,15 +837,19 @@ namespace Avalonia.Controls
             {
                 oldValue.LogicalChildren = null;
                 oldValue.InlineHost = null;
-                oldValue.Invalidated -= (s, e) => InvalidateMeasure();
+                oldValue.Invalidated -= Invalidated;
             }
 
             if (newValue is not null)
             {
                 newValue.LogicalChildren = LogicalChildren;
                 newValue.InlineHost = this;
-                newValue.Invalidated += (s, e) => InvalidateMeasure();
+                newValue.Invalidated += Invalidated;
             }
+
+            return;
+
+            void Invalidated(object? sender, EventArgs e) => InvalidateMeasure();
         }
 
         void IInlineHost.Invalidate()
@@ -854,6 +858,16 @@ namespace Avalonia.Controls
         }
 
         IAvaloniaList<Visual> IInlineHost.VisualChildren => VisualChildren;
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Text), Text ?? Inlines?.Text, true);
+            }
+        }
 
         protected readonly record struct SimpleTextSource : ITextSource
         {
