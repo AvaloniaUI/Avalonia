@@ -4,9 +4,9 @@ using Tizen.Applications;
 
 namespace Avalonia.Tizen;
 
-internal class TizenLauncher : ILauncher
+internal class TizenLauncher : Launcher
 {
-    public async Task<bool> LaunchUriAsync(Uri uri)
+    protected override async Task<bool> LaunchUriAsyncImpl(Uri uri)
     {
         if (uri is null)
         {
@@ -45,7 +45,7 @@ internal class TizenLauncher : ILauncher
         return true;
     }
 
-    public async Task<bool> LaunchFileAsync(IStorageItem storageItem)
+    protected override async Task<bool> LaunchFileAsyncImpl(IStorageItem storageItem)
     {
         if (storageItem is null)
         {
