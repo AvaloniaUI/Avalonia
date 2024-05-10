@@ -205,8 +205,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         void RenderRootToContextWithClip(IDrawingContextImpl context, ServerCompositionVisual root)
         {
-            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
-                               Compositor.RenderInterface.GpuContext != null;
+            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ?? false;
             
             using (DirtyRects.BeginDraw(context))
             {
