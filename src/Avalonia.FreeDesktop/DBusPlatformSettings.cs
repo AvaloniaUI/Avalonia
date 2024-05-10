@@ -7,9 +7,11 @@ using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
-    internal class DBusPlatformSettings : DefaultPlatformSettings
+    internal class DBusPlatformSettings : DefaultPlatformSettings, IDisposable
     {
         private readonly OrgFreedesktopPortalSettings? _settings;
+
+        private IDisposable? _disposable;
 
         private PlatformColorValues? _lastColorValues;
         private PlatformThemeVariant? _themeVariant;
@@ -21,8 +23,29 @@ namespace Avalonia.FreeDesktop
                 return;
 
             _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
-            _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
-            _ = TryGetInitialValuesAsync();
+        }
+
+        public static DBusPlatformSettings? TryInitialize()
+        {
+            try
+            {
+                var platformSettings = new DBusPlatformSettings();
+                _ = platformSettings.InitializeAsync();
+                return platformSettings;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task InitializeAsync()
+        {
+            if (_settings is null)
+                return;
+
+            _disposable = await _settings.WatchSettingChangedAsync(SettingsChangedHandler);
+            await TryGetInitialValuesAsync();
         }
 
         public override PlatformColorValues GetColorValues() => _lastColorValues ?? base.GetColorValues();
@@ -127,6 +150,11 @@ namespace Avalonia.FreeDesktop
             if (r is < 0 or > 1 || g is < 0 or > 1 || b is < 0 or > 1)
                 return null;
             return Color.FromRgb((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
+        }
+
+        public void Dispose()
+        {
+            _disposable?.Dispose();
         }
     }
 }

@@ -84,11 +84,17 @@ namespace Avalonia.X11
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
-                .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
-            
+
+            var platformSettings = DBusPlatformSettings.TryInitialize();
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformSettings>().ToConstant(platformSettings);
+
+            Dispatcher.UIThread.ShutdownFinished += (_, _) => platformSettings?.Dispose();
+            // Connection can either be initialized via X11DBusImeHelper.DetectAndRegister() or in DBusPlatformSettings.TryInitialize()
+            Dispatcher.UIThread.ShutdownFinished += static (_, _) => DBusHelper.Connection?.Dispose();
+
             Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
