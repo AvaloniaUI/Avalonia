@@ -10,9 +10,9 @@ namespace Avalonia.Animation.Easings
     public class CircularEaseIn : Easing
     {
         /// <inheritdoc/>
-        public override double Ease(double p)
+        public override double Ease(double progress)
         {
-            return 1d - Math.Sqrt(1d - p * p);
+            return 1d - Math.Sqrt(1d - progress * progress);
         }
     }
 }
