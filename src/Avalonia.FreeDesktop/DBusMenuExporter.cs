@@ -133,6 +133,7 @@ namespace Avalonia.FreeDesktop
                 _disposed = true;
                 // Fire and forget
                 _ = _registrar?.UnregisterWindowAsync(_xid);
+                Connection.RemoveMethodHandler(Path);
             }
 
 

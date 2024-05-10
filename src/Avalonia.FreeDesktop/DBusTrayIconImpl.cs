@@ -124,14 +124,16 @@ namespace Avalonia.FreeDesktop
                 return;
 
             _dBus!.ReleaseNameAsync(_sysTrayServiceName);
+            _connection.RemoveMethodHandler(_statusNotifierItemDbusObj.Path);
         }
 
         public void Dispose()
         {
             IsActive = false;
-            _isDisposed = true;
             DestroyTrayIcon();
+            (MenuExporter as IDisposable)?.Dispose();
             _serviceWatchDisposable?.Dispose();
+            _isDisposed = true;
         }
 
         public void SetIcon(IWindowIconImpl? icon)

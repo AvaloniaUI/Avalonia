@@ -936,6 +936,9 @@ namespace Avalonia.X11
             if (_handle != IntPtr.Zero)
                 Closed?.Invoke();
             
+            if (_nativeMenuExporter is IDisposable disposable)
+                disposable.Dispose();
+            
             if (_rawEventGrouper != null)
             {
                 _rawEventGrouper.Dispose();
