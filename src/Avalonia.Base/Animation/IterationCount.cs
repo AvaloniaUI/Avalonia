@@ -95,21 +95,21 @@ namespace Avalonia.Animation
         /// <summary>
         /// Determines whether the <see cref="IterationCount"/> is equal to the specified object.
         /// </summary>
-        /// <param name="o">The object with which to test equality.</param>
+        /// <param name="obj">The object with which to test equality.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
-        public override bool Equals(object? o)
+        public override bool Equals(object? obj)
         {
-            if (o == null)
+            if (obj == null)
             {
                 return false;
             }
 
-            if (!(o is IterationCount))
+            if (!(obj is IterationCount))
             {
                 return false;
             }
 
-            return this == (IterationCount)o;
+            return this == (IterationCount)obj;
         }
 
         /// <summary>
