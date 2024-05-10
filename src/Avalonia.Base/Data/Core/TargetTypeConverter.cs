@@ -76,16 +76,32 @@ internal abstract class TargetTypeConverter
 
             if (toTypeConverter.CanConvertFrom(from))
             {
-                result = toTypeConverter.ConvertFrom(null, culture, value);
-                return true;
+                try
+                {
+                    result = toTypeConverter.ConvertFrom(null, culture, value);
+                    return true;
+                }
+                catch
+                {
+                    result = null;
+                    return false;
+                }
             }
 
             var fromTypeConverter = TypeDescriptor.GetConverter(from);
 
             if (fromTypeConverter.CanConvertTo(t))
             {
-                result = fromTypeConverter.ConvertTo(null, culture, value, t);
-                return true;
+                try
+                {
+                    result = fromTypeConverter.ConvertTo(null, culture, value, t);
+                    return true;
+                }
+                catch
+                {
+                    result = null;
+                    return false;
+                }
             }
 
             // TODO: This requires reflection: we probably need to make compiled bindings emit
@@ -95,8 +111,16 @@ internal abstract class TargetTypeConverter
                 t,
                 OperatorType.Implicit | OperatorType.Explicit) is { } cast)
             {
-                result = cast.Invoke(null, new[] { value });
-                return true;
+                try
+                {
+                    result = cast.Invoke(null, new[] { value });
+                    return true;
+                }
+                catch
+                {
+                    result = null;
+                    return false;
+                }
             }
 #pragma warning restore IL2067
 #pragma warning restore IL2026

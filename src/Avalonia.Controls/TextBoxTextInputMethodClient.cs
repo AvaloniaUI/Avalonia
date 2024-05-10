@@ -184,6 +184,27 @@ namespace Avalonia.Controls
             return lineText;
         }
 
+        public override void ExecuteContextMenuAction(ContextMenuAction action)
+        {
+            base.ExecuteContextMenuAction(action);
+
+            switch (action)
+            {
+                case ContextMenuAction.Copy:
+                    _parent?.Copy();
+                    break;
+                case ContextMenuAction.Cut:
+                    _parent?.Cut();
+                    break;
+                case ContextMenuAction.Paste:
+                    _parent?.Paste();
+                    break;
+                case ContextMenuAction.SelectAll:
+                    _parent?.SelectAll();
+                    break;
+            }
+        }
+
         private void OnParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == TextBox.TextProperty)
