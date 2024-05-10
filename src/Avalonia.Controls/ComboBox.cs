@@ -84,7 +84,7 @@ namespace Avalonia.Controls
         private static IDataTemplate? CoerceSelectionBoxItemTemplate(AvaloniaObject obj, IDataTemplate? template)
         {
             if (template is not null) return template;
-            if(obj is ComboBox comboBox && template is null)
+            if (obj is ComboBox comboBox)
             {
                 return comboBox.ItemTemplate;
             }
