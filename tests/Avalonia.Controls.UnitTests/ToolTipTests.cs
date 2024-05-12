@@ -387,14 +387,6 @@ namespace Avalonia.Controls.UnitTests
             ToolTip.AddToolTipClosingHandler(target,
                 (sender, args) => eventsOrder.Add(("Closing", sender, args.Source)));
 
-            target.PropertyChanged += (sender, args) =>
-            {
-                if (args.Property == ToolTip.IsOpenProperty)
-                {
-                    eventsOrder.Add(("IsOpen=" + args.NewValue, sender, null));
-                }
-            };
-
             SetupWindowAndActivateToolTip(target);
 
             Assert.True(ToolTip.GetIsOpen(target));
@@ -407,10 +399,7 @@ namespace Avalonia.Controls.UnitTests
                 new[]
                 {
                     ("Opening", (object)target, (object)target),
-                    ("IsOpen=True", target, null),
-
-                    ("Closing", target, target),
-                    ("IsOpen=False", target, null),
+                    ("Closing", target, target)
                 },
                 eventsOrder);
         }
@@ -428,7 +417,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ToolTip.AddToolTipOpeningHandler(target,
-                (sender, args) => args.Handled = true);
+                (sender, args) => args.Cancel = true);
 
             SetupWindowAndActivateToolTip(target);
 
