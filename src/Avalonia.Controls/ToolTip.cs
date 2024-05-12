@@ -377,22 +377,6 @@ namespace Avalonia.Controls
             return isOpen;
         }
 
-        /// <summary>
-        /// Occurs when a ToolTip becomes visible.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="ToolTipOpeningEvent"/> attached event is also raised when the <see cref="ToolTip"/> control is opening.
-        /// </remarks>
-        public event EventHandler? Opened;
-
-        /// <summary>
-        /// Occurs when a ToolTip is closed and is no longer visible.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="ToolTipClosingEvent"/> attached event is also raised when the <see cref="ToolTip"/> control is closed.
-        /// </remarks>
-        public event EventHandler? Closed;
-
         internal Control? AdornedControl { get; private set; }
         internal IPopupHost? PopupHost => _popup?.Host;
 
@@ -403,22 +387,6 @@ namespace Avalonia.Controls
             remove => _popupHostChangedHandler -= value;
         }
 
-        /// <summary>
-        /// Called when the Tooltip is opened. Also raises the Opened event.
-        /// </summary>
-        protected virtual void OnOpened()
-        {
-            Opened?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// Called when the Tooltip is closed. Also raises the Closed event.
-        /// </summary>
-        protected virtual void OnClosed()
-        {
-            Closed?.Invoke(this, EventArgs.Empty);
-        }
-        
         private void Open(Control control)
         {
             Close();
@@ -469,14 +437,12 @@ namespace Avalonia.Controls
 
             _popupHostChangedHandler?.Invoke(null);
             UpdatePseudoClasses(false);
-            OnClosed();
         }
 
         private void OnPopupOpened(object? sender, EventArgs e)
         {
             _popupHostChangedHandler?.Invoke(((Popup)sender!).Host);
             UpdatePseudoClasses(true);
-            OnOpened();
         }
 
         private void UpdatePseudoClasses(bool newValue)
