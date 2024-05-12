@@ -1017,6 +1017,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.AppliedStyle</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.StyleDiagnostics</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Input.FocusManager.&lt;GetFocusScopeAncestors&gt;d__18</Target>
     <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
@@ -1076,6 +1088,12 @@
     <Right>target/netstandard2.0/Avalonia.Dialogs.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Diagnostics.StyledElementExtensions.GetStyleDiagnostics(Avalonia.StyledElement)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Avalonia.Platform.IAssetLoader.InvalidateAssemblyCache</Target>
     <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
@@ -1104,5 +1122,23 @@
     <Target>P:Avalonia.Rendering.Composition.ICompositionGpuImportedObject.ImportCompleted</Target>
     <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Controls.Notifications.IManagedNotificationManager.Close(System.Object)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Controls.Notifications.INotificationManager.Close(Avalonia.Controls.Notifications.INotification)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Controls.Notifications.INotificationManager.CloseAll</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
   </Suppression>
 </Suppressions>

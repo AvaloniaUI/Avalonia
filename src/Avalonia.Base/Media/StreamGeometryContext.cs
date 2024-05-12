@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// of <see cref="StreamGeometryContext"/> is obtained by calling
     /// <see cref="StreamGeometry.Open"/>.
     /// </remarks>
-    public class StreamGeometryContext : IGeometryContext
+    public class StreamGeometryContext : IGeometryContext, IGeometryContext2
     {
         private readonly IStreamGeometryContextImpl _impl;
 
@@ -101,6 +101,47 @@ namespace Avalonia.Media
         public void Dispose()
         {
             _impl.Dispose();
+        }
+
+        /// <inheritdoc/>
+        public void LineTo(Point point, bool isStroked)
+        {
+            if (_impl is IGeometryContext2 context2)
+                context2.LineTo(point, isStroked);
+            else
+                _impl.LineTo(point);
+
+            _currentPoint = point;
+        }
+
+        public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked)
+        {
+            if (_impl is IGeometryContext2 context2)
+                context2.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection, isStroked);
+            else
+                _impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
+
+            _currentPoint = point;
+        }
+
+        public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked)
+        {
+            if (_impl is IGeometryContext2 context2)
+                context2.CubicBezierTo(controlPoint1, controlPoint2, endPoint, isStroked);
+            else
+                _impl.CubicBezierTo(controlPoint1, controlPoint2, endPoint);
+
+            _currentPoint = endPoint;
+        }
+
+        public void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked)
+        {
+            if (_impl is IGeometryContext2 context2)
+                context2.QuadraticBezierTo(controlPoint, endPoint, isStroked);
+            else
+                _impl.QuadraticBezierTo(controlPoint, endPoint);
+
+            _currentPoint = endPoint;
         }
     }
 }

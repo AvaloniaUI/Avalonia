@@ -298,6 +298,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnloadableAssemblyLoadConte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnloadableAssemblyLoadContextPlug", "samples\UnloadableAssemblyLoadContext\UnloadableAssemblyLoadContextPlug\UnloadableAssemblyLoadContextPlug.csproj", "{DA5F1FF9-4259-4C54-B443-85CFA226EE6A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Vulkan", "src\Avalonia.Vulkan\Avalonia.Vulkan.csproj", "{3E2DE2B6-13BC-4C27-BCB9-A423B86CAF77}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.RenderTests.WpfCompare", "tests\Avalonia.RenderTests.WpfCompare\Avalonia.RenderTests.WpfCompare.csproj", "{9AE1B827-21AC-4063-AB22-C8804B7F931E}"
 EndProject
 Global
@@ -676,6 +678,10 @@ Global
 		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E2DE2B6-13BC-4C27-BCB9-A423B86CAF77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E2DE2B6-13BC-4C27-BCB9-A423B86CAF77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E2DE2B6-13BC-4C27-BCB9-A423B86CAF77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E2DE2B6-13BC-4C27-BCB9-A423B86CAF77}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}.Release|Any CPU.ActiveCfg = Release|Any CPU

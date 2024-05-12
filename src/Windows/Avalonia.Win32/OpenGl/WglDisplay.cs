@@ -126,6 +126,11 @@ namespace Avalonia.Win32.OpenGl
                     IntPtr context;
                     using (shareContext?.Lock())
                     {
+                        var profileMask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+                        if (version.IsCompatibilityProfile &&
+                            (version.Major > 3 || version.Major == 3 && version.Minor >= 2))
+                            profileMask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+
                         context = s_wglCreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,
                             new[]
                             {
@@ -133,8 +138,8 @@ namespace Avalonia.Win32.OpenGl
                                 WGL_CONTEXT_MAJOR_VERSION_ARB, version.Major,
                                 // minor
                                 WGL_CONTEXT_MINOR_VERSION_ARB, version.Minor,
-                                // core profile
-                                WGL_CONTEXT_PROFILE_MASK_ARB, 1,
+                                // core or compatibility profile
+                                WGL_CONTEXT_PROFILE_MASK_ARB, profileMask,
                                 // debug 
                                 // WGL_CONTEXT_FLAGS_ARB, 1,
                                 // end

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,8 +15,10 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.Vulkan;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
@@ -214,6 +216,14 @@ namespace Avalonia.X11
                         return egl;
                     }
                 }
+
+                if (renderingMode == X11RenderingMode.Vulkan)
+                {
+                    var vulkan = VulkanSupport.TryInitialize(info,
+                        AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                    if (vulkan != null)
+                        return vulkan;
+                }
             }
 
             throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
@@ -241,7 +251,12 @@ namespace Avalonia
         /// <summary>
         /// Enables native Linux EGL rendering.
         /// </summary>
-        Egl = 3
+        Egl = 3,
+        
+        /// <summary>
+        /// Enables Vulkan rendering
+        /// </summary>
+        Vulkan = 4
     }
     
     /// <summary>
