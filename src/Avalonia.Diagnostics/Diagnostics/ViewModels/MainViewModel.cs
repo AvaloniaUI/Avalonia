@@ -242,7 +242,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (Content is TreePageViewModel treeVm && treeVm.Details != null)
             {
-                treeVm.Details.SnapshotStyles = enable;
+                treeVm.Details.SnapshotFrames = enable;
             }
         }
 

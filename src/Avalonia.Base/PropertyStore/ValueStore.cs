@@ -836,6 +836,40 @@ namespace Avalonia.PropertyStore
             }
         }
 
+        public ValueStoreDiagnostic GetStoreDiagnostic()
+        {
+            var frames = new List<IValueFrameDiagnostic>();
+
+            var effectiveLocalValues = new List<ValueEntryDiagnostic>(_effectiveValues.Count);
+            for (var i = 0; i < _effectiveValues.Count; i++)
+            {
+                if (_effectiveValues.GetValue(i) is { } effectiveValue
+                    && effectiveValue.Priority == BindingPriority.LocalValue)
+                {
+                    effectiveLocalValues.Add(new ValueEntryDiagnostic(effectiveValue.Property, effectiveValue.Value));
+                }
+            }
+
+            if (effectiveLocalValues.Count > 0)
+            {
+                frames.Add(new LocalValueFrameDiagnostic(effectiveLocalValues));
+            }
+
+            foreach (var frame in Frames)
+            {
+                if (frame is StyleInstance { Source: StyleBase } styleInstance)
+                {
+                    frames.Add(new StyleValueFrameDiagnostic(styleInstance));
+                }
+                else
+                {
+                    frames.Add(new ValueFrameDiagnostic(frame));   
+                }
+            }
+
+            return new ValueStoreDiagnostic(frames);
+		}
+
         private int InsertFrame(ValueFrame frame)
         {
             Debug.Assert(!_frames.Contains(frame));

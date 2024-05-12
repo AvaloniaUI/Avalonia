@@ -221,7 +221,91 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(f.IsOpen);
             }
         }
+        
+        [Fact]
+        public void Light_Dismiss_No_Event_Pass_Through_To_Button()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Width = 100;
+                window.Height = 100;
 
+                bool buttonClicked = false;
+                var button = new Button()
+                {
+                    ClickMode = ClickMode.Press
+                };
+                button.Click += (s, e) =>
+                {
+                    buttonClicked = true;
+                };
+                window.Content = button;
+
+                window.Show();
+
+                var f = new Flyout();
+                f.OverlayDismissEventPassThrough = false;  // Focus of test
+                f.Content = new Border { Width = 10, Height = 10 };
+                f.ShowAt(window);
+
+                var hitTester = new Mock<IHitTester>();
+                window.HitTesterOverride = hitTester.Object;
+                hitTester.Setup(x =>
+                    x.HitTestFirst(new Point(90, 90), window, It.IsAny<Func<Visual, bool>>()))
+                    .Returns(button);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
+
+                Assert.False(f.IsOpen);
+                Assert.False(buttonClicked);  // Button is NOT clicked
+            }
+        }
+
+        [Fact]
+        public void Light_Dismiss_Event_Pass_Through_To_Button()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Width = 100;
+                window.Height = 100;
+
+                bool buttonClicked = false;
+                var button = new Button()
+                {
+                    ClickMode = ClickMode.Press
+                };
+                button.Click += (s, e) =>
+                {
+                    buttonClicked = true;
+                };
+                window.Content = button;
+
+                window.Show();
+
+                var f = new Flyout();
+                f.OverlayDismissEventPassThrough = true;  // Focus of test
+                f.Content = new Border { Width = 10, Height = 10 };
+                f.ShowAt(window);
+
+                var hitTester = new Mock<IHitTester>();
+                window.HitTesterOverride = hitTester.Object;
+                hitTester.Setup(x =>
+                    x.HitTestFirst(new Point(90, 90), window, It.IsAny<Func<Visual, bool>>()))
+                    .Returns(button);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
+
+                Assert.False(f.IsOpen);
+                Assert.True(buttonClicked);  // Button is clicked
+            }
+        }
+        
         [Fact]
         public void Flyout_Has_Uncancellable_Close_Before_Showing_On_A_Different_Target()
         {
