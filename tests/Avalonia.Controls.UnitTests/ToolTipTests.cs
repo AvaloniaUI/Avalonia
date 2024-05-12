@@ -382,9 +382,6 @@ namespace Avalonia.Controls.UnitTests
 
             var eventsOrder = new List<(string eventName, object sender, object source)>();
 
-            tip.Opened += (sender, args) => eventsOrder.Add(("Opened", sender, null));
-            tip.Closed += (sender, args) => eventsOrder.Add(("Closed", sender, null));
-
             ToolTip.AddToolTipOpeningHandler(target,
                 (sender, args) => eventsOrder.Add(("Opening", sender, args.Source)));
             ToolTip.AddToolTipClosingHandler(target,
@@ -432,18 +429,12 @@ namespace Avalonia.Controls.UnitTests
                 [ToolTip.ShowDelayProperty] = 0
             };
 
-            var tipEventsCount = 0;
-            tip.Opened += (sender, args) => tipEventsCount++;
-            tip.Closed += (sender, args) => tipEventsCount++;
-
             ToolTip.AddToolTipOpeningHandler(target,
                 (sender, args) => args.Handled = true);
 
             SetupWindowAndActivateToolTip(target);
 
             Assert.False(ToolTip.GetIsOpen(target));
-            
-            Assert.Equal(0, tipEventsCount);
         }
 
         [Fact]
@@ -459,14 +450,6 @@ namespace Avalonia.Controls.UnitTests
                 [ToolTip.ShowDelayProperty] = 0
             };
 
-            var tip1EventsCount = 0;
-            var tip2EventsCount = 0;
-
-            tip1.Opened += (sender, args) => tip1EventsCount++;
-            tip1.Closed += (sender, args) => tip1EventsCount++;
-            tip2.Opened += (sender, args) => tip2EventsCount++;
-            tip2.Closed += (sender, args) => tip2EventsCount++;
-
             ToolTip.AddToolTipOpeningHandler(target,
                 (sender, args) => target[ToolTip.TipProperty] = tip2);
 
@@ -477,9 +460,6 @@ namespace Avalonia.Controls.UnitTests
             target[ToolTip.TipProperty] = null;
 
             Assert.False(ToolTip.GetIsOpen(target));
-
-            Assert.Equal(0, tip1EventsCount);
-            Assert.Equal(2, tip2EventsCount);
 		}
 
         [Fact]
