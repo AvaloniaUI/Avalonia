@@ -378,6 +378,7 @@ namespace Avalonia.Controls
         }
 
         internal Control? AdornedControl { get; private set; }
+        internal event EventHandler? Closed;
         internal IPopupHost? PopupHost => _popup?.Host;
 
         IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
@@ -437,6 +438,7 @@ namespace Avalonia.Controls
 
             _popupHostChangedHandler?.Invoke(null);
             UpdatePseudoClasses(false);
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnPopupOpened(object? sender, EventArgs e)
