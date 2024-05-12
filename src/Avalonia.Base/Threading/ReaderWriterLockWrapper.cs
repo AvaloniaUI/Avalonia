@@ -3,6 +3,9 @@ using System.Threading;
 
 namespace Avalonia.Threading;
 
+/// <summary>
+///     A reader-writer lock abstraction, wrapping around the .NET class ReaderWriterLockSlim.
+/// </summary>
 public class ReaderWriterLockWrapper
 {
     /// <summary>
