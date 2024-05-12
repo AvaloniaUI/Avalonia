@@ -453,11 +453,17 @@ namespace Avalonia.X11
             {
                 if (ActivateTransientChildIfNeeded())
                     return;
+                // See: https://github.com/fltk/fltk/issues/295
+                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
+                    return;
                 Activated?.Invoke();
                 _imeControl?.SetWindowActive(true);
             }
             else if (ev.type == XEventName.FocusOut)
             {
+                // See: https://github.com/fltk/fltk/issues/295
+                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
+                    return;
                 _imeControl?.SetWindowActive(false);
                 Deactivated?.Invoke();
             }
