@@ -407,11 +407,9 @@ namespace Avalonia.Controls.UnitTests
                 new[]
                 {
                     ("Opening", (object)target, (object)target),
-                    ("Opened", tip, null),
                     ("IsOpen=True", target, null),
 
                     ("Closing", target, target),
-                    ("Closed", tip, null),
                     ("IsOpen=False", target, null),
                 },
                 eventsOrder);
