@@ -82,11 +82,10 @@ public partial class DispatcherTimer
     /// </summary>
     public bool IsEnabled
     {
-        get { return _isEnabled; }
-
+        get => _readerWriterLockWrapper.ExecuteWithinReadLock(() => _isEnabled);
         set
         {
-            lock (_instanceLock)
+            _readerWriterLockWrapper.ExecuteWithinWriteLock(() =>
             {
                 if (!value && _isEnabled)
                 {
@@ -96,7 +95,7 @@ public partial class DispatcherTimer
                 {
                     Start();
                 }
-            }
+            });
         }
     }
 
@@ -119,7 +118,7 @@ public partial class DispatcherTimer
                 throw new ArgumentOutOfRangeException(nameof(value),
                     "TimeSpan period must be less than or equal to Int32.MaxValue.");
 
-            lock (_instanceLock)
+            _readerWriterLockWrapper.ExecuteWithinWriteLock(() =>
             {
                 _interval = value;
 
@@ -128,7 +127,7 @@ public partial class DispatcherTimer
                     DueTimeInMs = _dispatcher.Now + (long)_interval.TotalMilliseconds;
                     updateOSTimer = true;
                 }
-            }
+            });
 
             if (updateOSTimer)
             {
@@ -142,7 +141,7 @@ public partial class DispatcherTimer
     /// </summary>
     public void Start()
     {
-        lock (_instanceLock)
+        _readerWriterLockWrapper.ExecuteWithinWriteLock(() =>
         {
             if (!_isEnabled)
             {
@@ -150,7 +149,7 @@ public partial class DispatcherTimer
 
                 Restart();
             }
-        }
+        });
     }
 
     /// <summary>
@@ -160,7 +159,7 @@ public partial class DispatcherTimer
     {
         bool updateOSTimer = false;
 
-        lock (_instanceLock)
+        _readerWriterLockWrapper.ExecuteWithinWriteLock(() =>
         {
             if (_isEnabled)
             {
@@ -174,7 +173,7 @@ public partial class DispatcherTimer
                     _operation = null;
                 }
             }
-        }
+        });
 
         if (updateOSTimer)
         {
@@ -277,7 +276,7 @@ public partial class DispatcherTimer
 
     private void Restart()
     {
-        lock (_instanceLock)
+        _readerWriterLockWrapper.ExecuteWithinWriteLock(() =>
         {
             if (_operation != null)
             {
@@ -299,19 +298,19 @@ public partial class DispatcherTimer
             {
                 _dispatcher.AddTimer(this);
             }
-        }
+        });
     }
 
     internal void Promote() // called from Dispatcher
     {
-        lock (_instanceLock)
+        _readerWriterLockWrapper.ExecuteWithinWriteLock(() =>
         {
             // Simply promote the operation to it's desired priority.
             if (_operation != null)
             {
                 _operation.Priority = _priority;
             }
-        }
+        });
     }
 
     private void FireTick()
@@ -321,11 +320,12 @@ public partial class DispatcherTimer
 
         // The dispatcher thread is calling us because item's priority
         // was changed from inactive to something else.
-        if (Tick != null)
+        
+        if (_isEnabled)
         {
-            Tick(this, EventArgs.Empty);
+            Tick?.Invoke(this, EventArgs.Empty);
         }
-
+        
         // If we are still enabled, start the timer again.
         if (_isEnabled)
         {
@@ -334,7 +334,7 @@ public partial class DispatcherTimer
     }
 
     // This is the object we use to synchronize access.
-    private readonly object _instanceLock = new object();
+    private readonly ReaderWriterLockWrapper _readerWriterLockWrapper = new ReaderWriterLockWrapper();
 
     // Note: We cannot BE a dispatcher-affinity object because we can be
     // created by a worker thread.  We are still associated with a
