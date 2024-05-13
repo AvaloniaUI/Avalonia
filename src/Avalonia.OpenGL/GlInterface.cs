@@ -62,10 +62,18 @@ namespace Avalonia.OpenGL
         public partial void ClearColor(float r, float g, float b, float a);
         
         [GetProcAddress("glClearDepth", true)]
-        public partial void ClearDepth(double value);
+        internal partial void ClearDepthDouble(double value);
         
         [GetProcAddress("glClearDepthf", true)]
-        public partial void ClearDepthf(float value);
+        internal partial void ClearDepthFloat(float value);
+
+        public void ClearDepth(float value)
+        {
+            if(IsClearDepthDoubleAvailable)
+                ClearDepthDouble(value);
+            else if (IsClearDepthFloatAvailable)
+                _addr_ClearDepthFloat(value);
+        }
         
         [GetProcAddress("glDepthFunc")]
         public partial void DepthFunc(int value);

@@ -71,6 +71,11 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                     var first = true;
                     var fieldName = "_addr_" + method.Name;
                     var delegateType = BuildDelegateType(classBuilder, method, fieldName);
+                    var visibility = method.DeclaredAccessibility == Accessibility.Public
+                        ? "public "
+                        : method.DeclaredAccessibility == Accessibility.Internal
+                            ? "internal "
+                            : "";
 
                     void AppendNextAddr()
                     {
@@ -160,7 +165,8 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
 
                     classBuilder
                         .Pad(1)
-                        .Append("public partial ")
+                        .Append(visibility)
+                        .Append(" partial ")
                         .Append(method.ReturnType.GetFullyQualifiedName())
                         .Append(" ")
                         .Append(method.Name)
@@ -231,7 +237,8 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                     if (isOptional)
                         classBuilder
                             .Pad(1)
-                            .Append("public bool Is")
+                            .Append(visibility)
+                            .Append(" bool Is")
                             .Append(method.Name)
                             .Append("Available => ")
                             .Append(fieldName)
