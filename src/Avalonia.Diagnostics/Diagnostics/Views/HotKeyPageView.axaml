@@ -16,7 +16,7 @@
       <TextBlock Grid.Column="2" FontWeight="Bold" Text="Gesture" />
     </Grid>
 
-    <ItemsControl Grid.Row="1" Grid.ColumnSpan="3" ItemsSource="{Binding HotKeys}">
+    <ItemsControl Grid.Row="1" Grid.ColumnSpan="3" ItemsSource="{Binding HotKeyDescriptions}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <Grid>
@@ -26,7 +26,7 @@
               <ColumnDefinition SharedSizeGroup="B" Width="*" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="{Binding Description}" ToolTip.Tip="{Binding LongDescription}" />
+            <TextBlock Text="{Binding BriefDescription}" ToolTip.Tip="{Binding DetailedDescription}" />
             <TextBlock Grid.Column="2" Text="{Binding Gesture}" />
           </Grid>
         </DataTemplate>
