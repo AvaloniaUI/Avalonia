@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ControlCatalog.Pages.PlatformInfoPage"
+﻿<UserControl x:Class="ControlCatalog.Pages.PlatformPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,8 +7,9 @@
              d:DesignHeight="800"
              d:DesignWidth="400"
              mc:Ignorable="d"
-             x:DataType="viewModels:PlatformInformationViewModel">
+             x:DataType="viewModels:PlatformViewModel">
   <StackPanel Spacing="20">
+    <TextBlock Margin="0 5" FontSize="18" FontWeight="Bold">PlatformInfo</TextBlock>
     <TextBlock Text="{Binding PlatformInfo}" />
 
     <StackPanel TextElement.Foreground="White">
@@ -51,6 +52,12 @@
           <TextBlock Text="Win, Lin or Mac" />
         </Border>
       </WrapPanel>
+    </StackPanel>
+    
+    <TextBlock Margin="0 5" FontSize="18" FontWeight="Bold">ILauncher</TextBlock>
+    <StackPanel Orientation="Horizontal" Spacing="20">
+      <Button Click="LaunchUriClick">Launch URI</Button>
+      <TextBlock Name="TextBlockLauncherStatus" VerticalAlignment="Center" Text="Status ..."/>
     </StackPanel>
   </StackPanel>
 </UserControl>

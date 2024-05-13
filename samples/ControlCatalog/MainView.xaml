@@ -127,8 +127,8 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
-      <TabItem Header="Platform Information">
-        <pages:PlatformInfoPage />
+      <TabItem Header="Platform Integration">
+        <pages:PlatformPage />
       </TabItem>
       <TabItem Header="Pointers">
         <pages:PointersPage />

@@ -5,9 +5,9 @@ using Avalonia.Platform.Storage;
 
 namespace Avalonia.Browser.Storage;
 
-internal class BrowserLauncher : ILauncher
+internal class BrowserLauncher : Launcher
 {
-    public Task<bool> LaunchUriAsync(Uri uri)
+    protected override Task<bool> LaunchUriAsyncImpl(Uri uri)
     {
         _ = uri ?? throw new ArgumentNullException(nameof(uri));
 
@@ -19,7 +19,7 @@ internal class BrowserLauncher : ILauncher
         return Task.FromResult(false);
     }
 
-    public Task<bool> LaunchFileAsync(IStorageItem storageItem)
+    protected override Task<bool> LaunchFileAsyncImpl(IStorageItem storageItem)
     {
         _ = storageItem ?? throw new ArgumentNullException(nameof(storageItem));
 
