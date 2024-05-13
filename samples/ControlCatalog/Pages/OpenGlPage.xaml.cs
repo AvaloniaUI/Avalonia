@@ -327,7 +327,7 @@ namespace ControlCatalog.Pages
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             gl.Enable(GL_DEPTH_TEST);
-            gl.Viewport(0, 0, (int)Bounds.Width, (int)Bounds.Height);
+            gl.Viewport(0, 0, FramebufferPixelSize.Width, FramebufferPixelSize.Height);
             var GL = gl;
 
             GL.BindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);

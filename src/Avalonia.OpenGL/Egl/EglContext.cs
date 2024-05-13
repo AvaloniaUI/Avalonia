@@ -8,7 +8,7 @@ using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
 {
-    public class EglContext : IGlContext
+    public class EglContext : IGlContext, IGlContextWithIsCurrentCheck
     {
         private readonly EglDisplay _disp;
         private readonly EglInterface _egl;
