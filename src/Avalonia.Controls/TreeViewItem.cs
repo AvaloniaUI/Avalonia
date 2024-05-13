@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -92,6 +93,12 @@ namespace Avalonia.Controls
         }
 
         internal TreeView? TreeViewOwner => _treeView;
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TreeViewItemAutomationPeer(this);
+        }
 
         protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
