@@ -6,7 +6,7 @@ namespace Avalonia.Threading;
 /// <summary>
 ///     A reader-writer lock abstraction, wrapping around the .NET class ReaderWriterLockSlim.
 /// </summary>
-public class ReaderWriterLockWrapper
+internal class ReaderWriterLockWrapper
 {
     /// <summary>
     ///     Executes an action within a read lock.

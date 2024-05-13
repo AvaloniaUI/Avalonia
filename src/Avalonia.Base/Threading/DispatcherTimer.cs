@@ -345,7 +345,7 @@ public partial class DispatcherTimer
     private readonly DispatcherPriority _priority; // NOTE: should be Priority
     private TimeSpan _interval;
     private DispatcherOperation? _operation;
-    private bool _isEnabled;
+    private volatile bool _isEnabled;
 
     // used by Dispatcher
     internal long DueTimeInMs { get; private set; }
