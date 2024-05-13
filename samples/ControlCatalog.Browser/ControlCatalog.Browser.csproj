@@ -5,12 +5,22 @@
     <WasmMainJSPath>wwwroot/main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebuggerSupport>true</DebuggerSupport>
+    <WasmDebugLevel>5</WasmDebugLevel>
+    <WasmEnableThreads>true</WasmEnableThreads>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
     <ProjectReference Include="../../src/Browser/Avalonia.Browser/Avalonia.Browser.csproj" />
     <ProjectReference Include="../ControlCatalog/ControlCatalog.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 
+      A workaround for VS and Rider being dumber than a rock when it comes to build dependency analysis
+      Also see https://youtrack.jetbrains.com/issue/RIDER-107175/Rider-doesnt-update-generate-transitive-Content-dependencies
+    -->
+    <AdditionalUpToDateCheckInput Include="../../src/Browser/Avalonia.Browser/**/*" Visible="false"/>
   </ItemGroup>
 
   <ItemGroup>
