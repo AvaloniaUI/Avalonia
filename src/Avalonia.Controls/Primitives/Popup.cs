@@ -493,6 +493,7 @@ namespace Avalonia.Controls.Primitives
             _openState = new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup);
 
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
+            WindowManagerIsLightDismissEnabledHintChanged(popupHost, IsLightDismissEnabled);
 
             popupHost.Show();
 
@@ -680,6 +681,14 @@ namespace Avalonia.Controls.Primitives
             if (host is PopupRoot pr)
             {
                 pr.WindowManagerAddShadowHint = hint;
+            }
+        }
+
+        private static void WindowManagerIsLightDismissEnabledHintChanged(IPopupHost host, bool hint)
+        {
+            if (host is PopupRoot pr)
+            {
+                pr.PlatformImpl?.SetIsLightDismissEnabledHint(hint);
             }
         }
 

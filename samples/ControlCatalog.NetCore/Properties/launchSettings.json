@@ -10,6 +10,12 @@
     "VNC": {
       "commandName": "Project",
       "commandLineArgs": "--vnc"
+    },
+    "Wayland Debug": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "WAYLAND_DEBUG": "1"
+      }
     }
   }
 }

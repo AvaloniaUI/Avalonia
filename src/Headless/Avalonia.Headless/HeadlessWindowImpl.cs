@@ -255,7 +255,9 @@ namespace Avalonia.Headless
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
-        public bool NeedsManagedDecorations => false;
+        public SystemDecorations RequestedManagedDecorations { get; }
+
+        public Action<SystemDecorations>? RequestedManagedDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins => new Thickness();
 
@@ -366,6 +368,11 @@ namespace Avalonia.Headless
         }
 
         public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+            
+        }
+
+        public void SetIsLightDismissEnabledHint(bool enabled)
         {
             
         }
