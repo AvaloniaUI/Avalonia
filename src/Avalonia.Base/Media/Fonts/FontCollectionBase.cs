@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
@@ -254,6 +255,18 @@ namespace Avalonia.Media.Fonts
             }
 
             return false;
+        }
+
+        private static readonly List<string> s_knownNames = ["Solid", "Regular", "Bold", "Black", "Normal", "Thin"];
+
+        internal static string NormalizeFamilyName(string familyName)
+        {
+            foreach (var name in s_knownNames)
+            {
+                familyName = Regex.Replace(familyName, name, "", RegexOptions.IgnoreCase);
+            }
+
+            return familyName.Trim();
         }
     }
 }

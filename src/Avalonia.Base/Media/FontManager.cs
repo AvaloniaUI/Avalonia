@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
+using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -144,13 +146,20 @@ namespace Avalonia.Media
         {
             var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-            if (TryGetFontCollection(source, out var fontCollection) &&
-                fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+            if (TryGetFontCollection(source, out var fontCollection))
             {
-                if (glyphTypeface.FamilyName.Contains(familyName))
+                if (fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch,
+                        out glyphTypeface))
                 {
                     return true;
                 }
+
+                var logger = Logger.TryGet(LogEventLevel.Debug, "FontManager");
+
+                logger?.Log(this,
+                    $"Exact family '{familyName}' could not be found. Present families: [{string.Join(",", fontCollection)}]");
+
+                return false;
             }
 
             glyphTypeface = null;
