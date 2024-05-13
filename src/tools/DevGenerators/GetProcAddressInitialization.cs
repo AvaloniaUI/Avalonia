@@ -70,7 +70,7 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                     var isOptional = false;
                     var first = true;
                     var fieldName = "_addr_" + method.Name;
-                    var delegateType = BuildDelegateType(method);
+                    var delegateType = BuildDelegateType(classBuilder, method, fieldName);
 
                     void AppendNextAddr()
                     {
@@ -157,13 +157,6 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                         .Append(" = (")
                         .Append(delegateType)
                         .AppendLine(")addr;");
-
-                    classBuilder
-                        .Pad(1)
-                        .Append(delegateType);
-                    classBuilder
-                        .Append(fieldName)
-                        .AppendLine(";");
 
                     classBuilder
                         .Pad(1)
@@ -313,19 +306,41 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
         return type.GetFullyQualifiedName();
     }
 
-    static string BuildDelegateType(IMethodSymbol method)
+    static string BuildDelegateType(StringBuilder classBuilder, IMethodSymbol method, string fieldName)
     {
-        StringBuilder name = new("delegate* unmanaged[Stdcall]<");
-        var firstArg = true;
+        StringBuilder functionPointer = new("delegate* unmanaged[Stdcall]<");
+        // We need this one because Mono interpreter needs pre-generated trampolines for function pointers,
+        // but .NET WASM SDK doesn't actually scan method bodies for calli instructions and only
+        // looks for methods with DllImport and delegates with UnmanagedFunctionPointer
+        StringBuilder fakeDelegate = new(
+            "    [global::System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(global::System.Runtime.InteropServices.CallingConvention.Cdecl)]\n    internal delegate ");
+        fakeDelegate
+            .Append(MapToNative(method.ReturnType))
+            .Append(" __wasmDummy")
+            .Append(method.Name)
+            .Append("(");
 
-        void AppendArg(string a, RefKind kind)
+
+        int arg = 0;
+
+        void AppendArgCore(StringBuilder builder, string a, RefKind kind, bool isFirstArg)
         {
-            if (firstArg)
-                firstArg = false;
-            else
-                name.Append(",");
-            AppendRefKind(name, kind);
-            name.Append(a);
+            if (!isFirstArg)
+                builder.Append(",");
+            AppendRefKind(builder, kind);
+            builder.Append(a);
+        }
+
+        void AppendArg(string a, RefKind kind, bool returnArg = false)
+        {
+            AppendArgCore(functionPointer, a, kind, arg == 0);
+            if (!returnArg)
+            {
+                AppendArgCore(fakeDelegate, a, kind, arg == 0);
+                fakeDelegate.Append($" a{arg}");
+            }
+
+            arg++;
         }
 
         foreach (var p in method.Parameters)
@@ -333,9 +348,18 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
             AppendArg(MapToNative(p.Type), p.RefKind);
         }
 
-        AppendArg(MapToNative(method.ReturnType), RefKind.None);
-        name.Append(">");
-        return name.ToString();
+        AppendArg(MapToNative(method.ReturnType), RefKind.None, true);
+        functionPointer.Append(">");
+        fakeDelegate.Append(");");
+        
+        classBuilder
+            .Pad(1)
+            .Append(functionPointer);
+        classBuilder
+            .Append(fieldName)
+            .AppendLine(";");
+        classBuilder.AppendLine(fakeDelegate.ToString());
+        return functionPointer.ToString();
     }
 
 }

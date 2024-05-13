@@ -60,6 +60,18 @@ namespace Avalonia.OpenGL
 
         [GetProcAddress("glClearColor")]
         public partial void ClearColor(float r, float g, float b, float a);
+        
+        [GetProcAddress("glClearDepth", true)]
+        public partial void ClearDepth(double value);
+        
+        [GetProcAddress("glClearDepthf", true)]
+        public partial void ClearDepthf(float value);
+        
+        [GetProcAddress("glDepthFunc")]
+        public partial void DepthFunc(int value);
+        
+        [GetProcAddress("glDepthMask")]
+        public partial void DepthMask(int value);
 
         [GetProcAddress("glClear")]
         public partial void Clear(int bits);
@@ -319,6 +331,9 @@ namespace Avalonia.OpenGL
 
         [GetProcAddress("glEnable")]
         public partial void Enable(int what);
+        
+        [GetProcAddress("glDisable")]
+        public partial void Disable(int what);
 
         [GetProcAddress("glDeleteBuffers")]
         public partial void DeleteBuffers(int count, int* buffers);
