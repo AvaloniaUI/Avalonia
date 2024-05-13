@@ -29,7 +29,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                 var resp = await method.CreateICv3Async(GetAppName(),
                     Process.GetCurrentProcess().Id);
 
-                var proxy = new OrgFcitxFcitxInputContext(Connection, name, $"/inputcontext_{resp.Icid}");
+                var proxy = new OrgFcitxFcitxInputContext(Connection, name, $"/inputcontext_{resp.icid}");
                 _context = new FcitxICWrapper(proxy);
             }
             else

@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
-            var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
+            var resourceNodes = AsResourceNodesStack(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
             var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
 
@@ -43,7 +43,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             /*delegate*<IServiceProvider, object>*/ IntPtr builder,
             IServiceProvider provider)
         {
-            var resourceNodes = AsResourceNodes(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
+            var resourceNodes = AsResourceNodesStack(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
             var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
             var typedBuilder = (delegate*<IServiceProvider, object>)builder;
@@ -51,7 +51,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             return new PointerDeferredContent<T>(resourceNodes, rootObject, parentScope, typedBuilder);
         }
 
-        private static IResourceNode[] AsResourceNodes(IAvaloniaXamlIlParentStackProvider provider)
+        private static IResourceNode[] AsResourceNodesStack(IAvaloniaXamlIlParentStackProvider provider)
         {
             var buffer = s_resourceNodeBuffer ??= new List<IResourceNode>(8);
             buffer.Clear();
@@ -71,6 +71,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                         buffer.Add(node);
                 }
             }
+
+            // The immediate parent should be last in the stack.
+            buffer.Reverse();
 
             var lastParentStack = s_lastParentStack;
 
@@ -230,9 +233,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 => RootObject;
 
             public IEnumerable<object> Parents
-                => _parentResourceNodes;
+                => _parentResourceNodes.Reverse();
 
-            public IReadOnlyList<object> DirectParents
+            public IReadOnlyList<object> DirectParentsStack
                 => _parentResourceNodes;
 
             public IAvaloniaXamlIlEagerParentStackProvider? ParentProvider
@@ -418,7 +421,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 public IEnumerable<object> Parents
                     => _parents ??= new object[] { _application };
 
-                public IReadOnlyList<object> DirectParents
+                public IReadOnlyList<object> DirectParentsStack
                     => this;
 
                 public int Count
@@ -462,7 +465,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 public IEnumerable<object> Parents
                     => Array.Empty<object>();
 
-                public IReadOnlyList<object> DirectParents
+                public IReadOnlyList<object> DirectParentsStack
                     => Array.Empty<object>();
 
                 public IAvaloniaXamlIlEagerParentStackProvider? ParentProvider

@@ -48,6 +48,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnDemand);
                 Dpi = new Vector(96, 96);
+                SetFormatFromWic(WicImpl.PixelFormat);
             }
         }
 
@@ -55,6 +56,7 @@ namespace Avalonia.Direct2D1.Media
         {
             WicImpl = bmp;
             Dpi = new Vector(96, 96);
+            SetFormatFromWic(WicImpl.PixelFormat);
         }
 
         /// <summary>
@@ -69,6 +71,7 @@ namespace Avalonia.Direct2D1.Media
             using var frame = _decoder.GetFrame(0);
             WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnLoad);
             Dpi = new Vector(96, 96);
+            SetFormatFromWic(WicImpl.PixelFormat);
         }
 
         /// <summary>
@@ -148,7 +151,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     scaler.Initialize(frame, desired.Width, desired.Height, ConvertInterpolationMode(interpolationMode));
 
-                    WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, scaler, BitmapCreateCacheOption.CacheOnLoad);                    
+                    WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, scaler, BitmapCreateCacheOption.CacheOnLoad);
                 }
             }
             else
@@ -159,13 +162,47 @@ namespace Avalonia.Direct2D1.Media
             Dpi = new Vector(96, 96);
         }
 
+        private void SetFormatFromWic(Guid pixelFormat)
+        {
+            if (pixelFormat == SharpDX.WIC.PixelFormat.Format16bppBGR565)
+            {
+                PixelFormat = APixelFormat.Rgb565;
+                AlphaFormat = Platform.AlphaFormat.Premul;
+            }
+            else if (pixelFormat == SharpDX.WIC.PixelFormat.Format32bppRGB)
+            {
+                PixelFormat = APixelFormat.Rgb32;
+                AlphaFormat = Platform.AlphaFormat.Premul;
+            }
+            else if (pixelFormat == PixelFormats.Rgba8888.ToWic(Platform.AlphaFormat.Premul))
+            {
+                PixelFormat = APixelFormat.Rgba8888;
+                AlphaFormat = Platform.AlphaFormat.Premul;
+            }
+            else if (pixelFormat == PixelFormats.Rgba8888.ToWic(Platform.AlphaFormat.Opaque))
+            {
+                PixelFormat = APixelFormat.Rgba8888;
+                AlphaFormat = Platform.AlphaFormat.Opaque;
+            }
+            else if (pixelFormat == PixelFormats.Bgra8888.ToWic(Platform.AlphaFormat.Premul))
+            {
+                PixelFormat = APixelFormat.Bgra8888;
+                AlphaFormat = Platform.AlphaFormat.Premul;
+            }
+            else if (pixelFormat == PixelFormats.Bgra8888.ToWic(Platform.AlphaFormat.Opaque))
+            {
+                PixelFormat = APixelFormat.Bgra8888;
+                AlphaFormat = Platform.AlphaFormat.Opaque;
+            }
+        }
+
         public override Vector Dpi { get; }
 
         public override PixelSize PixelSize => WicImpl.Size.ToAvalonia();
 
-        public APixelFormat? PixelFormat { get; }
+        public APixelFormat? PixelFormat { get; private set; }
 
-        public AlphaFormat? AlphaFormat { get; }
+        public AlphaFormat? AlphaFormat { get; private set; }
 
         public override void Dispose()
         {
@@ -204,7 +241,7 @@ namespace Avalonia.Direct2D1.Media
                 encoder.Commit();
             }
         }
-        
+
         class LockedBitmap : ILockedFramebuffer
         {
             private readonly WicBitmapImpl _parent;
