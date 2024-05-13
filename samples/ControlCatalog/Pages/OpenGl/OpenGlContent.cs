@@ -264,10 +264,7 @@ internal class OpenGlContent
         float yaw, float pitch, float roll, float disco)
     {
         gl.Viewport(0, 0, size.Width, size.Height);
-        if (gl.IsClearDepthAvailable)
-            gl.ClearDepth(1);
-        else if(gl.IsClearDepthfAvailable)
-            gl.ClearDepthf(1);
+        gl.ClearDepth(1);
         gl.Disable(GL_CULL_FACE);
         gl.Disable(GL_SCISSOR_TEST);
         gl.DepthFunc(GL_LESS);
