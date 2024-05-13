@@ -14,10 +14,9 @@ export class StreamHelper {
         return await stream.close();
     }
 
-    public static async write(stream: FileSystemWritableFileStream, span: IMemoryView) {
-        const array = new Uint8Array(span.byteLength);
-        span.copyTo(array);
-
+    public static async write(stream: FileSystemWritableFileStream, span: IMemoryView, offset: number, count: number) {
+        const array = new Uint8Array(count);
+        span.copyTo(array, offset);
         return await stream.write(array);
     }
 
