@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Avalonia.Diagnostics.ViewModels"
+             Padding="4"
+             x:Class="Avalonia.Diagnostics.Views.HotKeyPageView"
+             x:DataType="vm:HotKeyPageViewModel">
+  <Grid RowDefinitions="auto,*" Grid.IsSharedSizeScope="True">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition SharedSizeGroup="A" Width="auto" />
+        <ColumnDefinition Width="8" />
+        <ColumnDefinition SharedSizeGroup="B" Width="*" />
+      </Grid.ColumnDefinitions>
+
+      <TextBlock FontWeight="Bold" Text="Action" />
+      <TextBlock Grid.Column="2" FontWeight="Bold" Text="Gesture" />
+    </Grid>
+
+    <ItemsControl Grid.Row="1" Grid.ColumnSpan="3" ItemsSource="{Binding HotKeyDescriptions}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition SharedSizeGroup="A" Width="auto" />
+              <ColumnDefinition Width="8" />
+              <ColumnDefinition SharedSizeGroup="B" Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="{Binding BriefDescription}" ToolTip.Tip="{Binding DetailedDescription}" />
+            <TextBlock Grid.Column="2" Text="{Binding Gesture}" />
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </Grid>
+</UserControl>

@@ -1,14 +1,7 @@
 import { BrowserRenderingMode } from "./surfaceBase";
 import { HtmlCanvasSurfaceBase } from "./htmlSurfaceBase";
 import { RuntimeAPI } from "../../../types/dotnet";
-
-const sharedArrayBufferDefined = typeof SharedArrayBuffer !== "undefined";
-function isSharedArrayBuffer(buffer: any): buffer is SharedArrayBuffer {
-    // BEWARE: In some cases, `instanceof SharedArrayBuffer` returns false even though buffer is an SAB.
-    // Patch adapted from https://github.com/emscripten-core/emscripten/pull/16994
-    // See also https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toStringTag
-    return sharedArrayBufferDefined && buffer[Symbol.toStringTag] === "SharedArrayBuffer";
-}
+import { isSharedArrayBuffer } from "../stream";
 
 export class SoftwareSurface extends HtmlCanvasSurfaceBase {
     private readonly runtime: RuntimeAPI | undefined;
