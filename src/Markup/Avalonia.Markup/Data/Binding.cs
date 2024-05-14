@@ -175,6 +175,7 @@ namespace Avalonia.Data
                 mode: mode,
                 priority: Priority,
                 stringFormat: StringFormat,
+                targetProperty: targetProperty,
                 targetNullValue: TargetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
                 updateSourceTrigger: trigger);

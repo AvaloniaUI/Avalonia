@@ -39,12 +39,16 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="defaultPriority">
     /// The default binding priority for the expression.
     /// </param>
+    /// <param name="targetProperty">The target property being bound to.</param>
     /// <param name="isDataValidationEnabled">Whether data validation is enabled.</param>
     public UntypedBindingExpressionBase(
         BindingPriority defaultPriority,
+        AvaloniaProperty? targetProperty = null,
         bool isDataValidationEnabled = false)
     {
         Priority = defaultPriority;
+        TargetProperty = targetProperty;
+        TargetType = targetProperty?.PropertyType ?? typeof(object);
         _isDataValidationEnabled = isDataValidationEnabled;
     }
 
@@ -86,7 +90,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// Gets the target type of the binding expression; that is, the type that values produced by
     /// the expression should be converted to.
     /// </summary>
-    public Type TargetType { get; private set; } = typeof(object);
+    public Type TargetType { get; private set; }
 
     AvaloniaProperty IValueEntry.Property => TargetProperty ?? throw new Exception();
 
@@ -262,6 +266,8 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     {
         if (_sink is not null)
             throw new InvalidOperationException("BindingExpression was already attached.");
+        if (TargetProperty is not null && TargetProperty != targetProperty)
+            throw new InvalidOperationException("BindingExpression was already attached to a different property.");
 
         _sink = sink;
         _frame = frame;

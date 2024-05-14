@@ -133,6 +133,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 priority: Priority,
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
+                targetProperty: targetProperty,
                 targetTypeConverter: TargetTypeConverter.GetDefaultConverter(),
                 updateSourceTrigger: trigger);
         }
