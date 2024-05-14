@@ -187,13 +187,20 @@ internal abstract class ExpressionNode
             else if (notification.ErrorType == BindingErrorType.DataValidationError)
             {
                 if (notification.HasValue)
-                    SetValue(notification.Value, notification.Error);
+                {
+                    if (notification.Value is BindingNotification n)
+                        SetValue(n);
+                    else
+                        SetValue(notification.Value, notification.Error);
+                }
                 else
+                {
                     SetDataValidationError(notification.Error!);
+                }
             }
             else
             {
-                SetValue(notification.Value, null);
+                SetValue(notification.Value);
             }
         }
         else
