@@ -33,6 +33,7 @@ internal class UnmanagedBlob : IDisposable
         GC.WaitForPendingFinalizers();
     }
 #endif
+    public static bool SuppressFinalizerWarning { get; set; }
 
     public UnmanagedBlob(int size)
     {
@@ -78,7 +79,7 @@ internal class UnmanagedBlob : IDisposable
     public void Dispose()
     {
 #if DEBUG
-        if (Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
+        if (!SuppressFinalizerWarning && Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
         {
             lock (_lock)
             {
