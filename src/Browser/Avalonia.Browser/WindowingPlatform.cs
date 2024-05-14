@@ -20,6 +20,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
     
     static bool DetectThreadSupport()
     {
+        // TODO Replace with public API https://github.com/dotnet/runtime/issues/77541.
         var prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
             BindingFlags.Static | BindingFlags.NonPublic);
         if (prop != null && prop.GetValue(null) is bool value)
