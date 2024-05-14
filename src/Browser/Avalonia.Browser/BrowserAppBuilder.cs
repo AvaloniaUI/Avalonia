@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Rendering;
 using Avalonia.Metadata;
 
 namespace Avalonia.Browser;
@@ -107,6 +108,10 @@ public static class BrowserAppBuilder
         AvaloniaLocator.CurrentMutable.Bind<BrowserPlatformOptions>().ToConstant(options);
 
         await AvaloniaModule.ImportMain();
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
+        {
+            await RenderWorker.InitializeAsync();
+        }
 
         if (builder.WindowingSubsystemInitializer is null)
         {

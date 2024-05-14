@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@types/emscripten": "^1.39.6",
+    "@types/offscreencanvas": "2019.7.1",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "esbuild": "^0.15.7",
     "eslint": "^8.24.0",
