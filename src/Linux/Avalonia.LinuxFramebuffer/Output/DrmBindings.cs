@@ -28,7 +28,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         internal List<uint> EncoderIds { get; } = new List<uint>();
         public List<DrmModeInfo> Modes { get; } = new List<DrmModeInfo>();
         public DrmConnectorType ConnectorType { get; }
-        public uint ConnectorType_Id { get; }
+        public uint ConnectorTypeId { get; }
         internal DrmConnector(drmModeConnector* conn)
         {
             Connection = conn->connection;
@@ -41,7 +41,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             for (var c = 0; c < conn->count_modes; c++)
                 Modes.Add(new DrmModeInfo(ref conn->modes[c]));
             ConnectorType = (DrmConnectorType)conn->connector_type;
-            ConnectorType_Id = conn->connector_type_id;
+            ConnectorTypeId = conn->connector_type_id;
             if (conn->connector_type > KnownConnectorTypes.Length - 1)
                 Name = $"Unknown({conn->connector_type})-{conn->connector_type_id}";
             else
