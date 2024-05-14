@@ -96,7 +96,7 @@ partial class WebGlContext : IGlContext, Avalonia.Skia.IGlSkiaSpecificOptionsFea
     [JSImport("WebGlRenderTarget.makeContextCurrent", AvaloniaModule.MainModuleName)]
     private static partial bool MakeContextCurrent(int context);
 
-    [DllImport("*", EntryPoint = "eglGetProcAddress")]
+    [DllImport("libSkiaSharp", EntryPoint = "eglGetProcAddress")]
     private static extern IntPtr eglGetProcAddress(string name);
 
     private int _contextId;
