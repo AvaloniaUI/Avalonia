@@ -61,6 +61,8 @@
 		ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */; };
 		ED754D262A97306B0078B4DF /* PlatformRenderTimer.mm in Sources */ = {isa = PBXBuildFile; fileRef = ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */; };
 		EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */ = {isa = PBXBuildFile; fileRef = EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */; };
+		F166293E2BE8D02B00582430 /* AvnPopup.h in Headers */ = {isa = PBXBuildFile; fileRef = F166293D2BE8D02B00582430 /* AvnPopup.h */; };
+		F16D46362BF4B363009EF53D /* AvnPopup.mm in Sources */ = {isa = PBXBuildFile; fileRef = F16D46352BF4B363009EF53D /* AvnPopup.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -125,6 +127,8 @@
 		ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformRenderTimer.mm; sourceTree = "<group>"; };
 		EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformSettings.mm; sourceTree = "<group>"; };
+		F166293D2BE8D02B00582430 /* AvnPopup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnPopup.h; sourceTree = "<group>"; };
+		F16D46352BF4B363009EF53D /* AvnPopup.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnPopup.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,6 +168,8 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				F166293D2BE8D02B00582430 /* AvnPopup.h */,
+				F16D46352BF4B363009EF53D /* AvnPopup.mm */,
 				ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */,
 				855EDC9E28C6546F00807998 /* PlatformBehaviorInhibition.mm */,
 				8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */,
@@ -245,6 +251,7 @@
 				8D300D65292D0A6800320C49 /* AvnTextInputMethod.h in Headers */,
 				8D2F3512292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h in Headers */,
 				18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */,
+				F166293E2BE8D02B00582430 /* AvnPopup.h in Headers */,
 				18391ED5F611FF62C45F196D /* AvnView.h in Headers */,
 				18391E1381E2D5BFD60265A9 /* AutoFitContentView.h in Headers */,
 				18391F1E2411C79405A9943A /* WindowProtocol.h in Headers */,
@@ -324,6 +331,7 @@
 				BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */,
 				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
 				855EDC9F28C6546F00807998 /* PlatformBehaviorInhibition.mm in Sources */,
+				F16D46362BF4B363009EF53D /* AvnPopup.mm in Sources */,
 				520624B322973F4100C4DCEF /* menu.mm in Sources */,
 				8D300D69292E1E5D00320C49 /* AvnTextInputMethod.mm in Sources */,
 				37A517B32159597E00FBA241 /* Screens.mm in Sources */,

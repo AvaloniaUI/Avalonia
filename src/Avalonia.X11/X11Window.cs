@@ -1006,7 +1006,7 @@ namespace Avalonia.X11
             return false;
         }
 
-        public void SetParent(IWindowImpl? parent)
+        public void SetParent(IWindowBaseImpl? parent)
         {
             if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);

@@ -694,7 +694,7 @@ namespace Avalonia.Win32
 
         public Action? GotInputWhenDisabled { get; set; }
 
-        public void SetParent(IWindowImpl? parent)
+        public void SetParent(IWindowBaseImpl? parent)
         {
             _parent = parent as WindowImpl;
 

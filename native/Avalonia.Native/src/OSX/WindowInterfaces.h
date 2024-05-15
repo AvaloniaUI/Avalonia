@@ -6,12 +6,17 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #include "WindowProtocol.h"
+#include "AvnPopup.h"
 #include "WindowBaseImpl.h"
 
 @interface AvnWindow : NSWindow <AvnWindowProtocol, NSWindowDelegate>
--(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+-(AvnWindow* _Nonnull) initWithWindowImpl: (WindowBaseImpl* _Nonnull) windowImpl contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+@end
+
+@interface AvnPopup : NSWindow <AvnPopupProtocol, NSWindowDelegate>
+-(AvnPopup* _Nonnull) initWithWindowImpl: (WindowBaseImpl* _Nonnull) windowImpl contentRect: (NSRect)contentRect;
 @end
 
 @interface AvnPanel : NSPanel <AvnWindowProtocol, NSWindowDelegate>
--(AvnPanel* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+-(AvnPanel* _Nonnull) initWithWindowImpl: (WindowBaseImpl* _Nonnull) windowImpl contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 @end

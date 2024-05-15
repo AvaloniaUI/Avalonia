@@ -727,6 +727,7 @@ interface IAvnWindowBase : IUnknown
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
      HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
      HRESULT GetInputMethod(IAvnTextInputMethod **ppv);
+     HRESULT SetParent(IAvnWindowBase* parent);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
@@ -739,7 +740,6 @@ interface IAvnPopup : IAvnWindowBase
 interface IAvnWindow : IAvnWindowBase
 {
      HRESULT SetEnabled(bool enable);
-     HRESULT SetParent(IAvnWindow* parent);
      HRESULT SetCanResize(bool value);
      HRESULT SetDecorations(SystemDecorations value);
      HRESULT SetTitle(char* utf8Title);
@@ -1132,7 +1132,7 @@ interface IAvnAutomationPeer : IUnknown
      bool ShowContextMenu();
 
      IAvnAutomationPeer* GetRootPeer();
-     
+          
      bool IsRootProvider();
      IAvnWindowBase* RootProvider_GetWindow();
      IAvnAutomationPeer* RootProvider_GetFocus();

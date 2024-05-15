@@ -22,6 +22,7 @@
   <Import Project="..\..\..\build\SourceGenerators.props" />
   <ItemGroup>
     <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />
+    <Compile Remove="Automation\InteropAutomationNode.cs" />
   </ItemGroup>
   <Import Project="..\..\..\build\TrimmingEnable.props" />
   <PropertyGroup Label="Warnings">

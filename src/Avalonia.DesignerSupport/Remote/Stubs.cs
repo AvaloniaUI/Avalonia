@@ -158,7 +158,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowBaseImpl parent)
         {
         }
 

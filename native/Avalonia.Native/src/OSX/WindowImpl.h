@@ -8,7 +8,6 @@
 
 #import "WindowBaseImpl.h"
 #include "IWindowStateChanged.h"
-#include <list>
 
 class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
 {
@@ -23,9 +22,6 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
-    bool _isModal;
-    WindowImpl* _parent;
-    std::list<WindowImpl*> _children;
     AvnExtendClientAreaChromeHints _extendClientHints;
 
     FORWARD_IUNKNOWN()
@@ -44,8 +40,6 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT Show (bool activate, bool isDialog) override;
 
     virtual HRESULT SetEnabled (bool enable) override;
-
-    virtual HRESULT SetParent (IAvnWindow* parent) override;
 
     void StartStateTransition () override ;
 

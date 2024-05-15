@@ -23,7 +23,7 @@ private:
     END_INTERFACE_MAP()
     virtual ~PopupImpl(){}
     ComPtr<IAvnWindowEvents> WindowEvents;
-    PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
+    PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events, false, true)
     {
         WindowEvents = events;
         [Window setLevel:NSPopUpMenuWindowLevel];
@@ -51,7 +51,7 @@ extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
 {
     @autoreleasepool
     {
-        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
+        IAvnPopup* ptr = (IAvnPopup*)new PopupImpl(events);
         return ptr;
     }
 }

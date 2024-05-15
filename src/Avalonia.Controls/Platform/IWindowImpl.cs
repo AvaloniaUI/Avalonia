@@ -26,12 +26,6 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="title">The title.</param>
         void SetTitle(string? title);
-
-        /// <summary>
-        /// Sets the parent of the window.
-        /// </summary>
-        /// <param name="parent">The parent <see cref="IWindowImpl"/>.</param>
-        void SetParent(IWindowImpl? parent);
         
         /// <summary>
         /// Disables the window for example when a modal dialog is open.

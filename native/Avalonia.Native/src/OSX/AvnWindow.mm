@@ -24,11 +24,10 @@
 #include "WindowImpl.h"
 #include "AvnView.h"
 #include "WindowInterfaces.h"
-#include "PopupImpl.h"
 
 @implementation CLASS_NAME
 {
-    ComPtr<WindowBaseImpl> _parent;
+    ComPtr<WindowBaseImpl> _windowImpl;
     bool _closed;
     bool _isEnabled;
     bool _canBecomeKeyWindow;
@@ -44,7 +43,7 @@
 
 -(bool) isDialog
 {
-    return _parent->IsModal();
+    return _windowImpl->IsModal();
 }
 
 -(double) getExtendedTitleBarHeight
@@ -158,7 +157,7 @@
     _menu = menu;
 }
 
--(CLASS_NAME*_Nonnull)  initWithParent: (WindowBaseImpl*_Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+-(CLASS_NAME*_Nonnull)  initWithWindowImpl: (WindowBaseImpl*_Nonnull) windowImpl contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 {
     // https://jameshfisher.com/2020/07/10/why-is-the-contentrect-of-my-nswindow-ignored/
     // create nswindow with specific contentRect, otherwise we wont be able to resize the window
@@ -166,7 +165,7 @@
     self = [super initWithContentRect:contentRect styleMask: styleMask backing:NSBackingStoreBuffered defer:false];
 
     [self setReleasedWhenClosed:false];
-    _parent = parent;
+    _windowImpl = windowImpl;
     [self setDelegate:self];
     _closed = false;
     _isEnabled = true;
@@ -186,7 +185,7 @@
 
 - (BOOL)windowShouldClose:(NSWindow *_Nonnull)sender
 {
-    auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+    auto window = dynamic_cast<WindowImpl*>(_windowImpl.getRaw());
 
     if(window != nullptr)
     {
@@ -201,15 +200,13 @@
     [self backingScaleFactor];
 }
 
-
-
 - (void)windowWillClose:(NSNotification *_Nonnull)notification
 {
     _closed = true;
-    if(_parent)
+    if(_windowImpl)
     {
-        ComPtr<WindowBaseImpl> parent = _parent;
-        _parent = NULL;
+        ComPtr<WindowBaseImpl> parent = _windowImpl;
+        _windowImpl = NULL;
         
         auto window = dynamic_cast<WindowImpl*>(parent.getRaw());
         
@@ -241,7 +238,7 @@
     if(_canBecomeKeyWindow && !_closed)
     {
         // If the window has a child window being shown as a dialog then don't allow it to become the key window.
-        auto parent = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        auto parent = dynamic_cast<WindowImpl*>(_windowImpl.getRaw());
         
         if(parent != nullptr)
         {
@@ -259,6 +256,7 @@
 {
     return true;
 }
+
 #endif
 
 -(void)setCanBecomeKeyWindow:(bool)value
@@ -277,12 +275,12 @@
 }
 
 -(void)becomeKeyWindow
-{
+{    
     [self showWindowMenuWithAppMenu];
 
-    if(_parent != nullptr)
+    if(_windowImpl != nullptr)
     {
-        _parent->BaseEvents->Activated();
+        _windowImpl->BaseEvents->Activated();
     }
 
     [super becomeKeyWindow];
@@ -290,16 +288,16 @@
 
 - (void)windowDidBecomeKey:(NSNotification *_Nonnull)notification
 {
-    if (_parent == nullptr)
+    if (_windowImpl == nullptr)
         return;
     
-    _parent->BringToFront();
+    _windowImpl->BringToFront();
     
     dispatch_async(dispatch_get_main_queue(), ^{
         @try {
             [self invalidateShadow];
-            if (self->_parent != nullptr)
-                self->_parent->BringToFront();
+            if (self->_windowImpl != nullptr)
+                self->_windowImpl->BringToFront();
         }
         @finally{
         }
@@ -308,7 +306,7 @@
 
 - (void)windowDidMiniaturize:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = dynamic_cast<IWindowStateChanged*>(_windowImpl.operator->());
 
     if(parent != nullptr)
     {
@@ -318,7 +316,7 @@
 
 - (void)windowDidDeminiaturize:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = dynamic_cast<IWindowStateChanged*>(_windowImpl.operator->());
 
     if(parent != nullptr)
     {
@@ -328,7 +326,7 @@
 
 - (void)windowDidResize:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = dynamic_cast<IWindowStateChanged*>(_windowImpl.operator->());
 
     if(parent != nullptr)
     {
@@ -338,7 +336,7 @@
 
 - (void)windowWillExitFullScreen:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = dynamic_cast<IWindowStateChanged*>(_windowImpl.operator->());
 
     if(parent != nullptr)
     {
@@ -348,7 +346,7 @@
 
 - (void)windowDidExitFullScreen:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = dynamic_cast<IWindowStateChanged*>(_windowImpl.operator->());
 
     if(parent != nullptr)
     {
@@ -372,7 +370,7 @@
 - (void)windowWillEnterFullScreen:(NSNotification *_Nonnull)notification
 {
     _isTransitioningToFullScreen = true;
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = dynamic_cast<IWindowStateChanged*>(_windowImpl.operator->());
 
     if(parent != nullptr)
     {
@@ -383,7 +381,7 @@
 - (void)windowDidEnterFullScreen:(NSNotification *_Nonnull)notification
 {
     _isTransitioningToFullScreen = false;
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = dynamic_cast<IWindowStateChanged*>(_windowImpl.operator->());
 
     if(parent != nullptr)
     {
@@ -394,13 +392,13 @@
 
 - (BOOL)windowShouldZoom:(NSWindow *_Nonnull)window toFrame:(NSRect)newFrame
 {
-    return _parent->CanZoom();
+    return _windowImpl->CanZoom();
 }
 
 -(void)windowDidResignKey:(NSNotification *)notification
 {
-    if(_parent)
-        _parent->BaseEvents->Deactivated();
+    if(_windowImpl)
+        _windowImpl->BaseEvents->Deactivated();
 
     [self showAppMenuOnly];
     
@@ -411,9 +409,9 @@
 {
     AvnPoint position;
 
-    if(_parent != nullptr)
+    if(_windowImpl != nullptr)
     {
-        auto cparent = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        auto cparent = dynamic_cast<WindowImpl*>(_windowImpl.getRaw());
 
         if(cparent != nullptr)
         {
@@ -428,8 +426,8 @@
             }
         }
 
-        _parent->GetPosition(&position);
-        _parent->BaseEvents->PositionChanged(position);
+        _windowImpl->GetPosition(&position);
+        _windowImpl->BaseEvents->PositionChanged(position);
     }
 }
 
@@ -444,13 +442,13 @@
     [super sendEvent:event];
 
     /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
-    if(_parent != nullptr && dynamic_cast<WindowImpl*>(_parent.getRaw()) != nullptr)
+    if(_windowImpl != nullptr && dynamic_cast<WindowImpl*>(_windowImpl.getRaw()) != nullptr)
     {
         switch(event.type)
         {
             case NSEventTypeLeftMouseDown:
             {
-                AvnView* view = _parent->View;
+                AvnView* view = _windowImpl->View;
                 NSPoint windowPoint = [event locationInWindow];
                 NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
 
@@ -460,19 +458,19 @@
                     auto point = [self translateLocalPoint:avnPoint];
                     AvnVector delta = { 0, 0 };
 
-                    _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
+                    _windowImpl->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
                 }
                 
                 if(!_isTransitioningToFullScreen)
                 {
-                    _parent->BringToFront();
+                    _windowImpl->BringToFront();
                 }
             }
             break;
 
             case NSEventTypeMouseEntered:
             {
-                _parent->UpdateCursor();
+                _windowImpl->UpdateCursor();
             }
                 break;
 
@@ -489,7 +487,7 @@
 }
 
 - (void)disconnectParent {
-    _parent = nullptr;
+    _windowImpl = nullptr;
 }
 
 @end

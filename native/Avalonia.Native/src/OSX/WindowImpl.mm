@@ -11,7 +11,6 @@
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events) : WindowBaseImpl(events) {
     _isEnabled = true;
-    _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
@@ -22,7 +21,6 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events) : WindowBaseImpl(events) {
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
-    _parent = nullptr;
     WindowEvents = events;
 
     [Window setHasShadow:true];
@@ -70,39 +68,6 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
         _isEnabled = enable;
         [GetWindowProtocol() setEnabled:enable];
         UpdateStyle();
-        return S_OK;
-    }
-}
-
-HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if(_parent != nullptr)
-        {
-            _parent->_children.remove(this);
-        }
-
-        auto cparent = dynamic_cast<WindowImpl *>(parent);
-        
-        _parent = cparent;
-
-        _isModal = _parent != nullptr;
-        
-        if(_parent != nullptr && Window != nullptr){
-            // If one tries to show a child window with a minimized parent window, then the parent window will be
-            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
-            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
-            if (cparent->WindowState() == Minimized)
-                cparent->SetWindowState(Normal);
-
-            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-                
-            cparent->_children.push_back(this);
-                
-            UpdateStyle();
-        }
-
         return S_OK;
     }
 }
@@ -579,7 +544,7 @@ bool WindowImpl::IsModal() {
 }
 
 bool WindowImpl::IsOwned() {
-    return _parent != nullptr;
+    return Parent != nullptr;
 }
 
 NSWindowStyleMask WindowImpl::CalculateStyleMask() {

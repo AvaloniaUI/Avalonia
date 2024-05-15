@@ -9,6 +9,7 @@
 #include "rendertarget.h"
 #include "INSWindowHolder.h"
 #include "AvnTextInputMethod.h"
+#include <list>
 
 @class AutoFitContentView;
 @class AvnMenu;
@@ -27,7 +28,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual ~WindowBaseImpl();
 
-    WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel = false);
+    WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel = false, bool isPopup = false);
 
     virtual HRESULT ObtainNSWindowHandle(void **ret) override;
 
@@ -82,6 +83,8 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT PointToScreen(AvnPoint point, AvnPoint *ret) override;
 
     virtual HRESULT SetCursor(IAvnCursor *cursor) override;
+                           
+    virtual HRESULT SetParent (IAvnWindowBase* parent) override;
 
     virtual void UpdateCursor();
 
@@ -112,13 +115,15 @@ BEGIN_INTERFACE_MAP()
     virtual bool CanZoom() { return false; }
                            
 protected:
+    std::list<WindowBaseImpl*> _children;
+    bool _isModal;
+                           
     virtual NSWindowStyleMask CalculateStyleMask() = 0;
     virtual void UpdateStyle();
 
 private:
-    void CreateNSWindow (bool isDialog);
+    void CreateNSWindow (bool usePanel, bool isPopup);
     void CleanNSWindow ();
-
     NSCursor *cursor;
     bool hasPosition;
     NSSize lastSize;
@@ -138,6 +143,7 @@ public:
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     ComPtr<AvnTextInputMethod> InputMethod;
     AvnView *View;
+    WindowBaseImpl* Parent;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H

@@ -68,5 +68,11 @@ namespace Avalonia.Platform
         /// Gets platform specific display information
         /// </summary>
         IScreenImpl Screen { get; }
+        
+        /// <summary>
+        /// Sets the parent of the window.
+        /// </summary>
+        /// <param name="parent">The parent <see cref="IWindowBaseImpl"/>.</param>
+        void SetParent(IWindowBaseImpl? parent);
     }
 }

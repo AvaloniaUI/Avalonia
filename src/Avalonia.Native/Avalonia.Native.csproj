@@ -9,15 +9,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(PackAvaloniaNative)' == 'true'">
-    <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
-      <Link>libAvaloniaNative.dylib</Link>
-      <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
-      <Pack>true</Pack>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />

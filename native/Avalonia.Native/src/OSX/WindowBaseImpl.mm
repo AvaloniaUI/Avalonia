@@ -24,7 +24,9 @@ WindowBaseImpl::~WindowBaseImpl() {
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) {
+WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel, bool isPopup) {
+    _children = std::list<WindowBaseImpl*>();
+    Parent = nullptr;
     _shown = false;
     _inResize = false;
     BaseEvents = events;
@@ -39,13 +41,57 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) {
     lastMinSize = NSSize { 0, 0 };
     lastMenu = nullptr;
     
-    CreateNSWindow(usePanel);
+    CreateNSWindow(usePanel, isPopup);
     
     [Window setContentView:StandardContainer];
     [Window setBackingType:NSBackingStoreBuffered];
     [Window setContentMinSize:lastMinSize];
     [Window setContentMaxSize:lastMaxSize];
     [Window setOpaque:false];
+}
+
+HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
+    START_COM_CALL;
+
+    @autoreleasepool {
+        if(Parent != nullptr)
+        {
+            if(Parent->Window != nullptr && Window != nullptr && [Window class] == [AvnPopup class]){
+                [Parent->Window removeChildWindow:Window];
+            }
+            
+            Parent->_children.remove(this);
+        }
+
+        //Only deal with regular windows here
+        auto cparent = dynamic_cast<WindowImpl *>(parent);
+        
+        Parent = cparent;
+        
+        if(Parent != nullptr){
+            if(Parent->Window != nullptr && Window != nullptr && [Window class] == [AvnPopup class]){
+                [Parent->Window addChildWindow:Window ordered:NSWindowAbove];
+            }
+        }
+
+        _isModal = Parent != nullptr;
+        
+        if(Parent != nullptr && Window != nullptr){
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
+
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+                
+            cparent->_children.push_back(this);
+                
+            UpdateStyle();
+        }
+
+        return S_OK;
+    }
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -631,12 +677,16 @@ void WindowBaseImpl::CleanNSWindow() {
     }
 }
 
-void WindowBaseImpl::CreateNSWindow(bool usePanel) {
-    if (usePanel) {
-        Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
-        [Window setHidesOnDeactivate:false];
-    } else {
-        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+void WindowBaseImpl::CreateNSWindow(bool usePanel, bool isPopup) {
+    if (isPopup){
+        Window = [[AvnPopup alloc] initWithWindowImpl:this contentRect:NSRect{0, 0, lastSize}];
+    }else{
+        if (usePanel) {
+            Window = [[AvnPanel alloc] initWithWindowImpl:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+            [Window setHidesOnDeactivate:false];
+        } else {
+            Window = [[AvnWindow alloc] initWithWindowImpl:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        }
     }
 }
 

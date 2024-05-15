@@ -430,6 +430,10 @@ namespace Avalonia.Native
             _native?.Show(activate.AsComBool(), isDialog.AsComBool());
         }
 
+        public void SetParent(IWindowBaseImpl parent)
+        {
+            _native.SetParent(((WindowBaseImpl)parent)?.Native);
+        }
 
         public PixelPoint Position
         {

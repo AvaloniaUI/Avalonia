@@ -56,6 +56,7 @@ namespace Avalonia.Controls.Primitives
             : base(impl, dependencyResolver)
         {
             ParentTopLevel = parent;
+            Owner = parent as WindowBase;
             impl.SetWindowManagerAddShadowHint(WindowManagerAddShadowHint);
         }
 

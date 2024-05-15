@@ -12,7 +12,7 @@ namespace Avalonia.Native
     internal class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        IAvnWindow _native;
+        private readonly IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
@@ -214,11 +214,6 @@ namespace Avalonia.Native
             _opts.OverlayPopups ? null : new PopupImpl(_factory, this);
 
         public Action GotInputWhenDisabled { get; set; }
-
-        public void SetParent(IWindowImpl parent)
-        {
-            _native.SetParent(((WindowImpl)parent)?.Native);
-        }
 
         public void SetEnabled(bool enable)
         {
