@@ -186,6 +186,7 @@ namespace Avalonia.Skia
 
             Font.Dispose();
             Face.Dispose();
+            _typeface.Dispose();
         }
 
         public void Dispose()
