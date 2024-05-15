@@ -29,7 +29,7 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 ConfigureMacOptions(options);
                 Session = new MacDriver(
-                    new Uri("http://127.0.0.1:4723/wd/hub"),
+                    new Uri("http://127.0.0.1:4723"),
                     options);
             }
             else
