@@ -14,7 +14,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class XamlPropertyPathException : XamlTransformException
     {
-        public XamlPropertyPathException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
+        public XamlPropertyPathException(string message, IXamlLineInfo lineInfo, Exception? innerException = null)
             : base(message, lineInfo, innerException)
         {
         }
@@ -50,7 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
 
                 var elements = new List<IXamlIlPropertyPathElementNode>();
-                IXamlType currentType = parentScope.TargetType.GetClrType();
+                var currentType = parentScope.TargetType.GetClrType();
                 
                 
                 var expectProperty = true;
@@ -58,13 +58,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var expectTraversal = false;
                 var types = context.GetAvaloniaTypes();
                 
-                IXamlType GetType(string ns, string name)
+                IXamlType GetType(string? ns, string name)
                 {
                     return TypeReferenceResolver.ResolveType(context, $"{ns}:{name}", false,
                         text, true).GetClrType();
                 }
 
-                void HandleProperty(string name, string typeNamespace, string typeName)
+                void HandleProperty(string name, string? typeNamespace, string? typeName)
                 {
                     if(!expectProperty || currentType == null)
                         throw new XamlPropertyPathException("Unexpected property node", text);
@@ -72,7 +72,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     var propertySearchType =
                         typeName != null ? GetType(typeNamespace, typeName) : currentType;
 
-                    IXamlIlPropertyPathElementNode prop = null;
+                    IXamlIlPropertyPathElementNode? prop = null;
                     var avaloniaPropertyFieldName = name + "Property";
                     var avaloniaPropertyField = propertySearchType.GetAllFields().FirstOrDefault(f =>
                         f.IsStatic && f.IsPublic && f.Name == avaloniaPropertyFieldName);
@@ -84,7 +84,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     else
                     {
                         var clrProperty = propertySearchType.GetAllProperties().FirstOrDefault(p => p.Name == name);
-                        prop = new XamlIClrPropertyPathElementNode(clrProperty);
+                        if (clrProperty is not null)
+                            prop = new XamlIClrPropertyPathElementNode(clrProperty);
                     }
 
                     if (prop == null)
@@ -151,7 +152,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         interface IXamlIlPropertyPathElementNode
         {
             void Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen);
-            IXamlType Type { get; }
+            IXamlType? Type { get; }
         }
 
         class XamlIlChildTraversalPropertyPathElementNode : IXamlIlPropertyPathElementNode
@@ -159,9 +160,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             public void Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
                 => codeGen.EmitCall(
                     context.GetAvaloniaTypes()
-                        .PropertyPathBuilder.FindMethod(m => m.Name == "ChildTraversal"));
+                        .PropertyPathBuilder.GetMethod(m => m.Name == "ChildTraversal"));
 
-            public IXamlType Type => null;
+            public IXamlType? Type => null;
         }
         
         class XamlIlAvaloniaPropertyPropertyPathElementNode : IXamlIlPropertyPathElementNode
@@ -178,7 +179,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 => codeGen
                     .Ldsfld(_field)
                     .EmitCall(context.GetAvaloniaTypes()
-                        .PropertyPathBuilder.FindMethod(m => m.Name == "Property"));
+                        .PropertyPathBuilder.GetMethod(m => m.Name == "Property"));
 
             public IXamlType Type { get; }
         }
@@ -198,10 +199,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     .Emit(context, codeGen, _property);
 
                 codeGen.EmitCall(context.GetAvaloniaTypes()
-                    .PropertyPathBuilder.FindMethod(m => m.Name == "Property"));
+                    .PropertyPathBuilder.GetMethod(m => m.Name == "Property"));
             }
 
-            public IXamlType Type => _property.Getter?.ReturnType ?? _property.Setter?.Parameters[0];
+            public IXamlType Type => _property.PropertyType;
         }
 
         class XamlIlCastPropertyPathElementNode : IXamlIlPropertyPathElementNode
@@ -220,7 +221,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 codeGen
                     .Ldtype(_type)
                     .EmitCall(context.GetAvaloniaTypes()
-                        .PropertyPathBuilder.FindMethod(m => m.Name == (_ensureType ? "EnsureType" : "Cast")));
+                        .PropertyPathBuilder.GetMethod(m => m.Name == (_ensureType ? "EnsureType" : "Cast")));
             }
 
             public IXamlType Type => _type;
@@ -241,14 +242,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             public IXamlAstTypeReference Type { get; }
-            public IXamlType PropertyType => _elements.LastOrDefault()?.Type;
+            public IXamlType? PropertyType => _elements.LastOrDefault()?.Type;
             public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
             {
                 codeGen
-                    .Newobj(_types.PropertyPathBuilder.FindConstructor());
+                    .Newobj(_types.PropertyPathBuilder.GetConstructor());
                 foreach(var e in _elements)
                     e.Emit(context, codeGen);
-                codeGen.EmitCall(_types.PropertyPathBuilder.FindMethod(m => m.Name == "Build"));
+                codeGen.EmitCall(_types.PropertyPathBuilder.GetMethod(m => m.Name == "Build"));
                 return XamlILNodeEmitResult.Type(0, _types.PropertyPath);
             }
         }
@@ -256,6 +257,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
     interface IXamlIlPropertyPathNode : IXamlAstValueNode
     {
-        IXamlType PropertyType { get; }
+        IXamlType? PropertyType { get; }
     }
 }

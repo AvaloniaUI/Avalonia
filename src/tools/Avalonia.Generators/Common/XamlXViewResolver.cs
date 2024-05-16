@@ -14,18 +14,18 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
     private readonly RoslynTypeSystem _typeSystem;
     private readonly MiniCompiler _compiler;
     private readonly bool _checkTypeValidity;
-    private readonly Action<string> _onTypeInvalid;
-    private readonly Action<Exception> _onUnhandledError;
+    private readonly Action<string>? _onTypeInvalid;
+    private readonly Action<Exception>? _onUnhandledError;
 
-    private ResolvedView _resolvedClass;
-    private XamlDocument _xaml;
+    private ResolvedView? _resolvedClass;
+    private XamlDocument? _xaml;
 
     public XamlXViewResolver(
         RoslynTypeSystem typeSystem,
         MiniCompiler compiler,
         bool checkTypeValidity = false,
-        Action<string> onTypeInvalid = null,
-        Action<Exception> onUnhandledError = null)
+        Action<string>? onTypeInvalid = null,
+        Action<Exception>? onUnhandledError = null)
     {
         _checkTypeValidity = checkTypeValidity;
         _onTypeInvalid = onTypeInvalid;
@@ -34,7 +34,7 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
         _compiler = compiler;
     }
 
-    public ResolvedView ResolveView(string xaml)
+    public ResolvedView? ResolveView(string xaml)
     {
         try
         {
@@ -86,7 +86,7 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
                 var nameSpace = string.Join(".", split.Take(split.Length - 1));
                 var className = split.Last();
 
-                _resolvedClass = new ResolvedView(className, clrType, nameSpace, _xaml);
+                _resolvedClass = new ResolvedView(className, clrType, nameSpace, _xaml!);
                 return node;
             }
         }

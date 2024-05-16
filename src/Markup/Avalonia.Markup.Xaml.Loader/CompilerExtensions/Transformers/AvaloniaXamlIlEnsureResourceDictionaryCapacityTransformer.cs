@@ -70,8 +70,8 @@ internal sealed class AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer 
         {
             "Content" when node.Property.DeclaringType == types.ResourceDictionary
                 => new ResourcesInfo(ResourcesMode.ResourceDictionaryContent, null) { Count = 1 },
-            "Resources" when types.IResourceDictionary.IsAssignableFrom(node.Property.Getter.ReturnType)
-                => new ResourcesInfo(ResourcesMode.ElementResources, node.Property.Getter) { Count = 1 },
+            "Resources" when node.Property.Getter is { } getter && types.IResourceDictionary.IsAssignableFrom(getter.ReturnType)
+                => new ResourcesInfo(ResourcesMode.ElementResources, getter) { Count = 1 },
             _
                 => default
         };

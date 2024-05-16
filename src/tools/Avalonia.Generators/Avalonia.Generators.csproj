@@ -8,6 +8,7 @@
     <IncludeSymbols>false</IncludeSymbols>
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,20 +17,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Link="Compiler\XamlX\filename" Include="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/*.cs" />
+    <Compile Link="Compiler/XamlX/filename" Include="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/*.cs" />
     <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/obj/**/*.cs" />
     <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/SreTypeSystem.cs" />
-    <Compile Include="..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" Visible="False" />
-    <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
+    <Compile Include="../../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" Visible="False" />
+    <Compile Include="../../Avalonia.Base/Compatibility/TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
+    <Compile Include="../../Avalonia.Base/Compatibility/NullableAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Generators.Tests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 
-  <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="../../../build/TrimmingEnable.props" />
 </Project>
