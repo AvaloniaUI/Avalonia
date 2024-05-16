@@ -544,26 +544,15 @@
     
     //InputMethod is active
     if(_parent->InputMethod->IsActive()){
-        auto hasInputModifier = modifiers != AvnInputModifiersNone;
-        
-        //Handle keyDown first if an input modifier is present
-        if(hasInputModifier){
-            if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
-                //User code has handled the event
-                _lastKeyDownEvent = nullptr;
-                
-                return;
-            }
+              
+        if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
+            //User code has handled the event
+            _lastKeyDownEvent = nullptr;
+            
+            return;
         }
-        
-        if([[self inputContext] handleEvent:event] == NO){
-            //KeyDown has not been consumed by the input context
-                
-            //Only raise a keyDown if we don't have a modifier
-            if(!hasInputModifier){
-                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
-            }
-        }
+
+        [[self inputContext] handleEvent:event];
         
     }
     //InputMethod not active
