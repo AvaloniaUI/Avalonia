@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -8,6 +9,7 @@ using Avalonia.DesignerSupport.Remote.HtmlTransport;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
+using Avalonia.Styling;
 using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
@@ -218,6 +220,14 @@ namespace Avalonia.DesignerSupport.Remote
             {
                 s_viewportAllocatedMessage = viewport;
                 RebuildPreFlight();
+            }
+            if(arg is ThemeVariantListRequestMessage)
+            {
+                var variants = Application.Current?.Styles.Select(x => (x as Styles)?.Resources.ThemeDictionaries.Keys.ToString())?.ToArray();
+                s_transport.Send(new ThemeVariantListResponseMessage()
+                {
+                    ThemeVariants = variants
+                });
             }
             if (arg is UpdateXamlMessage xaml)
             {

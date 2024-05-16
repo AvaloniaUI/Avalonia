@@ -26,6 +26,17 @@ namespace Avalonia.Remote.Protocol.Designer
     {
         public string SessionId { get; set; }
     }
+
+    [AvaloniaRemoteMessageGuid("F196DC31-43DF-4BEB-A56D-129E64454377")]
+    public class ThemeVariantListRequestMessage
+    {
+    }
+
+    [AvaloniaRemoteMessageGuid("1AA06D40-F65A-4916-85F1-4CF5681781E8")]
+    public class ThemeVariantListResponseMessage
+    {
+        public string[] ThemeVariants { get; set; }
+    }
     
     public class ExceptionDetails
     {
