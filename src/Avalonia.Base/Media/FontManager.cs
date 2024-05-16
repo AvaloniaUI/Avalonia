@@ -93,6 +93,8 @@ namespace Avalonia.Media
 
             var fontFamily = typeface.FontFamily;
 
+            typeface = FontCollectionBase.GetImplicitTypeface(typeface);
+
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
@@ -157,7 +159,7 @@ namespace Avalonia.Media
                 var logger = Logger.TryGet(LogEventLevel.Debug, "FontManager");
 
                 logger?.Log(this,
-                    $"Exact family '{familyName}' could not be found. Present families: [{string.Join(",", fontCollection)}]");
+                    $"Font family '{familyName}' could not be found. Present font families: [{string.Join(",", fontCollection)}]");
 
                 return false;
             }
