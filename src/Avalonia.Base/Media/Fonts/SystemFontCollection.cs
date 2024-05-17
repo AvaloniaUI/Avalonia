@@ -15,7 +15,7 @@ namespace Avalonia.Media.Fonts
         public SystemFontCollection(FontManager fontManager)
         {
             _fontManager = fontManager;
-            _familyNames = fontManager.PlatformImpl.GetInstalledFontFamilyNames().ToList();
+            _familyNames = fontManager.PlatformImpl.GetInstalledFontFamilyNames().Where(x=> !string.IsNullOrEmpty(x)).ToList();
         }
 
         public override Uri Key => FontManager.SystemFontsKey;
