@@ -16,14 +16,14 @@ public partial class LibInputBackend
         var tev = libinput_event_get_touch_event(ev);
         if (tev == IntPtr.Zero)
             return;
+        _layoutManager.TtyGetModifiers(out var modifiers);
         if (type < LibInputEventType.LIBINPUT_EVENT_TOUCH_FRAME)
         {
             var info = _screen.ScaledSize;
             var slot = libinput_event_touch_get_slot(tev);
             Point pt;
 
-            if (type == LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN
-                || type == LibInputEventType.LIBINPUT_EVENT_TOUCH_MOTION)
+            if (type is LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN or LibInputEventType.LIBINPUT_EVENT_TOUCH_MOTION)
             {
                 var x = libinput_event_touch_get_x_transformed(tev, (int)info.Width);
                 var y = libinput_event_touch_get_y_transformed(tev, (int)info.Height);
@@ -41,11 +41,15 @@ public partial class LibInputBackend
                 return;
             ScheduleInput(new RawTouchEventArgs(_touch, ts,
                 _inputRoot,
-                type == LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN ? RawPointerEventType.TouchBegin
-                : type == LibInputEventType.LIBINPUT_EVENT_TOUCH_UP ? RawPointerEventType.TouchEnd
-                : type == LibInputEventType.LIBINPUT_EVENT_TOUCH_MOTION ? RawPointerEventType.TouchUpdate
-                : RawPointerEventType.TouchCancel,
-                pt, RawInputModifiers.None, slot));
+                type switch
+                {
+                    LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN => RawPointerEventType.TouchBegin,
+                    LibInputEventType.LIBINPUT_EVENT_TOUCH_UP => RawPointerEventType.TouchEnd,
+                    LibInputEventType.LIBINPUT_EVENT_TOUCH_MOTION => RawPointerEventType.TouchUpdate,
+                    _ => RawPointerEventType.TouchCancel
+                },
+                pt, modifiers, slot));
         }
     }
+
 }

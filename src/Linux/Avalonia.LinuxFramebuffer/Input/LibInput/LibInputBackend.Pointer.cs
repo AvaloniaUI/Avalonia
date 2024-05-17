@@ -6,9 +6,12 @@ using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethod
 
 namespace Avalonia.LinuxFramebuffer.Input.LibInput;
 
+/// <summary>
+/// LibInput Backend
+/// </summary>
 public partial class LibInputBackend
 {
-    private MouseDevice _mouse = new MouseDevice();
+    private readonly MouseDevice _mouse = new MouseDevice();
     private Point _mousePosition;
     private const string Pointer = LibInput + "/" + nameof(Pointer);
 

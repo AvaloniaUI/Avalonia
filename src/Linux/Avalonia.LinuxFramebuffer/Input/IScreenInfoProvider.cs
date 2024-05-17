@@ -1,7 +1,12 @@
-namespace Avalonia.LinuxFramebuffer.Input
+namespace Avalonia.LinuxFramebuffer.Input;
+/// <summary>
+/// Screen Info Provider base interface 
+/// </summary>
+public interface IScreenInfoProvider
 {
-    public interface IScreenInfoProvider
-    {
-        Size ScaledSize { get; }
-    }
+    /// <summary>
+    /// Current screen size 
+    /// </summary>
+    Size ScaledSize { get; }
 }
+
