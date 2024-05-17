@@ -58,7 +58,7 @@ namespace Avalonia.Media
 
         internal override void ApplyTo(StreamGeometryContext ctx)
         {
-            ctx.CubicBezierTo(Point1, Point2, Point3);
+            ctx.CubicBezierTo(Point1, Point2, Point3, IsStroked);
         }
 
         public override string ToString()

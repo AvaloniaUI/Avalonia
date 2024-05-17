@@ -453,11 +453,17 @@ namespace Avalonia.X11
             {
                 if (ActivateTransientChildIfNeeded())
                     return;
+                // See: https://github.com/fltk/fltk/issues/295
+                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
+                    return;
                 Activated?.Invoke();
                 _imeControl?.SetWindowActive(true);
             }
             else if (ev.type == XEventName.FocusOut)
             {
+                // See: https://github.com/fltk/fltk/issues/295
+                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
+                    return;
                 _imeControl?.SetWindowActive(false);
                 Deactivated?.Invoke();
             }
@@ -1459,6 +1465,80 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] { atom }, 1);
 
+        }
+
+        /// <inheritdoc/>
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> outputZOrder)
+        {
+            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
+            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
+
+            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
+            for (var i = 0; i < windows.Length; i++)
+                if (windows[i].PlatformImpl is { } platformImpl)
+                    indexInWindowsSpan[platformImpl.Handle.Handle] = i;
+
+            foreach (var window in windows)
+            {
+                if (window.PlatformImpl is not X11Window x11Window)
+                    continue;
+
+                var node = x11Window.Handle.Handle;
+                while (node != IntPtr.Zero)
+                {
+                    if (windowsChildren.ContainsKey(node))
+                    {
+                        break;
+                    }
+
+                    if (XQueryTree(_x11.Display, node, out _, out var parent,
+                            out var childrenPtr, out var childrenCount) == 0)
+                    {
+                        break;
+                    }
+
+                    if (childrenPtr != IntPtr.Zero)
+                    {
+                        var children = (IntPtr*)childrenPtr;
+                        windowsChildren[node] = new List<IntPtr>(childrenCount);
+                        for (var i = 0; i < childrenCount; i++)
+                        {
+                            windowsChildren[node].Add(children[i]);
+                        }
+                        XFree(childrenPtr);
+                    }
+
+                    node = parent;
+                }
+            }
+
+            var stack = new Stack<IntPtr>();
+            var zOrder = 0;
+            stack.Push(_x11.RootWindow);
+
+            while (stack.Count > 0)
+            {
+                var currentWindow = stack.Pop();
+
+                if (!windowsChildren.TryGetValue(currentWindow, out var children))
+                {
+                    continue;
+                }
+
+                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
+                {
+                    outputZOrder[index] = zOrder;
+                }
+
+                zOrder++;
+
+                // Children are returned bottom to top, so we need to push them in reverse order
+                // In order to traverse bottom children first
+                for (int i = children.Count - 1; i >= 0; i--)
+                {
+                    stack.Push(children[i]);
+                }
+            }
         }
     }
 }

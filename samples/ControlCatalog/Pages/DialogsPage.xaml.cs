@@ -1,9 +1,11 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -255,12 +257,12 @@ namespace ControlCatalog.Pages
                     // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
                     await using var stream = await file.OpenWriteAsync();
-                    await using var reader = new System.IO.StreamWriter(stream);
+                    await using var writer = new System.IO.StreamWriter(stream);
 #else
-                                using var stream = await file.OpenWriteAsync();
-                                using var reader = new System.IO.StreamWriter(stream);
+                    using var stream = await file.OpenWriteAsync();
+                    using var writer = new System.IO.StreamWriter(stream);
 #endif
-                    await reader.WriteLineAsync(openedFileContent.Text);
+                    await writer.WriteLineAsync(openedFileContent.Text);
 
                     SetFolder(await file.GetParentAsync());
                 }

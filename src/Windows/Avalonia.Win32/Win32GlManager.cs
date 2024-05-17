@@ -3,10 +3,12 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Vulkan;
 using Avalonia.Win32.DComposition;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.OpenGl.Angle;
+using Avalonia.Win32.Vulkan;
 using Avalonia.Win32.WinRT.Composition;
 
 namespace Avalonia.Win32;
@@ -61,6 +63,13 @@ static class Win32GlManager
                 {
                     return wgl;
                 }
+            }
+
+            if (renderingMode == Win32RenderingMode.Vulkan)
+            {
+                var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                if (vulkan != null)
+                    return vulkan;
             }
         }
 

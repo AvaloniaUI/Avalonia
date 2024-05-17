@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 && prop.DeclaringType is XamlAstClrTypeReference declaringRef)
             {
                 // Target and declared type aren't assignable but both inherit from AvaloniaObject
-                var avaloniaObject = context.Configuration.TypeSystem.FindType("Avalonia.AvaloniaObject");
+                var avaloniaObject = context.GetAvaloniaTypes().AvaloniaObject;
                 if (avaloniaObject.IsAssignableFrom(targetRef.Type)
                     && avaloniaObject.IsAssignableFrom(declaringRef.Type)
                     && !declaringRef.Type.IsAssignableFrom(targetRef.Type))
@@ -123,6 +123,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public IXamlType TargetType => _parent.DeclaringType;
                 public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
                 public IReadOnlyList<IXamlType> Parameters { get; }
+                public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => _parent.CustomAttributes;
                 public void Emit(IXamlILEmitter emitter)
                 {
                     var so = _parent._config.WellKnownTypes.Object;
@@ -178,6 +179,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public IReadOnlyList<IXamlType> Parameters { get; }
 
                 public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => DeclaringType.CustomAttributes;
+                public IXamlParameterInfo GetParameterInfo(int index) => new AnonymousParameterInfo(Parameters[index], index);
 
                 public void EmitCall(IXamlILEmitter emitter)
                 {

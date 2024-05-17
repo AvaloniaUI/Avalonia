@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// Provides positioning parameters to <see cref="IPopupPositioner"/>.
     /// </summary>
     /// <remarks>
-    /// The IPopupPositioner provides a collection of rules for the placement of a a popup relative
+    /// The IPopupPositioner provides a collection of rules for the placement of a popup relative
     /// to its parent. Rules can be defined to ensure the popup remains within the visible area's
     /// borders, and to specify how the popup changes its position, such as sliding along an axis,
     /// or flipping around a rectangle. These positioner-created rules are constrained by the

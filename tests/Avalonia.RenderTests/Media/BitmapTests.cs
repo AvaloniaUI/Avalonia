@@ -246,5 +246,34 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 bmp.CopyPixels(default, new IntPtr(pCopyTo), data.Length, stride);
             Assert.Equal(data, copyTo);
         }
+
+        [Fact]
+        public unsafe void Should_CopyPixels_With_Source_Rect()
+        {
+            var size = 80;
+            var partSize = 20;
+            var bitmap = new RenderTargetBitmap(new PixelSize(size, size));
+
+            using (var context = bitmap.CreateDrawingContext())
+            {
+                context.FillRectangle(Brushes.Black,
+                    new Rect(0, 0, bitmap.PixelSize.Width, bitmap.PixelSize.Height));
+                context.FillRectangle(Brushes.White, new Rect(partSize, partSize, partSize, partSize));
+            }
+
+            var bpp = bitmap.Format!.Value.BitsPerPixel / 8;
+            var buffer = new byte[partSize * partSize * bpp];
+
+            fixed (byte* pointer = buffer)
+            {
+                bitmap.CopyPixels(new PixelRect(partSize, partSize, partSize, partSize), (IntPtr)pointer,
+                    buffer.Length, partSize * bpp);
+            }
+
+            foreach (var t in buffer)
+            {
+                Assert.Equal(byte.MaxValue, t);
+            }
+        }
     }
 }

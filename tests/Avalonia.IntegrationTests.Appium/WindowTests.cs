@@ -15,7 +15,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class WindowTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public WindowTests(DefaultAppFixture fixture)
         {

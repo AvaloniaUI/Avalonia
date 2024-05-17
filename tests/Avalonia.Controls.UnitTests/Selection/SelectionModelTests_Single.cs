@@ -516,6 +516,26 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 Assert.Equal(1, raised);
             }
+
+            [Fact]
+            public void CollectionChanged_Is_Raised_When_SelectedIndex_Changes()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+                var incc = Assert.IsAssignableFrom<INotifyCollectionChanged>(target.SelectedIndexes);
+
+                incc.CollectionChanged += (s, e) =>
+                {
+                    // For the moment, for simplicity, we raise a Reset event when the SelectedIndexes
+                    // collection changes - whatever the change. This can be improved later if necessary.
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
+                };
+
+                target.SelectedIndex = 1;
+
+                Assert.Equal(1, raised);
+            }
         }
 
         public class SelectedItems
@@ -532,6 +552,26 @@ namespace Avalonia.Controls.UnitTests.Selection
                     {
                         ++raised;
                     }
+                };
+
+                target.SelectedIndex = 1;
+
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void CollectionChanged_Is_Raised_When_SelectedIndex_Changes()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+                var incc = Assert.IsAssignableFrom<INotifyCollectionChanged>(target.SelectedIndexes);
+
+                incc.CollectionChanged += (s, e) =>
+                {
+                    // For the moment, for simplicity, we raise a Reset event when the SelectedItems
+                    // collection changes - whatever the change. This can be improved later if necessary.
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
                 };
 
                 target.SelectedIndex = 1;

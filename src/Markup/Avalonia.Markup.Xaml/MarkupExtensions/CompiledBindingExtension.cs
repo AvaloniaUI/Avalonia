@@ -63,7 +63,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             AvaloniaObject target,
             object? anchor)
         {
-            var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
+            var enableDataValidation = targetProperty.GetMetadata(target).EnableDataValidation ?? false;
             return InstanceCore(target, targetProperty, anchor, enableDataValidation);
         }
 
@@ -133,6 +133,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 priority: Priority,
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
+                targetProperty: targetProperty,
                 targetTypeConverter: TargetTypeConverter.GetDefaultConverter(),
                 updateSourceTrigger: trigger);
         }

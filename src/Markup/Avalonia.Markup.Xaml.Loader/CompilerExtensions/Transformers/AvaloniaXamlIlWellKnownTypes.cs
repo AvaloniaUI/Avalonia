@@ -261,9 +261,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.IResourceDictionary");
             ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
             ResourceDictionaryDeferredAdd = ResourceDictionary.FindMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
-                cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
-                    cfg.TypeSystem.GetType("System.IServiceProvider"),
-                    XamlIlTypes.Object));
+                cfg.TypeSystem.GetType("Avalonia.Controls.IDeferredContent"));
             ResourceDictionaryEnsureCapacity = ResourceDictionary.FindMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
             ResourceDictionaryGetCount = ResourceDictionary.FindMethod("get_Count", XamlIlTypes.Int32, true);
             IThemeVariantProvider = cfg.TypeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");

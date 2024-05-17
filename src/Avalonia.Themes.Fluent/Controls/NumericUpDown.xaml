@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
                     x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
@@ -18,8 +19,8 @@
         <NumericUpDown ButtonSpinnerLocation="Left">
           <NumericUpDown.InnerLeftContent>
             <TextBlock Text="m"
-              TextAlignment="Center"
-              VerticalAlignment="Center"/>
+                       TextAlignment="Center"
+                       VerticalAlignment="Center"/>
           </NumericUpDown.InnerLeftContent>
           <NumericUpDown.InnerRightContent>
             <Button Content="X"/>
@@ -31,9 +32,18 @@
           </NumericUpDown.InnerLeftContent>
           <NumericUpDown.InnerRightContent>
             <TextBlock Text="m"
-              TextAlignment="Center"
-              VerticalAlignment="Center"/>
+                       TextAlignment="Center"
+                       VerticalAlignment="Center"/>
           </NumericUpDown.InnerRightContent>
+        </NumericUpDown>
+        <NumericUpDown>
+          <DataValidationErrors.Error>
+            <sys:Exception>
+              <x:Arguments>
+                <x:String>Error</x:String>
+              </x:Arguments>
+            </sys:Exception>
+          </DataValidationErrors.Error>
         </NumericUpDown>
       </StackPanel>
     </Border>
@@ -50,39 +60,39 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <ButtonSpinner Name="PART_Spinner"
-                       Background="{TemplateBinding Background}"
-                       BorderThickness="{TemplateBinding BorderThickness}"
-                       BorderBrush="{TemplateBinding BorderBrush}"
-                       CornerRadius="{TemplateBinding CornerRadius}"
-                       IsTabStop="False"
-                       Padding="0"
-                       MinWidth="0"
-                       HorizontalContentAlignment="Stretch"
-                       VerticalContentAlignment="Stretch"
-                       AllowSpin="{TemplateBinding AllowSpin}"
-                       ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}"
-                       DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                       ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
-          <TextBox Name="PART_TextBox"
-                   Background="Transparent"
-                   BorderBrush="Transparent"
-                   Margin="-1"
-                   Padding="{TemplateBinding Padding}"
-                   MinWidth="0"
-                   Foreground="{TemplateBinding Foreground}"
-                   Watermark="{TemplateBinding Watermark}"
-                   IsReadOnly="{TemplateBinding IsReadOnly}"
-                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                   Text="{TemplateBinding Text}"
-                   TextAlignment="{TemplateBinding TextAlignment}"
-                   AcceptsReturn="False"
-                   TextWrapping="NoWrap"
-                   InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
-                   InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"
-                   />
-        </ButtonSpinner>
+        <DataValidationErrors>
+          <ButtonSpinner Name="PART_Spinner"
+                         Background="{TemplateBinding Background}"
+                         BorderThickness="{TemplateBinding BorderThickness}"
+                         BorderBrush="{TemplateBinding BorderBrush}"
+                         CornerRadius="{TemplateBinding CornerRadius}"
+                         IsTabStop="False"
+                         Padding="0"
+                         MinWidth="0"
+                         HorizontalContentAlignment="Stretch"
+                         VerticalContentAlignment="Stretch"
+                         AllowSpin="{TemplateBinding AllowSpin}"
+                         ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}"
+                         ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
+            <TextBox Name="PART_TextBox"
+                     Background="Transparent"
+                     BorderBrush="Transparent"
+                     Margin="-1"
+                     Padding="{TemplateBinding Padding}"
+                     MinWidth="0"
+                     Foreground="{TemplateBinding Foreground}"
+                     Watermark="{TemplateBinding Watermark}"
+                     IsReadOnly="{TemplateBinding IsReadOnly}"
+                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                     Text="{TemplateBinding Text}"
+                     TextAlignment="{TemplateBinding TextAlignment}"
+                     AcceptsReturn="False"
+                     TextWrapping="NoWrap"
+                     InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
+                     InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+          </ButtonSpinner>
+        </DataValidationErrors>
       </ControlTemplate>
     </Setter>
   </ControlTheme>
