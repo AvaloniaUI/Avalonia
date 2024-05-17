@@ -16,14 +16,15 @@ namespace Avalonia.Controls
         private Control? _tipControl;
         private long _lastTipCloseTime;
         private DispatcherTimer? _timer;
+        private ulong _lastTipEventTime;
+        private ulong _lastWindowEventTime;
 
         public ToolTipService(IInputManager inputManager)
         {
             _subscriptions = new CompositeDisposable(
                 inputManager.Process.Subscribe(InputManager_OnProcess),
                 ToolTip.ServiceEnabledProperty.Changed.Subscribe(ServiceEnabledChanged),
-                ToolTip.TipProperty.Changed.Subscribe(TipChanged),
-                ToolTip.IsOpenProperty.Changed.Subscribe(TipOpenChanged));
+                ToolTip.TipProperty.Changed.Subscribe(TipChanged));
         }
 
         public void Dispose()
@@ -36,31 +37,52 @@ namespace Avalonia.Controls
         {
             if (e is RawPointerEventArgs pointerEvent)
             {
-                if (e.Root == _tipControl?.GetValue(ToolTip.ToolTipProperty)?.PopupHost)
+                bool isTooltipEvent = false;
+                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root == currentTip.PopupHost)
                 {
-                    return; // pointer is over the current tooltip
+                    isTooltipEvent = true;
+                    _lastTipEventTime = pointerEvent.Timestamp;
+                }
+                else if (e.Root == _tipControl?.VisualRoot)
+                {
+                    _lastWindowEventTime = pointerEvent.Timestamp;
                 }
 
                 switch (pointerEvent.Type)
                 {
                     case RawPointerEventType.Move:
-                        Update(pointerEvent.InputHitTestResult.element as Visual);
+                        Update(pointerEvent.Root, pointerEvent.InputHitTestResult.element as Visual);
+                        break;
+                    case RawPointerEventType.LeaveWindow when (e.Root == _tipControl?.VisualRoot && _lastTipEventTime != e.Timestamp) || (isTooltipEvent && _lastWindowEventTime != e.Timestamp):
+                        ClearTip();
+                        _tipControl = null;
                         break;
                     case RawPointerEventType.LeftButtonDown:
                     case RawPointerEventType.RightButtonDown:
                     case RawPointerEventType.MiddleButtonDown:
                     case RawPointerEventType.XButton1Down:
                     case RawPointerEventType.XButton2Down:
-                        StopTimer();
-                        _tipControl?.ClearValue(ToolTip.IsOpenProperty);
+                        ClearTip();
                         break;
+                }
+
+                void ClearTip()
+                {
+                    StopTimer();
+                    _tipControl?.ClearValue(ToolTip.IsOpenProperty);
                 }
             }
         }
 
-        public void Update(Visual? candidateToolTipHost)
+        public void Update(IInputRoot root, Visual? candidateToolTipHost)
         {
             var currentToolTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);
+
+            if (root == currentToolTip?.VisualRoot)
+            {
+                // Don't update while the pointer is over a tooltip
+                return;
+            }
 
             while (candidateToolTipHost != null)
             {
@@ -122,30 +144,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var control = (Control)e.Sender;
-
-            if (e.OldValue is false && e.NewValue is true)
-            {
-                control.DetachedFromVisualTree += ControlDetaching;
-                control.EffectiveViewportChanged += ControlEffectiveViewportChanged;
-            }
-            else if (e.OldValue is true && e.NewValue is false)
-            {
-                control.DetachedFromVisualTree -= ControlDetaching;
-                control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
-            }
-        }
-
-        private void ControlDetaching(object? sender, VisualTreeAttachmentEventArgs e)
-        {
-            var control = (Control)sender!;
-            control.DetachedFromVisualTree -= ControlDetaching;
-            control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
-            Close(control);
-        }
-
         private void OnTipControlChanged(Control? oldValue, Control? newValue)
         {
             StopTimer();
@@ -184,13 +182,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
-        {
-            var control = (Control)sender!;
-            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
-            toolTip?.RecalculatePosition(control);
-        }
-
         private void ToolTipClosed(object? sender, EventArgs e)
         {
             _lastTipCloseTime = DateTime.UtcNow.Ticks;
@@ -214,7 +205,11 @@ namespace Avalonia.Controls
         private void StartShowTimer(int showDelay, Control control)
         {
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(showDelay), Tag = (this, control) };
-            _timer.Tick += (o, e) => Open(control);
+            _timer.Tick += (o, e) =>
+            {
+                if (_timer != null)
+                    Open(control);
+            };
             _timer.Start();
         }
 

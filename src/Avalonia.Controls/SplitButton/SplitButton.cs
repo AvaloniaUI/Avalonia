@@ -136,7 +136,18 @@ namespace Avalonia.Controls
         /// <inheritdoc cref="ICommandSource.CanExecuteChanged"/>
         private void CanExecuteChanged(object? sender, EventArgs e)
         {
-            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+            (var command, var parameter) = (Command, CommandParameter);
+            CanExecuteChanged(command, parameter);
+        }
+
+        private void CanExecuteChanged(ICommand? command, object? parameter)
+        {
+            if (!((ILogical)this).IsAttachedToLogicalTree)
+            {
+                return;
+            }
+
+            var canExecute = command is null || command.CanExecute(parameter);
 
             if (canExecute != _commandCanExecute)
             {
@@ -215,6 +226,7 @@ namespace Avalonia.Controls
             if (_secondaryButton != null)
             {
                 _secondaryButton.Click -= SecondaryButton_Click;
+                _secondaryButton.RemoveHandler(PointerPressedEvent, SecondaryButton_PreviewPointerPressed);
             }
         }
 
@@ -237,6 +249,7 @@ namespace Avalonia.Controls
             if (_secondaryButton != null)
             {
                 _secondaryButton.Click += SecondaryButton_Click;
+                _secondaryButton.AddHandler(PointerPressedEvent, SecondaryButton_PreviewPointerPressed, RoutingStrategies.Tunnel);
             }
 
             RegisterFlyoutEvents(Flyout);
@@ -282,10 +295,11 @@ namespace Avalonia.Controls
         {
             if (e.Property == CommandProperty)
             {
+                // Must unregister events here while a reference to the old command still exists
+                var (oldValue, newValue) = e.GetOldAndNewValue<ICommand?>();
+
                 if (_isAttachedToLogicalTree)
                 {
-                    // Must unregister events here while a reference to the old command still exists
-                    var (oldValue, newValue) = e.GetOldAndNewValue<ICommand?>();
 
                     if (oldValue is ICommand oldCommand)
                     {
@@ -298,11 +312,11 @@ namespace Avalonia.Controls
                     }
                 }
 
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(newValue, CommandParameter);
             }
-            else if (e.Property == CommandParameterProperty)
+            else if (e.Property == CommandParameterProperty && IsLoaded)
             {
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(Command, e.NewValue);
             }
             else if (e.Property == FlyoutProperty)
             {
@@ -386,15 +400,16 @@ namespace Avalonia.Controls
         /// <param name="e">The event args from the internal Click event.</param>
         protected virtual void OnClickPrimary(RoutedEventArgs? e)
         {
+            (var command, var parameter) = (Command, CommandParameter);
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
                 var eventArgs = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(eventArgs);
 
-                if (!eventArgs.Handled && Command?.CanExecute(CommandParameter) == true)
+                if (!eventArgs.Handled && command?.CanExecute(parameter) == true)
                 {
-                    Command.Execute(CommandParameter);
+                    command.Execute(parameter);
                     eventArgs.Handled = true;
                 }
             }
@@ -409,7 +424,14 @@ namespace Avalonia.Controls
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
-                OpenFlyout();
+                if (_isFlyoutOpen)
+                {
+                    CloseFlyout();
+                }
+                else
+                {
+                    OpenFlyout();
+                }
             }
         }
 
@@ -430,7 +452,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Event handler for when the internal primary button part is pressed.
+        /// Event handler for when the internal primary button part is clicked.
         /// </summary>
         private void PrimaryButton_Click(object? sender, RoutedEventArgs e)
         {
@@ -440,13 +462,30 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Event handler for when the internal secondary button part is pressed.
+        /// Event handler for when the internal secondary button part is clicked.
         /// </summary>
         private void SecondaryButton_Click(object? sender, RoutedEventArgs e)
         {
             // Handle internal button click, so it won't bubble outside.
             e.Handled = true;
             OnClickSecondary(e);
+        }
+        
+        /// <summary>
+        /// Event handler for when the internal secondary button part is pressed.
+        /// </summary>
+        private void SecondaryButton_PreviewPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (_isFlyoutOpen && _secondaryButton?.IsEffectivelyEnabled == true)
+            {
+                if (e.GetCurrentPoint(_secondaryButton).Properties.IsLeftButtonPressed)
+                {
+                    // When a flyout is open with OverlayDismissEventPassThrough enabled and the secondary button
+                    // is pressed, close the flyout
+                    e.Handled = true;
+                    OnClickSecondary(e);
+                }
+            }
         }
 
         /// <summary>

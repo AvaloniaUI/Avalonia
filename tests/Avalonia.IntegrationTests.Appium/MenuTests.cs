@@ -9,7 +9,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public abstract class MenuTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public MenuTests(DefaultAppFixture fixture)
         {

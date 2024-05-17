@@ -8,7 +8,9 @@ namespace Sample.App
 {
     partial class SampleView
     {
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBox UserNameTextBox;
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.ListBox NamedListBox;
 
         /// <summary>
@@ -16,6 +18,8 @@ namespace Sample.App
         /// </summary>
         /// <param name="loadXaml">Should the XAML be loaded into the component.</param>
 
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public void InitializeComponent(bool loadXaml = true)
         {
             if (loadXaml)
@@ -23,8 +27,9 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
-            UserNameTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("UserNameTextBox");
-            NamedListBox = this.FindNameScope()?.Find<global::Avalonia.Controls.ListBox>("NamedListBox");
+            var __thisNameScope__ = this.FindNameScope();
+            UserNameTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("UserNameTextBox");
+            NamedListBox = __thisNameScope__?.Find<global::Avalonia.Controls.ListBox>("NamedListBox");
         }
     }
 }

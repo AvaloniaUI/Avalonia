@@ -169,12 +169,16 @@
     </ItemGroup>
   </Target>
 
-  <!-- For some reason the IL Compiler hardcodes $(IntermediateOutputPath)$(TargetName)$(TargetExt) instead of using @(IntermediateAssembly), change that to our assembly. -->
+  <!--
+    For some reason the IL Compiler hardcodes $(IntermediateOutputPath)$(TargetName)$(TargetExt)
+    instead of using @(IntermediateAssembly), change that to our assembly.
+    This is fixed in .NET 9.0 (https://github.com/dotnet/runtime/pull/99732)
+  -->
   <Target Name="InjectIlcAvaloniaXamlOutput"
           DependsOnTargets="InjectAvaloniaXamlOutput"
           AfterTargets="ComputeIlcCompileInputs"
           BeforeTargets="PrepareForILLink"
-          Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
+          Condition="$([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '9.0')) AND '@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
     <ItemGroup>
       <ManagedBinary Remove="$(IntermediateOutputPath)$(TargetName)$(TargetExt)" />
       <ManagedBinary Include="@(_AvaloniaXamlCompiledAssembly)" />
@@ -242,4 +246,21 @@
     <Delete Files="$(TargetRefPath)" Condition="Exists('$(TargetRefPath)')" />
   </Target>
 
+  <!--
+  $(IntermediateOutputPath)/Avalonia/references is using from AvaloniaVS for retrieve library references.
+  This target generate $(IntermediateOutputPath)/Avalonia/references for in xplat Template
+  (see: https://github.com/AvaloniaUI/avalonia-dotnet-templates/tree/e4a489ae828f005f625145c563785174403e267c/templates/csharp/xplat).
+  -->
+  <Target Name="GenerateIntellisenseReferences"
+          AfterTargets="AfterCompile"
+          Condition="('@(AvaloniaResource->Count())' == 0) and ('@(AvaloniaXaml->Count())' == 0)">
+    <PropertyGroup>
+      <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
+    </PropertyGroup>
+    <WriteLinesToFile
+      Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
+      File="$(AvaloniaXamlReferencesTemporaryFilePath)"
+      Lines="@(ReferencePathWithRefAssemblies)"
+      Overwrite="true" />
+  </Target>
 </Project>

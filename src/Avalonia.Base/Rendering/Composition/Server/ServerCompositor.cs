@@ -218,6 +218,8 @@ namespace Avalonia.Rendering.Composition.Server
             
             try
             {
+                if(!RenderInterface.IsReady)
+                    return;
                 RenderInterface.EnsureValidBackendContext();
                 ExecuteServerJobs();
                 foreach (var t in _activeTargets)

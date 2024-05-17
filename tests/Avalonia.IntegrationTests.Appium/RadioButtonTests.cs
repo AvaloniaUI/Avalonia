@@ -6,7 +6,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class RadioButtonTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public RadioButtonTests(DefaultAppFixture fixture)
         {

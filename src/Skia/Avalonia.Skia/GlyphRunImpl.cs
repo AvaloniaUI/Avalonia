@@ -117,7 +117,7 @@ namespace Avalonia.Skia
                 runBuffer.SetPositions(_glyphPositions);
                 runBuffer.SetGlyphs(_glyphIndices);
 
-                var textBlob = builder.Build();
+                var textBlob = builder.Build()!;
 
                 SKTextBlobBuilderCache.Shared.Return(builder);
 

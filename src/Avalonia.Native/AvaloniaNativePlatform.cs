@@ -138,15 +138,14 @@ namespace Avalonia.Native
                         // ignored
                     }
                 }
-#pragma warning disable CS0618
                 else if (mode == AvaloniaNativeRenderingMode.Metal)
-#pragma warning restore CS0618
                 {
                     try
                     {
                         var metal = new MetalPlatformGraphics(_factory);
                         metal.CreateContext().Dispose();
                         _platformGraphics = metal;
+                        break;
                     }
                     catch
                     {
