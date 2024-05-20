@@ -49,6 +49,10 @@ namespace Avalonia.IntegrationTests.Appium
         {
             options.AddAdditionalAppiumOption("appium:bundleId", TestAppBundleId);
             options.AddAdditionalAppiumOption("appium:showServerLogs", true);
+            
+            // Setting timeout at 4 hours. The mac driver seems to delete the wrong session on timeout if there
+            // are more than one.
+            options.AddAdditionalAppiumOption("appium:newCommandTimeout", 60 * 60 * 4);
             options.AutomationName = "mac2";
             options.PlatformName = MobilePlatform.MacOS;
         }
