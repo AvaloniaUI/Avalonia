@@ -39,7 +39,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(item4.Selected);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows, "macOS driver hangs")]
         public void Can_Select_Items_By_Ctrl_Clicking()
         {
             var listBox = GetTarget();
@@ -60,8 +60,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(item4.Selected);
         }
 
-        // appium-mac2-driver just hangs
-        [PlatformFact(TestPlatforms.Windows)]
+        [PlatformFact(TestPlatforms.Windows, "macOS driver hangs")]
         public void Can_Select_Range_By_Shift_Clicking()
         {
             var listBox = GetTarget();
