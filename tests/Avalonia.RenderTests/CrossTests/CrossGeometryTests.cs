@@ -120,7 +120,6 @@ public class CrossGeometryTests : CrossTestBase
         InlineData(PenLineCap.Round, PenLineJoin.Bevel),
         InlineData(PenLineCap.Round, PenLineJoin.Miter),
     ]
-#endif
     public void Should_Properly_CloseFigure(PenLineCap lineCap, PenLineJoin lineJoin)
     {
         var geometry = new CrossPathGeometry();
@@ -156,4 +155,5 @@ public class CrossGeometryTests : CrossTestBase
         RenderAndCompare(control,
             $"{nameof(Should_Properly_CloseFigure)}_{lineCap}_{lineJoin}");
     }
+#endif
 }
