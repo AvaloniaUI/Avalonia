@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.OpenGl.GlPageKnobs"
+             xmlns:pages="using:ControlCatalog.Pages"
+             xmlns:gl="using:ControlCatalog.Pages.OpenGl"
+             >
+    <Grid>
+        <StackPanel>
+            <TextBlock Text="{Binding $parent[gl:GlPageKnobs].Info}"/>
+        </StackPanel>
+        <Grid ColumnDefinitions="*,Auto" Margin="20">
+            <StackPanel Grid.Column="1" MinWidth="300">
+                <TextBlock>Yaw</TextBlock>
+                <Slider Value="{Binding $parent[gl:GlPageKnobs].Yaw, Mode=TwoWay}" Maximum="10"/>
+                <TextBlock>Pitch</TextBlock>
+                <Slider Value="{Binding $parent[gl:GlPageKnobs].Pitch, Mode=TwoWay}" Maximum="10"/>
+                <TextBlock>Roll</TextBlock>
+                <Slider Value="{Binding $parent[gl:GlPageKnobs].Roll, Mode=TwoWay}" Maximum="10"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontWeight="Bold" Foreground="#C000C0">D</TextBlock>
+                    <TextBlock FontWeight="Bold" Foreground="#00C090">I</TextBlock>
+                    <TextBlock FontWeight="Bold" Foreground="#90C000">S</TextBlock>
+                    <TextBlock FontWeight="Bold" Foreground="#C09000">C</TextBlock>
+                    <TextBlock FontWeight="Bold" Foreground="#00C090">O</TextBlock>
+                </StackPanel>
+                <Slider Value="{Binding $parent[gl:GlPageKnobs].Disco, Mode=TwoWay}" Maximum="1"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
