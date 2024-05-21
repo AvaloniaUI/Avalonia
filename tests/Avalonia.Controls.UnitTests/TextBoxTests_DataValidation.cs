@@ -6,8 +6,11 @@ using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Headless;
 using Avalonia.Markup.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -107,6 +110,40 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(DataValidationErrors.GetHasErrors(target));
                 target.Text = "1";
                 Assert.False(DataValidationErrors.GetHasErrors(target));
+            }
+        }
+
+        [Fact]
+        public void CompiledBindings_TypeConverter_Exceptions_Should_Set_DataValidationErrors_HasErrors()
+        {
+            var path = new CompiledBindingPathBuilder()
+            .Property(
+                new ClrPropertyInfo(
+                    nameof(ExceptionTest.LessThan10),
+                    target => ((ExceptionTest)target).LessThan10,
+                    (target, value) => ((ExceptionTest)target).LessThan10 = (int)value,
+                    typeof(int)),
+                PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
+            .Build();
+
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    DataContext = new ExceptionTest(),
+                    [!TextBox.TextProperty] = new CompiledBindingExtension
+                    {
+                        Source = new ExceptionTest(),
+                        Path = path,
+                        Mode = BindingMode.TwoWay
+                    },
+                    Template = CreateTemplate(),
+                };
+
+                target.ApplyTemplate();
+
+                target.Text = "a";
+                Assert.True(DataValidationErrors.GetHasErrors(target));
             }
         }
 

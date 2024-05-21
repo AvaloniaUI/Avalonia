@@ -44,7 +44,7 @@ public class CrossTestBase
 
         while (path.Length > 0 && Path.GetFileName(path) != "tests")
         {
-            path = Path.GetDirectoryName(path);
+            path = Path.GetDirectoryName(path)!;
         }
 
         return path;

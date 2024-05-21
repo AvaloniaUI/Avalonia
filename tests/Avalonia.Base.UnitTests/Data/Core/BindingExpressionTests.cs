@@ -19,7 +19,7 @@ namespace Avalonia.Base.UnitTests.Data.Core;
 [InvariantCulture]
 public abstract partial class BindingExpressionTests
 {
-    public class Reflection : BindingExpressionTests
+    public partial class Reflection : BindingExpressionTests
     {
         private protected override (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
             Expression<Func<TIn, TOut>> expression,
@@ -73,7 +73,7 @@ public abstract partial class BindingExpressionTests
         }
     }
 
-    public class Compiled : BindingExpressionTests
+    public partial class Compiled : BindingExpressionTests
     {
         private protected override (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
             Expression<Func<TIn, TOut>> expression,

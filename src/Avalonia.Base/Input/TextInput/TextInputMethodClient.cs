@@ -65,6 +65,12 @@ namespace Avalonia.Input.TextInput
         public virtual void SetPreeditText(string? preeditText) { }
 
         /// <summary>
+        /// Execute specific context menu actions
+        /// </summary>
+        /// <param name="action">The <see cref="ContextMenuAction"/> to perform</param>
+        public virtual void ExecuteContextMenuAction(ContextMenuAction action) { }
+
+        /// <summary>
         /// Sets the non-committed input string and cursor offset in that string
         /// </summary>
         public virtual void SetPreeditText(string? preeditText, int? cursorPos)
@@ -101,4 +107,12 @@ namespace Avalonia.Input.TextInput
     }
 
     public record struct TextSelection(int Start, int End);
+
+    public enum ContextMenuAction
+    {
+        Copy,
+        Cut,
+        Paste,
+        SelectAll
+    }
 }

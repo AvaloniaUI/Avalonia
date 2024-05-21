@@ -1017,6 +1017,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.AppliedStyle</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.StyleDiagnostics</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Input.FocusManager.&lt;GetFocusScopeAncestors&gt;d__18</Target>
     <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
@@ -1074,6 +1086,12 @@
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/AboutAvaloniaDialog.xaml</Target>
     <Left>baseline/netstandard2.0/Avalonia.Dialogs.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Dialogs.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Diagnostics.StyledElementExtensions.GetStyleDiagnostics(Avalonia.StyledElement)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
