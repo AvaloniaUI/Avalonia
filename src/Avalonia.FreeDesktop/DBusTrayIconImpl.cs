@@ -21,7 +21,7 @@ namespace Avalonia.FreeDesktop
         private readonly OrgFreedesktopDBus? _dBus;
 
         private IDisposable? _serviceWatchDisposable;
-        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
+        private readonly StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private OrgKdeStatusNotifierWatcher? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
 
@@ -115,7 +115,7 @@ namespace Avalonia.FreeDesktop
             await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
-            _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
+            _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
             _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
         }

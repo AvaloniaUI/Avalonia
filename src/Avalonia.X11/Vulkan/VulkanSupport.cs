@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -13,7 +15,7 @@ internal class VulkanSupport
     [DllImport("libvulkan.so.1")]
     private static extern IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
     
-    public static VulkanPlatformGraphics? TryInitialize(X11Info info, VulkanOptions options)
+    public static VulkanPlatformGraphics? TryInitialize(X11Info info, VulkanOptions? options)
     {
         s_offscreenWindow = XLib.XCreateSimpleWindow(info.DeferredDisplay,
             XLib.XDefaultRootWindow(info.DeferredDisplay), 0, 0, 1,

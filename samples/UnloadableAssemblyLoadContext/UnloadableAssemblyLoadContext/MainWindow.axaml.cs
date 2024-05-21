@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -33,11 +34,11 @@ public partial class MainWindow : Window
             this.AttachDevTools();
         }
     }
-    private PlugTool _plugTool;
+    private PlugTool? _plugTool;
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        test();
+        Test();
         //Content = _plugTool.FindControl("UnloadableAssemblyLoadContextPlug.TestControl");
 
 
@@ -75,7 +76,7 @@ public partial class MainWindow : Window
         
         
         Thread.CurrentThread.IsBackground = false;
-        var weakReference = _plugTool.Unload();
+        var weakReference = _plugTool!.Unload();
         while (weakReference.IsAlive)
         {
             GC.Collect();
@@ -88,8 +89,9 @@ public partial class MainWindow : Window
         
     }
 
-    public static IStyle Style;
-    public  void test(){
+    public static IStyle? Style;
+
+    public void Test() {
         
         //Notice : 你可以删除UnloadableAssemblyLoadContextPlug.dll所在文件夹中有关Avalonia的所有Dll,但这不是必须的
         //Notice : You can delete all Dlls about Avalonia in the folder where UnloadableAssemblyLoadContextPlug.dll is located, but this is not necessary
@@ -97,7 +99,6 @@ public partial class MainWindow : Window
         var AssemblyLoadContextH = new AssemblyLoadContextH(fileInfo.FullName,"test");
         
         var assembly = AssemblyLoadContextH.LoadFromAssemblyPath(fileInfo.FullName);
-        var assemblyDescriptorResolver = 
         _plugTool=new PlugTool();
         _plugTool.AssemblyLoadContextH = AssemblyLoadContextH;
       
@@ -106,13 +107,13 @@ public partial class MainWindow : Window
         styleInclude.Source=new Uri("ControlStyle.axaml", UriKind.Relative);
         styles.Add(styleInclude);
         Style = styles;
-        Application.Current.Styles.Add(styles);
+        Application.Current!.Styles.Add(styles);
         foreach (var type in assembly.GetTypes())
         {
             if (type.FullName=="AvaloniaPlug.Window1")
             {
                 //创建type实例
-                Window instance = (Window)type.GetConstructor( new Type[0]).Invoke(null);
+                Window? instance = (Window)type.GetConstructor([])!.Invoke(null);
                 
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
