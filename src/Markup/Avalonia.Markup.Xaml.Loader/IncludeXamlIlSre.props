@@ -9,15 +9,8 @@
     <Content Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
     <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
     <Compile Include="$(MSBuildThisFileDirectory)\xamlil.github\src\XamlX\**\*.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\src\XamlX\Compatibility\*.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\obj\**\*.cs" />
-
-    <!-- Polyfills used by XamlX, but re-imported from this repository -->
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" Visible="False" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
-
-    <!-- Utilities used by XamlX Avalonia SRE -->
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="!('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0')))">

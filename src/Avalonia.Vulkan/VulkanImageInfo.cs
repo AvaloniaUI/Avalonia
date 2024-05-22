@@ -1,8 +1,6 @@
-using System;
-
 namespace Avalonia.Vulkan;
 
-public struct VulkanImageInfo
+public record struct VulkanImageInfo
 {
     public uint Format { get; set; }
     public PixelSize PixelSize { get; set; }
