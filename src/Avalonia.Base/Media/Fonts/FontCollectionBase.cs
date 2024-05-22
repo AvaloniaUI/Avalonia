@@ -258,7 +258,7 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        private static readonly List<string> s_knownNames = ["Solid", "Regular", "Bold", "Black", "Normal", "Thin"];
+        private static readonly List<string> s_knownNames = ["Solid", "Regular", "Bold", "Black", "Normal", "Thin", "Italic"];
 
         internal static string NormalizeFamilyName(string familyName)
         {
@@ -281,7 +281,7 @@ namespace Avalonia.Media.Fonts
             var familyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
 
             //Return early if no separator is present.
-            if (!familyName.Contains(" "))
+            if (!familyName.Contains(' '))
             {
                 return typeface;
             }

@@ -47,47 +47,83 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName,
+            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+            {
+                if (glyphTypefaces.TryGetValue(key, out glyphTypeface))
+                {
+                    return glyphTypeface != null;
+                }
+            }
+
+            glyphTypefaces ??= _glyphTypefaceCache.GetOrAdd(familyName,
                 (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
 
-            if (glyphTypefaces.TryGetValue(key, out glyphTypeface))
+            //Try top create the font via system font manager
+            if (_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
+                glyphTypefaces.TryAdd(key, glyphTypeface);
+
+                return true;
+            }
+
+            //Try to find nearest match if possible
+            if (!TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+            {
+                if (TryGetGlyphTypeface(_fontManager.DefaultFontFamily.Name, style, weight, stretch, out glyphTypeface))
+                {
+                    glyphTypefaces.TryAdd(key, glyphTypeface);
+                }
+
                 return glyphTypeface != null;
             }
 
-            if(!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface) || 
-                !glyphTypeface.FamilyName.Contains(familyName))
+            if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, out var syntheticGlyphTypeface))
             {
-                //Try to find nearest match if possible
-                TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
+                glyphTypefaces.TryAdd(key, syntheticGlyphTypeface);
+
+                glyphTypeface = syntheticGlyphTypeface;
+            }
+            else
+            {
+                glyphTypefaces.TryAdd(key, glyphTypeface);
             }
 
-            if(glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+            return true;
+
+        }
+
+        private bool TryCreateSyntheticGlyphTypeface(IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight,
+            [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+        {
+            if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
             {
                 var fontSimulations = FontSimulations.None;
 
-                if(style != FontStyle.Normal && glyphTypeface2.Style != style)
+                if (style != FontStyle.Normal && glyphTypeface2.Style != style)
                 {
                     fontSimulations |= FontSimulations.Oblique;
                 }
 
-                if((int)weight >= 600 && glyphTypeface2.Weight != weight)
+                if ((int)weight >= 600 && glyphTypeface2.Weight != weight)
                 {
                     fontSimulations |= FontSimulations.Bold;
                 }
 
-                if(fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
+                if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
                 {
                     using (stream)
                     {
-                        _fontManager.PlatformImpl.TryCreateGlyphTypeface(stream, fontSimulations, out glyphTypeface);
+                        _fontManager.PlatformImpl.TryCreateGlyphTypeface(stream, fontSimulations,
+                            out syntheticGlyphTypeface);
+
+                        return syntheticGlyphTypeface != null;
                     }
                 }
             }
 
-            glyphTypefaces.TryAdd(key, glyphTypeface);
+            syntheticGlyphTypeface = null;
 
-            return glyphTypeface != null;
+            return false;
         }
 
         public override void Initialize(IFontManagerImpl fontManager)
