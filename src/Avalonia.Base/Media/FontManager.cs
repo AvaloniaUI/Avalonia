@@ -121,9 +121,7 @@ namespace Avalonia.Media
                 {
                     //Replace known typographic names
                     var familyName = FontCollectionBase.NormalizeFamilyName(fontFamily.FamilyNames.PrimaryFamilyName);
-
-                    typeface = FontCollectionBase.GetImplicitTypeface(typeface);
-
+                    
                     if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, familyName, out glyphTypeface))
                     {
                         return true;
@@ -136,8 +134,6 @@ namespace Avalonia.Media
             {
                 //Replace known typographic names
                 var familyName = FontCollectionBase.NormalizeFamilyName(fontFamily.FamilyNames.PrimaryFamilyName);
-
-                typeface = FontCollectionBase.GetImplicitTypeface(typeface);
 
                 if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {

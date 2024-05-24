@@ -229,11 +229,8 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
-
-                    Assert.NotNull(systemFontCollection);
-
-                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono"), out var glyphTypeface));
 
@@ -250,11 +247,8 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
-
-                    Assert.NotNull(systemFontCollection);
-
-                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic), out var glyphTypeface));
 
@@ -270,11 +264,8 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
-
-                    Assert.NotNull(systemFontCollection);
-
-                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono Italic"),
                         out var glyphTypeface));
