@@ -208,11 +208,7 @@
 
     if(_parent != nullptr)
     {
-        double scaling = 1;
-        
-        _parent->GetScaling(&scaling);
-        
-        _parent->TopLevelEvents->ScalingChanged(scaling);
+        _parent->TopLevelEvents->ScalingChanged([[self window] backingScaleFactor]);
     }
 
     [super viewDidChangeBackingProperties];
