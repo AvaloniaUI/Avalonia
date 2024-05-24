@@ -225,18 +225,22 @@
         return TRUE;
     }
     
-    WindowImpl* windowImpl = dynamic_cast<WindowImpl*>(_parent.getRaw());
-    
-    if(windowImpl == nullptr){
-        return false;
+    id<AvnWindowProtocol> parentWindow = nullptr;
+
+    if([[self window] conformsToProtocol:@protocol(AvnWindowProtocol)]){
+        parentWindow = (id<AvnWindowProtocol>)[self window];
     }
 
-    auto parentWindow = windowImpl->GetWindowProtocol();
-
-    if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
+    if(parentWindow != nullptr && ![parentWindow shouldTryToHandleEvents])
     {
         if(trigerInputWhenDisabled)
         {
+            WindowImpl* windowImpl = dynamic_cast<WindowImpl*>(_parent.getRaw());
+            
+            if(windowImpl == nullptr){
+                return FALSE;
+            }
+            
             windowImpl->WindowEvents->GotInputWhenDisabled();
         }
 

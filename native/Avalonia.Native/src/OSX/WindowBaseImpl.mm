@@ -207,23 +207,6 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
     }
 }
 
-HRESULT WindowBaseImpl::GetScaling(double *ret) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if (ret == nullptr)
-            return E_POINTER;
-
-        if (Window == nullptr) {
-            *ret = 1;
-            return S_OK;
-        }
-
-        *ret = [Window backingScaleFactor];
-        return S_OK;
-    }
-}
-
 HRESULT WindowBaseImpl::SetMinMaxSize(AvnSize minSize, AvnSize maxSize) {
     START_COM_CALL;
 

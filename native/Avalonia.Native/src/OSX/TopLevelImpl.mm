@@ -23,12 +23,20 @@ TopLevelImpl::TopLevelImpl(IAvnTopLevelEvents *events) {
 
 HRESULT TopLevelImpl::GetScaling(double *ret) {
     START_COM_CALL;
-        
-    if (ret == nullptr)
-        return E_POINTER;
 
-    *ret = 1;
-    return S_OK;
+    @autoreleasepool {
+        if (ret == nullptr)
+            return E_POINTER;
+
+        if ([View window] == nullptr) {
+            *ret = 1;
+            return S_OK;
+        }
+
+        *ret = [[View window] backingScaleFactor];
+        
+        return S_OK;
+    }
 }
 
 HRESULT TopLevelImpl::GetClientSize(AvnSize *ret) {

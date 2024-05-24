@@ -53,8 +53,6 @@ public:
 
     virtual HRESULT GetFrameSize(AvnSize *ret) override;
 
-    virtual HRESULT GetScaling(double *ret) override;
-
     virtual HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize) override;
 
     virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override;
