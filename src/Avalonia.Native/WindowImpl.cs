@@ -16,7 +16,6 @@ namespace Avalonia.Native
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
-        private readonly AvaloniaNativeTextInputMethod _inputMethod;
         private bool _canResize = true;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
@@ -31,8 +30,10 @@ namespace Avalonia.Native
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
             
-            _inputMethod = new AvaloniaNativeTextInputMethod(_native);
+            InputMethod = new AvaloniaNativeTextInputMethod(_native);
         }
+        
+        public AvaloniaNativeTextInputMethod InputMethod { get; }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
         {
@@ -66,6 +67,29 @@ namespace Avalonia.Native
             }
         }
 
+        public Size? FrameSize
+        {
+            get
+            {
+                if (_native != null)
+                {
+                    unsafe
+                    {
+                        var s = new AvnSize { Width = -1, Height = -1 };
+                        _native.GetFrameSize(&s);
+                        return s.Width < 0  && s.Height < 0 ? null : new Size(s.Width, s.Height);
+                    }
+                }
+
+                return default;
+            }
+        }
+        
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            _native.SetFrameThemeVariant((AvnPlatformThemeVariant)themeVariant);
+        }
+        
         public new IAvnWindow Native => _native;
 
         public void CanResize(bool value)
@@ -229,7 +253,7 @@ namespace Avalonia.Native
         {
             if(featureType == typeof(ITextInputMethodImpl))
             {
-                return _inputMethod;
+                return InputMethod;
             } 
             
             if (featureType == typeof(ITopLevelNativeMenuExporter))

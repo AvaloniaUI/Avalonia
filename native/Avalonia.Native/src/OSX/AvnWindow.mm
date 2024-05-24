@@ -24,7 +24,6 @@
 #include "WindowImpl.h"
 #include "AvnView.h"
 #include "WindowInterfaces.h"
-#include "PopupImpl.h"
 
 @implementation CLASS_NAME
 {
@@ -231,7 +230,7 @@
 //
 // If we don't implement this, then isZoomed always returns true for a non-
 // resizable window ¯\_(ツ)_/¯
-- (NSRect)windowWillUseStandardFrame:(NSWindow*)window
+- (NSRect)windowWillUseStandardFrame:(NSWindow* _Nonnull)window
                         defaultFrame:(NSRect)newFrame {
   return newFrame;
 }
@@ -397,7 +396,7 @@
     return _parent->CanZoom();
 }
 
--(void)windowDidResignKey:(NSNotification *)notification
+-(void)windowDidResignKey:(NSNotification* _Nonnull)notification
 {
     if(_parent)
         _parent->BaseEvents->Deactivated();

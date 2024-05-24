@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 
@@ -9,16 +10,41 @@ namespace Avalonia.Native
     class PopupImpl : WindowBaseImpl, IPopupImpl
     {
         private readonly IWindowBaseImpl _parent;
+        private readonly IAvnPopup _native;
+        private readonly AvaloniaNativeTextInputMethod _inputMethod;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
             IWindowBaseImpl parent) : base(factory)
         {
             _parent = parent;
+            
             using (var e = new PopupEvents(this))
             {
-                Init(factory.CreatePopup(e), factory.CreateScreens());
+                Init(_native = factory.CreatePopup(e), factory.CreateScreens());
             }
+            
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+
+            while (parent is PopupImpl popupImpl)
+            {
+                parent = popupImpl._parent;
+            }
+            
+            //Only the parent window is able to process input context events
+            if (parent is WindowImpl windowImpl)
+            {
+                _inputMethod = windowImpl.InputMethod;
+            }
+        }
+        
+        public override object TryGetFeature(Type featureType)
+        {
+            if(featureType == typeof(ITextInputMethodImpl))
+            {
+                return _inputMethod;
+            } 
+            
+            return base.TryGetFeature(featureType);
         }
 
         private void MoveResize(PixelPoint position, Size size, double scaling)
