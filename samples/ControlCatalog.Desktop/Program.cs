@@ -1,7 +1,5 @@
 using System;
-using System.Linq;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Platform;
 using ControlCatalog.NetCore;
 using ControlCatalog.Pages;
@@ -29,7 +27,8 @@ namespace ControlCatalog
 
                     EmbedSample.Implementation = new EmbedSampleWin();
                 })
-                .UsePlatformDetect();
+                .UseWin32()
+                .UseSkia();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {

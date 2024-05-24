@@ -468,7 +468,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="entry">The binding entry.</param>
         /// <param name="priority">The priority of binding which produced a new value.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnBindingValueChanged(
             IValueEntry entry,
             BindingPriority priority)
@@ -592,7 +591,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnLocalValueBindingCompleted(AvaloniaProperty property, IDisposable observer)
         {
             if (_localValueBindings is not null &&

@@ -30,7 +30,7 @@ namespace ControlCatalog.Pages
             _knobs.PropertyChanged += KnobsPropertyChanged;
         }
 
-        private void KnobsPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs change)
+        private void KnobsPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == GlPageKnobs.YawProperty
                 || change.Property == GlPageKnobs.RollProperty

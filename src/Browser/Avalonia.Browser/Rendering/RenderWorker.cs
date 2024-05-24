@@ -101,7 +101,9 @@ public partial class RenderWorker
                 Name = "Manual JS worker"
             };
             _setExtLoop.Invoke(null, [th]);
+#pragma warning disable CA1416
             th.Start();
+#pragma warning restore CA1416
             return tcs.Task;
         }
         

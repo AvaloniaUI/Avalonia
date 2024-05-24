@@ -183,7 +183,7 @@ internal class OpenGlContent
             Console.WriteLine(err);
     }
 
-    public string Info { get; private set; }
+    public string Info { get; private set; } = string.Empty;
     
     public unsafe void Init(GlInterface GL, GlVersion version)
     {
