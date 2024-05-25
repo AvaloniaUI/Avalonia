@@ -68,9 +68,9 @@ namespace Avalonia.Android
             OnVisibilityChanged(visibility == ViewStates.Visible);
         }
 
-        private void OnVisibilityChanged(bool isVisible)
+        internal void OnVisibilityChanged(bool isVisible)
         {
-            if (isVisible)
+            if (isVisible && _timerSubscription == null)
             {
                 if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
                 {
@@ -84,10 +84,11 @@ namespace Avalonia.Android
                     (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
                 }
             }
-            else
+            else if (!isVisible && _timerSubscription != null)
             {
                 _root.StopRendering();
                 _timerSubscription?.Dispose();
+                _timerSubscription = null;
             }
         }
         
