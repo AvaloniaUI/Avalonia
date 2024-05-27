@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Avalonia.Input.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Input
@@ -9,7 +10,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Defines a keyboard input combination.
     /// </summary>
-    public sealed class KeyGesture : IEquatable<KeyGesture>
+    public sealed class KeyGesture : IEquatable<KeyGesture>, IFormattable
     {
         private static readonly Dictionary<string, Key> s_keySynonyms = new Dictionary<string, Key>
         {
@@ -95,8 +96,17 @@ namespace Avalonia.Input
             return new KeyGesture(key, keyModifiers);
         }
 
-        public override string ToString()
+        public override string ToString() => ToString(null, null);
+
+        public string ToString(string? format, IFormatProvider? formatProvider)
         {
+            var formatInfo = format switch
+            {
+                null or "" or "g" => KeyGestureFormatInfo.Invariant,
+                "p" => KeyGestureFormatInfo.GetInstance(formatProvider),
+                _ => throw new FormatException("Unknown format specifier")
+            };
+
             var s = StringBuilderCache.Acquire();
 
             static void Plus(StringBuilder s)
@@ -109,29 +119,29 @@ namespace Avalonia.Input
 
             if (KeyModifiers.HasAllFlags(KeyModifiers.Control))
             {
-                s.Append("Ctrl");
+                s.Append(formatInfo.Ctrl);
             }
 
             if (KeyModifiers.HasAllFlags(KeyModifiers.Shift))
             {
                 Plus(s);
-                s.Append("Shift");
+                s.Append(formatInfo.Shift);
             }
 
             if (KeyModifiers.HasAllFlags(KeyModifiers.Alt))
             {
                 Plus(s);
-                s.Append("Alt");
+                s.Append(formatInfo.Alt);
             }
 
             if (KeyModifiers.HasAllFlags(KeyModifiers.Meta))
             {
                 Plus(s);
-                s.Append("Cmd");
+                s.Append(formatInfo.Meta);
             }
 
             Plus(s);
-            s.Append(Key);
+            s.Append(formatInfo.FormatKey(Key));
 
             return StringBuilderCache.GetStringAndRelease(s);
         }
