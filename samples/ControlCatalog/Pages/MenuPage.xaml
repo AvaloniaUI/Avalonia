@@ -16,6 +16,7 @@
                     <MenuItem Header="_First">
                         <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
                         <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
+                        <MenuItem Header="Meta Menu Item" InputGesture="Meta+D1"/>
                         <Separator/>
                         <MenuItem Header="Menu with _Submenu">
                             <MenuItem Header="Submenu _1"/>
