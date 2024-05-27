@@ -180,7 +180,9 @@ namespace Avalonia.Base.UnitTests.Media
                 glyphInfos[i] = new GlyphInfo(0, glyphClusters[i], glyphAdvances[i]);
             }
 
-            return new GlyphRun(new HeadlessGlyphTypefaceImpl(), 10, new string('a', count).AsMemory(), glyphInfos, biDiLevel: bidiLevel);
+            return new GlyphRun(
+                new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal,
+                    FontStretch.Normal), 10, new string('a', count).AsMemory(), glyphInfos, biDiLevel: bidiLevel);
         }
 
         private static IDisposable Start()

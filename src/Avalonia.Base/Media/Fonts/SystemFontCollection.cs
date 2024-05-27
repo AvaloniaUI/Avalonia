@@ -58,38 +58,39 @@ namespace Avalonia.Media.Fonts
             glyphTypefaces ??= _glyphTypefaceCache.GetOrAdd(familyName,
                 (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
 
-            //Try top create the font via system font manager
-            if (_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            //Try to create the glyph typeface via system font manager
+            if (!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch,
+                    out glyphTypeface))
             {
-                glyphTypefaces.TryAdd(key, glyphTypeface);
+                glyphTypefaces.TryAdd(key, null);
 
-                return true;
+                return false;
             }
 
-            //Try to find nearest match if possible
-            if (!TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+            var createdKey =
+                new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
+
+            //No exact match
+            if (createdKey != key)
             {
-                if (TryGetGlyphTypeface(_fontManager.DefaultFontFamily.Name, style, weight, stretch, out glyphTypeface))
+                //Try to find nearest match if possible
+                if (!TryGetNearestMatch(glyphTypefaces, key, out var nearestMatch))
                 {
-                    glyphTypefaces.TryAdd(key, glyphTypeface);
+                    glyphTypeface = nearestMatch;
                 }
-
-                return glyphTypeface != null;
+                else
+                {
+                    //Try to create a synthetic glyph typeface
+                    if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, out var syntheticGlyphTypeface))
+                    {
+                        glyphTypeface = syntheticGlyphTypeface;
+                    }
+                }
             }
 
-            if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, out var syntheticGlyphTypeface))
-            {
-                glyphTypefaces.TryAdd(key, syntheticGlyphTypeface);
+            glyphTypefaces.TryAdd(key, glyphTypeface);
 
-                glyphTypeface = syntheticGlyphTypeface;
-            }
-            else
-            {
-                glyphTypefaces.TryAdd(key, glyphTypeface);
-            }
-
-            return true;
-
+            return glyphTypeface != null;
         }
 
         private bool TryCreateSyntheticGlyphTypeface(IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight,
