@@ -6,32 +6,68 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Input.Platform
 {
+
+    /// <summary>
+    /// Provides platform specific formatting information for the KeyGesture class
+    /// </summary>
+    /// <param name="platformKeyOverrides">A dictionary of Key to String overrides for specific characters, for example Key.Left to "Left Arrow" or "←" on Mac.
+    /// A null value is assumed to be the Invariant, so the included set of common overrides will be skipped if this is null.  If only the common overrides are
+    /// desired, pass an empty Dictionary instead.</param>
+    /// <param name="meta">The string to use for the Meta modifier, defaults to "Cmd"</param>
+    /// <param name="ctrl">The string to use for the Ctrl modifier, defaults to "Ctrl"</param>
+    /// <param name="alt">The string to use for the Alt modifier, defaults to "Alt"</param>
+    /// <param name="shift">The string to use for the Shift modifier, defaults to "Shift"</param>
     public sealed class KeyGestureFormatInfo(Dictionary<Key, string>? platformKeyOverrides = null,
                                              string meta = "Cmd",
                                              string ctrl = "Ctrl",
                                              string alt = "Alt",
                                              string shift = "Shift") : IFormatProvider
     {
+        /// <summary>
+        /// The Invariant format.  Only uses strings straight from the appropriate Enums.
+        /// </summary>
         public static KeyGestureFormatInfo Invariant { get; } = new();
 
+        /// <summary>
+        /// The string used to represent Meta on the appropriate platform.  Defaults to "Cmd".
+        /// </summary>
         public string Meta { get; } = meta;
-
+        
+        /// <summary>
+        /// The string used to represent Ctrl on the appropriate platform.  Defaults to "Ctrl".
+        /// </summary>
         public string Ctrl { get; } = ctrl;
-
+        
+        /// <summary>
+        /// The string used to represent Alt on the appropriate platform.  Defaults to "Alt".
+        /// </summary>
         public string Alt { get; } = alt;
-
+       
+        /// <summary>
+        /// The string used to represent Shift on the appropriate platform.  Defaults to "Shift".
+        /// </summary>
         public string Shift { get; } = shift;
 
         public object? GetFormat(Type? formatType) => formatType == typeof(KeyGestureFormatInfo) ? this : null;
         
+        /// <summary>
+        /// Gets the most appropriate KeyGestureFormatInfo for the IFormatProvider requested.  This will be, in order:
+        /// 1. The provided IFormatProvider as a KeyGestureFormatInfo
+        /// 2. The currently registered platform specific KeyGestureFormatInfo, if present.
+        /// 3. The Invariant otherwise.
+        /// </summary>
+        /// <param name="formatProvider">The IFormatProvider to get a KeyGestureFormatInfo for.</param>
+        /// <returns></returns>
         public static KeyGestureFormatInfo GetInstance(IFormatProvider? formatProvider)
             => formatProvider?.GetFormat(typeof(KeyGestureFormatInfo)) as KeyGestureFormatInfo
             ?? AvaloniaLocator.Current.GetService<KeyGestureFormatInfo>()
             ?? Invariant;
 
-        /* A dictionary of the common platform Key overrides. These are used as a fallback
-         * if platformKeyOverrides doesn't contain the Key in question.
-         */
+        /// <summary>
+        /// A dictionary of the common platform Key overrides. These are used as a fallback
+        /// if platformKeyOverrides doesn't contain the Key in question.
+        /// </summary>
+        
         private static readonly Dictionary<Key, string> s_commonKeyOverrides = new()
         {
             { Key.Add , "+" },
@@ -64,6 +100,14 @@ namespace Avalonia.Input.Platform
             { Key.Subtract , "-" }
         };
 
+        /// <summary>
+        /// Checks the platformKeyOverrides and s_commonKeyOverrides Dictionaries, in order, for the appropriate
+        /// string to represent the given Key on this platform.
+        /// NOTE: If platformKeyOverrides is null, this is assumed to be the Invariant and the Dictionaries are not checked.
+        /// The plain Enum string is returned instead.
+        /// </summary>
+        /// <param name="key">The Key to format.</param>
+        /// <returns>The appropriate platform specific or common override if present, key.ToString() if not or this is the Invariant.</returns>
         public string FormatKey(Key key)
         {
             /*
