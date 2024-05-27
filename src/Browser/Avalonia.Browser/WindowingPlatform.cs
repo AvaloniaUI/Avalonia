@@ -70,6 +70,11 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+            .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new()
+                    {
+                        { Key.Back , "Backspace" }, { Key.Down , "Down Arrow" }, { Key.Left , "Left Arrow" },
+                        { Key.Right , "Right Arrow" }, { Key.Up , "Up Arrow" }
+                    }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
         AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>();
         

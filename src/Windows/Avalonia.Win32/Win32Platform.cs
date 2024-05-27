@@ -101,6 +101,11 @@ namespace Avalonia.Win32
                         new KeyGesture(Key.F10, KeyModifiers.Shift)
                     }
                 })
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new() 
+                    {
+                        { Key.Back , "Backspace" }, { Key.Down , "Down Arrow" }, { Key.Left , "Left Arrow" },
+                        { Key.Right , "Right Arrow" }, { Key.Up , "Up Arrow" } 
+                    }, meta: "Win"))
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(NonPumpingWaitHelperImpl.Instance)
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
