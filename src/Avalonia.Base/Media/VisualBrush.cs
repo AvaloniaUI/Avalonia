@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -63,6 +64,7 @@ namespace Avalonia.Media
             static c => new ServerCompositionSimpleContentBrush(c.Server);
 
         private InlineDictionary<Compositor, CompositionRenderDataSceneBrushContent?> _renderDataDictionary;
+        private Compositor? _currentCompositor;
 
         private protected override void OnReferencedFromCompositor(Compositor c)
         {
@@ -85,9 +87,46 @@ namespace Avalonia.Media
             else
                 writer.WriteObject(null);
         }
-        
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if(change.Property == VisualProperty)
+            {
+                if (change.GetOldValue<Visual?>() is Layoutable oldVisual)
+                {
+                    oldVisual.LayoutUpdated -= Visual_LayoutUpdated;
+                }
+
+                if (change.GetNewValue<Visual?>() is Layoutable newVisual)
+                {
+                    newVisual.LayoutUpdated += Visual_LayoutUpdated;
+                }
+                ResetServerContent();
+            }
+        }
+
+        private void ResetServerContent()
+        {
+            RegisterForSerialization();
+
+            if(_currentCompositor != null)
+            {
+                OnUnreferencedFromCompositor(_currentCompositor);
+                OnReferencedFromCompositor(_currentCompositor);
+            }
+        }
+
+        private void Visual_LayoutUpdated(object? sender, EventArgs e)
+        {
+            ResetServerContent();
+        }
+
         CompositionRenderDataSceneBrushContent? CreateServerContent(Compositor c)
         {
+            _currentCompositor = c;
+
             if (Visual == null)
                 return null;
 
