@@ -45,6 +45,14 @@ namespace Avalonia.Media.Fonts
         {
             glyphTypeface = null;
 
+            var typeface = GetImplicitTypeface(new Typeface(familyName, style, weight, stretch), out familyName);
+
+            style = typeface.Style;
+
+            weight = typeface.Weight;
+
+            stretch = typeface.Stretch;
+
             var key = new FontCollectionKey(style, weight, stretch);
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
