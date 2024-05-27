@@ -34,6 +34,14 @@ namespace Avalonia.Controls.Converters
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Converts a <see cref="KeyGesture"/> to a string, formatting it according to the current
+        /// platform's style guidelines.
+        /// </summary>
+        /// <param name="gesture">The gesture.</param>
+        /// <returns>The gesture formatted according to the current platform.</returns>
+        public static string ToPlatformString(KeyGesture gesture) => gesture.ToString("p", null);
         
     }
 }
