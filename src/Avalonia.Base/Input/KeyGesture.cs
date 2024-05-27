@@ -98,6 +98,17 @@ namespace Avalonia.Input
 
         public override string ToString() => ToString(null, null);
 
+        /// <summary>
+        /// Returns the current KeyGesture as a string formatted according to the format string and appropriate IFormatProvider
+        /// </summary>
+        /// <param name="format">The format to use. 
+        /// <list type="bullet">
+        /// <item><term>null or "" or "g"</term><description>The Invariant format, uses Enum.ToString() to format Keys.</description></item>
+        /// <item><term>"p"</term><description>Use platform specific formatting as registerd.</description></item>
+        /// </list></param>
+        /// <param name="formatProvider">The IFormatProvider to use.  If null, uses the appropriate provider registered in the Avalonia Locator, or Invariant.</param>
+        /// <returns>The formatted string.</returns>
+        /// <exception cref="FormatException">Thrown if the format string is not in the above table.</exception>
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
             var formatInfo = format switch
