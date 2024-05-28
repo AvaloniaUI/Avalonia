@@ -17,13 +17,13 @@ namespace Avalonia.Media.Fonts.Tables.Name
 
         private readonly NameRecord[] _names;
 
-        internal NameTable(NameRecord[] names, IReadOnlyList<string> languages)
+        internal NameTable(NameRecord[] names, IReadOnlyList<CultureInfo> languages)
         {
             _names = names;
             Languages = languages;
         }
 
-        public IReadOnlyList<string> Languages { get; }
+        public IReadOnlyList<CultureInfo> Languages { get; }
 
         /// <summary>
         /// Gets the name of the font.
@@ -127,25 +127,46 @@ namespace Avalonia.Media.Fonts.Tables.Name
             for (var i = 0; i < nameCount; i++)
             {
                 names[i] = NameRecord.Read(reader);
+
                 var sr = names[i].StringReader;
+
                 if (sr is not null)
                 {
                     strings.Add(sr);
                 }
             }
 
-            var langs = Array.Empty<StringLoader>();
-            if (format == 1)
-            {
-                // Format 1 adds language data.
-                var langCount = reader.ReadUInt16();
-                langs = new StringLoader[langCount];
+            //var languageNames = Array.Empty<StringLoader>();
 
-                for (var i = 0; i < langCount; i++)
+            //if (format == 1)
+            //{
+            //    // Format 1 adds language data.
+            //    var langCount = reader.ReadUInt16();
+            //    languageNames = new StringLoader[langCount];
+
+            //    for (var i = 0; i < langCount; i++)
+            //    {
+            //        languageNames[i] = StringLoader.Create(reader);
+
+            //        strings.Add(languageNames[i]);
+            //    }
+            //}
+
+            var languageIds = new HashSet<ushort>();
+
+            foreach (var nameRecord in names)
+            {
+                if (nameRecord.Platform == PlatformIDs.Windows && nameRecord.LanguageID != 0)
                 {
-                    langs[i] = StringLoader.Create(reader);
-                    strings.Add(langs[i]);
+                    languageIds.Add(nameRecord.LanguageID);
                 }
+            }
+
+            var languages = new List<CultureInfo>(languageIds.Count);
+
+            foreach (var languageId in languageIds)
+            {
+                languages.Add(new CultureInfo(languageId));
             }
 
             foreach (var readable in strings)
@@ -157,9 +178,9 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 readable.LoadValue(reader);
             }
 
-            string[] langNames = langs?.Select(x => x.Value).ToArray() ?? Array.Empty<string>();
+            //var languages = languageNames.Select(x => x.Value).ToArray();
 
-            return new NameTable(names, langNames);
+            return new NameTable(names, languages);
         }
     }
 }

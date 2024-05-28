@@ -1,20 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
+using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Name;
 using HarfBuzzSharp;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class GlyphTypefaceImpl : IGlyphTypeface, IGlyphTypeface2
+    internal class GlyphTypefaceImpl : IGlyphTypeface2
     {
         private bool _isDisposed;
         private readonly SKTypeface _typeface;
         private readonly NameTable _nameTable;
+        private readonly OS2Table? _os2Table;
+        private readonly HorizontalHeadTable _hhTable;
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
@@ -29,26 +33,51 @@ namespace Avalonia.Skia
 
             Font.SetFunctionsOpenType();
 
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalAscender, out var ascent);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalDescender, out var descent);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalLineGap, out var lineGap);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughOffset);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughSize);
             Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlineOffset);
             Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineSize);
 
-            Metrics = new FontMetrics
+            _os2Table = OS2Table.Load(this);
+            _hhTable = HorizontalHeadTable.Load(this);
+
+            if (_os2Table != null && (_os2Table.FontStyle & OS2Table.FontStyleSelection.USE_TYPO_METRICS) != 0)
             {
-                DesignEmHeight = (short)Face.UnitsPerEm,
-                Ascent = -ascent,
-                Descent = -descent,
-                LineGap = lineGap,
-                UnderlinePosition = -underlineOffset,
-                UnderlineThickness = underlineSize,
-                StrikethroughPosition = -strikethroughOffset,
-                StrikethroughThickness = strikethroughSize,
-                IsFixedPitch = typeface.IsFixedPitch
-            };
+                var ascent = _os2Table.TypoAscender;
+                var descent = _os2Table.TypoDescender;
+                var lineGap = _os2Table.TypoLineGap;
+
+                Metrics = new FontMetrics
+                {
+                    DesignEmHeight = (short)Face.UnitsPerEm,
+                    Ascent = -ascent,
+                    Descent = -descent,
+                    LineGap = lineGap,
+                    UnderlinePosition = -underlineOffset,
+                    UnderlineThickness = underlineSize,
+                    StrikethroughPosition = -_os2Table.StrikeoutPosition,
+                    StrikethroughThickness = _os2Table.StrikeoutSize,
+                    IsFixedPitch = typeface.IsFixedPitch
+                };
+            }
+            else
+            {
+                Metrics = new FontMetrics
+                {
+                    DesignEmHeight = (short)Face.UnitsPerEm,
+                    /* If the OS/2 table exists, use usWinAscent as the
+                     * CellAscent. Otherwise use hhea's Ascender value. */
+                    Ascent = -_os2Table?.WinAscent ?? -_hhTable.Ascender,
+                    /* If the OS/2 table exists, use usWinDescent as the
+                     * CellDescent. Otherwise use hhea's Descender value. */
+                    Descent = +_os2Table?.WinDescent ?? -_hhTable.Descender,
+                    /* The LineSpacing is the maximum of the two sumations. */
+                    LineGap = _hhTable.LineGap,
+                    UnderlinePosition = -underlineOffset,
+                    UnderlineThickness = underlineSize,
+                    StrikethroughPosition = -_os2Table?.StrikeoutPosition ?? 0,
+                    StrikethroughThickness = _os2Table?.StrikeoutSize ?? 0,
+                    IsFixedPitch = typeface.IsFixedPitch
+                };
+            }
 
             GlyphCount = typeface.GlyphCount;
 
@@ -65,7 +94,25 @@ namespace Avalonia.Skia
             _nameTable = NameTable.Load(this);
 
             FamilyName = _nameTable.FontFamilyName(CultureInfo.InvariantCulture);
+
+            if (_nameTable.Languages.Count > 0)
+            {
+                var familyNames = new Dictionary<CultureInfo, string>(_nameTable.Languages.Count);
+
+                foreach (var language in _nameTable.Languages)
+                {
+                    familyNames.Add(language, _nameTable.FontFamilyName(language));
+                }
+
+                FamilyNames = familyNames;
+            }
+            else
+            {
+                FamilyNames = new Dictionary<CultureInfo, string> { { CultureInfo.InvariantCulture, FamilyName } };
+            }
         }
+
+        public IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }
 
         public Face Face { get; }
 
