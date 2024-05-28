@@ -86,8 +86,8 @@ namespace Avalonia.iOS
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new()
                     {
                         { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
-                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇞" },
-                        { Key.PageUp , "⇟" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
+                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
+                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
                         { Key.Up , "↑" }
                     }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"))
                 .Bind<IRenderTimer>().ToConstant(Timer)
