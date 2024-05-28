@@ -22,5 +22,6 @@
 -(AvnPlatformResizeReason) getResizeReason;
 -(void) setResizeReason:(AvnPlatformResizeReason)reason;
 -(void) setRenderTarget:(NSObject<IRenderTarget>*)target;
+-(void) raiseAccessibilityChildrenChanged;
 + (AvnPoint)toAvnPoint:(CGPoint)p;
 @end
