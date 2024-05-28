@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
+using Avalonia.Media.Fonts.Tables.Name;
 using HarfBuzzSharp;
 using SkiaSharp;
 
@@ -12,6 +14,7 @@ namespace Avalonia.Skia
     {
         private bool _isDisposed;
         private readonly SKTypeface _typeface;
+        private readonly NameTable _nameTable;
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
@@ -58,6 +61,10 @@ namespace Avalonia.Skia
                 typeface.FontSlant.ToAvalonia();
 
             Stretch = (FontStretch)typeface.FontStyle.Width;
+
+            _nameTable = NameTable.Load(this);
+
+            FamilyName = _nameTable.FontFamilyName(CultureInfo.InvariantCulture);
         }
 
         public Face Face { get; }
@@ -72,7 +79,7 @@ namespace Avalonia.Skia
 
         public int GlyphCount { get; }
 
-        public string FamilyName => _typeface.FamilyName;
+        public string FamilyName { get; }
 
         public FontWeight Weight { get; }
 
