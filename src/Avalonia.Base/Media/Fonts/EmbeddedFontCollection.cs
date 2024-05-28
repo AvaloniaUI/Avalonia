@@ -113,6 +113,9 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
+            //Replace known typographic names
+            familyName = NormalizeFamilyName(familyName);
+
             //Try to find a partially matching font
             for (var i = 0; i < Count; i++)
             {

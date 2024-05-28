@@ -4,7 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
@@ -250,6 +252,114 @@ namespace Avalonia.Media.Fonts
                     {
                         return true;
                     }
+                }
+            }
+
+            return false;
+        }
+
+        private static readonly List<string> s_knownNames = ["Solid", "Regular", "Bold", "Black", "Normal", "Thin", "Italic"];
+
+        internal static string NormalizeFamilyName(string familyName)
+        {
+            //Return early if no separator is present.
+            if (!familyName.Contains(' '))
+            {
+                return familyName;
+            }
+
+            foreach (var name in s_knownNames)
+            {
+                familyName = Regex.Replace(familyName, name, "", RegexOptions.IgnoreCase);
+            }
+
+            return familyName.Trim();
+        }
+
+        internal static Typeface GetImplicitTypeface(Typeface typeface)
+        {
+            var familyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
+
+            //Return early if no separator is present.
+            if (!familyName.Contains(' '))
+            {
+                return typeface;
+            }
+
+            var style = typeface.Style;
+            var weight = typeface.Weight;
+            var stretch = typeface.Stretch;
+
+            if(TryGetStyle(familyName, out var foundStyle))
+            {
+                style = foundStyle;
+            }
+
+            if(TryGetWeight(familyName, out var foundWeight))
+            {
+                weight = foundWeight;
+            }
+
+            if(TryGetStretch(familyName, out var foundStretch))
+            {
+                stretch = foundStretch;
+            }
+
+            return new Typeface(typeface.FontFamily, style, weight, stretch);
+
+        }
+
+        internal static bool TryGetWeight(string familyName, out FontWeight weight)
+        {
+            weight = FontWeight.Normal;
+
+            var tokenizer = new StringTokenizer(familyName, ' ');
+
+            tokenizer.ReadString();
+
+            while (tokenizer.TryReadString(out var weightString))
+            {
+                if (Enum.TryParse(weightString, true, out weight))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetStyle(string familyName, out FontStyle style)
+        {
+            style = FontStyle.Normal;
+
+            var tokenizer = new StringTokenizer(familyName, ' ');
+
+            tokenizer.ReadString();
+
+            while (tokenizer.TryReadString(out var styleString))
+            {
+                if (Enum.TryParse(styleString, true, out style))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetStretch(string familyName, out FontStretch stretch)
+        {
+            stretch = FontStretch.Normal;
+
+            var tokenizer = new StringTokenizer(familyName, ' ');
+
+            tokenizer.ReadString();
+
+            while (tokenizer.TryReadString(out var stretchString))
+            {
+                if (Enum.TryParse(stretchString, true, out stretch))
+                {
+                    return true;
                 }
             }
 

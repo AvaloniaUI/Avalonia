@@ -90,7 +90,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_POLYGON_SMOOTH = 0x0B41;
 //        public const int GL_POLYGON_STIPPLE = 0x0B42;
 //        public const int GL_EDGE_FLAG = 0x0B43;
-//        public const int GL_CULL_FACE = 0x0B44;
+        public const int GL_CULL_FACE = 0x0B44;
 //        public const int GL_CULL_FACE_MODE = 0x0B45;
 //        public const int GL_FRONT_FACE = 0x0B46;
 //        public const int GL_POLYGON_OFFSET_FACTOR = 0x8038;
@@ -104,10 +104,10 @@ namespace Avalonia.OpenGL
 //        public const int GL_LIST_INDEX = 0x0B33;
 //        public const int GL_LIST_MODE = 0x0B30;
 //        public const int GL_NEVER = 0x0200;
-//        public const int GL_LESS = 0x0201;
+        public const int GL_LESS = 0x0201;
 //        public const int GL_EQUAL = 0x0202;
 //        public const int GL_LEQUAL = 0x0203;
-//        public const int GL_GREATER = 0x0204;
+        public const int GL_GREATER = 0x0204;
 //        public const int GL_NOTEQUAL = 0x0205;
 //        public const int GL_GEQUAL = 0x0206;
 //        public const int GL_ALWAYS = 0x0207;
@@ -359,7 +359,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_FASTEST = 0x1101;
 //        public const int GL_NICEST = 0x1102;
 //        public const int GL_SCISSOR_BOX = 0x0C10;
-//        public const int GL_SCISSOR_TEST = 0x0C11;
+        public const int GL_SCISSOR_TEST = 0x0C11;
 //        public const int GL_MAP_COLOR = 0x0D10;
 //        public const int GL_MAP_STENCIL = 0x0D11;
 //        public const int GL_INDEX_SHIFT = 0x0D12;

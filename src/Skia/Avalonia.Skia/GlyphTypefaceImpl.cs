@@ -53,9 +53,11 @@ namespace Avalonia.Skia
 
             FontSimulations = fontSimulations;
 
-            Weight = (FontWeight)typeface.FontWeight;
+            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : (FontWeight)typeface.FontWeight;
 
-            Style = typeface.FontSlant.ToAvalonia();
+            Style = (fontSimulations & FontSimulations.Oblique) != 0 ?
+                FontStyle.Italic :
+                typeface.FontSlant.ToAvalonia();
 
             Stretch = (FontStretch)typeface.FontStyle.Width;
         }
@@ -188,6 +190,7 @@ namespace Avalonia.Skia
 
             Font.Dispose();
             Face.Dispose();
+            _typeface.Dispose();
         }
 
         public void Dispose()
