@@ -28,10 +28,8 @@ namespace Avalonia.Browser
         
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly ITextInputMethodImpl _textInputMethodImpl;
         private readonly ClipboardImpl _clipboard;
         private readonly IInsetsManager _insetsManager;
-        private readonly IInputPane _inputPane;
         private readonly JSObject _container;
         private readonly BrowserInputHandler _inputHandler;
         private string _currentCursor = CssCursor.Default;
@@ -56,14 +54,13 @@ namespace Avalonia.Browser
         {
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
-            _inputHandler = new BrowserInputHandler(this, container);
-            _textInputMethodImpl = new BrowserTextInputMethod(_inputHandler, container, inputElement);
             _topLevelId = ++s_lastTopLevelId;
+            s_topLevels.Add(_topLevelId, new WeakReference<BrowserTopLevelImpl>(this));
+            _inputHandler = new BrowserInputHandler(this, container, inputElement, _topLevelId);
             _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = new BrowserNativeControlHost(nativeControlHost);
             _storageProvider = new BrowserStorageProvider();
             _clipboard = new ClipboardImpl();
-            _inputPane = new BrowserInputPane(container);
 
             _container = container;
 
@@ -100,6 +97,7 @@ namespace Avalonia.Browser
 
         public Compositor Compositor { get; }
         public BrowserSurface? Surface => _surface;
+        public BrowserInputHandler InputHandler => _inputHandler;
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputHandler.SetInputRoot(inputRoot);
 
@@ -157,7 +155,7 @@ namespace Avalonia.Browser
 
             if (featureType == typeof(ITextInputMethodImpl))
             {
-                return _textInputMethodImpl;
+                return _inputHandler.TextInputMethod;
             }
 
             if (featureType == typeof(ISystemNavigationManagerImpl))
@@ -182,7 +180,7 @@ namespace Avalonia.Browser
 
             if (featureType == typeof(IInputPane))
             {
-                return _inputPane;
+                return _inputHandler.InputPane;
             }
 
             return null;

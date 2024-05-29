@@ -22,7 +22,7 @@ internal class BrowserInputHandler
 
     private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
 
-    public BrowserInputHandler(BrowserTopLevelImpl topLevelImpl, JSObject container)
+    public BrowserInputHandler(BrowserTopLevelImpl topLevelImpl, JSObject container, JSObject inputElement, int topLevelId)
     {
         _topLevelImpl = topLevelImpl;
         _container = container ?? throw new ArgumentNullException(nameof(container));
@@ -32,15 +32,15 @@ internal class BrowserInputHandler
         _wheelMouseDevice = new MouseDevice();
         _mouseDevices = new();
 
-        InputHelper.SubscribeKeyEvents(
-            container,
-            OnKeyDown,
-            OnKeyUp);
-        InputHelper.SubscribePointerEvents(container, OnPointerMove, OnPointerDown, OnPointerUp,
-            OnPointerCancel, OnWheel);
-        InputHelper.SubscribeDropEvents(container, OnDragEvent);
+        TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
+        InputPane = new BrowserInputPane();
+        
+        InputHelper.SubscribeInputEvents(container, topLevelId);
     }
 
+    public BrowserTextInputMethod TextInputMethod { get; }
+    public BrowserInputPane InputPane { get; }
+    
     public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
 
     internal void SetInputRoot(IInputRoot inputRoot)
@@ -48,24 +48,20 @@ internal class BrowserInputHandler
         _inputRoot = inputRoot;
     }
 
-    private static RawPointerPoint ExtractRawPointerFromJsArgs(JSObject args)
+    private static RawPointerPoint CreateRawPointer(double offsetX, double offsetY,
+        double pressure, double tiltX, double tiltY, double twist) => new()
     {
-        var point = new RawPointerPoint
-        {
-            Position = new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY")),
-            Pressure = (float)args.GetPropertyAsDouble("pressure"),
-            XTilt = (float)args.GetPropertyAsDouble("tiltX"),
-            YTilt = (float)args.GetPropertyAsDouble("tiltY"),
-            Twist = (float)args.GetPropertyAsDouble("twist")
-        };
+        Position = new Point(offsetX, offsetY),
+        Pressure = (float)pressure,
+        XTilt = (float)tiltX,
+        YTilt = (float)tiltY,
+        Twist = (float)twist
+    };
 
-        return point;
-    }
-
-    private bool OnPointerMove(JSObject args)
+    public bool OnPointerMove(string pointerType, long pointerId, double offsetX, double offsetY,
+        double pressure, double tiltX, double tiltY, double twist, int modifier, JSObject argsObj)
     {
-        var pointerType = args.GetPropertyAsString("pointerType");
-        var point = ExtractRawPointerFromJsArgs(args);
+        var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
         var type = pointerType switch
         {
             "touch" => RawPointerEventType.TouchUpdate,
@@ -74,31 +70,36 @@ internal class BrowserInputHandler
 
         var coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
         {
-            var points = InputHelper.GetCoalescedEvents(args);
+            // To minimize JS interop usage, we resolve all points properties in a single call.
+            var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
+            var pointsCount = pointsProps.Length / 6;
+            argsObj.Dispose();
             s_intermediatePointsPooledList.Clear();
-            s_intermediatePointsPooledList.Capacity = points.Length - 1;
+            s_intermediatePointsPooledList.Capacity = pointsCount - 1;
 
             // Skip the last one, as it is already processed point.
-            for (var i = 0; i < points.Length - 1; i++)
+            for (var i = 0; i < pointsCount - 1; i++)
             {
-                var point = points[i];
-                s_intermediatePointsPooledList.Add(ExtractRawPointerFromJsArgs(point));
+                s_intermediatePointsPooledList.Add(CreateRawPointer(
+                    pointsProps[i], pointsProps[i + 1],
+                    pointsProps[i + 2], pointsProps[i + 3],
+                    pointsProps[i + 4], pointsProps[i + 5]));
             }
 
             return s_intermediatePointsPooledList;
         });
 
-        return RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"),
+        return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
             coalescedEvents);
     }
 
-    private bool OnPointerDown(JSObject args)
+    public bool OnPointerDown(string pointerType, long pointerId, int buttons, double offsetX, double offsetY,
+        double pressure, double tiltX, double tiltY, double twist, int modifier)
     {
-        var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
         var type = pointerType switch
         {
             "touch" => RawPointerEventType.TouchBegin,
-            _ => args.GetPropertyAsInt32("button") switch
+            _ => buttons switch
             {
                 0 => RawPointerEventType.LeftButtonDown,
                 1 => RawPointerEventType.MiddleButtonDown,
@@ -110,17 +111,17 @@ internal class BrowserInputHandler
             }
         };
 
-        var point = ExtractRawPointerFromJsArgs(args);
-        return RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+        var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
+        return RawPointerEvent(type, pointerType, point, (RawInputModifiers)modifier, pointerId);
     }
 
-    private bool OnPointerUp(JSObject args)
+    public bool OnPointerUp(string pointerType, long pointerId, int buttons, double offsetX, double offsetY,
+        double pressure, double tiltX, double tiltY, double twist, int modifier)
     {
-        var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
         var type = pointerType switch
         {
             "touch" => RawPointerEventType.TouchEnd,
-            _ => args.GetPropertyAsInt32("button") switch
+            _ => buttons switch
             {
                 0 => RawPointerEventType.LeftButtonUp,
                 1 => RawPointerEventType.MiddleButtonUp,
@@ -132,65 +133,28 @@ internal class BrowserInputHandler
             }
         };
 
-        var point = ExtractRawPointerFromJsArgs(args);
-        return RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+        var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
+        return RawPointerEvent(type, pointerType, point, (RawInputModifiers)modifier, pointerId);
     }
 
-    private bool OnPointerCancel(JSObject args)
+    public bool OnPointerCancel(string pointerType, long pointerId, double offsetX, double offsetY,
+        double pressure, double tiltX, double tiltY, double twist, int modifier)
     {
-        var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
         if (pointerType == "touch")
         {
-            var point = ExtractRawPointerFromJsArgs(args);
+            var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
             RawPointerEvent(RawPointerEventType.TouchCancel, pointerType, point,
-                GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+                (RawInputModifiers)modifier, pointerId);
         }
 
         return false;
     }
 
-    private bool OnWheel(JSObject args)
+    public bool OnWheel(double offsetX, double offsetY, double deltaX, double deltaY, int modifier)
     {
-        return RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY")),
-            new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)),
-            GetModifiers(args));
-    }
-
-    private static RawInputModifiers GetModifiers(JSObject e)
-    {
-        var modifiers = RawInputModifiers.None;
-
-        if (e.GetPropertyAsBoolean("ctrlKey"))
-            modifiers |= RawInputModifiers.Control;
-        if (e.GetPropertyAsBoolean("altKey"))
-            modifiers |= RawInputModifiers.Alt;
-        if (e.GetPropertyAsBoolean("shiftKey"))
-            modifiers |= RawInputModifiers.Shift;
-        if (e.GetPropertyAsBoolean("metaKey"))
-            modifiers |= RawInputModifiers.Meta;
-
-        var buttons = e.GetPropertyAsInt32("buttons");
-        if ((buttons & 1L) == 1)
-            modifiers |= RawInputModifiers.LeftMouseButton;
-
-        if ((buttons & 2L) == 2)
-            modifiers |= e.GetPropertyAsString("type") == "pen" ?
-                RawInputModifiers.PenBarrelButton :
-                RawInputModifiers.RightMouseButton;
-
-        if ((buttons & 4L) == 4)
-            modifiers |= RawInputModifiers.MiddleMouseButton;
-
-        if ((buttons & 8L) == 8)
-            modifiers |= RawInputModifiers.XButton1MouseButton;
-
-        if ((buttons & 16L) == 16)
-            modifiers |= RawInputModifiers.XButton2MouseButton;
-
-        if ((buttons & 32L) == 32)
-            modifiers |= RawInputModifiers.PenEraser;
-
-        return modifiers;
+        return RawMouseWheelEvent(new Point(offsetX, offsetY),
+            new Vector(-(deltaX / 50), -(deltaY / 50)),
+            (RawInputModifiers)modifier);
     }
 
     public bool OnDragEvent(JSObject args)
@@ -214,7 +178,7 @@ internal class BrowserInputHandler
         _ = AvaloniaModule.ImportStorage();
 
         var position = new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY"));
-        var modifiers = GetModifiers(args);
+        var modifiers = RawInputModifiers.None;// GetModifiers(args);
 
         var effectAllowedStr = dataObject.GetPropertyAsString("effectAllowed") ?? "none";
         var effectAllowed = DragDropEffects.None;
@@ -246,13 +210,15 @@ internal class BrowserInputHandler
         var dropEffect = RawDragEvent(eventType, position, modifiers, new BrowserDataObject(dataObject), effectAllowed);
         dataObject.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
 
+        // Note, due to complications of JS interop, we ignore this return value.
+        // And instead assume, that event is handled for any "drop" and "drag-over" stages.
         return eventType is RawDragEventType.Drop or RawDragEventType.DragOver
                && dropEffect != DragDropEffects.None;
     }
 
-    private bool OnKeyDown(string code, string key, string modifier)
+    public bool OnKeyDown(string code, string key, int modifier)
     {
-        var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)int.Parse(modifier));
+        var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
 
         if (!handled && key.Length == 1)
         {
@@ -262,9 +228,9 @@ internal class BrowserInputHandler
         return handled;
     }
 
-    private bool OnKeyUp(string code, string key, string modifier)
+    public bool OnKeyUp(string code, string key, int modifier)
     {
-        return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)int.Parse(modifier));
+        return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
     }
 
     private bool RawPointerEvent(
@@ -272,8 +238,7 @@ internal class BrowserInputHandler
         RawPointerPoint p, RawInputModifiers modifiers, long touchPointId,
         Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints = null)
     {
-        if (_inputRoot is { }
-            && _topLevelImpl.Input is { } input)
+        if (_inputRoot is not null && _topLevelImpl.Input is { } input)
         {
             var device = GetPointerDevice(pointerType, touchPointId);
             var args = device is TouchDevice ?
