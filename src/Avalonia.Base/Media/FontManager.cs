@@ -93,18 +93,16 @@ namespace Avalonia.Media
 
             var fontFamily = typeface.FontFamily;
 
-            typeface = FontCollectionBase.GetImplicitTypeface(typeface);
-
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
 
-            if (fontFamily.Key is FontFamilyKey)
+            if (fontFamily.Key != null)
             {
                 if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
-                    for (int i = 0; i < compositeKey.Keys.Count; i++)
+                    for (var i = 0; i < compositeKey.Keys.Count; i++)
                     {
                         var key = compositeKey.Keys[i];
 
@@ -119,9 +117,8 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    //Replace known typographic names
-                    var familyName = FontCollectionBase.NormalizeFamilyName(fontFamily.FamilyNames.PrimaryFamilyName);
-                    
+                    var familyName = fontFamily.FamilyNames.PrimaryFamilyName;
+
                     if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, familyName, out glyphTypeface))
                     {
                         return true;
@@ -132,8 +129,7 @@ namespace Avalonia.Media
             }
             else
             {
-                //Replace known typographic names
-                var familyName = FontCollectionBase.NormalizeFamilyName(fontFamily.FamilyNames.PrimaryFamilyName);
+                var familyName = fontFamily.FamilyNames.PrimaryFamilyName;
 
                 if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {

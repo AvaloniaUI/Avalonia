@@ -69,6 +69,14 @@ namespace Avalonia.Media.Fonts
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
+            var typeface = GetImplicitTypeface(new Typeface(familyName, style, weight, stretch), out familyName);
+
+            style = typeface.Style;
+
+            weight = typeface.Weight;
+
+            stretch = typeface.Stretch;
+
             var key = new FontCollectionKey(style, weight, stretch);
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
@@ -112,9 +120,6 @@ namespace Avalonia.Media.Fonts
                     return true;
                 }
             }
-
-            //Replace known typographic names
-            familyName = NormalizeFamilyName(familyName);
 
             //Try to find a partially matching font
             for (var i = 0; i < Count; i++)
