@@ -1288,9 +1288,9 @@ namespace Avalonia.Media.TextFormatting
                                 height = drawableTextRun.Size.Height;
                             }
 
-                            var offset = drawableTextRun.Baseline + descent - ascent;
+                            var offset = drawableTextRun.Baseline - descent + ascent;
                           
-                            ascent += offset;
+                            ascent -= offset;
                              
                             bounds = bounds.Union(new Rect(new Point(bounds.Right, 0), drawableTextRun.Size));
 
