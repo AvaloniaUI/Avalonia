@@ -419,7 +419,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            if (IsPressed && e.InitialPressMouseButton == MouseButton.Left)
+            if (!e.Handled && IsPressed && e.InitialPressMouseButton == MouseButton.Left)
             {
                 IsPressed = false;
                 e.Handled = true;

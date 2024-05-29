@@ -87,6 +87,7 @@ namespace Avalonia.Android
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
+                .Bind<PlatformPointerConfiguration>().ToSingleton<PlatformPointerConfiguration>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
                 .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());

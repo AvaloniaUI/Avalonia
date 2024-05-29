@@ -80,6 +80,7 @@ namespace Avalonia.X11
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(timer)
+                .Bind<PlatformPointerConfiguration>().ToSingleton<PlatformPointerConfiguration>()
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
