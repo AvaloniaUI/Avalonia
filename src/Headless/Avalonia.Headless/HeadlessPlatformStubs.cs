@@ -83,6 +83,14 @@ namespace Avalonia.Headless
 
     internal class HeadlessGlyphTypefaceImpl : IGlyphTypeface
     {
+        public HeadlessGlyphTypefaceImpl(string familyName, FontStyle style, FontWeight weight, FontStretch stretch)
+        {
+            FamilyName = familyName;
+            Style = style;
+            Weight = weight;
+            Stretch = stretch;
+        }
+
         public FontMetrics Metrics => new FontMetrics
         {
             DesignEmHeight = 10,
@@ -100,13 +108,13 @@ namespace Avalonia.Headless
 
         public FontSimulations FontSimulations => FontSimulations.None;
 
-        public string FamilyName => "$Default";
+        public string FamilyName { get; }
 
-        public FontWeight Weight => FontWeight.Normal;
+        public FontWeight Weight { get; }
 
-        public FontStyle Style => FontStyle.Normal;
+        public FontStyle Style { get; }
 
-        public FontStretch Stretch => FontStretch.Normal;
+        public FontStretch Stretch { get; }
 
         public void Dispose()
         {
@@ -237,14 +245,14 @@ namespace Avalonia.Headless
                 return false;
             }
 
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(familyName, style, weight, stretch);
 
             return true;
         }
 
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
 
             TryCreateGlyphTypefaceCount++;
 
@@ -298,14 +306,14 @@ namespace Avalonia.Headless
                 return false;
             }
 
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(familyName, style, weight, stretch);
 
             return true;
         }
 
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
 
             return true;
         }

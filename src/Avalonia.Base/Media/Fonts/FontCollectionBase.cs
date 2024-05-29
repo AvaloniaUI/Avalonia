@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -258,30 +257,12 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        private static readonly List<string> s_knownNames = ["Solid", "Regular", "Bold", "Black", "Normal", "Thin", "Italic"];
-
-        internal static string NormalizeFamilyName(string familyName)
+        internal static Typeface GetImplicitTypeface(Typeface typeface, out string normalizedFamilyName)
         {
-            //Return early if no separator is present.
-            if (!familyName.Contains(' '))
-            {
-                return familyName;
-            }
-
-            foreach (var name in s_knownNames)
-            {
-                familyName = Regex.Replace(familyName, name, "", RegexOptions.IgnoreCase);
-            }
-
-            return familyName.Trim();
-        }
-
-        internal static Typeface GetImplicitTypeface(Typeface typeface)
-        {
-            var familyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
+            normalizedFamilyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
 
             //Return early if no separator is present.
-            if (!familyName.Contains(' '))
+            if (!normalizedFamilyName.Contains(' '))
             {
                 return typeface;
             }
@@ -290,26 +271,27 @@ namespace Avalonia.Media.Fonts
             var weight = typeface.Weight;
             var stretch = typeface.Stretch;
 
-            if(TryGetStyle(familyName, out var foundStyle))
+            if(TryGetStyle(ref normalizedFamilyName, out var foundStyle))
             {
                 style = foundStyle;
             }
 
-            if(TryGetWeight(familyName, out var foundWeight))
+            if(TryGetWeight(ref normalizedFamilyName, out var foundWeight))
             {
                 weight = foundWeight;
             }
 
-            if(TryGetStretch(familyName, out var foundStretch))
+            if(TryGetStretch(ref normalizedFamilyName, out var foundStretch))
             {
                 stretch = foundStretch;
             }
 
+            //Preserve old font source
             return new Typeface(typeface.FontFamily, style, weight, stretch);
 
         }
 
-        internal static bool TryGetWeight(string familyName, out FontWeight weight)
+        internal static bool TryGetWeight(ref string familyName, out FontWeight weight)
         {
             weight = FontWeight.Normal;
 
@@ -319,16 +301,25 @@ namespace Avalonia.Media.Fonts
 
             while (tokenizer.TryReadString(out var weightString))
             {
-                if (Enum.TryParse(weightString, true, out weight))
+                if (new StringTokenizer(weightString).TryReadInt32(out _))
                 {
-                    return true;
+                    continue;
                 }
+
+                if (!Enum.TryParse(weightString, true, out weight))
+                {
+                    continue;
+                }
+
+                familyName = familyName.Replace(" " + weightString, "").TrimEnd();
+
+                return true;
             }
 
             return false;
         }
 
-        internal static bool TryGetStyle(string familyName, out FontStyle style)
+        internal static bool TryGetStyle(ref string familyName, out FontStyle style)
         {
             style = FontStyle.Normal;
 
@@ -338,16 +329,26 @@ namespace Avalonia.Media.Fonts
 
             while (tokenizer.TryReadString(out var styleString))
             {
-                if (Enum.TryParse(styleString, true, out style))
+                //Do not try to parse an integer
+                if (new StringTokenizer(styleString).TryReadInt32(out _))
                 {
-                    return true;
+                    continue;
                 }
+
+                if (!Enum.TryParse(styleString, true, out style))
+                {
+                    continue;
+                }
+
+                familyName = familyName.Replace(" " + styleString, "").TrimEnd();
+
+                return true;
             }
 
             return false;
         }
 
-        internal static bool TryGetStretch(string familyName, out FontStretch stretch)
+        internal static bool TryGetStretch(ref string familyName, out FontStretch stretch)
         {
             stretch = FontStretch.Normal;
 
@@ -357,10 +358,19 @@ namespace Avalonia.Media.Fonts
 
             while (tokenizer.TryReadString(out var stretchString))
             {
-                if (Enum.TryParse(stretchString, true, out stretch))
+                if (new StringTokenizer(stretchString).TryReadInt32(out _))
                 {
-                    return true;
+                    continue;
                 }
+
+                if (!Enum.TryParse(stretchString, true, out stretch))
+                {
+                    continue;
+                }
+
+                familyName = familyName.Replace(" " + stretchString, "").TrimEnd();
+
+                return true;
             }
 
             return false;
