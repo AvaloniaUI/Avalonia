@@ -23,6 +23,9 @@ namespace Avalonia.Browser
 {
     internal class BrowserTopLevelImpl : ITopLevelImpl
     {
+        private static int s_lastTopLevelId = 0;
+        private static Dictionary<int, WeakReference<BrowserTopLevelImpl>> s_topLevels = new();
+        
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
@@ -34,18 +37,28 @@ namespace Avalonia.Browser
         private readonly BrowserInputHandler _inputHandler;
         private string _currentCursor = CssCursor.Default;
         private BrowserSurface? _surface;
+        private readonly int _topLevelId;
 
         static BrowserTopLevelImpl()
         {
             InputHelper.InitializeBackgroundHandlers();
         }
-        
+
+        public static BrowserTopLevelImpl? TryGetTopLevel(int id)
+        {
+            return s_topLevels.TryGetValue(id, out var weakReference) &&
+                weakReference.TryGetTarget(out var topLevelImpl) ?
+                topLevelImpl :
+                null;
+        }
+
         public BrowserTopLevelImpl(JSObject container, JSObject nativeControlHost, JSObject inputElement)
         {
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
             _inputHandler = new BrowserInputHandler(this, container);
             _textInputMethodImpl = new BrowserTextInputMethod(_inputHandler, container, inputElement);
+            _topLevelId = ++s_lastTopLevelId;
             _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = new BrowserNativeControlHost(nativeControlHost);
             _storageProvider = new BrowserStorageProvider();
@@ -56,7 +69,7 @@ namespace Avalonia.Browser
             _container = container;
 
             var opts = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-            _surface = RenderTargetBrowserSurface.Create(container, opts.RenderingMode);
+            _surface = RenderTargetBrowserSurface.Create(container, opts.RenderingMode, _topLevelId);
 
             _surface.SizeChanged += OnSizeChanged;
             _surface.ScalingChanged += OnScalingChanged;
@@ -87,6 +100,7 @@ namespace Avalonia.Browser
         }
 
         public Compositor Compositor { get; }
+        public BrowserSurface? Surface => _surface;
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputHandler.SetInputRoot(inputRoot);
 
