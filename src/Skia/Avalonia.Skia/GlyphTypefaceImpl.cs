@@ -26,10 +26,7 @@ namespace Avalonia.Skia
         {
             _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
-            Face = new Face(GetTable)
-            {
-                UnitsPerEm = typeface.UnitsPerEm
-            };
+            Face = new Face(GetTable) { UnitsPerEm = typeface.UnitsPerEm };
 
             Font = new Font(Face);
 
@@ -41,45 +38,50 @@ namespace Avalonia.Skia
             _os2Table = OS2Table.Load(this);
             _hhTable = HorizontalHeadTable.Load(this);
 
+            int ascent;
+            int descent;
+            int lineGap;
+
             if (_os2Table != null && (_os2Table.FontStyle & OS2Table.FontStyleSelection.USE_TYPO_METRICS) != 0)
             {
-                var ascent = _os2Table.TypoAscender;
-                var descent = _os2Table.TypoDescender;
-                var lineGap = _os2Table.TypoLineGap;
-
-                Metrics = new FontMetrics
-                {
-                    DesignEmHeight = (short)Face.UnitsPerEm,
-                    Ascent = -ascent,
-                    Descent = -descent,
-                    LineGap = lineGap,
-                    UnderlinePosition = -underlineOffset,
-                    UnderlineThickness = underlineSize,
-                    StrikethroughPosition = -_os2Table.StrikeoutPosition,
-                    StrikethroughThickness = _os2Table.StrikeoutSize,
-                    IsFixedPitch = typeface.IsFixedPitch
-                };
+                ascent = -_os2Table.TypoAscender;
+                descent = -_os2Table.TypoDescender;
+                lineGap = _os2Table.TypoLineGap;
             }
             else
             {
-                Metrics = new FontMetrics
-                {
-                    DesignEmHeight = (short)Face.UnitsPerEm,
-                    /* If the OS/2 table exists, use usWinAscent as the
-                     * CellAscent. Otherwise use hhea's Ascender value. */
-                    Ascent = -_os2Table?.WinAscent ?? -_hhTable.Ascender,
-                    /* If the OS/2 table exists, use usWinDescent as the
-                     * CellDescent. Otherwise use hhea's Descender value. */
-                    Descent = +_os2Table?.WinDescent ?? -_hhTable.Descender,
-                    /* The LineSpacing is the maximum of the two sumations. */
-                    LineGap = _hhTable.LineGap,
-                    UnderlinePosition = -underlineOffset,
-                    UnderlineThickness = underlineSize,
-                    StrikethroughPosition = -_os2Table?.StrikeoutPosition ?? 0,
-                    StrikethroughThickness = _os2Table?.StrikeoutSize ?? 0,
-                    IsFixedPitch = typeface.IsFixedPitch
-                };
+                ascent = -_hhTable.Ascender;
+                descent = -_hhTable.Descender;
+                lineGap = _hhTable.LineGap;
             }
+
+            if (_os2Table != null && (ascent == 0 || descent == 0))
+            {
+                if (_os2Table.TypoAscender != 0 || _os2Table.TypoDescender != 0)
+                {
+                    ascent = -_os2Table.TypoAscender;
+                    descent = -_os2Table.TypoDescender;
+                    lineGap = _os2Table.TypoLineGap;
+                }
+                else
+                {
+                    ascent = -_os2Table.WinAscent;
+                    descent = _os2Table.WinDescent;
+                }
+            }
+
+            Metrics = new FontMetrics
+            {
+                DesignEmHeight = (short)Face.UnitsPerEm,
+                Ascent = ascent,
+                Descent = descent,
+                LineGap = lineGap,
+                UnderlinePosition = -underlineOffset,
+                UnderlineThickness = underlineSize,
+                StrikethroughPosition = -_os2Table?.StrikeoutPosition ?? 0,
+                StrikethroughThickness = _os2Table?.StrikeoutSize ?? 0,
+                IsFixedPitch = typeface.IsFixedPitch
+            };
 
             GlyphCount = typeface.GlyphCount;
 
