@@ -1168,10 +1168,12 @@ namespace Avalonia.Skia
 
             brushTransform *= Matrix.CreateTranslation(-sourceRect.Position);
 
+            var scale = Vector.One;
+
             if (sourceRect.Size != destinationRect.Size)
             {
                 //scale source to destination size
-                var scale = tileBrush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
+                scale = tileBrush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
 
                 var scaleTransform = Matrix.CreateScale(scale);
 
@@ -1197,11 +1199,11 @@ namespace Avalonia.Skia
                 }
             }
 
-            if (tileBrush.Stretch == Stretch.None && transform == Matrix.Identity)
+            if (tileBrush.Stretch != Stretch.Fill && transform == Matrix.Identity)
             {
                 //align content
                 var alignmentOffset = TileBrushCalculator.CalculateTranslate(tileBrush.AlignmentX, tileBrush.AlignmentY,
-                    contentBounds, destinationRect, Vector.One);
+                    contentBounds, destinationRect, tileBrush.Stretch == Stretch.None ? Vector.One : scale);
 
                 brushTransform *= Matrix.CreateTranslation(alignmentOffset);
             }
