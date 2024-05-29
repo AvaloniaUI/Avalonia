@@ -1288,11 +1288,10 @@ namespace Avalonia.Media.TextFormatting
                                 height = drawableTextRun.Size.Height;
                             }
 
-                            if (ascent > -drawableTextRun.Baseline)
-                            {
-                                ascent = -drawableTextRun.Baseline;
-                            }
-
+                            var offset = drawableTextRun.Baseline + descent - ascent;
+                          
+                            ascent += offset;
+                             
                             bounds = bounds.Union(new Rect(new Point(bounds.Right, 0), drawableTextRun.Size));
 
                             break;
