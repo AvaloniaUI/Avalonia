@@ -17,7 +17,7 @@ namespace Avalonia.Input.Platform
     /// <param name="ctrl">The string to use for the Ctrl modifier, defaults to "Ctrl"</param>
     /// <param name="alt">The string to use for the Alt modifier, defaults to "Alt"</param>
     /// <param name="shift">The string to use for the Shift modifier, defaults to "Shift"</param>
-    public sealed class KeyGestureFormatInfo(Dictionary<Key, string>? platformKeyOverrides = null,
+    public sealed class KeyGestureFormatInfo(IReadOnlyDictionary<Key, string>? platformKeyOverrides = null,
                                              string meta = "Cmd",
                                              string ctrl = "Ctrl",
                                              string alt = "Alt",
@@ -97,7 +97,12 @@ namespace Avalonia.Input.Platform
             { Key.OemSemicolon , ";" },
             { Key.OemTilde , "`" },
             { Key.Separator , "/" },
-            { Key.Subtract , "-" }
+            { Key.Subtract , "-" },
+            { Key.Back , "Backspace" },
+            { Key.Down , "Down Arrow" },
+            { Key.Left , "Left Arrow" },
+            { Key.Right , "Right Arrow" },
+            { Key.Up , "Up Arrow" }
         };
 
         /// <summary>

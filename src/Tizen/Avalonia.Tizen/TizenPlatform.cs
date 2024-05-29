@@ -40,11 +40,7 @@ internal class TizenPlatform
             .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
             .Bind<IRenderTimer>().ToConstant(new TizenRenderTimer())
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-            .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new()
-                    {
-                        { Key.Back , "Backspace" }, { Key.Down , "Down Arrow" }, { Key.Left , "Left Arrow" },
-                        { Key.Right , "Right Arrow" }, { Key.Up , "Up Arrow" }
-                    }))
+            .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IPlatformGraphics>().ToConstant(GlPlatform = new NuiGlPlatform());
 
         Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());

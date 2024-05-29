@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using System.Collections.Generic;
 
 namespace Avalonia.Headless
 {
@@ -77,11 +78,7 @@ namespace Avalonia.Headless
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new()
-                    {
-                        { Key.Back , "Backspace" }, { Key.Down , "Down Arrow" }, { Key.Left , "Left Arrow" },
-                        { Key.Right , "Right Arrow" }, { Key.Up , "Up Arrow" }
-                    }));
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
             Compositor = new Compositor( null);
         }
 

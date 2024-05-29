@@ -81,11 +81,7 @@ namespace Avalonia.X11
                 .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
-                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new()
-                    {
-                        { Key.Back , "Backspace" }, { Key.Down , "Down Arrow" }, { Key.Left , "Left Arrow" },
-                        { Key.Right , "Right Arrow" }, { Key.Up , "Up Arrow" }
-                    }, meta: "Super"))
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))

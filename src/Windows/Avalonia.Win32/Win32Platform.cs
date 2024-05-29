@@ -18,6 +18,7 @@ using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using System.Collections.Generic;
 
 namespace Avalonia
 {
@@ -101,11 +102,7 @@ namespace Avalonia.Win32
                         new KeyGesture(Key.F10, KeyModifiers.Shift)
                     }
                 })
-                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new() 
-                    {
-                        { Key.Back , "Backspace" }, { Key.Down , "Down Arrow" }, { Key.Left , "Left Arrow" },
-                        { Key.Right , "Right Arrow" }, { Key.Up , "Up Arrow" } 
-                    }, meta: "Win"))
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Win"))
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(NonPumpingWaitHelperImpl.Instance)
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())

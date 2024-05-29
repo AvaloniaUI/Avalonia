@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -73,11 +74,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new()
-                    {
-                        { Key.Back , "Backspace" }, { Key.Down , "Down Arrow" }, { Key.Left , "Left Arrow" },
-                        { Key.Right , "Right Arrow" }, { Key.Up , "Up Arrow" }
-                    }, meta: "Super"));
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"));
             
             Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
