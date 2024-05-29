@@ -1,5 +1,7 @@
-﻿using System;
-using System.Runtime.InteropServices.JavaScript;
+﻿using System.Runtime.InteropServices.JavaScript;
+using System.Threading.Tasks;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform;
 
 namespace Avalonia.Browser.Interop;
 
@@ -23,14 +25,29 @@ internal static partial class DomHelper
     [JSImport("AvaloniaDOM.getSafeAreaPadding", AvaloniaModule.MainModuleName)]
     public static partial double[] GetSafeAreaPadding();
 
-    [JSImport("AvaloniaDOM.initSafeAreaPadding", AvaloniaModule.MainModuleName)]
-    public static partial void InitSafeAreaPadding();
+    [JSImport("AvaloniaDOM.getDarkMode", AvaloniaModule.MainModuleName)]
+    public static partial int[] GetDarkMode();
 
     [JSImport("AvaloniaDOM.addClass", AvaloniaModule.MainModuleName)]
     public static partial void AddCssClass(JSObject element, string className);
 
-    [JSImport("AvaloniaDOM.observeDarkMode", AvaloniaModule.MainModuleName)]
-    public static partial JSObject ObserveDarkMode(
-        [JSMarshalAs<JSType.Function<JSType.Boolean, JSType.Boolean>>]
-        Action<bool, bool> observer);
+    [JSImport("globalThis.document.visibilityState")]
+    public static partial string GetCurrentDocumentVisibility();
+
+    [JSImport("AvaloniaDOM.initGlobalDomEvents", AvaloniaModule.MainModuleName)]
+    public static partial void InitGlobalDomEvents();
+
+    [JSExport]
+    public static Task DarkModeChanged(bool isDarkMode, bool isHighContrast)
+    {
+        (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnValuesChanged(isDarkMode, isHighContrast);
+        return Task.CompletedTask;
+    }
+
+    [JSExport]
+    public static Task DocumentVisibilityChanged(string visibilityState)
+    {
+        (AvaloniaLocator.Current.GetService<IActivatableLifetime>() as BrowserActivatableLifetime)?.OnVisibilityStateChanged(visibilityState);
+        return Task.CompletedTask;
+    }
 }

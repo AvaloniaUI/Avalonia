@@ -1,36 +1,25 @@
-using System;
 using Avalonia.Browser.Interop;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
 
 namespace Avalonia.Browser;
 
-internal class BrowserActivatableLifetime : IActivatableLifetime
+internal class BrowserActivatableLifetime : ActivatableLifetimeBase
 {
     public BrowserActivatableLifetime()
     {
-        bool? initiallyVisible = InputHelper.SubscribeVisibilityChange(visible =>
+        OnVisibilityStateChanged(DomHelper.GetCurrentDocumentVisibility(), true);
+    }
+
+    public void OnVisibilityStateChanged(string visibilityState, bool initial = false)
+    {
+        var visible = visibilityState == "visible";
+        if (visible)
         {
-            initiallyVisible = null;
-            (visible ? Activated : Deactivated)?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
-        });
-    
-        // Trigger Activated as an initial state, if web page is visible, and wasn't hidden during initialization.
-        if (initiallyVisible == true)
+            OnActivated(ActivationKind.Background);
+        }
+        else if (!initial)
         {
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (initiallyVisible == true)
-                {
-                    Activated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
-                }
-            }, DispatcherPriority.Background);
+            OnDeactivated(ActivationKind.Background);
         }
     }
-    
-    public event EventHandler<ActivatedEventArgs>? Activated;
-    public event EventHandler<ActivatedEventArgs>? Deactivated;
-
-    public bool TryLeaveBackground() => false;
-    public bool TryEnterBackground() => false;
 }

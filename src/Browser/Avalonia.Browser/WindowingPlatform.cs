@@ -67,6 +67,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
             .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
             .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
+            .Bind<ISystemNavigationManagerImpl>().ToSingleton<BrowserSystemNavigationManagerImpl>()
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()

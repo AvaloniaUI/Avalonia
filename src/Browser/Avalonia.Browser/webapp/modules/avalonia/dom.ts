@@ -1,28 +1,8 @@
+import { JsExports } from "./jsExports";
 
 export class AvaloniaDOM {
     public static addClass(element: HTMLElement, className: string): void {
         element.classList.add(className);
-    }
-
-    static observeDarkMode(observer: (isDarkMode: boolean, isHighContrast: boolean) => boolean) {
-        if (globalThis.matchMedia === undefined) {
-            return false;
-        }
-
-        const colorShemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
-        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
-
-        colorShemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-            observer(args.matches, prefersContrastMedia.matches);
-        });
-        prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-            observer(colorShemeMedia.matches, args.matches);
-        });
-
-        return {
-            isDarkMode: colorShemeMedia.matches,
-            isHighContrast: prefersContrastMedia.matches
-        };
     }
 
     static getFirstElementByClassName(className: string, parent?: HTMLElement): Element | null {
@@ -120,11 +100,29 @@ export class AvaloniaDOM {
         }
     }
 
-    public static initSafeAreaPadding(): void {
+    public static initGlobalDomEvents(): void {
+        // Init Safe Area properties.
         document.documentElement.style.setProperty("--av-sat", "env(safe-area-inset-top)");
         document.documentElement.style.setProperty("--av-sar", "env(safe-area-inset-right)");
         document.documentElement.style.setProperty("--av-sab", "env(safe-area-inset-bottom)");
         document.documentElement.style.setProperty("--av-sal", "env(safe-area-inset-left)");
+
+        // Subscribe on DarkMode changes.
+        if (globalThis.matchMedia !== undefined) {
+            const colorSchemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+            const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+
+            colorSchemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+                JsExports.resolvedExports?.Avalonia.Browser.Interop.DomHelper.DarkModeChanged(args.matches, prefersContrastMedia.matches);
+            });
+            prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+                JsExports.resolvedExports?.Avalonia.Browser.Interop.DomHelper.DarkModeChanged(colorSchemeMedia.matches, args.matches);
+            });
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            JsExports.resolvedExports?.Avalonia.Browser.Interop.DomHelper.DocumentVisibilityChanged(document.visibilityState);
+        });
     }
 
     public static getSafeAreaPadding(): number[] {
@@ -134,5 +132,14 @@ export class AvaloniaDOM {
         const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sar"));
 
         return [left, top, bottom, right];
+    }
+
+    public static getDarkMode(): number[] {
+        const colorSchemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+        return [
+            colorSchemeMedia.matches ? 1 : 0,
+            prefersContrastMedia.matches ? 1 : 0
+        ];
     }
 }

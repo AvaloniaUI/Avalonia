@@ -28,7 +28,6 @@ namespace Avalonia.Browser
         
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly ISystemNavigationManagerImpl _systemNavigationManager;
         private readonly ITextInputMethodImpl _textInputMethodImpl;
         private readonly ClipboardImpl _clipboard;
         private readonly IInsetsManager _insetsManager;
@@ -41,6 +40,7 @@ namespace Avalonia.Browser
 
         static BrowserTopLevelImpl()
         {
+            DomHelper.InitGlobalDomEvents();
             InputHelper.InitializeBackgroundHandlers();
         }
 
@@ -62,7 +62,6 @@ namespace Avalonia.Browser
             _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = new BrowserNativeControlHost(nativeControlHost);
             _storageProvider = new BrowserStorageProvider();
-            _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
             _clipboard = new ClipboardImpl();
             _inputPane = new BrowserInputPane(container);
 
@@ -163,7 +162,7 @@ namespace Avalonia.Browser
 
             if (featureType == typeof(ISystemNavigationManagerImpl))
             {
-                return _systemNavigationManager;
+                return AvaloniaLocator.Current.GetService<ISystemNavigationManagerImpl>();
             }
 
             if (featureType == typeof(INativeControlHostImpl))

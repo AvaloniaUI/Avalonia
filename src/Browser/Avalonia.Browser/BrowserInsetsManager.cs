@@ -6,11 +6,6 @@ namespace Avalonia.Browser
 {
     internal class BrowserInsetsManager : InsetsManagerBase
     {
-        public BrowserInsetsManager()
-        {
-            DomHelper.InitSafeAreaPadding();
-        }
-
         public override bool? IsSystemBarVisible
         {
             get
