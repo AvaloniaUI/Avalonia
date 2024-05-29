@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Name;
 using HarfBuzzSharp;
@@ -19,6 +20,7 @@ namespace Avalonia.Skia
         private readonly NameTable _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly HorizontalHeadTable _hhTable;
+        private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
@@ -106,6 +108,42 @@ namespace Avalonia.Skia
         }
 
         public IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }
+
+        public IReadOnlyList<OpenTypeTag> SupportedFeatures
+        {
+            get
+            {
+                if (_supportedFeatures != null)
+                {
+                    return _supportedFeatures;
+                }
+
+                var gPosFeatures = FeatureListTable.LoadGPos(this);
+                var gSubFeatures = FeatureListTable.LoadGSub(this);
+
+                var supportedFeatures = new List<OpenTypeTag>(gPosFeatures?.Features.Count ?? 0 + gSubFeatures?.Features.Count ?? 0);
+
+                if (gPosFeatures != null)
+                {
+                    foreach (var gPosFeature in gPosFeatures.Features)
+                    {
+                        supportedFeatures.Add(gPosFeature);
+                    }
+                }
+
+                if (gSubFeatures != null)
+                {
+                    foreach (var gSubFeature in gSubFeatures.Features)
+                    {
+                        supportedFeatures.Add(gSubFeature);
+                    }
+                }
+
+                _supportedFeatures = supportedFeatures;
+
+                return supportedFeatures;
+            }
+        }
 
         public Face Face { get; }
 

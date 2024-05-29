@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace Avalonia.Media.Fonts.Tables.Name
 {
@@ -159,8 +160,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 readable.LoadValue(reader);
             }
 
-            var familyNames = new HashSet<string>();
-            var languages = new List<CultureInfo>();
+            var cultures = new List<CultureInfo>();
 
             foreach (var nameRecord in names)
             {
@@ -169,15 +169,17 @@ namespace Avalonia.Media.Fonts.Tables.Name
                     continue;
                 }
 
-                if (familyNames.Add(nameRecord.Value))
+                var culture = new CultureInfo(nameRecord.LanguageID);
+
+                if (!cultures.Contains(culture))
                 {
-                    languages.Add(new CultureInfo(nameRecord.LanguageID));
+                    cultures.Add(culture);
                 }
             }
 
             //var languages = languageNames.Select(x => x.Value).ToArray();
 
-            return new NameTable(names, languages);
+            return new NameTable(names, cultures);
         }
     }
 }

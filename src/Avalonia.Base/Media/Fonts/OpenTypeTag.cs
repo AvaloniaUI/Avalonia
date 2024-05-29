@@ -10,19 +10,19 @@ namespace Avalonia.Media.Fonts
 
         private readonly uint _value;
 
-        private OpenTypeTag(uint value)
+        public OpenTypeTag(uint value)
         {
             _value = value;
-        }
-
-        private OpenTypeTag(byte c1, byte c2, byte c3, byte c4)
-        {
-            _value = (uint)((c1 << 24) | (c2 << 16) | (c3 << 8) | c4);
         }
 
         public OpenTypeTag(char c1, char c2, char c3, char c4)
         {
             _value = (uint)(((byte)c1 << 24) | ((byte)c2 << 16) | ((byte)c3 << 8) | (byte)c4);
+        }
+
+        private OpenTypeTag(byte c1, byte c2, byte c3, byte c4)
+        {
+            _value = (uint)((c1 << 24) | (c2 << 16) | (c3 << 8) | c4);
         }
 
         public static OpenTypeTag Parse(string tag)

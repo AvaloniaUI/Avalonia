@@ -2,12 +2,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
     internal interface IGlyphTypeface2 : IGlyphTypeface
     {
-
         /// <summary>
         /// Returns the font file stream represented by the <see cref="IGlyphTypeface"/> object.
         /// </summary>
@@ -19,5 +19,10 @@ namespace Avalonia.Media
         /// Gets the localized family names.
         /// </summary>
         IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }
+
+        /// <summary>
+        /// Gets supported font features.
+        /// </summary>
+        IReadOnlyList<OpenTypeTag> SupportedFeatures { get; }
     }
 }
