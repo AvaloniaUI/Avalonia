@@ -298,5 +298,20 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
+
+        [Win32Fact("Requires Windows Fonts")]
+        public void Should_Get_GlyphTypeface_By_Localized_FamilyName()
+        {
+            using (UnitTestApplication.Start(
+                       TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("微軟正黑體"), out var glyphTypeface));
+
+                    Assert.Equal("Microsoft JhengHei",glyphTypeface.FamilyName);
+                }
+            }
+        }
     }
 }
