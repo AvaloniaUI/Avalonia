@@ -29,12 +29,12 @@ namespace Avalonia.Media.Fonts.Tables
 
         public static FeatureListTable? LoadGSub(IGlyphTypeface glyphTypeface)
         {
-            if (!glyphTypeface.TryGetTable(GSubTag, out var gSubTable))
+            if (!glyphTypeface.TryGetTable(GSubTag, out var gPosTable))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(gSubTable);
+            using var stream = new MemoryStream(gPosTable);
             using var reader = new BigEndianBinaryReader(stream, false);
 
             return Load(reader);
@@ -94,9 +94,9 @@ namespace Avalonia.Media.Fonts.Tables
 
             var featureCount = reader.ReadUInt16();
 
-            var features = new OpenTypeTag[featureCount];
+            var features = new List<OpenTypeTag>(featureCount);
 
-            for (var i = 0; i < features.Length; i++)
+            for (var i = 0; i < featureCount; i++)
             {
                 // FeatureRecord
                 // +----------+---------------+--------------------------------------------------------+
@@ -107,9 +107,15 @@ namespace Avalonia.Media.Fonts.Tables
                 // | Offset16 | featureOffset | Offset to Feature table, from beginning of FeatureList |
                 // +----------+---------------+--------------------------------------------------------+
                 var featureTag = reader.ReadUInt32();
+
                 reader.ReadOffset16();
 
-                features[i] = new OpenTypeTag(featureTag);
+                var tag = new OpenTypeTag(featureTag);
+
+                if (!features.Contains(tag))
+                {
+                    features.Add(tag);
+                }
             }
 
             return new FeatureListTable(features /*featureTables*/);

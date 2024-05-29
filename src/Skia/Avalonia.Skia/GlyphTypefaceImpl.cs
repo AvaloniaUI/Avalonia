@@ -127,6 +127,11 @@ namespace Avalonia.Skia
                 {
                     foreach (var gPosFeature in gPosFeatures.Features)
                     {
+                        if (supportedFeatures.Contains(gPosFeature))
+                        {
+                            continue;
+                        }
+
                         supportedFeatures.Add(gPosFeature);
                     }
                 }
@@ -135,6 +140,11 @@ namespace Avalonia.Skia
                 {
                     foreach (var gSubFeature in gSubFeatures.Features)
                     {
+                        if (supportedFeatures.Contains(gSubFeature))
+                        {
+                            continue;
+                        }
+
                         supportedFeatures.Add(gSubFeature);
                     }
                 }
