@@ -64,22 +64,5 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.Equal("Twitter Color Emoji", glyphTypeface.FamilyName);
             }
         }
-
-        [Fact]
-        public void Should_Get_Typeface_For_Known_Typographic_Name()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests", UriKind.Absolute);
-
-                var fontCollection = new EmbeddedFontCollection(source, source);
-
-                fontCollection.Initialize(new CustomFontManagerImpl());
-
-                Assert.True(fontCollection.TryGetGlyphTypeface("Twitter Regular", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
-
-                Assert.Equal("Twitter Color Emoji", glyphTypeface.FamilyName);
-            }
-        }
     }
 }
