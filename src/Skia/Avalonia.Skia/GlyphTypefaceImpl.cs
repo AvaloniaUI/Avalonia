@@ -95,21 +95,14 @@ namespace Avalonia.Skia
 
             FamilyName = _nameTable.FontFamilyName(CultureInfo.InvariantCulture);
 
-            if (_nameTable.Languages.Count > 0)
-            {
-                var familyNames = new Dictionary<CultureInfo, string>(_nameTable.Languages.Count);
+            var familyNames = new Dictionary<CultureInfo, string>(_nameTable.Languages.Count);
 
-                foreach (var language in _nameTable.Languages)
-                {
-                    familyNames.Add(language, _nameTable.FontFamilyName(language));
-                }
-
-                FamilyNames = familyNames;
-            }
-            else
+            foreach (var language in _nameTable.Languages)
             {
-                FamilyNames = new Dictionary<CultureInfo, string> { { CultureInfo.InvariantCulture, FamilyName } };
+                familyNames.Add(language, _nameTable.FontFamilyName(language));
             }
+
+            FamilyNames = familyNames;
         }
 
         public IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }

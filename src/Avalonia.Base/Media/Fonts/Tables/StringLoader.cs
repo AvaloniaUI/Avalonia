@@ -1,6 +1,6 @@
 // Copyright (c) Six Labors.
 // Licensed under the Apache License, Version 2.0.
-// Ported from: https://github.com/SixLabors/Fonts/
+// Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
 using System.Diagnostics;
 using System.Text;

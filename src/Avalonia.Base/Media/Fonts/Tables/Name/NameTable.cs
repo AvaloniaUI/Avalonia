@@ -1,12 +1,10 @@
 // Copyright (c) Six Labors.
 // Licensed under the Apache License, Version 2.0.
-// Ported from: https://github.com/SixLabors/Fonts/
+// Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 
 namespace Avalonia.Media.Fonts.Tables.Name
 {
@@ -152,23 +150,6 @@ namespace Avalonia.Media.Fonts.Tables.Name
             //    }
             //}
 
-            var languageIds = new HashSet<ushort>();
-
-            foreach (var nameRecord in names)
-            {
-                if (nameRecord.Platform == PlatformIDs.Windows && nameRecord.LanguageID != 0)
-                {
-                    languageIds.Add(nameRecord.LanguageID);
-                }
-            }
-
-            var languages = new List<CultureInfo>(languageIds.Count);
-
-            foreach (var languageId in languageIds)
-            {
-                languages.Add(new CultureInfo(languageId));
-            }
-
             foreach (var readable in strings)
             {
                 var readableStartOffset = stringOffset + readable.Offset;
@@ -176,6 +157,22 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 reader.Seek(readableStartOffset, SeekOrigin.Begin);
 
                 readable.LoadValue(reader);
+            }
+
+            var familyNames = new HashSet<string>();
+            var languages = new List<CultureInfo>();
+
+            foreach (var nameRecord in names)
+            {
+                if (nameRecord.NameID != KnownNameIds.FontFamilyName || nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                {
+                    continue;
+                }
+
+                if (familyNames.Add(nameRecord.Value))
+                {
+                    languages.Add(new CultureInfo(nameRecord.LanguageID));
+                }
             }
 
             //var languages = languageNames.Select(x => x.Value).ToArray();
