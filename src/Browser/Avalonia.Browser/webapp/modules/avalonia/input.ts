@@ -218,22 +218,23 @@ export class InputHelper {
         element: HTMLInputElement,
         topLevelId: number
     ) {
-        const overAndDropHandler = (args: Event) => {
-            args.preventDefault();
-            this.inputHelper.OnDragDrop(topLevelId, args);
+        const handler = (args: DragEvent) => {
+            const dataObject = args.dataTransfer;
+            this.inputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, this.getModifiers(args), dataObject?.effectAllowed, dataObject);
         };
-        const enterLeaveHandler = (args: Event) => {
-            this.inputHelper.OnDragDrop(topLevelId, args);
+        const overAndDropHandler = (args: DragEvent) => {
+            args.preventDefault();
+            handler(args);
         };
         element.addEventListener("dragover", overAndDropHandler);
-        element.addEventListener("dragenter", enterLeaveHandler);
-        element.addEventListener("dragleave", enterLeaveHandler);
+        element.addEventListener("dragenter", handler);
+        element.addEventListener("dragleave", handler);
         element.addEventListener("drop", overAndDropHandler);
 
         return () => {
             element.removeEventListener("dragover", overAndDropHandler);
-            element.removeEventListener("dragenter", enterLeaveHandler);
-            element.removeEventListener("dragleave", enterLeaveHandler);
+            element.removeEventListener("dragenter", handler);
+            element.removeEventListener("dragleave", handler);
             element.removeEventListener("drop", overAndDropHandler);
         };
     }
@@ -313,7 +314,7 @@ export class InputHelper {
         inputElement.style.width = `${inputElement.scrollWidth}px`;
     }
 
-    private static getModifiers(args: KeyboardEvent | PointerEvent | WheelEvent): number {
+    private static getModifiers(args: KeyboardEvent | PointerEvent | WheelEvent | DragEvent): number {
         let modifiers = RawInputModifiers.None;
 
         if (args.ctrlKey) { modifiers |= RawInputModifiers.Control; }

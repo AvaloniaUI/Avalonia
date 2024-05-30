@@ -157,9 +157,9 @@ internal class BrowserInputHandler
             (RawInputModifiers)modifier);
     }
 
-    public bool OnDragEvent(JSObject args)
+    public bool OnDragEvent(string type, double offsetX, double offsetY, int modifiers, string? effectAllowedStr, JSObject? dataTransfer)
     {
-        var eventType = args?.GetPropertyAsString("type") switch
+        var eventType = type switch
         {
             "dragenter" => RawDragEventType.DragEnter,
             "dragover" => RawDragEventType.DragOver,
@@ -167,8 +167,7 @@ internal class BrowserInputHandler
             "drop" => RawDragEventType.Drop,
             _ => (RawDragEventType)(int)-1
         };
-        var dataObject = args?.GetPropertyAsJSObject("dataTransfer");
-        if (args is null || eventType < 0 || dataObject is null)
+        if (eventType < 0 || dataTransfer is null)
         {
             return false;
         }
@@ -177,10 +176,9 @@ internal class BrowserInputHandler
         // TODO: restructure JS files, so it's not needed.
         _ = AvaloniaModule.ImportStorage();
 
-        var position = new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY"));
-        var modifiers = RawInputModifiers.None;// GetModifiers(args);
+        var position = new Point(offsetX, offsetY);
 
-        var effectAllowedStr = dataObject.GetPropertyAsString("effectAllowed") ?? "none";
+        effectAllowedStr ??= "none";
         var effectAllowed = DragDropEffects.None;
         if (effectAllowedStr.Contains("copy", StringComparison.OrdinalIgnoreCase))
         {
@@ -207,8 +205,8 @@ internal class BrowserInputHandler
             return false;
         }
 
-        var dropEffect = RawDragEvent(eventType, position, modifiers, new BrowserDataObject(dataObject), effectAllowed);
-        dataObject.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
+        var dropEffect = RawDragEvent(eventType, position, (RawInputModifiers)modifiers, new BrowserDataObject(dataTransfer), effectAllowed);
+        dataTransfer.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
 
         // Note, due to complications of JS interop, we ignore this return value.
         // And instead assume, that event is handled for any "drop" and "drag-over" stages.
