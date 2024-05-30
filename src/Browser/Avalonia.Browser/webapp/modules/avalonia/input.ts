@@ -42,10 +42,6 @@ export class InputHelper {
     static resolveClipboard?: any;
     static rejectClipboard?: any;
 
-    private static get inputHelper(): any {
-        return JsExports.resolvedExports?.Avalonia.Browser.Interop.InputHelper;
-    }
-
     public static initializeBackgroundHandlers() {
         if (this.clipboardState !== ClipboardState.None) {
             return;
@@ -95,7 +91,7 @@ export class InputHelper {
 
     public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
         const keyDownHandler = (args: KeyboardEvent) => {
-            this.inputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args));
+            JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args));
             if (this.clipboardState !== ClipboardState.Pending) {
                 args.preventDefault();
             }
@@ -103,7 +99,7 @@ export class InputHelper {
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
-            this.inputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args));
+            JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args));
             args.preventDefault();
             if (this.rejectClipboard) {
                 this.rejectClipboard();
@@ -122,7 +118,7 @@ export class InputHelper {
         element: HTMLInputElement,
         topLevelId: number) {
         const compositionStartHandler = (args: CompositionEvent) => {
-            this.inputHelper.OnCompositionStart(topLevelId);
+            JsExports.InputHelper.OnCompositionStart(topLevelId);
         };
         element.addEventListener("compositionstart", compositionStartHandler);
 
@@ -140,17 +136,17 @@ export class InputHelper {
                 end = start + 2;
             }
 
-            this.inputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
+            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
         };
         element.addEventListener("beforeinput", beforeInputHandler);
 
         const compositionUpdateHandler = (args: CompositionEvent) => {
-            this.inputHelper.OnCompositionUpdate(topLevelId, args.data);
+            JsExports.InputHelper.OnCompositionUpdate(topLevelId, args.data);
         };
         element.addEventListener("compositionupdate", compositionUpdateHandler);
 
         const compositionEndHandler = (args: CompositionEvent) => {
-            this.inputHelper.OnCompositionEnd(topLevelId, args.data);
+            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.data);
             args.preventDefault();
         };
         element.addEventListener("compositionend", compositionEndHandler);
@@ -167,34 +163,34 @@ export class InputHelper {
         topLevelId: number
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
-            this.inputHelper.OnPointerMove(
+            JsExports.InputHelper.OnPointerMove(
                 topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
                 args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args), args);
             args.preventDefault();
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-            this.inputHelper.OnPointerDown(
+            JsExports.InputHelper.OnPointerDown(
                 topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
                 args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
             args.preventDefault();
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-            this.inputHelper.OnPointerUp(
+            JsExports.InputHelper.OnPointerUp(
                 topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
                 args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
             args.preventDefault();
         };
 
         const pointerCancelHandler = (args: PointerEvent) => {
-            this.inputHelper.OnPointerCancel(
+            JsExports.InputHelper.OnPointerCancel(
                 topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
                 args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
         };
 
         const wheelHandler = (args: WheelEvent) => {
-            this.inputHelper.OnWheel(
+            JsExports.InputHelper.OnWheel(
                 topLevelId, args.offsetX, args.offsetY, args.deltaX, args.deltaY, this.getModifiers(args));
             args.preventDefault();
         };
@@ -220,7 +216,7 @@ export class InputHelper {
     ) {
         const handler = (args: DragEvent) => {
             const dataObject = args.dataTransfer;
-            this.inputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, this.getModifiers(args), dataObject?.effectAllowed, dataObject);
+            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, this.getModifiers(args), dataObject?.effectAllowed, dataObject);
         };
         const overAndDropHandler = (args: DragEvent) => {
             args.preventDefault();
@@ -253,7 +249,7 @@ export class InputHelper {
                 const elementRect = element.getBoundingClientRect();
                 const keyboardRect = event.target.boundingRect as DOMRect;
 
-                this.inputHelper.OnKeyboardGeometryChange(
+                JsExports.InputHelper.OnKeyboardGeometryChange(
                     topLevelId,
                     keyboardRect.x - elementRect.x,
                     keyboardRect.y - elementRect.y,

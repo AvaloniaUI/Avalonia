@@ -113,15 +113,15 @@ export class AvaloniaDOM {
             const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
 
             colorSchemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-                JsExports.resolvedExports?.Avalonia.Browser.Interop.DomHelper.DarkModeChanged(args.matches, prefersContrastMedia.matches);
+                JsExports.DomHelper.DarkModeChanged(args.matches, prefersContrastMedia.matches);
             });
             prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-                JsExports.resolvedExports?.Avalonia.Browser.Interop.DomHelper.DarkModeChanged(colorSchemeMedia.matches, args.matches);
+                JsExports.DomHelper.DarkModeChanged(colorSchemeMedia.matches, args.matches);
             });
         }
 
         document.addEventListener("visibilitychange", () => {
-            JsExports.resolvedExports?.Avalonia.Browser.Interop.DomHelper.DocumentVisibilityChanged(document.visibilityState);
+            JsExports.DomHelper.DocumentVisibilityChanged(document.visibilityState);
         });
     }
 

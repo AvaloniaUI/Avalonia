@@ -13,7 +13,7 @@ export class CanvasSurface {
         ResizeHandler.observeSize(canvas, (width, height, dpr) => {
             this.sizeParams = [width, height, dpr];
 
-            JsExports.resolvedExports?.Avalonia.Browser.Interop.CanvasHelper.OnSizeChanged(topLevelId, width, height, dpr);
+            JsExports.CanvasHelper?.OnSizeChanged(topLevelId, width, height, dpr);
         });
     }
 
