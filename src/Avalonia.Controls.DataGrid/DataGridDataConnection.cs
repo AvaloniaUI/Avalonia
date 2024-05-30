@@ -379,17 +379,36 @@ namespace Avalonia.Controls
 
         public bool GetPropertyIsReadOnly(string propertyName)
         {
-            if (DataType != null)
+            Type propertyType = DataType;
+            if (propertyType != null)
             {
+                if (propertyType.GetIsReadOnly())
+                    return true;
+
                 if (!String.IsNullOrEmpty(propertyName))
                 {
-                    Type propertyType = DataType;
-                    PropertyInfo propertyInfo = null;
-                    List<string> propertyNames = TypeHelper.SplitPropertyPath(propertyName);
-                    for (int i = 0; i < propertyNames.Count; i++)
+                    Type? propertyReflectableType = null;
+                    if (typeof(IReflectableType).IsAssignableFrom(propertyType))
                     {
-                        propertyInfo = propertyType.GetPropertyOrIndexer(propertyNames[i], out _);
-                        if (propertyInfo == null || propertyType.GetIsReadOnly() || propertyInfo.GetIsReadOnly())
+                        IEnumerator en = DataSource.GetEnumerator();
+                        if (en.MoveNext() && en.Current is IReflectableType reflectableType)
+                        {
+                            propertyReflectableType = reflectableType.GetTypeInfo();
+                        }
+                    }
+                    PropertyInfo propertyInfo = null;
+                    List<string> propertyNameParts = TypeHelper.SplitPropertyPath(propertyName);
+                    for (int i = 0; i < propertyNameParts.Count; i++)
+                    {
+                        var propertyNamePart = propertyNameParts[i];
+
+                        if (propertyReflectableType != null)
+                            propertyInfo = propertyReflectableType.GetPropertyOrIndexer(propertyNamePart, out _);
+
+                        if(propertyInfo == null)
+                            propertyInfo = propertyType.GetPropertyOrIndexer(propertyNamePart, out _);
+
+                        if (propertyInfo == null || propertyInfo.GetIsReadOnly())
                         {
                             // Either the data type is read-only, the property doesn't exist, or it does exist but is read-only
                             return true;
@@ -408,10 +427,6 @@ namespace Avalonia.Controls
                         propertyType = propertyInfo.PropertyType.GetNonNullableType();
                     }
                     return propertyInfo == null || !propertyInfo.CanWrite || !AllowEdit || !CanEdit(propertyType);
-                }
-                else if (DataType.GetIsReadOnly())
-                {
-                    return true;
                 }
             }
             return !AllowEdit;
