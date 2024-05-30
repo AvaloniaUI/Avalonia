@@ -31,9 +31,6 @@ internal static partial class DomHelper
     [JSImport("AvaloniaDOM.addClass", AvaloniaModule.MainModuleName)]
     public static partial void AddCssClass(JSObject element, string className);
 
-    [JSImport("globalThis.document.visibilityState")]
-    public static partial string GetCurrentDocumentVisibility();
-
     [JSImport("AvaloniaDOM.initGlobalDomEvents", AvaloniaModule.MainModuleName)]
     public static partial void InitGlobalDomEvents();
 

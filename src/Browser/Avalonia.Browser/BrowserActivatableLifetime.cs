@@ -5,19 +5,14 @@ namespace Avalonia.Browser;
 
 internal class BrowserActivatableLifetime : ActivatableLifetimeBase
 {
-    public BrowserActivatableLifetime()
-    {
-        OnVisibilityStateChanged(DomHelper.GetCurrentDocumentVisibility(), true);
-    }
-
-    public void OnVisibilityStateChanged(string visibilityState, bool initial = false)
+    public void OnVisibilityStateChanged(string visibilityState)
     {
         var visible = visibilityState == "visible";
         if (visible)
         {
             OnActivated(ActivationKind.Background);
         }
-        else if (!initial)
+        else
         {
             OnDeactivated(ActivationKind.Background);
         }

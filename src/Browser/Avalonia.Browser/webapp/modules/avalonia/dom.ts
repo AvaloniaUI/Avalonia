@@ -123,6 +123,13 @@ export class AvaloniaDOM {
         document.addEventListener("visibilitychange", () => {
             JsExports.DomHelper.DocumentVisibilityChanged(document.visibilityState);
         });
+
+        // Report initial value.
+        if (document.visibilityState === "visible") {
+            globalThis.setTimeout(() => {
+                JsExports.DomHelper.DocumentVisibilityChanged(document.visibilityState);
+            }, 10);
+        }
     }
 
     public static getSafeAreaPadding(): number[] {
