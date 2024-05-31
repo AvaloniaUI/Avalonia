@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
@@ -19,6 +18,8 @@ namespace Avalonia.Controls.Notifications
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
+        private readonly Dictionary<object, NotificationCard> _notificationCards = new ();
+
         /// <summary>
         /// Defines the <see cref="Position"/> property.
         /// </summary>
@@ -103,7 +104,7 @@ namespace Avalonia.Controls.Notifications
                 Show(content, NotificationType.Information);
             }
         }
-        
+
         /// <summary>
         /// Shows a Notification
         /// </summary>
@@ -121,7 +122,7 @@ namespace Avalonia.Controls.Notifications
             string[]? classes = null)
         {
             Dispatcher.UIThread.VerifyAccess();
-            
+
             var notificationControl = new NotificationCard
             {
                 Content = content,
@@ -136,12 +137,13 @@ namespace Avalonia.Controls.Notifications
                     notificationControl.Classes.Add(@class);
                 }
             }
-            
+
             notificationControl.NotificationClosed += (sender, args) =>
             {
                 onClose?.Invoke();
 
                 _items?.Remove(sender);
+                _notificationCards.Remove(content);
             };
 
             notificationControl.PointerPressed += (sender, args) =>
@@ -154,6 +156,7 @@ namespace Avalonia.Controls.Notifications
             Dispatcher.UIThread.Post(() =>
             {
                 _items?.Add(notificationControl);
+                _notificationCards.Add(content, notificationControl);
 
                 if (_items?.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
                 {
@@ -169,6 +172,43 @@ namespace Avalonia.Controls.Notifications
             await Task.Delay(expiration ?? TimeSpan.FromSeconds(5));
 
             notificationControl.Close();
+ 
+            _notificationCards.Remove(content);
+        }
+
+        /// <inheritdoc/>
+        public void Close(INotification notification)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            if (_notificationCards.Remove(notification, out var notificationCard))
+            {
+                notificationCard.Close();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Close(object content)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            if (_notificationCards.Remove(content, out var notificationCard))
+            {
+                notificationCard.Close();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void CloseAll()
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            foreach (var kvp in _notificationCards)
+            {
+                kvp.Value.Close();
+            }
+            
+            _notificationCards.Clear();
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -179,6 +219,13 @@ namespace Avalonia.Controls.Notifications
             {
                 UpdatePseudoClasses(change.GetNewValue<NotificationPosition>());
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _notificationCards.Clear();
         }
 
         /// <summary>

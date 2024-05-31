@@ -4,8 +4,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
-using OpenQA.Selenium.Appium.Mac;
-using OpenQA.Selenium.Appium.Windows;
 
 namespace Avalonia.IntegrationTests.Appium
 {

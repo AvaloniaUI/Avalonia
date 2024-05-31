@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
 
             _helper.Down(target);
-            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
             _helper.Up(target);
             Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
 

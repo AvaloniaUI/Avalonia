@@ -6,15 +6,25 @@ namespace Sample.App
 {
     partial class SampleView
     {
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Controls.CustomTextBox UserNameTextBox => this.FindNameScope()?.Find<global::Controls.CustomTextBox>("UserNameTextBox");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBlock UserNameValidation => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("UserNameValidation");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBox PasswordTextBox => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBlock PasswordValidation => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("PasswordValidation");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.ListBox AwesomeListView => this.FindNameScope()?.Find<global::Avalonia.Controls.ListBox>("AwesomeListView");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBlock ConfirmPasswordValidation => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.Documents.Run SignUpButtonDescription => this.FindNameScope()?.Find<global::Avalonia.Controls.Documents.Run>("SignUpButtonDescription");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.Button SignUpButton => this.FindNameScope()?.Find<global::Avalonia.Controls.Button>("SignUpButton");
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.TextBlock CompoundValidation => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("CompoundValidation");
     }
 }

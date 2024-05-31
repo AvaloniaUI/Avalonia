@@ -340,7 +340,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button'/>
 </Window>")
             };
-            
+
             using (StyledWindow())
             {
                 var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
@@ -351,7 +351,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var border = (Border)button.GetVisualChildren().Single();
                 var brush = (ISolidColorBrush)border.Background;
-                
+
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
@@ -475,6 +475,40 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void StaticResource_Is_Correctly_Chosen_For_DeferredContent()
+        {
+            using (StyledWindow())
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+
+  <Window.Resources>
+    <Color x:Key='Color'>Purple</Color>
+  </Window.Resources>
+
+  <Border>
+   <Border.Resources>
+      <Color x:Key='Color'>Red</Color>
+      <SolidColorBrush x:Key='Brush' Color='{StaticResource Color}' />
+    </Border.Resources>
+    <TextBlock Foreground='{StaticResource Brush}' />
+  </Border>
+
+</Window>");
+
+                window.Show();
+
+                var textBlock = window.GetVisualDescendants().OfType<TextBlock>().Single();
+
+                Assert.NotNull(textBlock);
+                var brush = Assert.IsAssignableFrom<ISolidColorBrush>(textBlock.Foreground);
+                Assert.Equal(Colors.Red, brush.Color);
+            }
+        }
+
+        [Fact]
         public void Control_Property_Is_Not_Updated_When_Parent_Is_Changed()
         {
             var xaml = @"
@@ -518,7 +552,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
-        
+
         [Fact]
         public void Automatically_Converts_Color_To_SolidColorBrush_From_Setter()
         {
