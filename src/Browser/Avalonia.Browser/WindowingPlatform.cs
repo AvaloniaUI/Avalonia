@@ -18,6 +18,15 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
 {
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
     
+
+    // Capture initial GlobalThis, so we can use it as a contextual bridge between threads.
+    private static JSObject? s_globalThis;
+    internal static JSObject GlobalThis
+    {
+        get => s_globalThis ?? throw new InvalidOperationException("Browser backend wasn't initialized. GlobalThis is null.");
+        set => s_globalThis = value;
+    }
+
     static bool DetectThreadSupport()
     {
         // TODO Replace with public API https://github.com/dotnet/runtime/issues/77541.

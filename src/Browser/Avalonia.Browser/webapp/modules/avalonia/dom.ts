@@ -1,12 +1,28 @@
 import { JsExports } from "./jsExports";
 
 export class AvaloniaDOM {
+    public static getGlobalThis() {
+        return globalThis;
+    }
+
     public static addClass(element: HTMLElement, className: string): void {
         element.classList.add(className);
     }
 
-    static getFirstElementByClassName(className: string, parent?: HTMLElement): Element | null {
-        const elements = (parent ?? globalThis.document).getElementsByClassName(className);
+    static getFirstElementById(className: string, parent: HTMLElement | Window): Element | null {
+        const parentNode = parent instanceof Window
+            ? parent.document
+            : parent.ownerDocument;
+
+        return parentNode.getElementById(className);
+    }
+
+    static getFirstElementByClassName(className: string, parent: HTMLElement | Window): Element | null {
+        const parentNode = parent instanceof Window
+            ? parent.document
+            : parent;
+
+        const elements = parentNode.getElementsByClassName(className);
         return elements ? elements[0] : null;
     }
 
@@ -87,25 +103,25 @@ export class AvaloniaDOM {
         };
     }
 
-    public static isFullscreen(): boolean {
-        return document.fullscreenElement != null;
+    public static isFullscreen(globalThis: Window): boolean {
+        return globalThis.document.fullscreenElement != null;
     }
 
-    public static async setFullscreen(isFullscreen: boolean) {
+    public static async setFullscreen(globalThis: Window, isFullscreen: boolean) {
         if (isFullscreen) {
-            const doc = document.documentElement;
+            const doc = globalThis.document.documentElement;
             await doc.requestFullscreen();
         } else {
-            await document.exitFullscreen();
+            await globalThis.document.exitFullscreen();
         }
     }
 
-    public static initGlobalDomEvents(): void {
+    public static initGlobalDomEvents(globalThis: Window): void {
         // Init Safe Area properties.
-        document.documentElement.style.setProperty("--av-sat", "env(safe-area-inset-top)");
-        document.documentElement.style.setProperty("--av-sar", "env(safe-area-inset-right)");
-        document.documentElement.style.setProperty("--av-sab", "env(safe-area-inset-bottom)");
-        document.documentElement.style.setProperty("--av-sal", "env(safe-area-inset-left)");
+        globalThis.document.documentElement.style.setProperty("--av-sat", "env(safe-area-inset-top)");
+        globalThis.document.documentElement.style.setProperty("--av-sar", "env(safe-area-inset-right)");
+        globalThis.document.documentElement.style.setProperty("--av-sab", "env(safe-area-inset-bottom)");
+        globalThis.document.documentElement.style.setProperty("--av-sal", "env(safe-area-inset-left)");
 
         // Subscribe on DarkMode changes.
         if (globalThis.matchMedia !== undefined) {
@@ -120,28 +136,30 @@ export class AvaloniaDOM {
             });
         }
 
-        document.addEventListener("visibilitychange", () => {
-            JsExports.DomHelper.DocumentVisibilityChanged(document.visibilityState);
+        globalThis.document.addEventListener("visibilitychange", () => {
+            JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
         });
 
         // Report initial value.
-        if (document.visibilityState === "visible") {
+        if (globalThis.document.visibilityState === "visible") {
             globalThis.setTimeout(() => {
-                JsExports.DomHelper.DocumentVisibilityChanged(document.visibilityState);
+                JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
             }, 10);
         }
     }
 
-    public static getSafeAreaPadding(): number[] {
-        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sat"));
-        const bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sab"));
-        const left = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sal"));
-        const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sar"));
+    public static getSafeAreaPadding(globalThis: Window): number[] {
+        const top = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sat"));
+        const bottom = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sab"));
+        const left = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sal"));
+        const right = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sar"));
 
         return [left, top, bottom, right];
     }
 
-    public static getDarkMode(): number[] {
+    public static getDarkMode(globalThis: Window): number[] {
+        if (globalThis.matchMedia === undefined) return [0, 0];
+
         const colorSchemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
         const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
         return [

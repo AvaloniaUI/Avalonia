@@ -55,7 +55,7 @@ export class InputHelper {
         this.clipboardState = ClipboardState.Ready;
     }
 
-    public static async readClipboardText(): Promise<string> {
+    public static async readClipboardText(globalThis: Window): Promise<string> {
         if (globalThis.navigator.clipboard.readText) {
             return await globalThis.navigator.clipboard.readText();
         } else {
@@ -71,6 +71,10 @@ export class InputHelper {
                 this.rejectClipboard = null;
             }
         }
+    }
+
+    public static async writeClipboardText(globalThis: Window, text: string): Promise<void> {
+        return await globalThis.navigator.clipboard.writeText(text);
     }
 
     public static subscribeInputEvents(element: HTMLInputElement, topLevelId: number) {

@@ -44,7 +44,7 @@ internal class BrowserPlatformSettings : DefaultPlatformSettings
         {
             // WASM module has async nature of initialization. We can't native code right away during components registration. 
             _isInitialized = true;
-            var values = DomHelper.GetDarkMode();
+            var values = DomHelper.GetDarkMode(BrowserWindowingPlatform.GlobalThis);
             if (values.Length == 2)
             {
                 _isDarkMode = values[0] > 0;

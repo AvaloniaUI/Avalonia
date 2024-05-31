@@ -38,8 +38,8 @@ namespace Avalonia.Browser
 
         static BrowserTopLevelImpl()
         {
-            DomHelper.InitGlobalDomEvents();
-            InputHelper.InitializeBackgroundHandlers();
+            DomHelper.InitGlobalDomEvents(BrowserWindowingPlatform.GlobalThis);
+            InputHelper.InitializeBackgroundHandlers(BrowserWindowingPlatform.GlobalThis);
         }
 
         public static BrowserTopLevelImpl? TryGetTopLevel(int id)

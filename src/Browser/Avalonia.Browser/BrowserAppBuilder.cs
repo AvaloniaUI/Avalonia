@@ -108,6 +108,9 @@ public static class BrowserAppBuilder
         AvaloniaLocator.CurrentMutable.Bind<BrowserPlatformOptions>().ToConstant(options);
 
         await AvaloniaModule.ImportMain();
+
+        BrowserWindowingPlatform.GlobalThis = DomHelper.GetGlobalThis();
+
         if (BrowserWindowingPlatform.IsThreadingEnabled)
         {
             await RenderWorker.InitializeAsync();

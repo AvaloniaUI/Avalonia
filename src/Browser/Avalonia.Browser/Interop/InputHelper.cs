@@ -104,10 +104,13 @@ internal static partial class InputHelper
     public static partial void SetBounds(JSObject htmlElement, int x, int y, int width, int height, int caret);
 
     [JSImport("InputHelper.initializeBackgroundHandlers", AvaloniaModule.MainModuleName)]
-    public static partial void InitializeBackgroundHandlers();
+    public static partial void InitializeBackgroundHandlers(JSObject globalThis);
 
     [JSImport("InputHelper.readClipboardText", AvaloniaModule.MainModuleName)]
-    public static partial Task<string> ReadClipboardTextAsync();
+    public static partial Task<string> ReadClipboardTextAsync(JSObject globalThis);
+
+    [JSImport("InputHelper.writeClipboardText", AvaloniaModule.MainModuleName)]
+    public static partial Task WriteClipboardTextAsync(JSObject globalThis, string text);
 
     [JSImport("InputHelper.setPointerCapture", AvaloniaModule.MainModuleName)]
     public static partial void
@@ -116,7 +119,4 @@ internal static partial class InputHelper
     [JSImport("InputHelper.releasePointerCapture", AvaloniaModule.MainModuleName)]
     public static partial void ReleasePointerCapture(JSObject containerElement,
         [JSMarshalAs<JSType.Number>] long pointerId);
-
-    [JSImport("globalThis.navigator.clipboard.writeText")]
-    public static partial Task WriteClipboardTextAsync(string text);
 }
