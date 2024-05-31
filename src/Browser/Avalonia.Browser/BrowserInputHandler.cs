@@ -21,6 +21,7 @@ internal class BrowserInputHandler
     private IInputRoot? _inputRoot;
 
     private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
+    private readonly RawEventGrouper? _rawEventGrouper;
 
     public BrowserInputHandler(BrowserTopLevelImpl topLevelImpl, JSObject container, JSObject inputElement, int topLevelId)
     {
@@ -32,9 +33,13 @@ internal class BrowserInputHandler
         _wheelMouseDevice = new MouseDevice();
         _mouseDevices = new();
 
+        _rawEventGrouper = BrowserWindowingPlatform.EventGrouperDispatchQueue is not null
+            ? new RawEventGrouper(DispatchInput, BrowserWindowingPlatform.EventGrouperDispatchQueue)
+            : null;
+
         TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
         InputPane = new BrowserInputPane();
-        
+
         InputHelper.SubscribeInputEvents(container, topLevelId);
     }
 
@@ -68,26 +73,31 @@ internal class BrowserInputHandler
             _ => RawPointerEventType.Move
         };
 
-        var coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+        Lazy<IReadOnlyList<RawPointerPoint>?>? coalescedEvents = null;
+        // Rely on native GetCoalescedEvents only when managed event grouping is not available.
+        if (_rawEventGrouper is null)
         {
-            // To minimize JS interop usage, we resolve all points properties in a single call.
-            var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
-            var pointsCount = pointsProps.Length / 6;
-            argsObj.Dispose();
-            s_intermediatePointsPooledList.Clear();
-            s_intermediatePointsPooledList.Capacity = pointsCount - 1;
-
-            // Skip the last one, as it is already processed point.
-            for (var i = 0; i < pointsCount - 1; i++)
+            coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
             {
-                s_intermediatePointsPooledList.Add(CreateRawPointer(
-                    pointsProps[i], pointsProps[i + 1],
-                    pointsProps[i + 2], pointsProps[i + 3],
-                    pointsProps[i + 4], pointsProps[i + 5]));
-            }
+                // To minimize JS interop usage, we resolve all points properties in a single call.
+                var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
+                var pointsCount = pointsProps.Length / 6;
+                argsObj.Dispose();
+                s_intermediatePointsPooledList.Clear();
+                s_intermediatePointsPooledList.Capacity = pointsCount - 1;
 
-            return s_intermediatePointsPooledList;
-        });
+                // Skip the last one, as it is already processed point.
+                for (var i = 0; i < pointsCount - 1; i++)
+                {
+                    s_intermediatePointsPooledList.Add(CreateRawPointer(
+                        pointsProps[i], pointsProps[i + 1],
+                        pointsProps[i + 2], pointsProps[i + 3],
+                        pointsProps[i + 4], pointsProps[i + 5]));
+                }
+
+                return s_intermediatePointsPooledList;
+            });
+        }
 
         return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
             coalescedEvents);
@@ -236,7 +246,7 @@ internal class BrowserInputHandler
         RawPointerPoint p, RawInputModifiers modifiers, long touchPointId,
         Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints = null)
     {
-        if (_inputRoot is not null && _topLevelImpl.Input is { } input)
+        if (_inputRoot is not null)
         {
             var device = GetPointerDevice(pointerType, touchPointId);
             var args = device is TouchDevice ?
@@ -249,7 +259,7 @@ internal class BrowserInputHandler
                     RawPointerId = touchPointId, IntermediatePoints = intermediatePoints
                 };
 
-            input.Invoke(args);
+            ScheduleInput(args);
 
             return args.Handled;
         }
@@ -282,7 +292,7 @@ internal class BrowserInputHandler
         {
             var args = new RawMouseWheelEventArgs(_wheelMouseDevice, Timestamp, _inputRoot, p, v, modifiers);
 
-            _topLevelImpl.Input?.Invoke(args);
+            ScheduleInput(args);
 
             return args.Handled;
         }
@@ -310,14 +320,7 @@ internal class BrowserInputHandler
             keySymbol
         );
 
-        try
-        {
-            _topLevelImpl.Input?.Invoke(args);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-        }
+        ScheduleInput(args);
 
         return args.Handled;
     }
@@ -327,7 +330,7 @@ internal class BrowserInputHandler
         if (_inputRoot is { })
         {
             var args = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, Timestamp, _inputRoot, text);
-            _topLevelImpl.Input?.Invoke(args);
+            ScheduleInput(args);
 
             return args.Handled;
         }
@@ -340,7 +343,28 @@ internal class BrowserInputHandler
     {
         var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
         var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataObject, dropEffect, modifiers);
-        _topLevelImpl.Input?.Invoke(eventArgs);
+        ScheduleInput(eventArgs);
         return eventArgs.Effects;
+    }
+
+    private void ScheduleInput(RawInputEventArgs args)
+    {
+        // _rawEventGrouper is available only when we use managed dispatcher.
+        if (_rawEventGrouper is not null)
+        {
+            _rawEventGrouper.HandleEvent(args);
+        }
+        else
+        {
+            DispatchInput(args);
+        }
+    }
+
+    private void DispatchInput(RawInputEventArgs args)
+    {
+        if (_inputRoot is null)
+            return;
+
+        _topLevelImpl.Input?.Invoke(args);
     }
 }
