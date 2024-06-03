@@ -276,5 +276,27 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
+
+        [Fact]
+        public void Should_Create_Synthetic_Typeface()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic, FontWeight.Bold),
+                        out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+
+                    Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+
+                    Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
+                }
+            }
+        }
     }
 }
