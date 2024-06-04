@@ -14,6 +14,9 @@
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerExtensions\**\*.cs" />
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\AvaloniaXamlIlRuntimeCompiler.cs" />
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerDynamicDependencies.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Metadata\NullableAttributes.cs" Link="Compatibility\NullableAttributes.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="Compatibility\TrimmingAttributes.cs" />
+    <Compile Include="..\..\..\src\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
   </ItemGroup>
   <Import Project="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\IncludeXamlIlSre.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />

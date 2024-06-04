@@ -468,7 +468,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="entry">The binding entry.</param>
         /// <param name="priority">The priority of binding which produced a new value.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnBindingValueChanged(
             IValueEntry entry,
             BindingPriority priority)
@@ -592,7 +591,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnLocalValueBindingCompleted(AvaloniaProperty property, IDisposable observer)
         {
             if (_localValueBindings is not null &&
@@ -835,6 +833,40 @@ namespace Avalonia.PropertyStore
                 }
             }
         }
+
+        public ValueStoreDiagnostic GetStoreDiagnostic()
+        {
+            var frames = new List<IValueFrameDiagnostic>();
+
+            var effectiveLocalValues = new List<ValueEntryDiagnostic>(_effectiveValues.Count);
+            for (var i = 0; i < _effectiveValues.Count; i++)
+            {
+                if (_effectiveValues.GetValue(i) is { } effectiveValue
+                    && effectiveValue.Priority == BindingPriority.LocalValue)
+                {
+                    effectiveLocalValues.Add(new ValueEntryDiagnostic(effectiveValue.Property, effectiveValue.Value));
+                }
+            }
+
+            if (effectiveLocalValues.Count > 0)
+            {
+                frames.Add(new LocalValueFrameDiagnostic(effectiveLocalValues));
+            }
+
+            foreach (var frame in Frames)
+            {
+                if (frame is StyleInstance { Source: StyleBase } styleInstance)
+                {
+                    frames.Add(new StyleValueFrameDiagnostic(styleInstance));
+                }
+                else
+                {
+                    frames.Add(new ValueFrameDiagnostic(frame));   
+                }
+            }
+
+            return new ValueStoreDiagnostic(frames);
+		}
 
         private int InsertFrame(ValueFrame frame)
         {
