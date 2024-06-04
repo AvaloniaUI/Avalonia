@@ -223,10 +223,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Index of the row
         /// </summary>
-        internal int Index
+        public int Index
         {
             get;
-            set;
+            internal set;
         }
 
         internal double ActualBottomGridLineHeight

@@ -83,6 +83,7 @@
       <TabItem Header="Grouping">
         <DataGrid Name="dataGridGrouping" Margin="12">
           <DataGrid.Columns>
+            <DataGridTextColumn Header=" " Binding="{Binding $parent[DataGridRow].Index}" Width="60" x:DataType="local:Country" />
             <DataGridTextColumn Header="Country or Region" Binding="{Binding Name}" Width="6*" x:DataType="local:Country" />
             <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" x:DataType="local:Country" />
             <DataGridTextColumn DisplayIndex="3" Header="Population" Binding="{Binding Population}" Width="3*" x:DataType="local:Country" />
