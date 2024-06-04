@@ -86,18 +86,22 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 using var application = EnsureApplication();
 
                 var task = action();
-                task.ContinueWith((_, s) => ((CancellationTokenSource)s!).Cancel(), cts,
-                    TaskScheduler.FromCurrentSynchronizationContext());
-
-                if (cts.IsCancellationRequested)
+                if (task.Status != TaskStatus.RanToCompletion)
                 {
-                    tcs.TrySetCanceled(cts.Token);
-                    return;
-                }
+                    task.ContinueWith((_, s) =>
+                            ((CancellationTokenSource)s!).Cancel(), cts,
+                        TaskScheduler.FromCurrentSynchronizationContext());
 
-                var frame = new DispatcherFrame();
-                using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
-                Dispatcher.UIThread.PushFrame(frame);
+                    if (cts.IsCancellationRequested)
+                    {
+                        tcs.TrySetCanceled(cts.Token);
+                        return;
+                    }
+
+                    var frame = new DispatcherFrame();
+                    using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
+                    Dispatcher.UIThread.PushFrame(frame);
+                }
 
                 var result = task.GetAwaiter().GetResult();
                 tcs.TrySetResult(result);
@@ -128,6 +132,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
         {
             scope.Dispose();
             Dispatcher.ResetForUnitTests();
+            SynchronizationContext.SetSynchronizationContext(null);
         });
     }
 

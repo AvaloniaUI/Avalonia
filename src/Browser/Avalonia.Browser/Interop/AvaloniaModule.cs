@@ -6,11 +6,13 @@ namespace Avalonia.Browser.Interop;
 
 internal static partial class AvaloniaModule
 {
-    private static readonly Lazy<Task> s_importMain = new(() =>
+    private static readonly Lazy<Task> s_importMain = new(ImportMainToCurrentContext);
+    
+    public static Task ImportMainToCurrentContext()
     {
         var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
         return JSHost.ImportAsync(MainModuleName, options.FrameworkAssetPathResolver!("avalonia.js"));
-    });
+    }
 
     private static readonly Lazy<Task> s_importStorage = new(() =>
     {
@@ -33,7 +35,10 @@ internal static partial class AvaloniaModule
 
     [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]
     public static partial bool IsMobile();
-    
+
+    [JSImport("Caniuse.isTv", AvaloniaModule.MainModuleName)]
+    public static partial bool IsTv();
+
     [JSImport("registerServiceWorker", AvaloniaModule.MainModuleName)]
     public static partial void RegisterServiceWorker(string path, string? scope);
 }

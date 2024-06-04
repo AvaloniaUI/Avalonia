@@ -7,7 +7,7 @@
     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
-    <Setter Property="FontWeight" Value="400" />
+    <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontStyle" Value="Normal" />
     <Setter Property="Template">
       <ControlTemplate>

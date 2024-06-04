@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Avalonia.Controls.Selection
 {
-    internal class SelectedIndexes<T> : IReadOnlyList<int>
+    internal class SelectedIndexes<T> : ReadOnlySelectionListBase<int>
     {
         private readonly SelectionModel<T>? _owner;
         private readonly IReadOnlyList<IndexRange>? _ranges;
@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Selection
         public SelectedIndexes(SelectionModel<T> owner) => _owner = owner;
         public SelectedIndexes(IReadOnlyList<IndexRange> ranges) => _ranges = ranges;
 
-        public int this[int index]
+        public override int this[int index]
         {
             get
             {
@@ -33,7 +33,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public int Count
+        public override int Count
         {
             get
             {
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Selection
 
         private IReadOnlyList<IndexRange> Ranges => _ranges ?? _owner!.Ranges!;
 
-        public IEnumerator<int> GetEnumerator()
+        public override IEnumerator<int> GetEnumerator()
         {
             IEnumerator<int> SingleSelect()
             {
@@ -74,7 +74,5 @@ namespace Avalonia.Controls.Selection
         {
             return ranges is object ? new SelectedIndexes<T>(ranges) : null;
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

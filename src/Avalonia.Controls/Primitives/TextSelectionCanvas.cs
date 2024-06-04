@@ -250,6 +250,8 @@ namespace Avalonia.Controls.Primitives
 
         internal void SetPresenter(TextPresenter? textPresenter)
         {
+            if (_presenter == textPresenter)
+                return;
             _presenter = textPresenter;
             if (_presenter != null)
             {

@@ -1,4 +1,5 @@
-﻿using Avalonia.Metadata;
+﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Media
 {
@@ -19,9 +20,16 @@ namespace Avalonia.Media
         /// </summary>
         RelativePoint GradientOrigin { get; }
 
+        [Obsolete("Use RadiusX/RadiusY")] public double Radius { get; }
+
         /// <summary>
-        /// Gets the horizontal and vertical radius of the outermost circle of the radial gradient.
+        /// Gets the horizontal radius of the outermost circle of the radial gradient.
         /// </summary>
-        double Radius { get; }
+        RelativeScalar RadiusX { get; }
+        
+        /// <summary>
+        /// Gets the vertical radius of the outermost circle of the radial gradient.
+        /// </summary>
+        RelativeScalar RadiusY { get; }
     }
 }

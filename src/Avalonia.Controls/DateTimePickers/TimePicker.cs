@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<TimeSpan?> SelectedTimeProperty =
             AvaloniaProperty.Register<TimePicker, TimeSpan?>(nameof(SelectedTime),
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         // Template Items
         private TimePickerPresenter? _presenter;
@@ -190,10 +190,19 @@ namespace Avalonia.Controls
             if (_contentGrid == null)
                 return;
 
-            bool use24HourClock = ClockIdentifier == "24HourClock";
+            var use24HourClock = ClockIdentifier == "24HourClock";
 
-            var columnsD = use24HourClock ? "*, Auto, *" : "*, Auto, *, Auto, *";
-            _contentGrid.ColumnDefinitions = new ColumnDefinitions(columnsD);
+            var columnsD = new ColumnDefinitions();
+            columnsD.Add(new ColumnDefinition(GridLength.Star));
+            columnsD.Add(new ColumnDefinition(GridLength.Auto));
+            columnsD.Add(new ColumnDefinition(GridLength.Star));
+            if (!use24HourClock)
+            {
+                columnsD.Add(new ColumnDefinition(GridLength.Auto));
+                columnsD.Add(new ColumnDefinition(GridLength.Star));
+            }
+
+            _contentGrid.ColumnDefinitions = columnsD;
 
             _thirdPickerHost!.IsVisible = !use24HourClock;
             _secondSplitter!.IsVisible = !use24HourClock;
@@ -232,8 +241,9 @@ namespace Avalonia.Controls
             }
             else
             {
-                _hourText.Text = "hour";
-                _minuteText.Text = "minute";
+                // By clearing local value, we reset text property to the value from the template.
+                _hourText.ClearValue(TextBlock.TextProperty);
+                _minuteText.ClearValue(TextBlock.TextProperty);
                 PseudoClasses.Set(":hasnotime", true);
 
                 _periodText.Text = DateTime.Now.Hour >= 12 ?  TimeUtils.GetPMDesignator() :  TimeUtils.GetAMDesignator();
@@ -289,6 +299,14 @@ namespace Avalonia.Controls
         public void Clear()
         {
             SetCurrentValue(SelectedTimeProperty, null);
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
+
+            if (property == SelectedTimeProperty)
+                DataValidationErrors.SetError(this, error);
         }
     }
 }

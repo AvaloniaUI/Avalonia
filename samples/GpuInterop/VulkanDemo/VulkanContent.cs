@@ -182,10 +182,11 @@ unsafe class VulkanContent : IDisposable
 
         api.CmdSetScissor(commandBufferHandle, 0, 1, &scissor);
 
-        var clearColor = new ClearValue(new ClearColorValue(1, 0, 0, 0.1f), new ClearDepthStencilValue(1, 0));
-        
-        var clearValues = new[] { clearColor, clearColor };
-
+        var clearValues = new ClearValue[]
+        {
+	        new() { Color = new ClearColorValue { Float32_0 = 1, Float32_1 = 0, Float32_2 = 0, Float32_3 = 0.1f } },
+	        new() { DepthStencil = new ClearDepthStencilValue { Depth = 1, Stencil = 0 } }
+        };
 
         fixed (ClearValue* clearValue = clearValues)
         {
@@ -195,7 +196,7 @@ unsafe class VulkanContent : IDisposable
                 RenderPass = _renderPass,
                 Framebuffer = _framebuffer,
                 RenderArea = new Rect2D(new Offset2D(0, 0), new Extent2D((uint?)image.Size.Width, (uint?)image.Size.Height)),
-                ClearValueCount = 2,
+                ClearValueCount = (uint)clearValues.Length,
                 PClearValues = clearValue
             };
 
@@ -396,7 +397,7 @@ unsafe class VulkanContent : IDisposable
             Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)size.Width / size.Height,
                 0.01f, 1000);
         
-        _colorAttachment = new VulkanImage(_context, (uint)Format.R8G8B8A8Unorm, size, false);
+        _colorAttachment = new VulkanImage(_context, (uint)Format.R8G8B8A8Unorm, size, false, Array.Empty<string>());
         CreateDepthAttachment(size);
 
         var api = _context.Api;

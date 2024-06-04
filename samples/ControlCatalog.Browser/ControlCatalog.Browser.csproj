@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../../src/Browser/Avalonia.Browser/Avalonia.Browser.props" />
-
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmMainJSPath>AppBundle/main.js</WasmMainJSPath>
+    <WasmMainJSPath>wwwroot/main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <DebuggerSupport>true</DebuggerSupport>
+    <WasmDebugLevel>5</WasmDebugLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,10 +14,18 @@
     <ProjectReference Include="../../src/Browser/Avalonia.Browser/Avalonia.Browser.csproj" />
     <ProjectReference Include="../ControlCatalog/ControlCatalog.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <WasmExtraFilesToDeploy Include="AppBundle/**" />
+    <!-- 
+      A workaround for VS and Rider being dumber than a rock when it comes to build dependency analysis
+      Also see https://youtrack.jetbrains.com/issue/RIDER-107175/Rider-doesnt-update-generate-transitive-Content-dependencies
+    -->
+    <AdditionalUpToDateCheckInput Include="../../src/Browser/Avalonia.Browser/**/*" Visible="false"/>
   </ItemGroup>
 
-  <Import Project="../../src/Browser/Avalonia.Browser/Avalonia.Browser.targets" />
+  <ItemGroup>
+    <WasmExtraFilesToDeploy Include="wwwroot/**" />
+  </ItemGroup>
+
+  <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.props" />
+  <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.targets" />
 </Project>

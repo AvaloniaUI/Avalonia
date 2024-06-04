@@ -131,7 +131,7 @@ namespace Avalonia.Media
         /// </returns>
         public bool IsInRange(int value)
         {
-            return value - Start <= End - Start;
+            return Start <= value && value <= End;
         }
 
         /// <summary>

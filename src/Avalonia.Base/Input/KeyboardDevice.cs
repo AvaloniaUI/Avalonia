@@ -196,6 +196,7 @@ namespace Avalonia.Input
                             KeyModifiers = keyInput.Modifiers.ToKeyModifiers(),
                             PhysicalKey = keyInput.PhysicalKey,
                             KeySymbol = keyInput.KeySymbol,
+                            KeyDeviceType = keyInput.KeyDeviceType,
                             Source = element
                         };
                         

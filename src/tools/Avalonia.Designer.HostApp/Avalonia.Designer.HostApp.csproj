@@ -1,31 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netstandard2.0;$(AvsCurrentTargetFramework)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
-  </PropertyGroup>
-  <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
-  <PropertyGroup>
-    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <IsAotCompatible>false</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
-  <Import Project="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\IncludeXamlIlSre.props" />
   <ItemGroup>
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerExtensions\**\*.cs" />
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\AvaloniaXamlIlRuntimeCompiler.cs" />
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerDynamicDependencies.cs" />
-    <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
-    <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
-    <Compile Include="..\..\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Metadata\NullableAttributes.cs" Link="Compatibility\NullableAttributes.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="Compatibility\TrimmingAttributes.cs" />
+    <Compile Include="..\..\..\src\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.22045.20230930" />
-  </ItemGroup>
-  <Import Project="..\..\..\build\NetFX.props" />
+  <Import Project="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\IncludeXamlIlSre.props" />
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 </Project>

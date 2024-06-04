@@ -205,6 +205,17 @@ HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
     }
 }
 
+HRESULT AvnAppMenuItem::SetIsVisible (bool isVisible)
+{
+    START_COM_CALL;
+    
+    @autoreleasepool
+    {
+        [_native setHidden:!isVisible];
+        return S_OK;
+    }
+}
+
 HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
 {
     START_COM_CALL;

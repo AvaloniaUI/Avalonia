@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Avalonia.Platform.Internal;
 
-internal class UnmanagedBlob
+internal class UnmanagedBlob : IDisposable
 {
     private IntPtr _address;
     private readonly object _lock = new object();
@@ -33,6 +33,7 @@ internal class UnmanagedBlob
         GC.WaitForPendingFinalizers();
     }
 #endif
+    public static bool SuppressFinalizerWarning { get; set; }
 
     public UnmanagedBlob(int size)
     {
@@ -78,7 +79,7 @@ internal class UnmanagedBlob
     public void Dispose()
     {
 #if DEBUG
-        if (Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
+        if (!SuppressFinalizerWarning && Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
         {
             lock (_lock)
             {

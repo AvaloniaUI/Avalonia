@@ -15,7 +15,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class WindowTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public WindowTests(DefaultAppFixture fixture)
         {
@@ -203,6 +203,17 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(original.Position, current.Position);
                 Assert.Equal(original.FrameSize, current.FrameSize);
             }
+        }
+
+        [Fact]
+        public void Extended_Client_Window_Shows_With_Requested_Size()
+        {
+            var clientSize = new Size(400, 400);
+            using var window = OpenWindow(clientSize, ShowWindowMode.NonOwned, WindowStartupLocation.CenterScreen, extendClientArea: true);
+            var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
+            var current = GetWindowInfo();
+
+            Assert.Equal(current.ClientSize, clientSize);
         }
 
         [Fact]

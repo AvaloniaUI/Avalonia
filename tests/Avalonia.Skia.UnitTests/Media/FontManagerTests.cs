@@ -200,14 +200,16 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
-        [Fact]
-        public void Should_Match_Chararcter_Width_Fallbacks()
+        [Theory]
+        [InlineData("NotFound, Unknown", null)] // system fonts
+        [InlineData("/#NotFound, /#Unknown", "avares://some/path")] // embedded fonts
+        public void Should_Match_Character_With_Fallbacks(string familyName, string baseUri)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    var fontFamily = FontFamily.Parse("NotFound, Unknown");
+                    var fontFamily = FontFamily.Parse(familyName, baseUri is null ? null : new Uri(baseUri));
 
                     Assert.True(FontManager.Current.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface));
 
@@ -227,11 +229,8 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
-
-                    Assert.NotNull(systemFontCollection);
-
-                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono"), out var glyphTypeface));
 
@@ -248,15 +247,54 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    var systemFontCollection = FontManager.Current.SystemFonts as SystemFontCollection;
-
-                    Assert.NotNull(systemFontCollection);
-
-                    systemFontCollection.AddCustomFontSource(new Uri(s_fontUri, UriKind.Absolute));
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic), out var glyphTypeface));
 
                     Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Implicit_Typeface()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono Italic"),
+                        out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+
+                    Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Create_Synthetic_Typeface()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic, FontWeight.Bold),
+                        out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+
+                    Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+
+                    Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
                 }
             }
         }

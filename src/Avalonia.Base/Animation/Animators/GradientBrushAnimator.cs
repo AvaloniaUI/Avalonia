@@ -16,6 +16,7 @@ namespace Avalonia.Animation.Animators
     internal class GradientBrushAnimator : Animator<IGradientBrush?>
     {
         private static readonly RelativePointAnimator s_relativePointAnimator = new RelativePointAnimator();
+        private static readonly RelativeScalarAnimator s_relativeScalarAnimator = new RelativeScalarAnimator();
         private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
 
         public override IGradientBrush? Interpolate(double progress, IGradientBrush? oldValue, IGradientBrush? newValue)
@@ -36,7 +37,9 @@ namespace Avalonia.Animation.Animators
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldRadial.Center, newRadial.Center),
                         s_relativePointAnimator.Interpolate(progress, oldRadial.GradientOrigin, newRadial.GradientOrigin),
-                        s_doubleAnimator.Interpolate(progress, oldRadial.Radius, newRadial.Radius));
+                        s_relativeScalarAnimator.Interpolate(progress, oldRadial.RadiusX, newRadial.RadiusX),
+                        s_relativeScalarAnimator.Interpolate(progress, oldRadial.RadiusY, newRadial.RadiusY)
+                        );
 
                 case IConicGradientBrush oldConic when newValue is IConicGradientBrush newConic:
                     return new ImmutableConicGradientBrush(
@@ -126,7 +129,8 @@ namespace Avalonia.Animation.Animators
                         CreateStopsFromSolidColorBrush(solidColorBrush, oldRadial.GradientStops), solidColorBrush.Opacity,
                         oldRadial.Transform is { } ? new ImmutableTransform(oldRadial.Transform.Value) : null,
                         oldRadial.TransformOrigin,
-                        oldRadial.SpreadMethod, oldRadial.Center, oldRadial.GradientOrigin, oldRadial.Radius);
+                        oldRadial.SpreadMethod, oldRadial.Center, oldRadial.GradientOrigin,
+                        oldRadial.RadiusX, oldRadial.RadiusY);
 
                 case IConicGradientBrush oldConic:
                     return new ImmutableConicGradientBrush(

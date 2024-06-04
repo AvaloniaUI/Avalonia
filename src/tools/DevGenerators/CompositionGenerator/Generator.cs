@@ -166,15 +166,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                             .AddModifiers(SyntaxKind.PublicKeyword)
                             .AddAccessorListAccessors(
                                 AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithExpressionBody(
-                                    ArrowExpressionClause(
-                                        InvocationExpression(IdentifierName("GetAnimatedValue"),
-                                            ArgumentList(SeparatedList(new[]
-                                                {
-                                                    Argument(IdentifierName(CompositionPropertyField(prop))),
-                                                    Argument(null, Token(SyntaxKind.RefKeyword),
-                                                        IdentifierName(fieldName))
-                                                }
-                                            ))))).WithSemicolonToken(Semicolon()),
+                                    ArrowExpressionClause(IdentifierName(fieldName))).WithSemicolonToken(Semicolon()),
                                 AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                                     .WithExpressionBody(ArrowExpressionClause(
                                             ParseExpression($"SetAnimatedValue({CompositionPropertyField(prop)}, out {PropertyBackingFieldName(prop)}, value)")))
@@ -187,13 +179,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                             .AddModifiers(SyntaxKind.PublicKeyword)
                             .AddAccessorListAccessors(
                                 AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
-                                    Block(ReturnStatement(
-                                        InvocationExpression(IdentifierName("GetValue"),
-                                            ArgumentList(SeparatedList(new[]{
-                                                    Argument(IdentifierName(CompositionPropertyField(prop))),
-                                                    Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName(fieldName))
-                                                }
-                                            )))))),
+                                    Block(ReturnStatement(IdentifierName(fieldName)))),
                                 AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
                                     Block(
                                         ParseStatement("var changed = false;"),
@@ -235,8 +221,13 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 serverGetPropertyBody = ApplyGetProperty(serverGetPropertyBody, prop);
                 serverGetCompositionPropertyBody = ApplyGetProperty(serverGetCompositionPropertyBody, prop, CompositionPropertyField(prop));
 
-                server = server.AddMembers(DeclareField("CompositionProperty", CompositionPropertyField(prop),
-                    EqualsValueClause(ParseExpression("CompositionProperty.Register()")),
+
+                string compositionPropertyVariantGetter = "null";
+                if(VariantPropertyTypes.Contains(prop.Type))
+                    compositionPropertyVariantGetter = $"obj => (({serverName})obj).{fieldName}";
+                server = server.AddMembers(DeclareField($"CompositionProperty<{serverPropertyType}>", CompositionPropertyField(prop),
+                    EqualsValueClause(ParseExpression(
+                        $"CompositionProperty.Register<{serverName}, {serverPropertyType}>(\"{prop.Name}\", obj => (({serverName})obj).{fieldName}, (obj, v) => (({serverName})obj).{fieldName} = v, {compositionPropertyVariantGetter})")),
                     SyntaxKind.InternalKeyword, SyntaxKind.StaticKeyword));
                 
                 if (prop.DefaultValue != null)
@@ -282,7 +273,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
 
             if (!cl.ServerOnly)
             {
-                server = WithGetPropertyForAnimation(server, serverGetPropertyBody);
+                //server = WithGetPropertyForAnimation(server, serverGetPropertyBody);
                 server = WithGetCompositionProperty(server, serverGetCompositionPropertyBody);
             }
 

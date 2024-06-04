@@ -25,6 +25,9 @@ internal static class AvaloniaXamlDiagnosticCodes
     public const string PropertyPathError = "AVLN2202";
     public const string DuplicateSetterError = "AVLN2203";
     public const string StyleInMergedDictionaries = "AVLN2204";
+    public const string RequiredTemplatePartMissing = "AVLN2205";
+    public const string OptionalTemplatePartMissing = "AVLN2206";
+    public const string TemplatePartWrongType = "AVLN2207";
 
     // XAML emit errors 3000-3999.
     public const string EmitError = "AVLN3000";

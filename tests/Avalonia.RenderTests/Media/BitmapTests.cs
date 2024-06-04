@@ -72,7 +72,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var r = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             using(var cpuContext = r.CreateBackendContext(null))
             using (var target = cpuContext.CreateRenderTarget(new object[] { fb }))
-            using (var ctx = target.CreateDrawingContext())
+            using (var ctx = target.CreateDrawingContext(false))
             {
                 ctx.Clear(Colors.Transparent);
                 ctx.PushOpacity(0.8, new Rect(0, 0, 80, 80));
@@ -245,6 +245,35 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             fixed (byte* pCopyTo = copyTo)
                 bmp.CopyPixels(default, new IntPtr(pCopyTo), data.Length, stride);
             Assert.Equal(data, copyTo);
+        }
+
+        [Fact]
+        public unsafe void Should_CopyPixels_With_Source_Rect()
+        {
+            var size = 80;
+            var partSize = 20;
+            var bitmap = new RenderTargetBitmap(new PixelSize(size, size));
+
+            using (var context = bitmap.CreateDrawingContext())
+            {
+                context.FillRectangle(Brushes.Black,
+                    new Rect(0, 0, bitmap.PixelSize.Width, bitmap.PixelSize.Height));
+                context.FillRectangle(Brushes.White, new Rect(partSize, partSize, partSize, partSize));
+            }
+
+            var bpp = bitmap.Format!.Value.BitsPerPixel / 8;
+            var buffer = new byte[partSize * partSize * bpp];
+
+            fixed (byte* pointer = buffer)
+            {
+                bitmap.CopyPixels(new PixelRect(partSize, partSize, partSize, partSize), (IntPtr)pointer,
+                    buffer.Length, partSize * bpp);
+            }
+
+            foreach (var t in buffer)
+            {
+                Assert.Equal(byte.MaxValue, t);
+            }
         }
     }
 }

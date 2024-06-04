@@ -23,6 +23,7 @@
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Simple Bindings"/>
             <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
+            <TextBox Watermark="Two Way (LostFocus)" UseFloatingWatermark="True" Text="{Binding Path=StringValue, UpdateSourceTrigger=LostFocus}"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
             <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
             <!-- Removed due to #2983: reinstate when that's fixed.
@@ -117,6 +118,21 @@
         <TextBox Text="{Binding Path=StringValue}"/>
         <Button Content="Nested View Model Button" Name="NestedTest" Command="{Binding NestedModel.Command}" />
         <Button Content="Command Method Do" Command="{Binding Do}" x:Name="ToDo"/>
+      </StackPanel>
+    </TabItem>
+    <TabItem Header="Advanced">
+      <TabItem.Resources>
+        <local:GenericValueConverter x:Key="BrushConverter" x:TypeArguments="SolidColorBrush"/>
+      </TabItem.Resources>
+      <StackPanel>
+        <!-- Tests for #10856  -->
+        <TextBlock Text="{local:GenericMarkupExtension, Value=Red, x:TypeArguments=Color}"/>
+        <TextBlock HorizontalAlignment="Left"
+                   Text="{Binding $self.Background, Converter={StaticResource BrushConverter}}">
+          <TextBlock.Background>
+            <SolidColorBrush Color="Yellow"/>
+          </TextBlock.Background>
+        </TextBlock>
       </StackPanel>
     </TabItem>
   </TabControl>

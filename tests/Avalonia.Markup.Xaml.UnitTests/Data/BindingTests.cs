@@ -6,6 +6,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -92,6 +94,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
                 var target = (TextPresenter)textBox.GetVisualChildren().Single();
                 Assert.Equal("Foo,Bar", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Can_Bind_Brush_to_Hex_String()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Data;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Border Background='{Binding HexString}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var border = (Border)window.Content;
+                window.DataContext = new { HexString = "#ff0000" };
+
+                window.ApplyTemplate();
+
+                var brush = Assert.IsType<ImmutableSolidColorBrush>(border.Background);
+                Assert.Equal(Colors.Red, brush.Color);
             }
         }
     }

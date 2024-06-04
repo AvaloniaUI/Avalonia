@@ -1,8 +1,10 @@
-using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Media;
 
 namespace Avalonia.LinuxFramebuffer
 {
+    /// <summary>
+    /// DRM Output Options
+    /// </summary>
     public class DrmOutputOptions
     {
         /// <summary>
@@ -24,9 +26,21 @@ namespace Avalonia.LinuxFramebuffer
         public Color InitialBufferSwappingColor { get; set; } = new Color(0, 0, 0, 0);
 
         /// <summary>
-        /// specific the video mode with which the DrmOutput should be created, if it is not found it will fallback to the preferred mode.
-        /// If NULL preferred mode will be used.
+        /// Specifies the video mode with which the DrmOutput should be created, if it is not found it will fallback to the preferred mode.
+        /// If null, the preferred mode will be used.
         /// </summary>
         public PixelSize? VideoMode { get; set; }
+
+        /// <summary>
+        /// Specifies whether our connector is HDMI-A, DVI, DisplayPort, etc.
+        /// If null, the preferred connector will be used.
+        /// </summary>
+        public DrmConnectorType? ConnectorType { get; set; }
+
+        /// <summary>
+        /// Specifies the connector type ID used with <see cref="ConnectorType"/>.
+        /// If null, the preferred connector type ID will be used.
+        /// </summary>
+        public uint? ConnectorTypeId { get; set; }
     }
 }

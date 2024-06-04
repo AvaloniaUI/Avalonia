@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using static Avalonia.Controls.Platform.Win32SpecificOptions;
+using static Avalonia.Controls.Win32Properties;
 
 namespace Avalonia.Controls.Platform
 {

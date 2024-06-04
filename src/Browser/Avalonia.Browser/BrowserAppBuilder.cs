@@ -1,11 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Rendering;
+using Avalonia.Metadata;
 
 namespace Avalonia.Browser;
 
-public class BrowserPlatformOptions
+public enum BrowserRenderingMode
 {
+    Software2D = 1,
+    WebGL1,
+    WebGL2
+}
+
+public record BrowserPlatformOptions
+{
+    /// <summary>
+    /// Gets or sets Avalonia rendering modes with fallbacks.
+    /// The first element in the array has the highest priority.
+    /// </summary>
+    /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
+    public IReadOnlyList<BrowserRenderingMode> RenderingMode { get; set; } = new[]
+    {
+        BrowserRenderingMode.WebGL2, BrowserRenderingMode.WebGL1, BrowserRenderingMode.Software2D
+    };
+
     /// <summary>
     /// Defines paths where avalonia modules and service locator should be resolved.
     /// If null, default path resolved depending on the backend (browser or blazor) is used.
@@ -17,6 +37,7 @@ public class BrowserPlatformOptions
     /// If registered, service worker can work as a save file picker fallback on the browsers that don't support native implementation.
     /// For more details, see https://github.com/jimmywarting/native-file-system-adapter#a-note-when-downloading-with-the-polyfilled-version.
     /// </summary>
+    [Unstable("This property might not work reliably.")]
     public bool RegisterAvaloniaServiceWorker { get; set; }
 
     /// <summary>
@@ -24,7 +45,7 @@ public class BrowserPlatformOptions
     /// By default, current domain root is used as a scope.
     /// </summary>
     public string? AvaloniaServiceWorkerScope { get; set; }
-    
+
     /// <summary>
     /// Avalonia uses "native-file-system-adapter" polyfill for the file dialogs.
     /// If native implementation is available, by default it is used.
@@ -42,18 +63,19 @@ public static class BrowserAppBuilder
     /// <param name="builder">Application builder.</param>
     /// <param name="mainDivId">ID of the html element where avalonia content should be rendered.</param>
     /// <param name="options">Browser backend specific options.</param>
-    public static async Task StartBrowserAppAsync(this AppBuilder builder, string mainDivId, BrowserPlatformOptions? options = null)
+    public static async Task StartBrowserAppAsync(this AppBuilder builder, string mainDivId,
+        BrowserPlatformOptions? options = null)
     {
         if (mainDivId is null)
         {
             throw new ArgumentNullException(nameof(mainDivId));
         }
-        
+
         builder = await PreSetupBrowser(builder, options);
 
         var lifetime = new BrowserSingleViewLifetime();
         builder
-            .AfterSetup(_ =>
+            .AfterApplicationSetup(_ =>
             {
                 lifetime.View = new AvaloniaView(mainDivId);
             })
@@ -73,8 +95,9 @@ public static class BrowserAppBuilder
     {
         builder = await PreSetupBrowser(builder, options);
 
+        var lifetime = new BrowserSingleViewLifetime();
         builder
-            .SetupWithoutStarting();
+            .SetupWithLifetime(lifetime);
     }
 
     internal static async Task<AppBuilder> PreSetupBrowser(AppBuilder builder, BrowserPlatformOptions? options)
@@ -83,8 +106,12 @@ public static class BrowserAppBuilder
         options.FrameworkAssetPathResolver ??= fileName => $"./{fileName}";
 
         AvaloniaLocator.CurrentMutable.Bind<BrowserPlatformOptions>().ToConstant(options);
-        
+
         await AvaloniaModule.ImportMain();
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
+        {
+            await RenderWorker.InitializeAsync();
+        }
 
         if (builder.WindowingSubsystemInitializer is null)
         {
@@ -93,7 +120,7 @@ public static class BrowserAppBuilder
 
         return builder;
     }
-    
+
     public static AppBuilder UseBrowser(
         this AppBuilder builder)
     {

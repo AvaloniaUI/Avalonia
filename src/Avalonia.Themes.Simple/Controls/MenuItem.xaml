@@ -26,19 +26,20 @@
                                 SharedSizeGroup="MenuItemIGT" />
               <ColumnDefinition Width="20" />
             </Grid.ColumnDefinitions>
-            <ContentPresenter Name="icon"
-                              Width="16"
-                              Height="16"
-                              Margin="3"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              Content="{TemplateBinding Icon}" />
-            <Path Name="check"
-                  Margin="3"
-                  VerticalAlignment="Center"
-                  Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z"
-                  Fill="{TemplateBinding Foreground}"
-                  IsVisible="False" />
+            <ContentControl Grid.Column="0"
+                            x:Name="PART_ToggleIconPresenter"
+                            IsVisible="False"
+                            Margin="3"
+                            Width="16"
+                            Height="16" />
+            <ContentControl Grid.Column="0"
+                            Name="PART_IconPresenter"
+                            Width="16"
+                            Height="16"
+                            Margin="3"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Icon}" />
             <ContentPresenter Name="PART_HeaderPresenter"
                               Grid.Column="2"
                               Margin="{TemplateBinding Padding}"
@@ -102,6 +103,30 @@
 
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+    
+    <Style Selector="^:toggle /template/ ContentControl#PART_ToggleIconPresenter, ^:radio /template/ ContentControl#PART_ToggleIconPresenter">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:toggle /template/ ContentPresenter#PART_IconPresenter, ^:radio /template/ ContentPresenter#PART_IconPresenter">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:checked:toggle /template/ ContentControl#PART_ToggleIconPresenter">
+      <Setter Property="Content">
+        <Template>
+          <Path VerticalAlignment="Center"
+                Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z"
+                Fill="{Binding $parent[MenuItem].Foreground}" />
+        </Template>
+      </Setter>
+    </Style>
+    <Style Selector="^:checked:radio /template/ ContentControl#PART_ToggleIconPresenter">
+      <Setter Property="Content">
+        <Template>
+          <Ellipse Fill="{Binding $parent[MenuItem].Foreground}"
+                   Margin="4" Width="8" Height="8" />
+        </Template>
+      </Setter>
     </Style>
   </ControlTheme>
 </ResourceDictionary>

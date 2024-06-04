@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,8 +15,10 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.Vulkan;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
@@ -70,11 +72,16 @@ namespace Avalonia.X11
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
 
+            IRenderTimer timer = options.ShouldRenderOnUIThread
+               ? new UiThreadRenderTimer(60)
+               : new SleepLoopRenderTimer(60);
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
-                .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
@@ -98,6 +105,7 @@ namespace Avalonia.X11
             }
 
             Compositor = new Compositor(graphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -209,6 +217,14 @@ namespace Avalonia.X11
                         return egl;
                     }
                 }
+
+                if (renderingMode == X11RenderingMode.Vulkan)
+                {
+                    var vulkan = VulkanSupport.TryInitialize(info,
+                        AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                    if (vulkan != null)
+                        return vulkan;
+                }
             }
 
             throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
@@ -236,7 +252,12 @@ namespace Avalonia
         /// <summary>
         /// Enables native Linux EGL rendering.
         /// </summary>
-        Egl = 3
+        Egl = 3,
+        
+        /// <summary>
+        /// Enables Vulkan rendering
+        /// </summary>
+        Vulkan = 4
     }
     
     /// <summary>
@@ -302,7 +323,14 @@ namespace Avalonia
         /// </remarks>
         public bool EnableSessionManagement { get; set; } = 
             Environment.GetEnvironmentVariable("AVALONIA_X11_USE_SESSION_MANAGEMENT") != "0";
-        
+
+        /// <summary>
+        /// Render directly on the UI thread instead of using a dedicated render thread.
+        /// This can be usable if your device don't have multiple cores to begin with.
+        /// This setting is false by default.
+        /// </summary>
+        public bool ShouldRenderOnUIThread { get; set; }
+
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),
@@ -318,7 +346,12 @@ namespace Avalonia
             // llvmpipe is a software GL rasterizer. If it's returned by glGetString,
             // that usually means that something in the system is horribly misconfigured
             // and sometimes attempts to use GLX might cause a segfault
-            "llvmpipe"
+            "llvmpipe",
+            // SVGA3D is a driver for VMWare virtual GPU
+            // There were reports of various glitches like parts of the UI not being rendered
+            // Given that VMs are mostly used by testing, we've decided to blacklist that driver
+            // for now
+            "SVGA3D"
         };
 
         
@@ -331,6 +364,14 @@ namespace Avalonia
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
+
+        /// <summary>
+        /// Retain window framebuffer contents if using CPU rendering mode.
+        /// This will keep an offscreen bitmap for each window with contents of the previous frame
+        /// While improving performance by saving a blit, it will increase memory consumption
+        /// if you have many windows 
+        /// </summary>
+        public bool? UseRetainedFramebuffer { get; set; }
 
         public X11PlatformOptions()
         {

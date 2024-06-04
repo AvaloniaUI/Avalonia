@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             _outputHelper = outputHelper;
         }
 
-        [Fact(/*Skip = "Only run when we update the trie."*/)]
+        [Fact(Skip = "Only run when we update the trie.")]
         public void Should_Enumerate()
         {
             var generator = new GraphemeBreakTestDataGenerator();
@@ -77,7 +77,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return true;
         }
 
-        [Fact(/*Skip = "Only run when we update the trie."*/)]
+        [Fact(Skip = "Only run when we update the trie.")]
         public void Should_Enumerate_Other()
         {
             const string text = "ABCDEFGHIJ";
@@ -96,7 +96,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.Equal(10, count);
         }
 
-        [Fact(/*Skip = "Only run when we update the trie."*/)]
+        [Fact(Skip = "Only run when we update the trie.")]
         public void Should_Generate_Trie()
         {
             GraphemeBreakClassTrieGenerator.Execute();

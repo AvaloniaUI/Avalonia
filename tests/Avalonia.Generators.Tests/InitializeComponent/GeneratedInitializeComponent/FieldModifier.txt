@@ -8,11 +8,17 @@ namespace Sample.App
 {
     partial class SampleView
     {
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         public global::Avalonia.Controls.TextBox FirstNameTextBox;
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         public global::Avalonia.Controls.TextBox LastNameTextBox;
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         protected global::Avalonia.Controls.TextBox PasswordTextBox;
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         private global::Avalonia.Controls.TextBox ConfirmPasswordTextBox;
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.Button SignUpButton;
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
         internal global::Avalonia.Controls.Button RegisterButton;
 
         /// <summary>
@@ -20,6 +26,8 @@ namespace Sample.App
         /// </summary>
         /// <param name="loadXaml">Should the XAML be loaded into the component.</param>
 
+        [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.InitializeComponentCodeGenerator", "$GeneratorVersion")]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public void InitializeComponent(bool loadXaml = true)
         {
             if (loadXaml)
@@ -27,12 +35,13 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
-            FirstNameTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("FirstNameTextBox");
-            LastNameTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("LastNameTextBox");
-            PasswordTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
-            ConfirmPasswordTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
-            SignUpButton = this.FindNameScope()?.Find<global::Avalonia.Controls.Button>("SignUpButton");
-            RegisterButton = this.FindNameScope()?.Find<global::Avalonia.Controls.Button>("RegisterButton");
+            var __thisNameScope__ = this.FindNameScope();
+            FirstNameTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("FirstNameTextBox");
+            LastNameTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("LastNameTextBox");
+            PasswordTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+            ConfirmPasswordTextBox = __thisNameScope__?.Find<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
+            SignUpButton = __thisNameScope__?.Find<global::Avalonia.Controls.Button>("SignUpButton");
+            RegisterButton = __thisNameScope__?.Find<global::Avalonia.Controls.Button>("RegisterButton");
         }
     }
 }

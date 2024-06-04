@@ -50,7 +50,7 @@ self.addEventListener("activate", event /* ExtendableEvent */ => {
     (event as any).waitUntil((self as any).clients.claim());
 });
 
-const map = new Map();
+(self as any).map = new Map();
 
 // This should be called once per download
 // Each event has a dataChannel that the data will be piped through
@@ -61,12 +61,14 @@ globalThis.addEventListener("message", evt => {
             new MessagePortSource(evt.data.readablePort),
             new CountQueuingStrategy({ highWaterMark: 4 })
         );
+        const map = (self as any).map;
         map.set(data.url, data);
     }
 });
 
 globalThis.addEventListener("fetch", evt => {
     const url = (evt as any).request.url;
+    const map = (self as any).map;
     const data = map.get(url);
     if (!data) return null;
     map.delete(url);

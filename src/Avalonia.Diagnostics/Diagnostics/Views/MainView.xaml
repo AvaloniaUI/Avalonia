@@ -20,7 +20,7 @@
       <Setter Property="Margin" Value="10 0 -20 0"/>
     </Style>
   </UserControl.Styles>
-  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,0,Auto">
+  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,Auto">
     <Menu>
       <MenuItem Header="_File">
         <MenuItem Header="E_xit" Command="{Binding $parent[Window].Close}" />
@@ -31,7 +31,7 @@
                 <DrawingGroup>
                   <GeometryDrawing Geometry="F1 M 13.4533,17.56C 13.4533,19.8827 15.344,21.772 17.6653,21.772L 17.6653,21.772C 19.988,21.772 21.8773,19.8827 21.8773,17.56L 21.8773,17.56C 21.8773,15.2373 19.988,13.348 17.6653,13.348L 17.6653,13.348C 15.344,13.348 13.4533,15.2373 13.4533,17.56 Z ">
                     <GeometryDrawing.Brush>
-                      <RadialGradientBrush Center="0.245696,0.288009" GradientOrigin="0.245696,0.288009" Radius="0.499952">
+                      <RadialGradientBrush Center="0.245696,0.288009" GradientOrigin="0.245696,0.288009" RadiusX="50%" RadiusY="50%">
                         <RadialGradientBrush.GradientStops>
                           <GradientStop Color="#FF878A8C" Offset="0" />
                           <GradientStop Color="#FF544A4C" Offset="0.991379" />
@@ -41,7 +41,7 @@
                   </GeometryDrawing>
                   <GeometryDrawing Geometry="F1 M 13.332,6.22803L 10.2227,9.72668L 8.49866,9.72668L 8.49866,7.56136L 5.33333,7.56136L 5.33333,9.72668L 3.33333,9.72668L 3.33333,24.3947L 13.1213,24.3947C 14.424,25.264 15.9853,25.772 17.6653,25.772L 17.6653,25.772C 19.344,25.772 20.9067,25.264 22.2094,24.3947L 28.6667,24.3947L 28.6667,9.72668L 24.944,9.72668L 21.8333,6.22803M 12.12,17.56C 12.12,14.5013 14.608,12.0147 17.6653,12.0147L 17.6653,12.0147C 20.7227,12.0147 23.2107,14.5013 23.2107,17.56L 23.2107,17.56C 23.2107,20.6174 20.7227,23.104 17.6653,23.104L 17.6653,23.104C 14.608,23.104 12.12,20.6174 12.12,17.56 Z ">
                     <GeometryDrawing.Brush>
-                      <RadialGradientBrush Center="0.196943,0.216757" GradientOrigin="0.196943,0.216757" Radius="0.44654">
+                      <RadialGradientBrush Center="0.196943,0.216757" GradientOrigin="0.196943,0.216757" RadiusX="50%" RadiusY="50%">
                         <RadialGradientBrush.GradientStops>
                           <GradientStop Color="#FF87898C" Offset="0" />
                           <GradientStop Color="#FF544A4C" Offset="1" />
@@ -56,13 +56,6 @@
         </MenuItem>
       </MenuItem>
       <MenuItem Header="_View">
-        <MenuItem Header="_Console" Command="{Binding $parent[views:MainView].ToggleConsole}">
-          <MenuItem.Icon>
-            <CheckBox BorderThickness="0"
-                      IsChecked="{Binding Console.IsVisible}"
-                      IsEnabled="False" />
-          </MenuItem.Icon>
-        </MenuItem>
         <MenuItem Header="Control _Details">
           <MenuItem Header="Show Implemented Interfaces" Command="{Binding ToggleShowImplementedInterfaces}">
             <MenuItem.Icon>
@@ -79,6 +72,7 @@
             </MenuItem.Icon>
           </MenuItem>
         </MenuItem>
+        <MenuItem Header="_HotKeys" Command="{Binding ShowHotKeys}" />
       </MenuItem>
       <MenuItem Header="_Overlays">
         <MenuItem Header="Margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">
@@ -262,6 +256,7 @@
       <TabStripItem Content="Logical Tree" />
       <TabStripItem Content="Visual Tree" />
       <TabStripItem Content="Events" />
+      <TabStripItem Content="HotKeys" IsVisible="False" />
     </TabStrip>
 
     <ContentControl Grid.Row="2"
@@ -273,13 +268,7 @@
                   Background="{DynamicResource ThemeControlMidBrush}"
                   IsVisible="False" />
 
-    <views:ConsoleView Name="console"
-                       Grid.Row="4"
-                       DataContext="{Binding Console}"
-                       IsVisible="{Binding IsVisible}" />
-
-
-    <Border Grid.Row="5"
+    <Border Grid.Row="4"
             BorderBrush="{DynamicResource ThemeControlMidBrush}"
             BorderThickness="0,1,0,0">
       <Grid ColumnDefinitions="*, Auto">

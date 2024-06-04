@@ -1,14 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0-ios16.0</TargetFramework>
-    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
-    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <TargetFrameworks>$(AvsCurrentIOSTargetFramework);$(AvsCurrentTvOSTargetFramework)</TargetFrameworks>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">$(AvsMinSupportedTvOSVersion)</SupportedOSPlatformVersion>
+    <!-- Not yet enabled as a target framework -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">$(AvsMinSupportedMacCatalystVersion)</SupportedOSPlatformVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Compatibility attributes are pretty much broken for iOS-like platforms. Verify by hand. -->
+    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <Compile Remove="Eagl/**/*.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">
+    <Compile Remove="Storage/**/*.*" />
+    <Compile Remove="ClipboardImpl.cs" />
+    <Compile Remove="UIKitInputPane.cs" />
+  </ItemGroup>
+
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
 </Project>

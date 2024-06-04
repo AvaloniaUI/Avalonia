@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -23,18 +24,8 @@ namespace Avalonia.Controls.Documents
             ResetBehavior = ResetBehavior.Remove;
 
             this.ForEachItem(
-                x =>
-                {
-                    x.InlineHost = InlineHost;
-                    LogicalChildren?.Add(x);
-                    Invalidate();
-                },
-                x =>
-                {
-                    LogicalChildren?.Remove(x);
-                    x.InlineHost = InlineHost;
-                    Invalidate();
-                },
+                OnAdd,
+                OnRemove,
                 () => throw new NotSupportedException());
         }
 
@@ -56,9 +47,11 @@ namespace Avalonia.Controls.Documents
             get => _inlineHost;
             set
             {
+                var oldValue = _inlineHost;
+
                 _inlineHost = value;
 
-                OnInlineHostChanged(value);
+                OnInlineHostChanged(oldValue, value);
             }
         }
 
@@ -104,7 +97,7 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// Adds a text segment to the collection.
         /// <remarks>
-        /// For non complex content this appends the text to the end of currently held text.
+        /// For non-complex content this appends the text to the end of currently held text.
         /// For complex content this adds a <see cref="Run"/> to the collection.
         /// </remarks>
         /// </summary>
@@ -145,25 +138,68 @@ namespace Avalonia.Controls.Documents
             Invalidated?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnParentChanged(IAvaloniaList<ILogical>? oldParent, IAvaloniaList<ILogical>? newParent)
+        private void OnParentChanged(ICollection<ILogical>? oldValue, ICollection<ILogical>? newValue)
         {
             foreach (var child in this)
             {
-                if (oldParent != newParent)
+                if (Equals(oldValue, newValue))
                 {
-                    oldParent?.Remove(child);
-
-                    newParent?.Add(child);
+                    continue;
                 }
+
+                oldValue?.Remove(child);
+
+                newValue?.Add(child);
             }
+
+            Invalidate();
         }
 
-        private void OnInlineHostChanged(IInlineHost? inlineHost)
+        private void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
         {
             foreach (var child in this)
             {
-                child.InlineHost = inlineHost;
+                child.InlineHost = newValue;
+
+                if (child is not InlineUIContainer container)
+                {
+                    continue;
+                }
+
+                oldValue?.VisualChildren.Remove(container.Child);
+
+                newValue?.VisualChildren.Add(container.Child);
             }
+
+            Invalidate();
+        }
+
+        private void OnAdd(TextElement inline)
+        {
+            inline.InlineHost = InlineHost;
+
+            LogicalChildren?.Add(inline);
+
+            if (inline is InlineUIContainer container)
+            {
+                InlineHost?.VisualChildren.Add(container.Child);
+            }
+
+            Invalidate();
+        }
+
+        private void OnRemove(TextElement inline)
+        {
+            LogicalChildren?.Remove(inline);
+
+            if (inline is InlineUIContainer container)
+            {
+                InlineHost?.VisualChildren.Remove(container.Child);
+            }
+
+            inline.InlineHost = null;
+
+            Invalidate();
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Avalonia.Styling
 
             if (HasSettersOrAnimations && TargetType.IsAssignableFrom(StyledElement.GetStyleKey(target)))
             {
-                Attach(target, null, type);
+                Attach(target, null, type, true);
                 return SelectorMatchResult.AlwaysThisType;
             }
 

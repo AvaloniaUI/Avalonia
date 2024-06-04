@@ -19,6 +19,8 @@ namespace Avalonia.Win32
 {
     internal partial class WindowImpl
     {
+        private bool _killFocusRequested;
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We do .NET COM interop availability checks")]
@@ -126,9 +128,10 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DPICHANGED:
                     {
-                        var dpi = ToInt32(wParam) & 0xffff;
+                        _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
-                        _scaling = dpi / 96.0;
+                        _scaling = _dpi / StandardDpi;
+                        RefreshIcon();
                         ScalingChanged?.Invoke(_scaling);
 
                         using (SetResizeReason(WindowResizeReason.DpiChange))
@@ -145,6 +148,22 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+
+                case WindowsMessage.WM_GETICON:
+                    if (_iconImpl == null)
+                    {
+                        break;
+                    }
+
+                    var requestIcon = (Icons)wParam;
+                    var requestDpi = (uint) lParam;
+
+                    if (requestDpi == 0)
+                    {
+                        requestDpi = _dpi;
+                    }
+                                        
+                    return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
@@ -589,9 +608,32 @@ namespace Avalonia.Win32
                     _resizeReason = WindowResizeReason.User;
                     break;
 
+                case WindowsMessage.WM_SHOWWINDOW:
+                    _shown = wParam != default;
+
+                    if (_isClientAreaExtended)
+                    {
+                        ExtendClientArea();
+                    }
+                    break;
+
                 case WindowsMessage.WM_SIZE:
                     {
                         var size = (SizeCommand)wParam;
+
+                        var windowState = size switch
+                        {
+                            SizeCommand.Maximized => WindowState.Maximized,
+                            SizeCommand.Minimized => WindowState.Minimized,
+                            _ when _isFullScreenActive => WindowState.FullScreen,
+                            // Ignore state changes for unshown windows. We always tell Windows that we are hidden
+                            // until shown, so the OS value should be ignored while we are in the unshown state.
+                            _ when !_shown => _lastWindowState,
+                            _ => WindowState.Normal,
+                        };
+
+                        var stateChanged = windowState != _lastWindowState;
+                        _lastWindowState = windowState;
 
                         if (Resized != null &&
                             (size == SizeCommand.Restored ||
@@ -601,18 +643,9 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
-                        var windowState = size switch
-                        {
-                            SizeCommand.Maximized => WindowState.Maximized,
-                            SizeCommand.Minimized => WindowState.Minimized,
-                            _ when _isFullScreenActive => WindowState.FullScreen,
-                            _ => WindowState.Normal,
-                        };
 
-                        if (windowState != _lastWindowState)
+                        if (stateChanged)
                         {
-                            _lastWindowState = windowState;
-
                             var newWindowProperties = _windowProperties;
 
                             newWindowProperties.WindowState = windowState;
@@ -684,7 +717,15 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KILLFOCUS:
-                    LostFocus?.Invoke();
+                    if (Imm32InputMethod.Current.IsComposing)
+                    {
+                        _killFocusRequested = true;
+                    }
+                    else
+                    {
+                        LostFocus?.Invoke();
+                    }
+                   
                     break;
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
@@ -727,7 +768,14 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
-                        Imm32InputMethod.Current.HandleCompositionEnd();
+                        Imm32InputMethod.Current.HandleCompositionEnd(timestamp);
+
+                        if (_killFocusRequested)
+                        {
+                            LostFocus?.Invoke();
+
+                            _killFocusRequested = false;
+                        }
 
                         return IntPtr.Zero;
                     }
@@ -1162,11 +1210,10 @@ namespace Avalonia.Win32
             var keyData = ToInt32(lParam);
             var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
-
-            if (key == Key.None && physicalKey == PhysicalKey.None)
-                return null;
-
             var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
+                return null;
 
             return new RawKeyEventArgs(
                 WindowsKeyboardDevice.Instance,

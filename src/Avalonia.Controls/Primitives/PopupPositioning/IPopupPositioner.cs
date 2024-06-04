@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// Provides positioning parameters to <see cref="IPopupPositioner"/>.
     /// </summary>
     /// <remarks>
-    /// The IPopupPositioner provides a collection of rules for the placement of a a popup relative
+    /// The IPopupPositioner provides a collection of rules for the placement of a popup relative
     /// to its parent. Rules can be defined to ensure the popup remains within the visible area's
     /// borders, and to specify how the popup changes its position, such as sliding along an axis,
     /// or flipping around a rectangle. These positioner-created rules are constrained by the
@@ -248,7 +248,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         /// <remarks>
         /// Resize the surface vertically so that it is completely unconstrained.
         /// </remarks>
-        ResizeY = 16,
+        ResizeY = 32,
 
         All = SlideX|SlideY|FlipX|FlipY|ResizeX|ResizeY
     }
@@ -468,7 +468,16 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             {
                 if (target == null)
                     throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
-                var matrix = target.TransformToVisual(topLevel);
+                Matrix? matrix;
+                if (TryGetAdorner(target, out var adorned, out var adornerLayer))
+                {
+                    matrix = adorned!.TransformToVisual(topLevel) * target.TransformToVisual(adornerLayer!);
+                }
+                else
+                {
+                    matrix = target.TransformToVisual(topLevel);
+                }
+
                 if (matrix == null)
                 {
                     if (target.GetVisualRoot() == null)
@@ -528,6 +537,25 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                     positionerParameters.Gravity |= PopupGravity.Right;
                 }
             }
+        }
+
+        private static bool TryGetAdorner(Visual target, out Visual? adorned, out Visual? adornerLayer)
+        {
+            var element = target;
+            while (element != null)
+            {
+                if (AdornerLayer.GetAdornedElement(element) is { } adornedElement)
+                {
+                    adorned = adornedElement;
+                    adornerLayer = AdornerLayer.GetAdornerLayer(adorned);
+                    return true;
+                }
+                element = element.VisualParent;
+            }
+
+            adorned = null;
+            adornerLayer = null;
+            return false;
         }
     }
 
