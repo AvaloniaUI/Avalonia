@@ -22,7 +22,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="designMode">Indicates whether the XAML is being loaded in design mode.</param>
         /// <returns>The loaded object.</returns>
         [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
-        public static object Load(string xaml, Assembly? localAssembly = null, object? rootInstance = null, Uri? uri = null, bool designMode = false)
+        public static object Load([StringSyntax(StringSyntaxAttribute.Xml)] string xaml, Assembly? localAssembly = null, object? rootInstance = null, Uri? uri = null, bool designMode = false)
         {
             xaml = xaml ?? throw new ArgumentNullException(nameof(xaml));
 
@@ -74,7 +74,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="localAssembly">Default assembly for clr-namespace:.</param>
         /// <returns>The loaded object.</returns>
         [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
-        public static object Parse(string xaml, Assembly? localAssembly = null)
+        public static object Parse([StringSyntax(StringSyntaxAttribute.Xml)] string xaml, Assembly? localAssembly = null)
             => Load(xaml, localAssembly);
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="localAssembly">>Default assembly for clr-namespace:.</param>
         /// <returns>The loaded object.</returns>
         [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
-        public static T Parse<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(string xaml, Assembly? localAssembly = null)
+        public static T Parse<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>([StringSyntax(StringSyntaxAttribute.Xml)] string xaml, Assembly? localAssembly = null)
             => (T)Parse(xaml, localAssembly);
     }
 }

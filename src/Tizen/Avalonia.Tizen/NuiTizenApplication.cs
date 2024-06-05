@@ -13,7 +13,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
     private SingleViewLifetime? _lifetime;
 
-    private class SingleViewLifetime : ISingleViewApplicationLifetime
+    private class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
     {
         public NuiAvaloniaView View { get; }
 
@@ -27,8 +27,11 @@ public class NuiTizenApplication<TApp> : NUIApplication
             get => View.Content;
             set => View.Content = value;
         }
+
+        public TopLevel? TopLevel => View.TopLevel;
     }
 
+    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseTizen();
     protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
     protected override void OnCreate()
@@ -55,13 +58,12 @@ public class NuiTizenApplication<TApp> : NUIApplication
         SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
 
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "App builder");
-        var builder = AppBuilder.Configure<TApp>().UseTizen();
+        var builder = CreateAppBuilder();
 
         TizenThreadingInterface.MainloopContext.Post(_ =>
         {
-            CustomizeAppBuilder(builder);
-
-            builder.AfterSetup(_ => _lifetime!.View.Initialise());
+            builder = CustomizeAppBuilder(builder);
+            builder.AfterApplicationSetup(_ => _lifetime!.View.Initialise());
 
             Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup lifetime");
             builder.SetupWithLifetime(_lifetime!);

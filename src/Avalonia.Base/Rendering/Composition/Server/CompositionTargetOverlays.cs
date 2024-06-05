@@ -11,6 +11,7 @@ internal class CompositionTargetOverlays
 {
     private FpsCounter? _fpsCounter;
     private FrameTimeGraph? _renderTimeGraph;
+    private FrameTimeGraph? _updateTimeGraph;
     private FrameTimeGraph? _layoutTimeGraph;
     private Rect? _oldFpsCounterRect;
     private long _updateStarted;
@@ -35,6 +36,11 @@ internal class CompositionTargetOverlays
 
     private FrameTimeGraph? RenderTimeGraph
         => _renderTimeGraph ??= CreateTimeGraph("Render");
+    
+    private FrameTimeGraph? UpdateTimeGraph
+        => _updateTimeGraph ??= CreateTimeGraph("RUpdate");
+
+
 
     public bool RequireLayer => DebugOverlays.HasAnyFlag(RendererDebugOverlays.DirtyRects);
 
@@ -91,7 +97,17 @@ internal class CompositionTargetOverlays
         }
     }
 
-    public void MarkUpdateCallStart() => _updateStarted = CaptureTiming ? Stopwatch.GetTimestamp() : 0L;
+    public void MarkUpdateCallStart()
+    {
+        if (CaptureTiming)
+            _updateStarted = CaptureTiming ? Stopwatch.GetTimestamp() : 0L;
+    }
+
+    public void MarkUpdateCallEnd()
+    {
+        if (CaptureTiming)
+            UpdateTimeGraph?.AddFrameValue(StopwatchHelper.GetElapsedTime(_updateStarted).TotalMilliseconds);
+    }
 
     private void DrawOverlays(ImmediateDrawingContext targetContext, bool hasLayer, Size logicalSize)
     {
@@ -129,7 +145,10 @@ internal class CompositionTargetOverlays
             DrawTimeGraph(LayoutTimeGraph);
 
         if (DebugOverlays.HasFlag(RendererDebugOverlays.RenderTimeGraph))
+        {
             DrawTimeGraph(RenderTimeGraph);
+            DrawTimeGraph(UpdateTimeGraph);
+        }
     }
 
 

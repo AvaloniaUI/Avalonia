@@ -59,7 +59,7 @@ namespace Avalonia.Skia
             t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
             t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
 
-            var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+            using var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
 
             if (skTypeface != null)
             {

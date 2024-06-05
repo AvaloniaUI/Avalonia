@@ -15,6 +15,9 @@ namespace Avalonia.OpenGL
     
         [GetProcAddress("glGetIntegerv")]
         public partial void GetIntegerv(int name, out int rv);
+    
+        [GetProcAddress("glGetFloatv")]
+        public partial void GetFloatv(int name, out float rv);
 
         [GetProcAddress("glGetString")]
         public partial IntPtr GetStringNative(int v);

@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -124,6 +125,14 @@ namespace Avalonia.Native
 
             AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
 
+            AvaloniaLocator.CurrentMutable.Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
+                    {
+                        { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
+                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
+                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
+                        { Key.Up , "↑" }
+                    }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"));
+
             foreach (var mode in _options.RenderingMode)
             {
                 if (mode == AvaloniaNativeRenderingMode.OpenGl)
@@ -138,15 +147,14 @@ namespace Avalonia.Native
                         // ignored
                     }
                 }
-#pragma warning disable CS0618
                 else if (mode == AvaloniaNativeRenderingMode.Metal)
-#pragma warning restore CS0618
                 {
                     try
                     {
                         var metal = new MetalPlatformGraphics(_factory);
                         metal.CreateContext().Dispose();
                         _platformGraphics = metal;
+                        break;
                     }
                     catch
                     {

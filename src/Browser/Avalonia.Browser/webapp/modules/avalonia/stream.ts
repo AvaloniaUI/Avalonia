@@ -1,5 +1,12 @@
 import FileSystemWritableFileStream from "native-file-system-adapter/types/src/FileSystemWritableFileStream";
-import { IMemoryView } from "../../types/dotnet";
+
+const sharedArrayBufferDefined = typeof SharedArrayBuffer !== "undefined";
+export function isSharedArrayBuffer(buffer: any): buffer is SharedArrayBuffer {
+    // BEWARE: In some cases, `instanceof SharedArrayBuffer` returns false even though buffer is an SAB.
+    // Patch adapted from https://github.com/emscripten-core/emscripten/pull/16994
+    // See also https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toStringTag
+    return sharedArrayBufferDefined && buffer[Symbol.toStringTag] === "SharedArrayBuffer";
+}
 
 export class StreamHelper {
     public static async seek(stream: FileSystemWritableFileStream, position: number) {
@@ -14,11 +21,22 @@ export class StreamHelper {
         return await stream.close();
     }
 
-    public static async write(stream: FileSystemWritableFileStream, span: IMemoryView) {
-        const array = new Uint8Array(span.byteLength);
-        span.copyTo(array);
+    public static async write(stream: FileSystemWritableFileStream, span: any, offset: number, count: number) {
+        const heap8 = globalThis.getDotnetRuntime(0)?.localHeapViewU8();
 
-        return await stream.write(array);
+        let buffer: Uint8Array;
+        if (span._pointer > 0 && span._length > 0 && heap8 && !isSharedArrayBuffer(heap8.buffer)) {
+            // Attempt to use undocumented access to the HEAP8 directly
+            // Note, SharedArrayBuffer cannot be used with ImageData (when WasmEnableThreads = true).
+            buffer = new Uint8Array(heap8.buffer, span._pointer as number + offset, count);
+        } else {
+            // Or fallback to the normal API that does multiple array copies.
+            const copy = new Uint8Array(count);
+            span.copyTo(copy, offset);
+            buffer = span;
+        }
+
+        return await stream.write(buffer);
     }
 
     public static byteLength(stream: Blob) {

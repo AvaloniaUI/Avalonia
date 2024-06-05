@@ -614,6 +614,20 @@ namespace Avalonia.Direct2D1.Media
                         var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
                         var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
 
+                        var transform = rect.TopLeft == default ?
+                            Matrix.Identity :
+                            Matrix.CreateTranslation(-rect.X, -rect.Y);
+
+                        var brushTransform = Matrix.Identity;
+
+                        if (sceneBrushContent.Transform != null)
+                        {
+                            var transformOrigin = sceneBrushContent.TransformOrigin.ToPixels(rect);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+
+                            brushTransform = -offset * sceneBrushContent.Transform.Value * offset;
+                        }
+
                         using (var intermediate = new BitmapRenderTarget(
                                    _deviceContext,
                                    CompatibleRenderTargetOptions.None,
@@ -623,13 +637,12 @@ namespace Avalonia.Direct2D1.Media
                             {
                                 intermediate.Clear(null);
 
-                                if (sceneBrush?.Transform is not null)
+                                if (sceneBrush?.TileMode == TileMode.None)
                                 {
-                                    ctx.Transform *= sceneBrush.Transform.Value;
+                                    transform = brushTransform * transform;
                                 }
                                 
-                                sceneBrushContent.Render(ctx,
-                                    rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+                                sceneBrushContent.Render(ctx, transform);
                             }
 
                             return new ImageBrushImpl(

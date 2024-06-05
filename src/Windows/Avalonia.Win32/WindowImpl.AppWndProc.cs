@@ -19,6 +19,8 @@ namespace Avalonia.Win32
 {
     internal partial class WindowImpl
     {
+        private bool _killFocusRequested;
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We do .NET COM interop availability checks")]
@@ -609,6 +611,15 @@ namespace Avalonia.Win32
                     _resizeReason = WindowResizeReason.User;
                     break;
 
+                case WindowsMessage.WM_SHOWWINDOW:
+                    _shown = wParam != default;
+
+                    if (_isClientAreaExtended)
+                    {
+                        ExtendClientArea();
+                    }
+                    break;
+
                 case WindowsMessage.WM_SIZE:
                     {
                         var size = (SizeCommand)wParam;
@@ -618,6 +629,9 @@ namespace Avalonia.Win32
                             SizeCommand.Maximized => WindowState.Maximized,
                             SizeCommand.Minimized => WindowState.Minimized,
                             _ when _isFullScreenActive => WindowState.FullScreen,
+                            // Ignore state changes for unshown windows. We always tell Windows that we are hidden
+                            // until shown, so the OS value should be ignored while we are in the unshown state.
+                            _ when !_shown => _lastWindowState,
                             _ => WindowState.Normal,
                         };
 
@@ -706,7 +720,15 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KILLFOCUS:
-                    LostFocus?.Invoke();
+                    if (Imm32InputMethod.Current.IsComposing)
+                    {
+                        _killFocusRequested = true;
+                    }
+                    else
+                    {
+                        LostFocus?.Invoke();
+                    }
+                   
                     break;
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
@@ -750,6 +772,13 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
                         Imm32InputMethod.Current.HandleCompositionEnd(timestamp);
+
+                        if (_killFocusRequested)
+                        {
+                            LostFocus?.Invoke();
+
+                            _killFocusRequested = false;
+                        }
 
                         return IntPtr.Zero;
                     }
@@ -1184,11 +1213,10 @@ namespace Avalonia.Win32
             var keyData = ToInt32(lParam);
             var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
-
-            if (key == Key.None && physicalKey == PhysicalKey.None)
-                return null;
-
             var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
+                return null;
 
             return new RawKeyEventArgs(
                 WindowsKeyboardDevice.Instance,

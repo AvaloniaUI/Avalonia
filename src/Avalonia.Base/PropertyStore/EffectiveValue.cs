@@ -12,6 +12,11 @@ namespace Avalonia.PropertyStore
     internal abstract class EffectiveValue
     {
         /// <summary>
+        /// Gets the property targeted by this value.
+        /// </summary>
+        public AvaloniaProperty Property { get; protected init; }
+
+        /// <summary>
         /// Gets the current effective value as a boxed value.
         /// </summary>
         public object? Value => GetBoxedValue();
@@ -52,6 +57,13 @@ namespace Avalonia.PropertyStore
         /// 
         /// </summary>
         public bool IsCoercedDefaultValue { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="EffectiveValue"/>.
+        /// </summary>
+        /// <param name="property">The property targeted by this value.</param>
+        protected EffectiveValue(AvaloniaProperty property)
+            => Property = property;
 
         /// <summary>
         /// Begins a reevaluation pass on the effective value.

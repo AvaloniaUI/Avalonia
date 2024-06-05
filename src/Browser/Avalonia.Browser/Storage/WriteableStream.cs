@@ -80,14 +80,30 @@ internal sealed class WriteableStream : Stream
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        return new ValueTask(WriteAsyncInternal(buffer.ToArray(), cancellationToken));
+        return new ValueTask(WriteAsyncInternal(buffer.ToArray(), 0, buffer.Length, cancellationToken));
     }
 
-    private Task WriteAsyncInternal(byte[] buffer, CancellationToken _)
+    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        _position += buffer.Length;
+        return WriteAsyncInternal(buffer, offset, count, cancellationToken);
+    }
 
-        return StreamHelper.WriteAsync(JSReference, buffer);
+    public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+    {
+        var task = WriteAsyncInternal(buffer, offset, count, default);
+        return TaskToAsyncResult.Begin(task, callback, state);
+    }
+
+    public override void EndWrite(IAsyncResult asyncResult)
+    {
+        TaskToAsyncResult.End(asyncResult);
+    }
+
+    private Task WriteAsyncInternal(byte[] buffer, int offset, int count, CancellationToken _)
+    {
+        _position += count;
+
+        return StreamHelper.WriteAsync(JSReference, buffer, offset, count);
     }
 
     protected override void Dispose(bool disposing)

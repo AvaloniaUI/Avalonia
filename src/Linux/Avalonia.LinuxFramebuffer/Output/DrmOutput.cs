@@ -7,10 +7,8 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Platform.Interop;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
-using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
 
 namespace Avalonia.LinuxFramebuffer.Output
 {
@@ -51,11 +49,14 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions options = null)
+            :this(new DrmCard(path), connectorsForceProbe, options)
+        {
+        }
+
+        public DrmOutput(DrmCard card, bool connectorsForceProbe = false, DrmOutputOptions options = null)
         {
             if (options != null)
                 _outputOptions = options;
-
-            var card = new DrmCard(path);
 
             var resources = card.GetResources(connectorsForceProbe);
 
@@ -66,9 +67,9 @@ namespace Avalonia.LinuxFramebuffer.Output
                 connectors = connectors.Where(c => c.ConnectorType == connectorType);
             }
 
-            if (options?.ConnectorType_Id is { } connectorType_Id)
+            if (options?.ConnectorTypeId is { } connectorTypeId)
             {
-                connectors = connectors.Where(c => c.ConnectorType_Id == connectorType_Id);
+                connectors = connectors.Where(c => c.ConnectorTypeId == connectorTypeId);
             }
 
             var connector =
@@ -310,7 +311,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                         };
                         while (waitingForFlip)
                         {
-                            var pfd = new pollfd {events = 1, fd = _parent._card.Fd};
+                            var pfd = new PollFd {events = 1, fd = _parent._card.Fd};
                             poll(&pfd, new IntPtr(1), -1);
                             drmHandleEvent(_parent._card.Fd, &ctx);
                         }

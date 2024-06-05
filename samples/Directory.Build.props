@@ -4,7 +4,7 @@
     <IsPackable>false</IsPackable>
     <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Designer.HostApp\bin\Debug\netstandard2.0\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <LangVersion>11</LangVersion>
+    <LangVersion>12</LangVersion>
     <NoWarn>$(NoWarn);CS8002</NoWarn> <!-- ignore signing warnings for samples -->
   </PropertyGroup>
 

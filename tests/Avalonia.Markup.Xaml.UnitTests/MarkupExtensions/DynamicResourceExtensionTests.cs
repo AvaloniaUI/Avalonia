@@ -924,6 +924,42 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             window.Content = null;
         }
 
+        [Fact]
+        public void Handles_Clearing_Resources_With_Dynamic_Theme_In_Dynamic_Template()
+        {
+            // Issue #14753
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var xaml = """
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <SolidColorBrush x:Key='Blue'>Blue</SolidColorBrush>
+        <ControlTheme x:Key="MyBorder" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Blue}"/>
+        </ControlTheme>
+        <ControlTheme x:Key="MyButton" TargetType="Button">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Theme="{DynamicResource MyBorder}"/>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </Window.Resources>
+    <Button Theme="{DynamicResource MyButton}" Background="{DynamicResource Blue}"/>
+</Window>
+""";
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            window.Show();
+
+            var button = Assert.IsType<Button>(window.Content);
+            var border = Assert.IsType<Border>(button.GetVisualChildren().Single());
+            var background = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
+            Assert.Equal(Colors.Blue, background.Color);
+
+            window.Resources.Clear();
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

@@ -1,0 +1,22 @@
+name: "Avalonia CLA Bot"
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened,closed,synchronize]
+
+jobs:
+  Runner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Clone bot repo'
+        if: github.event.issue.pull_request && ((github.event.comment.user.login != 'cla-avalonia') || github.event_name == 'pull_request_target')
+        run : |
+          rm -rf ./github-action/
+          git clone https://${{ secrets.CLA_PAT }}:@github.com/AvaloniaUI/AvaloniaCLABot --branch=main --depth=1 --recursive CLABot
+
+      - name: "Run CLA bot"
+        if: github.event.issue.pull_request && ((github.event.comment.user.login != 'cla-avalonia') || github.event_name == 'pull_request_target')
+        uses: ./CLABot
+        env:
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_PAT }} 

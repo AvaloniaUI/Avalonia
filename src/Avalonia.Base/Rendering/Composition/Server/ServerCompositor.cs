@@ -27,8 +27,6 @@ namespace Avalonia.Rendering.Composition.Server
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
         private readonly List<ServerCompositionTarget> _activeTargets = new();
-        private readonly HashSet<IServerClockItem> _clockItems = new();
-        private readonly List<IServerClockItem> _clockItemsToUpdate = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
         private readonly object _lock = new object();
@@ -39,12 +37,14 @@ namespace Avalonia.Rendering.Composition.Server
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
         public CompositionOptions Options { get; }
+        public ServerCompositorAnimations Animations { get; }
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
             CompositionOptions options,
             BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
         {
             Options = options;
+            Animations = new();
             _renderLoop = renderLoop;
             RenderInterface = new PlatformRenderInterfaceContextManager(platformGraphics);
             RenderInterface.ContextDisposed += RT_OnContextDisposed;
@@ -210,19 +210,16 @@ namespace Avalonia.Rendering.Composition.Server
             UpdateServerTime();
             ApplyPendingBatches();
             NotifyBatchesProcessed();
-            
-            foreach(var animation in _clockItems)
-                _clockItemsToUpdate.Add(animation);
 
-            foreach (var animation in _clockItemsToUpdate)
-                animation.OnTick();
-            
-            _clockItemsToUpdate.Clear();
+            Animations.Process();
+
 
             ApplyEnqueuedRenderResourceChanges();
             
             try
             {
+                if(!RenderInterface.IsReady)
+                    return;
                 RenderInterface.EnsureValidBackendContext();
                 ExecuteServerJobs();
                 foreach (var t in _activeTargets)
@@ -244,12 +241,6 @@ namespace Avalonia.Rendering.Composition.Server
             _activeTargets.Remove(target);
         }
         
-        public void AddToClock(IServerClockItem item) =>
-            _clockItems.Add(item);
-
-        public void RemoveFromClock(IServerClockItem item) =>
-            _clockItems.Remove(item);
-
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             using (RenderInterface.EnsureCurrent())

@@ -136,9 +136,10 @@ namespace Avalonia.Rendering.Composition.Server
             _updateRequested = false;
             Readback.CompleteWrite(Revision);
 
+            _overlays.MarkUpdateCallEnd();
+            
             if (!_redrawRequested)
                 return;
-            _redrawRequested = false;
 
             var renderTargetWithProperties = _renderTarget as IRenderTargetWithProperties;
 
@@ -156,7 +157,7 @@ namespace Avalonia.Rendering.Composition.Server
                     _layer = null;
                     _layer = renderTargetContext.CreateLayer(PixelSize);
                     _layerSize = PixelSize;
-                    DirtyRects.AddRect(new PixelRect(_layerSize));
+                    DirtyRects.AddRect(new LtrbPixelRect(_layerSize));
                 }
                 else if (!needLayer)
                 {
@@ -166,7 +167,7 @@ namespace Avalonia.Rendering.Composition.Server
 
                 if (_fullRedrawRequested || (!needLayer && !properties.PreviousFrameIsRetained))
                 {
-                    DirtyRects.AddRect(new PixelRect(_layerSize));
+                    DirtyRects.AddRect(new LtrbPixelRect(_layerSize));
                     _fullRedrawRequested = false;
                 }
 
@@ -197,23 +198,23 @@ namespace Avalonia.Rendering.Composition.Server
 
                 RenderedVisuals = 0;
 
+                _redrawRequested = false;
                 DirtyRects.Reset();
             }
         }
 
         void RenderRootToContextWithClip(IDrawingContextImpl context, ServerCompositionVisual root)
         {
-            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
-                               Compositor.RenderInterface.GpuContext != null;
+            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ?? false;
             
             using (DirtyRects.BeginDraw(context))
             {
                 context.Clear(Colors.Transparent);
                 if (useLayerClip)
-                    context.PushLayer(DirtyRects.CombinedRect.ToRect(1));
+                    context.PushLayer(DirtyRects.CombinedRect.ToRectUnscaled());
 
-
-                root.Render(new CompositorDrawingContextProxy(context), null, DirtyRects);
+                using (var proxy = new CompositorDrawingContextProxy(context))
+                    root.Render(proxy, null, DirtyRects);
 
                 if (useLayerClip)
                     context.PopLayer();
