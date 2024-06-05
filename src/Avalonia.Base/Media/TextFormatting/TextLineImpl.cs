@@ -1287,11 +1287,11 @@ namespace Avalonia.Media.TextFormatting
                             {
                                 height = drawableTextRun.Size.Height;
                             }
+                          
+                            //Adjust current ascent so drawables and text align at the bottom edge of the line.
+                            var offset = Math.Max(0, drawableTextRun.Baseline + ascent - descent);
 
-                            if (ascent > -drawableTextRun.Baseline)
-                            {
-                                ascent = -drawableTextRun.Baseline;
-                            }
+                            ascent -= offset;
 
                             bounds = bounds.Union(new Rect(new Point(bounds.Right, 0), drawableTextRun.Size));
 
