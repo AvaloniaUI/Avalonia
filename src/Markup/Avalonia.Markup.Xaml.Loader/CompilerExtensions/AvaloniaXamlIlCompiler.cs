@@ -86,6 +86,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBeforeMany(new [] { typeof(DeferredContentTransformer), typeof(AvaloniaXamlIlCompiledBindingsMetadataRemover) },
                 new AvaloniaXamlIlDeferredResourceTransformer());
 
+            InsertBefore<AvaloniaXamlIlTransformInstanceAttachedProperties>(new AvaloniaXamlIlTransformRoutedEvent());
+
             Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());
