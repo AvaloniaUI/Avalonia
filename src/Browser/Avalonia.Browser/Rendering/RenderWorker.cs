@@ -58,12 +58,10 @@ public partial class RenderWorker
             "System.Runtime.InteropServices.JavaScript")]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Runtime.InteropServices.JavaScript.JSHostImplementation", 
             "System.Runtime.InteropServices.JavaScript")]
-        [UnconditionalSuppressMessage("Trimming", 
-            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Private runtime API")]
         static JSWebWorkerClone()
         {
-#pragma warning disable IL2075
             var syncContext = typeof(System.Runtime.InteropServices.JavaScript.JSHost)
                 .Assembly!.GetType("System.Runtime.InteropServices.JavaScript.JSSynchronizationContext")!;
             var hostImpl = typeof(System.Runtime.InteropServices.JavaScript.JSHost)
@@ -71,7 +69,6 @@ public partial class RenderWorker
             
             _setExtLoop = hostImpl.GetMethod("SetHasExternalEventLoop")!;
             _intallInterop = syncContext.GetMethod("InstallWebWorkerInterop")!;
-#pragma warning restore IL2075
         }
 
         public static Task RunAsync(Func<Task> run)
