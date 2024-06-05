@@ -9,8 +9,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             if (node is XamlAstObjectNode obj)
             {
-                IXamlAstNode classesNode = null;
-                IXamlAstNode firstSingleClassNode = null;
+                IXamlAstNode? classesNode = null;
+                IXamlAstNode? firstSingleClassNode = null;
                 var types = context.GetAvaloniaTypes();
                 foreach (var child in obj.Children)
                 {

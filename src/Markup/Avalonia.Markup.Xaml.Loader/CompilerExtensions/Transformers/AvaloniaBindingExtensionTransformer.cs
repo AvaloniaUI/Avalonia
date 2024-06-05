@@ -4,14 +4,11 @@ using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
 
-
-using XamlParseException = XamlX.XamlParseException;
-
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class XamlBindingsTransformException : XamlTransformException
     {
-        public XamlBindingsTransformException(string message, IXamlLineInfo lineInfo, Exception innerException = null)
+        public XamlBindingsTransformException(string message, IXamlLineInfo lineInfo, Exception? innerException = null)
             : base(message, lineInfo, innerException)
         {
         }

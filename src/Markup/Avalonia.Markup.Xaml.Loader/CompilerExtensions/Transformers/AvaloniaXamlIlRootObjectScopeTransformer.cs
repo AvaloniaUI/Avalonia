@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 mnode.Manipulation = new XamlManipulationGroupNode(mnode,
                     new[]
                     {
-                        mnode.Manipulation,
+                        mnode.Manipulation!,
                         new HandleRootObjectScopeNode(mnode, context.GetAvaloniaTypes())
                     });
             }
@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
         internal class Emitter : IXamlILAstNodeEmitter
         {
-            public XamlILNodeEmitResult Emit(IXamlAstNode node, XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+            public XamlILNodeEmitResult? Emit(IXamlAstNode node, XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
             {
                 if (!(node is HandleRootObjectScopeNode))
                 {

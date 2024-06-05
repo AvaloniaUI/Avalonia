@@ -135,6 +135,7 @@ public class XamlXNameResolverTests
                 MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
 
         var classInfo = classResolver.ResolveView(xaml);
+        Assert.NotNull(classInfo);
         var nameResolver = new XamlXNameResolver();
         return nameResolver.ResolveNames(classInfo.Xaml);
     }

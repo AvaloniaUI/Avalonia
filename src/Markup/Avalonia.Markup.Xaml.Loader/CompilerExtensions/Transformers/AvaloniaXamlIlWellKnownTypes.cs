@@ -27,7 +27,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IDisposable { get; }
         public IXamlType ICommand { get; }
         public XamlTypeWellKnownTypes XamlIlTypes { get; }
-        public XamlLanguageTypeMappings XamlIlMappings { get; }
         public IXamlType Transitions { get; }
         public IXamlType AssignBindingAttribute { get; }
         public IXamlType DependsOnAttribute { get; }
@@ -138,7 +137,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaAttachedPropertyT = cfg.TypeSystem.GetType("Avalonia.AttachedProperty`1");
             BindingPriority = cfg.TypeSystem.GetType("Avalonia.Data.BindingPriority");
             AvaloniaObjectSetStyledPropertyValue = AvaloniaObject
-                .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
+                .GetMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
                                  && m.Parameters.Count == 3
                                  && m.Parameters[0].Name == "StyledProperty`1"
                                  && m.Parameters[2].Equals(BindingPriority));
@@ -156,7 +155,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaListAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.AvaloniaListAttribute");
             AvaloniaList = cfg.TypeSystem.GetType("Avalonia.Collections.AvaloniaList`1");
             OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
-            AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, AvaloniaObject,
+            AvaloniaObjectBindMethod = AvaloniaObjectExtensions.GetMethod("Bind", IDisposable, false, AvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
             UnsetValueType = cfg.TypeSystem.GetType("Avalonia.UnsetValueType");
@@ -182,7 +181,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             NameScopeSetNameScope = NameScope.GetMethod(new FindMethodMethodSignature("SetNameScope",
                 XamlIlTypes.Void, StyledElement, INameScope)
             { IsStatic = true });
-            AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", IDisposable,
+            AvaloniaObjectSetValueMethod = AvaloniaObject.GetMethod("SetValue", IDisposable,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
             IPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
             ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
@@ -242,7 +241,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             StyledElementClassesProperty =
                 StyledElement.Properties.First(x => x.Name == "Classes" && x.PropertyType.Equals(Classes));
             ClassesBindMethod = cfg.TypeSystem.GetType("Avalonia.StyledElementExtensions")
-                .FindMethod( "BindClass", IDisposable, false, StyledElement,
+                .GetMethod("BindClass", IDisposable, false, StyledElement,
                 cfg.WellKnownTypes.String,
                 IBinding, cfg.WellKnownTypes.Object);
 
@@ -260,10 +259,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             MergeResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.MergeResourceInclude");
             IResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.IResourceDictionary");
             ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
-            ResourceDictionaryDeferredAdd = ResourceDictionary.FindMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
+            ResourceDictionaryDeferredAdd = ResourceDictionary.GetMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
                 cfg.TypeSystem.GetType("Avalonia.Controls.IDeferredContent"));
-            ResourceDictionaryEnsureCapacity = ResourceDictionary.FindMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
-            ResourceDictionaryGetCount = ResourceDictionary.FindMethod("get_Count", XamlIlTypes.Int32, true);
+            ResourceDictionaryEnsureCapacity = ResourceDictionary.GetMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
+            ResourceDictionaryGetCount = ResourceDictionary.GetMethod("get_Count", XamlIlTypes.Int32, true);
             IThemeVariantProvider = cfg.TypeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });

@@ -24,7 +24,8 @@ internal class AvaloniaXamlIlThemeVariantProviderTransformer : IXamlAstTransform
 
         var themeDictionariesColl = avTypes.IDictionaryT.MakeGenericType(avTypes.ThemeVariant, avTypes.IThemeVariantProvider);
         if (context.ParentNodes().FirstOrDefault() is not XamlAstXamlPropertyValueNode propertyValueNode
-            || !themeDictionariesColl.IsAssignableFrom(propertyValueNode.Property.GetClrProperty().Getter.ReturnType))
+            || propertyValueNode.Property.GetClrProperty().Getter is not { } getter
+            || !themeDictionariesColl.IsAssignableFrom(getter.ReturnType))
         {
             return node;
         }
