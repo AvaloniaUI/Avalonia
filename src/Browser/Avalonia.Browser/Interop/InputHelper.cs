@@ -9,7 +9,6 @@ internal static partial class InputHelper
 {
     public static Task RedirectInputAsync(int topLevelId, Action<BrowserTopLevelImpl> handler)
     {
-        // TODO consider passing input events through dispatcher or something.
         if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl) handler(topLevelImpl);
         return Task.CompletedTask;
     }

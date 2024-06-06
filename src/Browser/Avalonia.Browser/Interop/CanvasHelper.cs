@@ -11,9 +11,18 @@ internal static partial class CanvasHelper
     [JSExport]
     public static Task OnSizeChanged(int topLevelId, double width, double height, double dpr)
     {
-        return Dispatcher.UIThread.InvokeAsync(() => BrowserTopLevelImpl
-            .TryGetTopLevel(topLevelId)?.Surface?.OnSizeChanged(width, height, dpr))
-            .GetTask();
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
+        {
+            return Dispatcher.UIThread.InvokeAsync(() => BrowserTopLevelImpl
+                    .TryGetTopLevel(topLevelId)?.Surface?.OnSizeChanged(width, height, dpr))
+                .GetTask();
+        }
+        else
+        {
+            BrowserTopLevelImpl
+                .TryGetTopLevel(topLevelId)?.Surface?.OnSizeChanged(width, height, dpr);
+            return Task.CompletedTask;
+        }
     }
 
     [JSImport("CanvasSurface.create", AvaloniaModule.MainModuleName)]
