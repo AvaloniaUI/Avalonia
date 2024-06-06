@@ -14,7 +14,7 @@ internal class RenderTargetBrowserSurface : BrowserSurface
     private readonly BrowserPlatformGraphics _graphics;
 
     private record InitParams(Compositor Compositor, BrowserPlatformGraphics Graphics);
-    
+
     private static InitParams CreateCompositor(JSObject jsSurface)
     {
         var targetId = jsSurface.GetPropertyAsInt32("targetId");
@@ -36,7 +36,7 @@ internal class RenderTargetBrowserSurface : BrowserSurface
         return [_graphics.Target];
     }
 
-    protected override void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
+    public override void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
     {
         _graphics.CanvasSize = (Size: new PixelSize((int)pixelWidth, (int)pixelHeight), Scaling: dpr);
         base.OnSizeChanged(pixelWidth, pixelHeight, dpr);
@@ -93,9 +93,9 @@ internal class RenderTargetBrowserSurface : BrowserSurface
         base.Dispose();
     }
 
-    public static RenderTargetBrowserSurface Create(JSObject container, IReadOnlyList<BrowserRenderingMode> modes)
+    public static RenderTargetBrowserSurface Create(JSObject container, IReadOnlyList<BrowserRenderingMode> modes, int topLevelId)
     {
-        var js = CanvasHelper.CreateRenderTargetSurface(container, modes.Select(m => (int)m).ToArray(), RenderWorker.WorkerThreadId);
+        var js = CanvasHelper.CreateRenderTargetSurface(container, modes.Select(m => (int)m).ToArray(), topLevelId, RenderWorker.WorkerThreadId);
         return new RenderTargetBrowserSurface(js);
     }
 }

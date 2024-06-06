@@ -1,9 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmMainJSPath>wwwroot/main.js</WasmMainJSPath>
-    <OutputType>Exe</OutputType>
+    <WasmEnableThreads>false</WasmEnableThreads>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebuggerSupport>true</DebuggerSupport>
     <WasmDebugLevel>5</WasmDebugLevel>
@@ -20,10 +18,6 @@
       Also see https://youtrack.jetbrains.com/issue/RIDER-107175/Rider-doesnt-update-generate-transitive-Content-dependencies
     -->
     <AdditionalUpToDateCheckInput Include="../../src/Browser/Avalonia.Browser/**/*" Visible="false"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <WasmExtraFilesToDeploy Include="wwwroot/**" />
   </ItemGroup>
 
   <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.props" />
