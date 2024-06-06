@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 
@@ -80,6 +81,7 @@ internal static partial class InputHelper
             .OnGeometryChange(x, y, width, height));
 
     [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
+    [return: JSMarshalAs<JSType.Array<JSType.Number>>]
     public static partial double[] GetCoalescedEvents(JSObject pointerEvent);
 
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]

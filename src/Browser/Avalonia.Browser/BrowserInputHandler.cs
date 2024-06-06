@@ -80,14 +80,16 @@ internal class BrowserInputHandler
             coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
             {
                 // To minimize JS interop usage, we resolve all points properties in a single call.
+                const int itemsPerPoint = 6;
                 var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
-                var pointsCount = pointsProps.Length / 6;
                 argsObj.Dispose();
                 s_intermediatePointsPooledList.Clear();
+
+                var pointsCount = pointsProps.Length / itemsPerPoint;
                 s_intermediatePointsPooledList.Capacity = pointsCount - 1;
 
                 // Skip the last one, as it is already processed point.
-                for (var i = 0; i < pointsCount - 1; i++)
+                for (var i = 0; i < pointsCount - 1; i += itemsPerPoint)
                 {
                     s_intermediatePointsPooledList.Add(CreateRawPointer(
                         pointsProps[i], pointsProps[i + 1],
