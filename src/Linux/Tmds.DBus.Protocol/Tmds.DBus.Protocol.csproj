@@ -18,5 +18,10 @@
     <PackageReference Include="System.Threading.Channels" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Buffers">
+      <HintPath>..\..\..\..\..\.nuget\packages\system.buffers\4.4.0\ref\netstandard2.0\System.Buffers.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>

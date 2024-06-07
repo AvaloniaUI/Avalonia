@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
@@ -8,7 +9,6 @@ using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 
@@ -52,7 +52,9 @@ namespace Tmds.DBus.SourceGenerator
                 if (provider.IsEmpty)
                     return;
                 foreach ((DBusNode Node, string GeneratorMode) value in provider)
-                {
+                {               
+                    bool hasIntrospection = value.GeneratorMode != "HandlerNoIntrospect";
+
                     switch (value.GeneratorMode)
                     {
                         case "Proxy":
@@ -61,15 +63,20 @@ namespace Tmds.DBus.SourceGenerator
                                 TypeDeclarationSyntax typeDeclarationSyntax = GenerateProxy(dBusInterface);
                                 NamespaceDeclarationSyntax namespaceDeclaration = NamespaceDeclaration(IdentifierName("Tmds.DBus.SourceGenerator")).AddMembers(typeDeclarationSyntax);
                                 CompilationUnitSyntax compilationUnit = MakeCompilationUnit(namespaceDeclaration);
+                                
+                                
                                 productionContext.AddSource($"Tmds.DBus.SourceGenerator.{Pascalize(dBusInterface.Name!)}.g.cs", compilationUnit.GetText(Encoding.UTF8));
                             }
                             break;
-                        case "Handler":
+                        case "Handler": 
+                        case "HandlerNoIntrospect":
                             foreach (DBusInterface dBusInterface in value.Node.Interfaces!)
                             {
-                                TypeDeclarationSyntax typeDeclarationSyntax = GenerateHandler(dBusInterface);
+                                TypeDeclarationSyntax typeDeclarationSyntax = GenerateHandler(dBusInterface, hasIntrospection);
                                 NamespaceDeclarationSyntax namespaceDeclaration = NamespaceDeclaration(IdentifierName("Tmds.DBus.SourceGenerator")).AddMembers(typeDeclarationSyntax);
                                 CompilationUnitSyntax compilationUnit = MakeCompilationUnit(namespaceDeclaration);
+                                 
+                                
                                 productionContext.AddSource($"Tmds.DBus.SourceGenerator.{Pascalize(dBusInterface.Name!)}.g.cs", compilationUnit.GetText(Encoding.UTF8));
                             }
                             break;
@@ -96,6 +103,16 @@ namespace Tmds.DBus.SourceGenerator
                 productionContext.AddSource("Tmds.DBus.SourceGenerator.SignalHelper.cs", MakeSignalHelperClass().GetText(Encoding.UTF8));
                 productionContext.AddSource("Tmds.DBus.SourceGenerator.ReaderExtensions.cs", readerExtensions.GetText(Encoding.UTF8));
                 productionContext.AddSource("Tmds.DBus.SourceGenerator.WriterExtensions.cs", writerExtensions.GetText(Encoding.UTF8));
+                
+                if (ComplexTypeDictionary.Count != 0)
+                {
+                    CompilationUnitSyntax complexStructs = MakeCompilationUnit(NamespaceDeclaration(IdentifierName("Tmds.DBus.SourceGenerator")).AddMembers(ComplexTypeDictionary.Values
+                        .Cast<MemberDeclarationSyntax>().ToArray()));
+                    
+                    productionContext.AddSource("Tmds.DBus.SourceGenerator.ComplexStructs.cs", complexStructs.GetText(Encoding.UTF8));
+
+                }
+                
             });
         }
     }

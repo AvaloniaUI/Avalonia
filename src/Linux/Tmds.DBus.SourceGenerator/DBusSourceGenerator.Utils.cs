@@ -236,9 +236,35 @@ namespace Tmds.DBus.SourceGenerator
 
         private string GetOrAddReadStructMethod(DBusValue dBusValue)
         {
-            string identifier = $"ReadStruct_{SanitizeSignature(dBusValue.Type!)}";
+            string sanitized = SanitizeSignature(dBusValue.Type!);
+            string identifier = $"ReadStruct_{sanitized}";
             if (_readMethodExtensions.ContainsKey(identifier))
                 return identifier;
+
+            ReturnStatementSyntax retSyntax;
+            if (ComplexTypeDictionary.ContainsKey(sanitized))
+            {
+                retSyntax = ReturnStatement(
+                    InvocationExpression(ObjectCreationExpression(
+                            IdentifierName(sanitized))
+                        .AddArgumentListArguments(
+                            dBusValue.InnerDBusTypes!.Select(
+                                x => Argument(
+                                    InvocationExpression(
+                                        MakeMemberAccessExpression("reader", GetOrAddReadMethod(x))))).ToArray())));
+            }
+            else
+            {
+                
+                retSyntax = ReturnStatement(
+                    InvocationExpression(
+                            MakeMemberAccessExpression("ValueTuple", "Create"))
+                        .AddArgumentListArguments(
+                            dBusValue.InnerDBusTypes!.Select(
+                                x => Argument(
+                                    InvocationExpression(
+                                        MakeMemberAccessExpression("reader", GetOrAddReadMethod(x))))).ToArray()));
+            }
 
             _readMethodExtensions.Add(identifier,
                 MethodDeclaration(GetDotnetType(dBusValue, AccessMode.Read), identifier)
@@ -252,15 +278,8 @@ namespace Tmds.DBus.SourceGenerator
                             .AddStatements(
                                 ExpressionStatement(
                                     InvocationExpression(
-                                        MakeMemberAccessExpression("reader", "AlignStruct"))),
-                                ReturnStatement(
-                                    InvocationExpression(
-                                        MakeMemberAccessExpression("ValueTuple", "Create"))
-                                        .AddArgumentListArguments(
-                                            dBusValue.InnerDBusTypes!.Select(
-                                                x => Argument(
-                                                    InvocationExpression(
-                                                        MakeMemberAccessExpression("reader", GetOrAddReadMethod(x))))).ToArray())))));
+                                        MakeMemberAccessExpression("reader", "AlignStruct"))),retSyntax
+                                 )));
 
             return identifier;
         }

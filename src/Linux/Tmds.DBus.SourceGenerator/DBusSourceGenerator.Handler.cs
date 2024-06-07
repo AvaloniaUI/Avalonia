@@ -14,7 +14,7 @@ namespace Tmds.DBus.SourceGenerator
 {
     public partial class DBusSourceGenerator
     {
-        private ClassDeclarationSyntax GenerateHandler(DBusInterface dBusInterface)
+        private ClassDeclarationSyntax GenerateHandler(DBusInterface dBusInterface, bool hasIntrospection)
         {
             ClassDeclarationSyntax cl = ClassDeclaration(Pascalize(dBusInterface.Name!))
                 .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.AbstractKeyword))
@@ -57,7 +57,9 @@ namespace Tmds.DBus.SourceGenerator
             AddHandlerProperties(ref cl, ref switchStatement, dBusInterface);
             AddHandlerMethods(ref cl, ref switchStatement, dBusInterface);
             AddHandlerSignals(ref cl, dBusInterface);
-            AddHandlerIntrospect(ref cl, ref switchStatement, dBusInterface);
+            
+            if(hasIntrospection)
+                AddHandlerIntrospect(ref cl, ref switchStatement, dBusInterface);
 
             cl = cl.AddMembers(
                 MethodDeclaration(PredefinedType(Token(SyntaxKind.BoolKeyword)), "RunMethodHandlerSynchronously")
@@ -518,6 +520,7 @@ namespace Tmds.DBus.SourceGenerator
 
         private void AddHandlerIntrospect(ref ClassDeclarationSyntax cl, ref SwitchStatementSyntax sw, DBusInterface dBusInterface)
         {
+            
             XmlSerializer xmlSerializer = new(typeof(DBusInterface));
             using StringWriter stringWriter = new();
             using XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true });

@@ -158,6 +158,9 @@ namespace Tmds.DBus.SourceGenerator
             };
         }
 
+        private static Dictionary<string, StructDeclarationSyntax> ComplexTypeDictionary =
+            new Dictionary<string, StructDeclarationSyntax>();
+
         private static TypeSyntax GetDotnetType(DBusValue dBusValue, AccessMode accessMode, bool nullable = false)
         {
             switch (dBusValue.DBusType)
@@ -215,11 +218,59 @@ namespace Tmds.DBus.SourceGenerator
                     return GenericName("ValueTuple")
                         .AddTypeArgumentListArguments(
                             GetDotnetType(dBusValue.InnerDBusTypes![0], accessMode, nullable));
-                case DBusType.Struct:
+                case DBusType.Struct when dBusValue.InnerDBusTypes!.Length <= 7:
                     return TupleType()
                         .AddElements(dBusValue.InnerDBusTypes!.Select(dbusType => TupleElement(
-                            GetDotnetType(dbusType, accessMode, nullable)))
+                                GetDotnetType(dbusType, accessMode, nullable)))
                             .ToArray());
+
+                case DBusType.Struct when dBusValue.InnerDBusTypes!.Length > 7:
+
+                    var typeId = SanitizeSignature(dBusValue.Type!);
+
+                    if (!ComplexTypeDictionary.ContainsKey(typeId))
+                    {
+                        var innerTypes = dBusValue.InnerDBusTypes!
+                            .Select(dbusType => GetDotnetType(dbusType, accessMode, nullable))
+                            .Select((syntax, i) => (syntax, i)).ToArray();
+                        var complexType = StructDeclaration(typeId)
+                            .WithModifiers(
+                                TokenList(
+                                    Token(SyntaxKind.PublicKeyword)))
+                            .AddMembers(innerTypes
+                                .Select(x =>
+                                    FieldDeclaration(
+                                            VariableDeclaration(x.syntax)
+                                                .WithVariables(
+                                                    SingletonSeparatedList(
+                                                        VariableDeclarator(
+                                                            Identifier($"Item{x.i}")))))
+                                        .WithModifiers(
+                                            TokenList(
+                                                Token(SyntaxKind.PublicKeyword)))).Cast<MemberDeclarationSyntax>()
+                                .ToArray()
+                            )
+                            .AddMembers(
+                                ConstructorDeclaration(Identifier(typeId))
+                                    .WithParameterList(
+                                        ParameterList(SeparatedList(
+                                            innerTypes.Select(x =>
+                                                Parameter(Identifier($"_arg{x.i}")).WithType(x.syntax))))
+                                    ).WithBody(Block()
+                                        .AddStatements(
+                                            innerTypes.Select(x => ExpressionStatement(
+                                                AssignmentExpression(
+                                                    SyntaxKind.SimpleAssignmentExpression,
+                                                    IdentifierName($"Item{x.i}"),
+                                                    IdentifierName($"_arg{x.i}")))).Cast<StatementSyntax>().ToArray()
+                                        ))
+                            );
+
+                        ComplexTypeDictionary.Add(typeId, complexType);
+                    }
+
+                    return IdentifierName(typeId);
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dBusValue.DBusType), dBusValue.DBusType,
                         $"Cannot parse DBusType with value {dBusValue.DBusType}");
