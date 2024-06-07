@@ -13,12 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.18.0" />
     <ProjectReference Include="../Linux/Tmds.DBus.SourceGenerator/Tmds.DBus.SourceGenerator.csproj"
                       PrivateAssets="all"
                       OutputItemType="Analyzer" 
                       ReferenceOutputAssembly="false" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DBusGeneratorMode" />
+    <ProjectReference Include="..\Linux\Tmds.DBus.Protocol\Tmds.DBus.Protocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,8 +51,6 @@
 
     <!-- AT-SPI2 -->
     <AdditionalFiles Include="DBusXml/org.a11y.Bus.xml" DBusGeneratorMode="Proxy" />
- 
-
     <AdditionalFiles Include="DBusXml/org.a11y.atspi.accessible.root.xml" DBusGeneratorMode="Handler" />
  
   </ItemGroup>

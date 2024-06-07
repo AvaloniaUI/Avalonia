@@ -304,6 +304,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.RenderTests.WpfCom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus.SourceGenerator", "src\Linux\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator.csproj", "{12AE6CBC-C0A1-4BEF-AED6-81E566AAE7EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus.Protocol", "src\Linux\Tmds.DBus.Protocol\Tmds.DBus.Protocol.csproj", "{9A7672D7-77B9-4D50-AF22-6C5049C4712B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -708,6 +710,10 @@ Global
 		{12AE6CBC-C0A1-4BEF-AED6-81E566AAE7EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12AE6CBC-C0A1-4BEF-AED6-81E566AAE7EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12AE6CBC-C0A1-4BEF-AED6-81E566AAE7EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A7672D7-77B9-4D50-AF22-6C5049C4712B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A7672D7-77B9-4D50-AF22-6C5049C4712B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A7672D7-77B9-4D50-AF22-6C5049C4712B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A7672D7-77B9-4D50-AF22-6C5049C4712B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -796,6 +802,7 @@ Global
 		{DA5F1FF9-4259-4C54-B443-85CFA226EE6A} = {9CCA131B-DE95-4D44-8788-C3CAE28574CD}
 		{9AE1B827-21AC-4063-AB22-C8804B7F931E} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{12AE6CBC-C0A1-4BEF-AED6-81E566AAE7EB} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
+		{9A7672D7-77B9-4D50-AF22-6C5049C4712B} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
