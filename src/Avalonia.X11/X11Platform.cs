@@ -74,7 +74,7 @@ namespace Avalonia.X11
                 DBusHelper.TryInitialize();
 
             if (options.UseA11Y)
-                AtspiMainContext.RegisterRoot();
+                AtspiMainContext.StartService();
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
                ? new UiThreadRenderTimer(60)
@@ -191,7 +191,6 @@ namespace Avalonia.X11
             
             return false;
         }
-        
         private static IPlatformGraphics InitializeGraphics(X11PlatformOptions opts, X11Info info)
         {
             if (opts.RenderingMode is null || !opts.RenderingMode.Any())

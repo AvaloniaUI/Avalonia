@@ -39,6 +39,7 @@
       "src\\Headless\\Avalonia.Headless.Vnc\\Avalonia.Headless.Vnc.csproj",
       "src\\Headless\\Avalonia.Headless\\Avalonia.Headless.csproj",
       "src\\Linux\\Avalonia.LinuxFramebuffer\\Avalonia.LinuxFramebuffer.csproj",
+      "src\\Linux\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator.csproj",
       "src\\Markup\\Avalonia.Markup.Xaml.Loader\\Avalonia.Markup.Xaml.Loader.csproj",
       "src\\Markup\\Avalonia.Markup.Xaml\\Avalonia.Markup.Xaml.csproj",
       "src\\Markup\\Avalonia.Markup\\Avalonia.Markup.csproj",

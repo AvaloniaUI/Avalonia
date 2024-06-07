@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+<node name="/org/a11y/atspi/accessible/root">
   <!--
       org.a11y.atspi.Accessible:
       @short_description: Base interface which is implemented by all accessible objects.
@@ -1007,4 +1007,6 @@
     </method>
 
   </interface>
+  
+  
 </node>

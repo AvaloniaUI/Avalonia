@@ -24,7 +24,9 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Automation.Peers;
 using Avalonia.Dialogs;
+using Avalonia.FreeDesktop.Automation;
 using Avalonia.Platform.Storage.FileIO;
 
 // ReSharper disable IdentifierTypo
@@ -249,9 +251,21 @@ namespace Avalonia.X11
                     : null)
             });
 
+            if (platform.Options.UseA11Y)
+                AtspiMainContext.Instance?.RegisterRootPeer(GetAutomationPeer);
+            
             platform.X11Screens.Changed += OnScreensChanged;
         }
 
+        AutomationPeer? GetAutomationPeer()
+        {
+            if (_inputRoot is Control c)
+            {
+                return ControlAutomationPeer.CreatePeerForElement(c);
+            }
+            return null;  
+        }
+        
         private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
         {
             private readonly X11Window _window;
