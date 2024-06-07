@@ -45,6 +45,11 @@
           </StackPanel>
           <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All"
                     RowBackground="#1000">
+            <DataGrid.Styles>
+              <Style Selector="DataGridRow">
+                <Setter Property="Header" Value="{Binding $self.Index}"/>
+              </Style>
+            </DataGrid.Styles>
             <DataGrid.Columns>
               <!-- Using HeaderTemplate -->
               <DataGridTextColumn Header="Country or Region" HeaderTemplate="{StaticResource Demo.DataTemplates.CountryHeader}" Binding="{Binding Name}"  Width="6*" x:DataType="local:Country" />

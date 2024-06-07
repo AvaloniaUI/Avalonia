@@ -79,6 +79,36 @@ public class CrossTileBrushTests : CrossTestBase
     }
 
     [CrossFact]
+    public void Should_Render_Aligned_TileBrush()
+    {
+        var brush = new CrossDrawingBrush
+        {
+            TileMode = TileMode.Tile,
+            AlignmentX = AlignmentX.Center,
+            AlignmentY = AlignmentY.Center,
+            Stretch = Stretch.Uniform,
+            Drawing = new CrossDrawingGroup()
+            {
+                Children = new List<CrossDrawing>()
+                {
+                    new CrossGeometryDrawing(new CrossRectangleGeometry(new(0, 0, 100, 150)))
+                    {
+                        Brush = new CrossSolidColorBrush(Colors.Crimson)
+                    },
+                }
+            }
+        };
+
+        RenderAndCompare(new CrossControl()
+        {
+            Width = 100,
+            Height = 100,
+            Background = brush
+        });
+
+    }
+
+    [CrossFact]
     public void Should_Render_With_Transform()
     {
         var brush = new CrossDrawingBrush()

@@ -117,7 +117,8 @@ public unsafe class VulkanImage : IDisposable
             ImportMemoryWin32HandleInfoKHR handleImport = default;
             if (handleType == ExternalMemoryHandleTypeFlags.D3D11TextureBit && exportable)
             {
-                _d3dTexture2D = D3DMemoryHelper.CreateMemoryHandle(vk.D3DDevice, size, Format);
+                var d3dDevice = vk.D3DDevice ?? throw new NotSupportedException("Vulkan D3DDevice wasn't created");
+                _d3dTexture2D = D3DMemoryHelper.CreateMemoryHandle(d3dDevice, size, Format);
                 using var dxgi = _d3dTexture2D.QueryInterface<SharpDX.DXGI.Resource1>();
 
                 handleImport = new ImportMemoryWin32HandleInfoKHR

@@ -1,22 +1,45 @@
 using System;
 using System.Runtime.InteropServices.JavaScript;
+using System.Threading.Tasks;
 
 namespace Avalonia.Browser.Interop;
 
 internal static partial class TimerHelper
 {
     [JSImport("TimerHelper.runAnimationFrames", AvaloniaModule.MainModuleName)]
-    public static partial void RunAnimationFrames(
-        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Boolean>>] Func<double, bool> renderFrameCallback);
+    public static partial void RunAnimationFrames();
 
-    [JSImport("globalThis.setTimeout")]
-    public static partial int SetTimeout([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
+    public static Action<double>? AnimationFrame;
+    [JSExport]
+    public static void JsExportOnAnimationFrame(double d)
+    {
+        AnimationFrame?.Invoke(d);
+    }
+    
+    public static Action? Timeout;
+    [JSExport]
+    public static Task JsExportOnTimeout()
+    {
+        Timeout?.Invoke();
+        return Task.CompletedTask;
+    }
+
+    [JSImport("TimerHelper.setTimeout", AvaloniaModule.MainModuleName)]
+    public static partial int SetTimeout(int intervalMs);
 
     [JSImport("globalThis.clearTimeout")]
     public static partial int ClearTimeout(int id);
 
-    [JSImport("globalThis.setInterval")]
-    public static partial int SetInterval([JSMarshalAs<JSType.Function>] Action callback, int intervalMs);
+    public static Action? Interval;
+    [JSExport]
+    public static Task JsExportOnInterval()
+    {
+        Interval?.Invoke();
+        return Task.CompletedTask;
+    }
+    
+    [JSImport("TimerHelper.setInterval", AvaloniaModule.MainModuleName)]
+    public static partial int SetInterval( int intervalMs);
 
     [JSImport("globalThis.clearInterval")]
     public static partial int ClearInterval(int id);

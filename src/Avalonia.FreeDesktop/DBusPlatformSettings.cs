@@ -33,7 +33,7 @@ namespace Avalonia.FreeDesktop
             _accentColor = await TryGetAccentColorAsync();
             _lastColorValues = BuildPlatformColorValues();
             if (_lastColorValues is not null)
-                OnColorValuesChanged(_lastColorValues);
+                Threading.Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
         }
 
         private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
