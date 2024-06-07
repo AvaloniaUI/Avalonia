@@ -41,12 +41,17 @@ public class OnlyPropertiesTests
         var names = nameResolver.ResolveNames(classInfo.Xaml);
 
         var generator = new OnlyPropertiesCodeGenerator();
+        var generatorVersion = typeof(OnlyPropertiesCodeGenerator).Assembly.GetName().Version.ToString();
+
         var code = generator
             .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
             .Replace("\r", string.Empty);
 
-        var expected = await OnlyPropertiesCode.Load(expectation);
+        var expected = (await OnlyPropertiesCode.Load(expectation))
+            .Replace("\r", string.Empty)
+            .Replace("$GeneratorVersion", generatorVersion);
+
         CSharpSyntaxTree.ParseText(code);
-        Assert.Equal(expected.Replace("\r", string.Empty), code);
+        Assert.Equal(expected, code);
     }
 }

@@ -220,13 +220,18 @@ namespace Avalonia.Controls
             set;
         }
 
+        private int _index;
+
+        public static readonly DirectProperty<DataGridRow, int> IndexProperty = AvaloniaProperty.RegisterDirect<DataGridRow, int>(
+            nameof(Index), o => o.Index, (o, v) => o.Index = v);
+
         /// <summary>
         /// Index of the row
         /// </summary>
-        internal int Index
+        public int Index
         {
-            get;
-            set;
+            get => _index;
+            internal set => SetAndRaise(IndexProperty, ref _index, value);
         }
 
         internal double ActualBottomGridLineHeight
@@ -435,6 +440,7 @@ namespace Avalonia.Controls
         /// <returns>
         /// The index of the current row.
         /// </returns>
+        [Obsolete("This API is going to be removed in a future version. Use the Index property instead.")]
         public int GetIndex()
         {
             return Index;

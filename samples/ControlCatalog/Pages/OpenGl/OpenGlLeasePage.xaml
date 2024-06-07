@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.OpenGlLeasePage"
+             xmlns:pages="using:ControlCatalog.Pages"
+             xmlns:openGl="clr-namespace:ControlCatalog.Pages.OpenGl">
+    <Grid>
+        <Control x:Name="Viewport" />
+        <openGl:GlPageKnobs x:Name="Knobs" />
+    </Grid>
+</UserControl>

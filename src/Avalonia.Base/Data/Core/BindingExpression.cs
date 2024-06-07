@@ -48,6 +48,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// <param name="mode">The binding mode.</param>
     /// <param name="priority">The binding priority.</param>
     /// <param name="stringFormat">The format string to use.</param>
+    /// <param name="targetProperty">The target property being bound to.</param>
     /// <param name="targetNullValue">The null target value.</param>
     /// <param name="targetTypeConverter">
     /// A final type converter to be run on the produced value.
@@ -65,9 +66,10 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         BindingPriority priority = BindingPriority.LocalValue,
         string? stringFormat = null,
         object? targetNullValue = null,
+        AvaloniaProperty? targetProperty = null,
         TargetTypeConverter? targetTypeConverter = null,
         UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
-            : base(priority, enableDataValidation)
+            : base(priority, targetProperty, enableDataValidation)
     {
         if (mode == BindingMode.Default)
             throw new ArgumentException("Binding mode cannot be Default.", nameof(mode));

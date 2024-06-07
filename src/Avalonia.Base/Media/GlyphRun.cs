@@ -153,7 +153,8 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets the conservative bounding box of the <see cref="GlyphRun"/>.
         /// </summary>
-        public Rect Bounds => new Rect(new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height));
+        public Rect Bounds => new Rect(new Point(BaselineOrigin.X, 0),
+            new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height));
 
         public Rect InkBounds => PlatformImpl.Item.Bounds;
 
@@ -687,7 +688,7 @@ namespace Avalonia.Media
 
             return new GlyphRunMetrics
             {
-                Baseline = -GlyphTypeface.Metrics.Ascent * Scale,
+                Baseline = (-GlyphTypeface.Metrics.Ascent + GlyphTypeface.Metrics.LineGap) * Scale,
                 Width = width,
                 WidthIncludingTrailingWhitespace = widthIncludingTrailingWhitespace,
                 Height = height,
