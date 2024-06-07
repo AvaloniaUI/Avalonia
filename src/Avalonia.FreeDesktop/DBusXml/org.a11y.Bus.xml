@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node>
+  <interface name="org.a11y.Status">
+    <property type="b" name="IsEnabled" access="readwrite">
+    </property>
+    <property type="b" name="ScreenReaderEnabled" access="readwrite">
+    </property>
+  </interface>
+  <interface name="org.a11y.Bus">
+    <method name="GetAddress">
+      <arg type="s" name="address" direction="out">
+      </arg>
+    </method>
+  </interface>
+</node>

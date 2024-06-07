@@ -44,6 +44,8 @@
     <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierItem.xml" DBusGeneratorMode="Handler" />
 
     <!-- AT-SPI2 -->
+    <AdditionalFiles Include="DBusXml/org.a11y.Bus.xml" DBusGeneratorMode="Proxy" />
+
     <AdditionalFiles Include="DBusXml/org.a11y.atspi.Accessible.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.a11y.atspi.Action.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.a11y.atspi.Application.xml" DBusGeneratorMode="Proxy" />
@@ -65,10 +67,6 @@
     <AdditionalFiles Include="DBusXml/org.a11y.atspi.TableCell.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.a11y.atspi.Text.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.a11y.atspi.Value.xml" DBusGeneratorMode="Proxy" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Automation\" />
   </ItemGroup>
 
 </Project>
