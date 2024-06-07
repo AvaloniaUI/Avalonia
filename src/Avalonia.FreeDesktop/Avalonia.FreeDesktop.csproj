@@ -46,27 +46,27 @@
     <!-- AT-SPI2 -->
     <AdditionalFiles Include="DBusXml/org.a11y.Bus.xml" DBusGeneratorMode="Proxy" />
 
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Accessible.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Action.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Application.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Cache.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Collection.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Component.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.DeviceEventController.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.DeviceEventListener.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Document.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.EditableText.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Event.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Hyperlink.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Hypertext.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Image.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Registry.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Selection.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Socket.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Table.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.TableCell.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Text.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Value.xml" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Accessible.xml" DBusGeneratorMode="Handler" />
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Action.xml" DBusGeneratorMode="Proxy" />-->
+    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Application.xml" DBusGeneratorMode="Handler" />
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Cache.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Collection.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Component.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.DeviceEventController.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.DeviceEventListener.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Document.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.EditableText.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Event.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Hyperlink.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Hypertext.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Image.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Registry.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Selection.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Socket.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Table.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.TableCell.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Text.xml" DBusGeneratorMode="Proxy" />-->
+<!--    <AdditionalFiles Include="DBusXml/org.a11y.atspi.Value.xml" DBusGeneratorMode="Proxy" />-->
   </ItemGroup>
 
 </Project>
