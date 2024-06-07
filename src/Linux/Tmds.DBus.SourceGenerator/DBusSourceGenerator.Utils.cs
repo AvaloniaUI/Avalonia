@@ -245,7 +245,7 @@ namespace Tmds.DBus.SourceGenerator
             if (ComplexTypeDictionary.ContainsKey(sanitized))
             {
                 retSyntax = ReturnStatement(
-                    InvocationExpression(ObjectCreationExpression(
+                    (ObjectCreationExpression(
                             IdentifierName(sanitized))
                         .AddArgumentListArguments(
                             dBusValue.InnerDBusTypes!.Select(

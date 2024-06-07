@@ -252,6 +252,9 @@ namespace Tmds.DBus.SourceGenerator
                             )
                             .AddMembers(
                                 ConstructorDeclaration(Identifier(typeId))
+                                    .WithModifiers(
+                                        TokenList(
+                                            Token(SyntaxKind.PublicKeyword)))
                                     .WithParameterList(
                                         ParameterList(SeparatedList(
                                             innerTypes.Select(x =>
