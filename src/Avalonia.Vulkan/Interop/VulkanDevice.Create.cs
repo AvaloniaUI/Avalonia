@@ -87,7 +87,7 @@ internal unsafe partial class VulkanDevice
 
         api.GetDeviceQueue(createdDevice, dev.QueueFamilyIndex, 0, out var createdQueue);
 
-        return new VulkanDevice(api.Instance, createdDevice, dev.PhysicalDevice, createdQueue,
+        return new VulkanDevice(api, createdDevice, dev.PhysicalDevice, createdQueue,
             dev.QueueFamilyIndex, enabledExtensions);
 
     }
