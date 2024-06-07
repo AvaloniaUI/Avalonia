@@ -12,6 +12,8 @@ namespace Avalonia.Automation.Provider
     /// This interface is implemented by the <see cref="AutomationPeer"/> class, and should only
     /// be implemented on true root elements, such as Windows. To embed an automation tree, use
     /// <see cref="IEmbeddedRootProvider"/> instead.
+    ///
+    /// For downstream implementations, this has the same semantic meaning as a "Window".
     /// </remarks>
     public interface IRootProvider
     {
