@@ -1,23 +1,37 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using Avalonia.Browser.Interop;
-using Avalonia.Browser.Skia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Browser;
 
 internal class BrowserWindowingPlatform : IWindowingPlatform
 {
+    internal static ManualRawEventGrouperDispatchQueue? EventGrouperDispatchQueue;
+
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
-    
+
+    internal static bool IsManagedDispatcherEnabled =>
+        IsThreadingEnabled &&
+        AvaloniaLocator.Current.GetService<BrowserPlatformOptions>()?.PreferManagedThreadDispatcher != false; 
+
+    // Capture initial GlobalThis, so we can use it as a contextual bridge between threads.
+    private static JSObject? s_globalThis;
+    internal static JSObject GlobalThis
+    {
+        get => s_globalThis ?? throw new InvalidOperationException("Browser backend wasn't initialized. GlobalThis is null.");
+        set => s_globalThis = value;
+    }
+
     static bool DetectThreadSupport()
     {
         // TODO Replace with public API https://github.com/dotnet/runtime/issues/77541.
@@ -67,12 +81,23 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
             .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
             .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
+            .Bind<ISystemNavigationManagerImpl>().ToSingleton<BrowserSystemNavigationManagerImpl>()
             .Bind<IWindowingPlatform>().ToConstant(instance)
             .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+            .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
-        AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>();
-        
+        if (IsManagedDispatcherEnabled)
+        {
+            EventGrouperDispatchQueue = new();
+            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToConstant(
+                new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
+        }
+        else
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>();
+        }
+
         // GC thread is the same as the main one when MT is disabled
         if (IsThreadingEnabled)
             UnmanagedBlob.SuppressFinalizerWarning = true;

@@ -5,26 +5,16 @@ using Avalonia.Input.TextInput;
 
 namespace Avalonia.Browser;
 
-internal class BrowserTextInputMethod : ITextInputMethodImpl
+internal class BrowserTextInputMethod(
+    BrowserInputHandler inputHandler,
+    JSObject containerElement,
+    JSObject inputElement)
+    : ITextInputMethodImpl
 {
-    private readonly JSObject _inputElement;
-    private readonly JSObject _containerElement;
-    private readonly BrowserInputHandler _inputHandler;
+    private readonly JSObject _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
+    private readonly JSObject _containerElement = containerElement ?? throw new ArgumentNullException(nameof(containerElement));
+    private readonly BrowserInputHandler _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
     private TextInputMethodClient? _client;
-
-    public BrowserTextInputMethod(BrowserInputHandler inputHandler, JSObject containerElement, JSObject inputElement)
-    {
-        _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
-        _containerElement = containerElement ?? throw new ArgumentNullException(nameof(containerElement));
-        _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
-
-        InputHelper.SubscribeTextEvents(
-            _inputElement,
-            OnBeforeInput,
-            OnCompositionStart,
-            OnCompositionUpdate,
-            OnCompositionEnd);
-    }
 
     public bool IsComposing { get; private set; }
 
@@ -95,12 +85,11 @@ internal class BrowserTextInputMethod : ITextInputMethodImpl
         InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
     }
 
-    private bool OnBeforeInput(JSObject arg, int start, int end)
+    public void OnBeforeInput(string inputType, int start, int end)
     {
-        var type = arg.GetPropertyAsString("inputType");
-        if (type != "deleteByComposition")
+        if (inputType != "deleteByComposition")
         {
-            if (type == "deleteContentBackward")
+            if (inputType == "deleteContentBackward")
             {
                 start = _inputElement.GetPropertyAsInt32("selectionStart");
                 end = _inputElement.GetPropertyAsInt32("selectionEnd");
@@ -116,47 +105,37 @@ internal class BrowserTextInputMethod : ITextInputMethodImpl
         {
             _client.Selection = new TextSelection(start, end);
         }
-
-        return false;
     }
 
-    private bool OnCompositionStart(JSObject args)
+    public void OnCompositionStart()
     {
         if (_client == null)
-            return false;
+            return;
 
         _client.SetPreeditText(null);
         IsComposing = true;
-
-        return false;
     }
 
-    private bool OnCompositionUpdate(JSObject args)
+    public void OnCompositionUpdate(string? data)
     {
         if (_client == null)
-            return false;
+            return;
 
-        _client.SetPreeditText(args.GetPropertyAsString("data"));
-
-        return false;
+        _client.SetPreeditText(data);
     }
 
-    private bool OnCompositionEnd(JSObject args)
+    public void OnCompositionEnd(string? data)
     {
         if (_client == null)
-            return false;
+            return;
 
         IsComposing = false;
 
         _client.SetPreeditText(null);
-
-        var text = args.GetPropertyAsString("data");
-
-        if (text != null)
+        
+        if (data != null)
         {
-            return _inputHandler.RawTextEvent(text);
+            _inputHandler.RawTextEvent(data);
         }
-
-        return false;
     }
 }

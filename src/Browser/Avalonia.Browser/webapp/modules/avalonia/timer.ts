@@ -3,24 +3,18 @@ import { JsExports } from "./jsExports";
 export class TimerHelper {
     public static runAnimationFrames(): void {
         function render(time: number) {
-            if (JsExports.resolvedExports != null) {
-                JsExports.resolvedExports.Avalonia.Browser.Interop.TimerHelper.JsExportOnAnimationFrame(time);
-            }
+            JsExports.TimerHelper?.JsExportOnAnimationFrame();
             self.requestAnimationFrame(render);
         }
         self.requestAnimationFrame(render);
     }
 
     static onTimeout() {
-        if (JsExports.resolvedExports != null) {
-            JsExports.resolvedExports.Avalonia.Browser.Interop.TimerHelper.JsExportOnTimeout();
-        } else { console.error("TimerHelper.onTimeout call while uninitialized"); }
+        JsExports.TimerHelper?.JsExportOnTimeout();
     }
 
     static onInterval() {
-        if (JsExports.resolvedExports != null) {
-            JsExports.resolvedExports.Avalonia.Browser.Interop.TimerHelper.JsExportOnInterval();
-        } else { console.error("TimerHelper.onInterval call while uninitialized"); }
+        JsExports.TimerHelper?.JsExportOnInterval();
     }
 
     public static setTimeout(interval: number): number {
