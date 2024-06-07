@@ -24,7 +24,7 @@
     </method>
     <method name="GetRelationSet">
       <arg direction="out" type="a(ua(so))"/>
-      
+
     </method>
     <method name="GetRole">
       <arg direction="out" type="u"/>
@@ -37,15 +37,15 @@
     </method>
     <method name="GetState">
       <arg direction="out" type="au"/>
-      
+
     </method>
     <method name="GetAttributes">
       <arg direction="out" type="a{ss}"/>
-      
+
     </method>
     <method name="GetApplication">
       <arg direction="out" type="(so)"/>
-      
+
     </method>
     <method name="GetInterfaces">
       <arg direction="out" type="as"/>
@@ -60,24 +60,64 @@
       <arg direction="in" name="lctype" type="u"/>
       <arg direction="out" type="s"/>
     </method>
-  </interface> 
+  </interface>
+  <interface name="org.a11y.atspi.Collection">
+    <method name="GetMatches">
+      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)"/>
+
+      <arg direction="in" name="sortby" type="u"/>
+      <arg direction="in" name="count" type="i"/>
+      <arg direction="in" name="traverse" type="b"/>
+      <arg direction="out" type="a(so)"/>
+
+    </method>
+    <method name="GetMatchesTo">
+      <arg direction="in" name="current_object" type="o"/>
+
+      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)"/>
+
+      <arg direction="in" name="sortby" type="u"/>
+      <arg direction="in" name="tree" type="u"/>
+      <arg direction="in" name="limit_scope" type="b"/>
+      <arg direction="in" name="count" type="i"/>
+      <arg direction="in" name="traverse" type="b"/>
+      <arg direction="out" type="a(so)"/>
+
+    </method>
+    <method name="GetMatchesFrom">
+      <arg direction="in" name="current_object" type="o"/>
+
+      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)"/>
+
+      <arg direction="in" name="sortby" type="u"/>
+      <arg direction="in" name="tree" type="u"/>
+      <arg direction="in" name="count" type="i"/>
+      <arg direction="in" name="traverse" type="b"/>
+      <arg direction="out" type="a(so)"/>
+
+    </method>
+    <method name="GetActiveDescendant">
+      <arg direction="out" type="(so)"/>
+
+    </method>
+  </interface>
   <interface name="org.a11y.atspi.Socket">
     <method name="Embed">
       <arg direction="in" name="plug" type="(so)"/>
-      
+
       <arg direction="out" name="socket" type="(so)"/>
-      
+
     </method>
     <method name="Embedded">
       <arg direction="in" name="path" type="s"/>
     </method>
     <method name="Unembed">
       <arg direction="in" name="plug" type="(so)"/>
-      
+
     </method>
     <signal name="Available">
       <arg name="socket" type="(so)"/>
-      
+
     </signal>
-  </interface>  
+  </interface>
 </node>
