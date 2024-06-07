@@ -766,11 +766,15 @@ namespace Avalonia.Controls.Primitives
         {
             if (IsLightDismissEnabled && e.Source is Visual v && !IsChildOrThis(v))
             {
-                CloseCore();
-
                 if (OverlayDismissEventPassThrough)
                 {
                     PassThroughEvent(e);
+                }
+
+                // Ensure the popup is closed if it was not closed by a pass-through event handler
+                if (IsOpen)
+                {
+                    CloseCore();
                 }
             }
         }

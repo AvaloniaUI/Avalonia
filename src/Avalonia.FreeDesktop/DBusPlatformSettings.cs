@@ -33,7 +33,7 @@ namespace Avalonia.FreeDesktop
             _accentColor = await TryGetAccentColorAsync();
             _lastColorValues = BuildPlatformColorValues();
             if (_lastColorValues is not null)
-                OnColorValuesChanged(_lastColorValues);
+                Threading.Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
         }
 
         private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
@@ -41,12 +41,14 @@ namespace Avalonia.FreeDesktop
             try
             {
                 var version = await _settings!.GetVersionPropertyAsync();
-                VariantValue value;
+                DBusVariantItem value;
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetItem(0);
-                return ToColorScheme(value.GetUInt32());
+                    value = (DBusVariantItem)(await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).Value;
+                if (value.Value is DBusUInt32Item dBusUInt32Item)
+                    return ToColorScheme(dBusUInt32Item.Value);
+                return null;
             }
             catch (DBusException)
             {
@@ -59,12 +61,14 @@ namespace Avalonia.FreeDesktop
             try
             {
                 var version = await _settings!.GetVersionPropertyAsync();
-                VariantValue value;
+                DBusVariantItem value;
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color")).GetItem(0);
-                return ToAccentColor(value);
+                    value = (DBusVariantItem)(await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color")).Value;
+                if (value.Value is DBusStructItem dBusStructItem)
+                    return ToAccentColor(dBusStructItem);
+                return null;
             }
             catch (DBusException)
             {
@@ -72,20 +76,20 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private void SettingsChangedHandler(Exception? exception, (string Namespace, string Key, VariantValue Value) tuple)
+        private void SettingsChangedHandler(Exception? exception, (string @namespace, string key, DBusVariantItem value) valueTuple)
         {
             if (exception is not null)
                 return;
 
-            switch (tuple)
+            switch (valueTuple)
             {
-                case ("org.freedesktop.appearance", "color-scheme", var colorScheme):
-                    _themeVariant = ToColorScheme(colorScheme.GetUInt32());
+                case ("org.freedesktop.appearance", "color-scheme", { } colorScheme):
+                    _themeVariant = ToColorScheme((colorScheme.Value as DBusUInt32Item)!.Value);
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
                     break;
-                case ("org.freedesktop.appearance", "accent-color", var accentColor):
-                    _accentColor = ToAccentColor(accentColor);
+                case ("org.freedesktop.appearance", "accent-color", { } accentColor):
+                    _accentColor = ToAccentColor((accentColor.Value as DBusStructItem)!);
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
                     break;
@@ -114,16 +118,16 @@ namespace Avalonia.FreeDesktop
             return isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
         }
 
-        private static Color? ToAccentColor(VariantValue value)
+        private static Color? ToAccentColor(DBusStructItem value)
         {
             /*
             Indicates the system's preferred accent color as a tuple of RGB values
             in the sRGB color space, in the range [0,1].
             Out-of-range RGB values should be treated as an unset accent color.
              */
-            var r = value.GetItem(0).GetDouble();
-            var g = value.GetItem(1).GetDouble();
-            var b = value.GetItem(2).GetDouble();
+            var r = (value[0] as DBusDoubleItem)!.Value;
+            var g = (value[1] as DBusDoubleItem)!.Value;
+            var b = (value[2] as DBusDoubleItem)!.Value;
             if (r is < 0 or > 1 || g is < 0 or > 1 || b is < 0 or > 1)
                 return null;
             return Color.FromRgb((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));

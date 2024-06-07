@@ -127,6 +127,9 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
+      <TabItem Header="OpenGL Lease">
+        <pages:OpenGlLeasePage />
+      </TabItem>
       <TabItem Header="Platform Information">
         <pages:PlatformInfoPage />
       </TabItem>

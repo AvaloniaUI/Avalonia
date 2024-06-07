@@ -36,5 +36,15 @@
       <Link>PlatformFactAttribute.cs</Link>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="xunit.runner.console" Version="2.7.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.5.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

@@ -266,13 +266,15 @@ namespace Avalonia.RenderTests.WpfCompare
             {
                 PenLineCap.Flat => WPenLineCap.Flat,
                 PenLineCap.Round => WPenLineCap.Round,
-                PenLineCap.Square => WPenLineCap.Square
+                PenLineCap.Square => WPenLineCap.Square,
+                _ => throw new InvalidOperationException()
             };
             var join = pen.LineJoin switch
             {
                 PenLineJoin.Bevel => WPenLineJoin.Bevel,
                 PenLineJoin.Miter => WPenLineJoin.Miter,
-                PenLineJoin.Round => WPenLineJoin.Round
+                PenLineJoin.Round => WPenLineJoin.Round,
+                _ => throw new InvalidOperationException()
             };
 
             return new Pen(ConvertBrush(pen.Brush), pen.Thickness)
