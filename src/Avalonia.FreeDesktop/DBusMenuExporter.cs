@@ -29,6 +29,7 @@ namespace Avalonia.FreeDesktop
             private readonly Dictionary<int, NativeMenuItemBase> _idsToItems = new();
             private readonly Dictionary<NativeMenuItemBase, int> _itemsToIds = new();
             private readonly HashSet<NativeMenu> _menus = new();
+            private readonly PathHandler _pathHandler;
             private readonly uint _xid;
             private readonly bool _appMenu = true;
             private ComCanonicalAppMenuRegistrar? _registrar;
@@ -40,32 +41,27 @@ namespace Avalonia.FreeDesktop
 
             public DBusMenuExporterImpl(Connection connection, IntPtr xid)
             {
-                InitBackingProperties();
+                Version = 4;
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
-                Path = GenerateDBusMenuObjPath;
+                _pathHandler = new PathHandler(GenerateDBusMenuObjPath);
+                _pathHandler.Add(this);
                 SetNativeMenu(new NativeMenu());
                 _ = InitializeAsync();
             }
 
             public DBusMenuExporterImpl(Connection connection, string path)
             {
-                InitBackingProperties();
+                Version = 4;
                 Connection = connection;
                 _appMenu = false;
-                Path = path;
+                _pathHandler = new PathHandler(path);
+                _pathHandler.Add(this);
                 SetNativeMenu(new NativeMenu());
                 _ = InitializeAsync();
             }
 
-            private void InitBackingProperties()
-            {
-                Version = 4;
-            }
-
-            protected override Connection Connection { get; }
-
-            public override string Path { get; }
+            public override Connection Connection { get; }
 
             protected override ValueTask<(uint Revision, (int, Dictionary<string, Variant>, Variant[]) Layout)> OnGetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
             {
@@ -106,7 +102,7 @@ namespace Avalonia.FreeDesktop
 
             private async Task InitializeAsync()
             {
-                Connection.AddMethodHandler(this);
+                Connection.AddMethodHandler(_pathHandler);
                 if (!_appMenu)
                     return;
 
@@ -114,7 +110,7 @@ namespace Avalonia.FreeDesktop
                 try
                 {
                     if (!_disposed)
-                        await _registrar.RegisterWindowAsync(_xid, Path);
+                        await _registrar.RegisterWindowAsync(_xid, _pathHandler.Path);
                 }
                 catch
                 {
@@ -133,10 +129,9 @@ namespace Avalonia.FreeDesktop
                 _disposed = true;
                 // Fire and forget
                 _ = _registrar?.UnregisterWindowAsync(_xid);
-                Connection.RemoveMethodHandler(Path);
+                _pathHandler.Remove(this);
+                Connection.RemoveMethodHandler(_pathHandler.Path);
             }
-
-
 
             public bool IsNativeMenuExported { get; private set; }
 
@@ -335,7 +330,6 @@ namespace Avalonia.FreeDesktop
 
                 return (id, props, children);
             }
-
 
             private void HandleEvent(int id, string eventId)
             {

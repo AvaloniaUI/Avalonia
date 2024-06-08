@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
@@ -16,11 +14,11 @@ namespace Avalonia.FreeDesktop
         private static int s_trayIconInstanceId;
         public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, new byte[] { 255, 0, 0, 0 });
 
-        private readonly ObjectPath _dbusMenuPath;
         private readonly Connection? _connection;
         private readonly OrgFreedesktopDBus? _dBus;
 
         private IDisposable? _serviceWatchDisposable;
+        private readonly PathHandler _pathHandler = new("/StatusNotifierItem");
         private readonly StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private OrgKdeStatusNotifierWatcher? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
@@ -51,13 +49,14 @@ namespace Avalonia.FreeDesktop
             IsActive = true;
 
             _dBus = new OrgFreedesktopDBus(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
-            _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+            var dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
-            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
-           
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
-            
+            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
+
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
+            _pathHandler.Add(_statusNotifierItemDbusObj);
+            _connection.AddMethodHandler(_pathHandler);
+
             WatchAsync();
         }
 
@@ -126,7 +125,8 @@ namespace Avalonia.FreeDesktop
                 return;
 
             _dBus!.ReleaseNameAsync(_sysTrayServiceName);
-            _connection.RemoveMethodHandler(_statusNotifierItemDbusObj.Path);
+            _pathHandler.Remove(_statusNotifierItemDbusObj);
+            _connection.RemoveMethodHandler(_pathHandler.Path);
         }
 
         public void Dispose()
@@ -217,12 +217,9 @@ namespace Avalonia.FreeDesktop
         {
             Connection = connection;
             Menu = dbusMenuPath;
-            InvalidateAll();
         }
 
-        protected override Connection Connection { get; }
-
-        public override string Path => "/StatusNotifierItem";
+        public override Connection Connection { get; }
 
         public event Action? ActivationDelegate;
 
