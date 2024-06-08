@@ -51,6 +51,9 @@
 
     <!-- AT-SPI2 -->
     <AdditionalFiles Include="DBusXml/org.a11y.Bus.xml" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml\org.a11y.atspi.accessible.root.xml">
+      <DBusGeneratorMode>Handler</DBusGeneratorMode>
+    </AdditionalFiles>
   </ItemGroup>
 
 </Project>

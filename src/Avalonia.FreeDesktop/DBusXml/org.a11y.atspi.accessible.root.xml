@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="/org/a11y/atspi/accessible/root">
+  <interface name="org.a11y.atspi.Accessible">
+    <property name="Name" type="s" access="read"/>
+    <property name="Description" type="s" access="read"/>
+    <property name="Parent" type="(so)" access="read">
+
+    </property>
+    <property name="ChildCount" type="i" access="read"/>
+    <property name="Locale" type="s" access="read"/>
+    <property name="AccessibleId" type="s" access="read"/>
+    <property name="HelpText" type="s" access="read"/>
+    <method name="GetChildAtIndex">
+      <arg direction="in" name="index" type="i"/>
+      <arg direction="out" type="(so)"/>
+
+    </method>
+    <method name="GetChildren">
+      <arg direction="out" type="a(so)"/>
+
+    </method>
+    <method name="GetIndexInParent">
+      <arg direction="out" type="i"/>
+    </method>
+    <method name="GetRelationSet">
+      <arg direction="out" type="a(ua(so))"/>
+
+    </method>
+    <method name="GetRole">
+      <arg direction="out" type="u"/>
+    </method>
+    <method name="GetRoleName">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="GetLocalizedRoleName">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="GetState">
+      <arg direction="out" type="au"/>
+
+    </method>
+    <method name="GetAttributes">
+      <arg direction="out" type="a{ss}"/>
+
+    </method>
+    <method name="GetApplication">
+      <arg direction="out" type="(so)"/>
+
+    </method>
+    <method name="GetInterfaces">
+      <arg direction="out" type="as"/>
+    </method>
+  </interface>
+  <interface name="org.a11y.atspi.Application">
+    <property name="ToolkitName" type="s" access="read"/>
+    <property name="Version" type="s" access="read"/>
+    <property name="AtspiVersion" type="s" access="read"/>
+    <property name="Id" type="i" access="readwrite"/>
+    <method name="GetLocale">
+      <arg direction="in" name="lctype" type="u"/>
+      <arg direction="out" type="s"/>
+    </method>
+  </interface>
+  <interface name="org.a11y.atspi.Socket">
+    <method name="Embed">
+      <arg direction="in" name="plug" type="(so)"/>
+
+      <arg direction="out" name="socket" type="(so)"/>
+
+    </method>
+    <method name="Embedded">
+      <arg direction="in" name="path" type="s"/>
+    </method>
+    <method name="Unembed">
+      <arg direction="in" name="plug" type="(so)"/>
+
+    </method>
+    <signal name="Available">
+      <arg name="socket" type="(so)"/>
+
+    </signal>
+  </interface>
+
+  <interface name="org.a11y.atspi.Cache">
+
+    <method name="GetItems">
+      <arg name="nodes" type="a((so)(so)a(so)assusau)" direction="out"/>
+      <annotation name="com.trolltech.QtDBus.QtTypeName.Out0" value="QSpiAccessibleCacheArray"/>
+    </method>
+
+    <signal name="AddAccessible">
+      <arg name="nodeAdded" type="((so)(so)a(so)assusau)"/>
+      <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QSpiAccessibleCacheItem"/>
+    </signal>
+
+    <signal name="RemoveAccessible">
+      <arg name="nodeRemoved" type="(so)"/>
+      <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QSpiObjectReference"/>
+    </signal>
+
+  </interface>
+</node>
