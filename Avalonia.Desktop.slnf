@@ -41,6 +41,7 @@
       "src\\Linux\\Avalonia.LinuxFramebuffer\\Avalonia.LinuxFramebuffer.csproj",
       "src\\Linux\\Tmds.DBus.Protocol\\Tmds.DBus.Protocol.csproj",
       "src\\Linux\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator.csproj",
+      "src\\Linux\\Tmds.DBus\\Tmds.DBus.csproj",
       "src\\Markup\\Avalonia.Markup.Xaml.Loader\\Avalonia.Markup.Xaml.Loader.csproj",
       "src\\Markup\\Avalonia.Markup.Xaml\\Avalonia.Markup.Xaml.csproj",
       "src\\Markup\\Avalonia.Markup\\Avalonia.Markup.csproj",

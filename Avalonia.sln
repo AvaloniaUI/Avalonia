@@ -306,6 +306,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus.Protocol", "src\L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus.SourceGenerator", "src\Linux\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator.csproj", "{FFE8B040-B467-424A-9DDB-6155DC1EB62E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus", "src\Linux\Tmds.DBus\Tmds.DBus.csproj", "{1ABAB94E-D687-4E3B-8489-39EDCFA91653}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -714,6 +716,10 @@ Global
 		{FFE8B040-B467-424A-9DDB-6155DC1EB62E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFE8B040-B467-424A-9DDB-6155DC1EB62E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFE8B040-B467-424A-9DDB-6155DC1EB62E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ABAB94E-D687-4E3B-8489-39EDCFA91653}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ABAB94E-D687-4E3B-8489-39EDCFA91653}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ABAB94E-D687-4E3B-8489-39EDCFA91653}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ABAB94E-D687-4E3B-8489-39EDCFA91653}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -803,6 +809,7 @@ Global
 		{9AE1B827-21AC-4063-AB22-C8804B7F931E} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{18B242C7-33BC-4B40-B12C-82B20F2BF638} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 		{FFE8B040-B467-424A-9DDB-6155DC1EB62E} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
+		{1ABAB94E-D687-4E3B-8489-39EDCFA91653} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
