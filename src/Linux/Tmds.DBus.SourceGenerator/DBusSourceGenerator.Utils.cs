@@ -22,6 +22,7 @@ namespace Tmds.DBus.SourceGenerator
                     UsingDirective(IdentifierName("System.Runtime.InteropServices")),
                     UsingDirective(IdentifierName("System.Threading")),
                     UsingDirective(IdentifierName("System.Threading.Tasks")),
+                    UsingDirective(IdentifierName("Microsoft.Win32.SafeHandles")),
                     UsingDirective(IdentifierName("Tmds.DBus.Protocol")))
                 .AddMembers(namespaceDeclaration
                     .WithLeadingTrivia(
@@ -72,103 +73,7 @@ namespace Tmds.DBus.SourceGenerator
 
         private static LiteralExpressionSyntax MakeLiteralExpression(string literal) => LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(literal));
 
-        private static LiteralExpressionSyntax MakeLiteralExpression(int literal) => LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(literal));
-
         private static SyntaxToken Utf8Literal(string value) => Token(TriviaList(ElasticMarker), SyntaxKind.Utf8StringLiteralToken, SymbolDisplay.FormatLiteral(value, true) + "u8", value, TriviaList(ElasticMarker));
-
-        private static string TupleOf(IEnumerable<string> elements) => $"({string.Join(", ", elements)})";
-
-        private static ExpressionSyntax MakeGetDBusVariantExpression(DBusValue dBusValue, ExpressionSyntax accessValueExpression) =>
-            dBusValue.DBusType switch
-            {
-                DBusType.Byte => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusByteItem")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Bool => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusBoolItem")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Int16 => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusInt16Item")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.UInt16 => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusUInt16Item")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Int32 => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusInt32Item")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.UInt32 => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusUInt32Item")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Int64 => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusInt64Item")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.UInt64 => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusUInt64Item")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Double => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusDoubleItem"))).
-                    AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.String => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusStringItem")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.ObjectPath => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusObjectPathItem")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Signature => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusSignatureItem")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Variant => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusVariantItem")))
-                    .AddArgumentListArguments(Argument(accessValueExpression)),
-                DBusType.Array => ObjectCreationExpression(
-                        ParseTypeName("DBusArrayItem"))
-                    .AddArgumentListArguments(
-                        Argument(MakeMemberAccessExpression("DBusType", Enum.GetName(typeof(DBusType), dBusValue.InnerDBusTypes![0].DBusType)!)),
-                        Argument(
-                            InvocationExpression(
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    InvocationExpression(
-                                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, accessValueExpression, IdentifierName("Select")))
-                                        .AddArgumentListArguments(
-                                            Argument(
-                                                SimpleLambdaExpression(
-                                                        Parameter(
-                                                            Identifier("x")))
-                                                    .WithExpressionBody(
-                                                        MakeGetDBusVariantExpression(dBusValue.InnerDBusTypes![0], IdentifierName("x"))))), IdentifierName("ToArray"))))),
-                DBusType.DictEntry => InvocationExpression(
-                    ObjectCreationExpression(
-                        ParseTypeName("DBusDictEntryItem")))
-                    .AddArgumentListArguments(
-                        Argument(
-                            MakeGetDBusVariantExpression(dBusValue.InnerDBusTypes![0], MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, accessValueExpression, IdentifierName("Key")))),
-                        Argument(
-                            MakeGetDBusVariantExpression(dBusValue.InnerDBusTypes![1], MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, accessValueExpression, IdentifierName("Value"))))),
-                DBusType.Struct => InvocationExpression(
-                        ObjectCreationExpression(
-                            ParseTypeName("DBusStructItem")))
-                    .AddArgumentListArguments(
-                        Argument(
-                            ObjectCreationExpression(ParseTypeName("DBusItem[]"))
-                                .WithInitializer(
-                                    InitializerExpression(SyntaxKind.ArrayInitializerExpression, SeparatedList(
-                                        dBusValue.InnerDBusTypes!.Select((x, i) =>
-                                            MakeGetDBusVariantExpression(x, MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, accessValueExpression, IdentifierName($"Item{i + 1}"))))))))),
-                _ => throw new ArgumentOutOfRangeException(nameof(dBusValue.DBusType), dBusValue.DBusType, "")
-            };
 
         private string GetOrAddWriteMethod(DBusValue dBusValue) =>
             dBusValue.DBusType switch
@@ -182,15 +87,15 @@ namespace Tmds.DBus.SourceGenerator
                 DBusType.Int64 => "WriteInt64",
                 DBusType.UInt64 => "WriteUInt64",
                 DBusType.Double => "WriteDouble",
-                DBusType.String => "WriteString",
-                DBusType.ObjectPath => "WriteObjectPath",
+                DBusType.String => "WriteNullableString",
+                DBusType.ObjectPath => "WriteObjectPathSafe",
                 DBusType.Signature => "WriteSignature",
                 DBusType.UnixFd => "WriteHandle",
-                DBusType.Variant => "WriteDBusVariant",
+                DBusType.Variant => "WriteVariant",
                 DBusType.Array => GetOrAddWriteArrayMethod(dBusValue),
                 DBusType.DictEntry => GetOrAddWriteDictionaryMethod(dBusValue),
                 DBusType.Struct => GetOrAddWriteStructMethod(dBusValue),
-                _ => throw new ArgumentOutOfRangeException(nameof(dBusValue.DBusType), dBusValue.DBusType, "")
+                _ => throw new ArgumentOutOfRangeException(nameof(dBusValue.DBusType), dBusValue.DBusType, null)
             };
 
         private string GetOrAddReadMethod(DBusValue dBusValue) =>
@@ -208,12 +113,12 @@ namespace Tmds.DBus.SourceGenerator
                 DBusType.String => "ReadString",
                 DBusType.ObjectPath => "ReadObjectPath",
                 DBusType.Signature => "ReadSignature",
-                DBusType.UnixFd => "ReadHandle",
-                DBusType.Variant => "ReadDBusVariant",
+                DBusType.UnixFd => "ReadHandle<SafeFileHandle>",
+                DBusType.Variant => "ReadVariantValue",
                 DBusType.Array => GetOrAddReadArrayMethod(dBusValue),
                 DBusType.DictEntry => GetOrAddReadDictionaryMethod(dBusValue),
                 DBusType.Struct => GetOrAddReadStructMethod(dBusValue),
-                _ => throw new ArgumentOutOfRangeException(nameof(dBusValue.DBusType), dBusValue.DBusType, "")
+                _ => throw new ArgumentOutOfRangeException(nameof(dBusValue.DBusType), dBusValue.DBusType, null)
             };
 
         private string GetOrAddReadArrayMethod(DBusValue dBusValue)
@@ -223,24 +128,26 @@ namespace Tmds.DBus.SourceGenerator
                 return identifier;
 
             _readMethodExtensions.Add(identifier,
-                MethodDeclaration(ParseTypeName(dBusValue.DotNetType), identifier)
+                MethodDeclaration(GetDotnetType(dBusValue, AccessMode.Read), identifier)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
                     .AddParameterListParameters(
                         Parameter(Identifier("reader"))
-                            .WithType(ParseTypeName("Reader"))
+                            .WithType(IdentifierName("Reader"))
                             .AddModifiers(Token(SyntaxKind.ThisKeyword), Token(SyntaxKind.RefKeyword)))
                     .WithBody(
                         Block()
                             .AddStatements(
                                 LocalDeclarationStatement(
-                                    VariableDeclaration(ParseTypeName($"List<{dBusValue.InnerDBusTypes![0].DotNetType}>"))
+                                    VariableDeclaration(GenericName("List")
+                                            .AddTypeArgumentListArguments(
+                                                GetDotnetType(dBusValue.InnerDBusTypes![0], AccessMode.Read)))
                                         .AddVariables(
                                             VariableDeclarator("items")
                                                 .WithInitializer(
                                                     EqualsValueClause(
                                                         ImplicitObjectCreationExpression())))),
                                 LocalDeclarationStatement(
-                                    VariableDeclaration(ParseTypeName("ArrayEnd"))
+                                    VariableDeclaration(IdentifierName("ArrayEnd"))
                                         .AddVariables(
                                             VariableDeclarator("headersEnd")
                                                 .WithInitializer(
@@ -277,24 +184,24 @@ namespace Tmds.DBus.SourceGenerator
                 return identifier;
 
             _readMethodExtensions.Add(identifier,
-                MethodDeclaration(ParseTypeName(dBusValue.DotNetType), identifier)
+                MethodDeclaration(GetDotnetType(dBusValue, AccessMode.Read), identifier)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
                     .AddParameterListParameters(
                         Parameter(Identifier("reader"))
-                            .WithType(ParseTypeName("Reader"))
+                            .WithType(IdentifierName("Reader"))
                             .AddModifiers(Token(SyntaxKind.ThisKeyword), Token(SyntaxKind.RefKeyword)))
                     .WithBody(
                         Block()
                             .AddStatements(
                                 LocalDeclarationStatement(
-                                    VariableDeclaration(ParseTypeName(dBusValue.DotNetType))
+                                    VariableDeclaration(GetDotnetType(dBusValue, AccessMode.Read))
                                         .AddVariables(
                                             VariableDeclarator("items")
                                                 .WithInitializer(
                                                     EqualsValueClause(
                                                         ImplicitObjectCreationExpression())))),
                                 LocalDeclarationStatement(
-                                    VariableDeclaration(ParseTypeName("ArrayEnd"))
+                                    VariableDeclaration(IdentifierName("ArrayEnd"))
                                         .AddVariables(
                                             VariableDeclarator("headersEnd")
                                                 .WithInitializer(
@@ -332,11 +239,11 @@ namespace Tmds.DBus.SourceGenerator
                 return identifier;
 
             _readMethodExtensions.Add(identifier,
-                MethodDeclaration(ParseTypeName(dBusValue.DotNetType), identifier)
+                MethodDeclaration(GetDotnetType(dBusValue, AccessMode.Read), identifier)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
                     .AddParameterListParameters(
                         Parameter(Identifier("reader"))
-                            .WithType(ParseTypeName("Reader"))
+                            .WithType(IdentifierName("Reader"))
                             .AddModifiers(Token(SyntaxKind.ThisKeyword), Token(SyntaxKind.RefKeyword)))
                     .WithBody(
                         Block()
@@ -345,13 +252,19 @@ namespace Tmds.DBus.SourceGenerator
                                     InvocationExpression(
                                         MakeMemberAccessExpression("reader", "AlignStruct"))),
                                 ReturnStatement(
-                                    InvocationExpression(
-                                        MakeMemberAccessExpression("ValueTuple", "Create"))
-                                        .AddArgumentListArguments(
-                                            dBusValue.InnerDBusTypes!.Select(
-                                                x => Argument(
+                                    dBusValue.InnerDBusTypes!.Length == 1
+                                        ? ObjectCreationExpression(
+                                            GetDotnetType(dBusValue, AccessMode.Read))
+                                            .AddArgumentListArguments(
+                                                Argument(
                                                     InvocationExpression(
-                                                        MakeMemberAccessExpression("reader", GetOrAddReadMethod(x))))).ToArray())))));
+                                                        MakeMemberAccessExpression("reader", GetOrAddReadMethod(dBusValue.InnerDBusTypes![0])))))
+                                        : TupleExpression()
+                                            .AddArguments(
+                                                dBusValue.InnerDBusTypes!.Select(innerDBusValue => Argument(
+                                                        InvocationExpression(
+                                                            MakeMemberAccessExpression("reader", GetOrAddReadMethod(innerDBusValue)))))
+                                                    .ToArray())))));
 
             return identifier;
         }
@@ -367,7 +280,7 @@ namespace Tmds.DBus.SourceGenerator
             BlockSyntax block = Block()
                 .AddStatements(
                     LocalDeclarationStatement(
-                        VariableDeclaration(ParseTypeName("Reader"))
+                        VariableDeclaration(IdentifierName("Reader"))
                             .AddVariables(
                                 VariableDeclarator("reader")
                                     .WithInitializer(
@@ -398,7 +311,7 @@ namespace Tmds.DBus.SourceGenerator
                 {
                     block = block.AddStatements(
                         LocalDeclarationStatement(
-                            VariableDeclaration(ParseTypeName(dBusValues[i].DotNetType))
+                            VariableDeclaration(GetDotnetType(dBusValues[i], AccessMode.Read))
                                 .AddVariables(
                                     VariableDeclarator($"arg{i}")
                                         .WithInitializer(
@@ -415,11 +328,13 @@ namespace Tmds.DBus.SourceGenerator
             }
 
             _readMethodExtensions.Add(identifier,
-                MethodDeclaration(ParseTypeName(ParseReturnType(dBusValues)!), identifier)
+                MethodDeclaration(ParseReturnType(dBusValues, AccessMode.Read)!, identifier)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
                     .AddParameterListParameters(
-                        Parameter(Identifier("message")).WithType(ParseTypeName("Message")),
-                        Parameter(Identifier("_")).WithType(NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword)))))
+                        Parameter(Identifier("message"))
+                            .WithType(IdentifierName("Message")),
+                        Parameter(Identifier("_"))
+                            .WithType(NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword)))))
                     .WithBody(block));
 
             return identifier;
@@ -432,19 +347,23 @@ namespace Tmds.DBus.SourceGenerator
                 return identifier;
 
             _writeMethodExtensions.Add(identifier,
-                MethodDeclaration(PredefinedType(Token(SyntaxKind.VoidKeyword)), identifier)
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
+                MethodDeclaration(
+                        PredefinedType(Token(SyntaxKind.VoidKeyword)), identifier)
+                    .AddModifiers(
+                        Token(SyntaxKind.PublicKeyword),
+                        Token(SyntaxKind.StaticKeyword))
                     .AddParameterListParameters(
                         Parameter(Identifier("writer"))
-                            .WithType(ParseTypeName("MessageWriter"))
+                            .WithType(IdentifierName("MessageWriter"))
                             .AddModifiers(Token(SyntaxKind.ThisKeyword), Token(SyntaxKind.RefKeyword)),
                         Parameter(Identifier("values"))
-                            .WithType(ParseTypeName(dBusValue.DotNetType)))
+                            .WithType(
+                                    GetDotnetType(dBusValue, AccessMode.Write, true)))
                     .WithBody(
                         Block()
                             .AddStatements(
                                 LocalDeclarationStatement(
-                                    VariableDeclaration(ParseTypeName("ArrayStart"))
+                                    VariableDeclaration(IdentifierName("ArrayStart"))
                                         .AddVariables(
                                             VariableDeclarator("arrayStart")
                                                 .WithInitializer(
@@ -454,11 +373,21 @@ namespace Tmds.DBus.SourceGenerator
                                                             .AddArgumentListArguments(
                                                                 Argument(
                                                                     MakeMemberAccessExpression("DBusType", Enum.GetName(typeof(DBusType), dBusValue.InnerDBusTypes![0].DBusType)!))))))),
-                                ForEachStatement(ParseTypeName(dBusValue.InnerDBusTypes[0].DotNetType), "value", IdentifierName("values"), ExpressionStatement(
-                                    InvocationExpression(
-                                        MakeMemberAccessExpression("writer", GetOrAddWriteMethod(dBusValue.InnerDBusTypes[0])))
-                                        .AddArgumentListArguments(
-                                            Argument(IdentifierName("value"))))),
+                                IfStatement(
+                                    IsPatternExpression(
+                                        IdentifierName("values"),
+                                        UnaryPattern(
+                                            ConstantPattern(
+                                                LiteralExpression(SyntaxKind.NullLiteralExpression)))),
+                                    ForEachStatement(
+                                        GetDotnetType(dBusValue.InnerDBusTypes[0], AccessMode.Write, true),
+                                        "value",
+                                        IdentifierName("values"),
+                                        ExpressionStatement(
+                                            InvocationExpression(
+                                                    MakeMemberAccessExpression("writer", GetOrAddWriteMethod(dBusValue.InnerDBusTypes[0])))
+                                                .AddArgumentListArguments(
+                                                    Argument(IdentifierName("value")))))),
                                 ExpressionStatement(
                                     InvocationExpression(
                                             MakeMemberAccessExpression("writer", "WriteArrayEnd"))
@@ -476,18 +405,26 @@ namespace Tmds.DBus.SourceGenerator
 
             _writeMethodExtensions.Add(identifier,
                 MethodDeclaration(PredefinedType(Token(SyntaxKind.VoidKeyword)), identifier)
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
+                    .AddModifiers(
+                        Token(SyntaxKind.PublicKeyword),
+                        Token(SyntaxKind.StaticKeyword))
                     .AddParameterListParameters(
-                        Parameter(Identifier("writer"))
-                            .WithType(ParseTypeName("MessageWriter"))
-                            .AddModifiers(Token(SyntaxKind.ThisKeyword), Token(SyntaxKind.RefKeyword)),
-                        Parameter(Identifier("values"))
-                            .WithType(ParseTypeName(dBusValue.DotNetType)))
+                        Parameter(
+                                Identifier("writer"))
+                            .WithType(
+                                IdentifierName("MessageWriter"))
+                            .AddModifiers(
+                                Token(SyntaxKind.ThisKeyword),
+                                Token(SyntaxKind.RefKeyword)),
+                        Parameter(
+                                Identifier("values"))
+                            .WithType(
+                                    GetDotnetType(dBusValue, AccessMode.Write, true)))
                     .WithBody(
                         Block()
                             .AddStatements(
                                 LocalDeclarationStatement(
-                                    VariableDeclaration(ParseTypeName("ArrayStart"))
+                                    VariableDeclaration(IdentifierName("ArrayStart"))
                                         .AddVariables(
                                             VariableDeclarator("arrayStart")
                                                 .WithInitializer(
@@ -497,26 +434,41 @@ namespace Tmds.DBus.SourceGenerator
                                                             .AddArgumentListArguments(
                                                                 Argument(
                                                                     MakeMemberAccessExpression("DBusType", "Struct"))))))),
-                                ForEachStatement(ParseTypeName($"KeyValuePair<{dBusValue.InnerDotNetTypes![0]}, {dBusValue.InnerDotNetTypes![1]}>"), "value", IdentifierName("values"), Block(
-                                    ExpressionStatement(
-                                        InvocationExpression(
-                                            MakeMemberAccessExpression("writer", "WriteStructureStart"))),
-                                    ExpressionStatement(
-                                        InvocationExpression(
-                                                MakeMemberAccessExpression("writer", GetOrAddWriteMethod(dBusValue.InnerDBusTypes![0])))
-                                            .AddArgumentListArguments(
-                                                Argument(MakeMemberAccessExpression("value", "Key")))),
-                                    ExpressionStatement(
-                                        InvocationExpression(
-                                                MakeMemberAccessExpression("writer", GetOrAddWriteMethod(dBusValue.InnerDBusTypes![1])))
-                                            .AddArgumentListArguments(
-                                                Argument(MakeMemberAccessExpression("value", "Value"))))
-                                    )),
+                                IfStatement(
+                                    IsPatternExpression(
+                                        IdentifierName("values"),
+                                        UnaryPattern(
+                                            ConstantPattern(
+                                                LiteralExpression(SyntaxKind.NullLiteralExpression)))),
+                                    ForEachStatement(
+                                        GenericName("KeyValuePair")
+                                            .AddTypeArgumentListArguments(
+                                                GetDotnetType(dBusValue.InnerDBusTypes![0], AccessMode.Write),
+                                                GetDotnetType(dBusValue.InnerDBusTypes![1], AccessMode.Write, true)),
+                                        "value",
+                                        IdentifierName("values"),
+                                        Block(
+                                            ExpressionStatement(
+                                                InvocationExpression(
+                                                    MakeMemberAccessExpression("writer", "WriteStructureStart"))),
+                                            ExpressionStatement(
+                                                InvocationExpression(
+                                                        MakeMemberAccessExpression("writer", GetOrAddWriteMethod(dBusValue.InnerDBusTypes![0])))
+                                                    .AddArgumentListArguments(
+                                                        Argument(
+                                                            MakeMemberAccessExpression("value", "Key")))),
+                                            ExpressionStatement(
+                                                InvocationExpression(
+                                                        MakeMemberAccessExpression("writer", GetOrAddWriteMethod(dBusValue.InnerDBusTypes![1])))
+                                                    .AddArgumentListArguments(
+                                                        Argument(
+                                                            MakeMemberAccessExpression("value", "Value"))))))),
                                 ExpressionStatement(
                                     InvocationExpression(
                                             MakeMemberAccessExpression("writer", "WriteArrayEnd"))
                                         .AddArgumentListArguments(
-                                            Argument(IdentifierName("arrayStart")))))));
+                                            Argument(
+                                                IdentifierName("arrayStart")))))));
 
             return identifier;
         }
@@ -532,10 +484,10 @@ namespace Tmds.DBus.SourceGenerator
                     .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
                     .AddParameterListParameters(
                         Parameter(Identifier("writer"))
-                            .WithType(ParseTypeName("MessageWriter"))
+                            .WithType(IdentifierName("MessageWriter"))
                             .AddModifiers(Token(SyntaxKind.ThisKeyword), Token(SyntaxKind.RefKeyword)),
                         Parameter(Identifier("value"))
-                            .WithType(ParseTypeName(dBusValue.DotNetType)))
+                            .WithType(GetDotnetType(dBusValue, AccessMode.Write, true)))
                     .WithBody(
                         Block(
                                 ExpressionStatement(

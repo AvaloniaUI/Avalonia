@@ -82,12 +82,6 @@ namespace Tmds.DBus.SourceGenerator
     public class DBusValue
     {
         [XmlIgnore]
-        private string? _dotNetType;
-
-        [XmlIgnore]
-        private string[]? _innerDotNetTypes;
-
-        [XmlIgnore]
         private DBusType _dBusType;
 
         [XmlIgnore]
@@ -100,37 +94,13 @@ namespace Tmds.DBus.SourceGenerator
         public string? Type { get; set; }
 
         [XmlIgnore]
-        public string DotNetType
-        {
-            get
-            {
-                if (_dotNetType is not null)
-                    return _dotNetType;
-                (_dotNetType, _innerDotNetTypes, _, _innerDBusTypes, _dBusType) = DBusSourceGenerator.ParseDBusValue(Type!);
-                return _dotNetType;
-            }
-        }
-
-        [XmlIgnore]
-        public string[]? InnerDotNetTypes
-        {
-            get
-            {
-                if (_innerDotNetTypes is not null)
-                    return _innerDotNetTypes;
-                (_dotNetType, _innerDotNetTypes, _, _innerDBusTypes, _dBusType) = DBusSourceGenerator.ParseDBusValue(Type!);
-                return _innerDotNetTypes;
-            }
-        }
-
-        [XmlIgnore]
         public DBusType DBusType
         {
             get
             {
                 if (_dBusType != DBusType.Invalid)
                     return _dBusType;
-                (_dotNetType, _innerDotNetTypes, _, _innerDBusTypes, _dBusType) = DBusSourceGenerator.ParseDBusValue(Type!);
+                (_, _innerDBusTypes, _dBusType) = DBusSourceGenerator.ParseDBusValue(Type!);
                 return _dBusType;
             }
         }
@@ -142,7 +112,7 @@ namespace Tmds.DBus.SourceGenerator
             {
                 if (_innerDBusTypes is not null)
                     return _innerDBusTypes;
-                (_dotNetType, _innerDotNetTypes, _, _innerDBusTypes, _dBusType) = DBusSourceGenerator.ParseDBusValue(Type!);
+                (_, _innerDBusTypes, _dBusType) = DBusSourceGenerator.ParseDBusValue(Type!);
                 return _innerDBusTypes;
             }
         }

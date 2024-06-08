@@ -59,7 +59,9 @@ namespace Tmds.DBus.SourceGenerator
                             foreach (DBusInterface dBusInterface in value.Node.Interfaces!)
                             {
                                 TypeDeclarationSyntax typeDeclarationSyntax = GenerateProxy(dBusInterface);
-                                NamespaceDeclarationSyntax namespaceDeclaration = NamespaceDeclaration(IdentifierName("Tmds.DBus.SourceGenerator")).AddMembers(typeDeclarationSyntax);
+                                NamespaceDeclarationSyntax namespaceDeclaration = NamespaceDeclaration(
+                                    IdentifierName("Tmds.DBus.SourceGenerator"))
+                                    .AddMembers(typeDeclarationSyntax);
                                 CompilationUnitSyntax compilationUnit = MakeCompilationUnit(namespaceDeclaration);
                                 productionContext.AddSource($"Tmds.DBus.SourceGenerator.{Pascalize(dBusInterface.Name!)}.g.cs", compilationUnit.GetText(Encoding.UTF8));
                             }
@@ -68,7 +70,9 @@ namespace Tmds.DBus.SourceGenerator
                             foreach (DBusInterface dBusInterface in value.Node.Interfaces!)
                             {
                                 TypeDeclarationSyntax typeDeclarationSyntax = GenerateHandler(dBusInterface);
-                                NamespaceDeclarationSyntax namespaceDeclaration = NamespaceDeclaration(IdentifierName("Tmds.DBus.SourceGenerator")).AddMembers(typeDeclarationSyntax);
+                                NamespaceDeclarationSyntax namespaceDeclaration = NamespaceDeclaration(
+                                        IdentifierName("Tmds.DBus.SourceGenerator"))
+                                    .AddMembers(typeDeclarationSyntax);
                                 CompilationUnitSyntax compilationUnit = MakeCompilationUnit(namespaceDeclaration);
                                 productionContext.AddSource($"Tmds.DBus.SourceGenerator.{Pascalize(dBusInterface.Name!)}.g.cs", compilationUnit.GetText(Encoding.UTF8));
                             }
@@ -76,25 +80,32 @@ namespace Tmds.DBus.SourceGenerator
                     }
                 }
 
-                CompilationUnitSyntax readerExtensions = MakeCompilationUnit(NamespaceDeclaration(IdentifierName("Tmds.DBus.SourceGenerator"))
+                CompilationUnitSyntax readerExtensions = MakeCompilationUnit(
+                    NamespaceDeclaration(
+                            IdentifierName("Tmds.DBus.SourceGenerator"))
                     .AddMembers(
                         ClassDeclaration("ReaderExtensions")
                             .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword))
                             .WithMembers(
                                 List<MemberDeclarationSyntax>(_readMethodExtensions.Values))));
 
-                CompilationUnitSyntax writerExtensions = MakeCompilationUnit(NamespaceDeclaration(IdentifierName("Tmds.DBus.SourceGenerator"))
+                CompilationUnitSyntax writerExtensions = MakeCompilationUnit(
+                    NamespaceDeclaration(
+                            IdentifierName("Tmds.DBus.SourceGenerator"))
                     .AddMembers(
                         ClassDeclaration("WriterExtensions")
                             .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword))
                             .WithMembers(
-                                List<MemberDeclarationSyntax>(_writeMethodExtensions.Values))));
+                                List<MemberDeclarationSyntax>(_writeMethodExtensions.Values)
+                                    .Add(MakeWriteNullableStringMethod())
+                                    .Add(MakeWriteObjectPathSafeMethod()))));
 
-                productionContext.AddSource("Tmds.DBus.SourceGenerator.PropertyChanges.cs", MakePropertyChangesClass().GetText(Encoding.UTF8));
-                productionContext.AddSource("Tmds.DBus.SourceGenerator.SignalHelper.cs", MakeSignalHelperClass().GetText(Encoding.UTF8));
+                productionContext.AddSource("Tmds.DBus.SourceGenerator.PropertyChanges.cs", PropertyChangesClass);
+                productionContext.AddSource("Tmds.DBus.SourceGenerator.SignalHelper.cs", SignalHelperClass);
+                productionContext.AddSource("Tmds.DBus.SourceGenerator.PathHandler.cs", PathHandlerClass);
+                productionContext.AddSource("Tmds.DBus.SourceGenerator.IDBusInterfaceHandler.cs", DBusInterfaceHandlerInterface);
                 productionContext.AddSource("Tmds.DBus.SourceGenerator.ReaderExtensions.cs", readerExtensions.GetText(Encoding.UTF8));
                 productionContext.AddSource("Tmds.DBus.SourceGenerator.WriterExtensions.cs", writerExtensions.GetText(Encoding.UTF8));
-                productionContext.AddSource("Tmds.DBus.SourceGenerator.VariantExtensions.cs", VariantExtensions);
             });
         }
     }

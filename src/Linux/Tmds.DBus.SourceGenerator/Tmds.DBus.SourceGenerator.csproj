@@ -9,5 +9,13 @@
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" PrivateAssets="all" />
     </ItemGroup>
+ 
+    <ItemGroup>
+      <Folder Include="Properties\" />
+    </ItemGroup>
+ 
+    <ItemGroup>
+      <None Remove="Properties\launchSettings.json" />
+    </ItemGroup>
 
 </Project>

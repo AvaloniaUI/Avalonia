@@ -20,8 +20,6 @@
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false"
                       PrivateAssets="all"/>
-
-    <ProjectReference Include="..\Linux\Tmds.DBus\Tmds.DBus.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -28,16 +28,12 @@ namespace Tmds.DBus.SourceGenerator
 
             if (length > 1)
             {
-                switch (type)
+                innerSignature = type switch
                 {
-                    case DBusType.Array:
-                        innerSignature = _signature.Slice(1, length - 1);
-                        break;
-                    case DBusType.Struct:
-                    case DBusType.DictEntry:
-                        innerSignature = _signature.Slice(1, length - 2);
-                        break;
-                }
+                    DBusType.Array => _signature.Slice(1, length - 1),
+                    DBusType.Struct or DBusType.DictEntry => _signature.Slice(1, length - 2),
+                    _ => innerSignature
+                };
             }
 
             _signature = _signature.Slice(length);
@@ -158,12 +154,12 @@ namespace Tmds.DBus.SourceGenerator
                     signature = signature.Slice(1);
                     T keyType = Transform(keySignature, map);
                     T valueType = Transform(valueSignature, map);
-                    return map(DBusType.DictEntry, new[] { keyType, valueType });
+                    return map(DBusType.DictEntry, [keyType, valueType]);
                 case DBusType.Array:
                     signature = signature.Slice(1);
                     T elementType = Transform(signature, map);
                     //signature = signature.Slice(1);
-                    return map(DBusType.Array, new[] { elementType });
+                    return map(DBusType.Array, [elementType]);
                 case DBusType.Struct:
                     signature = signature.Slice(1, signature.Length - 2);
                     int typeCount = CountTypes(signature);
@@ -176,7 +172,7 @@ namespace Tmds.DBus.SourceGenerator
 
                     return map(DBusType.Struct, innerTypes);
                 default:
-                    return map(dbusType, Array.Empty<T>());
+                    return map(dbusType, []);
             }
         }
 
