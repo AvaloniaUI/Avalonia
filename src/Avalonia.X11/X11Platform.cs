@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -72,6 +73,9 @@ namespace Avalonia.X11
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
 
+            if (options.UseAtSpi)
+                AtSpiContext.Initialize();
+            
             IRenderTimer timer = options.ShouldRenderOnUIThread
                ? new UiThreadRenderTimer(60)
                : new SleepLoopRenderTimer(60);
@@ -289,6 +293,13 @@ namespace Avalonia
         /// The default value is true.
         /// </summary>
         public bool UseDBusMenu { get; set; } = true;
+
+        
+        /// <summary>
+        /// Enables AT-SPI Support for Accessibility/UI Automation
+        /// The default value is true.
+        /// </summary>
+        public bool UseAtSpi { get; set; } = true;
 
         /// <summary>
         /// Enables DBus file picker instead of GTK.

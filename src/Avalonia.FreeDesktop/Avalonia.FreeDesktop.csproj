@@ -48,6 +48,9 @@
 
     <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierWatcher.xml" DBusGeneratorMode="Proxy"/>
     <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierItem.xml" DBusGeneratorMode="Handler"/>
+
+    <!-- AT-SPI2 -->
+    <AdditionalFiles Include="DBusXml/org.a11y.Bus.xml" DBusGeneratorMode="Proxy" />
   </ItemGroup>
 
 </Project>

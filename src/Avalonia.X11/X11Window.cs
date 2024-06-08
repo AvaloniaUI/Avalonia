@@ -24,7 +24,9 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Automation.Peers;
 using Avalonia.Dialogs;
+using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.Platform.Storage.FileIO;
 
 // ReSharper disable IdentifierTypo
@@ -892,6 +894,8 @@ namespace Avalonia.X11
         public void SetInputRoot(IInputRoot inputRoot)
         {
             _inputRoot = inputRoot;
+            if(_platform.Options.UseAtSpi && inputRoot is Control controlPeer)
+                AtSpiContext.Instance?.RegisterRootAutomationPeer(ControlAutomationPeer.CreatePeerForElement(controlPeer));
         }
 
         public void Dispose()
