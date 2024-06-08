@@ -6,7 +6,7 @@ sealed class PathNode
     // a string if there is a single child name
     // a List<string> List<string>.Count child names
     private object? _childNames;
-    public IMethodHandler? MethodHandler;
+    public List<IMethodHandler>? MethodHandlers = new();
     public PathNode? Parent { get; set; }
 
     public int ChildNameCount =>
@@ -178,7 +178,7 @@ sealed class PathNodeDictionary : IMethodHandlerDictionary
             if (_dictionary.Remove(path, out PathNode? node))
             {
                 nodes[j++] = (path, node);
-                node.MethodHandler = null;
+                node.MethodHandlers.Clear();
             }
         }
         count = j; j = 0;
@@ -217,7 +217,7 @@ sealed class PathNodeDictionary : IMethodHandlerDictionary
         Debug.Assert(parent.ChildNameCount >= 1, "node is expected to be a known child");
         if (parent.ChildNameCount == 1) // We're the only child.
         {
-            if (parent.MethodHandler is not null)
+            if (parent.MethodHandlers.Count > 0)
             {
                 // Parent is still needed for the MethodHandler.
                 parent.ClearChildNames();
@@ -261,11 +261,11 @@ sealed class PathNodeDictionary : IMethodHandlerDictionary
 
         PathNode node = GetOrCreateNode(path);
 
-        if (node.MethodHandler is not null)
-        {
-            throw new InvalidOperationException($"A method handler is already registered for the path '{path}'.");
-        }
-        node.MethodHandler = methodHandler;
+        // if (node.MethodHandler is not null)
+        // {
+        //     throw new InvalidOperationException($"A method handler is already registered for the path '{path}'.");
+        // }
+        node.MethodHandlers.Add(methodHandler);
     }
 
     public void RemoveMethodHandler(string path)
@@ -279,7 +279,7 @@ sealed class PathNodeDictionary : IMethodHandlerDictionary
             if (node.ChildNameCount > 0)
             {
                 // Node is still needed for its children.
-                node.MethodHandler = null;
+                node.MethodHandlers.Clear();
                 _dictionary.Add(path, node);
             }
             else

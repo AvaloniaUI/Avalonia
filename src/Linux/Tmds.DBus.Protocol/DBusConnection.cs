@@ -290,7 +290,7 @@ class DBusConnection : IDisposable
             {
                 bool returnMessageToPool = true;
                 MessageHandler pendingCall = default;
-                IMethodHandler? methodHandler = null;
+                IEnumerable<IMethodHandler>? methodHandlers = null;
                 Action<Exception?, DisposableMessage>? monitor = null;
                 bool isMethodCall = message.MessageType == MessageType.MethodCall;
                 MethodContext? methodContext = null;
@@ -327,7 +327,7 @@ class DBusConnection : IDisposable
                             {
                                 if (_pathNodes.TryGetValue(message.PathAsString!, out PathNode? node))
                                 {
-                                    methodHandler = node.MethodHandler;
+                                    methodHandlers = node.MethodHandlers;
 
                                     bool isDBusIntrospect = message.Member.SequenceEqual("Introspect"u8) &&
                                                             message.Interface.SequenceEqual("org.freedesktop.DBus.Introspectable"u8);
@@ -372,23 +372,29 @@ class DBusConnection : IDisposable
                     if (isMethodCall)
                     {
                         Debug.Assert(methodContext is not null);
-                        if (methodHandler is not null)
+                        if (methodHandlers is not null)
                         {
 // Suppress methodContext nullability warnings.
 #if NETSTANDARD2_0
 #pragma warning disable CS8604
 #endif
-                            bool runHandlerSynchronously = methodHandler.RunMethodHandlerSynchronously(message);
-                            if (runHandlerSynchronously)
+
+                            foreach (var methodHandler in methodHandlers)
                             {
-                                await methodHandler.HandleMethodAsync(methodContext).ConfigureAwait(false);
-                                HandleNoReplySent(methodContext);
+                                
+                                bool runHandlerSynchronously = methodHandler.RunMethodHandlerSynchronously(message);
+                                if (runHandlerSynchronously)
+                                {
+                                    await methodHandler.HandleMethodAsync(methodContext).ConfigureAwait(false);
+                                    HandleNoReplySent(methodContext);
+                                }
+                                else
+                                {
+                                    returnMessageToPool = false;
+                                    RunMethodHandler(methodHandler, methodContext);
+                                }
                             }
-                            else
-                            {
-                                returnMessageToPool = false;
-                                RunMethodHandler(methodHandler, methodContext);
-                            }
+                            
                         }
                         else
                         {

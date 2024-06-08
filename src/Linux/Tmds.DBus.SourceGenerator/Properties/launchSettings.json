@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Generator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "/var/home/strix/RiderProjects/Avalonia/src/Avalonia.FreeDesktop/Avalonia.FreeDesktop.csproj"
+    }
+  }
+}

@@ -1,123 +1,108 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<node name="/org/a11y/atspi/accessible/root">
+<!-- GDBus 2.80.2 -->
+<node>
+<!--  <interface name="org.freedesktop.DBus.Properties">-->
+<!--    <method name="Get">-->
+<!--      <arg type="s" name="interface_name" direction="in"/>-->
+<!--      <arg type="s" name="property_name" direction="in"/>-->
+<!--      <arg type="v" name="value" direction="out"/>-->
+<!--    </method>-->
+<!--    <method name="GetAll">-->
+<!--      <arg type="s" name="interface_name" direction="in"/>-->
+<!--      <arg type="a{sv}" name="properties" direction="out"/>-->
+<!--    </method>-->
+<!--    <method name="Set">-->
+<!--      <arg type="s" name="interface_name" direction="in"/>-->
+<!--      <arg type="s" name="property_name" direction="in"/>-->
+<!--      <arg type="v" name="value" direction="in"/>-->
+<!--    </method>-->
+<!--    <signal name="PropertiesChanged">-->
+<!--      <arg type="s" name="interface_name"/>-->
+<!--      <arg type="a{sv}" name="changed_properties"/>-->
+<!--      <arg type="as" name="invalidated_properties"/>-->
+<!--    </signal>-->
+<!--  </interface>-->
+<!--  <interface name="org.freedesktop.DBus.Introspectable">-->
+<!--    <method name="Introspect">-->
+<!--      <arg type="s" name="xml_data" direction="out"/>-->
+<!--    </method>-->
+<!--  </interface>-->
+<!--  <interface name="org.freedesktop.DBus.Peer">-->
+<!--    <method name="Ping"/>-->
+<!--    <method name="GetMachineId">-->
+<!--      <arg type="s" name="machine_uuid" direction="out"/>-->
+<!--    </method>-->
+<!--  </interface>-->
+  <interface name="org.a11y.atspi.Application">
+    <method name="GetLocale">
+      <arg type="u" name="lctype" direction="in"/>
+      <arg type="s" name="unnamed_arg1" direction="out"/>
+    </method>
+    <method name="RegisterEventListener">
+      <arg type="s" name="event" direction="in"/>
+    </method>
+    <method name="DeregisterEventListener">
+      <arg type="s" name="event" direction="in"/>
+    </method>
+    <property type="s" name="ToolkitName" access="read"/>
+    <property type="s" name="Version" access="read"/>
+    <property type="s" name="AtspiVersion" access="read"/>
+    <property type="i" name="Id" access="readwrite"/>
+  </interface>
   <interface name="org.a11y.atspi.Accessible">
-    <property name="Name" type="s" access="read"/>
-    <property name="Description" type="s" access="read"/>
-    <property name="Parent" type="(so)" access="read">
-      
-    </property>
-    <property name="ChildCount" type="i" access="read"/>
-    <property name="Locale" type="s" access="read"/>
-    <property name="AccessibleId" type="s" access="read"/>
-    <property name="HelpText" type="s" access="read"/>
     <method name="GetChildAtIndex">
-      <arg direction="in" name="index" type="i"/>
-      <arg direction="out" type="(so)"/>
-      
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0"
+                  value="QSpiObjectReference"/>
+      <arg type="i" name="index" direction="in"/>
+      <arg type="(so)" name="unnamed_arg1" direction="out"/>
     </method>
     <method name="GetChildren">
-      <arg direction="out" type="a(so)"/>
-      
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0"
+                  value="QSpiObjectReferenceArray"/>
+      <arg type="a(so)" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetIndexInParent">
-      <arg direction="out" type="i"/>
+      <arg type="i" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetRelationSet">
-      <arg direction="out" type="a(ua(so))"/>
-
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0"
+                  value="QSpiRelationArray"/>
+      <arg type="a(ua(so))" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetRole">
-      <arg direction="out" type="u"/>
+      <arg type="u" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetRoleName">
-      <arg direction="out" type="s"/>
+      <arg type="s" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetLocalizedRoleName">
-      <arg direction="out" type="s"/>
+      <arg type="s" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetState">
-      <arg direction="out" type="au"/>
-
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0"
+                  value="QSpiIntList"/>
+      <arg type="au" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetAttributes">
-      <arg direction="out" type="a{ss}"/>
-
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0"
+                  value="QSpiAttributeSet"/>
+      <arg type="a{ss}" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetApplication">
-      <arg direction="out" type="(so)"/>
-
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0"
+                  value="QSpiObjectReference"/>
+      <arg type="(so)" name="unnamed_arg0" direction="out"/>
     </method>
     <method name="GetInterfaces">
-      <arg direction="out" type="as"/>
+      <arg type="as" name="unnamed_arg0" direction="out"/>
     </method>
-  </interface>
-  <interface name="org.a11y.atspi.Application">
-    <property name="ToolkitName" type="s" access="read"/>
-    <property name="Version" type="s" access="read"/>
-    <property name="AtspiVersion" type="s" access="read"/>
-    <property name="Id" type="i" access="readwrite"/>
-    <method name="GetLocale">
-      <arg direction="in" name="lctype" type="u"/>
-      <arg direction="out" type="s"/>
-    </method>
-  </interface>
-  <interface name="org.a11y.atspi.Collection">
-    <method name="GetMatches">
-      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)"/>
-
-      <arg direction="in" name="sortby" type="u"/>
-      <arg direction="in" name="count" type="i"/>
-      <arg direction="in" name="traverse" type="b"/>
-      <arg direction="out" type="a(so)"/>
-
-    </method>
-    <method name="GetMatchesTo">
-      <arg direction="in" name="current_object" type="o"/>
-
-      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)"/>
-
-      <arg direction="in" name="sortby" type="u"/>
-      <arg direction="in" name="tree" type="u"/>
-      <arg direction="in" name="limit_scope" type="b"/>
-      <arg direction="in" name="count" type="i"/>
-      <arg direction="in" name="traverse" type="b"/>
-      <arg direction="out" type="a(so)"/>
-
-    </method>
-    <method name="GetMatchesFrom">
-      <arg direction="in" name="current_object" type="o"/>
-
-      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)"/>
-
-      <arg direction="in" name="sortby" type="u"/>
-      <arg direction="in" name="tree" type="u"/>
-      <arg direction="in" name="count" type="i"/>
-      <arg direction="in" name="traverse" type="b"/>
-      <arg direction="out" type="a(so)"/>
-
-    </method>
-    <method name="GetActiveDescendant">
-      <arg direction="out" type="(so)"/>
-
-    </method>
-  </interface>
-  <interface name="org.a11y.atspi.Socket">
-    <method name="Embed">
-      <arg direction="in" name="plug" type="(so)"/>
-
-      <arg direction="out" name="socket" type="(so)"/>
-
-    </method>
-    <method name="Embedded">
-      <arg direction="in" name="path" type="s"/>
-    </method>
-    <method name="Unembed">
-      <arg direction="in" name="plug" type="(so)"/>
-
-    </method>
-    <signal name="Available">
-      <arg name="socket" type="(so)"/>
-
-    </signal>
+    <property type="s" name="Name" access="read"/>
+    <property type="s" name="Description" access="read"/>
+    <property type="(so)" name="Parent" access="read">
+      <annotation name="org.qtproject.QtDBus.QtTypeName"
+                  value="QSpiObjectReference"/>
+    </property>
+    <property type="i" name="ChildCount" access="read"/>
+    <property type="s" name="Locale" access="read"/>
+    <property type="s" name="AccessibleId" access="read"/>
   </interface>
 </node>
