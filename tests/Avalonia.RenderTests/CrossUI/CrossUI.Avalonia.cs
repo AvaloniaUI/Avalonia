@@ -200,7 +200,8 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
                                         Point1 = q.Point1,
                                         Point2 = q.Point2,
                                         IsStroked = q.IsStroked
-                                    }
+                                    },
+                                    _ => throw new InvalidOperationException()
                                 }))
                         }))
                 };

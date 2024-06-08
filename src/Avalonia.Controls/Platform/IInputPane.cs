@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Platform
     public interface IInputPane
     {
         /// <summary>
-        /// The current input pane state
+        /// The current input pane state.
         /// </summary>
         InputPaneState State { get; }
 

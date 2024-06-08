@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
@@ -19,7 +21,7 @@ namespace Avalonia.FreeDesktop
         private readonly OrgFreedesktopDBus? _dBus;
 
         private IDisposable? _serviceWatchDisposable;
-        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
+        private readonly StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private OrgKdeStatusNotifierWatcher? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
 
@@ -52,7 +54,10 @@ namespace Avalonia.FreeDesktop
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
-
+           
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
+            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+            
             WatchAsync();
         }
 
@@ -107,13 +112,10 @@ namespace Avalonia.FreeDesktop
             var tid = s_trayIconInstanceId++;
 
             _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
-
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
             await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
-            _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
+            _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
             _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
         }

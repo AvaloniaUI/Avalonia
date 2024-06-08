@@ -7,6 +7,8 @@ namespace Avalonia.Win32.OpenGl
         public const int WGL_CONTEXT_LAYER_PLANE_ARB = 0x2093;
         public const int WGL_CONTEXT_FLAGS_ARB = 0x2094;
         public const int WGL_CONTEXT_PROFILE_MASK_ARB = 0x9126;
+        public const int WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
+        public const int WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
         public const int WGL_NUMBER_PIXEL_FORMATS_ARB = 0x2000;
 
         public const int WGL_DRAW_TO_WINDOW_ARB = 0x2001;

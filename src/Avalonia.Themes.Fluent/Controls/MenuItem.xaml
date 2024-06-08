@@ -117,7 +117,7 @@
                     Fill="{DynamicResource MenuFlyoutSubItemChevron}"
                     Margin="{DynamicResource MenuFlyoutItemChevronMargin}"
                     VerticalAlignment="Center"
-                    Grid.Column="3" />
+                    Grid.Column="4" />
             </Grid>
           </Border>
           <Popup Name="PART_Popup"

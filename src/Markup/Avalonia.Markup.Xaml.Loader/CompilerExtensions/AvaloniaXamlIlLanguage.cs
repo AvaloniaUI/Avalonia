@@ -110,8 +110,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             definition.TypeBuilder.AddInterfaceImplementation(interfaceType);
 
-            // IReadOnlyList<object> DirectParents => (IReadOnlyList<object>)ParentsStack;
-            var directParentsGetter = ImplementInterfacePropertyGetter("DirectParents");
+            // IReadOnlyList<object> DirectParentsStack => (IReadOnlyList<object>)ParentsStack;
+            var directParentsGetter = ImplementInterfacePropertyGetter("DirectParentsStack");
             directParentsGetter.Generator
                 .LdThisFld(definition.ParentListField)
                 .Castclass(directParentsGetter.ReturnType)
