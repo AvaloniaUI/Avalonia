@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node>
+  <interface name="org.a11y.atspi.Registry">
+
+    <method name="RegisterEvent">
+      <arg direction="in" name="event" type="s"/>
+      <arg direction="in" name="properties" type="as"/>
+      <arg direction="in" name="app_bus_name" type="s"/>
+    </method>
+
+    <method name="DeregisterEvent">
+      <arg direction="in" name="event" type="s"/>
+    </method>
+
+    <method name="GetRegisteredEvents">
+      <arg direction="out" name="events" type="a(ss)"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiEventListenerArray"/>
+    </method>
+
+    <signal name="EventListenerRegistered">
+      <arg name="bus" type="s"/>
+      <arg name="path" type="s"/>
+    </signal>
+
+    <signal name="EventListenerDeregistered">
+      <arg name="bus" type="s"/>
+      <arg name="path" type="s"/>
+    </signal>
+  </interface>
+  <interface name="org.a11y.atspi.Socket">
+    <method name="Embed">
+      <arg direction="in" name="plug" type="(so)"/>
+
+      <arg direction="out" name="socket" type="(so)"/>
+
+    </method>
+    <method name="Embedded">
+      <arg direction="in" name="path" type="s"/>
+    </method>
+    <method name="Unembed">
+      <arg direction="in" name="plug" type="(so)"/>
+
+    </method>
+    <signal name="Available">
+      <arg name="socket" type="(so)"/>
+
+    </signal>
+  </interface>
+
+</node>
