@@ -490,16 +490,11 @@ class DBusConnection : IDisposable
         _currentSynchronizationContext = null;
     }
 
-    public void AddMethodHandlers(IReadOnlyList<IMethodHandler> methodHandlers)
+    public void UpdateMethodHandlers<T>(Action<IMethodHandlerDictionary, T> update, T state)
     {
         lock (_gate)
         {
-            if (_state == ConnectionState.Disconnected)
-            {
-                return;
-            }
-
-            _pathNodes.AddMethodHandlers(methodHandlers);
+            update(_pathNodes, state);
         }
     }
 

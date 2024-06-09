@@ -2,6 +2,8 @@ namespace Tmds.DBus.Protocol;
 
 public ref partial struct MessageWriter
 {
+    private const int MaxSizeHint = 4096;
+
     public void WriteBool(bool value) => WriteUInt32(value ? 1u : 0u);
 
     public void WriteByte(byte value) => WritePrimitiveCore<byte>(value, DBusType.Byte);
@@ -170,33 +172,63 @@ public ref partial struct MessageWriter
 
     private int WriteRaw(ReadOnlySpan<byte> data)
     {
-        int length = data.Length;
-        var dst = GetSpan(length);
-        data.CopyTo(dst);
-        Advance(length);
-        return length;
+        int totalLength = data.Length;
+        if (totalLength <= MaxSizeHint)
+        {
+            var dst = GetSpan(totalLength);
+            data.CopyTo(dst);
+            Advance(totalLength);
+            return totalLength;
+        }
+        else
+        {
+            while (!data.IsEmpty)
+            {
+                var dst = GetSpan(1);
+                int length = Math.Min(data.Length, dst.Length);
+                data.Slice(0, length).CopyTo(dst);
+                Advance(length);
+                data = data.Slice(length);
+            }
+            return totalLength;
+        }
     }
 
     private int WriteRaw(string data)
     {
-#if NETSTANDARD2_1_OR_GREATER || NET
-        // To use the IBufferWriter we need to flush the Span.
-        // Avoid it when we're writing small strings.
-        if (data.Length <= 2048)
+        const int MaxUtf8BytesPerChar = 3;
+
+        if (data.Length <= MaxSizeHint / MaxUtf8BytesPerChar)
         {
             ReadOnlySpan<char> chars = data.AsSpan();
             int byteCount = Encoding.UTF8.GetByteCount(chars);
             var dst = GetSpan(byteCount);
-            byteCount = Encoding.UTF8.GetBytes(data, dst);
+            byteCount = Encoding.UTF8.GetBytes(data.AsSpan(), dst);
             Advance(byteCount);
             return byteCount;
         }
         else
-#endif
         {
-            int length = (int)Encoding.UTF8.GetBytes(data.AsSpan(), Writer);
-            _offset += length;
-            return length;
+            ReadOnlySpan<char> chars = data.AsSpan();
+            Encoder encoder = Encoding.UTF8.GetEncoder();
+            int totalLength = 0;
+            do
+            {
+                Debug.Assert(!chars.IsEmpty);
+
+                var dst = GetSpan(MaxUtf8BytesPerChar);
+                encoder.Convert(chars, dst, flush: true, out int charsUsed, out int bytesUsed, out bool completed);
+
+                Advance(bytesUsed);
+                totalLength += bytesUsed;
+
+                if (completed)
+                {
+                    return totalLength;
+                }
+
+                chars = chars.Slice(charsUsed);
+            } while (true);
         }
     }
 }

@@ -13,7 +13,6 @@ public readonly struct Variant
     private readonly long    _l;
 
     private const int TypeShift = 8 * 7;
-    // private const int SignatureFirstShift = 8 * 6;
     private const long StripTypeMask = ~(0xffL << TypeShift);
 
     private DBusType Type

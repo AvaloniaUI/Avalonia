@@ -54,15 +54,6 @@ public ref partial struct MessageWriter
         return message;
     }
 
-    private IBufferWriter<byte> Writer
-    {
-        get
-        {
-            Flush();
-            return _data;
-        }
-    }
-
     internal MessageWriter(MessageBufferPool messagePool, uint serial)
     {
         _message = messagePool.Rent();

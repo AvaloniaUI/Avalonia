@@ -25,46 +25,6 @@ static partial class NetstandardExtensions
         return null!;
     }
 
-    public static long GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, IBufferWriter<byte> writer)
-    {
-        if (chars.Length <= MaxInputElementsPerIteration)
-        {
-            int byteCount = encoding.GetByteCount(chars);
-            Span<byte> scratchBuffer = writer.GetSpan(byteCount);
-
-            int actualBytesWritten = encoding.GetBytes(chars, scratchBuffer);
-
-            writer.Advance(actualBytesWritten);
-            return actualBytesWritten;
-        }
-        else
-        {
-            Convert(encoding.GetEncoder(), chars, writer, flush: true, out long totalBytesWritten, out bool completed);
-            return totalBytesWritten;
-        }
-    }
-
-    public static void Convert(this Encoder encoder, ReadOnlySpan<char> chars, IBufferWriter<byte> writer, bool flush, out long bytesUsed, out bool completed)
-    {
-        long totalBytesWritten = 0;
-        do
-        {
-            int byteCountForThisSlice = (chars.Length <= MaxInputElementsPerIteration)
-              ? encoder.GetByteCount(chars, flush)
-              : encoder.GetByteCount(chars.Slice(0, MaxInputElementsPerIteration), flush: false);
-
-            Span<byte> scratchBuffer = writer.GetSpan(byteCountForThisSlice);
-
-            encoder.Convert(chars, scratchBuffer, flush, out int charsUsedJustNow, out int bytesWrittenJustNow, out completed);
-
-            chars = chars.Slice(charsUsedJustNow);
-            writer.Advance(bytesWrittenJustNow);
-            totalBytesWritten += bytesWrittenJustNow;
-        } while (!chars.IsEmpty);
-
-        bytesUsed = totalBytesWritten;
-    }
-
     public static async Task ConnectAsync(this Socket socket, EndPoint remoteEP, CancellationToken cancellationToken)
     {
         using var ctr = cancellationToken.Register(state => ((Socket)state!).Dispose(), socket, useSynchronizationContext: false);

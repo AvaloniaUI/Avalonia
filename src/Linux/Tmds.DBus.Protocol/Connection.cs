@@ -249,12 +249,19 @@ public partial class Connection : IDisposable
     }
 
     public void AddMethodHandler(IMethodHandler methodHandler)
-        => AddMethodHandlers([ methodHandler ]);
+        => UpdateMethodHandlers((dictionary, handler) => dictionary.AddMethodHandler(handler), methodHandler);
 
     public void AddMethodHandlers(IReadOnlyList<IMethodHandler> methodHandlers)
-    {
-        GetConnection().AddMethodHandlers(methodHandlers);
-    }
+        => UpdateMethodHandlers((dictionary, handlers) => dictionary.AddMethodHandlers(handlers), methodHandlers);
+
+    public void RemoveMethodHandler(string path)
+        => UpdateMethodHandlers((dictionary, path) => dictionary.RemoveMethodHandler(path), path);
+
+    public void RemoveMethodHandlers(IEnumerable<string> paths)
+        => UpdateMethodHandlers((dictionary, paths) => dictionary.RemoveMethodHandlers(paths), paths);
+        
+    private void UpdateMethodHandlers<T>(Action<IMethodHandlerDictionary, T> update, T state)
+        => GetConnection().UpdateMethodHandlers(update, state);
 
     private static Connection CreateConnection(ref Connection? field, string? address)
     {
