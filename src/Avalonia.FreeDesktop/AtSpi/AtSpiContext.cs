@@ -177,6 +177,11 @@ internal class AtSpiContext
     {
         public override Connection Connection { get; }
 
+        public RootAccessible()
+        {
+            
+        }
+        
         protected override async ValueTask<(string, ObjectPath)> OnGetChildAtIndexAsync(int index)
         {
             return default;
@@ -189,7 +194,7 @@ internal class AtSpiContext
 
         protected override async ValueTask<int> OnGetIndexInParentAsync()
         {
-            return default;
+            return -1;
         }
 
         protected override async ValueTask<(uint, (string, ObjectPath)[])[]> OnGetRelationSetAsync()
@@ -199,7 +204,7 @@ internal class AtSpiContext
 
         protected override async ValueTask<uint> OnGetRoleAsync()
         {
-            return default;
+            return (uint)AtspiRole.ATSPI_ROLE_APPLICATION;
         }
 
         protected override async ValueTask<string> OnGetRoleNameAsync()
@@ -278,6 +283,9 @@ internal class AtSpiContext
 
         if (res is { } && res.Item1.StartsWith(":1.") && res.Item2.ToString() == RootPath)
         {
+            ac0.Parent = res;
+            ac0.Name = Application.Current?.Name ?? "Avalonia Application";
+            //ac0.ChildCount = 0;
         }
     }
 
@@ -304,7 +312,6 @@ internal class AtSpiContext
 
         await a11YConnection.ConnectAsync();
 
-
         cache = new RootCache();
 
         var cachePathHandler = new PathHandler("/org/a11y/atspi/cache");
@@ -315,7 +322,6 @@ internal class AtSpiContext
 
         serviceName = a11YConnection.UniqueName;
         Instance = new AtSpiContext(a11YConnection);
-
 
         s_instanced = true;
     }
