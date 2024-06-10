@@ -36,9 +36,10 @@ namespace Avalonia.FreeDesktop
 
         public DBusTrayIconImpl()
         {
+            
             _connection = DBusHelper.TryCreateNewConnection();
 
-            if (_connection is null)
+            if (_connection is null || true)
             {
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
                     ?.Log(this, "Unable to get a dbus connection for system tray icons.");
@@ -46,6 +47,7 @@ namespace Avalonia.FreeDesktop
                 return;
             }
 
+#pragma warning disable CS0162 // Unreachable code detected
             IsActive = true;
 
             _dBus = new OrgFreedesktopDBus(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
@@ -58,6 +60,7 @@ namespace Avalonia.FreeDesktop
             _connection.AddMethodHandler(_pathHandler);
 
             WatchAsync();
+#pragma warning restore CS0162 // Unreachable code detected
         }
 
         private async void WatchAsync()

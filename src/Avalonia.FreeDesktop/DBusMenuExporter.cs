@@ -102,6 +102,8 @@ namespace Avalonia.FreeDesktop
 
             private async Task InitializeAsync()
             {
+                return;
+#pragma warning disable CS0162 // Unreachable code detected
                 Connection.AddMethodHandler(_pathHandler);
                 if (!_appMenu)
                     return;
@@ -120,6 +122,7 @@ namespace Avalonia.FreeDesktop
                     // menu will be actually exported
                     _registrar = null;
                 }
+#pragma warning restore CS0162 // Unreachable code detected
             }
 
             public void Dispose()

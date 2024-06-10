@@ -17,12 +17,15 @@ namespace Avalonia.FreeDesktop
 
         public DBusPlatformSettings()
         {
+            return;
+#pragma warning disable CS0162 // Unreachable code detected
             if (DBusHelper.Connection is null)
                 return;
 
             _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
             _ = TryGetInitialValuesAsync();
+#pragma warning restore CS0162 // Unreachable code detected
         }
 
         public override PlatformColorValues GetColorValues() => _lastColorValues ?? base.GetColorValues();

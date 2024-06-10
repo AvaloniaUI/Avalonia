@@ -34,6 +34,9 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         public static bool DetectAndRegister()
         {
+            return false;
+            
+#pragma warning disable CS0162 // Unreachable code detected
             var factory = DetectInputMethod();
             if (factory is not null)
             {
@@ -46,6 +49,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             }
 
             return false;
+#pragma warning restore CS0162 // Unreachable code detected
 
         }
     }

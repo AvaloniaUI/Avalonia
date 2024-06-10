@@ -16,6 +16,8 @@ namespace Avalonia.FreeDesktop
     {
         internal static async Task<IStorageProvider?> TryCreateAsync(IPlatformHandle handle)
         {
+            return null;
+#pragma warning disable CS0162 // Unreachable code detected
             if (DBusHelper.Connection is null)
                 return null;
 
@@ -31,6 +33,7 @@ namespace Avalonia.FreeDesktop
             }
 
             return new DBusSystemDialog(DBusHelper.Connection, handle, dbusFileChooser, version);
+#pragma warning restore CS0162 // Unreachable code detected
         }
 
         private readonly Connection _connection;
