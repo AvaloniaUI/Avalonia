@@ -10,7 +10,7 @@ static partial class NetstandardExtensions
 
     private static PropertyInfo s_safehandleProperty = typeof(Socket).GetTypeInfo().GetDeclaredProperty("SafeHandle");
 
-    private const int MaxInputElementsPerIteration = 1 * 1024 * 1024;
+    // private const int MaxInputElementsPerIteration = 1 * 1024 * 1024;
 
     public static bool IsAssignableTo(this Type type, Type? targetType)
         => targetType?.IsAssignableFrom(type) ?? false;
