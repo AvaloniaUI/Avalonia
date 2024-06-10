@@ -86,17 +86,17 @@
         </TimePicker>
       </Border>
 
-      <TextBlock FontSize="18">A TimePicker with minute increments specified.</TextBlock>
+      <TextBlock FontSize="18">A TimePicker with minute and second increments specified.</TextBlock>
       <StackPanel Orientation="Vertical">
         <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                 BorderThickness="1" Padding="15">
-          <TimePicker MinuteIncrement="15" />
+          <TimePicker MinuteIncrement="15" SecondIncrement="30" />
         </Border>
         <Panel Background="{DynamicResource CatalogBaseLowColor}">
           <TextBlock Padding="15">
             <TextBlock.Text>
               <x:String>
-                &lt;TimePicker MinuteIncrement="15" /&gt;
+                &lt;TimePicker MinuteIncrement="15" SecondIncrement="30" /&gt;
               </x:String>
             </TextBlock.Text>
           </TextBlock>
