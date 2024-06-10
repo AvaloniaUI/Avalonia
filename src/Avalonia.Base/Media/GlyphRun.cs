@@ -639,7 +639,7 @@ namespace Avalonia.Media
         {
             int firstCluster, lastCluster;
 
-            if (Characters.IsEmpty)
+            if (Characters.IsEmpty || _glyphInfos.Count == 0)
             {
                 firstCluster = 0;
                 lastCluster = 0;
