@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.FreeDesktop.AtSpi;
 
 /// <summary>
@@ -706,7 +708,8 @@ public class AtSpiConstants
         ErrorFor,
     }
 
-    public enum State
+    [Flags]
+    public enum State 
     {
         /// Indicates an invalid state - probably an error condition.
         Invalid,

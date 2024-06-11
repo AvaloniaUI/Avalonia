@@ -57,6 +57,8 @@
     <AdditionalFiles Include="DBusXml/AtSpi/Registry.xml" DBusGeneratorMode="Handler"/>
     <AdditionalFiles Include="DBusXml/AtSpi/Socket.xml" DBusGeneratorMode="Proxy"/>
 
+
+ 
   </ItemGroup>
 
 </Project>

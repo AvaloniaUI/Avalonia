@@ -20,8 +20,8 @@ internal class RootApplication : OrgA11yAtspiApplication
 
     public override Connection Connection { get; }
 
-    protected override ValueTask<string> OnGetLocaleAsync(uint lctype)
+    protected override async ValueTask<string> OnGetLocaleAsync(uint lctype)
     {
-        return ValueTask.FromResult(Environment.GetEnvironmentVariable("LANG") ?? string.Empty);
+        return (Environment.GetEnvironmentVariable("LANG") ?? string.Empty);
     }
 }

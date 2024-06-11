@@ -4,7 +4,7 @@
       org.a11y.atspi.Accessible:
       @short_description: Base interface which is implemented by all accessible objects.
   -->
-  <interface name="org.a11y.atspi.Accessible">
+  <interface name="org.a11y.atspi.Accessible2">
 
     <!--
         Name: Human-readable, localized, short name for the object.

@@ -16,8 +16,8 @@ internal class RootCache : OrgA11yAtspiCache
             return false;
         }
 
-        if (Connection is not null)
-            EmitAddAccessible(accessible.InternalCacheEntry.Convert());
+        // if (Connection is not null)
+        //     EmitAddAccessible(accessible.InternalCacheEntry.Convert());
         return true;
     }
 
@@ -30,8 +30,8 @@ internal class RootCache : OrgA11yAtspiCache
     {
         if (!_globalCache.TryGetValue(id, out var item)) return false;
         var ret = _globalCache.Remove(id);
-        if (ret && Connection is not null)
-            EmitRemoveAccessible(item.Convert());
+       // if (ret && Connection is not null)
+       //     EmitRemoveAccessible(item.Convert());
         return ret;
     }
 
@@ -57,7 +57,10 @@ internal class RootCache : OrgA11yAtspiCache
         string,
         uint[])[]> OnGetItemsAsync()
     {
+        return default;
+/*
         return (_globalCache.Values.Select(x => x.InternalCacheEntry.Convert()
         ).ToArray());
+*/
     }
 }

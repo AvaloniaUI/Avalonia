@@ -4,9 +4,9 @@ namespace Avalonia.FreeDesktop.AtSpi;
 
 public class CacheEntry
 {
-    public (string, ObjectPath) Accessible = (":0.0", "/org/a11y/atspi/accessible/object");
-    public (string, ObjectPath) Application = (":0.0", "/org/a11y/atspi/accessible/application");
-    public (string, ObjectPath) Parent = (":0.0", "/org/a11y/atspi/accessible/parent");
+    public (string, ObjectPath) Accessible =  ("", "/org/a11y/atspi/null");
+    public (string, ObjectPath) Application =  ("", "/org/a11y/atspi/null");
+    public (string, ObjectPath) Parent =  ("", "/org/a11y/atspi/null");
     public int IndexInParent = 0;
     public int ChildCount = 0;
     public string[] ApplicableInterfaces = ["org.a11y.atspi.Accessible"];

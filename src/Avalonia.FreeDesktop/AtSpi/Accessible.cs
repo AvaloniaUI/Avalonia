@@ -6,25 +6,54 @@ using System.Threading.Tasks;
 using Avalonia.Logging;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Avalonia.FreeDesktop.AtSpi;
 
 internal abstract class Accessible : OrgA11yAtspiAccessible
 {
     private readonly Accessible? _internalParent;
-    public Guid InternalGuid { get; protected set; }
+    private  PathHandler? _pathHandler;
+    public Guid InternalGuid { get; protected init; }
     public CacheEntry InternalCacheEntry { get; } = new();
     public string DbusPath { get; }
     public string ServiceName { get; }
-
+    public override Connection Connection { get; }
     public Accessible? InternalParent => _internalParent;
 
-    protected Accessible(string serviceName, Accessible? internalParent)
+    protected Accessible(string serviceName, Accessible? internalParent, Connection? connection = null)
     {
-        _internalParent = internalParent;
-        ServiceName = serviceName;
-        InternalGuid = new Guid();
-        DbusPath = Path.Combine(AtSpiConstants.AvaloniaPathPrefix, InternalGuid.ToString("N"));
+        
+        if (connection is null && internalParent is not null)
+        {
+            _internalParent = internalParent;
+            
+            Parent = internalParent.Convert();
+            ServiceName = serviceName;
+            InternalGuid = Guid.NewGuid();
+            DbusPath = Path.Combine(AtSpiConstants.AvaloniaPathPrefix, InternalGuid.ToString("N"));
+
+            InternalCacheEntry.Accessible = (serviceName, DbusPath);
+            InternalCacheEntry.Parent = Parent!;
+            InternalCacheEntry.Application = internalParent.InternalCacheEntry.Application;
+            
+            this.Locale = (Environment.GetEnvironmentVariable("LANG") ?? string.Empty);
+        
+            _pathHandler = new PathHandler(DbusPath);
+            _pathHandler.Add(this);
+            Connection = internalParent.Connection;
+
+            internalParent.Connection.AddMethodHandler(_pathHandler);
+            
+            internalParent.AddChild(this);
+        }
+        else if(connection is not null && this.Connection is null)
+        {
+            Connection = connection;
+            DbusPath = AtSpiContext.RootPath;
+            ServiceName = serviceName;
+        }
     }
 
     public (string, ObjectPath) Convert() => (ServiceName, (ObjectPath)DbusPath);
@@ -55,67 +84,68 @@ internal abstract class Accessible : OrgA11yAtspiAccessible
 
     public IList<Accessible> InternalChildren => _internalChildren;
 
-
-    protected override ValueTask<(string, ObjectPath)> OnGetChildAtIndexAsync(int index)
+    protected override async ValueTask<(string, ObjectPath)> OnGetChildAtIndexAsync(int index)
     {
         var accessible = InternalChildren.ElementAtOrDefault(index);
         if (accessible is not null)
         {
-            return ValueTask.FromResult(accessible.Convert());
+            return accessible.Convert();
         }
 
-        return ValueTask.FromResult<(string, ObjectPath)>((":0.0", "/org/a11y/atspi/accessible/null"));
+        return ("", "/org/a11y/atspi/accessible/null");
     }
 
-    protected override ValueTask<(string, ObjectPath)[]> OnGetChildrenAsync()
+    protected override async ValueTask<(string, ObjectPath)[]> OnGetChildrenAsync()
     {
-        return ValueTask.FromResult(InternalChildren.Select(x => x.Convert()).ToArray());
+        return InternalChildren.Select(x => x.Convert()).ToArray();
     }
 
-    protected override ValueTask<int> OnGetIndexInParentAsync()
+    protected override async ValueTask<int> OnGetIndexInParentAsync()
     {
-        if (_internalParent is null) return ValueTask.FromResult(-1);
-        return ValueTask.FromResult(_internalParent.InternalChildren.IndexOf(this));
+        if (_internalParent is null) return -1;
+        return _internalParent.InternalChildren.IndexOf(this);
     }
 
-    protected override ValueTask<(uint, (string, ObjectPath)[])[]> OnGetRelationSetAsync()
+    protected override async ValueTask<(uint, (string, ObjectPath)[])[]> OnGetRelationSetAsync()
     {
-        return ValueTask.FromResult<(uint, (string, ObjectPath)[])[]>(default!);
+#pragma warning disable CS8603 // Possible null reference return.
+        return default;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
-    protected override ValueTask<uint> OnGetRoleAsync()
+    protected override async ValueTask<uint> OnGetRoleAsync()
     {
-        return ValueTask.FromResult((uint)InternalCacheEntry.Role);
+        return (uint)InternalCacheEntry.Role;
     }
 
-    protected override ValueTask<string> OnGetRoleNameAsync()
+    protected override async ValueTask<string> OnGetRoleNameAsync()
     {
-        return ValueTask.FromResult(InternalCacheEntry.RoleName);
+        return InternalCacheEntry.RoleName;
     }
 
-    protected override ValueTask<string> OnGetLocalizedRoleNameAsync()
+    protected override async ValueTask<string> OnGetLocalizedRoleNameAsync()
     {
-        return ValueTask.FromResult(InternalCacheEntry.LocalizedName);
+        return InternalCacheEntry.LocalizedName;
     }
 
-    protected override ValueTask<uint[]> OnGetStateAsync()
+    protected override async ValueTask<uint[]> OnGetStateAsync()
     {
-        return ValueTask.FromResult(InternalCacheEntry.ApplicableStates);
+        return InternalCacheEntry.ApplicableStates;
     }
 
-    protected override ValueTask<Dictionary<string, string>> OnGetAttributesAsync()
+    protected override async ValueTask<Dictionary<string, string>> OnGetAttributesAsync()
     {
-        return ValueTask.FromResult<Dictionary<string, string>>(new() { { "toolkit", "Avalonia" } });
+        return new() { { "toolkit", "Avalonia" } };
     }
 
-    protected override ValueTask<(string, ObjectPath)> OnGetApplicationAsync()
+    protected override async ValueTask<(string, ObjectPath)> OnGetApplicationAsync()
     {
-        return ValueTask.FromResult(InternalCacheEntry.Application);
+        return InternalCacheEntry.Application;
     }
 
-    protected override ValueTask<string[]> OnGetInterfacesAsync()
+    protected override async ValueTask<string[]> OnGetInterfacesAsync()
     {
-        return ValueTask.FromResult(InternalCacheEntry.ApplicableInterfaces);
+        return InternalCacheEntry.ApplicableInterfaces;
     }
 }
 

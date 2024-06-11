@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Automation.Peers;
+using Avalonia.FreeDesktop.AtSpi.Accessibles;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -12,18 +13,19 @@ internal class AtSpiContext
     public static RootCache? Cache;
     public static string? ServiceName;
     private Connection _connection;
+    private readonly RootAccessible _rootAccessible;
 
     public AtSpiContext(Connection connection)
     {
         _connection = connection;
 
         if (ServiceName == null) return;
-        var ac0 = new RootAccessible(connection, ServiceName);
+        this._rootAccessible = new RootAccessible(connection, ServiceName);
         var ac1 = new RootApplication(connection);
         var path = "/org/a11y/atspi/accessible/root";
         var pathHandler = new PathHandler(path);
 
-        pathHandler.Add(ac0);
+        pathHandler.Add(_rootAccessible);
         pathHandler.Add(ac1);
 
         _connection.AddMethodHandler(pathHandler);
@@ -33,10 +35,13 @@ internal class AtSpiContext
         var res = socket.EmbedAsync((ServiceName, new ObjectPath(RootPath))!).GetAwaiter().GetResult();
 
         if (!res.Item1.StartsWith(":") || res.Item2.ToString() != RootPath) return;
-        ac0.Parent = res;
-        ac0.Name = Application.Current?.Name ?? "Avalonia Application";
+        _rootAccessible.Parent = res;
+        
+        var appName = Application.Current?.Name ?? "Avalonia Application";
+        _rootAccessible.Name = appName;
+        _rootAccessible.InternalCacheEntry.RoleName = "application";
 
-        Cache?.TryAddEntry(ac0);
+        Cache?.TryAddEntry(_rootAccessible);
     }
 
     public const string RootPath = "/org/a11y/atspi/accessible/root";
@@ -47,7 +52,10 @@ internal class AtSpiContext
 
     public void RegisterRootAutomationPeer(AutomationPeer peer)
     {
-        
+        if (peer is WindowAutomationPeer winAutoPeer && ServiceName != null)
+        {
+            var win = new WindowAccessible(ServiceName, _rootAccessible, winAutoPeer);
+        }
     }
 
     public static async void Initialize()
