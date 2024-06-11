@@ -9,19 +9,19 @@ namespace Avalonia.FreeDesktop.AtSpi;
 
 internal class RootCache : OrgA11yAtspiCache
 {
-    public bool TryAddEntry(Guid id, CacheEntry cacheEntry)
+    public bool TryAddEntry(Accessible accessible)
     {
-        if (!_globalCache.TryAdd(id, cacheEntry))
+        if (!_globalCache.TryAdd(accessible.InternalGuid, accessible))
         {
             return false;
         }
 
         if (Connection is not null)
-            EmitAddAccessible(cacheEntry.Convert());
+            EmitAddAccessible(accessible.InternalCacheEntry.Convert());
         return true;
     }
 
-    public CacheEntry? GetCacheEntry(Guid id)
+    public Accessible? GetCacheEntry(Guid id)
     {
         return _globalCache.TryGetValue(id, out var entry) ? entry : default;
     }
@@ -31,46 +31,17 @@ internal class RootCache : OrgA11yAtspiCache
         if (!_globalCache.TryGetValue(id, out var item)) return false;
         var ret = _globalCache.Remove(id);
         if (ret && Connection is not null)
-            EmitRemoveAccessible(item.Accessible);
+            EmitRemoveAccessible(item.Convert());
         return ret;
     }
 
-    private Dictionary<Guid, CacheEntry> _globalCache = new();
+    private Dictionary<Guid, Accessible> _globalCache = new();
 
-    public class CacheEntry
+    public RootCache(Connection a11YConnection)
     {
-        public (string, ObjectPath) Accessible = (":0.0", "/org/a11y/atspi/accessible/object");
-        public (string, ObjectPath) Application = (":0.0", "/org/a11y/atspi/accessible/application");
-        public (string, ObjectPath) Parent = (":0.0", "/org/a11y/atspi/accessible/parent");
-        public int IndexInParent = 0;
-        public int ChildCount = 0;
-        public string[] ApplicableInterfaces = [];
-        public string LocalizedName = string.Empty;
-        public AtSpiConstants.Role Role = default;
-        public string RoleName = string.Empty;
-        public uint[] ApplicableStates = [];
-
-        public (
-            (string, ObjectPath),
-            (string, ObjectPath),
-            (string, ObjectPath),
-            int,
-            int,
-            string[],
-            string,
-            uint,
-            string,
-            uint[]) Convert() => (Accessible,
-            Application,
-            Parent,
-            IndexInParent,
-            ChildCount,
-            ApplicableInterfaces,
-            LocalizedName,
-            (uint)Role,
-            RoleName,
-            ApplicableStates);
+        Connection = a11YConnection;
     }
+
 
     public override Connection? Connection { get; }
 
@@ -86,7 +57,7 @@ internal class RootCache : OrgA11yAtspiCache
         string,
         uint[])[]> OnGetItemsAsync()
     {
-        return (_globalCache.Values.Select(x => x.Convert()
+        return (_globalCache.Values.Select(x => x.InternalCacheEntry.Convert()
         ).ToArray());
     }
 }

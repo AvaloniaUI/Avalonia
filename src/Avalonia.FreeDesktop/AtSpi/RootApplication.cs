@@ -7,8 +7,9 @@ namespace Avalonia.FreeDesktop.AtSpi;
 
 internal class RootApplication : OrgA11yAtspiApplication
 {
-    public RootApplication()
+    public RootApplication(Connection connection)
     {
+        Connection = connection;
         AtspiVersion = AVersion;
         ToolkitName = "Avalonia";
         Id = 0;
@@ -19,8 +20,8 @@ internal class RootApplication : OrgA11yAtspiApplication
 
     public override Connection Connection { get; }
 
-    protected override async ValueTask<string> OnGetLocaleAsync(uint lctype)
+    protected override ValueTask<string> OnGetLocaleAsync(uint lctype)
     {
-        return Environment.GetEnvironmentVariable("LANG") ?? string.Empty;
+        return ValueTask.FromResult(Environment.GetEnvironmentVariable("LANG") ?? string.Empty);
     }
 }

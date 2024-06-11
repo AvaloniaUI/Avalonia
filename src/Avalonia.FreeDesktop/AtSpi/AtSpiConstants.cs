@@ -8,6 +8,8 @@ namespace Avalonia.FreeDesktop.AtSpi;
 /// </summary>
 public class AtSpiConstants
 {
+    public const string AvaloniaPathPrefix = "/net/avaloniaui/accessibles/";
+
     public static readonly string[] RoleNames =
     [
         "invalid",

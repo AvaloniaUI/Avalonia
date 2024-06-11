@@ -8,7 +8,6 @@ namespace Avalonia.FreeDesktop.AtSpi;
 
 internal class AtSpiContext
 {
-    public const string AvaloniaPathPrefix = "/net/avaloniaui/accessibles/";
     private static bool s_instanced;
     public static RootCache? Cache;
     public static string? ServiceName;
@@ -18,8 +17,9 @@ internal class AtSpiContext
     {
         _connection = connection;
 
-        var ac0 = new RootAccessible();
-        var ac1 = new RootApplication();
+        if (ServiceName == null) return;
+        var ac0 = new RootAccessible(connection, ServiceName);
+        var ac1 = new RootApplication(connection);
         var path = "/org/a11y/atspi/accessible/root";
         var pathHandler = new PathHandler(path);
 
@@ -32,14 +32,11 @@ internal class AtSpiContext
 
         var res = socket.EmbedAsync((ServiceName, new ObjectPath(RootPath))!).GetAwaiter().GetResult();
 
-        if (!res.Item1.StartsWith(":") || res.Item2.ToString() != RootPath || ServiceName is not { }) return;
+        if (!res.Item1.StartsWith(":") || res.Item2.ToString() != RootPath) return;
         ac0.Parent = res;
         ac0.Name = Application.Current?.Name ?? "Avalonia Application";
 
-        if (!Cache.TryAddEntry(Guid.Empty, ac0.CacheEntry))
-        {
-            // shouldnt happen.
-        }
+        Cache?.TryAddEntry(ac0);
     }
 
     public const string RootPath = "/org/a11y/atspi/accessible/root";
@@ -50,7 +47,7 @@ internal class AtSpiContext
 
     public void RegisterRootAutomationPeer(AutomationPeer peer)
     {
-        // DelayedInit();
+        
     }
 
     public static async void Initialize()
@@ -65,15 +62,14 @@ internal class AtSpiContext
 
         await a11YConnection.ConnectAsync();
 
-        Cache = new RootCache();
+        Cache = new RootCache(a11YConnection);
 
         var cachePathHandler = new PathHandler("/org/a11y/atspi/cache");
 
         cachePathHandler.Add(Cache);
 
         a11YConnection.AddMethodHandler(cachePathHandler);
-
-
+        
         ServiceName = a11YConnection.UniqueName;
 
         Instance = new AtSpiContext(a11YConnection);
