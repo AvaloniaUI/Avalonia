@@ -21,6 +21,12 @@
 
   <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
     <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Transitions">
+        <Transitions>
+          <VectorTransition Property="Offset"
+                            Duration="0:0:0.5" />
+        </Transitions>
+    </Setter>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
