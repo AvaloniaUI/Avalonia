@@ -213,7 +213,7 @@ internal class AtSpiContext
 
         var res = socket.EmbedAsync((s_serviceName, new ObjectPath(RootPath))!).GetAwaiter().GetResult();
 
-        if (!res.Item1.StartsWith(":1.") || res.Item2.ToString() != RootPath || s_serviceName is not { }) return;
+        if (!res.Item1.StartsWith(":") || res.Item2.ToString() != RootPath || s_serviceName is not { }) return;
         ac0.Parent = res;
         ac0.Name = Application.Current?.Name ?? "Avalonia Application";
 
