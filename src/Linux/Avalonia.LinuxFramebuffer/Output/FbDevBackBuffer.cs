@@ -29,7 +29,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 {
                     IsBackground = true,
                     Name = "FbDevBackBuffer::AsyncBlitter",
-                    Priority = ThreadPriority.AboveNormal
+                    Priority = ThreadPriority.Highest,
                 };
                 _thread.Start();
             }
