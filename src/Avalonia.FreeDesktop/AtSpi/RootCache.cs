@@ -58,9 +58,7 @@ internal class RootCache : OrgA11yAtspiCache
         uint[])[]> OnGetItemsAsync()
     {
         return default;
-/*
-        return (_globalCache.Values.Select(x => x.InternalCacheEntry.Convert()
-        ).ToArray());
-*/
+        // return (_globalCache.Values.Select(x => x.InternalCacheEntry.Convert()
+        // ).ToArray());
     }
 }

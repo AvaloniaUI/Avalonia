@@ -9,17 +9,9 @@ namespace Avalonia.FreeDesktop.AtSpi;
 
 internal class RootAccessible : Accessible
 {
-    public RootAccessible(Connection connection, string serviceName) : base(serviceName, null, connection)
+    public RootAccessible(Connection connection, string serviceName, RootApplication ac1) : base(serviceName, null, connection)
     {
-        InternalCacheEntry.Accessible = (serviceName, AtSpiContext.RootPath)!;
-        InternalCacheEntry.Application = (serviceName, AtSpiContext.RootPath)!;
-        InternalCacheEntry.ApplicableInterfaces = ["org.a11y.atspi.Accessible", "org.a11y.atspi.Application"];
-        InternalCacheEntry.Role = AtSpiConstants.Role.Application;
-        InternalCacheEntry.LocalizedName = AtSpiConstants.RoleNames[(int)InternalCacheEntry.Role];
-        InternalCacheEntry.RoleName = AtSpiConstants.RoleNames[(int)InternalCacheEntry.Role];
-        InternalCacheEntry.ChildCount = 0; //TODO
-        InternalCacheEntry.ApplicableStates = [0, 0];
-        this.InternalGuid = Guid.Empty;
+         _pathHandler.Add(ac1);
     }
     
 }

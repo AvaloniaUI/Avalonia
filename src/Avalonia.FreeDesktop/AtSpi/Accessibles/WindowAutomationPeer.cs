@@ -12,16 +12,17 @@ internal class WindowAccessible : Accessible
         WindowAutomationPeer windowAutomationPeer) : base(serviceName, internalParent)
     {
         Peer = windowAutomationPeer;
-        
-        Name = Peer.GetName();
+
+        Name = "Software";
+        Locale = Environment.GetEnvironmentVariable("LANG");
         
         Peer.ChildrenChanged += PeerOnChildrenChanged;
         
-        InternalCacheEntry.Role = AtSpiConstants.Role.Window;
-        InternalCacheEntry.LocalizedName = AtSpiConstants.RoleNames[(int)InternalCacheEntry.Role];
-        InternalCacheEntry.RoleName = AtSpiConstants.RoleNames[(int)InternalCacheEntry.Role];
+        InternalCacheEntry.Role = AtSpiConstants.Role.Frame;
+        InternalCacheEntry.Name = "Software";
+        InternalCacheEntry.Description = "";
         InternalCacheEntry.ChildCount = 0; //TODO
-        InternalCacheEntry.ApplicableStates = [(uint)(AtSpiConstants.State.Visible), 0];
+        InternalCacheEntry.ApplicableStates = [(uint)(1124073472), 0];
     }
 
     private void PeerOnChildrenChanged(object sender, EventArgs e)

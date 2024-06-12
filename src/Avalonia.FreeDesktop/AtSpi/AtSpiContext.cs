@@ -20,15 +20,8 @@ internal class AtSpiContext
         _connection = connection;
 
         if (ServiceName == null) return;
-        this._rootAccessible = new RootAccessible(connection, ServiceName);
         var ac1 = new RootApplication(connection);
-        var path = "/org/a11y/atspi/accessible/root";
-        var pathHandler = new PathHandler(path);
-
-        pathHandler.Add(_rootAccessible);
-        pathHandler.Add(ac1);
-
-        _connection.AddMethodHandler(pathHandler);
+        this._rootAccessible = new RootAccessible(connection, ServiceName, ac1);
 
         var socket = new OrgA11yAtspiSocket(_connection, "org.a11y.atspi.Registry", RootPath);
 
@@ -39,8 +32,8 @@ internal class AtSpiContext
         
         var appName = Application.Current?.Name ?? "Avalonia Application";
         _rootAccessible.Name = appName;
-        _rootAccessible.InternalCacheEntry.RoleName = "application";
-
+        _rootAccessible.InternalCacheEntry.Description = "application";
+        
         Cache?.TryAddEntry(_rootAccessible);
     }
 

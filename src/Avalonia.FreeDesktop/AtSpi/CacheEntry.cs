@@ -10,9 +10,9 @@ public class CacheEntry
     public int IndexInParent = 0;
     public int ChildCount = 0;
     public string[] ApplicableInterfaces = ["org.a11y.atspi.Accessible"];
-    public string LocalizedName = string.Empty;
+    public string Name = string.Empty;
     public AtSpiConstants.Role Role = default;
-    public string RoleName = string.Empty;
+    public string Description = string.Empty;
     public uint[] ApplicableStates = [];
 
     public (
@@ -31,8 +31,8 @@ public class CacheEntry
         IndexInParent,
         ChildCount,
         ApplicableInterfaces,
-        LocalizedName,
+        Name,
         (uint)Role,
-        RoleName,
+        Description,
         ApplicableStates);
 }
