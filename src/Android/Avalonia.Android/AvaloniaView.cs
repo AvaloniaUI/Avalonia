@@ -24,11 +24,26 @@ namespace Avalonia.Android
 
         public AvaloniaView(Context context) : base(context)
         {
-            _view = new ViewImpl(this);
-            AddView(_view.View);
+            InitializeAvaloniaView(out _view, out _root);
+        }
 
-            _root = new EmbeddableControlRoot(_view);
-            _root.Prepare();
+        // https://stackoverflow.com/a/26728061/20894223
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        public AvaloniaView(IntPtr javaReference, JniHandleOwnership transfer):
+            base(javaReference, transfer)
+        {
+            InitializeAvaloniaView(out _view, out _root);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private void InitializeAvaloniaView(out ViewImpl view, out EmbeddableControlRoot root)
+        {
+            view = new ViewImpl(this);
+            AddView(view.View);
+
+            root = new EmbeddableControlRoot(view);
+            root.Prepare();
 
             this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
