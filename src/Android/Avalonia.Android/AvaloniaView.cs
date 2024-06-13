@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using Android.Content;
 using Android.Content.Res;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Avalonia.Android.Platform;
@@ -22,30 +23,35 @@ namespace Avalonia.Android
 
         private IDisposable? _timerSubscription;
 
-        public AvaloniaView(Context context) : base(context)
-        {
-            InitializeAvaloniaView(out _view, out _root);
-        }
-
-        // https://stackoverflow.com/a/26728061/20894223
+        // https://learn.microsoft.com/en-us/previous-versions/xamarin/android/internals/architecture#java-activation
         [System.ComponentModel.Browsable(false)]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public AvaloniaView(IntPtr javaReference, JniHandleOwnership transfer):
-            base(javaReference, transfer)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public AvaloniaView(IntPtr javaReference, JniHandleOwnership transfer): base(javaReference, transfer)
         {
-            InitializeAvaloniaView(out _view, out _root);
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        private void InitializeAvaloniaView(out ViewImpl view, out EmbeddableControlRoot root)
+        public AvaloniaView(Context context) : this(context, null)
         {
-            view = new ViewImpl(this);
-            AddView(view.View);
+        }
 
-            root = new EmbeddableControlRoot(view);
-            root.Prepare();
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        public AvaloniaView(Context context, IAttributeSet? attrs) : this(context, attrs, 0)
+        {
+        }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        public AvaloniaView(Context context, IAttributeSet? attrs, int defStyle) : base(context, attrs, defStyle)
+        {
+            _view = new ViewImpl(this);
+            AddView(_view.View);
+
+            _root = new EmbeddableControlRoot(_view);
+            _root.Prepare();
+            SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
         }
 
