@@ -158,6 +158,7 @@ public abstract record class CrossPathSegment(bool IsStroked)
     public record Arc(Point Point, Size Size, double RotationAngle, bool IsLargeArc, SweepDirection SweepDirection, bool IsStroked) : CrossPathSegment(IsStroked);
     public record CubicBezier(Point Point1, Point Point2, Point Point3, bool IsStroked) : CrossPathSegment(IsStroked);
     public record QuadraticBezier(Point Point1, Point Point2, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record PolyLine(IEnumerable<Point> Points, bool IsStroked) : CrossPathSegment(IsStroked);
 }
 
 public class CrossDrawingBrush : CrossTileBrush
