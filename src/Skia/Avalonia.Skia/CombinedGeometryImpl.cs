@@ -13,7 +13,13 @@ namespace Avalonia.Skia
         {
             StrokePath = stroke;
             FillPath = fill;
-            Bounds = (stroke ?? fill)?.TightBounds.ToAvaloniaRect() ?? default;
+
+            var bounds = stroke?.TightBounds ?? default;
+
+            if (fill != null)
+                bounds.Union(fill.TightBounds);
+
+            Bounds = bounds.ToAvaloniaRect();
         }
 
         public static CombinedGeometryImpl ForceCreate(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2)
