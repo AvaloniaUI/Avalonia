@@ -688,7 +688,7 @@ namespace Avalonia.Media
 
             return new GlyphRunMetrics
             {
-                Baseline = -GlyphTypeface.Metrics.Ascent * Scale,
+                Baseline = (-GlyphTypeface.Metrics.Ascent + GlyphTypeface.Metrics.LineGap) * Scale,
                 Width = width,
                 WidthIncludingTrailingWhitespace = widthIncludingTrailingWhitespace,
                 Height = height,
