@@ -69,17 +69,17 @@ namespace Avalonia.Media
         /// <summary>
         /// Represents a dotted <see cref="DashStyle"/>.
         /// </summary>
-        public static IDashStyle Dot => s_dot ??= new ImmutableDashStyle(new double[] { 0, 2 }, 0);
+        public static IDashStyle Dot => s_dot ??= new ImmutableDashStyle(new double[] { 1, 1 }, 0);
 
         /// <summary>
         /// Represents a dashed dotted <see cref="DashStyle"/>.
         /// </summary>
-        public static IDashStyle DashDot => s_dashDot ??= new ImmutableDashStyle(new double[] { 2, 2, 0, 2 }, 1);
+        public static IDashStyle DashDot => s_dashDot ??= new ImmutableDashStyle(new double[] { 3, 1, 1, 1 }, 1);
 
         /// <summary>
         /// Represents a dashed double dotted <see cref="DashStyle"/>.
         /// </summary>
-        public static IDashStyle DashDotDot => s_dashDotDot ??= new ImmutableDashStyle(new double[] { 2, 2, 0, 2, 0, 2 }, 1);
+        public static IDashStyle DashDotDot => s_dashDotDot ??= new ImmutableDashStyle(new double[] { 3, 1, 1, 1, 1, 1 }, 1);
 
         /// <summary>
         /// Gets or sets the length of alternating dashes and gaps.
