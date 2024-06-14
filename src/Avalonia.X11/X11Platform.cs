@@ -88,6 +88,7 @@ namespace Avalonia.X11
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
+                .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
@@ -101,8 +102,6 @@ namespace Avalonia.X11
                 if (xi2.Init(this))
                     XI2 = xi2;
             }
-            
-            AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display));
 
             var graphics = graphicsTask.Result;
             if (graphics is not null)
