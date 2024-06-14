@@ -1203,6 +1203,11 @@ namespace Avalonia.Win32
             if (command.HasValue)
             {
                 UnmanagedMethods.ShowWindow(_hwnd, command.Value);
+
+                if (!_shown && command.Value != ShowWindowCommand.Minimize && GetStyle().HasFlag(WindowStyles.WS_VISIBLE))
+                {
+                    _shown = true;
+                }
             }
 
             if (state == WindowState.Maximized)
