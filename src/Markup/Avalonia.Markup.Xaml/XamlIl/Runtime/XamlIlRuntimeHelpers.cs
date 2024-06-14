@@ -95,6 +95,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             return resourceNodes;
         }
 
+        /// <summary>
+        /// Converts a <see cref="IAvaloniaXamlIlParentStackProvider"/> into a
+        /// <see cref="IAvaloniaXamlIlEagerParentStackProvider"/>.
+        /// </summary>
+        public static IAvaloniaXamlIlEagerParentStackProvider AsEagerParentStackProvider(
+            this IAvaloniaXamlIlParentStackProvider provider)
+            => provider as IAvaloniaXamlIlEagerParentStackProvider ?? new XamlIlParentStackProviderWrapper(provider);
+
         // Parent resource nodes are often the same (e.g. most values in a ResourceDictionary), cache the last ones.
         private sealed class LastParentStack
         {
