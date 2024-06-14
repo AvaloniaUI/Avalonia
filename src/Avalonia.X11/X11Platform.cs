@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
@@ -57,15 +59,18 @@ namespace Avalonia.X11
             Display = XOpenDisplay(IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
+            
             DeferredDisplay = XOpenDisplay(IntPtr.Zero);
             if (DeferredDisplay == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
-                
-            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
-                IntPtr.Zero);
-            XError.Init();
 
             Info = new X11Info(Display, DeferredDisplay, useXim);
+            var graphicsTask = Task.Run(() => InitializeGraphics(options, Info));
+            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
+                IntPtr.Zero);
+            
+            XError.Init();
+            
             Globals = new X11Globals(this);
             Resources = new XResources(this);
             //TODO: log
@@ -83,7 +88,6 @@ namespace Avalonia.X11
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
-                .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
@@ -97,8 +101,10 @@ namespace Avalonia.X11
                 if (xi2.Init(this))
                     XI2 = xi2;
             }
+            
+            AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display));
 
-            var graphics = InitializeGraphics(options, Info);
+            var graphics = graphicsTask.Result;
             if (graphics is not null)
             {
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(graphics);

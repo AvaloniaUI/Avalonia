@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Platform;
@@ -52,13 +55,16 @@ namespace Avalonia.X11
 
         [GenerateEnumValueList]
         private static partial CursorFontShape[] GetAllCursorShapes();
-        
+
         public X11CursorFactory(IntPtr display)
         {
             _display = display;
             _nullCursor = GetNullCursor(display);
-            _cursors = GetAllCursorShapes()
-                .ToDictionary(id => id, id => XLib.XCreateFontCursor(_display, id));
+
+            var cursorShapes = GetAllCursorShapes();
+            _cursors = new Dictionary<CursorFontShape, IntPtr>(cursorShapes.Length);
+            foreach (var shape in cursorShapes)
+                _cursors[shape] = XLib.XCreateFontCursor(_display, shape);
         }
 
         public ICursorImpl GetCursor(StandardCursorType cursorType)
