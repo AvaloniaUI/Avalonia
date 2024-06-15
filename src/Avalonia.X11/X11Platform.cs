@@ -2,10 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
@@ -59,18 +55,15 @@ namespace Avalonia.X11
             Display = XOpenDisplay(IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
-            
             DeferredDisplay = XOpenDisplay(IntPtr.Zero);
             if (DeferredDisplay == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
-
-            Info = new X11Info(Display, DeferredDisplay, useXim);
-            var graphicsTask = Task.Run(() => InitializeGraphics(options, Info));
+                
             OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
                 IntPtr.Zero);
-            
             XError.Init();
-            
+
+            Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             Resources = new XResources(this);
             //TODO: log
@@ -103,7 +96,7 @@ namespace Avalonia.X11
                     XI2 = xi2;
             }
 
-            var graphics = graphicsTask.Result;
+            var graphics = InitializeGraphics(options, Info);
             if (graphics is not null)
             {
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(graphics);

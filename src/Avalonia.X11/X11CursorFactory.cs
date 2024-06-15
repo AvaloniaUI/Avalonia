@@ -1,16 +1,10 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
-using Avalonia.SourceGenerator;
-using Avalonia.Utilities;
 
 #nullable enable
 
@@ -53,18 +47,14 @@ namespace Avalonia.X11
                 {StandardCursorType.TopRightCorner, CursorFontShape.XC_top_right_corner},
             };
 
-        [GenerateEnumValueList]
-        private static partial CursorFontShape[] GetAllCursorShapes();
-
         public X11CursorFactory(IntPtr display)
         {
             _display = display;
             _nullCursor = GetNullCursor(display);
-
-            var cursorShapes = GetAllCursorShapes();
-            _cursors = new Dictionary<CursorFontShape, IntPtr>(cursorShapes.Length);
-            foreach (var shape in cursorShapes)
-                _cursors[shape] = XLib.XCreateFontCursor(_display, shape);
+            
+            // 78 = number of items in CursorFontShape enum
+            // Unlikely to change, but, do we have a Src Gen for this?
+            _cursors = new Dictionary<CursorFontShape, IntPtr>(78);
         }
 
         public ICursorImpl GetCursor(StandardCursorType cursorType)
@@ -77,8 +67,8 @@ namespace Avalonia.X11
             else
             {
                 handle = s_mapping.TryGetValue(cursorType, out var shape)
-                ? _cursors[shape]
-                : _cursors[CursorFontShape.XC_left_ptr];
+                ? GetCursorHandleLazy(shape)
+                : GetCursorHandleLazy(CursorFontShape.XC_left_ptr);
             }
             return new CursorImpl(handle);
         }
@@ -149,6 +139,14 @@ namespace Avalonia.X11
             }
             
             public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
+        }
+        
+        private nint GetCursorHandleLazy(CursorFontShape shape)
+        {
+            if (!_cursors.TryGetValue(shape, out var handle))
+                _cursors[shape] = handle = XLib.XCreateFontCursor(_display, shape);
+
+            return handle;
         }
     }
 
