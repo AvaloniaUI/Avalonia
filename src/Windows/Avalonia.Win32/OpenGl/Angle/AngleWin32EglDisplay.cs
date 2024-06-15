@@ -59,6 +59,7 @@ namespace Avalonia.Win32.OpenGl.Angle
             var dxgiFactoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory1));
             DirectXUnmanagedMethods.CreateDXGIFactory1(ref dxgiFactoryGuid, out var pDxgiFactory);
             IDXGIAdapter1? chosenAdapter = null;
+            
             if (pDxgiFactory != null)
             {
                 using var factory = MicroComRuntime.CreateProxyFor<IDXGIFactory1>(pDxgiFactory, true);
@@ -80,7 +81,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                     }
 
                     if (adapters.Count == 0)
-                        throw new OpenGlException("No adapters found");
+                        ThrowNoAdaptersFound();
 
                     chosenAdapter = adapters
                         .OrderByDescending(x =>
@@ -95,21 +96,41 @@ namespace Avalonia.Win32.OpenGl.Angle
                 else
                 {
                     if (factory.EnumAdapters1(0, &pAdapter) != 0)
-                        throw new OpenGlException("No adapters found");
+                        ThrowNoAdaptersFound();
                     chosenAdapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter1>(pAdapter, true);
                 }
             }
 
             IntPtr pD3dDevice;
             using (chosenAdapter)
-                DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
-                    D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
+            {
+                // https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_adapter_desc1
+                // https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ne-dxgi-dxgi_adapter_flag
+                var isSoftwareAdapter = (chosenAdapter!.Desc1.Flags & 2) == 1;
+                var driverType = isSoftwareAdapter ?
+                    D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_WARP :
+                    D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE;
+
+                var hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+                    driverType,
                     IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                     7, out pD3dDevice, out _, null);
 
+                if (pD3dDevice == IntPtr.Zero)
+                {
+                    hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+                        driverType,
+                        IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
+                        7, out pD3dDevice, out _, null);
+
+                    if (pD3dDevice == IntPtr.Zero)
+                        ThrowCannotCreateD3D11Device();
+                }
+            }
+
 
             if (pD3dDevice == IntPtr.Zero)
-                throw new Win32Exception("Unable to create D3D11 Device");
+                ThrowCannotCreateD3D11Device();
 
             var d3dDevice = MicroComRuntime.CreateProxyFor<ID3D11Device>(pD3dDevice, true);
             var angleDevice = IntPtr.Zero;
@@ -127,11 +148,11 @@ namespace Avalonia.Win32.OpenGl.Angle
             {
                 angleDevice = egl.CreateDeviceANGLE(EGL_D3D11_DEVICE_ANGLE, pD3dDevice, null);
                 if (angleDevice == IntPtr.Zero)
-                    throw OpenGlException.GetFormattedException("eglCreateDeviceANGLE", egl);
+                    OpenGlException.ThrowFormattedException("eglCreateDeviceANGLE", egl);
 
                 display = egl.GetPlatformDisplayExt(EGL_PLATFORM_DEVICE_EXT, angleDevice, null);
                 if (display == IntPtr.Zero)
-                    throw OpenGlException.GetFormattedException("eglGetPlatformDisplayEXT", egl);
+                    OpenGlException.ThrowFormattedException("eglGetPlatformDisplayEXT", egl);
 
 
                 var rv = new AngleWin32EglDisplay(display, egl,
@@ -155,6 +176,10 @@ namespace Avalonia.Win32.OpenGl.Angle
                     Cleanup();
                 }
             }
+
+            // Throwhelpers to aid inlining on rare paths.
+            void ThrowNoAdaptersFound() => throw new OpenGlException("No adapters found");
+            void ThrowCannotCreateD3D11Device() => throw new Win32Exception("Unable to create D3D11 Device");
         }
 
         private AngleWin32EglDisplay(IntPtr display, EglInterface egl, EglDisplayOptions options, AngleOptions.PlatformApi platformApi) : base(display, options)
