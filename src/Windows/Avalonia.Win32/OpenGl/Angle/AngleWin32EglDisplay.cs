@@ -103,31 +103,7 @@ namespace Avalonia.Win32.OpenGl.Angle
 
             IntPtr pD3dDevice;
             using (chosenAdapter)
-            {
-                // https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_adapter_desc1
-                // https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ne-dxgi-dxgi_adapter_flag
-                var isSoftwareAdapter = (chosenAdapter!.Desc1.Flags & 2) == 1;
-                var driverType = isSoftwareAdapter ?
-                    D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_WARP :
-                    D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE;
-
-                var hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
-                    driverType,
-                    IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
-                    7, out pD3dDevice, out _, null);
-
-                if (pD3dDevice == IntPtr.Zero)
-                {
-                    hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
-                        D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_SOFTWARE,
-                        IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
-                        7, out pD3dDevice, out _, null);
-
-                    if (pD3dDevice == IntPtr.Zero)
-                        ThrowCannotCreateD3D11Device();
-                }
-            }
-
+                pD3dDevice = CreateD3D11Device(chosenAdapter, featureLevels);
 
             if (pD3dDevice == IntPtr.Zero)
                 ThrowCannotCreateD3D11Device();
@@ -180,6 +156,49 @@ namespace Avalonia.Win32.OpenGl.Angle
             // Throwhelpers to aid inlining on rare paths.
             void ThrowNoAdaptersFound() => throw new OpenGlException("No adapters found");
             void ThrowCannotCreateD3D11Device() => throw new Win32Exception("Unable to create D3D11 Device");
+        }
+
+        /// <summary>
+        /// Creates a D3D11 device for the given adapter.
+        /// </summary>
+        /// <returns>A null pointer on failure, otherwise a device pointer.</returns>
+        private static unsafe IntPtr CreateD3D11Device(IDXGIAdapter1? chosenAdapter, D3D_FEATURE_LEVEL[] featureLevels)
+        {
+            // https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_adapter_desc1
+            // https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ne-dxgi-dxgi_adapter_flag
+            var isSoftwareAdapter = (chosenAdapter!.Desc1.Flags & 2) == 1;
+            var driverType = isSoftwareAdapter ?
+                D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_WARP :
+                D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE;
+
+            // HARDWARE or WARP should cover ~99% of use cases.
+            DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+                driverType,
+                IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
+                7, out var pD3dDevice, out _, null);
+
+            if (pD3dDevice != IntPtr.Zero)
+                return pD3dDevice;
+
+            // Otherwise fallback to legacy software device.
+            DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+                D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_SOFTWARE,
+                IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
+                7, out pD3dDevice, out _, null);
+
+            if (pD3dDevice != IntPtr.Zero) 
+                return pD3dDevice;
+
+            // As a last resort, try creating an unknown device.
+            // No consumer machine ought to hit this, the remaining options
+            // are more so for driver developers debugging/testing, but
+            // we might as well cover this base.
+            DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+                D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
+                IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
+                7, out pD3dDevice, out _, null);
+
+            return pD3dDevice;
         }
 
         private AngleWin32EglDisplay(IntPtr display, EglInterface egl, EglDisplayOptions options, AngleOptions.PlatformApi platformApi) : base(display, options)

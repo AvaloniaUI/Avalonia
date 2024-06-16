@@ -24,7 +24,7 @@ namespace Avalonia.Win32.DirectX
         internal static extern bool EnumDisplaySettingsW(ushort* lpszDeviceName, uint iModeNum, DEVMODEW* lpDevMode);
 
         [DllImport("d3d11", ExactSpelling = true, PreserveSig = false)]
-        public static extern nint D3D11CreateDevice(
+        public static extern void D3D11CreateDevice(
             IntPtr adapter, D3D_DRIVER_TYPE DriverType,
             IntPtr Software,
             uint Flags,
