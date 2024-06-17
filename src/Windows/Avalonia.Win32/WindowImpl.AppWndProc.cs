@@ -790,6 +790,17 @@ namespace Avalonia.Win32
                         return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
                     }
                     break;
+                case WindowsMessage.WM_WINDOWPOSCHANGED:
+                    var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
+                    if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                    {
+                        _shown = true;
+                    }
+                    else if ((winPos.flags & (uint)SetWindowPosFlags.SWP_HIDEWINDOW) != 0)
+                    {
+                        _shown = false;
+                    }
+                    break;
             }
 
 #if USE_MANAGED_DRAG
