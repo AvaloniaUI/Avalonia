@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Diagnostics;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -19,9 +19,10 @@ namespace Avalonia.Controls.Primitives
 
         private readonly OverlayLayer _overlayLayer;
         private readonly ManagedPopupPositioner _positioner;
-        private PopupPositionerParameters _positionerParameters;
         private Point _lastRequestedPosition;
-        private bool _shown;
+        private PopupPositionRequest? _popupPositionRequest;
+        private Size _popupSize;
+        private bool _shown, _needsUpdate;
 
         public OverlayPopupHost(OverlayLayer overlayLayer)
         {
@@ -73,36 +74,42 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
+        [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
-            _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot()!, target, placement, offset, anchor,
-                gravity, constraintAdjustment, rect, FlowDirection);
+            ((IPopupHost)this).ConfigurePosition(new PopupPositionRequest(target, placement, offset, anchor, gravity,
+                constraintAdjustment, rect, null));
+        }
+
+        /// <inheritdoc />
+        void IPopupHost.ConfigurePosition(PopupPositionRequest positionRequest)
+        {
+            _popupPositionRequest = positionRequest;
+            _needsUpdate = true;
             UpdatePosition();
         }
 
         /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (_positionerParameters.Size != finalSize)
+            if (_popupSize != finalSize)
             {
-                _positionerParameters.Size = finalSize;
+                _popupSize = finalSize;
+                _needsUpdate = true;
                 UpdatePosition();
             }
             return base.ArrangeOverride(finalSize);
         }
 
-
         private void UpdatePosition()
         {
-            // Don't bother the positioner with layout system artifacts
-            if (_positionerParameters.Size.Width == 0 || _positionerParameters.Size.Height == 0)
-                return;
-            if (_shown)
+            if (_needsUpdate && _popupPositionRequest is not null)
             {
-                _positioner.Update(_positionerParameters);
+                _needsUpdate = false;
+                _positioner.Update(TopLevel.GetTopLevel(_overlayLayer)!, _popupPositionRequest, _popupSize, FlowDirection);
             }
         }
 

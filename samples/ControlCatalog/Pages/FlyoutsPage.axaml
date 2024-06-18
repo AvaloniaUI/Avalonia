@@ -222,7 +222,15 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-
+                        <Button Content="Placement=Custom">
+                            <Button.Flyout>
+                                <Flyout Placement="Custom" CustomPopupPlacementCallback="CustomPlacementCallback">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
                     </UniformGrid>
                 </Border>
             </StackPanel>
@@ -267,7 +275,6 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        
                     </WrapPanel>
                 </Border>
             </StackPanel>
