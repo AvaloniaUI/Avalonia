@@ -31,4 +31,29 @@ namespace Avalonia.Win32.Automation
         void UIA.ISelectionItemProvider.RemoveFromSelection() => InvokeSync<ISelectionItemProvider>(x => x.RemoveFromSelection());
         void UIA.ISelectionItemProvider.Select() => InvokeSync<ISelectionItemProvider>(x => x.Select());
     }
+
+#if NET6_0_OR_GREATER
+
+    internal unsafe partial class AutomationNodeWrapper : UIA.ISelectionProvider, UIA.ISelectionItemProvider
+    {
+        public void* ISelectionProviderInst { get; init; }
+        public void* ISelectionItemProviderInst { get; init; }
+
+        bool UIA.ISelectionProvider.CanSelectMultiple => UIA.ISelectionProviderNativeWrapper.GetCanSelectMultiple(ISelectionProviderInst);
+
+        bool UIA.ISelectionProvider.IsSelectionRequired => UIA.ISelectionProviderNativeWrapper.GetIsSelectionRequired(ISelectionProviderInst);
+
+        UIA.IRawElementProviderSimple[] UIA.ISelectionProvider.GetSelection() => UIA.ISelectionProviderNativeWrapper.GetSelection(this, ISelectionProviderInst);
+
+        void UIA.ISelectionItemProvider.RemoveFromSelection() => UIA.ISelectionItemProviderNativeWrapper.RemoveFromSelection(ISelectionItemProviderInst);
+
+        void UIA.ISelectionItemProvider.Select() => UIA.ISelectionItemProviderNativeWrapper.Select(ISelectionItemProviderInst);
+
+        bool UIA.ISelectionItemProvider.IsSelected => UIA.ISelectionItemProviderNativeWrapper.GetIsSelected(ISelectionItemProviderInst);
+
+        UIA.IRawElementProviderSimple? UIA.ISelectionItemProvider.SelectionContainer => UIA.ISelectionItemProviderNativeWrapper.GetSelectionContainer(this, ISelectionItemProviderInst);
+
+        void UIA.ISelectionItemProvider.AddToSelection() => UIA.ISelectionItemProviderNativeWrapper.AddToSelection(ISelectionItemProviderInst);
+    }
+#endif
 }

@@ -15,7 +15,9 @@ using AAP = Avalonia.Automation.Provider;
 namespace Avalonia.Win32.Automation
 {
     [ComVisible(true)]
+#if !NET6_0_OR_GREATER
     [RequiresUnreferencedCode("Requires .NET COM interop")]
+#endif
     internal partial class AutomationNode : MarshalByRefObject,
         IRawElementProviderSimple,
         IRawElementProviderSimple2,
@@ -229,18 +231,22 @@ namespace Avalonia.Win32.Automation
 
         protected void RaiseChildrenChanged()
         {
+#pragma warning disable IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
             UiaCoreProviderApi.UiaRaiseStructureChangedEvent(
                 this,
                 StructureChangeType.ChildrenInvalidated,
                 null,
                 0);
+#pragma warning restore IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
         }
 
         protected void RaiseFocusChanged(AutomationNode? focused)
         {
+#pragma warning disable IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
             UiaCoreProviderApi.UiaRaiseAutomationEvent(
                 focused,
                 (int)UiaEventId.AutomationFocusChanged);
+#pragma warning restore IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
         }
 
         private RootAutomationNode? GetRoot()
@@ -258,11 +264,13 @@ namespace Avalonia.Win32.Automation
         {
             if (s_propertyMap.TryGetValue(e.Property, out var id))
             {
+#pragma warning disable IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
                 UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(
                     this,
                     (int)id,
                     e.OldValue as IConvertible,
                     e.NewValue as IConvertible);
+#pragma warning restore IL2050 // Correctness of COM interop cannot be guaranteed after trimming. Interfaces and interface members might be removed.
             }
         }
 
@@ -328,4 +336,42 @@ namespace Avalonia.Win32.Automation
             };
         }
     }
+
+#if NET6_0_OR_GREATER
+    internal unsafe partial class AutomationNodeWrapper :
+        IRawElementProviderSimple,
+        IRawElementProviderSimple2,
+        IRawElementProviderFragment,
+        IInvokeProvider
+    {
+        public void* IRawElementProviderSimpleInst { get; init; }
+        public void* IRawElementProviderSimple2Inst { get; init; }
+        public void* IInvokeProviderInst { get; init; }
+        public void* IRawElementProviderFragmentInst { get; init; }
+
+        ProviderOptions IRawElementProviderSimple.ProviderOptions => IRawElementProviderSimpleNativeWrapper.GetProviderOptions(IRawElementProviderSimpleInst);
+
+        IRawElementProviderSimple? IRawElementProviderSimple.HostRawElementProvider => IRawElementProviderSimpleNativeWrapper.GetHostRawElementProvider(this, IRawElementProviderSimpleInst);
+
+        object? IRawElementProviderSimple.GetPatternProvider(int patternId) => IRawElementProviderSimpleNativeWrapper.GetPatternProvider(this, IRawElementProviderSimpleInst, patternId);
+
+        object? IRawElementProviderSimple.GetPropertyValue(int propertyId) => IRawElementProviderSimpleNativeWrapper.GetPropertyValue(this, IRawElementProviderSimpleInst, propertyId);
+
+        IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => IRawElementProviderFragmentNativeWrapper.GetEmbeddedFragmentRoots(this, IRawElementProviderSimpleInst);
+
+        void IRawElementProviderSimple2.ShowContextMenu() => IRawElementProviderSimple2NativeWrapper.ShowContextMenu(IRawElementProviderSimple2Inst);
+
+        Rect IRawElementProviderFragment.BoundingRectangle => IRawElementProviderFragmentNativeWrapper.GetBoundingRectangle(IRawElementProviderFragmentInst);
+
+        IRawElementProviderFragmentRoot? IRawElementProviderFragment.FragmentRoot => IRawElementProviderFragmentNativeWrapper.GetFragmentRoot(this, IRawElementProviderFragmentInst);
+
+        int[]? IRawElementProviderFragment.GetRuntimeId() => IRawElementProviderFragmentNativeWrapper.GetRuntimeId(IRawElementProviderFragmentInst);
+
+        IRawElementProviderFragment? IRawElementProviderFragment.Navigate(NavigateDirection direction) => IRawElementProviderFragmentNativeWrapper.Navigate(this, IRawElementProviderFragmentInst, direction);
+
+        void IRawElementProviderFragment.SetFocus() => IRawElementProviderFragmentNativeWrapper.SetFocus(IRawElementProviderFragmentInst);
+
+        void IInvokeProvider.Invoke() => IInvokeProviderNativeWrapper.Invoke(IInvokeProviderInst);
+    }
+#endif
 }

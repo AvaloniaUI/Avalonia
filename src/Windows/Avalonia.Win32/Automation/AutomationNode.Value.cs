@@ -7,11 +7,26 @@ namespace Avalonia.Win32.Automation
     internal partial class AutomationNode : UIA.IValueProvider
     {
         bool UIA.IValueProvider.IsReadOnly => InvokeSync<IValueProvider, bool>(x => x.IsReadOnly);
-        string? UIA.IValueProvider.Value => InvokeSync<IValueProvider, string?>(x => x.Value);
-
-        void UIA.IValueProvider.SetValue([MarshalAs(UnmanagedType.LPWStr)] string? value)
+        string? UIA.IValueProvider.Value
         {
-            InvokeSync<IValueProvider>(x => x.SetValue(value));
+            get => InvokeSync<IValueProvider, string?>(x => x.Value);
+            [param: MarshalAs(UnmanagedType.LPWStr)]
+            set => InvokeSync<IValueProvider>(x => x.SetValue(value));
         }
     }
+
+#if NET6_0_OR_GREATER
+    internal unsafe partial class AutomationNodeWrapper : UIA.IValueProvider
+    {
+        public void* IValueProviderInst { get; init; }
+
+        string? UIA.IValueProvider.Value
+        {
+            get => UIA.IValueProviderNativeWrapper.GetValue(IValueProviderInst);
+            set => UIA.IValueProviderNativeWrapper.SetValue(IValueProviderInst, value);
+        }
+
+        bool UIA.IValueProvider.IsReadOnly => UIA.IValueProviderNativeWrapper.GetIsReadOnly(IValueProviderInst);
+    }
+#endif
 }

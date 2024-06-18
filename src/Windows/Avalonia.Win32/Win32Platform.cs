@@ -82,6 +82,10 @@ namespace Avalonia.Win32
         {
             s_options = options;
 
+#if NET6_0_OR_GREATER
+            ComWrappers.RegisterForMarshalling(Automation.AutomationNodeComWrappers.Instance);
+#endif
+
             SetDpiAwareness();
 
             var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
