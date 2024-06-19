@@ -9,13 +9,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
-    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.0" PrivateAssets="all" />
-    <MicroComIdl Include="avn.idl" CSharpInteropPath="Interop.Generated.cs" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(PackAvaloniaNative)' == 'true'">
     <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
       <Link>libAvaloniaNative.dylib</Link>
@@ -24,7 +17,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
+    <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.0" PrivateAssets="all" />
+    <MicroComIdl Include="avn.idl" CSharpInteropPath="Interop.Generated.cs" />
+  </ItemGroup>
+
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>
