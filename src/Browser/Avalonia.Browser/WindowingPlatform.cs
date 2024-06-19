@@ -58,9 +58,15 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
 
     public IWindowImpl CreateWindow() => throw new NotSupportedException("Browser doesn't support windowing platform. In order to display a single-view content, set ISingleViewApplicationLifetime.MainView.");
 
+
     IWindowImpl IWindowingPlatform.CreateEmbeddableWindow()
     {
         throw new NotImplementedException("Browser doesn't support embeddable windowing platform.");
+    }
+
+    ITopLevelImpl IWindowingPlatform.CreateEmbeddableTopLevel()
+    {
+        throw new NotImplementedException();
     }
 
     public ITrayIconImpl? CreateTrayIcon()

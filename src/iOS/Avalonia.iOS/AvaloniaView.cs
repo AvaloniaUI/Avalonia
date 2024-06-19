@@ -221,6 +221,9 @@ namespace Avalonia.iOS
                 // No-op
             }
 
+            public double DesktopScaling => RenderScaling;
+            public IScreenImpl? Screen { get; }
+            public IPlatformHandle? Handle { get; }
             public Size ClientSize => new Size(_view.Bounds.Width, _view.Bounds.Height);
             public Size? FrameSize => null;
             public double RenderScaling => _view.ContentScaleFactor;
