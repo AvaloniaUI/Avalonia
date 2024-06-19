@@ -60,7 +60,7 @@ private:
     NSMutableArray* _children;
 }
 
-+ (AvnAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
++ (NSAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
 {
     if (peer == nullptr)
         return nil;
@@ -70,7 +70,12 @@ private:
     if (instance != nullptr)
         return dynamic_cast<AutomationNode*>(instance)->GetOwner();
     
-    if (peer->IsRootProvider())
+    if (peer->IsInteropPeer())
+    {
+        auto view = (__bridge NSAccessibilityElement*)peer->InteropPeer_GetNativeControlHandle();
+        return view;
+    }
+    else if (peer->IsRootProvider())
     {
         auto window = peer->RootProvider_GetWindow();
         
