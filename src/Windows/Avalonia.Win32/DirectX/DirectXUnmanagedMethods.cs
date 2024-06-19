@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.DirectX
 {
@@ -24,7 +25,7 @@ namespace Avalonia.Win32.DirectX
         internal static extern bool EnumDisplaySettingsW(ushort* lpszDeviceName, uint iModeNum, DEVMODEW* lpDevMode);
 
         [DllImport("d3d11", ExactSpelling = true)]
-        public static extern int D3D11CreateDevice(
+        public static extern UnmanagedMethods.HRESULT D3D11CreateDevice(
             IntPtr adapter, D3D_DRIVER_TYPE DriverType,
             IntPtr Software,
             uint Flags,

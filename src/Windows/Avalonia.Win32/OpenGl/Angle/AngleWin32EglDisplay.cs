@@ -12,6 +12,7 @@ using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 using static Avalonia.OpenGL.Egl.EglConsts;
+using static Avalonia.Win32.Interop.HRESULTExtensions;
 // ReSharper disable SimplifyLinqExpressionUseMinByAndMaxBy
 
 namespace Avalonia.Win32.OpenGl.Angle
@@ -179,13 +180,13 @@ namespace Avalonia.Win32.OpenGl.Angle
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out var pD3dDevice, out _, null);
 
-            if (hr >= 0) // SUCCEEDED(hr)
+            if (hr.SUCCEEDED())
                 return pD3dDevice;
 
             // Otherwise fallback to legacy software device.
             var logger = Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform);
-            void LogCannotCreateDevice(D3D_DRIVER_TYPE type, int hresult) 
-                => logger?.Log(null, "Unable to create ID3D11Device, Driver Type: {DriverType}, HRESULT = {ErrorCode}", type, $"0x{hresult:X}");
+            void LogCannotCreateDevice(D3D_DRIVER_TYPE type, UnmanagedMethods.HRESULT hresult) 
+                => logger?.Log(null, "Unable to create ID3D11Device, Driver Type: {DriverType}, HRESULT = {ErrorCode}", type, $"0x{((uint)hresult):X}");
 
             LogCannotCreateDevice(driverType, hr);
             hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
@@ -193,7 +194,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out pD3dDevice, out _, null);
 
-            if (hr >= 0)
+            if (hr.SUCCEEDED())
                 return pD3dDevice;
 
             // As a last resort, try creating an unknown device.
@@ -206,7 +207,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out pD3dDevice, out _, null);
 
-            if (hr < 0) // FAILED(hr)
+            if (hr.FAILED())
                 LogCannotCreateDevice(D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN, hr);
 
             return pD3dDevice;
