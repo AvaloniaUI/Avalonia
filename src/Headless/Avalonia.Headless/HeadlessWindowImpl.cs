@@ -247,7 +247,7 @@ namespace Avalonia.Headless
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.Transparent;
 
         public Action? GotInputWhenDisabled { get; set; }
 
