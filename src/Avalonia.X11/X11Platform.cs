@@ -135,6 +135,8 @@ namespace Avalonia.X11
             return new X11Window(this, null);
         }
 
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
+
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();

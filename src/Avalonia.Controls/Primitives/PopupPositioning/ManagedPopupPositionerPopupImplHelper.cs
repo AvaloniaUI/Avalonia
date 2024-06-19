@@ -12,22 +12,33 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     [PrivateApi]
     public class ManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup 
     {
-        private readonly IWindowBaseImpl _parent;
+        private readonly ITopLevelImpl _parent;
 
         public delegate void MoveResizeDelegate(PixelPoint position, Size size, double scaling);
         private readonly MoveResizeDelegate _moveResize;
 
-        public ManagedPopupPositionerPopupImplHelper(IWindowBaseImpl parent, MoveResizeDelegate moveResize)
+        public ManagedPopupPositionerPopupImplHelper(ITopLevelImpl parent, MoveResizeDelegate moveResize)
         {
             _parent = parent;
             _moveResize = moveResize;
         }
 
-        public IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens =>
+        public IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens
+        {
+            get
+            {
+                if (_parent.Screen is null)
+                {
+                    return Array.Empty<ManagedPopupPositionerScreenInfo>();
+                }
 
-            _parent.Screen.AllScreens
-                .Select(s => new ManagedPopupPositionerScreenInfo(s.Bounds.ToRect(1), s.WorkingArea.ToRect(1)))
-                .ToArray();
+                return _parent.Screen.AllScreens
+                    .Select(s => new ManagedPopupPositionerScreenInfo(s.Bounds.ToRect(1), s.WorkingArea.ToRect(1)))
+                    .ToArray();
+            }
+        }
+
+           
 
         public Rect ParentClientAreaScreenGeometry
         {
