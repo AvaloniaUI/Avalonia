@@ -59,11 +59,11 @@ namespace Avalonia.Media.Fonts.Tables
 
         public short XMaxExtent { get; }
 
-        public static HorizontalHeadTable Load(IGlyphTypeface glyphTypeface)
+        public static HorizontalHeadTable? Load(IGlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.TryGetTable(Tag, out var table))
             {
-                throw new MissingFontTableException("Could not load table", "name");
+                return null;
             }
 
             using var stream = new MemoryStream(table);
