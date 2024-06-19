@@ -78,9 +78,14 @@ namespace Avalonia.Win32
         /// <inheritdoc />
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
-            var handle = window.Handle.Handle;
+            var handle = window.Handle?.Handle;
 
-            var monitor = MonitorFromWindow(handle, MONITOR.MONITOR_DEFAULTTONULL);
+            if (handle is null)
+            {
+                return null;
+            }
+            
+            var monitor = MonitorFromWindow(handle.Value, MONITOR.MONITOR_DEFAULTTONULL);
 
             return FindScreenByHandle(monitor);
         }

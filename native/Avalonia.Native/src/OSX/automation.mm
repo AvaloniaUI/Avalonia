@@ -80,7 +80,7 @@ private:
             return nil;
         }
         
-        auto holder = dynamic_cast<INSWindowHolder*>(window);
+        auto holder = dynamic_cast<INSViewHolder*>(window);
         auto view = holder->GetNSView();
         return [[AvnRootAccessibilityElement alloc] initWithPeer:peer owner:view];
     }
