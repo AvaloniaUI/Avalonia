@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
@@ -172,31 +173,40 @@ namespace Avalonia.Win32.OpenGl.Angle
                 D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE;
 
             // HARDWARE or WARP should cover ~99% of use cases.
-            DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+            var hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
                 driverType,
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out var pD3dDevice, out _, null);
 
-            if (pD3dDevice != IntPtr.Zero)
+            if (hr == 0)
                 return pD3dDevice;
 
             // Otherwise fallback to legacy software device.
-            DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+            var logger = Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform);
+            void LogCannotCreateDevice(D3D_DRIVER_TYPE type, int hresult) 
+                => logger?.Log(null, "Unable to create ID3D11Device, Driver Type: {DriverType}, HRESULT = {ErrorCode}", type, $"0x{hresult:X}");
+
+            LogCannotCreateDevice(driverType, hr);
+            hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
                 D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_SOFTWARE,
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out pD3dDevice, out _, null);
 
-            if (pD3dDevice != IntPtr.Zero) 
+            if (hr == 0)
                 return pD3dDevice;
 
             // As a last resort, try creating an unknown device.
-            // No consumer machine ought to hit this, the remaining options
-            // are more so for driver developers debugging/testing, but
-            // we might as well cover this base.
-            DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
+            // No consumer machine ought to hit this, unless we borked our parameters.
+            // We never create a null device, and reference ones are usually used
+            // by driver developers.
+            LogCannotCreateDevice(D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_SOFTWARE, hr);
+            hr = DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
                 D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out pD3dDevice, out _, null);
+
+            if (hr != 0)
+                LogCannotCreateDevice(D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN, hr);
 
             return pD3dDevice;
         }
