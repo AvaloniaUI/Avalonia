@@ -9,6 +9,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Win32.DirectX;
+using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 using static Avalonia.OpenGL.Egl.EglConsts;
 // ReSharper disable SimplifyLinqExpressionUseMinByAndMaxBy
@@ -178,7 +179,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out var pD3dDevice, out _, null);
 
-            if (hr == 0)
+            if (hr >= 0) // SUCCEEDED(hr)
                 return pD3dDevice;
 
             // Otherwise fallback to legacy software device.
@@ -192,7 +193,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out pD3dDevice, out _, null);
 
-            if (hr == 0)
+            if (hr >= 0)
                 return pD3dDevice;
 
             // As a last resort, try creating an unknown device.
@@ -205,7 +206,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                 IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
                 7, out pD3dDevice, out _, null);
 
-            if (hr != 0)
+            if (hr < 0) // FAILED(hr)
                 LogCannotCreateDevice(D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN, hr);
 
             return pD3dDevice;
