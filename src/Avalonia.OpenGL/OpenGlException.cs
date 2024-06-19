@@ -50,10 +50,5 @@ namespace Avalonia.OpenGL
                 return new OpenGlException($"{funcName} failed with error 0x{errorCode.ToString("X")}", intErrorCode);
             }
         }
-        
-        /// <summary>
-        ///     Throw helper that is used to allow callers to be inlined.
-        /// </summary>
-        public static OpenGlException ThrowFormattedException(string funcName, EglInterface egl) => throw GetFormattedEglException(funcName, egl.GetError());
     }
 }
