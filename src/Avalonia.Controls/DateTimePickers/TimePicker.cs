@@ -47,6 +47,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<string> ClockIdentifierProperty =
            AvaloniaProperty.Register<TimePicker, string>(nameof(ClockIdentifier), "12HourClock", coerce: CoerceClockIdentifier);
+        
+        /// <summary>
+        /// Defines the <see cref="UseSeconds"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> UseSecondsProperty =
+            AvaloniaProperty.Register<TimePicker, bool>(nameof(UseSeconds), false, coerce: CoerceUseSeconds);
 
         /// <summary>
         /// Defines the <see cref="SelectedTime"/> property
@@ -132,6 +138,24 @@ namespace Avalonia.Controls
 
             return value;
         }
+        
+        /// <summary>
+        /// Gets or sets the use seconds switch, either true or false
+        /// </summary>
+        public bool UseSeconds
+        {
+
+            get => GetValue(UseSecondsProperty);
+            set => SetValue(UseSecondsProperty, value);
+        }
+
+        private static bool CoerceUseSeconds(AvaloniaObject sender, bool value)
+        {
+            if (!(value == true || value == false))
+                throw new ArgumentException("Invalid UseSeconds", default(bool).ToString());
+
+            return value;
+        }
 
         /// <summary>
         /// Gets or sets the selected time. Can be null.
@@ -194,6 +218,7 @@ namespace Avalonia.Controls
                 _presenter[!TimePickerPresenter.MinuteIncrementProperty] = this[!MinuteIncrementProperty];
                 _presenter[!TimePickerPresenter.SecondIncrementProperty] = this[!SecondIncrementProperty];
                 _presenter[!TimePickerPresenter.ClockIdentifierProperty] = this[!ClockIdentifierProperty];
+                _presenter[!TimePickerPresenter.UseSecondsProperty] = this[!UseSecondsProperty];
             }
         }
 
@@ -210,6 +235,11 @@ namespace Avalonia.Controls
                 SetSelectedTimeText();
             }
             else if (change.Property == ClockIdentifierProperty)
+            {
+                SetGrid();
+                SetSelectedTimeText();
+            }
+            else if (change.Property == UseSecondsProperty)
             {
                 SetGrid();
                 SetSelectedTimeText();
@@ -233,28 +263,35 @@ namespace Avalonia.Controls
             columnsD.Add(new ColumnDefinition(GridLength.Star));
             columnsD.Add(new ColumnDefinition(GridLength.Auto));
             columnsD.Add(new ColumnDefinition(GridLength.Star));
-            columnsD.Add(new ColumnDefinition(GridLength.Auto));
-            columnsD.Add(new ColumnDefinition(GridLength.Star));
+            if (UseSeconds)
+            {
+                columnsD.Add(new ColumnDefinition(GridLength.Auto));
+                columnsD.Add(new ColumnDefinition(GridLength.Star));
+            }
             if (!use24HourClock)
             {
                 columnsD.Add(new ColumnDefinition(GridLength.Auto));
                 columnsD.Add(new ColumnDefinition(GridLength.Star));
             }
-
+            
             _contentGrid.ColumnDefinitions = columnsD;
+            
+            _thirdPickerHost!.IsVisible = UseSeconds;
+            _secondSplitter!.IsVisible = UseSeconds;
 
             _fourthPickerHost!.IsVisible = !use24HourClock;
             _thirdSplitter!.IsVisible = !use24HourClock;
 
+            var amPmColumn = (UseSeconds) ? 6 : 4;
+
             Grid.SetColumn(_firstPickerHost!, 0);
             Grid.SetColumn(_secondPickerHost!, 2);
-            Grid.SetColumn(_thirdPickerHost!, 4);
-
-            Grid.SetColumn(_fourthPickerHost, use24HourClock ? 0 : 6);
+            Grid.SetColumn(_thirdPickerHost!, UseSeconds ? 4 : 0);
+            Grid.SetColumn(_fourthPickerHost, use24HourClock ? 0 : amPmColumn);
 
             Grid.SetColumn(_firstSplitter!, 1);
-            Grid.SetColumn(_secondSplitter!, 3);
-            Grid.SetColumn(_thirdSplitter, use24HourClock ? 0 : 5);
+            Grid.SetColumn(_secondSplitter!, UseSeconds ? 3 : 0);
+            Grid.SetColumn(_thirdSplitter, use24HourClock ? 0 : amPmColumn-1);
         }
 
         private void SetSelectedTimeText()
