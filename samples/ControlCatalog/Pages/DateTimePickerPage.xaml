@@ -77,6 +77,23 @@
         </Panel>
       </StackPanel>
       
+      <TextBlock FontSize="18">A TimePicker with seconds enabled.</TextBlock>
+      <StackPanel Orientation="Vertical">
+        <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
+                BorderThickness="1" Padding="15">
+          <TimePicker UseSeconds="True" />
+        </Border>
+        <Panel Background="{DynamicResource CatalogBaseLowColor}">
+          <TextBlock Padding="15">
+            <TextBlock.Text>
+              <x:String>
+                &lt;TimePicker UseSeconds="True" /&gt;
+              </x:String>
+            </TextBlock.Text>
+          </TextBlock>
+        </Panel>
+      </StackPanel>
+      
       <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
               BorderThickness="1" Padding="15">
         <TimePicker>
