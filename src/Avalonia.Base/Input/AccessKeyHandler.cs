@@ -181,9 +181,9 @@ namespace Avalonia.Input
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
 
-                /// Insteand of <see cref="Platform.KeyGestureFormatInfo.FormatKey"/> 
-                /// can bee use <see cref="KeyEventArgs.KeySymbol"/> 
-                /// but see <see cref="Platform.KeyGestureFormatInfo.FormatKey"/> 
+                /// Instead of <see cref="Platform.KeyGestureFormatInfo.FormatKey"/> 
+                /// can be use <see cref="KeyEventArgs.KeySymbol"/> 
+                /// but <see cref="Platform.KeyGestureFormatInfo.FormatKey"/> 
                 /// it might allow the developer to extend the behavior in the future.
                 var text =
                     Platform.KeyGestureFormatInfo.GetInstance(System.Globalization.CultureInfo.CurrentUICulture)
