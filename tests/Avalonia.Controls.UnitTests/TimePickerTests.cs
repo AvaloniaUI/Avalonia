@@ -63,6 +63,36 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(periodTextHost.IsVisible);
             }
         }
+        
+        [Fact]
+        public void UseSeconds_Equals_False_Should_Hide_Seconds()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TimePicker timePicker = new TimePicker()
+                {
+                    UseSeconds = true,
+                    Template = CreateTemplate()
+                };
+                timePicker.ApplyTemplate();
+
+                var desc = timePicker.GetVisualDescendants();
+                Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
+                Grid container = null;
+
+                Assert.True(desc.ElementAt(1) is Button);
+
+                container = (desc.ElementAt(1) as Button).Content as Grid;
+                Assert.True(container != null);
+
+                var periodTextHost = container.Children[4] as Border;
+                Assert.True(periodTextHost != null);
+                Assert.True(periodTextHost.IsVisible);
+
+                timePicker.UseSeconds = false;
+                Assert.False(periodTextHost.IsVisible);
+            }
+        }
 
         [Fact]
         public void SelectedTime_null_Should_Use_Placeholders()
@@ -127,7 +157,7 @@ namespace Avalonia.Controls.UnitTests
                 var container = (desc.ElementAt(1) as Button).Content as Grid;
                 Assert.True(container != null);
 
-                var periodTextHost = container.Children[4] as Border;
+                var periodTextHost = container.Children[6] as Border;
                 Assert.NotNull(periodTextHost);
                 var periodText = periodTextHost.Child as TextBlock;
                 Assert.NotNull(periodTextHost);
@@ -261,7 +291,7 @@ namespace Avalonia.Controls.UnitTests
                 
                 var thirdSpacer = new Rectangle
                 {
-                    Name = "PART_SecondColumnDivider"
+                    Name = "PART_ThirdColumnDivider"
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(thirdSpacer, 5);
 
