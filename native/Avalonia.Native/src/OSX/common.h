@@ -11,6 +11,7 @@
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
 extern void FreeAvnGCHandle(void* handle);
 extern void PostDispatcherCallback(IAvnActionCallback* cb);
+extern IAvnTopLevel* CreateAvnTopLevel(IAvnTopLevelEvents* events);
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
 extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
 extern IAvnSystemDialogs* CreateSystemDialogs();
@@ -46,6 +47,7 @@ extern NSRect ToNSRect (AvnRect r);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
 extern NSSize ToNSSize (AvnSize s);
+extern AvnSize FromNSSize (NSSize s);
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)
 #else
