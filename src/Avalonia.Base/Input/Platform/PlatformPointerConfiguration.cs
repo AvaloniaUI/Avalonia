@@ -5,19 +5,19 @@ namespace Avalonia.Input.Platform;
 
 public sealed class PlatformPointerConfiguration
 {
-    public List<PointerGesture> OpenContextMenu { get; set; }
+    public List<PointerActionGesture> OpenContextMenu { get; set; }
 
     [PrivateApi]
     public PlatformPointerConfiguration()
     {
-        OpenContextMenu = new List<PointerGesture>
+        OpenContextMenu = new List<PointerActionGesture>
         {
-            new PointerGesture(MouseButton.Right, KeyModifiers.None)
+            new(MouseButton.Right)
         };
     }
 
     [PrivateApi]
-    public PlatformPointerConfiguration(params PointerGesture[] additionalContextGestures) : this()
+    public PlatformPointerConfiguration(params PointerActionGesture[] additionalContextGestures) : this()
     {
         OpenContextMenu.AddRange(additionalContextGestures);
     }

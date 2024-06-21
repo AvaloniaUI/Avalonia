@@ -109,7 +109,10 @@ namespace Avalonia.Input
         /// <param name="formatProvider">The IFormatProvider to use.  If null, uses the appropriate provider registered in the Avalonia Locator, or Invariant.</param>
         /// <returns>The formatted string.</returns>
         /// <exception cref="FormatException">Thrown if the format string is not null, "", "g", or "p"</exception>
-        public string ToString(string? format, IFormatProvider? formatProvider)
+        public string ToString(string? format, IFormatProvider? formatProvider) =>
+            FormatWithKeyModifiers(f => f.FormatKey(Key), KeyModifiers, format, formatProvider);
+
+        internal static string FormatWithKeyModifiers(Func<KeyGestureFormatInfo, object> gesture, KeyModifiers keyModifiers, string? format, IFormatProvider? formatProvider)
         {
             var formatInfo = format switch
             {
@@ -128,31 +131,31 @@ namespace Avalonia.Input
                 }
             }
 
-            if (KeyModifiers.HasAllFlags(KeyModifiers.Control))
+            if (keyModifiers.HasAllFlags(KeyModifiers.Control))
             {
                 s.Append(formatInfo.Ctrl);
             }
 
-            if (KeyModifiers.HasAllFlags(KeyModifiers.Shift))
+            if (keyModifiers.HasAllFlags(KeyModifiers.Shift))
             {
                 Plus(s);
                 s.Append(formatInfo.Shift);
             }
 
-            if (KeyModifiers.HasAllFlags(KeyModifiers.Alt))
+            if (keyModifiers.HasAllFlags(KeyModifiers.Alt))
             {
                 Plus(s);
                 s.Append(formatInfo.Alt);
             }
 
-            if (KeyModifiers.HasAllFlags(KeyModifiers.Meta))
+            if (keyModifiers.HasAllFlags(KeyModifiers.Meta))
             {
                 Plus(s);
                 s.Append(formatInfo.Meta);
             }
 
             Plus(s);
-            s.Append(formatInfo.FormatKey(Key));
+            s.Append(gesture(formatInfo));
 
             return StringBuilderCache.GetStringAndRelease(s);
         }
