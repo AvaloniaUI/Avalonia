@@ -174,7 +174,7 @@ namespace Avalonia.Input
             return EnumHelper.Parse<Key>(key, true);
         }
 
-        private static KeyModifiers ParseModifier(ReadOnlySpan<char> modifier)
+        internal static KeyModifiers ParseModifier(ReadOnlySpan<char> modifier)
         {
             if (modifier.Equals("ctrl".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
