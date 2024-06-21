@@ -5,18 +5,27 @@ namespace Avalonia.Input;
 /// <summary>
 /// Defines a pointer input combination.
 /// </summary>
-public record PointerActionGesture(MouseButton Button, KeyModifiers KeyModifiers = KeyModifiers.None)
+public record PointerActionGesture(MouseButton Button, KeyModifiers KeyModifiers = KeyModifiers.None, int ClickCount = 1)
 {
     public virtual bool Equals(PointerActionGesture? other)
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
         
-        return Button == other.Button && KeyModifiers == other.KeyModifiers;
+        return Button == other.Button && KeyModifiers == other.KeyModifiers && ClickCount == other.ClickCount;
     }
     
-    public override int GetHashCode() => unchecked(((int)Button * 397) ^ (int)KeyModifiers);
-
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = (int)Button;
+            hashCode = (hashCode * 397) ^ (int)KeyModifiers;
+            hashCode = (hashCode * 397) ^ ClickCount;
+            return hashCode;
+        }
+    }
+    
     public override string ToString() => ToString(null, null);
 
     /// <summary>
@@ -35,6 +44,12 @@ public record PointerActionGesture(MouseButton Button, KeyModifiers KeyModifiers
 
     public bool Matches(PointerEventArgs pointerEvent) =>
         pointerEvent != null &&
+        pointerEvent.KeyModifiers == KeyModifiers &&
+        pointerEvent.GetCurrentPoint(pointerEvent.Source as Visual).Properties.PointerUpdateKind.GetMouseButton() == Button;
+
+    public bool Matches(PointerPressedEventArgs pointerEvent) =>
+        pointerEvent != null &&
+        pointerEvent.ClickCount == ClickCount &&
         pointerEvent.KeyModifiers == KeyModifiers &&
         pointerEvent.GetCurrentPoint(pointerEvent.Source as Visual).Properties.PointerUpdateKind.GetMouseButton() == Button;
 
