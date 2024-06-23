@@ -14,14 +14,10 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Native;
 
-internal class StorageProviderApi(IAvnStorageProvider native) : IStorageProviderFactory, IDisposable
+internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnabled) : IStorageProviderFactory, IDisposable
 {
     private readonly Dictionary<string, int> _openScopes = new();
-    private bool? _sandboxEnabled;
     private readonly IAvnStorageProvider _native = native;
-
-    internal bool SandboxEnabled =>
-        _sandboxEnabled ??= AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>()?.AppSandboxEnabled ?? true;
 
     public IStorageProvider CreateProvider(TopLevel topLevel)
     {
@@ -35,14 +31,14 @@ internal class StorageProviderApi(IAvnStorageProvider native) : IStorageProvider
             if (new FileInfo(itemPath) is { } fileInfo
                 && (create || fileInfo.Exists))
             {
-                return SandboxEnabled
+                return sandboxEnabled
                     ? new StorageFile(this, fileInfo, itemUri, itemUri)
                     : new BclStorageFile(fileInfo);
             }
             if (new DirectoryInfo(itemPath) is { } directoryInfo
                 && (create || directoryInfo.Exists))
             {
-                return SandboxEnabled
+                return sandboxEnabled
                     ? new StorageFolder(this, directoryInfo, itemUri, itemUri)
                     : new BclStorageFolder(directoryInfo);
             }
@@ -111,7 +107,7 @@ internal class StorageProviderApi(IAvnStorageProvider native) : IStorageProvider
     {
         using var bookmarkStr = new AvnString(bookmark);
         using var uriString = _native.ReadBookmark(bookmarkStr);
-        return Uri.TryCreate(uriString.String, UriKind.Absolute, out var uri) ? uri : null;
+        return uriString is not null && Uri.TryCreate(uriString.String, UriKind.Absolute, out var uri) ? uri : null;
     }
 
     public void ReleaseBookmark(Uri uri)
