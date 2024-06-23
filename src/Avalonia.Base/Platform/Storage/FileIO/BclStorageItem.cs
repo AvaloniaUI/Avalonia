@@ -19,7 +19,7 @@ internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorage
 
     public string Name => FileSystemInfo.Name;
 
-    public bool CanBookmark => true;
+    public bool CanBookmark => false;
 
     public Uri Path => GetPathCore(FileSystemInfo);
 
@@ -40,7 +40,7 @@ internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorage
     public Task<IStorageItem?> MoveAsync(IStorageFolder destination) => Task.FromResult(
         WrapFileSystemInfo(MoveCore(FileSystemInfo, destination)));
 
-    public Task<string?> SaveBookmarkAsync() => Task.FromResult<string?>(this.TryGetLocalPath());
+    public Task<string?> SaveBookmarkAsync() => Task.FromResult<string?>(null);
     public Task ReleaseBookmarkAsync() => Task.CompletedTask;
 
     public void Dispose() { }
