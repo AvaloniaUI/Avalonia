@@ -546,7 +546,9 @@ namespace Avalonia.Controls
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
         public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();
-        public ILauncher Launcher => PlatformImpl?.TryGetFeature<ILauncher>() ?? new NoopLauncher();
+        public ILauncher Launcher => new ChainLauncher(
+            AvaloniaLocator.Current.GetService<ILauncherFactory>()?.CreateLauncher(this), 
+            PlatformImpl?.TryGetFeature<ILauncher>());
 
         /// <summary>
         /// Gets the platform's clipboard implementation

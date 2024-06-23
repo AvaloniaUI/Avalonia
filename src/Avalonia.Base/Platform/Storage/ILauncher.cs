@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
@@ -32,6 +33,45 @@ internal class NoopLauncher : ILauncher
     public Task<bool> LaunchUriAsync(Uri uri) => Task.FromResult(false); 
     public Task<bool> LaunchFileAsync(IStorageItem storageItem) => Task.FromResult(false);
 } 
+
+internal class ChainLauncher : ILauncher {
+    private readonly IEnumerable<ILauncher?> _launchers;
+    public ChainLauncher(params ILauncher?[] launchers) {
+        _launchers = launchers;
+    }
+
+    public async Task<bool> LaunchFileAsync(IStorageItem storageItem)
+    {
+        foreach (var launcher in _launchers)
+        {
+            if (launcher == null) {
+                continue;
+            }
+
+            if (await launcher.LaunchFileAsync(storageItem)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public async Task<bool> LaunchUriAsync(Uri uri)
+    {
+        foreach (var launcher in _launchers)
+        {
+            if (launcher == null) {
+                continue;
+            }
+            
+            if (await launcher.LaunchUriAsync(uri)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
 
 public static class LauncherExtensions
 {
