@@ -225,6 +225,19 @@ public:
         return (IAvnMacOptions*)new MacOptions();
     }
     
+    virtual HRESULT CreateTopLevel(IAvnTopLevelEvents* cb,
+                                           IAvnTopLevel** ppv) override {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            if(cb == nullptr || ppv == nullptr)
+                return E_POINTER;
+            *ppv = CreateAvnTopLevel(cb);
+            return S_OK;
+        }
+    }
+    
     virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)  override
     {
         START_COM_CALL;
@@ -480,6 +493,15 @@ NSSize ToNSSize (AvnSize s)
     NSSize result;
     result.width = s.Width;
     result.height = s.Height;
+    
+    return result;
+}
+
+AvnSize FromNSSize (NSSize s)
+{
+    AvnSize result;
+    result.Width = s.width;
+    result.Height = s.height;
     
     return result;
 }

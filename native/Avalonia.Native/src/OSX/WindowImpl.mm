@@ -8,10 +8,10 @@
 #include "AvnView.h"
 #include "automation.h"
 #include "WindowProtocol.h"
+#include "WindowImpl.h"
 
-WindowImpl::WindowImpl(IAvnWindowEvents *events) : WindowBaseImpl(events) {
+WindowImpl::WindowImpl(IAvnWindowEvents *events) : TopLevelImpl(events), WindowBaseImpl(events, false) {
     _isEnabled = true;
-    _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
@@ -22,7 +22,7 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events) : WindowBaseImpl(events) {
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
-    _parent = nullptr;
+    Parent = nullptr;
     WindowEvents = events;
 
     [Window setHasShadow:true];
@@ -69,40 +69,7 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
     @autoreleasepool {
         _isEnabled = enable;
         [GetWindowProtocol() setEnabled:enable];
-        UpdateStyle();
-        return S_OK;
-    }
-}
-
-HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if(_parent != nullptr)
-        {
-            _parent->_children.remove(this);
-        }
-
-        auto cparent = dynamic_cast<WindowImpl *>(parent);
-        
-        _parent = cparent;
-
-        _isModal = _parent != nullptr;
-        
-        if(_parent != nullptr && Window != nullptr){
-            // If one tries to show a child window with a minimized parent window, then the parent window will be
-            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
-            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
-            if (cparent->WindowState() == Minimized)
-                cparent->SetWindowState(Normal);
-
-            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-                
-            cparent->_children.push_back(this);
-                
-            UpdateStyle();
-        }
-
+        UpdateAppearance();
         return S_OK;
     }
 }
@@ -156,12 +123,12 @@ bool WindowImpl::CanBecomeKeyWindow()
 
 void WindowImpl::StartStateTransition() {
     _transitioningWindowState = true;
-    UpdateStyle();
+    UpdateAppearance();
 }
 
 void WindowImpl::EndStateTransition() {
     _transitioningWindowState = false;
-    UpdateStyle();
+    UpdateAppearance();
 
     // Ensure correct order of child windows after fullscreen transition.
     ZOrderChildWindows();
@@ -236,7 +203,7 @@ HRESULT WindowImpl::SetCanResize(bool value) {
 
     @autoreleasepool {
         _canResize = value;
-        UpdateStyle();
+        UpdateAppearance();
         return S_OK;
     }
 }
@@ -252,7 +219,7 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
             return S_OK;
         }
 
-        UpdateStyle();
+        UpdateAppearance();
 
         switch (_decorations) {
             case SystemDecorationsNone:
@@ -427,7 +394,7 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
             }
 
             [GetWindowProtocol() setIsExtended:enable];
-            UpdateStyle();
+            UpdateAppearance();
         }
 
         return S_OK;
@@ -579,7 +546,7 @@ bool WindowImpl::IsModal() {
 }
 
 bool WindowImpl::IsOwned() {
-    return _parent != nullptr;
+    return Parent != nullptr;
 }
 
 NSWindowStyleMask WindowImpl::CalculateStyleMask() {
@@ -620,8 +587,8 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
     return s;
 }
 
-void WindowImpl::UpdateStyle() {
-    WindowBaseImpl::UpdateStyle();
+void WindowImpl::UpdateAppearance() {
+    WindowBaseImpl::UpdateAppearance();
     
     if (Window == nil) {
         return;
@@ -641,4 +608,13 @@ void WindowImpl::UpdateStyle() {
     [miniaturizeButton setEnabled:_isEnabled];
     [zoomButton setHidden:!hasTrafficLights];
     [zoomButton setEnabled:CanZoom()];
+}
+
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
+{
+    @autoreleasepool
+    {
+        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
+        return ptr;
+    }
 }
