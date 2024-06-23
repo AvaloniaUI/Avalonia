@@ -64,6 +64,16 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     public virtual Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
+        if (TryGetWellKnownFolderCore(wellKnownFolder) is { } directoryInfo)
+        {
+            return Task.FromResult<IStorageFolder?>(new BclStorageFolder(directoryInfo));
+        }
+
+        return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    internal static DirectoryInfo? TryGetWellKnownFolderCore(WellKnownFolder wellKnownFolder)
+    {
         // Note, this BCL API returns different values depending on the .NET version.
         // We should also document it. 
         // https://github.com/dotnet/docs/issues/31423
@@ -82,16 +92,16 @@ internal abstract class BclStorageProvider : IStorageProvider
 
         if (folderPath is null)
         {
-            return Task.FromResult<IStorageFolder?>(null);
+            return null;
         }
 
         var directory = new DirectoryInfo(folderPath);
         if (!directory.Exists)
         {
-            return Task.FromResult<IStorageFolder?>(null);
+            return null;
         }
-        
-        return Task.FromResult<IStorageFolder?>(new BclStorageFolder(directory));
+
+        return directory;
 
         string GetFromSpecialFolder(Environment.SpecialFolder folder) =>
             Environment.GetFolderPath(folder, Environment.SpecialFolderOption.Create);
