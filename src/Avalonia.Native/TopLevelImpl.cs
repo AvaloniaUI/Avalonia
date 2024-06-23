@@ -65,7 +65,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 {
     protected IInputRoot? _inputRoot;
     private NativeControlHostImpl? _nativeControlHost;
-    private IStorageProvider? _storageProvider;
     private PlatformBehaviorInhibition? _platformBehaviorInhibition;
 
     private readonly MouseDevice? _mouse;
@@ -98,7 +97,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _savedLogicalSize = ClientSize;
         _savedScaling = RenderScaling;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
-        _storageProvider = new SystemDialogs(this, Factory.CreateSystemDialogs());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
         
@@ -340,11 +338,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         if (featureType == typeof(INativeControlHostImpl))
         {
             return _nativeControlHost;
-        }
-
-        if (featureType == typeof(IStorageProvider))
-        {
-            return _storageProvider;
         }
 
         if (featureType == typeof(IPlatformBehaviorInhibition))

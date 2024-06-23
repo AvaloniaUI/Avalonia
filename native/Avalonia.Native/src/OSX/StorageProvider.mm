@@ -64,12 +64,92 @@ const int kFileTypePopupTag = 10975;
 
 @end
 
-class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemDialogs>
+class StorageProvider : public ComSingleObject<IAvnStorageProvider, &IID_IAvnStorageProvider>
 {
     ExtensionDropdownHandler* __strong _extension_dropdown_handler;
     
 public:
     FORWARD_IUNKNOWN()
+
+    virtual HRESULT SaveBookmark (
+        IAvnString* fileUriStr,
+        IAvnString** ppv
+    ) override
+    {
+        @autoreleasepool
+        {
+            if(ppv == nullptr)
+                return E_POINTER;
+
+            NSError* error;
+            auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
+            auto bookmarkData = [fileUri bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+            if (bookmarkData)
+            {
+                auto bookmarkStr = [bookmarkData base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+                *ppv = CreateAvnString(bookmarkStr);
+            }
+            else{
+                *ppv = CreateAvnString([error localizedDescription]);
+            }
+            return S_OK;
+        }
+    }
+
+    virtual HRESULT ReadBookmark (
+        IAvnString* bookmarkStr,
+        IAvnString** ppv
+    ) override {
+        @autoreleasepool
+        {
+            if(ppv == nullptr)
+                return E_POINTER;
+            
+            auto bookmark = GetNSStringAndRelease(bookmarkStr);
+            auto bookmarkData = [[NSData alloc] initWithBase64EncodedString: bookmark options:NSDataBase64DecodingIgnoreUnknownCharacters];
+            
+            auto fileUri = [NSURL URLByResolvingBookmarkData: bookmarkData
+                                                     options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI
+                                               relativeToURL:nil
+                                         bookmarkDataIsStale:nil
+                                                       error:nil];
+            
+            if (fileUri)
+            {
+                *ppv = CreateAvnString([fileUri absoluteString]);
+            }
+            return S_OK;
+        }
+    }
+
+    virtual void ReleaseBookmark (
+        IAvnString* fileUriStr
+    ) override {
+        auto fileUri = GetNSStringAndRelease(fileUriStr);
+        // no-op
+    }
+
+    virtual bool OpenSecurityScope (
+        IAvnString* fileUriStr
+    ) override {
+        @autoreleasepool
+        {
+            auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
+            auto success = [fileUri startAccessingSecurityScopedResource];
+            return success;
+        }
+    }
+
+    virtual void CloseSecurityScope (
+        IAvnString* fileUriStr
+    ) override {
+        @autoreleasepool
+        {
+            auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
+            [fileUri stopAccessingSecurityScopedResource];
+        }
+    }
+
     virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
                                      IAvnSystemDialogEvents* events,
                                      bool allowMultiple,
@@ -105,19 +185,9 @@ public:
                     
                     if(urls.count > 0)
                     {
-                        void* strings[urls.count];
-                        
-                        for(int i = 0; i < urls.count; i++)
-                        {
-                            auto url = [urls objectAtIndex:i];
-                            
-                            auto string = [url path];
-                            
-                            strings[i] = (void*)[string UTF8String];
-                        }
-                        
-                        events->OnCompleted((int)urls.count, &strings[0]);
-                        
+                        auto uriStrings = CreateAvnStringArray(urls);
+                        events->OnCompleted(uriStrings);
+    
                         [panel orderOut:panel];
                         
                         if(parentWindowHandle != nullptr)
@@ -130,7 +200,7 @@ public:
                     }
                 }
                 
-                events->OnCompleted(0, nullptr);
+                events->OnCompleted(nullptr);
                 
             };
             
@@ -188,19 +258,9 @@ public:
                     
                     if(urls.count > 0)
                     {
-                        void* strings[urls.count];
-                        
-                        for(int i = 0; i < urls.count; i++)
-                        {
-                            auto url = [urls objectAtIndex:i];
-                            
-                            auto string = [url path];
-                            
-                            strings[i] = (void*)[string UTF8String];
-                        }
-                        
-                        events->OnCompleted((int)urls.count, &strings[0]);
-                        
+                        auto uriStrings = CreateAvnStringArray(urls);
+                        events->OnCompleted(uriStrings);
+
                         [panel orderOut:panel];
                         
                         if(parentWindowHandle != nullptr)
@@ -213,7 +273,7 @@ public:
                     }
                 }
                 
-                events->OnCompleted(0, nullptr);
+                events->OnCompleted(nullptr);
                 
             };
             
@@ -264,15 +324,11 @@ public:
             auto handler = ^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
                 {
-                    void* strings[1];
-                    
                     auto url = [panel URL];
-                    
-                    auto string = [url path];
-                    strings[0] = (void*)[string UTF8String];
-                    
-                    events->OnCompleted(1, &strings[0]);
-                    
+                    auto urls = [NSArray<NSURL*> arrayWithObject:url];
+                    auto uriStrings = CreateAvnStringArray(urls);
+                    events->OnCompleted(uriStrings);
+
                     [panel orderOut:panel];
                     
                     if(parentWindowHandle != nullptr)
@@ -284,7 +340,7 @@ public:
                     return;
                 }
                 
-                events->OnCompleted(0, nullptr);
+                events->OnCompleted(nullptr);
                 
             };
             
@@ -519,7 +575,7 @@ private:
     };
 };
 
-extern IAvnSystemDialogs* CreateSystemDialogs()
+extern IAvnStorageProvider* CreateStorageProvider()
 {
-    return new SystemDialogs();
+    return new StorageProvider();
 }
