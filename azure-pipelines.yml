@@ -209,7 +209,7 @@ jobs:
 
 - job: BuildAotDemo
   pool:
-      vmImage: 'windows-2022'
+      vmImage: 'ubuntu-20.04'
   variables:
       SolutionDir: '$(Build.SourcesDirectory)'
   steps:
