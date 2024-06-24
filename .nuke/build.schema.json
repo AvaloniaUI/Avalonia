@@ -73,6 +73,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildAotDemo",
               "BuildToNuGetCache",
               "CiAzureLinux",
               "CiAzureOSX",
@@ -110,6 +111,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildAotDemo",
               "BuildToNuGetCache",
               "CiAzureLinux",
               "CiAzureOSX",

@@ -20,7 +20,7 @@ jobs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: 'PRNumber'
       publishLocation: 'Container'
-      
+
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
@@ -207,3 +207,22 @@ jobs:
       artifactName: 'Samples'
     condition: succeeded()
 
+- job: BuildAotDemo
+  pool:
+      vmImage: 'windows-2022'
+  variables:
+      SolutionDir: '$(Build.SourcesDirectory)'
+  steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET 8.0 SDK'
+        inputs:
+            packageType: sdk
+            useGlobalJson: true
+      - task: CmdLine@2
+        displayName: 'Run Build'
+        inputs:
+            script: ./build.sh --target BuildAotDemo
+      - task: PublishBuildArtifacts@1
+        inputs:
+            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/demo/'
+            ArtifactName: 'Demo'

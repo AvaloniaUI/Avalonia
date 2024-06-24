@@ -94,9 +94,12 @@ partial class Build : NukeBuild
                 .AddProperty("SkipBuildingTests", "True");
         return c;
     }
+
     DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
         ApplySettingCore(c).Build.Apply(configurator);
-
+    
+    DotNetPublishSettings ApplySetting(DotNetPublishSettings c, Configure<DotNetPublishSettings> configurator = null) =>
+        ApplySettingCore(c).Publish.Apply(configurator);
     DotNetPackSettings ApplySetting(DotNetPackSettings c, Configure<DotNetPackSettings> configurator = null) =>
         ApplySettingCore(c).Pack.Apply(configurator);
 
@@ -401,6 +404,26 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    // Skip anything that might slow down PublishAot build.
+    // Runtime configuration will be assumed from the running OS.
+    Target BuildAotDemo => _ => _
+        .DependsOn(Clean, CompileNative)
+        .Executes(() =>
+        {
+            var outputDir = Parameters.ArtifactsDir / "demo" / "BindingDemo";
+            DotNetPublish(c => ApplySetting(c)
+                .SetOutput(outputDir)
+                // Extra property instead of PublishAot, see https://github.com/dotnet/sdk/issues/37228 why.
+                .AddProperty("EnablePublishAot", true)
+                .SetProject(RootDirectory.GlobFiles(@"**\BindingDemo.csproj").FirstOrDefault()
+                            ?? throw new InvalidOperationException($"Project BindingDemo doesn't exist"))
+            );
+            foreach (var extraFile in Directory.EnumerateFiles(outputDir, "*.xml")
+                         .Concat(Directory.EnumerateFiles(outputDir, "*.pdb")))
+            {
+                File.Delete(extraFile);
+            }
+        });
 
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

@@ -4,6 +4,7 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
+    <PublishAot Condition="'$(EnablePublishAot)' == 'True'">true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Condition="'$(Configuration)' == 'Debug'" Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
