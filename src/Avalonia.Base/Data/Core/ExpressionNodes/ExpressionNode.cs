@@ -61,16 +61,6 @@ internal abstract class ExpressionNode
     }
 
     /// <summary>
-    /// Resets the node to its uninitialized state when the <see cref="Owner"/> is unsubscribed.
-    /// </summary>
-    public void Reset()
-    {
-        SetSource(null, null);
-        _source = null;
-        _value = AvaloniaProperty.UnsetValue;
-    }
-
-    /// <summary>
     /// Sets the owner binding.
     /// </summary>
     /// <param name="owner">The owner binding.</param>

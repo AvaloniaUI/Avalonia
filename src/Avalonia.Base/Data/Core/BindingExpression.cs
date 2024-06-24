@@ -160,7 +160,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         var source = _nodes[0].Source;
 
         for (var i = 0; i < _nodes.Count; ++i)
-            _nodes[i].SetSource(null, null);
+            _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
 
         _nodes[0].SetSource(source, null);
     }
@@ -273,11 +273,11 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// <param name="error">The error message.</param>
     internal void OnNodeError(int nodeIndex, string error)
     {
-        // Set the source of all nodes after the one that errored to null. This needs to be done
-        // for each node individually because setting the source to null will not result in
+        // Set the source of all nodes after the one that errored to unset. This needs to be done
+        // for each node individually because setting the source to unset will not result in
         // OnNodeValueChanged or OnNodeError being called.
         for (var i = nodeIndex + 1; i < _nodes.Count; ++i)
-            _nodes[i].SetSource(null, null);
+            _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
 
         if (_mode == BindingMode.OneWayToSource)
             return;
@@ -394,7 +394,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     protected override void StopCore()
     {
         foreach (var node in _nodes)
-            node.Reset();
+            node.SetSource(AvaloniaProperty.UnsetValue, null);
 
         if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource &&
             TryGetTarget(out var target))
