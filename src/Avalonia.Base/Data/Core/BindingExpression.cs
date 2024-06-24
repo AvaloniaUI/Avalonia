@@ -253,10 +253,6 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             _nodes[nodeIndex + 1].SetSource(value, dataValidationError);
             WriteTargetValueToSource();
         }
-        else if (value is null)
-        {
-            OnNodeError(nodeIndex, "Value is null.");
-        }
         else
         {
             _nodes[nodeIndex + 1].SetSource(value, dataValidationError);
