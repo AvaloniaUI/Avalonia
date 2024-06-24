@@ -225,4 +225,4 @@ jobs:
       - task: PublishBuildArtifacts@1
         inputs:
             PathtoPublish: '$(Build.SourcesDirectory)/artifacts/demo/'
-            ArtifactName: 'Demo'
+            ArtifactName: 'AotDemo'

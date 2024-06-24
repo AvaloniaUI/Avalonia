@@ -418,10 +418,14 @@ partial class Build : NukeBuild
                 .SetProject(RootDirectory.GlobFiles(@"**\BindingDemo.csproj").FirstOrDefault()
                             ?? throw new InvalidOperationException($"Project BindingDemo doesn't exist"))
             );
-            foreach (var extraFile in Directory.EnumerateFiles(outputDir, "*.xml")
-                         .Concat(Directory.EnumerateFiles(outputDir, "*.pdb")))
+            if (Parameters.Configuration != Parameters.ReleaseConfiguration)
             {
-                File.Delete(extraFile);
+                foreach (var extraFile in Directory.EnumerateFiles(outputDir, "*.xml")
+                             .Concat(Directory.EnumerateFiles(outputDir, "*.pdb"))
+                             .Concat(Directory.EnumerateFiles(outputDir, "*.dbg")))
+                {
+                    File.Delete(extraFile);
+                }
             }
         });
 
