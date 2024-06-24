@@ -82,7 +82,7 @@
           <TextBlock FontSize="16" Text="Multiple"/>
           <ListBox ItemsSource="{Binding Items}" SelectionMode="Multiple" Selection="{Binding Selection}"/>
         </StackPanel>
-        <ContentControl Content="{ReflectionBinding Selection.SelectedItems[0]}">
+        <ContentControl Content="{Binding Selection.SelectedItems[0]}">
           <ContentControl.DataTemplates>
             <DataTemplate DataType="vm:TestItem">
               <local:TestItemView></local:TestItemView>
@@ -126,7 +126,7 @@
       </TabItem.Resources>
       <StackPanel>
         <!-- Tests for #10856  -->
-        <TextBlock Text="{local:GenericMarkupExtension, Value=Red, x:TypeArguments=Color}"/>
+        <TextBlock Text="{local:GenericMarkupExtension Value=Red, x:TypeArguments=Color}"/>
         <TextBlock HorizontalAlignment="Left"
                    Text="{Binding $self.Background, Converter={StaticResource BrushConverter}}">
           <TextBlock.Background>
