@@ -180,6 +180,28 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(target.ItemsView[2], source.C);
         }
 
+        [Fact]
+        public void Converter_Can_Return_BindingNotification()
+        {
+            var source = new { A = 1, B = 2, C = 3 };
+            var target = new TextBlock { DataContext = source };
+
+            var binding = new MultiBinding
+            {
+                Converter = new BindingNotificationConverter(),
+                Bindings = new[]
+                {
+                    new Binding { Path = "A" },
+                    new Binding { Path = "B" },
+                    new Binding { Path = "C" },
+                },
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("1,2,3-BindingNotification", target.Text);
+        }
+
         private class ConcatConverter : IMultiValueConverter
         {
             public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
@@ -201,6 +223,17 @@ namespace Avalonia.Markup.UnitTests.Data
             public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
             {
                 return null;
+            }
+        }
+
+        private class BindingNotificationConverter : IMultiValueConverter
+        {
+            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            {
+                return new BindingNotification(
+                    new ArgumentException(),
+                    BindingErrorType.Error,
+                    string.Join(",", values) + "-BindingNotification");
             }
         }
     }
