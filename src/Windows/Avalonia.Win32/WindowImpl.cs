@@ -708,6 +708,8 @@ namespace Avalonia.Win32
             _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
 
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
+
+            (parent as WindowImpl)?.EnsureTopmost();
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -858,6 +860,17 @@ namespace Avalonia.Win32
                 SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
 
             _topmost = value;
+        }
+
+        private void EnsureTopmost()
+        {
+            if(_topmost)
+            {
+                SetWindowPos(_hwnd,
+                    WindowPosZOrder.HWND_TOPMOST,
+                    0, 0, 0, 0,
+                    SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+            }
         }
 
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
