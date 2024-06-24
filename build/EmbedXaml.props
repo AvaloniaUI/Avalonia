@@ -8,5 +8,6 @@
     <AvaloniaResource Include="**\*.xaml">
       <SubType>Designer</SubType>
     </AvaloniaResource>
+    <AdditionalFiles Include="**\*.xaml" SourceItemGroup="AvaloniaXaml" />
   </ItemGroup>
 </Project>
