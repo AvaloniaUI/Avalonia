@@ -43,7 +43,9 @@ namespace Avalonia.FreeDesktop
                 InitBackingProperties();
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
-                Path = GenerateDBusMenuObjPath;
+                TargetPath = GenerateDBusMenuObjPath;
+                _pathHandler = new PathHandler(TargetPath);
+                _pathHandler.Add(this);
                 SetNativeMenu(new NativeMenu());
                 _ = InitializeAsync();
             }
@@ -53,19 +55,21 @@ namespace Avalonia.FreeDesktop
                 InitBackingProperties();
                 Connection = connection;
                 _appMenu = false;
-                Path = path;
+                TargetPath = path;
+                _pathHandler = new PathHandler(TargetPath);
+                _pathHandler.Add(this);
                 SetNativeMenu(new NativeMenu());
                 _ = InitializeAsync();
             }
+
+            public string TargetPath { get; set; }
 
             private void InitBackingProperties()
             {
                 Version = 4;
             }
 
-            protected override Connection Connection { get; }
-
-            public override string Path { get; }
+            public override Connection Connection { get; }
 
             protected override ValueTask<(uint Revision, (int, Dictionary<string, Variant>, Variant[]) Layout)> OnGetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
             {
@@ -106,7 +110,7 @@ namespace Avalonia.FreeDesktop
 
             private async Task InitializeAsync()
             {
-                Connection.AddMethodHandler(this);
+                Connection.AddMethodHandler(_pathHandler);
                 if (!_appMenu)
                     return;
 
@@ -114,7 +118,7 @@ namespace Avalonia.FreeDesktop
                 try
                 {
                     if (!_disposed)
-                        await _registrar.RegisterWindowAsync(_xid, Path);
+                        await _registrar.RegisterWindowAsync(_xid, TargetPath);
                 }
                 catch
                 {
@@ -216,6 +220,8 @@ namespace Avalonia.FreeDesktop
             private static readonly string[] s_allProperties = {
                 "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"
             };
+
+            private PathHandler _pathHandler;
 
             private static Variant? GetProperty((NativeMenuItemBase? item, NativeMenu? menu) i, string name)
             {

@@ -30,6 +30,7 @@ namespace Avalonia.FreeDesktop
         private bool _isDisposed;
         private bool _serviceConnected;
         private bool _isVisible = true;
+        private readonly PathHandler _pathHandler1;
 
         public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
@@ -56,7 +57,9 @@ namespace Avalonia.FreeDesktop
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
            
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+            _pathHandler1 = new PathHandler("/StatusNotifierItem");
+            _pathHandler1.Add(_statusNotifierItemDbusObj);
+            _connection.AddMethodHandler(_pathHandler1);
             
             WatchAsync();
         }
@@ -212,19 +215,20 @@ namespace Avalonia.FreeDesktop
     /// </remarks>
     internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem
     {
+        private readonly PathHandler _pathHandler;
+
         public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
             Connection = connection;
             Menu = dbusMenuPath;
+            _pathHandler = new PathHandler(dbusMenuPath);
+            _pathHandler.Add(this);
             InvalidateAll();
         }
 
-        protected override Connection Connection { get; }
-
-        public override string Path => "/StatusNotifierItem";
-
         public event Action? ActivationDelegate;
 
+        public override Connection Connection { get; }
         protected override ValueTask OnContextMenuAsync(int x, int y) => new();
 
         protected override ValueTask OnActivateAsync(int x, int y)
