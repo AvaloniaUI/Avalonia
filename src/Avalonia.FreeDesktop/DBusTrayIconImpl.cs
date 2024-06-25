@@ -69,11 +69,12 @@ namespace Avalonia.FreeDesktop
                 var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
                 OnNameChange("org.kde.StatusNotifierWatcher", nameOwner);
             }
-            catch
+            catch(Exception e)
             {
+                Console.WriteLine(e);
                 _serviceWatchDisposable = null;
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.");
+                    ?.Log(this, $"Interface 'org.kde.StatusNotifierWatcher' is unavailable. {e}");
             }
         }
 
