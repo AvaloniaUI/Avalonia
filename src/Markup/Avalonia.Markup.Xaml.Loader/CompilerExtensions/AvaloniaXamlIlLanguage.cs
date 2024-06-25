@@ -263,12 +263,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 return true;
             }
-            
+
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
-                var scopeKind = (AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes?)(customAttributes?
-                    .FirstOrDefault(a => a.Type.Name == "InheritDataTypeFromAttribute")?.Parameters.FirstOrDefault()
-                    as int?);
+                var scopeKind = customAttributes?
+                        .FirstOrDefault(a => a.Type.Name == "InheritDataTypeFromAttribute")?.Parameters
+                        .FirstOrDefault() switch
+                    {
+                        1 => AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style,
+                        2 => AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate,
+                        _ => (AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes?)null
+                    };
 
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                     .FirstOrDefault(s => scopeKind.HasValue ? s.ScopeType == scopeKind : true);
