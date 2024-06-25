@@ -213,6 +213,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Occurs immediately before a container is prepared for use.
+        /// </summary>
+        /// <remarks>
+        /// The prepared element might be newly created or an existing container that is being re-
+        /// used.
+        /// </remarks>
+        public event EventHandler<ContainerPreparedEventArgs>? PreparingContainer;
+
+        /// <summary>
         /// Occurs each time a container is prepared for use.
         /// </summary>
         /// <remarks>
@@ -702,6 +711,8 @@ namespace Avalonia.Controls
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {
+            PreparingContainer?.Invoke(this, new(container, index));
+
             // If the container has no theme set, or we've already applied our ItemContainerTheme
             // (and it hasn't changed since) then we're in control of the container's Theme and may
             // need to update it.
