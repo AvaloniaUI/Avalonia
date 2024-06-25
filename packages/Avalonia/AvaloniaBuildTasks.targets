@@ -169,12 +169,16 @@
     </ItemGroup>
   </Target>
 
-  <!-- For some reason the IL Compiler hardcodes $(IntermediateOutputPath)$(TargetName)$(TargetExt) instead of using @(IntermediateAssembly), change that to our assembly. -->
+  <!--
+    For some reason the IL Compiler hardcodes $(IntermediateOutputPath)$(TargetName)$(TargetExt)
+    instead of using @(IntermediateAssembly), change that to our assembly.
+    This is fixed in .NET 9.0 (https://github.com/dotnet/runtime/pull/99732)
+  -->
   <Target Name="InjectIlcAvaloniaXamlOutput"
           DependsOnTargets="InjectAvaloniaXamlOutput"
           AfterTargets="ComputeIlcCompileInputs"
           BeforeTargets="PrepareForILLink"
-          Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
+          Condition="$([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '9.0')) AND '@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
     <ItemGroup>
       <ManagedBinary Remove="$(IntermediateOutputPath)$(TargetName)$(TargetExt)" />
       <ManagedBinary Include="@(_AvaloniaXamlCompiledAssembly)" />

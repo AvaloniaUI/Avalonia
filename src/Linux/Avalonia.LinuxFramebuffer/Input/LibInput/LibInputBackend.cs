@@ -51,7 +51,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     libinput_dispatch(ctx);
                 }
 
-                pollfd pfd = new pollfd { fd = fd, events = 1 };
+                var pfd = new PollFd { fd = fd, events = 1 };
                 NativeUnsafeMethods.poll(&pfd, new IntPtr(1), 10);
             }
         }

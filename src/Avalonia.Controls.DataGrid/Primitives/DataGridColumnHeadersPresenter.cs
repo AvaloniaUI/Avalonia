@@ -118,13 +118,13 @@ namespace Avalonia.Controls.Primitives
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
             return child is DataGridColumnHeader header
-                ? OwningGrid.ColumnsInternal.GetColumnDisplayIndex(header.ColumnIndex)
+                ? header.OwningColumn?.DisplayIndex ?? -1
                 : throw new InvalidOperationException("Invalid cell type");
         }
 
         bool IChildIndexProvider.TryGetTotalCount(out int count)
         {
-            count = OwningGrid.ColumnsInternal.VisibleColumnCount;
+            count = Children.Count - 1; // Adjust for filler column
             return true;
         }
 

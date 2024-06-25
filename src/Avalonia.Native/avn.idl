@@ -663,6 +663,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* appCb,
         IAvnDispatcher* dispatcher);
      IAvnMacOptions* GetMacOptions();
+     HRESULT CreateTopLevel(IAvnTopLevelEvents* cb, IAvnTopLevel** ppv);
      HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv);
      HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv);
      HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv);
@@ -692,41 +693,53 @@ interface IAvnString : IUnknown
      HRESULT Length(int*ret);
 }
 
-[uuid(e5aca675-02b7-4129-aa79-d6e417210bda)]
-interface IAvnWindowBase : IUnknown
+[uuid(e8cccd3e-e6dc-430a-a0b9-2ce7d7922de6)]
+interface IAvnTopLevel : IUnknown
 {
-     HRESULT Show(bool activate, bool isDialog);
-     HRESULT Hide();
-     HRESULT Close();
-     HRESULT Activate();
      HRESULT GetClientSize(AvnSize*ret);
-     HRESULT GetFrameSize(AvnSize*result);
      HRESULT GetScaling(double*ret);
-     HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize);
-     HRESULT Resize(double width, double height, AvnPlatformResizeReason reason);
-     HRESULT Invalidate(AvnRect rect);
-     HRESULT BeginMoveDrag();
-     HRESULT BeginResizeDrag(AvnWindowEdge edge);
-     HRESULT GetPosition(AvnPoint*ret);
-     HRESULT SetPosition(AvnPoint point);
+     
+     HRESULT Invalidate();
+     
      HRESULT PointToClient(AvnPoint point, AvnPoint*ret);
      HRESULT PointToScreen(AvnPoint point, AvnPoint*ret);
-     HRESULT SetTopMost(bool value);
+     
      HRESULT SetCursor(IAvnCursor* cursor);
      HRESULT CreateGlRenderTarget(IAvnGlContext* context, IAvnGlSurfaceRenderTarget** ret);
      HRESULT CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget** ret);
      HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget** ret);
+     
+     HRESULT ObtainNSViewHandle([intptr]void** retOut);
+     HRESULT ObtainNSViewHandleRetained([intptr]void** retOut);
+     
+     HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut);
+     
+     HRESULT GetInputMethod(IAvnTextInputMethod **ppv);
+     HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
+}
+
+[uuid(e5aca675-02b7-4129-aa79-d6e417210bda), cpp-virtual-inherits]
+interface IAvnWindowBase : IAvnTopLevel
+{
+     HRESULT GetFrameSize(AvnSize*result);
+     HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
+     HRESULT SetParent(IAvnWindowBase* parent);
+     HRESULT Show(bool activate, bool isDialog);
+     HRESULT Hide();
+     HRESULT Close();
+     HRESULT Activate(); 
+     HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize);
+     HRESULT Resize(double width, double height, AvnPlatformResizeReason reason);
+     HRESULT BeginMoveDrag();
+     HRESULT BeginResizeDrag(AvnWindowEdge edge);
+     HRESULT GetPosition(AvnPoint*ret);
+     HRESULT SetPosition(AvnPoint point);
+     HRESULT SetTopMost(bool value);
      HRESULT SetMainMenu(IAvnMenu* menu);
      HRESULT ObtainNSWindowHandle([intptr]void** retOut);
      HRESULT ObtainNSWindowHandleRetained([intptr]void** retOut);
-     HRESULT ObtainNSViewHandle([intptr]void** retOut);
-     HRESULT ObtainNSViewHandleRetained([intptr]void** retOut);
-     HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut);
      HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
-     HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
-     HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
-     HRESULT GetInputMethod(IAvnTextInputMethod **ppv);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
@@ -739,7 +752,6 @@ interface IAvnPopup : IAvnWindowBase
 interface IAvnWindow : IAvnWindowBase
 {
      HRESULT SetEnabled(bool enable);
-     HRESULT SetParent(IAvnWindow* parent);
      HRESULT SetCanResize(bool value);
      HRESULT SetDecorations(SystemDecorations value);
      HRESULT SetTitle(char* utf8Title);
@@ -754,30 +766,39 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT GetWindowZOrder(long*ret);
 }
 
-[uuid(939b6599-40a8-4710-a4c8-5d72d8f174fb)]
-interface IAvnWindowBaseEvents : IUnknown
+[uuid(fda9c1b3-69e0-43d7-9459-8cc97cb41f6a)]
+interface IAvnTopLevelEvents : IUnknown
 {
-     HRESULT Paint();
-     void Closed();
-     void Activated();
-     void Deactivated();
-     void Resized([const] AvnSize& size, AvnPlatformResizeReason reason);
-     void PositionChanged(AvnPoint position);
-     void RawMouseEvent(AvnRawMouseEventType type,
-                                u_int64_t timeStamp,
-                                AvnInputModifiers modifiers,
-                                AvnPoint point,
-                                AvnVector delta);
-     bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers,
-                      AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol);
-     bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
-     void ScalingChanged(double scaling);
-     void RunRenderPriorityJobs();
-     void LostFocus();
-     AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
+    void Closed();
+
+    HRESULT Paint();
+    void Resized([const] AvnSize& size, AvnPlatformResizeReason reason);
+    void RawMouseEvent(AvnRawMouseEventType type,
+                                    u_int64_t timeStamp,
+                                    AvnInputModifiers modifiers,
+                                    AvnPoint point,
+                                    AvnVector delta);
+    bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers,
+                          AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol);
+    bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
+    void ScalingChanged(double scaling);
+    void RunRenderPriorityJobs();
+    void LostFocus();
+    
+    IAvnAutomationPeer* GetAutomationPeer();
+    
+    
+    AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
                                          IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
-     IAvnAutomationPeer* GetAutomationPeer();
+}
+
+[uuid(939b6599-40a8-4710-a4c8-5d72d8f174fb)]
+interface IAvnWindowBaseEvents : IAvnTopLevelEvents
+{
+     void Activated();
+     void Deactivated();
+     void PositionChanged(AvnPoint position);
 }
 
 [uuid(1ae178ee-1fcc-447f-b6dd-b7bb727f934c)]

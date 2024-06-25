@@ -9,7 +9,8 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlWellKnownTypes
+
+    sealed class AvaloniaXamlIlWellKnownTypes
     {
         public IXamlType RuntimeHelpers { get; }
         public IXamlType AvaloniaObject { get; }
@@ -124,6 +125,49 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType WindowTransparencyLevel { get; }
         public IXamlType IReadOnlyListOfT { get; }
         public IXamlType ControlTemplate { get; }
+        public IXamlType EventHandlerT {  get; }
+
+        sealed internal class InteractivityWellKnownTypes
+        {
+            public IXamlType Interactive { get; }
+            public IXamlType RoutedEvent { get; }
+            public IXamlType RoutedEventArgs { get; }
+            public IXamlType RoutedEventHandler { get; }
+            public IXamlMethod AddHandler { get; }
+            public IXamlMethod AddHandlerT { get; }
+
+            internal InteractivityWellKnownTypes(TransformerConfiguration cfg)
+            {
+                var ts = cfg.TypeSystem;
+                Interactive = ts.FindType("Avalonia.Interactivity.Interactive");
+                RoutedEvent = ts.FindType("Avalonia.Interactivity.RoutedEvent");
+                RoutedEventArgs = ts.FindType("Avalonia.Interactivity.RoutedEventArgs");
+                var eventHanlderT = ts.FindType("System.EventHandler`1");
+                RoutedEventHandler = eventHanlderT.MakeGenericType(RoutedEventArgs);
+                AddHandler = Interactive.FindMethod(m => m.IsPublic
+                    && !m.IsStatic
+                    && m.Name == "AddHandler"
+                    && m.Parameters.Count == 4
+                    && m.Parameters[0].Equals(RoutedEvent)
+                    && m.Parameters[1].Equals(cfg.WellKnownTypes.Delegate)
+                    && m.Parameters[2].IsEnum
+                    && m.Parameters[3].Equals(cfg.WellKnownTypes.Boolean)
+                    );
+                AddHandlerT = Interactive.FindMethod(m => m.IsPublic
+                    && !m.IsStatic
+                    && m.Name == "AddHandler"
+                    && m.Parameters.Count == 4
+                    && RoutedEvent.IsAssignableFrom(m.Parameters[0])
+                    && m.Parameters[0].GenericArguments?.Count == 1 // This is specific this case  workaround to check is generic method
+                    && (cfg.WellKnownTypes.Delegate).IsAssignableFrom(m.Parameters[1])
+                    && m.Parameters[2].IsEnum
+                    && m.Parameters[3].Equals(cfg.WellKnownTypes.Boolean) == true
+                );
+
+            }
+        }
+
+        public InteractivityWellKnownTypes Interactivity { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -160,7 +204,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
             UnsetValueType = cfg.TypeSystem.GetType("Avalonia.UnsetValueType");
-            StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
             StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
             INameScope = cfg.TypeSystem.GetType("Avalonia.Controls.INameScope");
             INameScopeRegister = INameScope.GetMethod(
@@ -242,7 +285,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             StyledElementClassesProperty =
                 StyledElement.Properties.First(x => x.Name == "Classes" && x.PropertyType.Equals(Classes));
             ClassesBindMethod = cfg.TypeSystem.GetType("Avalonia.StyledElementExtensions")
-                .FindMethod( "BindClass", IDisposable, false, StyledElement,
+                .FindMethod("BindClass", IDisposable, false, StyledElement,
                 cfg.WellKnownTypes.String,
                 IBinding, cfg.WellKnownTypes.Object);
 
@@ -271,6 +314,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
             ControlTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.ControlTemplate");
             IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");
+            EventHandlerT = cfg.TypeSystem.GetType("System.EventHandler`1");
+            Interactivity = new InteractivityWellKnownTypes(cfg);
         }
     }
 
@@ -291,7 +336,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
             return rv;
         }
-        
+
         public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this AstGroupTransformationContext ctx)
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))

@@ -281,7 +281,7 @@ namespace Avalonia.Controls
             var fromControl = from as Control;
 
             if (count == 0 || 
-                fromControl is null && direction is not NavigationDirection.First or NavigationDirection.Last)
+                (fromControl is null && direction is not NavigationDirection.First and not NavigationDirection.Last))
                 return null;
 
             var horiz = Orientation == Orientation.Horizontal;

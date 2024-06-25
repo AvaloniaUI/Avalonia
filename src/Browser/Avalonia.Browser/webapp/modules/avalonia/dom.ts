@@ -1,32 +1,28 @@
+import { JsExports } from "./jsExports";
 
 export class AvaloniaDOM {
+    public static getGlobalThis() {
+        return globalThis;
+    }
+
     public static addClass(element: HTMLElement, className: string): void {
         element.classList.add(className);
     }
 
-    static observeDarkMode(observer: (isDarkMode: boolean, isHighContrast: boolean) => boolean) {
-        if (globalThis.matchMedia === undefined) {
-            return false;
-        }
+    static getFirstElementById(className: string, parent: HTMLElement | Window): Element | null {
+        const parentNode = parent instanceof Window
+            ? parent.document
+            : parent.ownerDocument;
 
-        const colorShemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
-        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
-
-        colorShemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-            observer(args.matches, prefersContrastMedia.matches);
-        });
-        prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-            observer(colorShemeMedia.matches, args.matches);
-        });
-
-        return {
-            isDarkMode: colorShemeMedia.matches,
-            isHighContrast: prefersContrastMedia.matches
-        };
+        return parentNode.getElementById(className);
     }
 
-    static getFirstElementByClassName(className: string, parent?: HTMLElement): Element | null {
-        const elements = (parent ?? globalThis.document).getElementsByClassName(className);
+    static getFirstElementByClassName(className: string, parent: HTMLElement | Window): Element | null {
+        const parentNode = parent instanceof Window
+            ? parent.document
+            : parent;
+
+        const elements = parentNode.getElementsByClassName(className);
         return elements ? elements[0] : null;
     }
 
@@ -107,32 +103,68 @@ export class AvaloniaDOM {
         };
     }
 
-    public static isFullscreen(): boolean {
-        return document.fullscreenElement != null;
+    public static isFullscreen(globalThis: Window): boolean {
+        return globalThis.document.fullscreenElement != null;
     }
 
-    public static async setFullscreen(isFullscreen: boolean) {
+    public static async setFullscreen(globalThis: Window, isFullscreen: boolean) {
         if (isFullscreen) {
-            const doc = document.documentElement;
+            const doc = globalThis.document.documentElement;
             await doc.requestFullscreen();
         } else {
-            await document.exitFullscreen();
+            await globalThis.document.exitFullscreen();
         }
     }
 
-    public static initSafeAreaPadding(): void {
-        document.documentElement.style.setProperty("--av-sat", "env(safe-area-inset-top)");
-        document.documentElement.style.setProperty("--av-sar", "env(safe-area-inset-right)");
-        document.documentElement.style.setProperty("--av-sab", "env(safe-area-inset-bottom)");
-        document.documentElement.style.setProperty("--av-sal", "env(safe-area-inset-left)");
+    public static initGlobalDomEvents(globalThis: Window): void {
+        // Init Safe Area properties.
+        globalThis.document.documentElement.style.setProperty("--av-sat", "env(safe-area-inset-top)");
+        globalThis.document.documentElement.style.setProperty("--av-sar", "env(safe-area-inset-right)");
+        globalThis.document.documentElement.style.setProperty("--av-sab", "env(safe-area-inset-bottom)");
+        globalThis.document.documentElement.style.setProperty("--av-sal", "env(safe-area-inset-left)");
+
+        // Subscribe on DarkMode changes.
+        if (globalThis.matchMedia !== undefined) {
+            const colorSchemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+            const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+
+            colorSchemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+                JsExports.DomHelper.DarkModeChanged(args.matches, prefersContrastMedia.matches);
+            });
+            prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+                JsExports.DomHelper.DarkModeChanged(colorSchemeMedia.matches, args.matches);
+            });
+        }
+
+        globalThis.document.addEventListener("visibilitychange", () => {
+            JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
+        });
+
+        // Report initial value.
+        if (globalThis.document.visibilityState === "visible") {
+            globalThis.setTimeout(() => {
+                JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
+            }, 10);
+        }
     }
 
-    public static getSafeAreaPadding(): number[] {
-        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sat"));
-        const bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sab"));
-        const left = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sal"));
-        const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--av-sar"));
+    public static getSafeAreaPadding(globalThis: Window): number[] {
+        const top = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sat"));
+        const bottom = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sab"));
+        const left = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sal"));
+        const right = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sar"));
 
         return [left, top, bottom, right];
+    }
+
+    public static getDarkMode(globalThis: Window): number[] {
+        if (globalThis.matchMedia === undefined) return [0, 0];
+
+        const colorSchemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+        return [
+            colorSchemeMedia.matches ? 1 : 0,
+            prefersContrastMedia.matches ? 1 : 0
+        ];
     }
 }

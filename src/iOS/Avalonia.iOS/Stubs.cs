@@ -20,6 +20,7 @@ namespace Avalonia.iOS
     internal class WindowingPlatformStub : IWindowingPlatform
     {
         public IWindowImpl CreateWindow() => throw new NotSupportedException();
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
