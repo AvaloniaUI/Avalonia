@@ -1929,6 +1929,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void Binding_Method_To_Command_In_Style_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:MethodAsCommandDataContext'>
+    <Window.Styles>
+        <Style Selector='Button'>
+            <Setter Property='Command' Value='{CompiledBinding Method}'/>
+        </Style>
+    </Window.Styles>
+    <Button Name='button'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.GetControl<Button>("button");
+                var vm = new MethodAsCommandDataContext();
+
+                button.DataContext = vm;
+                window.ApplyTemplate();
+
+                Assert.NotNull(button.Command);
+                PerformClick(button);
+                Assert.Equal("Called", vm.Value);
+            }
+        }
+
+        [Fact]
         public void ResolvesDataTypeForAssignBinding()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
