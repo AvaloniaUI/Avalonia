@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using Avalonia.Media;
 using CrossUI;
@@ -109,7 +110,37 @@ public class CrossGeometryTests : CrossTestBase
             Background = brush
         });
     }
-    
+
+
+    [CrossFact]
+    public void Should_Render_PolyLineSegment_With_Strokeless_Lines()
+    {
+        var brush = new CrossSolidColorBrush(Colors.Blue);
+        var pen = new CrossPen()
+        {
+            Brush = new CrossSolidColorBrush(Colors.Red),
+            Thickness = 8
+        };
+        var figure = new CrossPathFigure()
+        {
+            Closed = true,
+            Segments =
+            {
+                new CrossPathSegment.PolyLine([new(0, 0), new(100, 0), new(100, 100), new(0, 100), new(0, 0)], false)
+            }
+        };
+        var geometry = new CrossPathGeometry { Figures = { figure } };
+
+        var control = new CrossFuncControl(ctx => ctx.DrawGeometry(brush, pen, geometry))
+        { 
+            Width = 100, 
+            Height = 100,
+        };
+
+        RenderAndCompare(control,
+            $"{nameof(Should_Render_PolyLineSegment_With_Strokeless_Lines)}");
+    }
+
     // Skip the test for now
 #if !AVALONIA_SKIA
     [CrossTheory,

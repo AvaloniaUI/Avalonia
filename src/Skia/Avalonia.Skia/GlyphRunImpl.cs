@@ -78,7 +78,7 @@ namespace Avalonia.Skia
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
             BaselineOrigin = baselineOrigin;
-            Bounds = runBounds;
+            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, 0));
         }
 
         public IGlyphTypeface GlyphTypeface => _glyphTypefaceImpl;

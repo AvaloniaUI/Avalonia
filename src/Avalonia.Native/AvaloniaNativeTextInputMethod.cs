@@ -13,9 +13,9 @@ namespace Avalonia.Native
         private IAvnTextInputMethodClient? _nativeClient;
         private readonly IAvnTextInputMethod _inputMethod;
         
-        public AvaloniaNativeTextInputMethod(IAvnWindowBase nativeWindow)
+        public AvaloniaNativeTextInputMethod(IAvnTopLevel topLevel)
         {
-            _inputMethod = nativeWindow.InputMethod;
+            _inputMethod = topLevel.InputMethod;
         }
 
         public void Dispose()
