@@ -103,7 +103,7 @@ internal abstract class ExpressionNode
 
         if (source == AvaloniaProperty.UnsetValue)
         {
-            // If the source is unset then the value is null. We explicitly do not want to call
+            // If the source is unset then the value is unset. We explicitly do not want to call
             // OnSourceChanged as we don't want to raise errors for subsequent nodes in the
             // binding change.
             _source = null;
