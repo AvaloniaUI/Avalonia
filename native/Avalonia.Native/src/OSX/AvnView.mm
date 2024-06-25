@@ -19,12 +19,12 @@
     AvnPixelSize _lastPixelSize;
     NSObject<IRenderTarget>* _currentRenderTarget;
     AvnPlatformResizeReason _resizeReason;
-    AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
     NSMutableAttributedString* _text;
     NSRange _selectedRange;
     NSRange _markedRange;
     NSEvent* _lastKeyDownEvent;
+    NSMutableArray* _accessibilityChildren;
 }
 
 - (void)onClosed
@@ -801,35 +801,74 @@
     _resizeReason = reason;
 }
 
-- (AvnAccessibilityElement *) accessibilityChild
-{
-    if (_accessibilityChild == nil)
-    {
-        auto peer = _parent->TopLevelEvents->GetAutomationPeer();
-
-        if (peer == nil)
-            return nil;
-
-        _accessibilityChild = [AvnAccessibilityElement acquire:peer];
-    }
-
-    return _accessibilityChild;
-}
-
 - (NSArray *)accessibilityChildren
 {
-    auto child = [self accessibilityChild];
-    return NSAccessibilityUnignoredChildrenForOnlyChild(child);
+    if (_accessibilityChildren == nil)
+        [self recalculateAccessibiltyChildren];
+    return _accessibilityChildren;
 }
 
-- (id)accessibilityHitTest:(NSPoint)point
+- (id _Nullable) accessibilityHitTest:(NSPoint)point
 {
-    return [[self accessibilityChild] accessibilityHitTest:point];
+    if (![[self window] isKindOfClass:[AvnWindow class]])
+        return self;
+
+    auto window = (AvnWindow*)[self window];
+    auto peer = [window automationPeer];
+
+    if (!peer->IsRootProvider())
+        return nil;
+
+    auto clientPoint = [window convertPointFromScreen:point];
+    auto localPoint = [self translateLocalPoint:ToAvnPoint(clientPoint)];
+    auto hit = peer->RootProvider_GetPeerFromPoint(localPoint);
+    return [AvnAccessibilityElement acquire:hit];
 }
 
-- (id)accessibilityFocusedUIElement
+- (void)raiseAccessibilityChildrenChanged
 {
-    return [[self accessibilityChild] accessibilityFocusedUIElement];
+    auto changed = _accessibilityChildren ? [NSMutableSet setWithArray:_accessibilityChildren] : [NSMutableSet set];
+
+    [self recalculateAccessibiltyChildren];
+
+    if (_accessibilityChildren)
+        [changed addObjectsFromArray:_accessibilityChildren];
+
+    NSAccessibilityPostNotificationWithUserInfo(
+        self,
+        NSAccessibilityLayoutChangedNotification,
+        @{ NSAccessibilityUIElementsKey: [changed allObjects]});
+}
+
+- (void)recalculateAccessibiltyChildren
+{
+    _accessibilityChildren = [[NSMutableArray alloc] init];
+
+    if (![[self window] isKindOfClass:[AvnWindow class]])
+    {
+        return;
+    }
+
+    // The accessibility children of the Window are exposed as children
+    // of the AvnView.
+    auto window = (AvnWindow*)[self window];
+    auto peer = [window automationPeer];
+    auto childPeers = peer->GetChildren();
+    auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
+
+    if (childCount > 0)
+    {
+        for (int i = 0; i < childCount; ++i)
+        {
+            IAvnAutomationPeer* child;
+
+            if (childPeers->Get(i, &child) == S_OK)
+            {
+                id element = [AvnAccessibilityElement acquire:child];
+                [_accessibilityChildren addObject:element];
+            }
+        }
+    }
 }
 
 - (void) setText:(NSString *)text{
