@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -16,10 +17,12 @@ namespace Avalonia.FreeDesktop
     {
         internal static async Task<IStorageProvider?> TryCreateAsync(IPlatformHandle handle)
         {
-            if (DBusHelper.Connection is null)
+            if (DBusHelper.DefaultConnection is not {} conn)
                 return null;
 
-            var dbusFileChooser = new OrgFreedesktopPortalFileChooser(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
+            
+            var dbusFileChooser = new OrgFreedesktopPortalFileChooser(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             uint version;
             try
             {
@@ -30,7 +33,7 @@ namespace Avalonia.FreeDesktop
                 return null;
             }
 
-            return new DBusSystemDialog(DBusHelper.Connection, handle, dbusFileChooser, version);
+            return new DBusSystemDialog(conn, handle, dbusFileChooser, version);
         }
 
         private readonly Connection _connection;

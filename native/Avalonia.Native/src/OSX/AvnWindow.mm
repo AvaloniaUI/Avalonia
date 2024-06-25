@@ -24,6 +24,8 @@
 #include "WindowImpl.h"
 #include "AvnView.h"
 #include "WindowInterfaces.h"
+#include "AvnAutomationNode.h"
+#include "AvnString.h"
 
 @implementation CLASS_NAME
 {
@@ -34,6 +36,13 @@
     bool _isExtended;
     bool _isTransitioningToFullScreen;
     AvnMenu* _menu;
+    IAvnAutomationPeer* _automationPeer;
+    AvnAutomationNode* _automationNode;
+}
+
+-(AvnView* _Nullable) view
+{
+    return _parent->View;
 }
 
 -(void) setIsExtended:(bool)value;
@@ -208,7 +217,7 @@
         ComPtr<WindowBaseImpl> parent = _parent;
         _parent = NULL;
         
-        auto window = dynamic_cast<WindowImpl*>(parent.getRaw());
+            auto window = dynamic_cast<WindowImpl*>(parent.getRaw());
         
         if(window != nullptr)
         {
@@ -487,6 +496,42 @@
 
 - (void)disconnectParent {
     _parent = nullptr;
+}
+
+- (id _Nullable) accessibilityFocusedUIElement
+{
+    if (![self automationPeer]->IsRootProvider())
+        return nil;
+    auto focusedPeer = [self automationPeer]->RootProvider_GetFocus();
+    return [AvnAccessibilityElement acquire:focusedPeer];
+}
+
+- (NSString * _Nullable) accessibilityIdentifier
+{
+    return GetNSStringAndRelease([self automationPeer]->GetAutomationId());
+}
+
+- (IAvnAutomationPeer* _Nonnull) automationPeer
+{
+    if (_automationPeer == nullptr)
+    {
+        _automationPeer = _parent->BaseEvents->GetAutomationPeer();
+        _automationNode = new AvnAutomationNode(self);
+        _automationPeer->SetNode(_automationNode);
+    }
+
+    return _automationPeer;
+}
+
+- (void)raiseChildrenChanged
+{
+    [_parent->View raiseAccessibilityChildrenChanged];
+}
+
+- (void)raiseFocusChanged
+{
+    id focused = [self accessibilityFocusedUIElement];
+    NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
 }
 
 @end
