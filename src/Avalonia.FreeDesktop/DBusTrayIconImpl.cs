@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -38,6 +39,7 @@ namespace Avalonia.FreeDesktop
 
         public DBusTrayIconImpl()
         {
+            using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
             _connection = DBusHelper.TryCreateNewConnection();
 
             if (_connection is null)

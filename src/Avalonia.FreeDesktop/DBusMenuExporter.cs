@@ -17,7 +17,7 @@ namespace Avalonia.FreeDesktop
     internal class DBusMenuExporter
     {
         public static ITopLevelNativeMenuExporter? TryCreateTopLevelNativeMenu(IntPtr xid) =>
-            DBusHelper.Connection is null ? null : new DBusMenuExporterImpl(DBusHelper.Connection, xid);
+            DBusHelper.DefaultConnection is {} conn ?  new DBusMenuExporterImpl(conn, xid) : null;
 
         public static INativeMenuExporter TryCreateDetachedNativeMenu(string path, Connection currentConnection) =>
             new DBusMenuExporterImpl(currentConnection, path);
