@@ -341,6 +341,7 @@ namespace Avalonia
             AfterApplicationSetupCallback?.Invoke(Self);
             AfterSetupCallback?.Invoke(Self);
             Instance.OnFrameworkInitializationCompleted();
+            Application.ApplicationCurrentIsInitialized(Self);
         }
     }
 }

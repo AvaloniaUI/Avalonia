@@ -69,6 +69,12 @@ namespace Avalonia
         public event EventHandler? ActualThemeVariantChanged;
 
         /// <summary>
+        /// This is a workaround for not being able to monitor if the Application.Current
+        /// is already initialized.
+        /// </summary>
+        internal static event EventHandler? ApplicationCurrentInitialized;
+
+        /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
         /// </summary>
         public Application()
@@ -110,6 +116,11 @@ namespace Avalonia
         public static Application? Current
         {
             get => AvaloniaLocator.Current.GetService<Application>();
+        }
+
+        internal static void ApplicationCurrentIsInitialized(AppBuilder self)
+        {
+            ApplicationCurrentInitialized?.Invoke(self, EventArgs.Empty);
         }
 
         /// <summary>
