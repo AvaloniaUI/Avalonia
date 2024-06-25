@@ -7,6 +7,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Reactive;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -63,15 +64,8 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("TrayIcon.Icons must be set on the Application.");
                 }
             });
-            
-            Application.ApplicationCurrentInitialized += (sender, args) =>
-            {
-                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-                {
-                    lifetime.Exit += Lifetime_Exit;
-                }
-            };
 
+            Dispatcher.UIThread.ShutdownStarted += ShutdownStarted;
         }
 
         /// <summary>
@@ -186,7 +180,7 @@ namespace Avalonia.Controls
 
         internal ITrayIconImpl? Impl => _impl;
         
-        private static void Lifetime_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+        private static void ShutdownStarted(object? sender, EventArgs? e)
         {
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
             var trayIcons = GetIcons(app);

@@ -69,14 +69,6 @@ namespace Avalonia
         public event EventHandler? ActualThemeVariantChanged;
 
         /// <summary>
-        /// TODO: This is a workaround for not being able to monitor in <see cref="TrayIcon"/>'s static ctor
-        /// if the Application.Current is already initialized.
-        ///
-        /// TODO: Refactor in V12. 
-        /// </summary>
-        internal static event EventHandler? ApplicationCurrentInitialized;
-
-        /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
         /// </summary>
         public Application()
@@ -118,11 +110,6 @@ namespace Avalonia
         public static Application? Current
         {
             get => AvaloniaLocator.Current.GetService<Application>();
-        }
-
-        internal static void ApplicationCurrentIsInitialized(AppBuilder self)
-        {
-            ApplicationCurrentInitialized?.Invoke(self, EventArgs.Empty);
         }
 
         /// <summary>
