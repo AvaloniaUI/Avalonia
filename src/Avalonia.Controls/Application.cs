@@ -69,8 +69,10 @@ namespace Avalonia
         public event EventHandler? ActualThemeVariantChanged;
 
         /// <summary>
-        /// This is a workaround for not being able to monitor if the Application.Current
-        /// is already initialized.
+        /// TODO: This is a workaround for not being able to monitor in <see cref="TrayIcon"/>'s static ctor
+        /// if the Application.Current is already initialized.
+        ///
+        /// TODO: Refactor in V12. 
         /// </summary>
         internal static event EventHandler? ApplicationCurrentInitialized;
 
