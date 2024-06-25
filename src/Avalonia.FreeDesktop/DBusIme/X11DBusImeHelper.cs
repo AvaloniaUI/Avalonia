@@ -37,7 +37,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             var factory = DetectInputMethod();
             if (factory is not null)
             {
-                var conn = DBusHelper.DefaultConnection;
+                var conn = DBusHelper.TryInitialize();
                 if (conn is not null)
                 {
                     AvaloniaLocator.CurrentMutable.Bind<IX11InputMethodFactory>().ToConstant(factory(conn));
