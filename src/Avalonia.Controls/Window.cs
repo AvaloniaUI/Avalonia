@@ -718,29 +718,15 @@ namespace Avalonia.Controls
                 _shown = true;
                 IsVisible = true;
 
-                // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
-                // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
-                // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
-                SetWindowStartupLocation(owner);
-
-                _canHandleResized = true; 
+                // Must be called before ExecuteInitialLayoutPass, because otherwise ExecuteInitialLayoutPass may set ClientSize using incorrect scaling
+                SetWindowStartupLocationAndSize(owner);
                 
-                var initialSize = new Size(
-                    double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
-                    double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
-
-                if (initialSize != ClientSize)
-                {
-                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
-                }
+                _canHandleResized = true; 
 
                 LayoutManager.ExecuteInitialLayoutPass();
 
                 Owner = owner;
-
-                // Second call will calculate correct position because both current and owner windows have correct scaling.
-                SetWindowStartupLocation(owner);
-
+                
                 StartRendering();
                 PlatformImpl?.Show(ShowActivated, false);
                 OnOpened(EventArgs.Empty);
@@ -799,30 +785,16 @@ namespace Avalonia.Controls
                 _showingAsDialog = true;
                 IsVisible = true;
 
-                // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
-                // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
-                // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
-                SetWindowStartupLocation(owner);
+                // Must be called before ExecuteInitialLayoutPass, because otherwise ExecuteInitialLayoutPass may set ClientSize using incorrect scaling
+                SetWindowStartupLocationAndSize(owner);
                 
                 _canHandleResized = true; 
-
-                var initialSize = new Size(
-                    double.IsNaN(Width) ? ClientSize.Width : Width,
-                    double.IsNaN(Height) ? ClientSize.Height : Height);
-
-                if (initialSize != ClientSize)
-                {
-                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
-                }
 
                 LayoutManager.ExecuteInitialLayoutPass();
 
                 var result = new TaskCompletionSource<TResult>();
 
                 Owner = owner;
-
-                // Second call will calculate correct position because both current and owner windows have correct scaling.
-                SetWindowStartupLocation(owner);
 
                 StartRendering();
                 PlatformImpl?.Show(ShowActivated, true);
@@ -925,69 +897,88 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetWindowStartupLocation(Window? owner = null)
+        private void SetWindowStartupLocationAndSize(Window? owner = null)
         {
-            if (_wasShownBefore == true)
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            initialSize = new Size(
+                MathUtilities.Clamp(initialSize.Width, MinWidth.IsNaN() ? 0 : MinWidth, MaxWidth.IsNaN() ? double.MaxValue : MaxWidth),
+                MathUtilities.Clamp(initialSize.Height, MinHeight.IsNaN() ? 0 : MinHeight, MaxHeight.IsNaN() ? double.MaxValue : MaxHeight));
+            
+            if (!_wasShownBefore)
             {
-                return;
-            }
 
-            var startupLocation = WindowStartupLocation;
+                var startupLocation = WindowStartupLocation;
 
-            if (startupLocation == WindowStartupLocation.CenterOwner &&
-                (owner is null ||
-                 (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
-                )
-            {
-                // If startup location is CenterOwner, but owner is null or minimized then fall back
-                // to CenterScreen. This behavior is consistent with WPF.
-                startupLocation = WindowStartupLocation.CenterScreen;
-            }
+                if (startupLocation == WindowStartupLocation.CenterOwner &&
+                    (owner is null ||
+                     (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+                   )
+                {
+                    // If startup location is CenterOwner, but owner is null or minimized then fall back
+                    // to CenterScreen. This behavior is consistent with WPF.
+                    startupLocation = WindowStartupLocation.CenterScreen;
+                }
 
-            var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
+                void CenterRect(PixelRect parentRect, Screen? expectedScreen, double scaling)
+                {
+                    var outerSize = initialSize;
+                    // To position more precisely add frame size if the platform can give it to us.
+                    if (FrameSize.HasValue)
+                        outerSize += FrameSize.Value - ClientSize;
+                    var rect = new PixelRect(PixelSize.FromSize(outerSize, scaling));
 
-            // Use frame size, falling back to client size if the platform can't give it to us.
-            var rect = FrameSize.HasValue ?
-                new PixelRect(PixelSize.FromSize(FrameSize.Value, scaling)) :
-                new PixelRect(PixelSize.FromSize(ClientSize, scaling));
+                    var childRect = parentRect.CenterRect(rect);
+                    
+                    if (expectedScreen?.WorkingArea is { } constraint)
+                    {
+                        var maxX = constraint.Right - rect.Width;
+                        var maxY = constraint.Bottom - rect.Height;
 
-            if (startupLocation == WindowStartupLocation.CenterScreen)
-            {
+                        if (constraint.X <= maxX)
+                            childRect = childRect.WithX(MathUtilities.Clamp(childRect.X, constraint.X, maxX));
+                        if (constraint.Y <= maxY)
+                            childRect = childRect.WithY(MathUtilities.Clamp(childRect.Y, constraint.Y, maxY));
+                    }
+                    
+                    Position = childRect.Position;
+                }
+
                 Screen? screen = null;
-
                 if (owner is not null)
                 {
                     screen = Screens.ScreenFromWindow(owner)
                              ?? Screens.ScreenFromPoint(owner.Position);
                 }
-
-                screen ??= Screens.ScreenFromPoint(Position);
-
-                if (screen is not null)
+                
+                if (startupLocation == WindowStartupLocation.CenterScreen)
                 {
-                    Position = screen.WorkingArea.CenterRect(rect).Position;
+                    screen ??= Screens.ScreenFromPoint(Position);
+
+                    if (screen is not null)
+                    {
+                        CenterRect(screen.WorkingArea, screen, screen.Scaling);
+                    }
+                }
+                else if (startupLocation == WindowStartupLocation.CenterOwner)
+                {
+                    var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
+
+                    var ownerSize = owner!.FrameSize ?? owner.ClientSize;
+                    var ownerRect = new PixelRect(
+                        owner.Position,
+                        PixelSize.FromSize(ownerSize, scaling));
+                    
+                    CenterRect(ownerRect, screen, scaling);
                 }
             }
-            else if (startupLocation == WindowStartupLocation.CenterOwner)
+            
+            if (initialSize != ClientSize)
             {
-                var ownerSize = owner!.FrameSize ?? owner.ClientSize;
-                var ownerRect = new PixelRect(
-                    owner.Position,
-                    PixelSize.FromSize(ownerSize, scaling));
-                var childRect = ownerRect.CenterRect(rect);
-
-                if (Screens.ScreenFromWindow(owner)?.WorkingArea is { } constraint)
-                {
-                    var maxX = constraint.Right - rect.Width;
-                    var maxY = constraint.Bottom - rect.Height;
-
-                    if (constraint.X <= maxX)
-                        childRect = childRect.WithX(MathUtilities.Clamp(childRect.X, constraint.X, maxX));
-                    if (constraint.Y <= maxY)
-                        childRect = childRect.WithY(MathUtilities.Clamp(childRect.Y, constraint.Y, maxY));
-                }
-
-                Position = childRect.Position;
+                // Resize must be after setting Position, otherwise in some cases scaling will not be applied
+                PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
             }
         }
 
