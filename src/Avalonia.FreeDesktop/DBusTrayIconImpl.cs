@@ -83,7 +83,7 @@ namespace Avalonia.FreeDesktop
             if (_isDisposed || _connection is null || name != "org.kde.StatusNotifierWatcher")
                 return;
 
-            if (!_serviceConnected & newOwner is not null)
+            if (!_serviceConnected && newOwner is not null)
             {
                 _serviceConnected = true;
                 _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
@@ -215,18 +215,7 @@ namespace Avalonia.FreeDesktop
         public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
             Connection = connection;
-            BackingProperties.Menu = dbusMenuPath;
-            BackingProperties.Category = string.Empty;
-            BackingProperties.Status = string.Empty;
-            BackingProperties.Id = string.Empty;
-            BackingProperties.Title = string.Empty;
-            BackingProperties.IconPixmap = Array.Empty<(int, int, byte[])>();
-            BackingProperties.AttentionIconName = string.Empty;
-            BackingProperties.AttentionIconPixmap = Array.Empty<(int, int, byte[])>();
-            BackingProperties.AttentionMovieName = string.Empty;
-            BackingProperties.OverlayIconName = string.Empty;
-            BackingProperties.OverlayIconPixmap = Array.Empty<(int, int, byte[])>();
-            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty);
+            Menu = dbusMenuPath;
             InvalidateAll();
         }
 
@@ -255,12 +244,12 @@ namespace Avalonia.FreeDesktop
             EmitNewAttentionIcon();
             EmitNewOverlayIcon();
             EmitNewToolTip();
-            EmitNewStatus(BackingProperties.Status);
+            EmitNewStatus(Status);
         }
 
         public void SetIcon((int, int, byte[]) dbusPixmap)
         {
-            BackingProperties.IconPixmap = new[] { dbusPixmap };
+            IconPixmap = new[] { dbusPixmap };
             InvalidateAll();
         }
 
@@ -269,10 +258,10 @@ namespace Avalonia.FreeDesktop
             if (text is null)
                 return;
 
-            BackingProperties.Id = text;
-            BackingProperties.Category = "ApplicationStatus";
-            BackingProperties.Status = text;
-            BackingProperties.Title = text;
+            Id = text;
+            Category = "ApplicationStatus";
+            Status = text;
+            Title = text;
             InvalidateAll();
         }
     }
