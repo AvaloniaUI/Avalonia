@@ -169,7 +169,7 @@ public class OpenGlLeasePage : UserControl
         _knobs.PropertyChanged += KnobsPropertyChanged;
     }
 
-    private void KnobsPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs change)
+    private void KnobsPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == GlPageKnobs.YawProperty
             || change.Property == GlPageKnobs.RollProperty
@@ -183,7 +183,7 @@ public class OpenGlLeasePage : UserControl
         Yaw = _knobs!.Yaw, Pitch = _knobs.Pitch, Roll = _knobs.Roll, Disco = _knobs.Disco
     };
     
-    private void ViewportAttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+    private void ViewportAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
         var visual = ElementComposition.GetElementVisual(_viewport!);
         if(visual == null)
@@ -206,7 +206,7 @@ public class OpenGlLeasePage : UserControl
         return size;
     }
 
-    private void ViewportDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+    private void ViewportDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
         _visual?.SendHandlerMessage(new DisposeMessage());
         _visual = null;

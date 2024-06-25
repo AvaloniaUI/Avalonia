@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform;
 
 [PrivateApi]
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Private API, not meant to be compared")]
 public struct RenderTargetProperties
 {
     /// <summary>
@@ -21,6 +23,7 @@ public struct RenderTargetProperties
 }
 
 [PrivateApi]
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Private API, not meant to be compared")]
 public struct RenderTargetDrawingContextProperties
 {
     /// <summary>

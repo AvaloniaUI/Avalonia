@@ -7,68 +7,84 @@ namespace Avalonia.Browser.Interop;
 
 internal static partial class InputHelper
 {
-    [JSImport("InputHelper.subscribeKeyEvents", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribeKeyEvents(
-        JSObject htmlElement,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.String, JSType.Boolean>>]
-        // TODO: this callback should be <string, string, int, bool>. Revert after next .NET 9 preview.  
-        Func<string, string, string, bool> keyDown,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.String, JSType.Boolean>>]
-        // TODO: this callback should be <string, string, int, bool>. Revert after next .NET 9 preview.
-        Func<string, string, string, bool> keyUp);
-
-    [JSImport("InputHelper.subscribeTextEvents", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribeTextEvents(
-        JSObject htmlElement,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Number, JSType.Number, JSType.Boolean>>]
-        Func<JSObject, int, int, bool> onBeforeInput,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> onCompositionStart,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> onCompositionUpdate,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> onCompositionEnd);
-
-    [JSImport("InputHelper.subscribePointerEvents", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribePointerEvents(
-        JSObject htmlElement,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> pointerMove,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> pointerDown,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> pointerUp,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> pointerCancel,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> wheel);
+    public static Task RedirectInputAsync(int topLevelId, Action<BrowserTopLevelImpl> handler)
+    {
+        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl) handler(topLevelImpl);
+        return Task.CompletedTask;
+    }
 
     [JSImport("InputHelper.subscribeInputEvents", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribeInputEvents(
-        JSObject htmlElement,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.Boolean>>]
-        Func<string, bool> input);
+    public static partial void SubscribeInputEvents(JSObject htmlElement, int topLevelId);
 
-    [JSImport("InputHelper.subscribeDropEvents", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribeDropEvents(JSObject containerElement,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>] Func<JSObject, bool> dragEvent);
+    [JSExport]
+    public static Task OnKeyDown(int topLevelId, string code, string key, int modifier) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.OnKeyDown(code, key, modifier));
 
-    [JSImport("InputHelper.subscribeKeyboardGeometryChange", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribeKeyboardGeometryChange(JSObject containerElement,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>] Func<JSObject, bool> handler);
+    [JSExport]
+    public static Task OnKeyUp(int topLevelId, string code, string key, int modifier) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier));
 
-    [JSImport("InputHelper.subscribeVisibilityChange", AvaloniaModule.MainModuleName)]
-    public static partial bool SubscribeVisibilityChange([JSMarshalAs<JSType.Function<JSType.Boolean>>] Action<bool> handler);
+    [JSExport]
+    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
+
+    [JSExport]
+    public static Task OnCompositionStart(int topLevelId) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionStart());
+
+    [JSExport]
+    public static Task OnCompositionUpdate(int topLevelId, string? data) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionUpdate(data));
+
+    [JSExport]
+    public static Task OnCompositionEnd(int topLevelId, string? data) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd(data));
+
+    [JSExport]
+    public static Task OnPointerMove(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
+        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier, JSObject argsObj) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler
+            .OnPointerMove(pointerType, pointerId, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier, argsObj));
+
+    [JSExport]
+    public static Task OnPointerDown(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
+        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler
+            .OnPointerDown(pointerType, pointerId, buttons, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
+
+    [JSExport]
+    public static Task OnPointerUp(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
+        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler
+            .OnPointerUp(pointerType, pointerId, buttons, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
+
+    [JSExport]
+    public static Task OnPointerCancel(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
+        double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler
+            .OnPointerCancel(pointerType, pointerId, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
+
+    [JSExport]
+    public static Task OnWheel(int topLevelId,
+        double offsetX, double offsetY,
+        double deltaX, double deltaY, int modifier) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.OnWheel(offsetX, offsetY, deltaX, deltaY, modifier));
+
+    [JSExport]
+    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, string? effectAllowedStr, JSObject? dataTransfer) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, modifiers, effectAllowedStr, dataTransfer));
+
+    [JSExport]
+    public static Task OnKeyboardGeometryChange(int topLevelId, double x, double y, double width, double height) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.InputPane
+            .OnGeometryChange(x, y, width, height));
 
     [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
-    [return: JSMarshalAs<JSType.Array<JSType.Object>>]
-    public static partial JSObject[] GetCoalescedEvents(JSObject pointerEvent);
+    [return: JSMarshalAs<JSType.Array<JSType.Number>>]
+    public static partial double[] GetCoalescedEvents(JSObject pointerEvent);
 
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]
     public static partial void ClearInputElement(JSObject htmlElement);
-
-    [JSImport("InputHelper.isInputElement", AvaloniaModule.MainModuleName)]
-    public static partial void IsInputElement(JSObject htmlElement);
 
     [JSImport("InputHelper.focusElement", AvaloniaModule.MainModuleName)]
     public static partial void FocusElement(JSObject htmlElement);
@@ -89,17 +105,19 @@ internal static partial class InputHelper
     public static partial void SetBounds(JSObject htmlElement, int x, int y, int width, int height, int caret);
 
     [JSImport("InputHelper.initializeBackgroundHandlers", AvaloniaModule.MainModuleName)]
-    public static partial void InitializeBackgroundHandlers();
+    public static partial void InitializeBackgroundHandlers(JSObject globalThis);
 
     [JSImport("InputHelper.readClipboardText", AvaloniaModule.MainModuleName)]
-    public static partial Task<string> ReadClipboardTextAsync();
+    public static partial Task<string> ReadClipboardTextAsync(JSObject globalThis);
+
+    [JSImport("InputHelper.writeClipboardText", AvaloniaModule.MainModuleName)]
+    public static partial Task WriteClipboardTextAsync(JSObject globalThis, string text);
 
     [JSImport("InputHelper.setPointerCapture", AvaloniaModule.MainModuleName)]
-    public static partial void SetPointerCapture(JSObject containerElement, [JSMarshalAs<JSType.Number>] long pointerId);
+    public static partial void
+        SetPointerCapture(JSObject containerElement, [JSMarshalAs<JSType.Number>] long pointerId);
 
     [JSImport("InputHelper.releasePointerCapture", AvaloniaModule.MainModuleName)]
-    public static partial void ReleasePointerCapture(JSObject containerElement, [JSMarshalAs<JSType.Number>] long pointerId);
-
-    [JSImport("globalThis.navigator.clipboard.writeText")]
-    public static partial Task WriteClipboardTextAsync(string text);
+    public static partial void ReleasePointerCapture(JSObject containerElement,
+        [JSMarshalAs<JSType.Number>] long pointerId);
 }

@@ -14,4 +14,9 @@
     <Import Project="..\..\build\SourceGenerators.props" />
     <Import Project="..\..\build\TrimmingEnable.props" />
     <Import Project="..\..\build\NullableEnable.props" />
+
+  <ItemGroup>
+    <Compile Remove="..\Shared\SourceGeneratorAttributes.cs" />
+  </ItemGroup>
+
 </Project>

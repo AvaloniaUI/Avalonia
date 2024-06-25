@@ -26,6 +26,10 @@ internal class TopLevelImpl : ITopLevelImpl
         _clipboard = new NuiClipboardImpl();
     }
 
+    public double DesktopScaling => RenderScaling;
+    public IScreenImpl? Screen { get; }
+    public IPlatformHandle? Handle { get; }
+
     public Size ClientSize => _view.ClientSize;
 
     public Size? FrameSize => null;

@@ -12,7 +12,6 @@ namespace Avalonia.Data.Core.Plugins
         internal static readonly List<IPropertyAccessorPlugin> s_propertyAccessors = new()
         {
             new AvaloniaPropertyAccessorPlugin(),
-            new ReflectionMethodAccessorPlugin(),
             new InpcPropertyAccessorPlugin(),
         };
 
@@ -28,6 +27,20 @@ namespace Avalonia.Data.Core.Plugins
             new TaskStreamPlugin(),
             new ObservableStreamPlugin(),
         };
+
+        static BindingPlugins()
+        {
+            // When building with AOT, don't create ReflectionMethodAccessorPlugin instance.
+            // This branch can be eliminated in compile time with AOT.
+#if NET6_0_OR_GREATER
+            if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+#else
+            if (true)
+#endif
+            {
+                s_propertyAccessors.Insert(1, new ReflectionMethodAccessorPlugin());
+            }
+        }
 
         /// <summary>
         /// An ordered collection of property accessor plugins that can be used to customize
