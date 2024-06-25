@@ -24,7 +24,6 @@
 #include "WindowImpl.h"
 #include "AvnView.h"
 #include "WindowInterfaces.h"
-#include "PopupImpl.h"
 #include "AvnAutomationNode.h"
 #include "AvnString.h"
 
