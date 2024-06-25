@@ -63,13 +63,15 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("TrayIcon.Icons must be set on the Application.");
                 }
             });
-
-            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
-
-            if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            
+            Application.ApplicationCurrentInitialized += (sender, args) =>
             {
-                lifetime.Exit += Lifetime_Exit;
-            }
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+                {
+                    lifetime.Exit += Lifetime_Exit;
+                }
+            };
+
         }
 
         /// <summary>
