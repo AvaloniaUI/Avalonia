@@ -239,7 +239,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             {
                                 var textNode = new XamlAstTextNode(lineInfo, indexer.Arguments[currentParamIndex], type: context.Configuration.WellKnownTypes.String);
                                 if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context, textNode,
-                                        param, out var converted))
+                                        property.CustomAttributes, param, out var converted))
                                     throw new XamlX.XamlTransformException(
                                         $"Unable to convert indexer parameter value of '{indexer.Arguments[currentParamIndex]}' to {param.GetFqn()}",
                                         textNode);
