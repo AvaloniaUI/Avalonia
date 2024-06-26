@@ -57,6 +57,7 @@
 		AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */; };
 		BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */ = {isa = PBXBuildFile; fileRef = BC11A5BC2608D58F0017BAD0 /* automation.h */; };
 		BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC11A5BD2608D58F0017BAD0 /* automation.mm */; };
+		BC7C33822C066DBF00945A48 /* AvnAutomationNode.h in Headers */ = {isa = PBXBuildFile; fileRef = BC7C33812C066DBF00945A48 /* AvnAutomationNode.h */; };
 		ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */; };
 		ED754D262A97306B0078B4DF /* PlatformRenderTimer.mm in Sources */ = {isa = PBXBuildFile; fileRef = ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */; };
 		EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */ = {isa = PBXBuildFile; fileRef = EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */; };
@@ -122,6 +123,8 @@
 		AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platformthreading.mm; sourceTree = "<group>"; };
 		BC11A5BC2608D58F0017BAD0 /* automation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = automation.h; sourceTree = "<group>"; };
 		BC11A5BD2608D58F0017BAD0 /* automation.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = automation.mm; sourceTree = "<group>"; };
+		BC7C33812C066DBF00945A48 /* AvnAutomationNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvnAutomationNode.h; sourceTree = "<group>"; };
+		BC7C33832C066F1100945A48 /* AvnAccessibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnAccessibility.h; sourceTree = "<group>"; };
 		ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformRenderTimer.mm; sourceTree = "<group>"; };
 		EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformSettings.mm; sourceTree = "<group>"; };
@@ -167,6 +170,8 @@
 			isa = PBXGroup;
 			children = (
 				F10084852BFF1FB40024303E /* TopLevelImpl.mm */,
+				BC7C33832C066F1100945A48 /* AvnAccessibility.h */,
+				BC7C33812C066DBF00945A48 /* AvnAutomationNode.h */,
 				ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */,
 				855EDC9E28C6546F00807998 /* PlatformBehaviorInhibition.mm */,
 				8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */,
@@ -245,6 +250,7 @@
 				183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */,
 				1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */,
 				183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */,
+				BC7C33822C066DBF00945A48 /* AvnAutomationNode.h in Headers */,
 				18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */,
 				8D300D65292D0A6800320C49 /* AvnTextInputMethod.h in Headers */,
 				8D2F3512292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h in Headers */,

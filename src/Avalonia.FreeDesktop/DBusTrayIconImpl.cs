@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -30,7 +31,6 @@ namespace Avalonia.FreeDesktop
         private bool _isDisposed;
         private bool _serviceConnected;
         private bool _isVisible = true;
-        private readonly PathHandler _pathHandler1;
 
         public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
@@ -39,6 +39,7 @@ namespace Avalonia.FreeDesktop
 
         public DBusTrayIconImpl()
         {
+            using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
             _connection = DBusHelper.TryCreateNewConnection();
 
             if (_connection is null)
@@ -57,9 +58,7 @@ namespace Avalonia.FreeDesktop
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
            
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
-            _pathHandler1 = new PathHandler("/StatusNotifierItem");
-            _pathHandler1.Add(_statusNotifierItemDbusObj);
-            _connection.AddMethodHandler(_pathHandler1);
+            _connection.AddMethodHandler(_statusNotifierItemDbusObj.PathHandler!);
             
             WatchAsync();
         }
@@ -72,12 +71,11 @@ namespace Avalonia.FreeDesktop
                 var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
                 OnNameChange("org.kde.StatusNotifierWatcher", nameOwner);
             }
-            catch(Exception e)
+            catch
             {
-                Console.WriteLine(e);
                 _serviceWatchDisposable = null;
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this, $"Interface 'org.kde.StatusNotifierWatcher' is unavailable. {e}");
+                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.");
             }
         }
 
@@ -215,14 +213,12 @@ namespace Avalonia.FreeDesktop
     /// </remarks>
     internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem
     {
-        private readonly PathHandler _pathHandler;
-
         public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
             Connection = connection;
             Menu = dbusMenuPath;
-            _pathHandler = new PathHandler(dbusMenuPath);
-            _pathHandler.Add(this);
+            PathHandler = new PathHandler("/StatusNotifierItem");
+            PathHandler.Add(this);
             InvalidateAll();
         }
 

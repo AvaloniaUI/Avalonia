@@ -19,6 +19,7 @@ using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
+using NuGet.Configuration;
 using Nuke.Common.IO;
 
 /*
@@ -366,6 +367,9 @@ partial class Build : NukeBuild
         {
             if (!Parameters.IsPackingToLocalCache)
                 throw new InvalidOperationException();
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(
+                Settings.LoadDefaultSettings(RootDirectory));
             
             foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
             {
@@ -376,11 +380,11 @@ partial class Build : NukeBuild
                     .Elements().First(x => x.Name.LocalName == "metadata")
                     .Elements().First(x => x.Name.LocalName == "id").Value;
 
-                var packagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".nuget",
-                    "packages",
+                var packagePath = Path.Combine(
+                    globalPackagesFolder,
                     packageId.ToLowerInvariant(),
                     BuildParameters.LocalBuildVersion);
+
                 if (Directory.Exists(packagePath))
                     Directory.Delete(packagePath, true);
                 Directory.CreateDirectory(packagePath);
