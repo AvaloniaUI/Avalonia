@@ -34,6 +34,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType DependsOnAttribute { get; }
         public IXamlType DataTypeAttribute { get; }
         public IXamlType InheritDataTypeFromItemsAttribute { get; }
+        public IXamlType InheritDataTypeFromAttribute { get; }
         public IXamlType MarkupExtensionOptionAttribute { get; }
         public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
         public IXamlType AvaloniaListAttribute { get; }
@@ -195,6 +196,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
             DataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DataTypeAttribute");
             InheritDataTypeFromItemsAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromItemsAttribute");
+            InheritDataTypeFromAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromAttribute");
             MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
             MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
             AvaloniaListAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.AvaloniaListAttribute");

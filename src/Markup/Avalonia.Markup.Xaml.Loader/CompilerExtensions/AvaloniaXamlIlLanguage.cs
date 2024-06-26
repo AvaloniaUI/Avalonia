@@ -266,8 +266,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
+                var attrType = context.GetAvaloniaTypes().InheritDataTypeFromAttribute;
                 var scopeKind = customAttributes?
-                        .FirstOrDefault(a => a.Type.Name == "InheritDataTypeFromAttribute")?.Parameters
+                        .FirstOrDefault(a => a.Type.Equals(attrType))?.Parameters
                         .FirstOrDefault() switch
                     {
                         1 => AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style,
