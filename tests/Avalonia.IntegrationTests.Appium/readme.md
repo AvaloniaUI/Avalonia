@@ -31,7 +31,7 @@ Each time you make a change to Avalonia or `IntegrationTestApp`, re-run the `bun
 
 Tests in this project are configured to run with Appium 1 (as only this version supports WinAppDriver).
 If you need to run with Appium 2 on macOS, extra steps are required:
-- Install Appium 2 with mac2 driver
+- Install Appium 2 with [mac2 driver](https://github.com/appium/appium-mac2-driver)
 - Set `<IsRunningAppium2>true</IsRunningAppium2>` msbuild property on the test project or globally
 - Run appium 2 with `appium --base-path=/wd/hub` (custom base path is required)
 - Run tests as normally
