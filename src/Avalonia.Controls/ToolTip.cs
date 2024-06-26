@@ -90,7 +90,7 @@ namespace Avalonia.Controls
         /// Another possible scenario is that you could write a handler that resets the value of the ToolTip property for the element that is the event source, just before the tooltip is displayed.
         /// ToolTipOpening will not be raised if the value of ToolTip is null or otherwise unset. Do not deliberately set ToolTip to null while a tooltip is open or opening; this will not have the effect of closing the tooltip, and will instead create an undesirable visual artifact in the UI.
         /// </remarks>
-        public static readonly RoutedEvent ToolTipOpeningEvent =
+        public static readonly RoutedEvent<CancelRoutedEventArgs> ToolTipOpeningEvent =
             RoutedEvent.Register<ToolTip, CancelRoutedEventArgs>("ToolTipOpening", RoutingStrategies.Direct);
 
         /// <summary>
