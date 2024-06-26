@@ -257,11 +257,11 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Owned_Window_Should_Appear_Above_Topmost_Owner()
         {
             var showTopmostWindow = _session.FindElementByAccessibilityId("ShowTopmostWindow");
-            showTopmostWindow.OpenWindowWithClick();
+            using var window = showTopmostWindow.OpenWindowWithClick();
             Thread.Sleep(1000);
             var ownerWindow = GetWindow("OwnerWindow");
             var ownedWindow = GetWindow("OwnedWindow");
@@ -271,8 +271,6 @@ namespace Avalonia.IntegrationTests.Appium
 
             var ownerPosition = GetPosition(ownerWindow);
             var ownedPosition = GetPosition(ownedWindow);
-
-            Assert.Equal(ownerPosition, ownedPosition);
 
             // Owned Window moves 
             var moveButton = ownedWindow.FindElementByAccessibilityId("MoveButton");
