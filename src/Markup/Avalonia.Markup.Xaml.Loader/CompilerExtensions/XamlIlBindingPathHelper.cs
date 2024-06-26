@@ -85,10 +85,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 return transformed;
             }
-
+            
             var lastElement = transformed.Elements.LastOrDefault();
             
-            if (parentNode.Property?.Getter?.ReturnType == context.GetAvaloniaTypes().ICommand && lastElement is XamlIlClrMethodPathElementNode methodPathElement)
+            if (GetPropertyType(context, parentNode) == context.GetAvaloniaTypes().ICommand && lastElement is XamlIlClrMethodPathElementNode methodPathElement)
             {
                 IXamlMethod executeMethod = methodPathElement.Method;
                 IXamlMethod canExecuteMethod = executeMethod.DeclaringType.FindMethod(new FindMethodMethodSignature($"Can{executeMethod.Name}", context.Configuration.WellKnownTypes.Boolean, context.Configuration.WellKnownTypes.Object));
@@ -108,6 +108,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             return transformed;
+        }
+
+        private static IXamlType GetPropertyType(AstTransformationContext context, XamlPropertyAssignmentNode node)
+        {
+            var setterType = context.GetAvaloniaTypes().Setter;
+
+            if (node.Property.DeclaringType == setterType && node.Property.Name == "Value")
+            {
+                // The property is a Setter.Value property. We need to get the type of the property that the Setter.Value property is setting.
+                var setter = context.ParentNodes()
+                    .SkipWhile(x => x != node)
+                    .OfType<XamlAstConstructableObjectNode>()
+                    .Take(1)
+                    .FirstOrDefault(x => x.Type.GetClrType() == setterType);
+                var propertyAssignment = setter?.Children.OfType<XamlPropertyAssignmentNode>()
+                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Property");
+                var property = propertyAssignment?.Values.FirstOrDefault() as IXamlIlAvaloniaPropertyNode;
+
+                if (property.AvaloniaPropertyType is { } propertyType)
+                    return propertyType;
+            }
+
+            return node.Property?.Getter?.ReturnType;
         }
 
         private static XamlIlBindingPathNode TransformBindingPath(AstTransformationContext context, IXamlLineInfo lineInfo, Func<IXamlType> startTypeResolver, IXamlType selfType, IEnumerable<BindingExpressionGrammar.INode> bindingExpression)
@@ -216,7 +239,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             {
                                 var textNode = new XamlAstTextNode(lineInfo, indexer.Arguments[currentParamIndex], type: context.Configuration.WellKnownTypes.String);
                                 if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context, textNode,
-                                        param, out var converted))
+                                        property.CustomAttributes, param, out var converted))
                                     throw new XamlX.XamlTransformException(
                                         $"Unable to convert indexer parameter value of '{indexer.Arguments[currentParamIndex]}' to {param.GetFqn()}",
                                         textNode);

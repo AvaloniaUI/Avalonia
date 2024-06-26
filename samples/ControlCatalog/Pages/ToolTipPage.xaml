@@ -77,11 +77,22 @@
             </Button>
 
           <Border Grid.Row="3"
+                  Grid.Column="0"
                   Background="{DynamicResource SystemAccentColor}"
                   Margin="5"
                   Padding="50"
                   ToolTip.Tip="Outer tooltip">
             <TextBlock Background="{StaticResource SystemAccentColorDark1}" Padding="10" ToolTip.Tip="Inner tooltip" VerticalAlignment="Center">Nested ToolTips</TextBlock>
+          </Border>
+            
+          <Border Grid.Row="3"
+                  Grid.Column="1"
+                  Background="{DynamicResource SystemAccentColor}"
+                  Margin="5"
+                  Padding="50"
+                  ToolTip.ToolTipOpening="ToolTipOpening"
+                  ToolTip.Tip="Should never be visible">
+            <TextBlock VerticalAlignment="Center">ToolTip replaced on the fly</TextBlock>
           </Border>
         </Grid>
     </StackPanel>

@@ -34,6 +34,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType DependsOnAttribute { get; }
         public IXamlType DataTypeAttribute { get; }
         public IXamlType InheritDataTypeFromItemsAttribute { get; }
+        public IXamlType InheritDataTypeFromAttribute { get; }
         public IXamlType MarkupExtensionOptionAttribute { get; }
         public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
         public IXamlType AvaloniaListAttribute { get; }
@@ -60,6 +61,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public IXamlType DataTemplate { get; }
         public IXamlType IDataTemplate { get; }
+        public IXamlType ITemplateOfControl { get; }
+        public IXamlType Control { get; }
         public IXamlType ItemsControl { get; }
         public IXamlType ReflectionBindingExtension { get; }
 
@@ -108,6 +111,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType TextDecorations { get; }
         public IXamlType TextTrimming { get; }
         public IXamlType SetterBase { get; }
+        public IXamlType Setter { get; }
         public IXamlType IStyle { get; }
         public IXamlType StyleInclude { get; }
         public IXamlType ResourceInclude { get; }
@@ -195,6 +199,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
             DataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DataTypeAttribute");
             InheritDataTypeFromItemsAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromItemsAttribute");
+            InheritDataTypeFromAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromAttribute");
             MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
             MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
             AvaloniaListAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.AvaloniaListAttribute");
@@ -239,6 +244,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ResolveByNameExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ResolveByNameExtension");
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
             IDataTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IDataTemplate");
+            Control = cfg.TypeSystem.GetType("Avalonia.Controls.Control");
+            ITemplateOfControl = cfg.TypeSystem.GetType("Avalonia.Controls.ITemplate`1").MakeGenericType(Control);
             ItemsControl = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsControl");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
@@ -297,6 +304,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
             TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
             SetterBase = cfg.TypeSystem.GetType("Avalonia.Styling.SetterBase");
+            Setter = cfg.TypeSystem.GetType("Avalonia.Styling.Setter");
             IStyle = cfg.TypeSystem.GetType("Avalonia.Styling.IStyle");
             StyleInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.StyleInclude");
             ResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.ResourceInclude");
