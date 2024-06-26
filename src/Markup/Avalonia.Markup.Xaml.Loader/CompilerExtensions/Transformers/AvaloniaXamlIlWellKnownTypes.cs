@@ -107,6 +107,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType TextDecorations { get; }
         public IXamlType TextTrimming { get; }
         public IXamlType SetterBase { get; }
+        public IXamlType Setter { get; }
         public IXamlType IStyle { get; }
         public IXamlType StyleInclude { get; }
         public IXamlType ResourceInclude { get; }
@@ -254,6 +255,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
             TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
             SetterBase = cfg.TypeSystem.GetType("Avalonia.Styling.SetterBase");
+            Setter = cfg.TypeSystem.GetType("Avalonia.Styling.Setter");
             IStyle = cfg.TypeSystem.GetType("Avalonia.Styling.IStyle");
             StyleInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.StyleInclude");
             ResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.ResourceInclude");
