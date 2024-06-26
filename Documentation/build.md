@@ -100,7 +100,14 @@ On macOS it is necessary to build and manually install the respective native lib
 # Building Avalonia into a local NuGet cache
 
 It is possible to build Avalonia locally and generate NuGet packages that can be used locally to test local changes.
-To do so you need to run:
+
+First, install Nuke's dotnet global tool like so:
+
+```bash
+dotnet tool install Nuke.GlobalTool --global
+```
+
+Then you need to run:
 ```bash
 nuke --target BuildToNuGetCache --configuration Release
 ```
