@@ -43,7 +43,10 @@ namespace Avalonia.FreeDesktop
                 InitBackingProperties();
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
-                Path = GenerateDBusMenuObjPath;
+                
+                PathHandler = new PathHandler(GenerateDBusMenuObjPath);
+                PathHandler.Add(this);
+                
                 SetNativeMenu(new NativeMenu());
                 _ = InitializeAsync();
             }
@@ -53,7 +56,10 @@ namespace Avalonia.FreeDesktop
                 InitBackingProperties();
                 Connection = connection;
                 _appMenu = false;
-                Path = path;
+                
+                PathHandler = new PathHandler(path);
+                PathHandler.Add(this);
+                
                 SetNativeMenu(new NativeMenu());
                 _ = InitializeAsync();
             }
@@ -63,9 +69,7 @@ namespace Avalonia.FreeDesktop
                 Version = 4;
             }
 
-            protected override Connection Connection { get; }
-
-            public override string Path { get; }
+            public override Connection Connection { get; }
 
             protected override ValueTask<(uint Revision, (int, Dictionary<string, Variant>, Variant[]) Layout)> OnGetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
             {
@@ -106,7 +110,7 @@ namespace Avalonia.FreeDesktop
 
             private async Task InitializeAsync()
             {
-                Connection.AddMethodHandler(this);
+                Connection.AddMethodHandler(this.PathHandler!);
                 if (!_appMenu)
                     return;
 
@@ -114,7 +118,7 @@ namespace Avalonia.FreeDesktop
                 try
                 {
                     if (!_disposed)
-                        await _registrar.RegisterWindowAsync(_xid, Path);
+                        await _registrar.RegisterWindowAsync(_xid, this.PathHandler!.Path);
                 }
                 catch
                 {
