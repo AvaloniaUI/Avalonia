@@ -107,6 +107,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
+        private bool _ignoreDpiChanges;
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
@@ -707,7 +708,20 @@ namespace Avalonia.Win32
 
             _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
 
+            // I can't find mention of this *anywhere* online, but it seems that setting
+            // GWL_HWNDPARENT to a window which is on the non-primary monitor can cause two
+            // WM_DPICHANGED messages to be sent: the first changing the DPI to the parent's DPI,
+            // then another changing the DPI back. This then causes Windows to provide an incorrect
+            // suggested new rectangle to the WM_DPICHANGED message if the window is immediately
+            // moved to the parent window's monitor (e.g. when using
+            // WindowStartupLocation.CenterOwner) causing the window to be shown with an incorrect
+            // size.
+            //
+            // Just ignore any WM_DPICHANGED while we're setting the parent as this shouldn't
+            // change the DPI anyway.
+            _ignoreDpiChanges = true;
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
+            _ignoreDpiChanges = false;
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
