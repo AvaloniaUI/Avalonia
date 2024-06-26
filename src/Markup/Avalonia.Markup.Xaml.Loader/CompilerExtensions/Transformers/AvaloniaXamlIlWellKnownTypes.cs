@@ -61,6 +61,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public IXamlType DataTemplate { get; }
         public IXamlType IDataTemplate { get; }
+        public IXamlType ITemplateOfControl { get; }
+        public IXamlType Control { get; }
         public IXamlType ItemsControl { get; }
         public IXamlType ReflectionBindingExtension { get; }
 
@@ -241,6 +243,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ResolveByNameExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ResolveByNameExtension");
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
             IDataTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IDataTemplate");
+            Control = cfg.TypeSystem.GetType("Avalonia.Controls.Control");
+            ITemplateOfControl = cfg.TypeSystem.GetType("Avalonia.Controls.ITemplate`1").MakeGenericType(Control);
             ItemsControl = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsControl");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");

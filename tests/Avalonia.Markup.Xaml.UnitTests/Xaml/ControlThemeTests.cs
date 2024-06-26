@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
@@ -133,6 +134,44 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var setter = Assert.IsType<Setter>(Assert.Single(style.Setters));
                 
                 Assert.Equal(TestTemplatedControl.TestDataProperty, (setter.Value as TemplateBinding)?.Property);
+            }
+        }
+
+        [Fact]
+        public void Correctly_Resolve_TemplateBinding_In_Theme_Detached_Template()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load($@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
+    <Window.Resources>
+        <ControlTheme x:Key='MyTheme' TargetType='ContentControl'>
+            <Setter Property='CornerRadius' Value='10, 0, 0, 10' />
+            <Setter Property='Content'>
+                <Template>
+                    <Border CornerRadius='{{TemplateBinding CornerRadius}}'/>
+                </Template>
+            </Setter>
+            <Setter Property='Template'>
+                <ControlTemplate>
+                    <Button Content='{{TemplateBinding Content}}'
+                            ContentTemplate='{{TemplateBinding ContentTemplate}}' />
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </Window.Resources>
+
+    <ContentControl Theme='{{StaticResource MyTheme}}' />
+</Window>");
+                var control = Assert.IsType<ContentControl>(window.Content);
+
+                window.Show();
+
+                var border = Assert.IsType<Border>(control.Content);
+
+                Assert.Equal(new CornerRadius(10, 0, 0, 10), border.CornerRadius);
             }
         }
 
