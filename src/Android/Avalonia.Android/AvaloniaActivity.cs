@@ -122,6 +122,9 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         {
             attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
         }
+
+        // We inform the ContentView that it has become visible. OnVisibleChanged() sometimes doesn't get called. Issue #15807.
+        _view?.OnVisibilityChanged(true);
     }
 
     protected override void OnDestroy()

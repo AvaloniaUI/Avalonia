@@ -56,8 +56,11 @@ internal sealed class VisualAncestorElementNode : SourceNode
         return target is Visual visual && visual.IsAttachedToVisualTree;
     }
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (source is Visual visual)
         {
             var locator = VisualLocator.Track(visual, _ancestorLevel, _ancestorType);

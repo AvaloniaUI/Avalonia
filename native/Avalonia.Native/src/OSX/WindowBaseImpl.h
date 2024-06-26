@@ -9,19 +9,21 @@
 #include "rendertarget.h"
 #include "INSWindowHolder.h"
 #include "AvnTextInputMethod.h"
+#include "TopLevelImpl.h"
+#include <list>
 
-@class AutoFitContentView;
 @class AvnMenu;
 @protocol AvnWindowProtocol;
 
-class WindowBaseImpl : public virtual ComObject,
+class WindowBaseImpl : public virtual TopLevelImpl,
                        public virtual IAvnWindowBase,
                        public INSWindowHolder {
 
 public:
     FORWARD_IUNKNOWN()
 
-BEGIN_INTERFACE_MAP()
+    BEGIN_INTERFACE_MAP()
+        INHERIT_INTERFACE_MAP(TopLevelImpl)
         INTERFACE_MAP_ENTRY(IAvnWindowBase, IID_IAvnWindowBase)
     END_INTERFACE_MAP()
 
@@ -33,13 +35,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT ObtainNSWindowHandleRetained(void **ret) override;
 
-    virtual HRESULT ObtainNSViewHandle(void **ret) override;
-
-    virtual HRESULT ObtainNSViewHandleRetained(void **ret) override;
-
     virtual NSWindow *GetNSWindow() override;
-
-    virtual AvnView *GetNSView() override;
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
 
@@ -55,17 +51,11 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT Close() override;
 
-    virtual HRESULT GetClientSize(AvnSize *ret) override;
-
     virtual HRESULT GetFrameSize(AvnSize *ret) override;
-
-    virtual HRESULT GetScaling(double *ret) override;
 
     virtual HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize) override;
 
     virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override;
-
-    virtual HRESULT Invalidate(__attribute__((unused)) AvnRect rect) override;
 
     virtual HRESULT SetMainMenu(IAvnMenu *menu) override;
 
@@ -77,49 +67,33 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT SetPosition(AvnPoint point) override;
 
-    virtual HRESULT PointToClient(AvnPoint point, AvnPoint *ret) override;
-
-    virtual HRESULT PointToScreen(AvnPoint point, AvnPoint *ret) override;
-
-    virtual HRESULT SetCursor(IAvnCursor *cursor) override;
-
-    virtual void UpdateCursor();
-
-    virtual HRESULT CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget **ppv) override;
-
-    virtual HRESULT CreateGlRenderTarget(IAvnGlContext* glContext, IAvnGlSurfaceRenderTarget **ppv) override;
-
-    virtual HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget **ppv) override;
-
-    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost **retOut) override;
-
-    virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
-
     virtual HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant variant) override;
 
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
             IAvnClipboard *clipboard, IAvnDndResultCallback *cb,
             void *sourceHandle) override;
 
+    virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
+                           
     virtual bool IsModal();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
                            
     virtual void BringToFront ();
-                           
-    virtual HRESULT GetInputMethod(IAvnTextInputMethod **retOut) override;
 
     virtual bool CanZoom() { return false; }
                            
+    virtual HRESULT SetParent(IAvnWindowBase* parent) override;
+                           
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() = 0;
-    virtual void UpdateStyle();
+    virtual void UpdateAppearance() override;
+    virtual void SetClientSize(NSSize size) override;
 
 private:
     void CreateNSWindow (bool isDialog);
     void CleanNSWindow ();
 
-    NSCursor *cursor;
     bool hasPosition;
     NSSize lastSize;
     NSSize lastMinSize;
@@ -128,16 +102,16 @@ private:
     bool _inResize;
 
 protected:
-    AvnPoint lastPositionSet;
     AutoFitContentView *StandardContainer;
+    AvnPoint lastPositionSet;
     bool _shown;
+    std::list<WindowBaseImpl*> _children;
+    bool _isModal;
 
 public:
-    NSObject <IRenderTarget> *currentRenderTarget;
+    WindowBaseImpl* Parent;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
-    ComPtr<AvnTextInputMethod> InputMethod;
-    AvnView *View;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H

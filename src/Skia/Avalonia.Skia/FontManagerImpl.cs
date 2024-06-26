@@ -55,11 +55,10 @@ namespace Avalonia.Skia
 
             culture ??= CultureInfo.CurrentUICulture;
 
-            t_languageTagBuffer ??= new string[2];
-            t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
-            t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
+            t_languageTagBuffer ??= new string[1];
+            t_languageTagBuffer[0] = culture.Name;
 
-            var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+            using var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
 
             if (skTypeface != null)
             {

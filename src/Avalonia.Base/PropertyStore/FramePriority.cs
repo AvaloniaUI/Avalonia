@@ -28,6 +28,12 @@ namespace Avalonia.PropertyStore
             return (FramePriority)(p * 3 + (int)type);
         }
 
+        public static BindingPriority ToBindingPriority(this FramePriority priority)
+        {
+            var p = (int)priority / 3;
+            return p == 0 ? BindingPriority.Animation : (BindingPriority)p;
+        }
+
         public static bool IsType(this FramePriority priority, FrameType type)
         {
             return (FrameType)((int)priority % 3) == type;

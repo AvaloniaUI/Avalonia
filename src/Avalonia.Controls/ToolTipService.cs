@@ -16,6 +16,8 @@ namespace Avalonia.Controls
         private Control? _tipControl;
         private long _lastTipCloseTime;
         private DispatcherTimer? _timer;
+        private ulong _lastTipEventTime;
+        private ulong _lastWindowEventTime;
 
         public ToolTipService(IInputManager inputManager)
         {
@@ -35,31 +37,52 @@ namespace Avalonia.Controls
         {
             if (e is RawPointerEventArgs pointerEvent)
             {
-                if (e.Root == _tipControl?.GetValue(ToolTip.ToolTipProperty)?.PopupHost)
+                bool isTooltipEvent = false;
+                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root == currentTip.PopupHost)
                 {
-                    return; // pointer is over the current tooltip
+                    isTooltipEvent = true;
+                    _lastTipEventTime = pointerEvent.Timestamp;
+                }
+                else if (e.Root == _tipControl?.VisualRoot)
+                {
+                    _lastWindowEventTime = pointerEvent.Timestamp;
                 }
 
                 switch (pointerEvent.Type)
                 {
                     case RawPointerEventType.Move:
-                        Update(pointerEvent.InputHitTestResult.element as Visual);
+                        Update(pointerEvent.Root, pointerEvent.InputHitTestResult.element as Visual);
+                        break;
+                    case RawPointerEventType.LeaveWindow when (e.Root == _tipControl?.VisualRoot && _lastTipEventTime != e.Timestamp) || (isTooltipEvent && _lastWindowEventTime != e.Timestamp):
+                        ClearTip();
+                        _tipControl = null;
                         break;
                     case RawPointerEventType.LeftButtonDown:
                     case RawPointerEventType.RightButtonDown:
                     case RawPointerEventType.MiddleButtonDown:
                     case RawPointerEventType.XButton1Down:
                     case RawPointerEventType.XButton2Down:
-                        StopTimer();
-                        _tipControl?.ClearValue(ToolTip.IsOpenProperty);
+                        ClearTip();
                         break;
+                }
+
+                void ClearTip()
+                {
+                    StopTimer();
+                    _tipControl?.ClearValue(ToolTip.IsOpenProperty);
                 }
             }
         }
 
-        public void Update(Visual? candidateToolTipHost)
+        public void Update(IInputRoot root, Visual? candidateToolTipHost)
         {
             var currentToolTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);
+
+            if (root == currentToolTip?.VisualRoot)
+            {
+                // Don't update while the pointer is over a tooltip
+                return;
+            }
 
             while (candidateToolTipHost != null)
             {
@@ -182,7 +205,11 @@ namespace Avalonia.Controls
         private void StartShowTimer(int showDelay, Control control)
         {
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(showDelay), Tag = (this, control) };
-            _timer.Tick += (o, e) => Open(control);
+            _timer.Tick += (o, e) =>
+            {
+                if (_timer != null)
+                    Open(control);
+            };
             _timer.Start();
         }
 
@@ -194,7 +221,8 @@ namespace Avalonia.Controls
             {
                 ToolTip.SetIsOpen(control, true);
 
-                if (control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
+                // Value can be coerced back to false, need to double check.
+                if (ToolTip.GetIsOpen(control) && control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
                 {
                     tooltip.Closed += ToolTipClosed;
                     tooltip.PointerExited += ToolTipPointerExited;

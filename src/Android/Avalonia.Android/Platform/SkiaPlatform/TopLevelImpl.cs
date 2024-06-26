@@ -54,7 +54,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
-            
+
             _view = new ViewImpl(avaloniaView.Context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
@@ -85,7 +85,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public virtual Size ClientSize => _view.Size.ToSize(RenderScaling);
 
         public Size? FrameSize => null;
-        
+
         public Action? Closed { get; set; }
 
         public Action<RawInputEventArgs>? Input { get; set; }
@@ -100,6 +100,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         internal InvalidationAwareSurfaceView InternalView => _view;
 
+        public double DesktopScaling => RenderScaling;
+        public IScreenImpl? Screen { get; }
         public IPlatformHandle Handle => _view;
 
         public IEnumerable<object> Surfaces { get; }
@@ -136,7 +138,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             InputRoot = inputRoot;
         }
-        
+
         public virtual void Show()
         {
             _view.Visibility = ViewStates.Visible;
@@ -148,7 +150,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             Paint?.Invoke(new Rect(new Point(0, 0), ClientSize));
         }
-        
+
         public virtual void Dispose()
         {
             _systemNavigationManager.Dispose();
@@ -264,11 +266,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
 
         public IPopupImpl? CreatePopup() => null;
-        
+
         public Action? LostFocus { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel 
+        public WindowTransparencyLevel TransparencyLevel
         {
             get => _transparencyLevel;
             private set
@@ -532,8 +534,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 if (_inputMethod.IsActive && !_commitInProgress)
                 {
                     if (string.IsNullOrEmpty(compositionText))
-                        _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-
+                    {
+                        if (_editable.CurrentComposition.Start > -1)
+                            _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+                    }
                     else
                         _toplevel.TextInput(compositionText);
                 }
@@ -678,6 +682,30 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             return extract;
+        }
+
+        public override bool PerformContextMenuAction(int id)
+        {
+            if (InputMethod.Client is not { } client) return false;
+
+            switch (id)
+            {
+                case global::Android.Resource.Id.SelectAll:
+                    client.ExecuteContextMenuAction(ContextMenuAction.SelectAll);
+                    return true;
+                case global::Android.Resource.Id.Cut:
+                    client.ExecuteContextMenuAction(ContextMenuAction.Cut);
+                    return true;
+                case global::Android.Resource.Id.Copy:
+                    client.ExecuteContextMenuAction(ContextMenuAction.Copy);
+                    return true;
+                case global::Android.Resource.Id.Paste:
+                    client.ExecuteContextMenuAction(ContextMenuAction.Paste);
+                    return true;
+                default:
+                    break;
+            }
+            return base.PerformContextMenuAction(id);
         }
     }
 }
