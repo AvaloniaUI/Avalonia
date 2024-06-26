@@ -75,7 +75,7 @@ namespace Avalonia.FreeDesktop
             {
                 _serviceWatchDisposable = null;
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this, $"Interface 'org.kde.StatusNotifierWatcher' is unavailable.\n{e}");
+                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.\n{Exception}", e);
             }
         }
 
