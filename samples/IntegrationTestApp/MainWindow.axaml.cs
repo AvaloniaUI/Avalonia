@@ -217,6 +217,15 @@ namespace IntegrationTestApp
                     window.WindowState = WindowState.Normal;
             }
         }
+        
+        private void ShowTopmostWindow()
+        {
+            var mainWindow = new TopmostWindowTest("OwnerWindow") { Topmost = true, Title = "Owner Window"};
+            var ownedWindow = new TopmostWindowTest("OwnedWindow") { WindowStartupLocation = WindowStartupLocation.CenterOwner, Title = "Owned Window"};
+            mainWindow.Show();
+            
+            ownedWindow.Show(mainWindow);
+        }
 
         private void InitializeGesturesTab()
         {
@@ -284,6 +293,8 @@ namespace IntegrationTestApp
                 WindowState = WindowState.Normal;
             if (source?.Name == "RestoreAll")
                 RestoreAll();
+            if (source?.Name == "ShowTopmostWindow")
+                ShowTopmostWindow();
         }
     }
 }

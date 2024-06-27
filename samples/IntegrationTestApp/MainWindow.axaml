@@ -170,6 +170,7 @@
             <Button Name="EnterFullscreen">Enter Fullscreen</Button>
             <Button Name="ExitFullscreen">Exit Fullscreen</Button>
             <Button Name="RestoreAll">Restore All</Button>
+            <Button Name="ShowTopmostWindow">Show Topmost Window</Button>
           </StackPanel>
           <StackPanel Grid.Column="2">
             <Button Name="ShowTransparentWindow">Transparent Window</Button>

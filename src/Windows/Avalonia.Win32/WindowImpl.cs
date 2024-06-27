@@ -722,6 +722,10 @@ namespace Avalonia.Win32
             _ignoreDpiChanges = true;
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
             _ignoreDpiChanges = false;
+
+            // Windows doesn't seem to respect the HWND_TOPMOST flag of a window when showing an owned window for the first time.
+            // So we set the HWND_TOPMOST again before the owned window is shown. This only needs to be done once.
+            (parent as WindowImpl)?.EnsureTopmost();
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -872,6 +876,17 @@ namespace Avalonia.Win32
                 SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
 
             _topmost = value;
+        }
+
+        private void EnsureTopmost()
+        {
+            if(_topmost)
+            {
+                SetWindowPos(_hwnd,
+                    WindowPosZOrder.HWND_TOPMOST,
+                    0, 0, 0, 0,
+                    SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+            }
         }
 
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
