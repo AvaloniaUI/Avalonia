@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.UnitTests;
@@ -385,6 +386,29 @@ namespace Avalonia.Base.UnitTests.Layout
             Assert.True(target.IsMeasureValid);
             Assert.True(target.IsArrangeValid);
             Assert.Equal(default, child.DesiredSize);
+        }
+
+        [Fact]
+        public void Size_Properties_Reject_Invalid_Values()
+        {
+            var target = new Layoutable();
+
+            Assert.Multiple(() =>
+            {
+                SetShouldThrow([Layoutable.WidthProperty, Layoutable.HeightProperty], double.PositiveInfinity);
+                SetShouldThrow([Layoutable.WidthProperty, Layoutable.HeightProperty], -10);
+
+                SetShouldThrow([Layoutable.MinWidthProperty, Layoutable.MinHeightProperty], double.PositiveInfinity);
+                SetShouldThrow([Layoutable.MinWidthProperty, Layoutable.MinHeightProperty], -10);
+
+                SetShouldThrow([Layoutable.MaxWidthProperty, Layoutable.MaxHeightProperty], -10);
+
+                void SetShouldThrow(IEnumerable<StyledProperty<double>> properies, double value)
+                {
+                    foreach (var prop in properies)
+                        Assert.Throws<ArgumentException>(() => target.SetValue(prop, value));
+                }
+            });
         }
 
         private class TestLayoutable : Layoutable
