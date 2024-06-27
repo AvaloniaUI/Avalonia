@@ -215,6 +215,15 @@ namespace IntegrationTestApp
                     window.WindowState = WindowState.Normal;
             }
         }
+        
+        private void OnShowTopmostWindow()
+        {
+            var mainWindow = new TopmostWindowTest("OwnerWindow") { Topmost = true, Title = "Owner Window"};
+            var ownedWindow = new TopmostWindowTest("OwnedWindow") { WindowStartupLocation = WindowStartupLocation.CenterOwner, Title = "Owned Window"};
+            mainWindow.Show();
+            
+            ownedWindow.Show(mainWindow);
+        }
 
         private void InitializeGesturesTab()
         {
@@ -280,6 +289,8 @@ namespace IntegrationTestApp
                 WindowState = WindowState.FullScreen;
             if (source?.Name == nameof(ExitFullscreen))
                 WindowState = WindowState.Normal;
+            if (source?.Name == nameof(ShowTopmostWindow))
+                OnShowTopmostWindow();
             if (source?.Name == nameof(RestoreAll))
                 OnRestoreAll();
             if (source?.Name == nameof(ApplyWindowDecorations))
