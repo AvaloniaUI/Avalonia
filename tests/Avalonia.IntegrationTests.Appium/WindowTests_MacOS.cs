@@ -448,7 +448,7 @@ namespace Avalonia.IntegrationTests.Appium
 
         private AppiumWebElement GetWindow(string identifier)
         {
-            return _session.FindElementByXPath($"XCUIElementTypeWindow[@identifier='{identifier}']");
+            return _session.GetWindowById(identifier);
         }
 
         private int GetWindowOrder(string identifier)

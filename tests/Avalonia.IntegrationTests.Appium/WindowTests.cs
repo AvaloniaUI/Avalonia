@@ -263,8 +263,8 @@ namespace Avalonia.IntegrationTests.Appium
             var showTopmostWindow = _session.FindElementByAccessibilityId("ShowTopmostWindow");
             using var window = showTopmostWindow.OpenWindowWithClick();
             Thread.Sleep(1000);
-            var ownerWindow = GetWindow("OwnerWindow");
-            var ownedWindow = GetWindow("OwnedWindow");
+            var ownerWindow = _session.GetWindowById("OwnerWindow");
+            var ownedWindow = _session.GetWindowById("OwnedWindow");
 
             Assert.NotNull(ownerWindow);
             Assert.NotNull(ownedWindow);
