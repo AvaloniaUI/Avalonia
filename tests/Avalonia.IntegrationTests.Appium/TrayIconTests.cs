@@ -95,14 +95,16 @@ public class TrayIconTests : IDisposable
                 // Add a sleep here, as previous test might still run popup closing animation.
                 Thread.Sleep(1000);
 
-                // Try to open "Show hidden icons"
-                var trayIconsButton = taskBar.FindElementsByAccessibilityId("SystemTrayIcon")
-                    .FirstOrDefault() ?? throw new InvalidOperationException("SystemTrayIcon cannot be found.");
+                // Try to open "Show hidden icons" (win11) or "Notification Chevron" (win10)
+                var trayIconsButton = taskBar.FindElementsByAccessibilityId("SystemTrayIcon").FirstOrDefault()
+                    ?? taskBar.FindElementsByName("Notification Chevron").FirstOrDefault()
+                    ?? throw new InvalidOperationException("SystemTrayIcon cannot be found.");
                 trayIconsButton.Click();
 
-                // Is it localizable? Or is it safe?
-                var trayIconsFlyout = session.FindElementsByName("System tray overflow window.")
-                    .FirstOrDefault() ?? throw new InvalidOperationException("System tray overflow window cannot be found.");
+                // Try to open "System tray" (win11) or "Notification Overflow" (win10)
+                var trayIconsFlyout = session.FindElementsByName("System tray overflow window.").FirstOrDefault()
+                      ?? taskBar.FindElementsByName("Notification Overflow").FirstOrDefault()
+                      ?? throw new InvalidOperationException("System tray overflow window cannot be found.");
                 return TryToGetIcon(trayIconsFlyout, trayIconName);
             }
 
