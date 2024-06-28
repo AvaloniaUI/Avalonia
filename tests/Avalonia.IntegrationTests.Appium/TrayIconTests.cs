@@ -105,6 +105,9 @@ public class TrayIconTests : IDisposable
                     ?? throw new InvalidOperationException("SystemTrayIcon cannot be found.");
                 trayIconsButton.Click();
 
+                var rootSource = session.PageSource;
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "rootSource.xml"), rootSource);
+
                 // win11: TopLevelWindowForOverflowXamlIsland
                 // win10: NotifyIconOverflowWindow
                 var trayIconsFlyout = session.FindElementsByClassName("TopLevelWindowForOverflowXamlIsland").FirstOrDefault()

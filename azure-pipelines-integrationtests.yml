@@ -93,3 +93,7 @@ jobs:
     inputs:
       OperationType: 'Stop'
     displayName: 'Stop WinAppDriver'
+
+  - publish: 'tests/Avalonia.IntegrationTests.Appium/bin/Debug/net8.0/rootSource.xml'
+    displayName: 'Publish appium logs on failure'
+    condition: always()
