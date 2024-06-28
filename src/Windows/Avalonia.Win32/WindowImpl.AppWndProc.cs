@@ -130,6 +130,7 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_DPICHANGED:
+                    if (!_ignoreDpiChanges)
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
@@ -151,6 +152,7 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+                    break;
 
                 case WindowsMessage.WM_GETICON:
                     if (_iconImpl == null)
