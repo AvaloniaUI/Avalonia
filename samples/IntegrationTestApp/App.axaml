@@ -9,10 +9,15 @@
     </Application.Styles>
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="/Assets/icon.ico">
+            <TrayIcon Icon="/Assets/icon.ico"
+                      ToolTipText="IntegrationTestApp TrayIcon"
+                      Command="{Binding TrayIconCommand}"
+                      CommandParameter="TrayIconClicked">
                 <TrayIcon.Menu>
                     <NativeMenu>
-                        <NativeMenuItem Header="Show _Test Window" Command="{Binding ShowWindowCommand}" />
+                        <NativeMenuItem Header="Raise Menu Clicked"
+                                        Command="{Binding TrayIconCommand}"
+                                        CommandParameter="TrayIconMenuClicked" />
                     </NativeMenu>
                 </TrayIcon.Menu>
             </TrayIcon>
