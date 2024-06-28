@@ -8,12 +8,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Microsoft.CodeAnalysis;
 
 namespace IntegrationTestApp
 {
