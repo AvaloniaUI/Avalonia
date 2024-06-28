@@ -280,8 +280,6 @@ namespace ControlCatalog.Pages
                 });
 
                 await SetPickerResult(folders);
-
-                SetFolder(folders.FirstOrDefault());
             };
             this.Get<Button>("OpenFileFromBookmark").Click += async delegate
             {
@@ -298,7 +296,6 @@ namespace ControlCatalog.Pages
                     : null;
 
                 await SetPickerResult(folder is null ? null : new[] { folder });
-                SetFolder(folder);
             };
             
             this.Get<Button>("LaunchUri").Click += async delegate
@@ -365,11 +362,18 @@ namespace ControlCatalog.Pages
 
                     openedFileContent.Text = resultText;
 
-                    var parent = await item.GetParentAsync();
-                    SetFolder(parent);
-                    if (parent is not null)
+                    if (item is IStorageFolder storageFolder)
                     {
-                        mappedResults.Add(FullPathOrName(parent));
+                        SetFolder(storageFolder);
+                    }
+                    else
+                    {
+                        var parent = await item.GetParentAsync();
+                        SetFolder(parent);
+                        if (parent is not null)
+                        {
+                            mappedResults.Add(FullPathOrName(parent));
+                        }
                     }
 
                     foreach (var selectedItem in items)

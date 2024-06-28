@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Reactive;
 using Foundation;
 
 using UIKit;
@@ -171,12 +173,28 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     public Task<Stream> OpenReadAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Read));
+        return Task.FromResult(CreateStream(FileAccess.Read));
     }
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Write));
+        return Task.FromResult(CreateStream(FileAccess.Write));
+    }
+
+    private Stream CreateStream(FileAccess fileAccess)
+    {
+        var document = new UIDocument(Url);
+        var path = document.FileUrl.Path!;
+        var scopeCreated = SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
+        var stream = File.Open(path, FileMode.Open, fileAccess);
+
+        return scopeCreated ?
+            new SecurityScopedStream(stream, Disposable.Create(() =>
+            {
+                document.Dispose();
+                SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+            })) :
+            stream;
     }
 }
 

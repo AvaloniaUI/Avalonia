@@ -80,6 +80,13 @@ namespace Avalonia
         /// and make your Avalonia app run with it. The default value is null.
         /// </summary>
         public string AvaloniaNativeLibraryPath { get; set; }
+
+        /// <summary>
+        /// If you distribute your app in App Store - it should be with sandbox enabled.
+        /// This parameter enables <see cref="Avalonia.Platform.Storage.IStorageItem.SaveBookmarkAsync"/> and related APIs,
+        /// as well as wrapping all storage related calls in secure context. The default value is true.
+        /// </summary>
+        public bool AppSandboxEnabled { get; set; } = true;
     }
 
     // ReSharper disable once InconsistentNaming

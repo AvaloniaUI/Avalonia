@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
     class ClipboardImpl : IClipboard, IDisposable
     {
         private IAvnClipboard _native;
+
         // TODO hide native types behind IAvnClipboard abstraction, so managed side won't depend on macOS.
         private const string NSPasteboardTypeString = "public.utf8-plain-text";
         private const string NSFilenamesPboardType = "NSFilenamesPboardType";
@@ -86,7 +89,13 @@ namespace Avalonia.Native
 
         public IEnumerable<IStorageItem> GetFiles()
         {
-            return GetFileNames()?.Select(f => StorageProviderHelpers.TryCreateBclStorageItem(f)!)
+            var storageApi = (StorageProviderApi)AvaloniaLocator.Current.GetRequiredService<IStorageProviderFactory>();
+    
+            // TODO: use non-deprecated AppKit API to get NSUri instead of file names.
+            return GetFileNames()?
+                .Select(f => StorageProviderHelpers.TryGetUriFromFilePath(f, false) is { } uri
+                    ? storageApi.TryGetStorageItem(uri)
+                    : null)
                 .Where(f => f is not null);
         }
 
