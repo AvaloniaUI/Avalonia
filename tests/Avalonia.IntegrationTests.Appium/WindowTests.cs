@@ -263,8 +263,8 @@ namespace Avalonia.IntegrationTests.Appium
             var showTopmostWindow = _session.FindElementByAccessibilityId("ShowTopmostWindow");
             using var window = showTopmostWindow.OpenWindowWithClick();
             Thread.Sleep(1000);
-            var ownerWindow = GetWindow("OwnerWindow");
-            var ownedWindow = GetWindow("OwnedWindow");
+            var ownerWindow = _session.GetWindowById("OwnerWindow");
+            var ownedWindow = _session.GetWindowById("OwnedWindow");
 
             Assert.NotNull(ownerWindow);
             Assert.NotNull(ownedWindow);
@@ -297,7 +297,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false, extendClientArea: extendClientArea))
             {
-                var secondaryWindow = GetWindow("SecondaryWindow");
+                var secondaryWindow = _session.GetWindowById("SecondaryWindow");
                 AppiumWebElement? maximizeButton;
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -440,19 +440,6 @@ namespace Avalonia.IntegrationTests.Appium
                 extendClientAreaCheckBox.Click();
 
             return showButton.OpenWindowWithClick();
-        }
-
-        private AppiumWebElement GetWindow(string identifier)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return _session.FindElementByXPath(
-                    $"XCUIElementTypeWindow[@identifier='{identifier}']");
-            }
-            else
-            {
-                return _session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
-            }
         }
 
         private WindowInfo GetWindowInfo()
