@@ -24,8 +24,6 @@ public class TrayIconTests : IDisposable
         if (OperatingSystem.IsWindows())
         {
             _rootSession = fixture.CreateNestedSession("Root");
-            var rootSource = _rootSession.PageSource;
-            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "rootSource.xml"), rootSource);
         }
 
         var tabs = _session.FindElementByAccessibilityId("MainTabs");
@@ -40,9 +38,9 @@ public class TrayIconTests : IDisposable
         var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
         Assert.NotNull(avaloinaTrayIconButton);
 
-        avaloinaTrayIconButton.Click();
+        avaloinaTrayIconButton.SendClick();
 
-        Thread.Sleep(1000);
+        Thread.Sleep(2000);
         
         var checkBox = _session.FindElementByAccessibilityId("TrayIconClicked");
         Assert.True(checkBox.GetIsChecked());
@@ -58,9 +56,9 @@ public class TrayIconTests : IDisposable
         Assert.NotNull(contextMenu);
 
         var menuItem = contextMenu.FindElementByName("Raise Menu Clicked");
-        menuItem.Click();
-        
-        Thread.Sleep(1000);
+        menuItem.SendClick();
+
+        Thread.Sleep(2000);
 
         var checkBox = _session.FindElementByAccessibilityId("TrayIconMenuClicked");
         Assert.True(checkBox.GetIsChecked());
@@ -88,7 +86,7 @@ public class TrayIconTests : IDisposable
     {
         if (OperatingSystem.IsWindows())
         {
-            var taskBar = session.FindElementsByName("Taskbar")
+            var taskBar = session.FindElementsByClassName("Shell_TrayWnd")
                 .FirstOrDefault() ?? throw new InvalidOperationException("Couldn't find Taskbar on current system.");
 
             if (TryToGetIcon(taskBar, trayIconName) is { } trayIcon)
@@ -100,15 +98,17 @@ public class TrayIconTests : IDisposable
                 // Add a sleep here, as previous test might still run popup closing animation.
                 Thread.Sleep(1000);
 
-                // Try to open "Show hidden icons" (win11) or "Notification Chevron" (win10)
+                // win11: SystemTrayIcon
+                // win10: Notification Chevron
                 var trayIconsButton = taskBar.FindElementsByAccessibilityId("SystemTrayIcon").FirstOrDefault()
                     ?? taskBar.FindElementsByName("Notification Chevron").FirstOrDefault()
                     ?? throw new InvalidOperationException("SystemTrayIcon cannot be found.");
                 trayIconsButton.Click();
 
-                // Try to open "System tray" (win11) or "Notification Overflow" (win10)
-                var trayIconsFlyout = session.FindElementsByName("System tray overflow window.").FirstOrDefault()
-                      ?? taskBar.FindElementsByName("Notification Overflow").FirstOrDefault()
+                // win11: TopLevelWindowForOverflowXamlIsland
+                // win10: NotifyIconOverflowWindow
+                var trayIconsFlyout = session.FindElementsByClassName("TopLevelWindowForOverflowXamlIsland").FirstOrDefault()
+                      ?? taskBar.FindElementsByClassName("NotifyIconOverflowWindow").FirstOrDefault()
                       ?? throw new InvalidOperationException("System tray overflow window cannot be found.");
                 return TryToGetIcon(trayIconsFlyout, trayIconName);
             }
