@@ -29,7 +29,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
         .GetField("BeforeTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
     private static FieldInfo s_afterTest = typeof(BeforeAndAfterTestCommand)
         .GetField("AfterTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
-    
+
     private AvaloniaTestMethodCommand(
         HeadlessUnitTestSession session,
         TestCommand innerCommand,
@@ -47,7 +47,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
     {
         return ProcessCommand(session, command, new List<Action>(), new List<Action>());
     }
-    
+
     private static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command, List<Action> before, List<Action> after)
     {
         if (command is BeforeAndAfterTestCommand beforeAndAfterTestCommand)
@@ -85,6 +85,8 @@ internal class AvaloniaTestMethodCommand : TestCommand
     // Unfortunately, NUnit has issues with custom synchronization contexts, which means we need to add some hacks to make it work.
     private async Task<TestResult> ExecuteTestMethod(TestExecutionContext context)
     {
+        context.EstablishExecutionEnvironment();
+
         _beforeTest.ForEach(a => a());
         
         var testMethod = _innerCommand.Test.Method;

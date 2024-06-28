@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -14,6 +15,7 @@ public class ThreadingTests
 #endif
     public void Should_Be_On_Dispatcher_Thread()
     {
+        ValidateTestContext();
         Dispatcher.UIThread.VerifyAccess();
     }
 
@@ -34,7 +36,10 @@ public class ThreadingTests
 #endif
     public async Task DispatcherTimer_Works_On_The_Same_Thread(int interval)
     {
+        ValidateTestContext();
         await Task.Delay(100);
+
+        ValidateTestContext();
 
         var currentThread = Thread.CurrentThread;
         var tcs = new TaskCompletionSource();
@@ -42,6 +47,7 @@ public class ThreadingTests
 
         DispatcherTimer.RunOnce(() =>
         {
+            ValidateTestContext();
             hasCompleted = currentThread == Thread.CurrentThread;
 
             tcs.SetResult();
@@ -49,5 +55,14 @@ public class ThreadingTests
 
         await tcs.Task; 
         Assert.True(hasCompleted);
+    }
+
+    private void ValidateTestContext([CallerMemberName] string runningMethodName = null)
+    {
+#if NUNIT
+        var testName = TestContext.CurrentContext.Test.Name;
+        // Test.Name also includes parameters, so we use StartsWith.
+        Assert.True(testName.StartsWith(runningMethodName!)); 
+#endif
     }
 }
