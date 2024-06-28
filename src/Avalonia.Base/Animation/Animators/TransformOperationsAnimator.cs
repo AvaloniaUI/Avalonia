@@ -1,14 +1,15 @@
 using System;
+using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
 
 namespace Avalonia.Animation.Animators
 {
-    internal class TransformOperationsAnimator : Animator<TransformOperations>
+    internal class TransformOperationsAnimator : Animator<TransformOperations>, IAvaloniaListItemValidator<AnimatorKeyFrame>
     {
         public TransformOperationsAnimator()
         {
-            Validate = ValidateTransform;
+            Validator = this;
         }
 
         public override TransformOperations Interpolate(double progress, TransformOperations oldValue, TransformOperations newValue)
@@ -24,11 +25,11 @@ namespace Avalonia.Animation.Animators
             return value as TransformOperations ?? TransformOperations.Identity;
         }
 
-        private void ValidateTransform(AnimatorKeyFrame kf)
+        void IAvaloniaListItemValidator<AnimatorKeyFrame>.Validate(AnimatorKeyFrame item)
         {
-            if (!(kf.Value is TransformOperations))
+            if (item.Value is not TransformOperations)
             {
-                throw new InvalidOperationException($"All keyframes must be of type {typeof(TransformOperations)}.");
+                throw new InvalidOperationException($"{item.DebugDisplay} must have a value of type {typeof(TransformOperations)}.");
             }
         }
     }

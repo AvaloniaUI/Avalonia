@@ -139,7 +139,7 @@ namespace Avalonia.Skia
                 {
                     if (!_isDisposed)
                     {
-                        SkiaCompat.SetMatrix(_context.Canvas, _revertTransform);
+                        _context.Canvas.SetMatrix(_revertTransform);
                         _context._leased = false;
                         _isDisposed = true;
                     }
@@ -328,7 +328,7 @@ namespace Avalonia.Skia
             {
                 var ac = shadow.Color;
 
-                var filter = SkiaCompat.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
+                var filter = SKImageFilter.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
                 var color = new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity));
 
                 paint.Reset();
@@ -860,7 +860,7 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                SkiaCompat.SetMatrix(Canvas, transform.ToSKMatrix());
+                Canvas.SetMatrix(transform.ToSKMatrix());
             }
         }
 
@@ -1072,14 +1072,14 @@ namespace Avalonia.Skia
 
             SKShaderTileMode tileX =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
 
             SKShaderTileMode tileY =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
@@ -1149,65 +1149,105 @@ namespace Avalonia.Skia
         private void ConfigureSceneBrushContentWithPicture(ref PaintWrapper paintWrapper, ISceneBrushContent content,
             Rect targetRect)
         {
-            var rect = content.Rect;
-            var contentSize = rect.Size;
-            if (contentSize.Width <= 0 || contentSize.Height <= 0)
+            var tileBrush = content.Brush;
+
+            var contentBounds = content.Rect;
+
+            if (contentBounds.Size.Width <= 0 || contentBounds.Size.Height <= 0)
             {
                 paintWrapper.Paint.Color = SKColor.Empty;
+
                 return;
             }
-            
-            var tileBrush = content.Brush;
-            var transform = rect.TopLeft == default ? Matrix.Identity : Matrix.CreateTranslation(-rect.X, -rect.Y);
+
+            var brushTransform = Matrix.Identity;
+
+            var destinationRect = content.Brush.DestinationRect.ToPixels(targetRect.Size);
+
+            var sourceRect = tileBrush.SourceRect.ToPixels(contentBounds);
+
+            brushTransform *= Matrix.CreateTranslation(-sourceRect.Position);
+
+            var scale = Vector.One;
+
+            if (sourceRect.Size != destinationRect.Size)
+            {
+                //scale source to destination size
+                scale = tileBrush.Stretch.CalculateScaling(destinationRect.Size, sourceRect.Size);
+
+                var scaleTransform = Matrix.CreateScale(scale);
+
+                brushTransform *= scaleTransform;
+            }
+
+            var transform = Matrix.Identity;
 
             if (content.Transform is not null)
             {
                 var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
                 var offset = Matrix.CreateTranslation(transformOrigin);
+                transform = -offset * content.Transform.Value * offset;
 
-                transform *= -offset * content.Transform.Value * offset;
+                if (tileBrush.TileMode == TileMode.None)
+                {
+                    brushTransform *= transform;
+
+                    destinationRect = destinationRect.TransformToAABB(transform);
+
+                    destinationRect = new Rect(0, 0, destinationRect.Left + destinationRect.Width,
+                        destinationRect.Top + destinationRect.Height);
+                }
             }
 
-            var calc = new TileBrushCalculator(tileBrush, contentSize, targetRect.Size);
-            transform *= calc.IntermediateTransform;
-            
-            using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
-            using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
+            if (tileBrush.Stretch != Stretch.Fill && transform == Matrix.Identity)
             {
-                ctx.PushClip(calc.IntermediateClip);
+                //align content
+                var alignmentOffset = TileBrushCalculator.CalculateTranslate(tileBrush.AlignmentX, tileBrush.AlignmentY,
+                    contentBounds, destinationRect, tileBrush.Stretch == Stretch.None ? Vector.One : scale);
+
+                brushTransform *= Matrix.CreateTranslation(alignmentOffset);
+            }
+
+            using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
+            using (var ctx = pictureTarget.CreateDrawingContext(destinationRect.Size))
+            {
                 ctx.PushRenderOptions(RenderOptions);
-                content.Render(ctx, transform);
+                content.Render(ctx, brushTransform);
                 ctx.PopRenderOptions();
-                ctx.PopClip();
             }
 
             using var picture = pictureTarget.GetPicture();
 
             var paintTransform =
                 tileBrush.TileMode != TileMode.None
-                    ? SKMatrix.CreateTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)
+                    ? SKMatrix.CreateTranslation(-(float)destinationRect.X, -(float)destinationRect.Y)
                     : SKMatrix.CreateIdentity();
 
             SKShaderTileMode tileX =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
 
             SKShaderTileMode tileY =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
 
             paintTransform = SKMatrix.Concat(paintTransform,
                 SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
-            
+
             if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
                 paintTransform =
                     paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetRect.X, (float)targetRect.Y));
+
+            if (tileBrush.TileMode != TileMode.None)
+            {
+                paintTransform = paintTransform.PreConcat(transform.ToSKMatrix());
+            }
 
             using (var shader = picture.ToShader(tileX, tileY, paintTransform,
                        new SKRect(0, 0, picture.CullRect.Width, picture.CullRect.Height)))

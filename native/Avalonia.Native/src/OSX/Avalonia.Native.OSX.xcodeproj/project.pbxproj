@@ -17,7 +17,6 @@
 		183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391CD090AA776E7E841AC9 /* WindowImpl.h */; };
 		18391AA7E0BBA74D184C5734 /* AutoFitContentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839166350F32661F3ABD70F /* AutoFitContentView.mm */; };
 		18391AC16726CBC45856233B /* AvnWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839155B28B20FFB672D29C6 /* AvnWindow.mm */; };
-		18391AC65ADD7DDD33FBE737 /* PopupImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 183910513F396141938832B5 /* PopupImpl.h */; };
 		18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 1839171D898F9BFC1373631A /* ResizeScope.h */; };
 		18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */ = {isa = PBXBuildFile; fileRef = 183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */; };
 		18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839132D0E2454D911F1D1F9 /* AvnView.mm */; };
@@ -58,13 +57,15 @@
 		AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */; };
 		BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */ = {isa = PBXBuildFile; fileRef = BC11A5BC2608D58F0017BAD0 /* automation.h */; };
 		BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC11A5BD2608D58F0017BAD0 /* automation.mm */; };
+		BC7C33822C066DBF00945A48 /* AvnAutomationNode.h in Headers */ = {isa = PBXBuildFile; fileRef = BC7C33812C066DBF00945A48 /* AvnAutomationNode.h */; };
 		ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */; };
 		ED754D262A97306B0078B4DF /* PlatformRenderTimer.mm in Sources */ = {isa = PBXBuildFile; fileRef = ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */; };
 		EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */ = {isa = PBXBuildFile; fileRef = EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */; };
+		F10084842BFF1F9E0024303E /* TopLevelImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = F10084832BFF1F9E0024303E /* TopLevelImpl.h */; };
+		F10084862BFF1FB40024303E /* TopLevelImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = F10084852BFF1FB40024303E /* TopLevelImpl.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		183910513F396141938832B5 /* PopupImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupImpl.h; sourceTree = "<group>"; };
 		1839122E037567BDD1D09DEB /* WindowProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowProtocol.h; sourceTree = "<group>"; };
 		1839132D0E2454D911F1D1F9 /* AvnView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnView.mm; sourceTree = "<group>"; };
 		183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IWindowStateChanged.h; sourceTree = "<group>"; };
@@ -122,9 +123,13 @@
 		AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platformthreading.mm; sourceTree = "<group>"; };
 		BC11A5BC2608D58F0017BAD0 /* automation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = automation.h; sourceTree = "<group>"; };
 		BC11A5BD2608D58F0017BAD0 /* automation.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = automation.mm; sourceTree = "<group>"; };
+		BC7C33812C066DBF00945A48 /* AvnAutomationNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvnAutomationNode.h; sourceTree = "<group>"; };
+		BC7C33832C066F1100945A48 /* AvnAccessibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnAccessibility.h; sourceTree = "<group>"; };
 		ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformRenderTimer.mm; sourceTree = "<group>"; };
 		EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformSettings.mm; sourceTree = "<group>"; };
+		F10084832BFF1F9E0024303E /* TopLevelImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TopLevelImpl.h; sourceTree = "<group>"; };
+		F10084852BFF1FB40024303E /* TopLevelImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TopLevelImpl.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,9 +169,13 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				F10084852BFF1FB40024303E /* TopLevelImpl.mm */,
+				BC7C33832C066F1100945A48 /* AvnAccessibility.h */,
+				BC7C33812C066DBF00945A48 /* AvnAutomationNode.h */,
 				ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */,
 				855EDC9E28C6546F00807998 /* PlatformBehaviorInhibition.mm */,
 				8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */,
+				F10084832BFF1F9E0024303E /* TopLevelImpl.h */,
 				8D300D68292E1E5D00320C49 /* AvnTextInputMethod.mm */,
 				8D300D64292D0A6800320C49 /* AvnTextInputMethod.h */,
 				BC11A5BC2608D58F0017BAD0 /* automation.h */,
@@ -214,7 +223,6 @@
 				1839155B28B20FFB672D29C6 /* AvnWindow.mm */,
 				18391DB45C7D892E61BF388C /* WindowInterfaces.h */,
 				18391BB698579F40F1783F31 /* PopupImpl.mm */,
-				183910513F396141938832B5 /* PopupImpl.h */,
 				64B1EBEECBE13D8616D7C934 /* metal.mm */,
 				64B1E4FA7D9D6E5F47AA8606 /* noarc.mm */,
 				64B1E26F2B1B9C577BF52F06 /* noarc.h */,
@@ -237,10 +245,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				37155CE4233C00EB0034DCE9 /* menu.h in Headers */,
+				F10084842BFF1F9E0024303E /* TopLevelImpl.h in Headers */,
 				BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */,
 				183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */,
 				1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */,
 				183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */,
+				BC7C33822C066DBF00945A48 /* AvnAutomationNode.h in Headers */,
 				18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */,
 				8D300D65292D0A6800320C49 /* AvnTextInputMethod.h in Headers */,
 				8D2F3512292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h in Headers */,
@@ -249,7 +259,6 @@
 				18391E1381E2D5BFD60265A9 /* AutoFitContentView.h in Headers */,
 				18391F1E2411C79405A9943A /* WindowProtocol.h in Headers */,
 				183914E50CF6D2EFC1667F7C /* WindowInterfaces.h in Headers */,
-				18391AC65ADD7DDD33FBE737 /* PopupImpl.h in Headers */,
 				64B1ECA861163C0EFF0E502B /* noarc.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -332,6 +341,7 @@
 				AB00E4F72147CA920032A60A /* main.mm in Sources */,
 				37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */,
 				1839179A55FC1421BEE83330 /* WindowBaseImpl.mm in Sources */,
+				F10084862BFF1FB40024303E /* TopLevelImpl.mm in Sources */,
 				1839125F057B0A4EB1760058 /* WindowImpl.mm in Sources */,
 				18391068E48EF96E3DB5FDAB /* ResizeScope.mm in Sources */,
 				18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */,

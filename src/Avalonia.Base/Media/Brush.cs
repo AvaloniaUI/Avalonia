@@ -101,6 +101,8 @@ namespace Avalonia.Media
         private protected void RegisterForSerialization() =>
             _resource.RegisterForInvalidationOnAllCompositors(this);
 
+        private protected bool IsOnCompositor(Compositor c) => _resource.TryGetForCompositor(c) != null;
+
         private CompositorResourceHolder<ServerCompositionSimpleBrush> _resource;
 
         IBrush ICompositionRenderResource<IBrush>.GetForCompositor(Compositor c) => _resource.GetForCompositor(c);

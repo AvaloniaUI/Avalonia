@@ -31,7 +31,7 @@ public static class PhysicalKeyExtensions
             PhysicalKey.Digit7 => Key.D7,
             PhysicalKey.Digit8 => Key.D8,
             PhysicalKey.Digit9 => Key.D9,
-            PhysicalKey.Equal => Key.OemMinus,
+            PhysicalKey.Equal => Key.OemPlus,
             PhysicalKey.IntlBackslash => Key.Oem102,
             PhysicalKey.IntlRo => Key.Oem102,
             PhysicalKey.IntlYen => Key.Oem5,

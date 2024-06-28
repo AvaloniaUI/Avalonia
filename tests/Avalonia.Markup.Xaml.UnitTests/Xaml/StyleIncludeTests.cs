@@ -326,7 +326,10 @@ public class StyleIncludeTests
     }
 }
 
-public class TestServiceProvider : IServiceProvider, IUriContext, IAvaloniaXamlIlParentStackProvider
+public class TestServiceProvider :
+    IServiceProvider,
+    IUriContext,
+    IAvaloniaXamlIlEagerParentStackProvider
 {
     private IServiceProvider _root = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
     public object GetService(Type serviceType)
@@ -343,6 +346,8 @@ public class TestServiceProvider : IServiceProvider, IUriContext, IAvaloniaXamlI
     }
 
     public Uri BaseUri { get; set; }
-    public List<object> Parents { get; set; } = new List<object> { new ContentControl() };
-    IEnumerable<object> IAvaloniaXamlIlParentStackProvider.Parents => Parents;
+    public List<object> ParentsStack { get; set; } = [new ContentControl()];
+    IEnumerable<object> IAvaloniaXamlIlParentStackProvider.Parents => ParentsStack.AsEnumerable().Reverse();
+    IReadOnlyList<object> IAvaloniaXamlIlEagerParentStackProvider.DirectParentsStack => ParentsStack;
+    IAvaloniaXamlIlEagerParentStackProvider IAvaloniaXamlIlEagerParentStackProvider.ParentProvider => null;
 }

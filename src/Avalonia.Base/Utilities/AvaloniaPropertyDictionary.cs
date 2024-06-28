@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Avalonia.Utilities
 {
@@ -52,7 +54,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The key to get or set.</param>
         /// <returns>
-        /// The value associated with the specified key. If the key is not found, a get operation 
+        /// The value associated with the specified key. If the key is not found, a get operation
         /// throws a <see cref="KeyNotFoundException"/>, and a set operation creates a
         /// new element for the specified key.
         /// </returns>
@@ -63,16 +65,18 @@ namespace Avalonia.Utilities
         {
             get
             {
-                if (!TryGetEntry(property.Id, out var index))
+                var index = FindEntry(property.Id);
+                if (index < 0)
                     ThrowNotFound();
-                return _entries[index].Value;
+                return UnsafeGetEntryRef(index).Value;
             }
             set
             {
-                if (TryGetEntry(property.Id, out var index))
-                    _entries[index] = new Entry(property, value);
+                var index = FindEntry(property.Id);
+                if (index >= 0)
+                    UnsafeGetEntryRef(index) = new Entry(property, value);
                 else
-                    InsertEntry(new Entry(property, value), index);
+                    InsertEntry(new Entry(property, value), ~index);
             }
         }
 
@@ -88,7 +92,7 @@ namespace Avalonia.Utilities
             {
                 if (index >= _entryCount)
                     ThrowOutOfRange();
-                return _entries![index].Value;
+                return UnsafeGetEntryRef(index).Value;
             }
         }
 
@@ -99,11 +103,12 @@ namespace Avalonia.Utilities
         /// <param name="value">The value of the element to add.</param>
         public void Add(AvaloniaProperty property, TValue value)
         {
-            if (TryGetEntry(property.Id, out var index))
+            var index = FindEntry(property.Id);
+            if (index >= 0)
                 ThrowDuplicate();
-            InsertEntry(new Entry(property, value), index);
+            InsertEntry(new Entry(property, value), ~index);
         }
-        
+
         /// <summary>
         /// Removes all keys and values from the collection.
         /// </summary>
@@ -124,27 +129,19 @@ namespace Avalonia.Utilities
         /// Determines whether the collection contains the specified key.
         /// </summary>
         /// <param name="property">The key.</param>
-        public bool ContainsKey(AvaloniaProperty property) => TryGetEntry(property.Id, out _);
+        public bool ContainsKey(AvaloniaProperty property) => FindEntry(property.Id) >= 0;
 
         /// <summary>
-        /// Gets the key and value at the specified index.
+        /// Gets value at the specified index.
         /// </summary>
-        /// <param name="index">
-        /// The index of the entry, between 0 and <see cref="Count"/> - 1.
-        /// </param>
-        /// <param name="key">
-        /// When this method returns, contains the key at the specified index.
-        /// </param>
-        /// <param name="value">
-        /// When this method returns, contains the value at the specified index.
-        /// </param>
-        public void GetKeyValue(int index, out AvaloniaProperty key, out TValue value)
+        /// <param name="index">The index of the entry, between 0 and <see cref="Count"/> - 1.</param>
+        /// <returns>The value at the specified index.</returns>
+        public TValue GetValue(int index)
         {
             if (index >= _entryCount)
                 ThrowOutOfRange();
-            ref var entry = ref _entries![index];
-            key = entry.Property;
-            value = entry.Value;
+            ref var entry = ref UnsafeGetEntryRef(index);
+            return entry.Value;
         }
 
         /// <summary>
@@ -157,7 +154,8 @@ namespace Avalonia.Utilities
         /// </returns>
         public bool Remove(AvaloniaProperty property)
         {
-            if (TryGetEntry(property.Id, out var index))
+            var index = FindEntry(property.Id);
+            if (index >= 0)
             {
                 RemoveAt(index);
                 return true;
@@ -178,9 +176,10 @@ namespace Avalonia.Utilities
         /// </returns>
         public bool Remove(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
         {
-            if (TryGetEntry(property.Id, out var index))
+            var index = FindEntry(property.Id);
+            if (index >= 0)
             {
-                value = _entries[index].Value;
+                value = UnsafeGetEntryRef(index).Value;
                 RemoveAt(index);
                 return true;
             }
@@ -196,11 +195,11 @@ namespace Avalonia.Utilities
         public void RemoveAt(int index)
         {
             if (_entries is null)
-                throw new IndexOutOfRangeException();
+                ThrowOutOfRange();
 
             Array.Copy(_entries, index + 1, _entries, index, _entryCount - index - 1);
             _entryCount--;
-            _entries[_entryCount] = default;
+            UnsafeGetEntryRef(_entryCount) = default;
         }
 
         /// <summary>
@@ -211,9 +210,10 @@ namespace Avalonia.Utilities
         /// <returns></returns>
         public bool TryAdd(AvaloniaProperty property, TValue value)
         {
-            if (TryGetEntry(property.Id, out var index))
+            var index = FindEntry(property.Id);
+            if (index >= 0)
                 return false;
-            InsertEntry(new Entry(property, value), index);
+            InsertEntry(new Entry(property, value), ~index);
             return true;
         }
 
@@ -228,73 +228,91 @@ namespace Avalonia.Utilities
         /// <returns></returns>
         public bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
         {
-            if (TryGetEntry(property.Id, out var index))
+            // <!> Very performance critical code: FindEntry has been manually inlined here.
+            // This gives a ~20% speedup in micro-benchmarks.
+
+            var lo = 0;
+            var hi = _entryCount - 1;
+
+            if (hi >= 0)
             {
-                value = _entries[index].Value;
-                return true;
+                var propertyId = property.Id;
+                ref var entry0 = ref UnsafeGetEntryRef(0);
+
+                do
+                {
+                    // hi and lo are never negative: there's no overflow using unsigned math
+                    var i = (int)(((uint)hi + (uint)lo) >> 1);
+
+#if NET6_0_OR_GREATER
+                    // nuint cast to force zero extend instead of sign extend
+                    ref var entry = ref Unsafe.Add(ref entry0, (nuint)i);
+#else
+                    ref var entry = ref Unsafe.Add(ref entry0, i);
+#endif
+
+                    var entryId = entry.Id;
+                    if (entryId == propertyId)
+                    {
+                        value = entry.Value;
+                        return true;
+                    }
+
+                    if (entryId < propertyId)
+                    {
+                        lo = i + 1;
+                    }
+                    else
+                    {
+                        hi = i - 1;
+                    }
+                } while (lo <= hi);
             }
 
             value = default;
             return false;
         }
 
-        [MemberNotNullWhen(true, nameof(_entries))]
-        private bool TryGetEntry(int propertyId, out int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int FindEntry(int propertyId)
         {
-            int checkIndex;
-            int iLo = 0;
-            int iHi = _entryCount;
+            var lo = 0;
+            var hi = _entryCount - 1;
 
-            if (iHi <= 0)
+            if (hi >= 0)
             {
-                index = 0;
-                return false;
+                ref var entry0 = ref UnsafeGetEntryRef(0);
+
+                do
+                {
+                    // hi and lo are never negative: there's no overflow using unsigned math
+                    var i = (int)(((uint)hi + (uint)lo) >> 1);
+
+#if NET6_0_OR_GREATER
+                    // nuint cast to force zero extend instead of sign extend
+                    ref var entry = ref Unsafe.Add(ref entry0, (nuint)i);
+#else
+                    ref var entry = ref Unsafe.Add(ref entry0, i);
+#endif
+
+                    var entryId = entry.Id;
+                    if (entryId == propertyId)
+                    {
+                        return i;
+                    }
+
+                    if (entryId < propertyId)
+                    {
+                        lo = i + 1;
+                    }
+                    else
+                    {
+                        hi = i - 1;
+                    }
+                } while (lo <= hi);
             }
 
-            // Do a binary search to find the value
-            while (iHi - iLo > 3)
-            {
-                int iPv = (iHi + iLo) / 2;
-                checkIndex = _entries![iPv].Property.Id;
-
-                if (propertyId == checkIndex)
-                {
-                    index = iPv;
-                    return true;
-                }
-
-                if (propertyId <= checkIndex)
-                {
-                    iHi = iPv;
-                }
-                else
-                {
-                    iLo = iPv + 1;
-                }
-            }
-
-            // Now we only have three values to search; switch to a linear search
-            do
-            {
-                checkIndex = _entries![iLo].Property.Id;
-
-                if (checkIndex == propertyId)
-                {
-                    index = iLo;
-                    return true;
-                }
-
-                if (checkIndex > propertyId)
-                {
-                    // we've gone past the targetIndex - return not found
-                    break;
-                }
-
-                iLo++;
-            } while (iLo < iHi);
-
-            index = iLo;
-            return false;
+            return ~lo;
         }
 
         [MemberNotNull(nameof(_entries))]
@@ -327,16 +345,28 @@ namespace Avalonia.Utilities
                         entryIndex + 1,
                         _entryCount - entryIndex);
 
-                    _entries[entryIndex] = entry;
+                    UnsafeGetEntryRef(entryIndex) = entry;
                 }
             }
             else
             {
                 _entries ??= new Entry[DefaultInitialCapacity];
-                _entries[0] = entry;
+                UnsafeGetEntryRef(0) = entry;
             }
 
             _entryCount++;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref Entry UnsafeGetEntryRef(int index)
+        {
+#if NET6_0_OR_GREATER && !DEBUG
+            // This type is performance critical: in release mode, skip any bound check the JIT compiler couldn't elide.
+            // The index parameter should always be correct when calling this method: no unchecked user input should get here.
+            return ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_entries!), (uint)index);
+#else
+            return ref _entries![index];
+#endif
         }
 
         [DoesNotReturn]
@@ -351,12 +381,12 @@ namespace Avalonia.Utilities
 
         private readonly struct Entry
         {
-            public readonly AvaloniaProperty Property;
+            public readonly int Id;
             public readonly TValue Value;
 
             public Entry(AvaloniaProperty property, TValue value)
             {
-                Property = property;
+                Id = property.Id;
                 Value = value;
             }
         }

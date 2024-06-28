@@ -1,9 +1,11 @@
 using System;
+using System.Text;
 using System.Windows.Input;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -163,7 +165,10 @@ namespace Avalonia.Controls
 
         void CanExecuteChanged()
         {
-            SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
+            if (!Dispatcher.UIThread.CheckAccess())
+                Dispatcher.UIThread.Invoke(() => CanExecuteChanged());
+            else
+                SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
         }
 
         public bool HasClickHandlers => Click != null;
@@ -214,6 +219,16 @@ namespace Avalonia.Controls
                 if (change.NewValue is ICommand newCommand)
                     WeakEvents.CommandCanExecuteChanged.Subscribe(newCommand, _canExecuteChangedSubscriber);
                 CanExecuteChanged();
+            }
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, true);
             }
         }
     }

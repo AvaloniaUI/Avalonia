@@ -8,26 +8,9 @@
 
 #import "WindowBaseImpl.h"
 #include "IWindowStateChanged.h"
-#include <list>
-
 class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
 {
-private:
-    bool _isEnabled;
-    bool _canResize;
-    bool _fullScreenActive;
-    SystemDecorations _decorations;
-    AvnWindowState _lastWindowState;
-    AvnWindowState _actualWindowState;
-    bool _inSetWindowState;
-    NSRect _preZoomSize;
-    bool _transitioningWindowState;
-    bool _isClientAreaExtended;
-    bool _isModal;
-    WindowImpl* _parent;
-    std::list<WindowImpl*> _children;
-    AvnExtendClientAreaChromeHints _extendClientHints;
-
+public:
     FORWARD_IUNKNOWN()
 BEGIN_INTERFACE_MAP()
         INHERIT_INTERFACE_MAP(WindowBaseImpl)
@@ -44,8 +27,6 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT Show (bool activate, bool isDialog) override;
 
     virtual HRESULT SetEnabled (bool enable) override;
-
-    virtual HRESULT SetParent (IAvnWindow* parent) override;
 
     void StartStateTransition () override ;
 
@@ -82,6 +63,8 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT GetExtendTitleBarHeight (double*ret) override;
 
     virtual HRESULT SetExtendTitleBarHeight (double value) override;
+    
+    virtual HRESULT GetWindowZOrder (long* zOrder) override;
 
     void EnterFullScreenMode ();
 
@@ -101,12 +84,23 @@ BEGIN_INTERFACE_MAP()
     
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() override;
-    void UpdateStyle () override;
+    virtual void UpdateAppearance() override;
 
 private:
     void ZOrderChildWindows();
     void OnInitialiseNSWindow();
     NSString *_lastTitle;
+    bool _isEnabled;
+    bool _canResize;
+    bool _fullScreenActive;
+    SystemDecorations _decorations;
+    AvnWindowState _lastWindowState;
+    AvnWindowState _actualWindowState;
+    bool _inSetWindowState;
+    NSRect _preZoomSize;
+    bool _transitioningWindowState;
+    bool _isClientAreaExtended;
+    AvnExtendClientAreaChromeHints _extendClientHints;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

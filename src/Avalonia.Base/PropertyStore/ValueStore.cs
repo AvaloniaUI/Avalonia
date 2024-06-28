@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Diagnostics;
@@ -283,11 +284,25 @@ namespace Avalonia.PropertyStore
 
         public T GetValue<T>(StyledProperty<T> property)
         {
+            // <!> Performance critical method
             if (_effectiveValues.TryGetValue(property, out var v))
-                return ((EffectiveValue<T>)v).Value;
+                return CastEffectiveValue<T>(v).Value;
             if (property.Inherits && TryGetInheritedValue(property, out v))
-                return ((EffectiveValue<T>)v).Value;
-            return property.GetDefaultValue(Owner.GetType());
+                return CastEffectiveValue<T>(v).Value;
+            return property.GetDefaultValue(Owner);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static EffectiveValue<T> CastEffectiveValue<T>(EffectiveValue value)
+        {
+#if DEBUG
+            return (EffectiveValue<T>)value;
+#else
+            // Avoid casts in release mode for performance since GetValue is a very hot path.
+            // We control every path:
+            // it shouldn't be possible to have something else than an EffectiveValue<T> stored for a T property.
+            return Unsafe.As<EffectiveValue<T>>(value);
+#endif
         }
 
         public bool IsAnimating(AvaloniaProperty property)
@@ -309,7 +324,7 @@ namespace Avalonia.PropertyStore
 
         public void CoerceDefaultValue<T>(StyledProperty<T> property)
         {
-            var metadata = property.GetMetadata(Owner.GetType());
+            var metadata = property.GetMetadata(Owner);
 
             if (metadata.CoerceValue is null)
                 return;
@@ -388,9 +403,9 @@ namespace Avalonia.PropertyStore
 
                 for (var i = 0; i < count; ++i)
                 {
-                    f._effectiveValues.GetKeyValue(i, out var key, out var value);
-                    if (key.Inherits)
-                        values.TryAdd(key, new(value));
+                    var value = f._effectiveValues.GetValue(i);
+                    if (value.Property.Inherits)
+                        values.TryAdd(value.Property, new(value));
                 }
 
                 f = f.InheritanceAncestor;
@@ -405,19 +420,20 @@ namespace Avalonia.PropertyStore
 
                 for (var i = 0; i < count; ++i)
                 {
-                    f._effectiveValues.GetKeyValue(i, out var key, out var value);
+                    var value = f._effectiveValues.GetValue(i);
+                    var property = value.Property;
 
-                    if (!key.Inherits)
+                    if (!property.Inherits)
                         continue;
 
-                    if (values.TryGetValue(key, out var existing))
+                    if (values.TryGetValue(property, out var existing))
                     {
                         if (existing.NewValue is null)
-                            values[key] = existing.WithNewValue(value);
+                            values[property] = existing.WithNewValue(value);
                     }
                     else
                     {
-                        values.Add(key, new(null, value));
+                        values.Add(property, new(null, value));
                     }
                 }
 
@@ -431,12 +447,15 @@ namespace Avalonia.PropertyStore
                 var count = values.Count;
                 for (var i = 0; i < count; ++i)
                 {
-                    values.GetKeyValue(i, out var key, out var v);
+                    var v = values.GetValue(i);
                     var oldValue = v.OldValue;
                     var newValue = v.NewValue;
 
                     if (oldValue != newValue)
-                        InheritedValueChanged(key, oldValue, newValue);
+                    {
+                        var property = v.OldValue?.Property ?? v.NewValue!.Property;
+                        InheritedValueChanged(property, oldValue, newValue);
+                    }
                 }
             }
 
@@ -449,7 +468,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="entry">The binding entry.</param>
         /// <param name="priority">The priority of binding which produced a new value.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnBindingValueChanged(
             IValueEntry entry,
             BindingPriority priority)
@@ -573,7 +591,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnLocalValueBindingCompleted(AvaloniaProperty property, IDisposable observer)
         {
             if (_localValueBindings is not null &&
@@ -816,6 +833,40 @@ namespace Avalonia.PropertyStore
                 }
             }
         }
+
+        public ValueStoreDiagnostic GetStoreDiagnostic()
+        {
+            var frames = new List<IValueFrameDiagnostic>();
+
+            var effectiveLocalValues = new List<ValueEntryDiagnostic>(_effectiveValues.Count);
+            for (var i = 0; i < _effectiveValues.Count; i++)
+            {
+                if (_effectiveValues.GetValue(i) is { } effectiveValue
+                    && effectiveValue.Priority == BindingPriority.LocalValue)
+                {
+                    effectiveLocalValues.Add(new ValueEntryDiagnostic(effectiveValue.Property, effectiveValue.Value));
+                }
+            }
+
+            if (effectiveLocalValues.Count > 0)
+            {
+                frames.Add(new LocalValueFrameDiagnostic(effectiveLocalValues));
+            }
+
+            foreach (var frame in Frames)
+            {
+                if (frame is StyleInstance { Source: StyleBase } styleInstance)
+                {
+                    frames.Add(new StyleValueFrameDiagnostic(styleInstance));
+                }
+                else
+                {
+                    frames.Add(new ValueFrameDiagnostic(frame));   
+                }
+            }
+
+            return new ValueStoreDiagnostic(frames);
+		}
 
         private int InsertFrame(ValueFrame frame)
         {
@@ -1077,14 +1128,15 @@ namespace Avalonia.PropertyStore
                 // Remove all effective values that are still unset.
                 for (var i = _effectiveValues.Count - 1; i >= 0; --i)
                 {
-                    _effectiveValues.GetKeyValue(i, out var key, out var e);
+                    var e = _effectiveValues.GetValue(i);
+                    var property = e.Property;
 
-                    e.EndReevaluation(this, key);
+                    e.EndReevaluation(this, property);
 
                     if (e.CanRemove())
                     {
-                        RemoveEffectiveValue(key, i);
-                        e.DisposeAndRaiseUnset(this, key);
+                        RemoveEffectiveValue(property, i);
+                        e.DisposeAndRaiseUnset(this, property);
 
                         if (i > _effectiveValues.Count)
                             break;
@@ -1134,10 +1186,7 @@ namespace Avalonia.PropertyStore
             AvaloniaProperty property,
             [NotNullWhen(true)] out EffectiveValue? value)
         {
-            if (_effectiveValues.TryGetValue(property, out value))
-                return true;
-            value = null;
-            return false;
+            return _effectiveValues.TryGetValue(property, out value);
         }
 
         private EffectiveValue? GetEffectiveValue(AvaloniaProperty property)
@@ -1149,7 +1198,7 @@ namespace Avalonia.PropertyStore
 
         private object? GetDefaultValue(AvaloniaProperty property)
         {
-            return ((IStyledPropertyAccessor)property).GetDefaultValue(Owner.GetType());
+            return ((IStyledPropertyAccessor)property).GetDefaultValue(Owner);
         }
 
         private void DisposeExistingLocalValueBinding(AvaloniaProperty property)

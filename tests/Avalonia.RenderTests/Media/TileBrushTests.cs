@@ -40,7 +40,35 @@ public class DrawingBrushTests: TestBase
         await RenderToFile(target);
         CompareImages();
     }
-    
+
+
+    [Fact]
+    public async Task DrawingBrushIsProperlyScaled()
+    {
+        Decorator target = new Decorator
+        {
+            Padding = new Thickness(10),
+            Width = 220,
+            Height = 220,
+            Child = new Rectangle
+            {
+                Fill = new DrawingBrush
+                {
+                    TileMode = TileMode.Tile,
+                    SourceRect = new RelativeRect(0, 0, 20, 20, RelativeUnit.Absolute),
+                    DestinationRect = new RelativeRect(0, 0, 20, 20, RelativeUnit.Absolute),
+                    Drawing = new GeometryDrawing()
+                    {
+                        Pen = new Pen(Brushes.Red, 5),
+                        Geometry = Geometry.Parse("M 0 0 l 50 50")
+                    }
+                }
+            }
+        };
+
+        await RenderToFile(target);
+        CompareImages();
+    }
 
 #if AVALONIA_SKIA
     [Fact]

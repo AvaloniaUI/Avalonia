@@ -122,6 +122,7 @@ namespace Avalonia.Controls
             );
 
         private readonly IInputManager? _inputManager;
+        private readonly IToolTipService? _tooltipService;
         private readonly IAccessKeyHandler? _accessKeyHandler;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IGlobalStyles? _globalStyles;
@@ -182,6 +183,8 @@ namespace Avalonia.Controls
                     newInputElement.PropertyChanged += topLevel.PointerOverElementOnPropertyChanged;
                 }
             });
+
+            ToolTip.ServiceEnabledProperty.Changed.Subscribe(OnToolTipServiceEnabledChanged);
         }
 
         /// <summary>
@@ -211,6 +214,7 @@ namespace Avalonia.Controls
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
+            _tooltipService = TryGetService<IToolTipService>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
@@ -228,11 +232,6 @@ namespace Avalonia.Controls
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
-            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
-            {
-                variant ??= ThemeVariant.Default;
-                PlatformImpl.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
-            });
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -249,7 +248,6 @@ namespace Avalonia.Controls
             }
 
             ClientSize = impl.ClientSize;
-            FrameSize = impl.FrameSize;
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
@@ -312,7 +310,6 @@ namespace Avalonia.Controls
                 }
             });
         }
-
         /// <summary>
         /// Fired when the window is opened.
         /// </summary>
@@ -426,7 +423,7 @@ namespace Avalonia.Controls
         /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
         /// could not be retrieved.
         /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => (PlatformImpl as IWindowBaseImpl)?.Handle;
+        public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
 
         private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<TValue> onValue)
         {
@@ -714,6 +711,7 @@ namespace Avalonia.Controls
             OnClosed(EventArgs.Empty);
 
             LayoutManager.Dispose();
+            _platformImplBindings.Clear();
         }
 
         /// <summary>
@@ -724,7 +722,6 @@ namespace Avalonia.Controls
         internal virtual void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             ClientSize = clientSize;
-            FrameSize = PlatformImpl!.FrameSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.ExecuteLayoutPass();
@@ -785,7 +782,6 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnOpened(EventArgs e)
         {
-            FrameSize = PlatformImpl?.FrameSize;
             Dispatcher.UIThread.Send(_ => Opened?.Invoke(this, e));
         }
 
@@ -833,7 +829,9 @@ namespace Avalonia.Controls
                     var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
                     if (e is RawPointerEventArgs pointerArgs)
                     {
-                        pointerArgs.InputHitTestResult = topLevel.InputHitTest(pointerArgs.Position);
+                        var hitTestElement = topLevel.InputHitTest(pointerArgs.Position, enabledElementsOnly: false);
+
+                        pointerArgs.InputHitTestResult = (hitTestElement, FirstEnabledAncestor(hitTestElement));
                     }
 
                     topLevel._inputManager?.ProcessInput(e);
@@ -845,6 +843,17 @@ namespace Avalonia.Controls
                     this,
                     "PlatformImpl is null, couldn't handle input.");
             }
+        }
+
+        private static IInputElement? FirstEnabledAncestor(IInputElement? hitTestElement)
+        {
+            var candidate = hitTestElement;
+            while (candidate?.IsEffectivelyEnabled == false)
+            {
+                candidate = (candidate as Visual)?.Parent as IInputElement;
+            }
+
+            return candidate;
         }
 
         private void PointerOverElementOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -863,6 +872,30 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
         {
             _pointerOverPreProcessor?.SceneInvalidated(e.DirtyRect);
+            UpdateToolTip(e.DirtyRect);
+        }
+
+        private static void OnToolTipServiceEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> args)
+        {
+            if (args.GetNewValue<bool>()
+                && args.Priority != BindingPriority.Inherited 
+                && args.Sender is Visual visual 
+                && GetTopLevel(visual) is { } topLevel)
+            {
+                topLevel.UpdateToolTip(visual.Bounds.Translate((Vector)visual.TranslatePoint(default, topLevel)!));
+            }
+        }
+
+        private void UpdateToolTip(Rect dirtyRect)
+        {
+            if (_tooltipService != null && IsPointerOver && _pointerOverPreProcessor?.LastPosition is { } lastPos)
+            {
+                var clientPoint = this.PointToClient(lastPos);
+                if (dirtyRect.Contains(clientPoint))
+                {
+                    _tooltipService.Update(this, HitTester.HitTestFirst(clientPoint, this, null));
+                }
+            }
         }
 
         void PlatformImpl_LostFocus()

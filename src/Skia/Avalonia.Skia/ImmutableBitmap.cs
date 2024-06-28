@@ -117,7 +117,7 @@ namespace Avalonia.Skia
             {
                 tmp.InstallPixels(
                     new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType()),
-                    data);
+                    data, stride);
                 _bitmap = tmp.Copy();
             }
 

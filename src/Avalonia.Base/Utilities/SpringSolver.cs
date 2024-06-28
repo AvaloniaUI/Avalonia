@@ -84,7 +84,7 @@ internal struct SpringSolver
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="ωn">The the natural frequency of the system [rad/s].</param>
+    /// <param name="ωn">The natural frequency of the system [rad/s].</param>
     /// <param name="zeta">The damping ratio.</param>
     /// <param name="initialVelocity"></param>
     public SpringSolver(double ωn, double zeta, double initialVelocity)

@@ -39,12 +39,16 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="defaultPriority">
     /// The default binding priority for the expression.
     /// </param>
+    /// <param name="targetProperty">The target property being bound to.</param>
     /// <param name="isDataValidationEnabled">Whether data validation is enabled.</param>
     public UntypedBindingExpressionBase(
         BindingPriority defaultPriority,
+        AvaloniaProperty? targetProperty = null,
         bool isDataValidationEnabled = false)
     {
         Priority = defaultPriority;
+        TargetProperty = targetProperty;
+        TargetType = targetProperty?.PropertyType ?? typeof(object);
         _isDataValidationEnabled = isDataValidationEnabled;
     }
 
@@ -86,7 +90,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// Gets the target type of the binding expression; that is, the type that values produced by
     /// the expression should be converted to.
     /// </summary>
-    public Type TargetType { get; private set; } = typeof(object);
+    public Type TargetType { get; private set; }
 
     AvaloniaProperty IValueEntry.Property => TargetProperty ?? throw new Exception();
 
@@ -262,6 +266,8 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     {
         if (_sink is not null)
             throw new InvalidOperationException("BindingExpression was already attached.");
+        if (TargetProperty is not null && TargetProperty != targetProperty)
+            throw new InvalidOperationException("BindingExpression was already attached to a different property.");
 
         _sink = sink;
         _frame = frame;
@@ -403,6 +409,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="error">The new binding or data validation error.</param>
     private protected void PublishValue(object? value, BindingError? error = null)
     {
+        if (!IsRunning)
+            return;
+
         // When binding to DataContext and the expression results in a binding error, the binding
         // expression should produce null rather than UnsetValue in order to not propagate
         // incorrect DataContexts from parent controls while things are being set up.
@@ -529,9 +538,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         if (TargetProperty is not null && _target?.TryGetTarget(out var target) == true)
         {
             if (TargetProperty.IsDirect)
-                _defaultValue = ((IDirectPropertyAccessor)TargetProperty).GetUnsetValue(target.GetType());
+                _defaultValue = ((IDirectPropertyAccessor)TargetProperty).GetUnsetValue(target);
             else
-                _defaultValue = ((IStyledPropertyAccessor)TargetProperty).GetDefaultValue(target.GetType());
+                _defaultValue = ((IStyledPropertyAccessor)TargetProperty).GetDefaultValue(target);
 
             _isDefaultValueInitialized = true;
             return _defaultValue;

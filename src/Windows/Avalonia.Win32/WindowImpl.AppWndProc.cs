@@ -19,6 +19,8 @@ namespace Avalonia.Win32
 {
     internal partial class WindowImpl
     {
+        private bool _killFocusRequested;
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We do .NET COM interop availability checks")]
@@ -128,6 +130,7 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_DPICHANGED:
+                    if (!_ignoreDpiChanges)
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
@@ -149,6 +152,7 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+                    break;
 
                 case WindowsMessage.WM_GETICON:
                     if (_iconImpl == null)
@@ -609,6 +613,15 @@ namespace Avalonia.Win32
                     _resizeReason = WindowResizeReason.User;
                     break;
 
+                case WindowsMessage.WM_SHOWWINDOW:
+                    _shown = wParam != default;
+
+                    if (_isClientAreaExtended)
+                    {
+                        ExtendClientArea();
+                    }
+                    break;
+
                 case WindowsMessage.WM_SIZE:
                     {
                         var size = (SizeCommand)wParam;
@@ -709,7 +722,15 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KILLFOCUS:
-                    LostFocus?.Invoke();
+                    if (Imm32InputMethod.Current.IsComposing)
+                    {
+                        _killFocusRequested = true;
+                    }
+                    else
+                    {
+                        LostFocus?.Invoke();
+                    }
+                   
                     break;
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
@@ -754,6 +775,13 @@ namespace Avalonia.Win32
                     {
                         Imm32InputMethod.Current.HandleCompositionEnd(timestamp);
 
+                        if (_killFocusRequested)
+                        {
+                            LostFocus?.Invoke();
+
+                            _killFocusRequested = false;
+                        }
+
                         return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
@@ -762,6 +790,17 @@ namespace Avalonia.Win32
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
                         return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
+                    }
+                    break;
+                case WindowsMessage.WM_WINDOWPOSCHANGED:
+                    var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
+                    if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                    {
+                        _shown = true;
+                    }
+                    else if ((winPos.flags & (uint)SetWindowPosFlags.SWP_HIDEWINDOW) != 0)
+                    {
+                        _shown = false;
                     }
                     break;
             }
@@ -1187,11 +1226,10 @@ namespace Avalonia.Win32
             var keyData = ToInt32(lParam);
             var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
-
-            if (key == Key.None && physicalKey == PhysicalKey.None)
-                return null;
-
             var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
+                return null;
 
             return new RawKeyEventArgs(
                 WindowsKeyboardDevice.Instance,

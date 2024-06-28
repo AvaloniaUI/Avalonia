@@ -1,7 +1,6 @@
 using System;
 using Foundation;
 using Avalonia.Controls.ApplicationLifetimes;
-
 using UIKit;
 
 namespace Avalonia.iOS
@@ -34,7 +33,7 @@ namespace Avalonia.iOS
             remove { _onDeactivated -= value; }
         }
 
-        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseiOS();
+        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS();
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
         [Export("window")]
@@ -74,7 +73,16 @@ namespace Avalonia.iOS
         {
             if (Uri.TryCreate(url.ToString(), UriKind.Absolute, out var uri))
             {
-                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(ActivationKind.OpenUri, uri));
+#if !TVOS
+                if (uri.Scheme == Uri.UriSchemeFile)
+                {
+                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new[] { Storage.IOSStorageItem.CreateItem(url) }));
+                }
+                else
+#endif
+                {
+                    _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));   
+                }
                 return true;
             }
 

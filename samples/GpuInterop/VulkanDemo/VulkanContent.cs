@@ -397,7 +397,7 @@ unsafe class VulkanContent : IDisposable
             Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)size.Width / size.Height,
                 0.01f, 1000);
         
-        _colorAttachment = new VulkanImage(_context, (uint)Format.R8G8B8A8Unorm, size, false);
+        _colorAttachment = new VulkanImage(_context, (uint)Format.R8G8B8A8Unorm, size, false, Array.Empty<string>());
         CreateDepthAttachment(size);
 
         var api = _context.Api;

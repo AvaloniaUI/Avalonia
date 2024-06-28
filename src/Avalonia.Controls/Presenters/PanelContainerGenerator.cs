@@ -136,12 +136,15 @@ namespace Avalonia.Controls.Presenters
                 return;
 
             var itemsControl = _presenter.ItemsControl;
+            var generator = itemsControl.ItemContainerGenerator;
             var panel = _presenter.Panel;
 
             foreach (var c in panel.Children)
             {
+                itemsControl.RemoveLogicalChild(c);
+
                 if (!c.IsSet(ItemIsOwnContainerProperty))
-                    itemsControl.RemoveLogicalChild(c);
+                    generator.ClearItemContainer(c);
             }
         }
     }

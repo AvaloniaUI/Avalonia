@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -107,6 +107,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
+        private bool _ignoreDpiChanges;
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
@@ -184,6 +185,8 @@ namespace Avalonia.Win32
         internal IInputRoot Owner
             => _owner ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
 
+        internal WindowImpl? ParentImpl => _parent;
+
         public Action? Activated { get; set; }
 
         public Func<WindowCloseReason, bool>? Closing { get; set; }
@@ -254,7 +257,7 @@ namespace Avalonia.Win32
             }
         }
 
-        Size? ITopLevelImpl.FrameSize => FrameSize;
+        Size? IWindowBaseImpl.FrameSize => FrameSize;
 
         public Size FrameSize
         {
@@ -682,7 +685,6 @@ namespace Avalonia.Win32
         public void Hide()
         {
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
-            _shown = false;
         }
 
         public virtual void Show(bool activate, bool isDialog)
@@ -706,7 +708,24 @@ namespace Avalonia.Win32
 
             _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
 
+            // I can't find mention of this *anywhere* online, but it seems that setting
+            // GWL_HWNDPARENT to a window which is on the non-primary monitor can cause two
+            // WM_DPICHANGED messages to be sent: the first changing the DPI to the parent's DPI,
+            // then another changing the DPI back. This then causes Windows to provide an incorrect
+            // suggested new rectangle to the WM_DPICHANGED message if the window is immediately
+            // moved to the parent window's monitor (e.g. when using
+            // WindowStartupLocation.CenterOwner) causing the window to be shown with an incorrect
+            // size.
+            //
+            // Just ignore any WM_DPICHANGED while we're setting the parent as this shouldn't
+            // change the DPI anyway.
+            _ignoreDpiChanges = true;
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
+            _ignoreDpiChanges = false;
+
+            // Windows doesn't seem to respect the HWND_TOPMOST flag of a window when showing an owned window for the first time.
+            // So we set the HWND_TOPMOST again before the owned window is shown. This only needs to be done once.
+            (parent as WindowImpl)?.EnsureTopmost();
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -859,6 +878,17 @@ namespace Avalonia.Win32
             _topmost = value;
         }
 
+        private void EnsureTopmost()
+        {
+            if(_topmost)
+            {
+                SetWindowPos(_hwnd,
+                    WindowPosZOrder.HWND_TOPMOST,
+                    0, 0, 0, 0,
+                    SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+            }
+        }
+
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             _currentThemeVariant = themeVariant;
@@ -936,7 +966,7 @@ namespace Avalonia.Win32
 
             RegisterTouchWindow(_hwnd, 0);
 
-            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
+            if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
             {
                 var monitor = MonitorFromWindow(
                     _hwnd,
@@ -1160,8 +1190,6 @@ namespace Avalonia.Win32
 
         private void ShowWindow(WindowState state, bool activate)
         {
-            _shown = true;
-
             if (_isClientAreaExtended)
             {
                 ExtendClientArea();
@@ -1574,6 +1602,38 @@ namespace Avalonia.Win32
             _extendTitleBarHint = titleBarHeight;
 
             ExtendClientArea();
+        }
+
+        /// <inheritdoc/>
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        {
+            var handlesToIndex = new Dictionary<IntPtr, int>(windows.Length);
+            var outputArray = new long[windows.Length];
+
+            for (int i = 0; i < windows.Length; i++)
+            {
+                if (windows[i].PlatformImpl is WindowImpl platformImpl)
+                    handlesToIndex.Add(platformImpl.Handle.Handle, i);
+            }
+
+            long nextZOrder = 0;
+            bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam)
+            {
+                if (handlesToIndex.TryGetValue(hWnd, out var index))
+                {
+                    // We negate the z-order so that the topmost window has the highest number.
+                    outputArray[index] = -nextZOrder;
+                    nextZOrder++;
+                }
+                return nextZOrder < outputArray.Length;
+            }
+
+            EnumChildWindows(IntPtr.Zero, EnumWindowsProc, IntPtr.Zero);
+
+            for (int i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = outputArray[i];
+            }
         }
 
         /// <inheritdoc/>

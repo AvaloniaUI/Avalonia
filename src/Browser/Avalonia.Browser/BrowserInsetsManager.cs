@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Browser.Interop;
+﻿using Avalonia.Browser.Interop;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
-using static Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.Browser
 {
@@ -16,11 +10,11 @@ namespace Avalonia.Browser
         {
             get
             {
-                return DomHelper.IsFullscreen();
+                return DomHelper.IsFullscreen(BrowserWindowingPlatform.GlobalThis);
             }
             set
             {
-                DomHelper.SetFullscreen(!value ?? false);
+                _ = DomHelper.SetFullscreen(BrowserWindowingPlatform.GlobalThis, !value ?? false);
             }
         }
 
@@ -30,7 +24,7 @@ namespace Avalonia.Browser
         {
             get
             {
-                var padding = DomHelper.GetSafeAreaPadding();
+                var padding = DomHelper.GetSafeAreaPadding(BrowserWindowingPlatform.GlobalThis);
 
                 return new Thickness(padding[0], padding[1], padding[2], padding[3]);
             }

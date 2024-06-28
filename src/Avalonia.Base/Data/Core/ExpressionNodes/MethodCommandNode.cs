@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 /// A node in an <see cref="BindingExpression"/> which converts methods to an
 /// <see cref="ICommand"/>.
 /// </summary>
-internal sealed class MethodCommandNode : ExpressionNode
+internal sealed class MethodCommandNode : ExpressionNode, IWeakEventSubscriber<PropertyChangedEventArgs>
 {
     private readonly string _methodName;
     private readonly Action<object, object?> _execute;
@@ -38,10 +39,13 @@ internal sealed class MethodCommandNode : ExpressionNode
         builder.Append("()");
     }
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (source is INotifyPropertyChanged newInpc)
-            newInpc.PropertyChanged += OnPropertyChanged;
+            WeakEvents.ThreadSafePropertyChanged.Subscribe(newInpc, this);
 
         _command = new Command(source, _execute, _canExecute);
         SetValue(_command);
@@ -50,10 +54,10 @@ internal sealed class MethodCommandNode : ExpressionNode
     protected override void Unsubscribe(object oldSource)
     {
         if (oldSource is INotifyPropertyChanged oldInpc)
-            oldInpc.PropertyChanged -= OnPropertyChanged;
+            WeakEvents.ThreadSafePropertyChanged.Unsubscribe(oldInpc, this);
     }
 
-    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    public void OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
     {
         if (string.IsNullOrEmpty(e.PropertyName) || _dependsOnProperties.Contains(e.PropertyName))
         {

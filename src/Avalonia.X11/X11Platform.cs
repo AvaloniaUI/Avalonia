@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,8 +15,10 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.Vulkan;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
@@ -66,9 +68,6 @@ namespace Avalonia.X11
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             Resources = new XResources(this);
-            //TODO: log
-            if (options.UseDBusMenu)
-                DBusHelper.TryInitialize();
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
                ? new UiThreadRenderTimer(60)
@@ -79,6 +78,7 @@ namespace Avalonia.X11
                 .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
@@ -131,6 +131,8 @@ namespace Avalonia.X11
         {
             return new X11Window(this, null);
         }
+
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
         public IWindowImpl CreateEmbeddableWindow()
         {
@@ -214,6 +216,14 @@ namespace Avalonia.X11
                         return egl;
                     }
                 }
+
+                if (renderingMode == X11RenderingMode.Vulkan)
+                {
+                    var vulkan = VulkanSupport.TryInitialize(info,
+                        AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                    if (vulkan != null)
+                        return vulkan;
+                }
             }
 
             throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
@@ -241,7 +251,12 @@ namespace Avalonia
         /// <summary>
         /// Enables native Linux EGL rendering.
         /// </summary>
-        Egl = 3
+        Egl = 3,
+        
+        /// <summary>
+        /// Enables Vulkan rendering
+        /// </summary>
+        Vulkan = 4
     }
     
     /// <summary>
@@ -330,7 +345,12 @@ namespace Avalonia
             // llvmpipe is a software GL rasterizer. If it's returned by glGetString,
             // that usually means that something in the system is horribly misconfigured
             // and sometimes attempts to use GLX might cause a segfault
-            "llvmpipe"
+            "llvmpipe",
+            // SVGA3D is a driver for VMWare virtual GPU
+            // There were reports of various glitches like parts of the UI not being rendered
+            // Given that VMs are mostly used by testing, we've decided to blacklist that driver
+            // for now
+            "SVGA3D"
         };
 
         

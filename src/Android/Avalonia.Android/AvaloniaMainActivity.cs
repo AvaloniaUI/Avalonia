@@ -1,7 +1,4 @@
-#nullable enable
-
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Android.OS;
 using Avalonia.Android.Platform;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -34,6 +31,8 @@ public class AvaloniaMainActivity : AvaloniaActivity
         // We need this AfterSetup callback to match iOS/Browser behavior and ensure that view/toplevel is available in custom AfterSetup calls.
         if (Lifetime is not null)
         {
+            initialContent ??= Lifetime.MainView; 
+
             Lifetime.Activity = this;
             _view = new AvaloniaView(this) { Content = initialContent };
         }

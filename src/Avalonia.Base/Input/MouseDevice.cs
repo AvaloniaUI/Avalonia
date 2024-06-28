@@ -75,9 +75,9 @@ namespace Avalonia.Input
                 case RawPointerEventType.XButton1Down:
                 case RawPointerEventType.XButton2Down:
                     if (ButtonCount(props) > 1)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult);
+                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult.firstEnabledAncestor);
                     else
-                        e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
+                        e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
                 case RawPointerEventType.LeftButtonUp:
                 case RawPointerEventType.RightButtonUp:
@@ -85,24 +85,24 @@ namespace Avalonia.Input
                 case RawPointerEventType.XButton1Up:
                 case RawPointerEventType.XButton2Up:
                     if (ButtonCount(props) != 0)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult);
+                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult.firstEnabledAncestor);
                     else
-                        e.Handled = MouseUp(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
+                        e.Handled = MouseUp(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
                 case RawPointerEventType.Move:
-                    e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult);
+                    e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult.firstEnabledAncestor);
                     break;
                 case RawPointerEventType.Wheel:
-                    e.Handled = MouseWheel(mouse, e.Timestamp, e.Root, e.Position, props, ((RawMouseWheelEventArgs)e).Delta, keyModifiers, e.InputHitTestResult);
+                    e.Handled = MouseWheel(mouse, e.Timestamp, e.Root, e.Position, props, ((RawMouseWheelEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
                 case RawPointerEventType.Magnify:
-                    e.Handled = GestureMagnify(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult);
+                    e.Handled = GestureMagnify(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
                 case RawPointerEventType.Rotate:
-                    e.Handled = GestureRotate(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult);
+                    e.Handled = GestureRotate(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
                 case RawPointerEventType.Swipe:
-                    e.Handled = GestureSwipe(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult);
+                    e.Handled = GestureSwipe(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
             }
         }
@@ -205,6 +205,7 @@ namespace Avalonia.Input
                 {
                     _pointer.Capture(null);
                     _pointer.CaptureGestureRecognizer(null);
+                    _pointer.IsGestureRecognitionSkipped = false;
                     _lastMouseDownButton = default;
                 }
                 return e.Handled;

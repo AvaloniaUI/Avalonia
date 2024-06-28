@@ -39,7 +39,7 @@ namespace Avalonia.Win32
             var focusOwner = UnmanagedMethods.GetFocus();
             if (focusOwner != IntPtr.Zero &&
                 UnmanagedMethods.GetAncestor(focusOwner, UnmanagedMethods.GetAncestorFlags.GA_ROOT)
-                == parent.Handle.Handle)
+                == parent.Handle?.Handle)
                 UnmanagedMethods.SetFocus(parent.Handle.Handle);
         }
 
@@ -116,7 +116,7 @@ namespace Avalonia.Win32
         // One fabulous design decision leads to another, I guess
         private static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
         {
-            s_parentHandle = parent.Handle.Handle;
+            s_parentHandle = parent.Handle!.Handle;
             return parent;
         }
 

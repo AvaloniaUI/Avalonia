@@ -16,7 +16,6 @@ namespace Avalonia.Native
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
-        private readonly AvaloniaNativeTextInputMethod _inputMethod;
         private bool _canResize = true;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
@@ -26,12 +25,15 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(_native = factory.CreateWindow(e)), factory.CreateScreens());
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
-            
-            _inputMethod = new AvaloniaNativeTextInputMethod(_native);
+        }
+
+        internal sealed override void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+        {
+            base.Init(handle, screens);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -65,7 +67,7 @@ namespace Avalonia.Native
                 _parent.GotInputWhenDisabled?.Invoke();
             }
         }
-
+        
         public new IAvnWindow Native => _native;
 
         public void CanResize(bool value)
@@ -102,6 +104,8 @@ namespace Avalonia.Native
         public Thickness ExtendedMargins { get; private set; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
+
+        public IntPtr? ZOrder => _native.WindowZOrder;
 
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;
@@ -209,7 +213,7 @@ namespace Avalonia.Native
         public void Move(PixelPoint point) => Position = point;
 
         public override IPopupImpl CreatePopup() =>
-            _opts.OverlayPopups ? null : new PopupImpl(_factory, this);
+            _opts.OverlayPopups ? null : new PopupImpl(Factory, this);
 
         public Action GotInputWhenDisabled { get; set; }
 
@@ -227,7 +231,7 @@ namespace Avalonia.Native
         {
             if(featureType == typeof(ITextInputMethodImpl))
             {
-                return _inputMethod;
+                return InputMethod;
             } 
             
             if (featureType == typeof(ITopLevelNativeMenuExporter))
@@ -236,6 +240,14 @@ namespace Avalonia.Native
             }
             
             return base.TryGetFeature(featureType);
+        }
+
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        {
+            for (int i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = (windows[i].PlatformImpl as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
+            }
         }
     }
 }

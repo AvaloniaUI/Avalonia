@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTizenTargetFramework)</TargetFramework>
+    <SupportedOSPlatformVersion>$(AvsMinSupportedTizenVersion)</SupportedOSPlatformVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,4 +13,5 @@
 
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
 </Project>
