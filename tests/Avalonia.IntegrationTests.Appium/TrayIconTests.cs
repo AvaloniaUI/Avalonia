@@ -59,6 +59,24 @@ public class TrayIconTests : IDisposable
         Assert.True(checkBox.GetIsChecked());
     }
 
+    [PlatformFact(TestPlatforms.Windows)]
+    public void Can_Toggle_TrayIcon_Visibility()
+    {
+        var avaloinaTrayIconButton = GetTrayIconButton(_rootSession, TrayIconName);
+        Assert.NotNull(avaloinaTrayIconButton);
+
+        var toggleButton = _session.FindElementByAccessibilityId("ToggleTrayIconVisible");
+        toggleButton.SendClick();
+
+        avaloinaTrayIconButton = GetTrayIconButton(_rootSession, TrayIconName);
+        Assert.Null(avaloinaTrayIconButton);
+
+        toggleButton.SendClick();
+
+        avaloinaTrayIconButton = GetTrayIconButton(_rootSession, TrayIconName);
+        Assert.NotNull(avaloinaTrayIconButton);
+    }
+
     private static AppiumWebElement? GetTrayIconButton(AppiumDriver session, string trayIconName)
     {
         var taskBar = session.FindElementByName("Taskbar");
@@ -69,6 +87,9 @@ public class TrayIconTests : IDisposable
         }
         else
         {
+            // Add a sleep here, as previous test might still run popup closing animation.
+            Thread.Sleep(1000);
+            
             // Try to open "Show hidden icons"
             var trayIconsButton = taskBar.FindElementByAccessibilityId("SystemTrayIcon");
             trayIconsButton.Click();

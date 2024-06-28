@@ -227,6 +227,12 @@ namespace IntegrationTestApp
             ownedWindow.Show(mainWindow);
         }
 
+        private void OnToggleTrayIconVisible()
+        {
+            var icon = TrayIcon.GetIcons(Application.Current!)!.FirstOrDefault()!;
+            icon.IsVisible = !icon.IsVisible;
+        }
+
         private void InitializeGesturesTab()
         {
             var gestureBorder = this.GetControl<Border>("GestureBorder");
@@ -295,6 +301,8 @@ namespace IntegrationTestApp
                 RestoreAll();
             if (source?.Name == "ShowTopmostWindow")
                 ShowTopmostWindow();
+            if (source?.Name == "ToggleTrayIconVisible")
+                OnToggleTrayIconVisible();
         }
     }
 }

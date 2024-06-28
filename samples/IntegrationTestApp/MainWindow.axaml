@@ -98,6 +98,7 @@
         <StackPanel>
           <CheckBox x:FieldModifier="public" Name="TrayIconClicked">Tray Icon Clicked</CheckBox>
           <CheckBox x:FieldModifier="public" Name="TrayIconMenuClicked">Tray Icon Menu Clicked</CheckBox>
+          <Button Name="ToggleTrayIconVisible" Content="Toggle TrayIcon Visible" />
         </StackPanel>
       </TabItem>
 
