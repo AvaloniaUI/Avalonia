@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using OpenQA.Selenium;
@@ -21,7 +22,11 @@ public class TrayIconTests : IDisposable
 
         // "Root" is a special name for windows the desktop session, that has access to task bar.
         if (OperatingSystem.IsWindows())
+        {
             _rootSession = fixture.CreateNestedSession("Root");
+            var rootSource = _rootSession.PageSource;
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "rootSource.xml"), rootSource);
+        }
 
         var tabs = _session.FindElementByAccessibilityId("MainTabs");
         var tab = tabs.FindElementByName("Desktop");
