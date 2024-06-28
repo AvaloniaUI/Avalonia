@@ -79,7 +79,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
 
     public override TestResult Execute(TestExecutionContext context)
     {
-        return _session.Dispatch(() => ExecuteTestMethod(context), default).GetAwaiter().GetResult();
+        return _session.DispatchCore(() => ExecuteTestMethod(context), true, default).GetAwaiter().GetResult();
     }
 
     // Unfortunately, NUnit has issues with custom synchronization contexts, which means we need to add some hacks to make it work.
