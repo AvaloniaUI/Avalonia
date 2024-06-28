@@ -85,8 +85,6 @@ internal class AvaloniaTestMethodCommand : TestCommand
     // Unfortunately, NUnit has issues with custom synchronization contexts, which means we need to add some hacks to make it work.
     private async Task<TestResult> ExecuteTestMethod(TestExecutionContext context)
     {
-        context.EstablishExecutionEnvironment();
-
         _beforeTest.ForEach(a => a());
         
         var testMethod = _innerCommand.Test.Method;

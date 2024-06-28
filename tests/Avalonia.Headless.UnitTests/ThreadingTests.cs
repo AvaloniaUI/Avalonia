@@ -37,6 +37,7 @@ public class ThreadingTests
 #endif
     public async Task DispatcherTimer_Works_On_The_Same_Thread(int interval)
     {
+        Assert.NotNull(SynchronizationContext.Current);
         ValidateTestContext();
         var currentThread = Thread.CurrentThread;
 
