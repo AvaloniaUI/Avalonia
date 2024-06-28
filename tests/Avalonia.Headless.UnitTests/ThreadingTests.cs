@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,32 +38,38 @@ public class ThreadingTests
     public async Task DispatcherTimer_Works_On_The_Same_Thread(int interval)
     {
         ValidateTestContext();
+        var currentThread = Thread.CurrentThread;
+
         await Task.Delay(100);
 
         ValidateTestContext();
+        Assert.True(currentThread == Thread.CurrentThread);
 
-        var currentThread = Thread.CurrentThread;
         var tcs = new TaskCompletionSource();
-        var hasCompleted = false;
 
         DispatcherTimer.RunOnce(() =>
         {
-            ValidateTestContext();
-            hasCompleted = currentThread == Thread.CurrentThread;
-
-            tcs.SetResult();
+            try
+            {
+                ValidateTestContext();
+                Assert.True(currentThread == Thread.CurrentThread);
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
         }, TimeSpan.FromTicks(interval));
 
         await tcs.Task; 
-        Assert.True(hasCompleted);
     }
 
     private void ValidateTestContext([CallerMemberName] string runningMethodName = null)
     {
 #if NUNIT
         var testName = TestContext.CurrentContext.Test.Name;
-        // Test.Name also includes parameters, so we use StartsWith.
-        Assert.True(testName.StartsWith(runningMethodName!)); 
+        // Test.Name also includes parameters.
+        Assert.AreEqual(testName.Split('(').First(), runningMethodName); 
 #endif
     }
 }
