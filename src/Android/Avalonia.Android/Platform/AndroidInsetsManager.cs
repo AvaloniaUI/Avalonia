@@ -191,11 +191,6 @@ namespace Avalonia.Android.Platform
             {
                 _statusBarTheme = value;
 
-                if (!_topLevel.View.IsShown)
-                {
-                    return;
-                }
-
                 var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                 if (_isDefaultSystemBarLightTheme == null)
@@ -228,11 +223,6 @@ namespace Avalonia.Android.Platform
             set
             {
                 _systemUiVisibility = value;
-
-                if (!_topLevel.View.IsShown)
-                {
-                    return;
-                }
 
                 var compat = WindowCompat.GetInsetsController(Window, _topLevel.View);
 
