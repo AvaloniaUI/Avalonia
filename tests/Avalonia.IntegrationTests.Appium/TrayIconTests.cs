@@ -32,7 +32,7 @@ public class TrayIconTests : IDisposable
     [PlatformFact(TestPlatforms.Windows)]
     public void Should_Handle_Left_Click()
     {
-        var avaloinaTrayIconButton = TryGetTrayIconButton(_rootSession ?? _session, TrayIconName);
+        var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
         Assert.NotNull(avaloinaTrayIconButton);
 
         avaloinaTrayIconButton.Click();
@@ -46,7 +46,7 @@ public class TrayIconTests : IDisposable
     [Fact]
     public void Should_Handle_Context_Menu_Item_Click()
     {
-        var avaloinaTrayIconButton = TryGetTrayIconButton(_rootSession ?? _session, TrayIconName);
+        var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
         Assert.NotNull(avaloinaTrayIconButton);
 
         var contextMenu = ShowAndGetTrayMenu(avaloinaTrayIconButton, TrayIconName);
@@ -64,22 +64,22 @@ public class TrayIconTests : IDisposable
     [Fact]
     public void Can_Toggle_TrayIcon_Visibility()
     {
-        var avaloinaTrayIconButton = TryGetTrayIconButton(_rootSession ?? _session, TrayIconName);
+        var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
         Assert.NotNull(avaloinaTrayIconButton);
 
         var toggleButton = _session.FindElementByAccessibilityId("ToggleTrayIconVisible");
         toggleButton.SendClick();
 
-        avaloinaTrayIconButton = TryGetTrayIconButton(_rootSession ?? _session, TrayIconName);
+        avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
         Assert.Null(avaloinaTrayIconButton);
 
         toggleButton.SendClick();
 
-        avaloinaTrayIconButton = TryGetTrayIconButton(_rootSession ?? _session, TrayIconName);
+        avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
         Assert.NotNull(avaloinaTrayIconButton);
     }
 
-    private static AppiumWebElement? TryGetTrayIconButton(AppiumDriver session, string trayIconName)
+    private static AppiumWebElement? GetTrayIconButton(AppiumDriver session, string trayIconName)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -96,11 +96,13 @@ public class TrayIconTests : IDisposable
                 Thread.Sleep(1000);
 
                 // Try to open "Show hidden icons"
-                var trayIconsButton = taskBar.FindElementByAccessibilityId("SystemTrayIcon");
+                var trayIconsButton = taskBar.FindElementsByAccessibilityId("SystemTrayIcon")
+                    .FirstOrDefault() ?? throw new InvalidOperationException("SystemTrayIcon cannot be found.");
                 trayIconsButton.Click();
 
                 // Is it localizable? Or is it safe?
-                var trayIconsFlyout = session.FindElementByName("System tray overflow window.");
+                var trayIconsFlyout = session.FindElementsByName("System tray overflow window.")
+                    .FirstOrDefault() ?? throw new InvalidOperationException("System tray overflow window cannot be found.");
                 return TryToGetIcon(trayIconsFlyout, trayIconName);
             }
 
