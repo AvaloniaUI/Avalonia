@@ -1,10 +1,10 @@
 using System.Windows.Input;
 
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-
-using ReactiveUI;
+using MiniMvvm;
 
 namespace IntegrationTestApp
 {
@@ -12,7 +12,11 @@ namespace IntegrationTestApp
     {
         public App()
         {
-            ShowWindowCommand = ReactiveCommand.Create(ShowTestWindow);
+            ShowWindowCommand = MiniCommand.Create(() =>
+            {
+                var window = new Window() { Title = "TrayIcon demo window" };
+                window.Show();
+            });
             DataContext = this;
         }
 
@@ -32,12 +36,5 @@ namespace IntegrationTestApp
         }
 
         public ICommand ShowWindowCommand { get; }
-
-        void ShowTestWindow()
-        {
-            var window = new ShowWindowTest();
-
-            window.Show();
-        }
     }
 }
