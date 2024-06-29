@@ -180,6 +180,10 @@ namespace Avalonia.Controls
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
                 _measureElements.ResetForReuse();
 
+                // If there is a focused element is outside the visible viewport (i.e.
+                // _focusedElement is non-null), ensure it's measured.
+                _focusedElement?.Measure(availableSize);
+
                 return CalculateDesiredSize(orientation, items.Count, viewport);
             }
             finally
@@ -214,6 +218,16 @@ namespace Avalonia.Controls
                         _scrollAnchorProvider?.RegisterAnchorCandidate(e);
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
+                }
+
+                // Ensure that the focused element is in the correct position.
+                if (_focusedElement is not null && _focusedIndex >= 0)
+                {
+                    u = _realizedElements.GetOrEstimateElementU(_focusedIndex, ref _lastEstimatedElementSizeU);
+                    var rect = orientation == Orientation.Horizontal ?
+                        new Rect(u, 0, _focusedElement.DesiredSize.Width, finalSize.Height) :
+                        new Rect(0, u, finalSize.Width, _focusedElement.DesiredSize.Height);
+                    _focusedElement.Arrange(rect);
                 }
 
                 return finalSize;

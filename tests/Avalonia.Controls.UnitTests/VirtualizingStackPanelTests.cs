@@ -1212,7 +1212,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(100, 1000), scroll.Extent);
             Assert.Equal(new Vector(0, 200), scroll.Offset);
 
-            // Update the height of all items to 25 and run a layout pass.2
+            // Update the height of all items to 25 and run a layout pass.
             foreach (var item in items)
                 item.Height = 25;
             target.UpdateLayout();
@@ -1223,6 +1223,40 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(100, 500), scroll.Extent);
             Assert.Equal(new Vector(0, 200), scroll.Offset);
             Assert.Equal(8, target.FirstRealizedIndex);
+            Assert.Equal(11, target.LastRealizedIndex);
+        }
+
+        [Fact]
+        public void Focused_Container_Is_Positioned_Correctly_when_Container_Size_Change_Causes_It_To_Be_Moved_Out_Of_Visible_Viewport()
+        {
+            using var app = App();
+
+            // All containers start off with a height of 50 (2 containers fit in viewport).
+            var items = Enumerable.Range(0, 20).Select(x => new ItemWithHeight(x, 50)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Scroll to the 5th item (containers 4 and 5 should be visible).
+            target.ScrollIntoView(5);
+            Assert.Equal(4, target.FirstRealizedIndex);
+            Assert.Equal(5, target.LastRealizedIndex);
+
+            // Focus the 5th item.
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            container.Focusable = true;
+            container.Focus();
+
+            // Update the height of all items to 25 and run a layout pass.
+            foreach (var item in items)
+                item.Height = 25;
+            target.UpdateLayout();
+
+            // The focused container should now be outside the realized range.
+            Assert.Equal(8, target.FirstRealizedIndex);
+            Assert.Equal(11, target.LastRealizedIndex);
+
+            // The container should still exist and be positioned outside the visible viewport.
+            container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            Assert.Equal(new Rect(0, 125, 100, 25), container.Bounds);
         }
 
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
