@@ -550,7 +550,7 @@ namespace Avalonia.Controls.Utils
         /// </remarks>
         public void ValidateStartU(Orientation orientation)
         {
-            if (_elements is null || _sizes is null)
+            if (_elements is null || _sizes is null || _startUUnstable)
                 return;
 
             for (var i = 0; i < _elements.Count; ++i)
