@@ -1152,15 +1152,14 @@ namespace Avalonia.Controls.UnitTests
             // Scroll the last item into view.
             target.ScrollIntoView(19);
 
-            // At the time of the scroll, the average item height is 20, so the requested item
-            // should be placed at 380 (19 * 20) which therefore results in an extent of 390 to
-            // accommodate the item height of 10. This is obviously not a perfect answer, but
-            // it's the best we can do without knowing the actual item heights.
+            // After scroll, the average item height is 10, so the requested item
+            // should be placed at 190 (19 * 10) which results in an extent of 200 to
+            // accommodate the item height of 10.
             var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
-            Assert.Equal(new Rect(0, 380, 100, 10), container.Bounds);
+            Assert.Equal(new Rect(0, 190, 100, 10), container.Bounds);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
-            Assert.Equal(new Size(100, 390), scroll.Extent);
-            Assert.Equal(new Vector(0, 290), scroll.Offset);
+            Assert.Equal(new Size(100, 200), scroll.Extent);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
 
             // Items 10-19 should be visible.
             AssertRealizedItems(target, itemsControl, 10, 10);

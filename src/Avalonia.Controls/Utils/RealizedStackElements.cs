@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
@@ -538,6 +539,34 @@ namespace Avalonia.Controls.Utils
             _elements?.Clear();
             _sizes?.Clear();
         }
-    }
 
+        /// <summary>
+        /// Validates that <see cref="StartU"/> is still valid.
+        /// </summary>
+        /// <param name="orientation">The panel orientation.</param>
+        /// <remarks>
+        /// If the U size of any element in the realized elements has changed, then the value of
+        /// <see cref="StartU"/> should be considered unstable.
+        /// </remarks>
+        public void ValidateStartU(Orientation orientation)
+        {
+            if (_elements is null || _sizes is null)
+                return;
+
+            for (var i = 0; i < _elements.Count; ++i)
+            {
+                if (_elements[i] is not { } element)
+                    continue;
+
+                var sizeU = orientation == Orientation.Horizontal ?
+                    element.Bounds.Width : element.Bounds.Height;
+
+                if (sizeU != _sizes[i])
+                {
+                    _startUUnstable = true;
+                    break;
+                }
+            }
+        }
+    }
 }
