@@ -62,6 +62,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
+                new AvaloniaXamlIlEventSetterTransformer(),
                 new AvaloniaXamlIlStyleValidatorTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
