@@ -137,12 +137,18 @@ namespace Avalonia.Input.GestureRecognizers
                     _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), _pointerPressedPoint - rootPoint);
 
                     _lastMoveTimestamp = e.Timestamp;
-                    Target!.RaiseEvent(new ScrollGestureEventArgs(_gestureId, vector));
+                    RaiseScrollGestureEvent(vector);
                     _trackedRootPoint = rootPoint;
                     e.Handled = true;
                 }
             }
         }
+
+        private ScrollGestureEventArgs? RaiseScrollGestureEvent(Vector delta)
+            => Target?.RaiseEvent(
+                Gestures.ScrollGestureEvent,
+                static (_, ctx) => new ScrollGestureEventArgs(ctx.gestureId, ctx.delta),
+                (gestureId: _gestureId, delta));
 
         protected override void PointerCaptureLost(IPointer pointer)
         {
@@ -156,12 +162,16 @@ namespace Avalonia.Input.GestureRecognizers
             {
                 _inertia = default;
                 _scrolling = false;
-                Target!.RaiseEvent(new ScrollGestureEndedEventArgs(_gestureId));
+
+                Target?.RaiseEvent(
+                    Gestures.ScrollGestureEndedEvent,
+                    static (_, gestureId) => new ScrollGestureEndedEventArgs(gestureId),
+                    _gestureId);
+
                 _gestureId = 0;
                 _lastMoveTimestamp = null;
                 _rootTarget = null;
             }
-            
         }
 
 
@@ -184,7 +194,12 @@ namespace Avalonia.Input.GestureRecognizers
                     var savedGestureId = _gestureId;
                     var st = Stopwatch.StartNew();
                     var lastTime = TimeSpan.Zero;
-                    Target!.RaiseEvent(new ScrollGestureInertiaStartingEventArgs(_gestureId, _inertia));
+
+                    Target?.RaiseEvent(
+                        Gestures.ScrollGestureInertiaStartingEvent,
+                        static (_, ctx) => new ScrollGestureInertiaStartingEventArgs(ctx.gestureId, ctx.inertia),
+                        (gestureId: _gestureId, inertia: _inertia));
+
                     DispatcherTimer.Run(() =>
                     {
                         // Another gesture has started, finish the current one
@@ -198,10 +213,12 @@ namespace Avalonia.Input.GestureRecognizers
 
                         var speed = _inertia * Math.Pow(InertialResistance, st.Elapsed.TotalSeconds);
                         var distance = speed * elapsedSinceLastTick.TotalSeconds;
-                        var scrollGestureEventArgs = new ScrollGestureEventArgs(_gestureId, distance);
-                        Target!.RaiseEvent(scrollGestureEventArgs);
 
-                        if (!scrollGestureEventArgs.Handled || scrollGestureEventArgs.ShouldEndScrollGesture)
+                        var scrollGestureEventArgs = RaiseScrollGestureEvent(distance);
+
+                        if (scrollGestureEventArgs is null ||
+                            !scrollGestureEventArgs.Handled ||
+                            scrollGestureEventArgs.ShouldEndScrollGesture)
                         {
                             EndGesture();
                             return false;

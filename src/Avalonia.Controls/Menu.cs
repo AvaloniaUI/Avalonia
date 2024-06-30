@@ -58,11 +58,7 @@ namespace Avalonia.Controls
             IsOpen = false;
             SelectedIndex = -1;
 
-            RaiseEvent(new RoutedEventArgs
-            {
-                RoutedEvent = ClosedEvent,
-                Source = this,
-            });
+            RaiseEvent(ClosedEvent);
         }
 
         /// <inheritdoc/>
@@ -75,11 +71,7 @@ namespace Avalonia.Controls
 
             IsOpen = true;
 
-            RaiseEvent(new RoutedEventArgs
-            {
-                RoutedEvent = OpenedEvent,
-                Source = this,
-            });
+            RaiseEvent(OpenedEvent);
         }
 
         /// <inheritdoc/>

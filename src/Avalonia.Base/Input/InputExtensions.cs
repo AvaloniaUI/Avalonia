@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Input
 {
@@ -78,6 +77,53 @@ namespace Avalonia.Input
 
         /// <inheritdoc cref="InputHitTest(IInputElement, Point, Func{Visual, bool}, bool)"/>
         public static IInputElement? InputHitTest(this IInputElement element, Point p, Func<Visual, bool> filter) => InputHitTest(element, p, filter, true);
+
+        internal static TEventArgs? RaiseEvent<TEventArgs, TContext>(
+            this IInputElement inputElement,
+            RoutedEvent<TEventArgs> routedEvent,
+            Func<RoutedEvent<TEventArgs>, TContext, TEventArgs> eventArgsFactory,
+            TContext context)
+            where TEventArgs : RoutedEventArgs
+        {
+            if (inputElement is InputElement typedInputElement)
+            {
+                return typedInputElement.RaiseEvent(routedEvent, eventArgsFactory, context);
+            }
+
+            var eventArgs = eventArgsFactory(routedEvent, context);
+            inputElement.RaiseEvent(eventArgs);
+            return eventArgs;
+        }
+
+        internal static TEventArgs? RaiseEvent<TEventArgs>(
+            this IInputElement inputElement,
+            RoutedEvent<TEventArgs> routedEvent,
+            Func<RoutedEvent<TEventArgs>, TEventArgs> eventArgsFactory)
+            where TEventArgs : RoutedEventArgs
+        {
+            if (inputElement is InputElement typedInputElement)
+            {
+                return typedInputElement.RaiseEvent(routedEvent, eventArgsFactory);
+            }
+
+            var eventArgs = eventArgsFactory(routedEvent);
+            inputElement.RaiseEvent(eventArgs);
+            return eventArgs;
+        }
+
+        internal static RoutedEventArgs? RaiseEvent(
+            this IInputElement inputElement,
+            RoutedEvent<RoutedEventArgs> routedEvent)
+        {
+            if (inputElement is InputElement typedInputElement)
+            {
+                return typedInputElement.RaiseEvent(routedEvent);
+            }
+
+            var eventArgs = new RoutedEventArgs(routedEvent);
+            inputElement.RaiseEvent(eventArgs);
+            return eventArgs;
+        }
 
         private static bool IsHitTestVisible(Visual visual) => visual is { IsVisible: true, IsAttachedToVisualTree: true } and IInputElement { IsHitTestVisible: true };
 

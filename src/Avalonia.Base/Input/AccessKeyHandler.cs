@@ -196,10 +196,7 @@ namespace Avalonia.Input
                 var match = matches.FirstOrDefault();
 
                 // If there was a match, raise the AccessKeyPressed event on it.
-                if (match is not null)
-                {
-                    match.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
-                }
+                match?.RaiseEvent(AccessKeyPressedEvent);
             }
         }
 
@@ -243,7 +240,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Closes the <see cref="MainMenu"/> and performs other bookeeping.
+        /// Closes the <see cref="MainMenu"/> and performs other bookkeeping.
         /// </summary>
         private void CloseMenu()
         {

@@ -45,9 +45,18 @@ namespace Avalonia.Interactivity
 
         public RoutingStrategies RoutingStrategies { get; }
 
+        /// <summary>
+        /// Gets whether the <see cref="RoutedEvent"/> has active subscribers to <see cref="Raised"/>.
+        /// </summary>
         public bool HasRaisedSubscriptions => _raised.HasObservers;
 
+        /// <summary>
+        /// Gets whether the <see cref="RoutedEvent"/> has active subscribers to <see cref="RouteFinished"/>.
+        /// </summary>
+        public bool HasRouteFinishedSubscriptions => _routeFinished.HasObservers;
+
         public IObservable<(object, RoutedEventArgs)> Raised => _raised;
+
         public IObservable<RoutedEventArgs> RouteFinished => _routeFinished;
 
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(

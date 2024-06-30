@@ -230,11 +230,11 @@ namespace Avalonia.Input
                 var e = (PointerPressedEventArgs)ev;
                 var visual = (Visual)ev.Source;
 
-                if(s_gestureState != null)
+                if (s_gestureState is { } gestureState)
                 {
-                    if(s_gestureState.Value.Type == GestureStateType.Holding && ev.Source is Interactive i)
+                    if (gestureState.Type == GestureStateType.Holding && ev.Source is Interactive interactive)
                     {
-                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                        RaiseHoldingEvent(interactive, HoldingState.Cancelled, gestureState.Pointer.Type, e);
                     }
                     s_holdCancellationToken?.Cancel();
                     s_holdCancellationToken?.Dispose();
@@ -256,10 +256,14 @@ namespace Avalonia.Input
                     {
                         DispatcherTimer.RunOnce(() =>
                         {
-                            if (s_gestureState != null && !token.IsCancellationRequested && e.Source is InputElement i && GetIsHoldingEnabled(i) && (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(i)))
+                            if (s_gestureState?.Pointer is { } pointer &&
+                                !token.IsCancellationRequested &&
+                                e.Source is Interactive interactive &&
+                                GetIsHoldingEnabled(interactive) &&
+                                (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(interactive)))
                             {
-                                s_gestureState = new GestureState(GestureStateType.Holding, s_gestureState.Value.Pointer);
-                                i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                                s_gestureState = new GestureState(GestureStateType.Holding, pointer);
+                                RaiseHoldingEvent(interactive, HoldingState.Started, pointer.Type, e);
                             }
                         }, settings.HoldWaitDuration);
                     }
@@ -268,10 +272,10 @@ namespace Avalonia.Input
                 {
                     if (s_lastPress.TryGetTarget(out var target) && 
                         target == e.Source && 
-                        e.Source is Interactive i)
+                        e.Source is Interactive interactive)
                     {
                         s_gestureState = new GestureState(GestureStateType.DoubleTapped, e.Pointer);
-                        i.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
+                        interactive.RaiseEvent(DoubleTappedEvent, static (e, ctx) => new TappedEventArgs(e, ctx), e);
                     }
                 }
             }
@@ -286,29 +290,29 @@ namespace Avalonia.Input
                 if (s_lastPress.TryGetTarget(out var target) &&
                     target == e.Source &&
                     e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right &&
-                    e.Source is Interactive i)
+                    e.Source is Interactive interactive)
                 {
                     var point = e.GetCurrentPoint((Visual)target);
-                    var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
+                    var settings = ((IInputRoot?)interactive.GetVisualRoot())?.PlatformSettings;
                     var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                     var tapRect = new Rect(s_lastPressPoint, new Size())
                         .Inflate(new Thickness(tapSize.Width, tapSize.Height));
 
                     if (tapRect.ContainsExclusive(point.Position))
                     {
-                        if (s_gestureState?.Type == GestureStateType.Holding)
+                        if (s_gestureState is { Type: GestureStateType.Holding } gestureState)
                         {
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Completed, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                            RaiseHoldingEvent(interactive, HoldingState.Completed, gestureState.Pointer.Type, e);
                         }
                         else if (e.InitialPressMouseButton == MouseButton.Right)
                         {
-                            i.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
+                            interactive.RaiseEvent(RightTappedEvent, static (e, ctx) => new TappedEventArgs(e, ctx), e);
                         }
                         //GestureStateType.DoubleTapped needed here to prevent invoking Tapped event when DoubleTapped is called.
                         //This behaviour matches UWP behaviour.
                         else if (s_gestureState?.Type != GestureStateType.DoubleTapped)
                         {
-                            i.RaiseEvent(new TappedEventArgs(TappedEvent, e));
+                            interactive.RaiseEvent(TappedEvent, static (e, ctx) => new TappedEventArgs(e, ctx), e);
                         }
                     }
                     s_gestureState = null;
@@ -327,10 +331,10 @@ namespace Avalonia.Input
                 var e = (PointerEventArgs)ev;
                 if (s_lastPress.TryGetTarget(out var target))
                 {
-                    if (e.Pointer == s_gestureState?.Pointer && ev.Source is Interactive i)
+                    if (e.Pointer == s_gestureState?.Pointer && ev.Source is Interactive interactive)
                     {
                         var point = e.GetCurrentPoint((Visual)target);
-                        var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
+                        var settings = ((IInputRoot?)interactive.GetVisualRoot())?.PlatformSettings;
                         var holdSize = new Size(4, 4);
                         var holdRect = new Rect(s_lastPressPoint, new Size())
                             .Inflate(new Thickness(holdSize.Width, holdSize.Height));
@@ -340,9 +344,9 @@ namespace Avalonia.Input
                             return;
                         }
 
-                        if (s_gestureState.Value.Type == GestureStateType.Holding)
+                        if (s_gestureState is { Type: GestureStateType.Holding } gestureState)
                         {
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                            RaiseHoldingEvent(interactive, HoldingState.Cancelled, gestureState.Pointer.Type, e);
                         }
                     }
                 }
@@ -353,5 +357,19 @@ namespace Avalonia.Input
                 s_gestureState = null;
             }
         }
+
+        private static void RaiseHoldingEvent(
+            Interactive interactive,
+            HoldingState holdingState,
+            PointerType pointerType,
+            PointerEventArgs pointerEventArgs)
+            => interactive.RaiseEvent(
+                HoldingEvent,
+                static (_, ctx) => new HoldingRoutedEventArgs(
+                    ctx.holdingState,
+                    s_lastPressPoint,
+                    ctx.pointerType,
+                    ctx.pointerEventArgs),
+                (holdingState, pointerType, pointerEventArgs));
     }
 }

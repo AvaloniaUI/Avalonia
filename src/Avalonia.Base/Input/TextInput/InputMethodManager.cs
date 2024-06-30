@@ -161,13 +161,11 @@ namespace Avalonia.Input.TextInput
                 return;
             }
 
-            var clientQuery = new TextInputMethodClientRequestedEventArgs
-            {
-                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
-            };
+            var clientQuery = focused.RaiseEvent(
+                InputElement.TextInputMethodClientRequestedEvent,
+                static e => new TextInputMethodClientRequestedEventArgs { RoutedEvent = e });
 
-            _focusedElement.RaiseEvent(clientQuery);
-            Client = clientQuery.Client;
+            Client = clientQuery?.Client;
         }
     }
 }

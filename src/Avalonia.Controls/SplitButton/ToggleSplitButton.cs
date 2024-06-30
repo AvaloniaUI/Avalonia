@@ -92,8 +92,7 @@ namespace Avalonia.Controls
             // IsLoaded check
             if (Parent is not null)
             {
-                var eventArgs = new RoutedEventArgs(IsCheckedChangedEvent);
-                RaiseEvent(eventArgs);
+                RaiseEvent(IsCheckedChangedEvent);
             }
 
             UpdatePseudoClasses();

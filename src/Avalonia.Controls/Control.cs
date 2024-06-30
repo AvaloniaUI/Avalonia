@@ -383,12 +383,15 @@ namespace Avalonia.Controls
             if (e.Source == this && !e.Handled && e.HoldingState == HoldingState.Started)
             {
                 // Trigger ContentRequest when hold has started
-                var contextEvent = e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs();
-                RaiseEvent(contextEvent);
-
-                e.Handled = contextEvent.Handled;
+                var args = RaiseContextRequested(e.PointerEventArgs);
+                e.Handled = args?.Handled ?? false;
             }
         }
+
+        private ContextRequestedEventArgs? RaiseContextRequested(PointerEventArgs? pointerArgs)
+            => pointerArgs is not null ?
+                RaiseEvent(ContextRequestedEvent, static (_, ctx) => new ContextRequestedEventArgs(ctx), pointerArgs) :
+                RaiseEvent(ContextRequestedEvent, static _ => new ContextRequestedEventArgs());
 
         /// <inheritdoc/>
         protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
@@ -484,9 +487,8 @@ namespace Avalonia.Controls
                 && !e.Handled
                 && e.InitialPressMouseButton == MouseButton.Right)
             {
-                var args = new ContextRequestedEventArgs(e);
-                RaiseEvent(args);
-                e.Handled = args.Handled;
+                var args = RaiseContextRequested(e);
+                e.Handled = args?.Handled ?? false;
             }
         }
 
@@ -520,9 +522,8 @@ namespace Avalonia.Controls
 
                 if (matches)
                 {
-                    var args = new ContextRequestedEventArgs();
-                    RaiseEvent(args);
-                    e.Handled = args.Handled;
+                    var args = RaiseContextRequested(null);
+                    e.Handled = args?.Handled ?? false;
                 }
             }
         }

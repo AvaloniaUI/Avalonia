@@ -96,8 +96,8 @@ public class TransitioningContentControl : ContentControl
 
                 transition.Start(from, to, !IsTransitionReversed, cancel.Token).ContinueWith(task =>
                 {
-                    OnTransitionCompleted(new TransitionCompletedEventArgs(
-                        fromContent, toContent, task.Status == TaskStatus.RanToCompletion && !cancel.IsCancellationRequested));
+                    var hasRunToCompletion = task.Status == TaskStatus.RanToCompletion && !cancel.IsCancellationRequested;
+                    OnTransitionCompleted(fromContent, toContent, hasRunToCompletion);
 
                     if (!cancel.IsCancellationRequested)
                     {
@@ -180,7 +180,7 @@ public class TransitioningContentControl : ContentControl
         else
         {
             HideOldPresenter();
-            OnTransitionCompleted(new TransitionCompletedEventArgs(fromContent, toContent, false));
+            OnTransitionCompleted(fromContent, toContent, false);
         }
     }
 
@@ -194,8 +194,11 @@ public class TransitioningContentControl : ContentControl
         }
     }
 
-    private void OnTransitionCompleted(TransitionCompletedEventArgs e)
-        => RaiseEvent(e);
+    private void OnTransitionCompleted(object? from, object? to, bool hasRunToCompletion)
+        => RaiseEvent(
+            TransitionCompletedEvent,
+            static (_, ctx) => new TransitionCompletedEventArgs(ctx.from, ctx.to, ctx.hasRunToCompletion),
+            (from, to, hasRunToCompletion));
 
     private class ImmutableCrossFade : IPageTransition
     {
