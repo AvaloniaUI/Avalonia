@@ -1400,6 +1400,9 @@ namespace Avalonia.Win32
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
 
+                if (this is EmbeddedWindowImpl)
+                    style |= WindowStyles.WS_CHILD;
+
                 if (IsWindowVisible(_hwnd))
                     style |= WindowStyles.WS_VISIBLE;
 
