@@ -6,6 +6,7 @@ namespace Avalonia.PropertyStore
 {
     internal class LocalValueBindingObserverBase<T> : IObserver<T>,
         IObserver<BindingValue<T>>,
+        IValueBindingObserver,
         IDisposable
     {
         private readonly ValueStore _owner;
