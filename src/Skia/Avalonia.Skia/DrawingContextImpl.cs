@@ -635,6 +635,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushClip(Rect clip)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Save();
             Canvas.ClipRect(clip.ToSKRect());
@@ -642,6 +647,11 @@ namespace Avalonia.Skia
 
         public void PushClip(RoundedRect clip)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Save();
 
@@ -681,6 +691,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopClip()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             RestoreCanvas();
         }
@@ -700,6 +715,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushOpacity(double opacity, Rect? bounds)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             _opacityStack.Push(_currentOpacity);
@@ -731,6 +751,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopOpacity()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
@@ -793,6 +818,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushGeometryClip(IGeometryImpl clip)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             Canvas.Save();
             Canvas.ClipPath(((GeometryImpl)clip).FillPath, SKClipOperation.Intersect, true);
@@ -801,6 +831,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopGeometryClip()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
             RestoreCanvas();
         }
@@ -808,6 +843,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             var paint = SKPaintCache.Shared.Get();
@@ -819,6 +859,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopOpacityMask()
         {
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return;
+            }
+
             CheckLease();
 
             var paint = SKPaintCache.Shared.Get();
@@ -1348,6 +1393,14 @@ namespace Avalonia.Skia
 
             paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
+            if (RenderOptions.ShowOutlines == true)
+            {
+                paint.Color = SKColors.Black;
+                paint.StrokeWidth = 0;
+                paint.Style = SKPaintStyle.Stroke;
+                return paintWrapper;
+            }
+            
             double opacity = brush.Opacity * (_useOpacitySaveLayer ? 1 :_currentOpacity);
 
             if (brush is ISolidColorBrush solid)
@@ -1421,6 +1474,11 @@ namespace Avalonia.Skia
             }
 
             var rv = CreatePaint(paint, brush, targetRect);
+
+            if (RenderOptions.ShowOutlines == true)
+            {
+                return rv;
+            }
 
             paint.IsStroke = true;
             paint.StrokeWidth = (float) pen.Thickness;
