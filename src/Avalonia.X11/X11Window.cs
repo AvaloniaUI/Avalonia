@@ -1318,6 +1318,15 @@ namespace Avalonia.X11
                 // so setting it again forces the update
                 UpdateMotifHints();
             }
+            else
+            {
+                // Showing a dialog should result in pointer capture being lost. We don't currently use XGrabPointer on
+                // X11 to implement pointer capture, so no we have no OS-level event to hook into. Instead, release the 
+                // pointer capture when the owner window is disabled. This behavior matches win32, which sends a
+                // WM_CANCELMODE message when EnableWindow(hWnd, false) is called from SetEnabled.
+                _mouse.PlatformCaptureLost();
+                _touch.PlatformCaptureLost();
+            }
         }
 
         private void UpdateWMHints()
