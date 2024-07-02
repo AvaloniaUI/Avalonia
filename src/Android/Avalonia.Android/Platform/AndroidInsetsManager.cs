@@ -4,6 +4,7 @@ using Android.App;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
+using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Animation.Easings;
@@ -25,6 +26,7 @@ namespace Avalonia.Android.Platform
         private Color? _systemBarColor;
         private InputPaneState _state;
         private Rect _previousRect;
+        private Insets? _previousImeInset;
         private readonly bool _usesLegacyLayouts;
 
         private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
@@ -147,6 +149,19 @@ namespace Avalonia.Android.Platform
             }
 
             State = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? InputPaneState.Open : InputPaneState.Closed;
+
+            // Workaround for weird inset values for android 11
+            if(Build.VERSION.SdkInt == BuildVersionCodes.R)
+            {
+                var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+                if(_previousImeInset == default)
+                    _previousImeInset = imeInset;
+                if(imeInset.Bottom != _previousImeInset.Bottom)
+                {
+                    NotifyStateChanged(State, _previousRect, OccludedRect, TimeSpan.Zero, null);
+                }
+                _previousImeInset = imeInset;
+            }
 
             return insets;
         }
