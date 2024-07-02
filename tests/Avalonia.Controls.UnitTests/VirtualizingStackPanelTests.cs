@@ -1152,15 +1152,14 @@ namespace Avalonia.Controls.UnitTests
             // Scroll the last item into view.
             target.ScrollIntoView(19);
 
-            // At the time of the scroll, the average item height is 20, so the requested item
-            // should be placed at 380 (19 * 20) which therefore results in an extent of 390 to
-            // accommodate the item height of 10. This is obviously not a perfect answer, but
-            // it's the best we can do without knowing the actual item heights.
+            // After scroll, the average item height is 10, so the requested item
+            // should be placed at 190 (19 * 10) which results in an extent of 200 to
+            // accommodate the item height of 10.
             var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
-            Assert.Equal(new Rect(0, 380, 100, 10), container.Bounds);
+            Assert.Equal(new Rect(0, 190, 100, 10), container.Bounds);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
-            Assert.Equal(new Size(100, 390), scroll.Extent);
-            Assert.Equal(new Vector(0, 290), scroll.Offset);
+            Assert.Equal(new Size(100, 200), scroll.Extent);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
 
             // Items 10-19 should be visible.
             AssertRealizedItems(target, itemsControl, 10, 10);
@@ -1190,6 +1189,74 @@ namespace Avalonia.Controls.UnitTests
 
             // Items 15-19 should be visible.
             AssertRealizedItems(target, itemsControl, 15, 5);
+        }
+
+        [Fact]
+        public void Extent_And_Offset_Should_Be_Updated_When_Containers_Resize()
+        {
+            using var app = App();
+
+            // All containers start off with a height of 50 (2 containers fit in viewport).
+            var items = Enumerable.Range(0, 20).Select(x => new ItemWithHeight(x, 50)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Scroll to the 5th item (containers 4 and 5 should be visible).
+            target.ScrollIntoView(5);
+            Assert.Equal(4, target.FirstRealizedIndex);
+            Assert.Equal(5, target.LastRealizedIndex);
+
+            // The extent should be 500 (10 * 50) and the offset should be 200 (4 * 50).
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            Assert.Equal(new Rect(0, 250, 100, 50), container.Bounds);
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
+            Assert.Equal(new Size(100, 1000), scroll.Extent);
+            Assert.Equal(new Vector(0, 200), scroll.Offset);
+
+            // Update the height of all items to 25 and run a layout pass.
+            foreach (var item in items)
+                item.Height = 25;
+            target.UpdateLayout();
+
+            // The extent should be updated to reflect the new heights. The offset should be
+            // unchanged but the first realized index should be updated to 8 (200 / 25).
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
+            Assert.Equal(new Size(100, 500), scroll.Extent);
+            Assert.Equal(new Vector(0, 200), scroll.Offset);
+            Assert.Equal(8, target.FirstRealizedIndex);
+            Assert.Equal(11, target.LastRealizedIndex);
+        }
+
+        [Fact]
+        public void Focused_Container_Is_Positioned_Correctly_when_Container_Size_Change_Causes_It_To_Be_Moved_Out_Of_Visible_Viewport()
+        {
+            using var app = App();
+
+            // All containers start off with a height of 50 (2 containers fit in viewport).
+            var items = Enumerable.Range(0, 20).Select(x => new ItemWithHeight(x, 50)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Scroll to the 5th item (containers 4 and 5 should be visible).
+            target.ScrollIntoView(5);
+            Assert.Equal(4, target.FirstRealizedIndex);
+            Assert.Equal(5, target.LastRealizedIndex);
+
+            // Focus the 5th item.
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            container.Focusable = true;
+            container.Focus();
+
+            // Update the height of all items to 25 and run a layout pass.
+            foreach (var item in items)
+                item.Height = 25;
+            target.UpdateLayout();
+
+            // The focused container should now be outside the realized range.
+            Assert.Equal(8, target.FirstRealizedIndex);
+            Assert.Equal(11, target.LastRealizedIndex);
+
+            // The container should still exist and be positioned outside the visible viewport.
+            container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            Assert.Equal(new Rect(0, 125, 100, 25), container.Bounds);
         }
 
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
@@ -1354,8 +1421,10 @@ namespace Avalonia.Controls.UnitTests
 
         private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);
 
-        private class ItemWithHeight
+        private class ItemWithHeight : NotifyingBase
         {
+            private double _height;
+
             public ItemWithHeight(int index, double height = 10)
             {
                 Caption = $"Item {index}";
@@ -1363,7 +1432,12 @@ namespace Avalonia.Controls.UnitTests
             }
             
             public string Caption { get; set; }
-            public double Height { get; set; }
+            
+            public double Height 
+            {
+                get => _height;
+                set => SetField(ref _height, value);
+            }
         }
 
         private class ItemWithIsVisible : NotifyingBase
