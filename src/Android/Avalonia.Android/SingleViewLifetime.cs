@@ -10,7 +10,7 @@ internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLe
     private AvaloniaMainActivity? _activity;
         
     /// <summary>
-    /// Since Main Activity can be swapped, we should adjust litetime as well.  
+    /// Since Main Activity can be swapped, we should adjust lifetime as well.
     /// </summary>
     public AvaloniaMainActivity Activity
     {
