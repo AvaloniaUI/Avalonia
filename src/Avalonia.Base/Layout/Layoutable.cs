@@ -842,6 +842,10 @@ namespace Avalonia.Layout
                 layoutManager.InvalidateArrange(this);
                 InvalidateVisual();
             }
+            else
+            {
+                layoutManager.InvalidateViewport(this);
+            }
 
             var count = VisualChildren.Count;
 
