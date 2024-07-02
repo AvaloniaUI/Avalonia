@@ -43,7 +43,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button#foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.NameSyntax { Name = "foo" },
@@ -67,7 +67,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(":is(Button)#foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.IsSyntax { TypeName = "Button" },
                     new SelectorGrammar.NameSyntax { Name = "foo" },
@@ -81,7 +81,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(":is(x|Button)#foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.IsSyntax { TypeName = "Button", Xmlns = "x" },
                     new SelectorGrammar.NameSyntax { Name = "foo" },
@@ -115,7 +115,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button.foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[] 
+                new ISyntax[] 
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.ClassSyntax { Class = "foo" },
@@ -129,7 +129,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button > .foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.ChildSyntax { },
@@ -144,7 +144,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button>.foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.ChildSyntax { },
@@ -159,7 +159,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button .foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.DescendantSyntax { },
@@ -174,7 +174,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button /template/ .foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.TemplateSyntax { },
@@ -189,7 +189,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button[Foo=bar]");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.PropertySyntax { Property = "Foo", Value = "bar" },
@@ -203,7 +203,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button[(Grid.Column)=1]");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.AttachedPropertySyntax { 
@@ -221,7 +221,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button[(x|Grid.Column)=1]");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.AttachedPropertySyntax {
@@ -239,11 +239,11 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(":not(Button)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NotSyntax
                     {
-                        Argument = new SelectorGrammar.ISyntax[]
+                        Argument = new ISyntax[]
                         {
                             new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                         },
@@ -258,12 +258,12 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button:not(.foo)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.NotSyntax
                     {
-                        Argument = new SelectorGrammar.ISyntax[]
+                        Argument = new ISyntax[]
                         {
                             new SelectorGrammar.ClassSyntax { Class = "foo" },
                         },
@@ -301,7 +301,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(input);
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NthChildSyntax()
                     {
@@ -330,7 +330,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(input);
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NthLastChildSyntax()
                     {
@@ -347,7 +347,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button:nth-child(2n+1)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.NthChildSyntax()
@@ -365,7 +365,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button:nth-child(2147483647n)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.NthChildSyntax()
@@ -383,7 +383,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button:nth-last-child(2n+1)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.NthLastChildSyntax()
@@ -401,7 +401,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button:nth-child(odd)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.NthChildSyntax()
@@ -419,7 +419,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button:nth-child(even)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.NthChildSyntax()
@@ -437,13 +437,13 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(":is(Control) :not(Button.foo)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.IsSyntax { TypeName = "Control" },
                     new SelectorGrammar.DescendantSyntax { },
                     new SelectorGrammar.NotSyntax
                     {
-                        Argument = new SelectorGrammar.ISyntax[]
+                        Argument = new ISyntax[]
                         {
                             new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                             new SelectorGrammar.ClassSyntax { Class = "foo" },
@@ -459,7 +459,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("TextBlock, :is(Button).foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "TextBlock" },
                     new SelectorGrammar.CommaSyntax(),
@@ -475,7 +475,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("^.foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NestingSyntax(),
                     new SelectorGrammar.ClassSyntax { Class = "foo" },
@@ -489,7 +489,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("^ > .foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NestingSyntax(),
                     new SelectorGrammar.ChildSyntax { },
@@ -504,7 +504,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("^ .foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NestingSyntax(),
                     new SelectorGrammar.DescendantSyntax { },
@@ -519,7 +519,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("^ /template/ .foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NestingSyntax(),
                     new SelectorGrammar.TemplateSyntax { },
@@ -534,7 +534,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button /template/ ^");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.TemplateSyntax { },
@@ -549,7 +549,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("^[Foo=bar]");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NestingSyntax(),
                     new SelectorGrammar.PropertySyntax { Property = "Foo", Value = "bar" },
@@ -563,7 +563,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(":not(^)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NotSyntax
                     {
@@ -579,7 +579,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("^:nth-child(2n+1)");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NestingSyntax(),
                     new SelectorGrammar.NthChildSyntax()
@@ -597,7 +597,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("^, ^.foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[]
+                new ISyntax[]
                 {
                     new SelectorGrammar.NestingSyntax(),
                     new SelectorGrammar.CommaSyntax(),

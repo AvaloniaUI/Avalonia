@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Data.Core;
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the
@@ -274,6 +275,32 @@ namespace Avalonia.Markup.Parsers
             }
             return (State.CanHaveType, new NameSyntax { Name = name.ToString() });
         }
+        
+        private static double ParseDecimal(ref CharacterReader r)
+        {
+            var number = r.ParseNumber();
+            if (number.IsEmpty)
+            {
+                throw new ExpressionParseException(r.Position, $"Expected a number after.");
+            }
+
+            return double.Parse(number.ToString());
+        }
+        
+        private static T ParseEnum<T>(ref CharacterReader r) where T: struct
+        {
+            var identifier = r.ParseIdentifier();
+
+            if (Enum.TryParse<T>(identifier.ToString(), true, out T value))
+                return value;
+
+            throw new ExpressionParseException(r.Position, $"Expected a {typeof(T)} after.");
+        }
+        
+        private static string ParseString(ref CharacterReader r) 
+        {
+            return r.ParseIdentifier().ToString();
+        }
 
         private static (State, ISyntax) ParseTypeName(ref CharacterReader r)
         {
@@ -487,17 +514,6 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        public interface ISyntax
-        {
-        }
-
-        public interface ITypeSyntax
-        {
-            string TypeName { get; set; }
-
-            string Xmlns { get; set; }
-        }
-
         public class OfTypeSyntax : ISyntax, ITypeSyntax
         {
             public string TypeName { get; set; } = string.Empty;
@@ -563,6 +579,16 @@ namespace Avalonia.Markup.Parsers
             {
                 return obj is NameSyntax syntax &&
                        syntax.Name == Name;
+            }
+        }
+
+        public class DecimalSyntax : ISyntax
+        {
+            public decimal Number { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is DecimalSyntax dec && dec.Number == Number;
             }
         }
 

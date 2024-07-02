@@ -4,6 +4,7 @@ using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -28,6 +29,7 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     public Action<int, string[], Permission[]>? RequestPermissionsResult { get; set; }
 
     public event EventHandler<AndroidBackRequestedEventArgs>? BackRequested;
+    public event EventHandler? ConfigurationChanged;
 
     public object? Content
     {
@@ -153,6 +155,13 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
         RequestPermissionsResult?.Invoke(requestCode, permissions, grantResults);
+    }
+
+    public override void OnConfigurationChanged(Configuration newConfig)
+    {
+        base.OnConfigurationChanged(newConfig);
+
+        ConfigurationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     [MemberNotNull(nameof(_view))]
