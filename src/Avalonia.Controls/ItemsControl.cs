@@ -23,6 +23,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
+    [ItemType(typeof(ContentControl))]
     public class ItemsControl : TemplatedControl, IChildIndexProvider
     {
         /// <summary>
