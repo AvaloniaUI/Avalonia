@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 
 // ReSharper disable InconsistentNaming
@@ -2448,7 +2449,7 @@ namespace Avalonia.Win32.Interop
             E_UNEXPECTED = 0x8000FFFF,
             E_CANCELLED = 0x800704C7,
         }
-
+        
         public enum Icons
         {
             ICON_SMALL = 0,
@@ -2666,5 +2667,14 @@ namespace Avalonia.Win32.Interop
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
         public string? szInfoTitle;
         public NIIF dwInfoFlags;
+    }
+    
+    internal static class HRESULTExtensions
+    {
+        // https://learn.microsoft.com/en-us/windows/win32/api/winerror/nf-winerror-succeeded
+        public static bool SUCCEEDED(this UnmanagedMethods.HRESULT result) => unchecked((int)result) >= 0;
+
+        // https://learn.microsoft.com/en-us/windows/win32/api/winerror/nf-winerror-failed
+        public static bool FAILED(this UnmanagedMethods.HRESULT result) => unchecked((int)result) < 0;
     }
 }
