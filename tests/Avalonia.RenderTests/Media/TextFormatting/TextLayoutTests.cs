@@ -26,9 +26,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         private const string stringmiddle2lines = "The quick brown fox\njumps over the lazy dog";
         private const string stringmiddle3lines = "01234567\n\n0123456789";
         private const string stringmiddlenewlines = "012345678\r 1234567\r\n 12345678\n0123456789";
+        private const string stringspecialsymbols =
+            @"v]��/�=߮�G�r�ې���2r��{��Sn���-�\�'��n�Co��z��������롷��}$3<����z���T)?ܮ�b�;";
 
         private const string stringlong =
-"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis " +
+@"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis " +
 "aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero" +
 " at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus " +
 "pretium ornare est.";
@@ -111,6 +113,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(stringlong, 18, 150, TextWrapping.Wrap)]
         [InlineData(stringmiddlenewlines, 4, -1, TextWrapping.NoWrap)]
         [InlineData(stringmiddlenewlines, 4, 150, TextWrapping.Wrap)]
+        [InlineData(stringspecialsymbols, 1, -1, TextWrapping.NoWrap)]
         public void Should_Break_Lines_String_Correctly(string input,
                                                             int linesCount,
                                                             double widthConstraint,
