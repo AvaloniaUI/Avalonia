@@ -8,6 +8,7 @@
   <!-- TimePicker -->
   <x:String x:Key="StringTimePickerHourText">hour</x:String>
   <x:String x:Key="StringTimePickerMinuteText">minute</x:String>
+  <x:String x:Key="StringTimePickerSecondText">second</x:String>
   <!-- TextBox/SelectableTextBox flyout -->
   <x:String x:Key="StringTextFlyoutCutText">Cut</x:String>
   <x:String x:Key="StringTextFlyoutCopyText">Copy</x:String>

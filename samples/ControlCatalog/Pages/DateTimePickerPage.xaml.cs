@@ -15,7 +15,7 @@ namespace ControlCatalog.Pages
                 "Order of month, day, and year is dynamically set based on user date settings";
 
             this.Get<TextBlock>("TimePickerDesc").Text = "Use a TimePicker to let users set a time in your app, for example " +
-                "to set a reminder. The TimePicker displays three controls for hour, minute, and AM / PM(if necessary).These controls " +
+                "to set a reminder. The TimePicker displays four controls for hour, minute, seconds(optional), and AM / PM(if necessary).These controls " +
                 "are easy to use with touch or mouse, and they can be styled and configured in several different ways. " +
                 "12 - hour or 24 - hour clock and visibility of AM / PM is dynamically set based on user time settings, or can be overridden.";
 
