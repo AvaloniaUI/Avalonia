@@ -6,12 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="**\*.xaml"/>
-    <!-- Note this AdditionalFiles directive. -->
-    <AdditionalFiles Include="**\*.xaml" SourceItemGroup="AvaloniaXaml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ReactiveUI.Validation" Version="3.0.22"/>
   </ItemGroup>
 
@@ -23,6 +17,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj"/>
   </ItemGroup>
 
-  <Import Project="..\..\build\BuildTargets.targets"/>
+  <Import Project="..\..\build\EmbedXaml.props"/>
   <Import Project="..\..\build\SourceGenerators.props"/>
+  <Import Project="..\..\build\BuildTargets.targets"/>
 </Project>
