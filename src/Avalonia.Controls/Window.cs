@@ -622,7 +622,7 @@ namespace Avalonia.Controls
         /// </exception>
         public override void Show()
         {
-            ShowCore(null);
+            ShowCore<object>(null, false);
         }
 
         protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
@@ -666,7 +666,7 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException(nameof(owner), "Showing a child window requires valid parent.");
             }
 
-            ShowCore(owner);
+            ShowCore<object>(owner, false);
         }
 
         private void EnsureStateBeforeShow()
@@ -695,12 +695,16 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ShowCore(Window? owner)
+        private Task<TResult> ShowCore<TResult>(Window? owner, bool modal)
         {
             using (FreezeVisibilityChangeHandling())
             {
                 EnsureStateBeforeShow();
-
+                
+                if (modal && owner == null)
+                {
+                    throw new ArgumentNullException(nameof(owner));
+                }
                 if (owner != null)
                 {
                     EnsureParentStateBeforeShow(owner);
@@ -708,7 +712,9 @@ namespace Avalonia.Controls
 
                 if (_shown)
                 {
-                    return;
+                    if (modal)
+                        throw new InvalidOperationException("The window is already being shown.");
+                    return null;
                 }
 
                 RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
@@ -716,6 +722,7 @@ namespace Avalonia.Controls
                 EnsureInitialized();
                 ApplyStyling();
                 _shown = true;
+                _showingAsDialog = modal;
                 IsVisible = true;
 
                 // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
@@ -742,9 +749,30 @@ namespace Avalonia.Controls
                 SetWindowStartupLocation(owner);
 
                 StartRendering();
-                PlatformImpl?.Show(ShowActivated, false);
+                PlatformImpl?.Show(ShowActivated, modal);
+
+                Task<TResult> result = null;
+                if (modal)
+                {
+                    var tcs = new TaskCompletionSource<TResult>();
+
+                    Observable.FromEventPattern(
+                            x => Closed += x,
+                            x => Closed -= x)
+                        .Take(1)
+                        .Subscribe(_ =>
+                        {
+                            owner.Activate();
+                            tcs.SetResult((TResult)(_dialogResult ?? default(TResult)!));
+                        });
+                    result = tcs.Task;
+                }
+
                 OnOpened(EventArgs.Empty);
-                _wasShownBefore = true;
+                if (!modal)
+                    _wasShownBefore = true;
+                
+                return result;
             }
         }
 
@@ -773,74 +801,7 @@ namespace Avalonia.Controls
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>(Window owner)
-        {
-            using (FreezeVisibilityChangeHandling())
-            {
-                EnsureStateBeforeShow();
-
-                if (owner == null)
-                {
-                    throw new ArgumentNullException(nameof(owner));
-                }
-
-                EnsureParentStateBeforeShow(owner);
-
-                if (_shown)
-                {
-                    throw new InvalidOperationException("The window is already being shown.");
-                }
-
-                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
-
-                EnsureInitialized();
-                ApplyStyling();
-                _shown = true;
-                _showingAsDialog = true;
-                IsVisible = true;
-
-                // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
-                // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
-                // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
-                SetWindowStartupLocation(owner);
-                
-                _canHandleResized = true; 
-
-                var initialSize = new Size(
-                    double.IsNaN(Width) ? ClientSize.Width : Width,
-                    double.IsNaN(Height) ? ClientSize.Height : Height);
-
-                if (initialSize != ClientSize)
-                {
-                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
-                }
-
-                LayoutManager.ExecuteInitialLayoutPass();
-
-                var result = new TaskCompletionSource<TResult>();
-
-                Owner = owner;
-
-                // Second call will calculate correct position because both current and owner windows have correct scaling.
-                SetWindowStartupLocation(owner);
-
-                StartRendering();
-                PlatformImpl?.Show(ShowActivated, true);
-
-                Observable.FromEventPattern(
-                        x => Closed += x,
-                        x => Closed -= x)
-                    .Take(1)
-                    .Subscribe(_ =>
-                    {
-                        owner.Activate();
-                        result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
-                    });
-
-                OnOpened(EventArgs.Empty);
-                return result.Task;
-            }
-        }
+        public Task<TResult> ShowDialog<TResult>(Window owner) => ShowCore<TResult>(owner, true);
 
         /// <summary>
         /// Sorts the windows ascending by their Z order - the topmost window will be the last in the list.
