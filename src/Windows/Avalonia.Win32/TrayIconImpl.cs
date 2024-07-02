@@ -218,8 +218,9 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var _trayMenu = new TrayPopupRoot()
+            var _trayMenu = new TrayPopupRoot
             {
+                Name = "AvaloniaTrayPopupRoot_" + _tooltipText,
                 SystemDecorations = SystemDecorations.None,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,

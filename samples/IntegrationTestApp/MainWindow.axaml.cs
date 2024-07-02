@@ -222,6 +222,12 @@ namespace IntegrationTestApp
             ownedWindow.Show(mainWindow);
         }
 
+        private void OnToggleTrayIconVisible()
+        {
+            var icon = TrayIcon.GetIcons(Application.Current!)!.FirstOrDefault()!;
+            icon.IsVisible = !icon.IsVisible;
+        }
+
         private void InitializeGesturesTab()
         {
             var gestureBorder = GestureBorder;
@@ -294,6 +300,8 @@ namespace IntegrationTestApp
                 OnApplyWindowDecorations(this);
             if (source?.Name == nameof(ShowNewWindowDecorations))
                 OnShowNewWindowDecorations();
+            if (source?.Name == nameof(ToggleTrayIconVisible))
+                OnToggleTrayIconVisible();
         }
 
         private void OnApplyWindowDecorations(Window window)
