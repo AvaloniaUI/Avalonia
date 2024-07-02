@@ -194,7 +194,10 @@ HRESULT TopLevelImpl::PointToClient(AvnPoint point, AvnPoint *ret) {
         
         point = ConvertPointY(point);
         NSRect convertRect = [window convertRectFromScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
-        auto viewPoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
+        
+        auto frame = [View frame];
+        
+        auto viewPoint = NSMakePoint(convertRect.origin.x - frame.origin.x, convertRect.origin.y - frame.origin.y);
 
         *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
 
@@ -217,11 +220,18 @@ HRESULT TopLevelImpl::PointToScreen(AvnPoint point, AvnPoint *ret) {
             
             return S_OK;
         }
+        
+        auto frame = [View frame];
+        
+        point = ToAvnPoint(NSMakePoint(point.X + frame.origin.x, point.Y - frame.origin.y));
 
         auto cocoaViewPoint = ToNSPoint([View translateLocalPoint:point]);
         NSRect convertRect = [window convertRectToScreen:NSMakeRect(cocoaViewPoint.x, cocoaViewPoint.y, 0.0, 0.0)];
         auto cocoaScreenPoint = NSPointFromCGPoint(NSMakePoint(convertRect.origin.x, convertRect.origin.y));
-        *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
+        
+        auto convertedScreenPoint = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
+        
+        *ret = convertedScreenPoint;
 
         return S_OK;
     }

@@ -255,7 +255,11 @@
         return;
     }
 
-    auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
+    NSPoint eventLocation = [event locationInWindow];
+    
+    auto frame = [self frame];
+    
+    NSPoint localPoint = NSMakePoint(eventLocation.x - frame.origin.x, eventLocation.y - frame.origin.y);
     auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
     AvnVector delta = { 0, 0};
