@@ -25,6 +25,24 @@ namespace Avalonia.Markup.Xaml.UnitTests
         }
 
         [Fact]
+        public void Xml_Value_Should_Be_Assigned_To_Setter_Value()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
+            {
+                var style = (Style)AvaloniaRuntimeXamlLoader.Load(@"
+<Style Selector='Button' xmlns='https://github.com/avaloniaui'>
+    <Setter Property='Margin'>
+        10, 4, 0, 4
+    </Setter>
+</Style>");
+                var setter = (Setter)(style.Setters.First());
+
+                var thickness = Assert.IsType<Thickness>(setter.Value);
+                Assert.Equal(new Thickness(10, 4, 0, 4), thickness);
+            }
+        }
+        
+        [Fact]
         public void Setter_With_TwoWay_Binding_Should_Update_Source()
         {
             using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
