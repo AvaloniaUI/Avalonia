@@ -19,6 +19,8 @@ namespace Avalonia.Controls.Utils
         internal const char LeftIndexerToken = '[';
         internal const char PropertyNameSeparator = '.';
         internal const char RightIndexerToken = ']';
+        internal const char LeftParenthesisToken  = '(';
+        internal const char RightParenthesisToken = ')';
 
         private static Type FindGenericType(Type definition, Type type)
         {
@@ -482,12 +484,35 @@ namespace Avalonia.Controls.Utils
             List<string> propertyPaths = new List<string>();
             if (!string.IsNullOrEmpty(propertyPath))
             {
+                bool parenthesisOn = false;
                 int startIndex = 0;
                 for (int index = 0; index < propertyPath.Length; index++)
                 {
-                    if (propertyPath[index] == PropertyNameSeparator)
+                    if (parenthesisOn)
                     {
-                        propertyPaths.Add(propertyPath.Substring(startIndex, index - startIndex));
+                        if (propertyPath[index] == RightParenthesisToken)
+                        {
+                            parenthesisOn = false;
+                            startIndex = index + 1;
+                        }
+                        continue;
+                    }
+
+                    if (propertyPath[index] == LeftParenthesisToken)
+                    {
+                        parenthesisOn = true;
+                        if (startIndex != index)
+                        {
+                            propertyPaths.Add(propertyPath.Substring(startIndex, index - startIndex));
+                            startIndex = index + 1;
+                        }
+                    }
+                    else if (propertyPath[index] == PropertyNameSeparator)
+                    {
+                        if (startIndex != index)
+                        {
+                            propertyPaths.Add(propertyPath.Substring(startIndex, index - startIndex));
+                        }
                         startIndex = index + 1;
                     }
                     else if (startIndex != index && propertyPath[index] == LeftIndexerToken)
