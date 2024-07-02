@@ -9,7 +9,7 @@
 #include <cstring>
 
 /**
- START_COM_CALL causes AddRef to be called at the beggining of a function.
+ START_COM_CALL causes AddRef to be called at the beginning of a function.
  When a function is exited, it causes ReleaseRef to be called.
  This ensures that the object cannot be destroyed whilst the function is running.
  For example: Window Show is called, which triggers an event, and user calls Close inside the event
