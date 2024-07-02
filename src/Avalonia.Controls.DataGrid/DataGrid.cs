@@ -2140,7 +2140,7 @@ namespace Avalonia.Controls
             if (DataConnection.DataSource != null && !DataConnection.EventsWired)
             {
                 DataConnection.WireEvents(DataConnection.DataSource);
-                InitializeElements(false /*recycleRows*/);
+                InitializeElements(true /*recycleRows*/);
             }
         }
 
