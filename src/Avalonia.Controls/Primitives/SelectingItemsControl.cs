@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
@@ -1387,6 +1388,9 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         private class BindingHelper : StyledElement
         {
+            private BindingExpressionBase? _expression;
+            private IBinding? _lastBinding;
+
             public BindingHelper(IBinding binding)
             {
                 UpdateBinding(binding);
@@ -1406,17 +1410,13 @@ namespace Avalonia.Controls.Primitives
 
             public void UpdateBinding(IBinding binding)
             {
+                if (binding == _lastBinding)
+                    return;
+
+                _expression?.Dispose();
+                _expression = Bind(ValueProperty, binding);
                 _lastBinding = binding;
-                var ib = binding.Initiate(this, ValueProperty);
-                if (ib is null)
-                {
-                    throw new InvalidOperationException("Unable to create binding");
-                }
-
-                BindingOperations.Apply(this, ValueProperty, ib, null);
             }
-
-            private IBinding? _lastBinding;
         }
     }
 }
