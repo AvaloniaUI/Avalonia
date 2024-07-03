@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.UnitTests;
 using Xunit;
 
 #nullable enable
@@ -203,6 +204,46 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("1,2,3-BindingNotification", target.Text);
         }
 
+        [Fact]
+        public void Converter_Should_Be_Called_On_PropertyChanged_Even_If_Property_Not_Changed()
+        {
+            // Issue #16084
+            var data = new TestModel();
+            var target = new TextBlock { DataContext = data };
+
+            var binding = new MultiBinding
+            {
+                Converter = new TestModelMemberConverter(),
+                Bindings =
+                {
+                    new Binding(),
+                    new Binding(nameof(data.NotifyingValue)),
+                },
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+            Assert.Equal("0", target.Text);
+
+            data.NonNotifyingValue = 1;
+            Assert.Equal("0", target.Text);
+
+            data.NotifyingValue = new object();
+            Assert.Equal("1", target.Text);
+        }
+
+        private partial class TestModel : NotifyingBase
+        {
+            private object? _notifyingValue;
+
+            public int? NonNotifyingValue { get; set; } = 0;
+
+            public object? NotifyingValue
+            {
+                get => _notifyingValue;
+                set => SetField(ref _notifyingValue, value);
+            }
+        }
+
         private class ConcatConverter : IMultiValueConverter
         {
             public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
@@ -235,6 +276,19 @@ namespace Avalonia.Markup.UnitTests.Data
                     new ArgumentException(),
                     BindingErrorType.Error,
                     string.Join(",", values) + "-BindingNotification");
+            }
+        }
+
+        private class TestModelMemberConverter : IMultiValueConverter
+        {
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+            {
+                if (values[0] is not TestModel model)
+                {
+                    return string.Empty;
+                }
+
+                return model.NonNotifyingValue.ToString();
             }
         }
     }
