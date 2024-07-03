@@ -17,7 +17,7 @@ namespace Avalonia.Markup.UnitTests.Data
     public class MultiBindingTests
     {
         [Fact]
-        public async Task OneWay_Binding_Should_Be_Set_Up()
+        public void OneWay_Binding_Should_Be_Set_Up()
         {
             var source = new { A = 1, B = 2, C = 3 };
             var binding = new MultiBinding
@@ -32,14 +32,13 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null)!.Source;
-            var result = await observable.Take(1);
+            target.Bind(Control.TagProperty, binding);
 
-            Assert.Equal("1,2,3", result);
+            Assert.Equal("1,2,3", target.Tag);
         }
 
         [Fact]
-        public async Task Nested_MultiBinding_Should_Be_Set_Up()
+        public void Nested_MultiBinding_Should_Be_Set_Up()
         {
             var source = new { A = 1, B = 2, C = 3 };
             var binding = new MultiBinding
@@ -61,10 +60,9 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null)!.Source;
-            var result = await observable.Take(1);
+            target.Bind(Control.TagProperty, binding);
 
-            Assert.Equal("1,2,3", result);
+            Assert.Equal("1,2,3", target.Tag);
         }
 
         [Fact]
