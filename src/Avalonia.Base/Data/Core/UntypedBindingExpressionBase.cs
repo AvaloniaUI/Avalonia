@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
@@ -408,6 +409,8 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="error">The new binding or data validation error.</param>
     private protected void PublishValue(object? value, BindingError? error = null)
     {
+        Debug.Assert(value is not BindingNotification);
+
         if (!IsRunning)
             return;
 
