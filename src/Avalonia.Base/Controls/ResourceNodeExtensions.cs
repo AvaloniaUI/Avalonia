@@ -108,7 +108,18 @@ namespace Avalonia.Controls
             control = control ?? throw new ArgumentNullException(nameof(control));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            return new ResourceObservable(control, key, converter);
+            return new ResourceObservable(control, key, converter, false);
+        }
+        
+        public static IObservable<object?> GetResourceObservableByKey(
+            this IResourceHost control,
+            object key,
+            Func<object?, object?>? converter = null)
+        {
+            control = control ?? throw new ArgumentNullException(nameof(control));
+            key = key ?? throw new ArgumentNullException(nameof(key));
+
+            return new ResourceObservable(control, key, converter, true);
         }
 
         public static IObservable<object?> GetResourceObservable(
@@ -119,7 +130,7 @@ namespace Avalonia.Controls
             resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            return new FloatingResourceObservable(resourceProvider, key, null, converter);
+            return new FloatingResourceObservable(resourceProvider, key, null, converter, false);
         }
 
         public static IObservable<object?> GetResourceObservable(
@@ -131,7 +142,30 @@ namespace Avalonia.Controls
             resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            return new FloatingResourceObservable(resourceProvider, key, defaultThemeVariant, converter);
+            return new FloatingResourceObservable(resourceProvider, key, defaultThemeVariant, converter, false);
+        }
+        
+        public static IObservable<object?> GetResourceObservableByKey(
+            this IResourceProvider resourceProvider,
+            object key,
+            Func<object?, object?>? converter = null)
+        {
+            resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
+            key = key ?? throw new ArgumentNullException(nameof(key));
+
+            return new FloatingResourceObservable(resourceProvider, key, null, converter, true);
+        }
+
+        public static IObservable<object?> GetResourceObservableByKey(
+            this IResourceProvider resourceProvider,
+            object key,
+            ThemeVariant? defaultThemeVariant,
+            Func<object?, object?>? converter = null)
+        {
+            resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
+            key = key ?? throw new ArgumentNullException(nameof(key));
+
+            return new FloatingResourceObservable(resourceProvider, key, defaultThemeVariant, converter, true);
         }
 
         private class ResourceObservable : LightweightObservableBase<object?>
@@ -139,15 +173,18 @@ namespace Avalonia.Controls
             private readonly IResourceHost _target;
             private readonly object _key;
             private readonly Func<object?, object?>? _converter;
-
+            private readonly bool _byKey;
+            
             public ResourceObservable(
                 IResourceHost target,
                 object key,
-                Func<object?, object?>? converter)
+                Func<object?, object?>? converter,
+                bool byKey)
             {
                 _target = target;
                 _key = key;
                 _converter = converter;
+                _byKey = byKey;
             }
 
             protected override void Initialize()
@@ -175,7 +212,14 @@ namespace Avalonia.Controls
 
             private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e)
             {
-                PublishNext(GetValue());
+                if (!_byKey)
+                {
+                    PublishNext(GetValue());
+                }
+                else if (_byKey && (e.Key == null || e.Key == _key))
+                {
+                    PublishNext(GetValue());
+                }
             }
 
             private void ActualThemeVariantChanged(object? sender, EventArgs e)
@@ -198,18 +242,21 @@ namespace Avalonia.Controls
             private readonly ThemeVariant? _overrideThemeVariant;
             private readonly object _key;
             private readonly Func<object?, object?>? _converter;
+            private readonly bool _byKey;
             private IResourceHost? _owner;
 
             public FloatingResourceObservable(
                 IResourceProvider target,
                 object key,
                 ThemeVariant? overrideThemeVariant,
-                Func<object?, object?>? converter)
+                Func<object?, object?>? converter,
+                bool byKey)
             {
                 _target = target;
                 _key = key;
                 _overrideThemeVariant = overrideThemeVariant;
                 _converter = converter;
+                _byKey = byKey;
             }
 
             protected override void Initialize()
@@ -291,7 +338,14 @@ namespace Avalonia.Controls
 
             private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e)
             {
-                PublishNext();
+                if (!_byKey)
+                {
+                    PublishNext();
+                }
+                else if (_byKey && (e.Key is null || e.Key == _key))
+                {
+                    PublishNext();
+                }
             }
 
             private object? GetValue()
