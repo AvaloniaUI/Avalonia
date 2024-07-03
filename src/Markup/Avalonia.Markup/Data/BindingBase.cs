@@ -118,7 +118,7 @@ namespace Avalonia.Data
             return (mode, trigger);
         }
 
-        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
         {
             return Instance(target, property, anchor);
         }
