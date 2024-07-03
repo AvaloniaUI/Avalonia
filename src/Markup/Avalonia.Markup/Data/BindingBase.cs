@@ -95,8 +95,8 @@ namespace Avalonia.Data
             bool enableDataValidation = false);
 
         private protected abstract BindingExpressionBase Instance(
-            AvaloniaProperty targetProperty,
             AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
             object? anchor);
 
         private protected (BindingMode, UpdateSourceTrigger) ResolveDefaultsFromMetadata(
@@ -120,7 +120,7 @@ namespace Avalonia.Data
 
         BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
         {
-            return Instance(property, target, anchor);
+            return Instance(target, property, anchor);
         }
     }
 }
