@@ -189,16 +189,6 @@
     return pt;
 }
 
-+ (AvnPoint)toAvnPoint:(CGPoint)p
-{
-    AvnPoint result;
-
-    result.X = p.x;
-    result.Y = p.y;
-
-    return result;
-}
-
 - (void) viewDidChangeBackingProperties
 {
     auto fsize = [self convertSizeToBacking: [self frame].size];
@@ -257,11 +247,12 @@
 
     NSPoint eventLocation = [event locationInWindow];
     
-    auto frame = [self frame];
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
     
-    NSPoint localPoint = NSMakePoint(eventLocation.x - frame.origin.x, eventLocation.y - frame.origin.y);
-    auto avnPoint = [AvnView toAvnPoint:localPoint];
-    auto point = [self translateLocalPoint:avnPoint];
+    auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
+    
+    auto point = ToAvnPoint(localPoint);
+    //auto point = [self translateLocalPoint:avnPoint];
     AvnVector delta = { 0, 0};
 
     if(type == Wheel)
@@ -738,7 +729,7 @@
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
     auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = [AvnView toAvnPoint:localPoint];
+    auto avnPoint = ToAvnPoint(localPoint);
     auto point = [self translateLocalPoint:avnPoint];
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];

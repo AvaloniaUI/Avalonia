@@ -192,14 +192,23 @@ HRESULT TopLevelImpl::PointToClient(AvnPoint point, AvnPoint *ret) {
             return S_OK;
         }
         
-        point = ConvertPointY(point);
-        NSRect convertRect = [window convertRectFromScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
-        
         auto frame = [View frame];
         
-        auto viewPoint = NSMakePoint(convertRect.origin.x - frame.origin.x, convertRect.origin.y - frame.origin.y);
+        auto viewRect = [View convertRect:frame toView:nil];
+        
+        auto viewScreenRect = [window convertRectToScreen:viewRect];
+        
+        auto primaryDisplayHeight = NSMaxY([[[NSScreen screens] firstObject] frame]);
+        
+        //Window coord are bottom to top so we need to adjust by primaryScreenHeight
+        auto viewScreenLocation = NSMakePoint(viewScreenRect.origin.x, primaryDisplayHeight - viewScreenRect.origin.y - frame.size.height);
+        
+        //Substract client point from screen position of the view
+        auto localPoint = NSMakePoint(point.X - viewScreenLocation.x, point.Y - viewScreenLocation.y);
+        
+        point = ToAvnPoint(localPoint);
 
-        *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
+        *ret = point;
 
         return S_OK;
     }
@@ -223,15 +232,21 @@ HRESULT TopLevelImpl::PointToScreen(AvnPoint point, AvnPoint *ret) {
         
         auto frame = [View frame];
         
-        point = ToAvnPoint(NSMakePoint(point.X + frame.origin.x, point.Y - frame.origin.y));
+        //Get rect inside current window
+        auto viewRect = [View convertRect:frame toView:nil];
+        
+        //Get screen rect of the view
+        auto viewScreenRect = [window convertRectToScreen:viewRect];
+               
+        auto primaryDisplayHeight = NSMaxY([[[NSScreen screens] firstObject] frame]);
+        
+        //Window coord are bottom to top so we need to adjust by primaryScreenHeight
+        auto viewScreenLocation = NSMakePoint(viewScreenRect.origin.x, primaryDisplayHeight - viewScreenRect.origin.y - frame.size.height);
 
-        auto cocoaViewPoint = ToNSPoint([View translateLocalPoint:point]);
-        NSRect convertRect = [window convertRectToScreen:NSMakeRect(cocoaViewPoint.x, cocoaViewPoint.y, 0.0, 0.0)];
-        auto cocoaScreenPoint = NSPointFromCGPoint(NSMakePoint(convertRect.origin.x, convertRect.origin.y));
+        //Add client point to screen position of the view
+        auto screenPoint = ToAvnPoint(NSMakePoint(viewScreenLocation.x + point.X, viewScreenLocation.y + point.Y));
         
-        auto convertedScreenPoint = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
-        
-        *ret = convertedScreenPoint;
+        *ret = screenPoint;
 
         return S_OK;
     }
