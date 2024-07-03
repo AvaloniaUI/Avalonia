@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
@@ -204,7 +203,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     internal void AttachAndStart(
         IBindingExpressionSink subscriber,
         AvaloniaObject target,
-        AvaloniaProperty targetProperty,
+        AvaloniaProperty? targetProperty,
         BindingPriority priority)
     {
         AttachCore(subscriber, null, target, targetProperty, priority);
@@ -261,7 +260,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         IBindingExpressionSink sink,
         ImmediateValueFrame? frame,
         AvaloniaObject target,
-        AvaloniaProperty targetProperty,
+        AvaloniaProperty? targetProperty,
         BindingPriority priority)
     {
         if (_sink is not null)
@@ -273,7 +272,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         _frame = frame;
         _target = new(target);
         TargetProperty = targetProperty;
-        TargetType = targetProperty.PropertyType;
+        TargetType = targetProperty?.PropertyType ?? typeof(object);
         Priority = priority;
     }
 
