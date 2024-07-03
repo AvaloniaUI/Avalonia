@@ -1392,7 +1392,7 @@ namespace Avalonia.X11
                 var ptr = (IntPtr*)prop.ToPointer();
                 var newAtoms = new HashSet<IntPtr>();
                 for (var c = 0; c < nitems.ToInt64(); c++) 
-                    newAtoms.Add(*ptr);
+                    newAtoms.Add(*(ptr+c));
                 XFree(prop);
                 foreach(var atom in atoms)
                     if (enable)
