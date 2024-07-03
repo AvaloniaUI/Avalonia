@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
-using Moq;
-using Avalonia.Controls;
-using Xunit;
 using System.Threading.Tasks;
-using Avalonia.Data.Converters;
+using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -30,7 +31,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Source;
+            var observable = binding.Initiate(target, null)!.Source;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
@@ -59,7 +60,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Source;
+            var observable = binding.Initiate(target, null)!.Source;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
@@ -204,7 +205,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class ConcatConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return string.Join(",", values);
             }
@@ -212,7 +213,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class UnsetValueConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return AvaloniaProperty.UnsetValue;
             }
@@ -220,7 +221,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class NullValueConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return null;
             }
@@ -228,7 +229,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class BindingNotificationConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return new BindingNotification(
                     new ArgumentException(),
