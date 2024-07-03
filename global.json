@@ -1,7 +1,8 @@
 {
   "sdk": {
-    "version": "8.0.101",
-    "rollForward": "latestFeature"
+    "version": "9.0.0",
+    "rollForward": "latestFeature",
+    "allowPrerelease": true
   },
   "msbuild-sdks": {
     "Microsoft.Build.Traversal": "3.2.0"

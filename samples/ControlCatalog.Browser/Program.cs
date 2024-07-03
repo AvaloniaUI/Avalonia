@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Web;
@@ -22,9 +23,9 @@ internal partial class Program
     public static async Task Main(string[] args)
     {
         Trace.Listeners.Add(new ConsoleTraceListener());
-    
-        var options = ParseArgs(args) ?? new BrowserPlatformOptions();
-    
+
+        var options = ParseArgs(GetHref()) ?? new BrowserPlatformOptions();
+
         await BuildAvaloniaApp()
             .LogToTrace()
             .AfterSetup(_ =>
@@ -68,12 +69,12 @@ internal partial class Program
     public static AppBuilder BuildAvaloniaApp()
            => AppBuilder.Configure<App>();
 
-    private static BrowserPlatformOptions? ParseArgs(string[] args)
+    private static BrowserPlatformOptions? ParseArgs(string? args)
     {
         try
         {
-            if (args.Length == 0
-                || !Uri.TryCreate(args[0], UriKind.Absolute, out var uri)
+            if (args is null
+                || !Uri.TryCreate(args, UriKind.Absolute, out var uri)
                 || uri.Query.Length <= 1)
             {
                 uri = new Uri("http://localhost");
@@ -105,4 +106,7 @@ internal partial class Program
             return null;
         }
     }
+
+    [JSImport("getHref", "main.js")]
+    public static partial string? GetHref();
 }

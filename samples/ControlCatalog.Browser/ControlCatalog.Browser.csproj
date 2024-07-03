@@ -1,10 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <WasmMainJSPath>wwwroot/main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <DotNetJsApi>true</DotNetJsApi>
+    <PublishTrimmed>true</PublishTrimmed>
+    <SelfContained>true</SelfContained>
+    <WasmRuntimeAssetsLocation>./</WasmRuntimeAssetsLocation>
+    
+    <UseNativeAotLllvm Condition="'$(UseNativeAotLLVM)' == ''">true</UseNativeAotLllvm>
+    <MSBuildEnableWorkloadResolver Condition="'$(UseNativeAotLllvm)' == 'true'">false</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +23,19 @@
 
   <ItemGroup>
     <WasmExtraFilesToDeploy Include="wwwroot/**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseNativeAotLllvm)' == 'true'">
+    <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="9.0.0-*" />
+    <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="9.0.0-*" />
+  </ItemGroup>
+
+  <!-- Locally built SkiaSharp and HarfBuzzSharp -->
+  <ItemGroup>
+    <PackageReference Include="HarfBuzzSharp" Version="9999.9.9" />
+    <PackageReference Include="SkiaSharp" Version="9999.9.9" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="8.3.0-preview.3.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.0.0-preview.3.1" />
   </ItemGroup>
 
   <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.props" />
