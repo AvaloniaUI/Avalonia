@@ -40,7 +40,7 @@ namespace Avalonia.Controls
             set
             {
                 Inner[key] = value;
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                Owner?.NotifyHostedResourcesChanged(new ResourcesChangedEventArgs(key));
             }
         }
 
@@ -138,7 +138,7 @@ namespace Avalonia.Controls
         public void Add(object key, object? value)
         {
             Inner.Add(key, value);
-            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            Owner?.NotifyHostedResourcesChanged(new ResourcesChangedEventArgs(key));
         }
 
         public void AddDeferred(object key, Func<IServiceProvider?, object?> factory)
@@ -162,7 +162,7 @@ namespace Avalonia.Controls
         {
             if (_inner?.Remove(key) == true)
             {
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                Owner?.NotifyHostedResourcesChanged(new ResourcesChangedEventArgs(key));
                 return true;
             }
 
@@ -297,7 +297,7 @@ namespace Avalonia.Controls
         {
             if ((_inner as ICollection<KeyValuePair<object, object?>>)?.Remove(item) == true)
             {
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                Owner?.NotifyHostedResourcesChanged(new ResourcesChangedEventArgs(item.Key));
                 return true;
             }
 
