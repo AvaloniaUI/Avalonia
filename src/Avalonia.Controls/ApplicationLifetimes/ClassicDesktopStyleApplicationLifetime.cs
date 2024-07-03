@@ -118,27 +118,21 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         public int Start(string[] args)
         {
-            SetupCore(args);
-            
-            _cts = new CancellationTokenSource();
-
-            // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
-            // gets stuffed into a local var and can not be GCed until after the program stops.
-            // this method never exits until program end.
-            ShowMainWindow(); 
-                              
-            Dispatcher.UIThread.MainLoop(_cts.Token);
-            Environment.ExitCode = _exitCode;
-            return _exitCode;
+            return StartCore(args);
         }
 
         /// <summary>
         /// Since the lifetime must be set up/prepared with 'args' before executing Start(), an overload with no parameters seems more suitable for integrating with some lifetime manager providers, such as MS HostApplicationBuilder.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>exit code</returns>
         public int Start()
         {
-            SetupCore(Args ?? Array.Empty<string>());
+            return StartCore(Args ?? Array.Empty<string>());
+        }
+
+        internal int StartCore(string[] args)
+        {
+            SetupCore(args);
 
             _cts = new CancellationTokenSource();
 
