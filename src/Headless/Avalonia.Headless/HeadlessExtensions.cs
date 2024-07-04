@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
@@ -15,8 +16,8 @@ public static class HeadlessExtensions
     /// <param name="dispatcher">The dispatcher to use.</param>
     public static void Idle(this Dispatcher dispatcher)
     {
+        dispatcher.PromoteTimers();
         dispatcher.RunJobs();
-        dispatcher.PulseTime(TimeSpan.FromTicks(1));
     }
 
     /// <summary>
@@ -32,8 +33,6 @@ public static class HeadlessExtensions
             throw new ArgumentException("Only non-negative TimeSpan argument is allowed.", nameof(duration));
         }
 
-        // Avalonia DispatcherTimer doesn't work well about zero durations, and it might stack.
-        // Force pulse to be at least 1 tick, TODO: find a better solution.
         if (duration == default)
         {
             duration = TimeSpan.FromTicks(1);
@@ -43,10 +42,7 @@ public static class HeadlessExtensions
 
         HeadlessTimeProvider.GetCurrent().Pulse(duration);
 
-        var frame = new DispatcherFrame(dispatcher, true);
-        DispatcherTimer.RunOnce(() => frame.Continue = false, TimeSpan.FromTicks(1));
-        dispatcher.PushFrame(frame);
-        dispatcher.RunJobs();
+        dispatcher.Idle();
     }
 
     /// <summary>

@@ -166,8 +166,7 @@ public class TimeTests
 
         Assert.False(triggered);
 
-        await Task.Delay(interval);
-        Dispatcher.UIThread.Idle();
+        await Task.Delay(interval + TimeSpan.FromMilliseconds(100));
 
         Assert.True(triggered);
     }
