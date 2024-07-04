@@ -1127,6 +1127,25 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Win32Fact("Font only available on Windows")]
+        public void Should_Handle_TextStyle_With_Ligature()
+        {
+            using (Start())
+            {
+                var text = "fi";
+
+                var typeface = new Typeface("Calibri");
+
+                var textLayout = new TextLayout(text, typeface, 12, Brushes.Black,
+                    textStyleOverrides: new[]
+                    {
+                        new ValueSpan<TextRunProperties>(1, 1,
+                            new GenericTextRunProperties(typeface, foregroundBrush: Brushes.White))
+                    });
+
+                Assert.NotNull(textLayout);
+            }
+        }
 
         private static IDisposable Start()
         {

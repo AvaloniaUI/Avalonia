@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);AVP1012</NoWarn>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,10 +28,18 @@
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
+    <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="TopmostWindowTest.axaml.cs">
+      <DependentUpon>TopmostWindowTest.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
+  <Import Project="..\..\build\SourceGenerators.props" />
   
 </Project>

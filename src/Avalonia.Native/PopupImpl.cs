@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -8,17 +7,37 @@ namespace Avalonia.Native
 {
     class PopupImpl : WindowBaseImpl, IPopupImpl
     {
-        private readonly IWindowBaseImpl _parent;
+        private readonly ITopLevelImpl _parent;
+        private readonly IAvnPopup _native;
+        private readonly AvaloniaNativeTextInputMethod _inputMethod;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
-            IWindowBaseImpl parent) : base(factory)
+            ITopLevelImpl parent) : base(factory)
         {
             _parent = parent;
+            
             using (var e = new PopupEvents(this))
             {
-                Init(factory.CreatePopup(e), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(_native = factory.CreatePopup(e)), factory.CreateScreens());
             }
+            
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+
+            while (parent is PopupImpl popupImpl)
+            {
+                parent = popupImpl._parent;
+            }
+
+            //Use the parent's input context to process events
+            if (parent is TopLevelImpl topLevelImpl)
+            {
+                _inputMethod = topLevelImpl.InputMethod;
+            }
+        }
+
+        internal sealed override void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+        {
+            base.Init(handle, screens);
         }
 
         private void MoveResize(PixelPoint position, Size size, double scaling)
@@ -62,7 +81,7 @@ namespace Avalonia.Native
             base.Show(false, isDialog);
         }
 
-        public override IPopupImpl CreatePopup() => new PopupImpl(_factory, this);
+        public override IPopupImpl CreatePopup() => new PopupImpl(Factory, this);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {

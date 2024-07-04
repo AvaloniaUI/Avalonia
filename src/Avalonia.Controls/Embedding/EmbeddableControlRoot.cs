@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Embedding
         {
         }
 
-        public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
+        public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableTopLevel())
         {
         }
 

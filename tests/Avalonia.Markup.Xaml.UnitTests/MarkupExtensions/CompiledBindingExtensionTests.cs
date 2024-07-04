@@ -306,6 +306,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void IndexerSetterBindsCorrectly()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBox Text='{CompiledBinding ListProperty[3], Mode=TwoWay}' Name='textBox' />
+</Window>");
+                var textBox = window.GetControl<TextBox>("textBox");
+
+                var dataContext = new TestDataContext
+                {
+                    ListProperty = { "A", "B", "C", "D", "E" }
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.ListProperty[3], textBox.Text);
+
+                textBox.Text = "Z";
+
+                Assert.Equal("Z", dataContext.ListProperty[3]);
+                Assert.Equal(dataContext.ListProperty[3], textBox.Text);
+            }
+        }
+
+        [Fact]
         public void ResolvesArrayIndexerBindingCorrectly()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -1925,6 +1955,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Threading.Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(button.IsEffectivelyEnabled, true);
+            }
+        }
+
+        [Fact]
+        public void Binding_Method_To_Command_In_Style_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:MethodAsCommandDataContext'>
+    <Window.Styles>
+        <Style Selector='Button'>
+            <Setter Property='Command' Value='{CompiledBinding Method}'/>
+        </Style>
+    </Window.Styles>
+    <Button Name='button'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.GetControl<Button>("button");
+                var vm = new MethodAsCommandDataContext();
+
+                button.DataContext = vm;
+                window.ApplyTemplate();
+
+                Assert.NotNull(button.Command);
+                PerformClick(button);
+                Assert.Equal("Called", vm.Value);
             }
         }
 

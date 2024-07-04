@@ -16,7 +16,6 @@ namespace Avalonia.Native
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
-        private readonly AvaloniaNativeTextInputMethod _inputMethod;
         private bool _canResize = true;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
@@ -26,12 +25,15 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(_native = factory.CreateWindow(e)), factory.CreateScreens());
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
-            
-            _inputMethod = new AvaloniaNativeTextInputMethod(_native);
+        }
+
+        internal sealed override void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+        {
+            base.Init(handle, screens);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -65,7 +67,7 @@ namespace Avalonia.Native
                 _parent.GotInputWhenDisabled?.Invoke();
             }
         }
-
+        
         public new IAvnWindow Native => _native;
 
         public void CanResize(bool value)
@@ -211,7 +213,7 @@ namespace Avalonia.Native
         public void Move(PixelPoint point) => Position = point;
 
         public override IPopupImpl CreatePopup() =>
-            _opts.OverlayPopups ? null : new PopupImpl(_factory, this);
+            _opts.OverlayPopups ? null : new PopupImpl(Factory, this);
 
         public Action GotInputWhenDisabled { get; set; }
 
@@ -223,13 +225,20 @@ namespace Avalonia.Native
         public void SetEnabled(bool enable)
         {
             _native.SetEnabled(enable.AsComBool());
+
+            // Showing a dialog should result in mouse capture being lost. macOS doesn't have the concept of mouse
+            // capture, so no we have no OS-level event to hook into. Instead, release the mouse capture when the
+            // owner window is disabled. This behavior matches win32, which sends a WM_CANCELMODE message when
+            // EnableWindow(hWnd, false) is called from SetEnabled.
+            if (!enable && MouseDevice is MouseDevice mouse)
+                mouse.PlatformCaptureLost();
         }
 
         public override object TryGetFeature(Type featureType)
         {
             if(featureType == typeof(ITextInputMethodImpl))
             {
-                return _inputMethod;
+                return InputMethod;
             } 
             
             if (featureType == typeof(ITopLevelNativeMenuExporter))

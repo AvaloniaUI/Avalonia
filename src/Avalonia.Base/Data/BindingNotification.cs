@@ -178,7 +178,7 @@ namespace Avalonia.Data
         /// to <paramref name="value"/>. If <paramref name="value"/> is a
         /// <see cref="BindingNotification"/> then the value will first be extracted.
         /// </remarks>
-        public static object? UpdateValue(object o, object value)
+        public static object? UpdateValue(object? o, object value)
         {
             if (o is BindingNotification n)
             {
