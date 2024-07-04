@@ -292,6 +292,42 @@ namespace Avalonia.PropertyStore
             return property.GetDefaultValue(Owner);
         }
 
+        public BindingExpressionBase? GetExpression(AvaloniaProperty property)
+        {
+            var evaluatedLocalValue = false;
+
+            bool TryGetLocalValue(out BindingExpressionBase? result)
+            {
+                if (!evaluatedLocalValue)
+                {
+                    evaluatedLocalValue = true;
+
+                    if (_localValueBindings?.TryGetValue(property.Id, out var o) == true)
+                    {
+                        result = o as BindingExpressionBase;
+                        return true;
+                    }
+                }
+
+                result = null;
+                return false;
+            }
+
+            for (var i = _frames.Count - 1; i >= 0; --i)
+            {
+                var frame = _frames[i];
+
+                if (frame.Priority > BindingPriority.LocalValue && TryGetLocalValue(out var localExpression))
+                    return localExpression;
+
+                if (frame.TryGetEntryIfActive(property, out var entry, out _))
+                    return entry as BindingExpressionBase;
+            }
+
+            TryGetLocalValue(out var e);
+            return e;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static EffectiveValue<T> CastEffectiveValue<T>(EffectiveValue value)
         {
