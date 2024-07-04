@@ -15,15 +15,16 @@ namespace Avalonia.Headless.UnitTests;
 
 public class TimeTests
 {
+    private const int MsInHour = 60 * 60 * 1000;
+
 #if NUNIT
-    [AvaloniaTheory, Timeout(10000), TestCase(1), TestCase(10), TestCase(100)]
+    [AvaloniaTheory, Timeout(10000), TestCase(1 * MsInHour), TestCase(10 * MsInHour), TestCase(100 * MsInHour), TestCase(int.MaxValue)]
 #elif XUNIT
-    [AvaloniaTheory(Timeout = 10000), InlineData(1), InlineData(10), InlineData(100)]
+    [AvaloniaTheory(Timeout = 10000), InlineData(1 * MsInHour), InlineData(10 * MsInHour), InlineData(100 * MsInHour), InlineData(int.MaxValue)]
 #endif
-    public void Should_Pulse_Time_To_Skip_Hours_While_Paused(int hours)
+    public void Should_Pulse_Time_To_Skip_Hours(int milliseconds)
     {
-        // Internal time provider is paused, but it still should be possible to `adjust time` manually.
-        var interval = TimeSpan.FromHours(hours);
+        var interval = TimeSpan.FromMilliseconds(milliseconds);
 
         var triggered = false;
         using var _ = DispatcherTimer.RunOnce(() =>
