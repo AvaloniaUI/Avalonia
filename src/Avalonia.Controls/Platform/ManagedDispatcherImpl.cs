@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using Avalonia.Metadata;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Platform;
 
@@ -13,8 +14,8 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     private readonly AutoResetEvent _wakeup = new(false);
     private bool _signaled;
     private readonly object _lock = new();
-    private readonly Stopwatch _clock = Stopwatch.StartNew();
-    private TimeSpan? _nextTimer; 
+    private TimeSpan? _nextTimer;
+    private Stopwatch _sw = Stopwatch.StartNew();
     private readonly Thread _loopThread = Thread.CurrentThread;
 
     public interface IManagedDispatcherInputProvider
@@ -40,7 +41,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
     public event Action? Signaled;
     public event Action? Timer;
-    public long Now => _clock.ElapsedMilliseconds;
+    public long Now => (long)GetElapsedTime().TotalMilliseconds;
     public void UpdateTimer(long? dueTimeInMs)
     {
         lock (_lock)
@@ -80,7 +81,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
             bool fireTimer = false;
             lock (_lock)
             {
-                if (_nextTimer < _clock.Elapsed)
+                if (_nextTimer < GetElapsedTime())
                 {
                     fireTimer = true;
                     _nextTimer = null;
@@ -107,7 +108,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
             if (nextTimer != null)
             {
-                var waitFor = nextTimer.Value - _clock.Elapsed;
+                var waitFor = nextTimer.Value - GetElapsedTime();
                 if (waitFor.TotalMilliseconds < 1)
                     continue;
                 _wakeup.WaitOne(waitFor);
@@ -118,4 +119,6 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
         registration.Dispose();
     }
+
+    private protected virtual TimeSpan GetElapsedTime() => _sw.Elapsed;
 }

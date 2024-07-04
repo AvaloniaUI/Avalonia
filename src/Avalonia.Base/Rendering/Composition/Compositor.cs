@@ -179,8 +179,8 @@ namespace Avalonia.Rendering.Composition
                 }
                 _pendingServerCompositorJobs.Clear();
             }
-            
-            _nextCommit.CommittedAt = Server.Clock.Elapsed;
+
+            _nextCommit.CommittedAt = Server.ServerNow;
             _server.EnqueueBatch(_nextCommit);
             
             lock (_pendingBatchLock)
