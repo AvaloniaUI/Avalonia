@@ -152,59 +152,24 @@ public class TimeTests
 #elif XUNIT
     [AvaloniaFact(Timeout = 10000)]
 #endif
-    // This tests is a copy of an actual Avalonia animations tests - Check_Initial_Inter_and_Trailing_Delay_Values
     public async Task Should_Be_Possible_To_Use_System_Timer()
     {
         Dispatcher.UIThread.SetTimeProvider(TimeProvider.System);
 
-        var keyframe1 = new KeyFrame()
+        var interval = TimeSpan.FromMilliseconds(300);
+
+        var triggered = false;
+        using var _ = DispatcherTimer.RunOnce(() =>
         {
-            Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
-        };
+            triggered = true;
+        }, interval);
 
-        var keyframe2 = new KeyFrame()
-        {
-            Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
-        };
+        Assert.False(triggered);
 
-        var animation = new Animation.Animation()
-        {
-            Duration = TimeSpan.FromSeconds(0.3),
-            Delay = TimeSpan.FromSeconds(0.3),
-            DelayBetweenIterations = TimeSpan.FromSeconds(0.3),
-            IterationCount = new IterationCount(2),
-            Children = { keyframe2, keyframe1 }
-        };
-
-        var border = new Border() { Height = 100d, Width = 100d };
-
-        var animationRun = animation.RunAsync(border);
-
-        border.Measure(Size.Infinity);
-        border.Arrange(new Rect(border.DesiredSize));
-
-        // Initial Delay.
+        await Task.Delay(interval);
         Dispatcher.UIThread.Idle();
 
-        Assert.True(Math.Abs(100d - border.Width) < double.Epsilon);
-
-        await Task.Delay(TimeSpan.FromSeconds(0.6));
-        Dispatcher.UIThread.Idle();
-
-        // First Inter-Iteration delay.
-        await Task.Delay(TimeSpan.FromSeconds(0.2));
-        Dispatcher.UIThread.Idle();
-
-        // This test is quite flacky
-        // Would not recommend anybody to use Task.Delay in unit tests anymore, when custom TimeProvider is an option.
-        Assert.True(Math.Abs(200d - border.Width) < 10);
-
-        // Trailing Delay should be non-existent.
-        await Task.Delay(TimeSpan.FromSeconds(0.6));
-        Dispatcher.UIThread.Idle();
-
-        Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
-        Assert.True(Math.Abs(100d - border.Width) < double.Epsilon);
+        Assert.True(triggered);
     }
 
 #if NUNIT
