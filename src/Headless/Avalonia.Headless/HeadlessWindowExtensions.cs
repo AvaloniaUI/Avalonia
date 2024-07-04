@@ -128,9 +128,10 @@ public static class HeadlessWindowExtensions
 
     private static void RunJobsOnImpl(this TopLevel topLevel, Action<IHeadlessWindow> action)
     {
-        Dispatcher.UIThread.Idle();
-        action(GetImpl(topLevel));
+        // Most of input operations that involve hit test require frame to be rendered.
         Dispatcher.UIThread.PulseRenderFrames(1);
+        action(GetImpl(topLevel));
+        Dispatcher.UIThread.PulseTime(TimeSpan.FromTicks(1));
     }
 
     private static IHeadlessWindow GetImpl(this TopLevel topLevel)

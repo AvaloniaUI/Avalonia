@@ -73,7 +73,7 @@ public class TimeTests
         border.Arrange(new Rect(border.DesiredSize));
 
         // Initial Delay.
-        Dispatcher.UIThread.PulseTime(TimeSpan.Zero);
+        Dispatcher.UIThread.Idle();
         Assert.True(Math.Abs(100d - border.Width) < double.Epsilon);
 
         Dispatcher.UIThread.PulseTime(TimeSpan.FromSeconds(6));
@@ -126,19 +126,82 @@ public class TimeTests
         border.Arrange(new Rect(border.DesiredSize));
 
         // Initial Delay.
-        timeProvider.CurrentTime = TimeSpan.FromSeconds(0);
+        Dispatcher.UIThread.Idle();
 
         Assert.True(Math.Abs(100d - border.Width) < double.Epsilon);
 
         timeProvider.CurrentTime = TimeSpan.FromSeconds(6);
+        Dispatcher.UIThread.Idle();
 
         // First Inter-Iteration delay.
         timeProvider.CurrentTime = TimeSpan.FromSeconds(8);
+        Dispatcher.UIThread.Idle();
 
         Assert.True(Math.Abs(200d - border.Width) < double.Epsilon);
 
         // Trailing Delay should be non-existent.
         timeProvider.CurrentTime = TimeSpan.FromSeconds(14);
+        Dispatcher.UIThread.Idle();
+
+        Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
+        Assert.True(Math.Abs(100d - border.Width) < double.Epsilon);
+    }
+
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
+    // This tests is a copy of an actual Avalonia animations tests - Check_Initial_Inter_and_Trailing_Delay_Values
+    public async Task Should_Be_Possible_To_Use_System_Timer()
+    {
+        Dispatcher.UIThread.SetTimeProvider(TimeProvider.System);
+
+        var keyframe1 = new KeyFrame()
+        {
+            Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
+        };
+
+        var keyframe2 = new KeyFrame()
+        {
+            Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
+        };
+
+        var animation = new Animation.Animation()
+        {
+            Duration = TimeSpan.FromSeconds(0.3),
+            Delay = TimeSpan.FromSeconds(0.3),
+            DelayBetweenIterations = TimeSpan.FromSeconds(0.3),
+            IterationCount = new IterationCount(2),
+            Children = { keyframe2, keyframe1 }
+        };
+
+        var border = new Border() { Height = 100d, Width = 100d };
+
+        var animationRun = animation.RunAsync(border);
+
+        border.Measure(Size.Infinity);
+        border.Arrange(new Rect(border.DesiredSize));
+
+        // Initial Delay.
+        Dispatcher.UIThread.Idle();
+
+        Assert.True(Math.Abs(100d - border.Width) < double.Epsilon);
+
+        await Task.Delay(TimeSpan.FromSeconds(0.6));
+        Dispatcher.UIThread.Idle();
+
+        // First Inter-Iteration delay.
+        await Task.Delay(TimeSpan.FromSeconds(0.2));
+        Dispatcher.UIThread.Idle();
+
+        // This test is quite flacky
+        // Would not recommend anybody to use Task.Delay in unit tests anymore, when custom TimeProvider is an option.
+        Assert.True(Math.Abs(200d - border.Width) < 5);
+
+        // Trailing Delay should be non-existent.
+        await Task.Delay(TimeSpan.FromSeconds(0.6));
+        Dispatcher.UIThread.Idle();
 
         Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
         Assert.True(Math.Abs(100d - border.Width) < double.Epsilon);
@@ -188,17 +251,7 @@ public class TimeTests
 
     private class FakeTimeProvider : TimeProvider
     {
-        private TimeSpan _currentTime;
-
-        public TimeSpan CurrentTime
-        {
-            get => _currentTime;
-            set
-            {
-                _currentTime = value;
-                Dispatcher.UIThread.Idle();
-            }
-        }
+        public TimeSpan CurrentTime { get; set; }
 
         public override long TimestampFrequency => TimeSpan.TicksPerSecond;
 

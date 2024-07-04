@@ -9,6 +9,8 @@ namespace Avalonia.Headless;
 
 internal class HeadlessTimeProvider : TimeProvider
 {
+    private readonly bool _autoStart;
+
     public static HeadlessTimeProvider GetCurrent() =>
         AvaloniaLocator.Current.GetRequiredService<HeadlessTimeProvider>();
 
@@ -17,12 +19,13 @@ internal class HeadlessTimeProvider : TimeProvider
     private bool _isRunning;
     private TimeSpan _snapshotTime;
 
-    private TimeProvider _nested;
+    private TimeProvider? _nested;
     private long _nestedStartTimestamp;
 
     public HeadlessTimeProvider(bool autoStart)
     {
-        SetNested(System);
+        _autoStart = autoStart;
+        Reset();
     }
 
     public override long TimestampFrequency => TimeSpan.TicksPerSecond;
@@ -35,7 +38,7 @@ internal class HeadlessTimeProvider : TimeProvider
         }
     }
 
-    public void Pause()
+    private void Pause()
     {
         lock (_sync)
         {
@@ -44,12 +47,12 @@ internal class HeadlessTimeProvider : TimeProvider
         }
     }
 
-    public void Play()
+    private void Play()
     {
         lock (_sync)
         {
             _isRunning = true;
-            _nestedStartTimestamp = _nested.GetTimestamp();
+            _nestedStartTimestamp = _nested?.GetTimestamp() ?? default;
         }
     }
 
@@ -61,8 +64,7 @@ internal class HeadlessTimeProvider : TimeProvider
         }
     }
 
-    [MemberNotNull(nameof(_nested))]
-    public void SetNested(TimeProvider timeProvider)
+    public void SetNested(TimeProvider? timeProvider)
     {
         lock (_sync)
         {
@@ -73,7 +75,11 @@ internal class HeadlessTimeProvider : TimeProvider
 
             Pause();
             _nested = timeProvider;
-            Play();
+            // Force running state, when custom time provider is set.
+            if (_nested != null)
+            {
+                Play();
+            }
         }
     }
 
@@ -83,8 +89,8 @@ internal class HeadlessTimeProvider : TimeProvider
         {
             Pause();
             _snapshotTime = default;
-            _nested = System;
-            Play();
+            if (_autoStart)
+                SetNested(System);
         }
     }
 
@@ -92,7 +98,7 @@ internal class HeadlessTimeProvider : TimeProvider
     {
         lock (_sync)
         {
-            return _isRunning ? _nested.GetElapsedTime(_nestedStartTimestamp) : default;
+            return _isRunning && _nested is not null ? _nested.GetElapsedTime(_nestedStartTimestamp) : default;
         }
     }
 }

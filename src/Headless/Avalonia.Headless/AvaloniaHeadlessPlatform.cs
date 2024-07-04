@@ -76,6 +76,7 @@ namespace Avalonia.Headless
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
         {
             var timeProvider = new HeadlessTimeProvider(opts.UseRealtimeTimeProvider);
+
             AvaloniaLocator.CurrentMutable
                 .BindToSelf(opts)
                 .BindToSelf(timeProvider)
