@@ -14,5 +14,5 @@ internal class HeadlessDispatcherImpl : ManagedDispatcherImpl
         _startingTimestamp = _timeProvider.GetTimestamp();
     }
 
-    private protected override TimeSpan GetElapsedTime() => _timeProvider.GetElapsedTime(_startingTimestamp);
+    private protected override long GetElapsedTimeMs() => (long)_timeProvider.GetElapsedTime(_startingTimestamp).TotalMilliseconds;
 }

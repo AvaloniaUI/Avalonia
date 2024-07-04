@@ -14,7 +14,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     private readonly AutoResetEvent _wakeup = new(false);
     private bool _signaled;
     private readonly object _lock = new();
-    private TimeSpan? _nextTimer;
+    private long? _nextTimerMs;
     private Stopwatch _sw = Stopwatch.StartNew();
     private readonly Thread _loopThread = Thread.CurrentThread;
 
@@ -41,14 +41,12 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
     public event Action? Signaled;
     public event Action? Timer;
-    public long Now => (long)GetElapsedTime().TotalMilliseconds;
+    public long Now => GetElapsedTimeMs();
     public void UpdateTimer(long? dueTimeInMs)
     {
         lock (_lock)
         {
-            _nextTimer = dueTimeInMs == null
-                ? null
-                : TimeSpan.FromMilliseconds(dueTimeInMs.Value);
+            _nextTimerMs = dueTimeInMs;
             if (!CurrentThreadIsLoopThread)
                 _wakeup.Set();
         }
@@ -81,10 +79,10 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
             bool fireTimer = false;
             lock (_lock)
             {
-                if (_nextTimer < GetElapsedTime())
+                if (_nextTimerMs.HasValue && _nextTimerMs < GetElapsedTimeMs())
                 {
                     fireTimer = true;
-                    _nextTimer = null;
+                    _nextTimerMs = null;
                 }
             }
 
@@ -100,18 +98,19 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
                 continue;
             }
 
-            TimeSpan? nextTimer;
+            long? nextTimerMs;
             lock (_lock)
             {
-                nextTimer = _nextTimer;
+                nextTimerMs = _nextTimerMs;
             }
 
-            if (nextTimer != null)
+            if (nextTimerMs != null)
             {
-                var waitFor = nextTimer.Value - GetElapsedTime();
-                if (waitFor.TotalMilliseconds < 1)
+                var waitFor = nextTimerMs.Value - GetElapsedTimeMs();
+                if (waitFor < 1)
                     continue;
-                _wakeup.WaitOne(waitFor);
+                Debug.Assert(waitFor < int.MaxValue);
+                _wakeup.WaitOne((int)waitFor);
             }
             else
                 _wakeup.WaitOne();
@@ -120,5 +119,5 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
         registration.Dispose();
     }
 
-    private protected virtual TimeSpan GetElapsedTime() => _sw.Elapsed;
+    private protected virtual long GetElapsedTimeMs() => _sw.ElapsedMilliseconds;
 }
