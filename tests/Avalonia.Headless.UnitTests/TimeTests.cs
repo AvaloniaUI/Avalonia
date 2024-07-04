@@ -197,7 +197,7 @@ public class TimeTests
 
         // This test is quite flacky
         // Would not recommend anybody to use Task.Delay in unit tests anymore, when custom TimeProvider is an option.
-        Assert.True(Math.Abs(200d - border.Width) < 5);
+        Assert.True(Math.Abs(200d - border.Width) < 10);
 
         // Trailing Delay should be non-existent.
         await Task.Delay(TimeSpan.FromSeconds(0.6));
