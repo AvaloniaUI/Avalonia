@@ -252,7 +252,6 @@
     auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
     
     auto point = ToAvnPoint(localPoint);
-    //auto point = [self translateLocalPoint:avnPoint];
     AvnVector delta = { 0, 0};
 
     if(type == Wheel)
