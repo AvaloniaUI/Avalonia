@@ -211,24 +211,8 @@ internal abstract class ExpressionNode
     protected void SetValue(object? value, Exception? dataValidationError = null)
     {
         Debug.Assert(value is not BindingNotification);
-
-        if (Owner is null)
-            return;
-
-        // We raise a change notification if:
-        //
-        // - This is the initial value (_value is null)
-        // - There is a data validation error
-        // - There is no data validation error, but the owner has one
-        // - The new value is different to the old value
-        if (_value is null ||
-            dataValidationError is not null ||
-            (dataValidationError is null && Owner.ErrorType == BindingErrorType.DataValidationError) ||
-            !Equals(value, _value))
-        {
-            _value = value;
-            Owner.OnNodeValueChanged(Index, value, dataValidationError);
-        }
+        _value = value;
+        Owner?.OnNodeValueChanged(Index, value, dataValidationError);
     }
 
     /// <summary>

@@ -48,11 +48,6 @@ namespace Avalonia.Controls
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
             CreatePlatformImplBinding(TopmostProperty, topmost => PlatformImpl!.SetTopmost(topmost));
-            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
-            {
-                variant ??= ThemeVariant.Default;
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
-            });
             
             FrameSize = impl.FrameSize;
         }

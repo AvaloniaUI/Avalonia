@@ -818,11 +818,9 @@ namespace Avalonia
                     var fallback = value.HasValue ? value : value.WithValue(property.GetUnsetValue(this));
                     property.InvokeSetter(this, fallback);
                     break;
-                case BindingValueType.DataValidationError:
-                    property.InvokeSetter(this, value);
-                    break;
                 case BindingValueType.Value:
                 case BindingValueType.BindingErrorWithFallback:
+                case BindingValueType.DataValidationError:
                 case BindingValueType.DataValidationErrorWithFallback:
                     property.InvokeSetter(this, value);
                     break;

@@ -239,7 +239,7 @@ namespace Avalonia.IntegrationTests.Appium
         public void Parent_Window_Has_Disabled_ChromeButtons_When_Modal_Dialog_Shown()
         {
             var window = GetWindow("MainWindow");
-            var windowChrome = window.GetChromeButtons();
+            var windowChrome = window.GetSystemChromeButtons();
 
             Assert.True(windowChrome.Close!.Enabled);
             Assert.True(windowChrome.FullScreen!.Enabled);
@@ -260,7 +260,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var windowChrome = secondaryWindow.GetChromeButtons();
+                var windowChrome = secondaryWindow.GetSystemChromeButtons();
 
                 Assert.True(windowChrome.Close!.Enabled);
                 Assert.True(windowChrome.Maximize!.Enabled);
@@ -374,7 +374,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 try
                 {
-                    var chrome = secondaryWindow.GetChromeButtons();
+                    var chrome = secondaryWindow.GetSystemChromeButtons();
                 
                     if (decorations == SystemDecorations.Full)
                     {
@@ -448,7 +448,7 @@ namespace Avalonia.IntegrationTests.Appium
 
         private AppiumWebElement GetWindow(string identifier)
         {
-            return _session.FindElementByXPath($"XCUIElementTypeWindow[@identifier='{identifier}']");
+            return _session.GetWindowById(identifier);
         }
 
         private int GetWindowOrder(string identifier)

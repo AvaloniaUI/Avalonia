@@ -257,6 +257,35 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
 
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Owned_Window_Should_Appear_Above_Topmost_Owner()
+        {
+            var showTopmostWindow = _session.FindElementByAccessibilityId("ShowTopmostWindow");
+            using var window = showTopmostWindow.OpenWindowWithClick();
+            Thread.Sleep(1000);
+            var ownerWindow = _session.GetWindowById("OwnerWindow");
+            var ownedWindow = _session.GetWindowById("OwnedWindow");
+
+            Assert.NotNull(ownerWindow);
+            Assert.NotNull(ownedWindow);
+
+            var ownerPosition = GetPosition(ownerWindow);
+            var ownedPosition = GetPosition(ownedWindow);
+
+            // Owned Window moves 
+            var moveButton = ownedWindow.FindElementByAccessibilityId("MoveButton");
+            moveButton.Click();
+            Thread.Sleep(1000);
+
+            Assert.Equal(GetPosition(ownerWindow), ownerPosition);
+            Assert.NotEqual(GetPosition(ownedWindow), ownedPosition);
+
+            PixelPoint GetPosition(AppiumWebElement window)
+            {
+                return PixelPoint.Parse(window.FindElementByAccessibilityId("CurrentPosition").Text);
+            }
+        }
+
         [Theory]
         [InlineData(ShowWindowMode.NonOwned, true)]
         [InlineData(ShowWindowMode.Owned, true)]
@@ -268,7 +297,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false, extendClientArea: extendClientArea))
             {
-                var secondaryWindow = GetWindow("SecondaryWindow");
+                var secondaryWindow = _session.GetWindowById("SecondaryWindow");
                 AppiumWebElement? maximizeButton;
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -411,19 +440,6 @@ namespace Avalonia.IntegrationTests.Appium
                 extendClientAreaCheckBox.Click();
 
             return showButton.OpenWindowWithClick();
-        }
-
-        private AppiumWebElement GetWindow(string identifier)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return _session.FindElementByXPath(
-                    $"XCUIElementTypeWindow[@identifier='{identifier}']");
-            }
-            else
-            {
-                return _session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
-            }
         }
 
         private WindowInfo GetWindowInfo()
