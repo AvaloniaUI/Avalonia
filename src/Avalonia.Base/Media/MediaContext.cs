@@ -95,7 +95,7 @@ internal partial class MediaContext : ICompositorScheduler
             _inputMarkerOp = _dispatcher.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
             _inputMarkerAddedAtInMs = _dispatcher.Now;
         }
-        else if (!now && StopwatchHelper.GetElapsedTime(_inputMarkerAddedAtInMs, _dispatcher.Now).TotalSeconds > MaxSecondsWithoutInput)
+        else if (!now && TimeSpan.FromMilliseconds(_dispatcher.Now - _inputMarkerAddedAtInMs).TotalSeconds > MaxSecondsWithoutInput)
         {
             priority = DispatcherPriority.Input;
         }
