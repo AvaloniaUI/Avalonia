@@ -305,5 +305,10 @@ namespace Avalonia.Input
         {
             return _pointer;
         }
+
+        internal void PlatformCaptureLost()
+        {
+            _pointer.Capture(null);
+        }
     }
 }
