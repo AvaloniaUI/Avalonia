@@ -55,17 +55,6 @@ internal class HeadlessTimeProvider : TimeProvider
 
     public void Pulse(TimeSpan time)
     {
-        // We can technically allow negative time spans. But should we do that?
-        if (time < TimeSpan.Zero)
-        {
-            throw new ArgumentException("Only non-negative TimeSpan argument is allowed.", nameof(time));
-        }
-
-        if (time == default)
-        {
-            return;
-        }
-
         lock (_sync)
         {
             _snapshotTime += time;

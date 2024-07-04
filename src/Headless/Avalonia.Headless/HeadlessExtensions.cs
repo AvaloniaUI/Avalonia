@@ -10,32 +10,6 @@ namespace Avalonia.Headless;
 public static class HeadlessExtensions
 {
     /// <summary>
-    /// Forces the renderer to process a rendering timer tick.
-    /// Use this method before calling <see cref="HeadlessWindowExtensions.GetLastRenderedFrame"/>.
-    /// </summary>
-    /// <param name="dispatcher">The dispatcher to use.</param>
-    /// <param name="framesCount">The number of frames to be ticked on the timer.</param>
-    public static void PulseRenderFrames(this Dispatcher dispatcher, int framesCount)
-    {
-        if (framesCount < 0)
-        {
-            throw new ArgumentException("Frame count cannot be less than zero");
-        }
-
-        if (framesCount == 0)
-        {
-            return;
-        }
-
-        ValidateDispatcher(dispatcher);
-
-        var timer = (AvaloniaHeadlessPlatform.RenderTimer)AvaloniaLocator.Current.GetRequiredService<IRenderTimer>();
-        var singleFrame = 1d / timer.FramesPerSecond;
-        for (var c = 0; c < framesCount; c++)
-            dispatcher.PulseTime(TimeSpan.FromSeconds(singleFrame));
-    }
-
-    /// <summary>
     ///  Runs all remaining jobs, including any previously scheduled timers with zero time.
     /// </summary>
     /// <param name="dispatcher">The dispatcher to use.</param>
@@ -56,11 +30,48 @@ public static class HeadlessExtensions
     /// <param name="duration">The duration to pulse the time provider.</param>
     public static void PulseTime(this Dispatcher dispatcher, TimeSpan duration)
     {
+        // We can technically allow negative time spans. But should we do that?
+        if (duration < TimeSpan.Zero)
+        {
+            throw new ArgumentException("Only non-negative TimeSpan argument is allowed.", nameof(duration));
+        }
+
+        if (duration == default)
+        {
+            return;
+        }
+
         ValidateDispatcher(dispatcher);
 
         HeadlessTimeProvider.GetCurrent().Pulse(duration);
 
         dispatcher.Idle();
+    }
+
+    /// <summary>
+    /// Forces the renderer to process a rendering timer tick.
+    /// Use this method before calling <see cref="HeadlessWindowExtensions.GetLastRenderedFrame"/>.
+    /// </summary>
+    /// <param name="dispatcher">The dispatcher to use.</param>
+    /// <param name="framesCount">The number of frames to be ticked on the timer.</param>
+    public static void PulseRenderFrames(this Dispatcher dispatcher, int framesCount = 1)
+    {
+        if (framesCount < 0)
+        {
+            throw new ArgumentException("Only non-negative framesCount argument is allowed.", nameof(framesCount));
+        }
+
+        if (framesCount == 0)
+        {
+            return;
+        }
+
+        ValidateDispatcher(dispatcher);
+
+        var timer = (AvaloniaHeadlessPlatform.RenderTimer)AvaloniaLocator.Current.GetRequiredService<IRenderTimer>();
+        var singleFrame = 1d / timer.FramesPerSecond;
+        for (var c = 0; c < framesCount; c++)
+            dispatcher.PulseTime(TimeSpan.FromSeconds(singleFrame));
     }
 
     /// <summary>
