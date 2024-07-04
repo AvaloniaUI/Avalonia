@@ -44,6 +44,26 @@ public class TimeTests
 #elif XUNIT
     [AvaloniaFact(Timeout = 10000)]
 #endif
+    public void Doesnt_Trigger_Timers_Yet_From_The_Future()
+    {
+        var triggered = false;
+        using var _ = DispatcherTimer.RunOnce(() =>
+        {
+            triggered = true;
+        }, TimeSpan.FromSeconds(10));
+
+        Assert.False(triggered);
+
+        Dispatcher.UIThread.PulseTime(TimeSpan.FromSeconds(5));
+
+        Assert.False(triggered);
+    }
+
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
     // This tests is a copy of an actual Avalonia animations tests - Check_Initial_Inter_and_Trailing_Delay_Values
     public void Should_Be_Possible_To_Pulse_Animations()
     {
