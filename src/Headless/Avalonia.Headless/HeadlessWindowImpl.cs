@@ -19,7 +19,6 @@ namespace Avalonia.Headless
         private static int _nextGlobalZOrder = 1;
 
         private readonly IKeyboardDevice _keyboard;
-        private readonly Stopwatch _st = Stopwatch.StartNew();
         private readonly Pointer _mousePointer;
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
@@ -238,7 +237,7 @@ namespace Avalonia.Headless
             }
         }
 
-        private ulong Timestamp => (ulong)_st.ElapsedMilliseconds;
+        private ulong Timestamp => (ulong)HeadlessTimeProvider.GetCurrent().GetTimestamp();
 
         // TODO: Hook recent Popup changes. 
         IPopupPositioner IPopupImpl.PopupPositioner => null!;
