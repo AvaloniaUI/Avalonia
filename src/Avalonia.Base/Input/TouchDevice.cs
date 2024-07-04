@@ -160,5 +160,11 @@ namespace Avalonia.Input
                 ? pointer
                 : null;
         }
+
+        internal void PlatformCaptureLost()
+        {
+            foreach (var pointer in _pointers.Values)
+                pointer.Capture(null);
+        }
     }
 }

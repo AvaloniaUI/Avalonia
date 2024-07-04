@@ -136,6 +136,21 @@
           </StackPanel>
         </DockPanel>
       </TabItem>
+
+      <TabItem Header="Pointer">
+        <StackPanel>
+          <!-- Trigger with PointerPressed rather using a Button so we have access to the pointer. -->
+          <Border Name="PointerPageShowDialog"
+                  Background="{DynamicResource ButtonBackground}"
+                  HorizontalAlignment="Left"
+                  Padding="{DynamicResource ButtonPadding}"
+                  AutomationProperties.AccessibilityView="Control"
+                  PointerPressed="PointerPageShowDialogPressed">
+            <TextBlock>Show Dialog</TextBlock>
+          </Border>
+          <TextBlock Name="PointerCaptureStatus"/>
+        </StackPanel>
+      </TabItem>
       
       <TabItem Header="Window">
         <Grid ColumnDefinitions="*,8,*">
