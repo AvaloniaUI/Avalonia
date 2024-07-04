@@ -9,6 +9,69 @@
 #import "WindowInterfaces.h"
 #import "WindowImpl.h"
 
+@implementation FooTextView
+{
+    
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+    NSLog(@"FooTextView.mouseDown");
+    [super mouseDown:event];
+}
+
+- (BOOL)needsPanelToBecomeKey
+{
+    BOOL r = [super needsPanelToBecomeKey];
+    NSLog(@"FooTextView.needsPanelToBecomeKey -> %d", r);
+    return r;
+}
+
+- (BOOL)canBecomeKeyView
+{
+    BOOL r = [super canBecomeKeyView];
+    NSLog(@"FooTextView.canBecomeKeyView -> %d", r);
+    return r;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    BOOL r = [super acceptsFirstResponder];
+    NSLog(@"FooTextView.acceptsFirstResponder -> %d", r);
+    return r;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    BOOL r = [super becomeFirstResponder];
+    NSLog(@"FooTextView.becomeFirstResponder -> %d", r);
+    return r;
+}
+
+- (BOOL)resignFirstResponder
+{
+    BOOL r = [super resignFirstResponder];
+    NSLog(@"FooTextView.resignFirstResponder -> %d", r);
+    return r;
+}
+
+- (BOOL)shouldDrawInsertionPoint
+{
+    BOOL r = [super shouldDrawInsertionPoint];
+    NSLog(@"FooTextView.shouldDrawInsertionPoint -> %d", r);
+    return r;
+}
+
+- (void)keyDown:(NSEvent *)event
+{
+    NSLog(@"FooTextView.keyDown");
+    [super keyDown:event];
+}
+
+@end
+
+
+
 @implementation AvnView
 {
     ComPtr<TopLevelImpl> _parent;
@@ -254,7 +317,7 @@
     {
         return;
     }
-
+    
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
@@ -294,16 +357,16 @@
     uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    if(type != Move ||
-            (
-                    [self window] != nil &&
-                            (
-                                    [[self window] firstResponder] == nil
-                                            || ![[[self window] firstResponder] isKindOfClass: [NSView class]]
-                            )
-            )
-            )
-        [self becomeFirstResponder];
+//    if(type != Move ||
+//            (
+//                    [self window] != nil &&
+//                            (
+//                                    [[self window] firstResponder] == nil
+//                                            || ![[[self window] firstResponder] isKindOfClass: [NSView class]]
+//                            )
+//            )
+//            )
+//        [self becomeFirstResponder];
 
     if(_parent != nullptr)
     {
@@ -313,8 +376,15 @@
     [super mouseMoved:event];
 }
 
+- (BOOL)becomeFirstResponder
+{
+    NSLog(@"AvnView.becomeFirstResponder");
+    return [super becomeFirstResponder];
+}
+
 - (BOOL) resignFirstResponder
 {
+    NSLog(@"AvnView.resignFirstResponder");
     _parent->TopLevelEvents->LostFocus();
     return YES;
 }

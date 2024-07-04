@@ -13,7 +13,7 @@ extern void FreeAvnGCHandle(void* handle);
 extern void PostDispatcherCallback(IAvnActionCallback* cb);
 extern IAvnTopLevel* CreateAvnTopLevel(IAvnTopLevelEvents* events);
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnTopLevel* parent);
 extern IAvnSystemDialogs* CreateSystemDialogs();
 extern IAvnScreens* CreateScreens();
 extern IAvnClipboard* CreateClipboard(NSPasteboard*, NSPasteboardItem*);
@@ -108,6 +108,12 @@ public:
     virtual HRESULT ShowAll() override;
     virtual HRESULT HideOthers() override;
 };
+
+@interface FooTextView : NSTextView
+
+@end
+
+
 #define NSApp [NSApplication sharedApplication]
 
 #define START_COM_ARP_CALL START_ARP_CALL; START_COM_CALL

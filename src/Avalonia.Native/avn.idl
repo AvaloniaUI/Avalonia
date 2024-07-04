@@ -665,7 +665,7 @@ interface IAvaloniaNativeFactory : IUnknown
      IAvnMacOptions* GetMacOptions();
      HRESULT CreateTopLevel(IAvnTopLevelEvents* cb, IAvnTopLevel** ppv);
      HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv);
-     HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv);
+     HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnTopLevel* parent, IAvnPopup** ppv);
      HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv);
      HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv);
      HRESULT CreateScreens(IAvnScreens** ppv);

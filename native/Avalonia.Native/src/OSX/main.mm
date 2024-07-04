@@ -251,7 +251,7 @@ public:
         }
     };
     
-    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv) override
+    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnTopLevel* parent, IAvnPopup** ppv) override
     {
         START_COM_CALL;
         
@@ -260,7 +260,7 @@ public:
             if(cb == nullptr || ppv == nullptr)
                 return E_POINTER;
             
-            *ppv = CreateAvnPopup(cb);
+            *ppv = CreateAvnPopup(cb, parent);
             return S_OK;
         }
     }

@@ -83,7 +83,10 @@ public:
         {
             if(_child != nil)
                 return E_FAIL;
-            _child = (__bridge NSView*)child;
+            //_child = (__bridge NSView*)child;
+            auto tv = [[FooTextView alloc] initWithFrame:NSMakeRect(0, 0, 200, 100)];
+            tv.string = @"Foo bar";
+            _child = tv;
             if(_child == nil)
                 return E_FAIL;
             [_holder addSubview:_child];

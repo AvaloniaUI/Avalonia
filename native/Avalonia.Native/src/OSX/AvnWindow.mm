@@ -445,8 +445,30 @@
     return pt;
 }
 
+- (BOOL)makeFirstResponder:(NSResponder *)responder
+{
+    auto r = [super makeFirstResponder:responder];
+    NSLog(@"'%@'.makeFirstResponser:%@ -> %d", [self title],  responder, r);
+    return r;
+}
+
 - (void)sendEvent:(NSEvent *_Nonnull)event
 {
+    if (event.type == NSEventTypeLeftMouseDown)
+    {
+        
+    }
+    
+    if (event.type == NSEventTypeKeyDown)
+    {
+        auto children = _parent->GetChildren();
+        
+        for (auto const& i : children)
+        {
+            [i->Window sendEvent: event];
+        }
+    }
+    
     [super sendEvent:event];
 
     /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.

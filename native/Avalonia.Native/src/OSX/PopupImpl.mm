@@ -22,9 +22,11 @@ private:
     END_INTERFACE_MAP()
     virtual ~PopupImpl(){}
     ComPtr<IAvnWindowEvents> WindowEvents;
-    PopupImpl(IAvnWindowEvents* events) : TopLevelImpl(events), WindowBaseImpl(events)
+    TopLevelImpl* parent;
+    PopupImpl(IAvnWindowEvents* events, TopLevelImpl* parent) : TopLevelImpl(events), WindowBaseImpl(events)
     {
         WindowEvents = events;
+        Parent = parent;
         [Window setLevel:NSPopUpMenuWindowLevel];
     }
 protected:
@@ -45,11 +47,11 @@ public:
 };
 
 
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnTopLevel* parent)
 {
     @autoreleasepool
     {
-        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
+        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events, parent));
         return ptr;
     }
 }

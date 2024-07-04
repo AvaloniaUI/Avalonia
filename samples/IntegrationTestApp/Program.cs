@@ -23,6 +23,7 @@ namespace IntegrationTestApp
                 })
                 .With(new AvaloniaNativePlatformOptions
                 {
+                    AvaloniaNativeLibraryPath = "/Users/grokys/Library/Developer/Xcode/DerivedData/Avalonia.Native.OSX-fvcliulexunksybpbfafijsceggg/Build/Products/Debug/libAvalonia.Native.OSX.dylib",
                     OverlayPopups = OverlayPopups,
                 })
                 .StartWithClassicDesktopLifetime(args);

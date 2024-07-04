@@ -112,6 +112,10 @@ public:
     WindowBaseImpl* Parent;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    const std::list<WindowBaseImpl*> GetChildren()
+    {
+        return _children;
+    }
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H

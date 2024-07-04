@@ -91,6 +91,12 @@ ComPtr<IAvnApplicationEvents> _events;
 
 - (void)sendEvent:(NSEvent *)event
 {
+    if ([event type] == NSEventTypeLeftMouseDown && ([event modifierFlags] & NSEventModifierFlagShift) != 0)
+    {
+        
+    }
+
+    
     bool oldHandling = _isHandlingSendEvent;
     _isHandlingSendEvent = true;
     @try {
