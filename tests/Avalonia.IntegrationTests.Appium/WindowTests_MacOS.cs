@@ -63,15 +63,17 @@ namespace Avalonia.IntegrationTests.Appium
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
             {
+                var childWindow = GetWindow("SecondaryWindow");
+                
                 new Actions(_session)
-                    .MoveToElement(mainWindow, 100, 1)
+                    .MoveToElement(childWindow, 100, 1)
                     .ClickAndHold()
                     .Perform();
 
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
 
                 new Actions(_session)
-                    .MoveToElement(mainWindow, 100, 1)
+                    .MoveToElement(childWindow, 100, 1)
                     .Release()
                     .Perform();
 
