@@ -211,7 +211,7 @@
             <DockPanel DockPanel.Dock="Top">
               <TextBox Name="HorizontalSliderValue"
                        DockPanel.Dock="Right"
-                       Text="{Binding #HorizontalSlider.Value, Mode=OneWay, StringFormat=\{0:0\}}"
+                       Text="{Binding #HorizontalSlider.Value, Mode=OneWay, StringFormat=\{0:N2\}}"
                        VerticalAlignment="Top"/>
               <Slider Name="HorizontalSlider" Value="50"/>
             </DockPanel>
