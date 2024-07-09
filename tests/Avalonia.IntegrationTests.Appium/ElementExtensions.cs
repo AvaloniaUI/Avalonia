@@ -11,29 +11,62 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
-    public record class WindowChrome(
+    public record WindowChrome(
         AppiumWebElement? Close,
         AppiumWebElement? Minimize,
         AppiumWebElement? Maximize,
-        AppiumWebElement? FullScreen);
+        AppiumWebElement? FullScreen,
+        AppiumWebElement? TitleBar)
+    {
+        public bool IsAnyButtonEnabled => (TitleBar is null || TitleBar.Enabled) &&
+                                          (Close?.Enabled == true
+                                           || Minimize?.Enabled == true
+                                           || Maximize?.Enabled == true
+                                           || FullScreen?.Enabled == true);
+
+        public int TitleBarHeight => TitleBar?.Size.Height ?? -1;
+
+        public int MaxButtonHeight =>
+            Math.Max(
+                Math.Max(Close?.Size.Height ?? -1, Minimize?.Size.Height ?? -1),
+                Math.Max(Maximize?.Size.Height ?? -1, FullScreen?.Size.Height ?? -1));
+    }
 
     internal static class ElementExtensions
     {
         public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
             element.FindElementsByXPath("*/*");
 
-        public static WindowChrome GetChromeButtons(this AppiumWebElement window)
+        public static WindowChrome GetSystemChromeButtons(this AppiumWebElement window)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 var closeButton = window.FindElementsByAccessibilityId("_XCUI:CloseWindow").FirstOrDefault();
                 var fullscreenButton = window.FindElementsByAccessibilityId("_XCUI:FullScreenWindow").FirstOrDefault();
                 var minimizeButton = window.FindElementsByAccessibilityId("_XCUI:MinimizeWindow").FirstOrDefault();
                 var zoomButton = window.FindElementsByAccessibilityId("_XCUI:ZoomWindow").FirstOrDefault();
-                return new(closeButton, minimizeButton, zoomButton, fullscreenButton);
+                return new(closeButton, minimizeButton, zoomButton, fullscreenButton, null);
+            }
+
+            if (OperatingSystem.IsWindows())
+            {
+                var titlebar = window.FindElementsByTagName("TitleBar").FirstOrDefault();
+                var closeButton = titlebar?.FindElementByName("Close");
+                var minimizeButton = titlebar?.FindElementByName("Minimize");
+                var maximizeButton = titlebar?.FindElementByName("Maximize");
+                return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
             }
 
             throw new NotSupportedException("GetChromeButtons not supported on this platform.");
+        }
+
+        public static WindowChrome GetClientChromeButtons(this AppiumWebElement window)
+        {
+            var titlebar = window.FindElementsByAccessibilityId("AvaloniaTitleBar")?.FirstOrDefault();
+            var closeButton = titlebar?.FindElementByName("Close");
+            var minimizeButton = titlebar?.FindElementByName("Minimize");
+            var maximizeButton = titlebar?.FindElementByName("Maximize");
+            return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
         }
 
         public static string GetComboBoxValue(this AppiumWebElement element)
@@ -67,6 +100,35 @@ namespace Avalonia.IntegrationTests.Appium
                 throw new NotSupportedException("Couldn't work out how to check if an element is focused on mac.");
             }
         }
+
+        public static AppiumWebElement GetCurrentSingleWindow(this AppiumDriver session)
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
+                // but in the meantime use the `parent::' selector to return the parent "real" window. 
+                return session.FindElementByXPath(
+                    $"XCUIElementTypeWindow//*/parent::XCUIElementTypeWindow");
+            }
+            else
+            {
+                return session.FindElementByXPath($"//Window");
+            }
+        }
+
+        public static AppiumWebElement GetWindowById(this AppiumDriver session, string identifier)
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                return session.FindElementByXPath(
+                    $"XCUIElementTypeWindow[@identifier='{identifier}']");
+            }
+            else
+            {
+                return session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
+            }
+        }
+
 
         /// <summary>
         /// Clicks a button which is expected to open a new window.

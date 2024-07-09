@@ -1,13 +1,26 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="IntegrationTestApp.App">
+             xmlns:self="using:IntegrationTestApp"
+             x:Class="IntegrationTestApp.App"
+             x:DataType="self:App"
+             RequestedThemeVariant="Default">
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
-  <TrayIcon.Icons>
-    <TrayIcons>
-      <TrayIcon Icon="/Assets/icon.ico">
-      </TrayIcon>
-    </TrayIcons>
-  </TrayIcon.Icons>
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="/Assets/icon.ico"
+                      ToolTipText="IntegrationTestApp TrayIcon"
+                      Command="{Binding TrayIconCommand}"
+                      CommandParameter="TrayIconClicked">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Raise Menu Clicked"
+                                        Command="{Binding TrayIconCommand}"
+                                        CommandParameter="TrayIconMenuClicked" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
 </Application>
