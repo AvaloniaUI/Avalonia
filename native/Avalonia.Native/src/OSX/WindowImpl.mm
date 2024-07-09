@@ -7,6 +7,7 @@
 #include "AutoFitContentView.h"
 #include "AvnView.h"
 #include "automation.h"
+#include "WindowInterfaces.h"
 #include "WindowProtocol.h"
 #include "WindowImpl.h"
 

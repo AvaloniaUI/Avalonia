@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -18,7 +19,8 @@ namespace Avalonia.Native
             
             using (var e = new PopupEvents(this))
             {
-                Init(new MacOSTopLevelHandle(_native = factory.CreatePopup(e)), factory.CreateScreens());
+                var parentNative = ((TopLevelImpl)_parent).Native;
+                Init(new MacOSTopLevelHandle(_native = factory.CreatePopup(e, parentNative)), factory.CreateScreens());
             }
             
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));

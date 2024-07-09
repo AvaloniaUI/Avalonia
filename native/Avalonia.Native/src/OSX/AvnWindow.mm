@@ -38,6 +38,7 @@
     AvnMenu* _menu;
     IAvnAutomationPeer* _automationPeer;
     AvnAutomationNode* _automationNode;
+    NSView* _Nullable _forwardKeyEventsTo;
 }
 
 -(AvnView* _Nullable) view
@@ -445,30 +446,71 @@
     return pt;
 }
 
-- (BOOL)makeFirstResponder:(NSResponder *)responder
+- (BOOL)makeFirstResponder:(nullable NSResponder *)responder
 {
     auto r = [super makeFirstResponder:responder];
     NSLog(@"'%@'.makeFirstResponser:%@ -> %d", [self title],  responder, r);
+    
+    if (_parent->Parent != nullptr)
+    {
+        if ([responder isKindOfClass:[NSView class]] && ![responder isKindOfClass:[AvnView class]])
+        {
+            NSLog(@"Native view in popup made first responder");
+            [_parent->Parent->Window forwardKeyEventsTo:responder];
+        }
+        else
+        {
+            [_parent->Parent->Window forwardKeyEventsTo:nil];
+        }
+    }
+    else
+    {
+        [self forwardKeyEventsTo:nil];
+    }
+    
     return r;
+}
+
+- (void)forwardKeyEventsTo:(nullable NSView*)responder
+{
+    NSLog(@"Forward key events to @%@", responder);    
+    _forwardKeyEventsTo = responder;
 }
 
 - (void)sendEvent:(NSEvent *_Nonnull)event
 {
     if (event.type == NSEventTypeLeftMouseDown)
     {
-        
+        [self forwardKeyEventsTo:nil];
     }
     
     if (event.type == NSEventTypeKeyDown)
     {
-        auto children = _parent->GetChildren();
-        
-        for (auto const& i : children)
+        if (_forwardKeyEventsTo != nil)
         {
-            [i->Window sendEvent: event];
+            [_forwardKeyEventsTo keyDown: event];
+            return;
+        }
+        else
+        {
+            auto children = _parent->GetChildren();
+            
+            for (auto const& i : children)
+            {
+                [i->Window sendEvent: event];
+            }
         }
     }
-    
+
+    if (event.type == NSEventTypeKeyUp)
+    {
+        if (_forwardKeyEventsTo != nil)
+        {
+            [_forwardKeyEventsTo keyUp: event];
+            return;
+        }
+    }
+
     [super sendEvent:event];
 
     /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
@@ -555,6 +597,5 @@
     id focused = [self accessibilityFocusedUIElement];
     NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
 }
-
 @end
 

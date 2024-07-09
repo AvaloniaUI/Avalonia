@@ -26,7 +26,7 @@ private:
     PopupImpl(IAvnWindowEvents* events, TopLevelImpl* parent) : TopLevelImpl(events), WindowBaseImpl(events)
     {
         WindowEvents = events;
-        Parent = parent;
+        Parent = dynamic_cast<WindowBaseImpl*>(parent);
         [Window setLevel:NSPopUpMenuWindowLevel];
     }
 protected:
@@ -51,7 +51,7 @@ extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnTopLevel* parent)
 {
     @autoreleasepool
     {
-        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events, parent));
+        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events, dynamic_cast<TopLevelImpl*>(parent)));
         return ptr;
     }
 }

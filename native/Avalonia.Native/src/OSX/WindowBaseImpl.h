@@ -13,6 +13,7 @@
 #include <list>
 
 @class AvnMenu;
+@class AvnWindow;
 @protocol AvnWindowProtocol;
 
 class WindowBaseImpl : public virtual TopLevelImpl,
@@ -110,7 +111,7 @@ protected:
 
 public:
     WindowBaseImpl* Parent;
-    NSWindow * Window;
+    AvnWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     const std::list<WindowBaseImpl*> GetChildren()
     {

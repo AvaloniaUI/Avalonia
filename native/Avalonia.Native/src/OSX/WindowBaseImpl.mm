@@ -457,7 +457,7 @@ void WindowBaseImpl::CleanNSWindow() {
 
 void WindowBaseImpl::CreateNSWindow(bool usePanel) {
     if (usePanel) {
-        Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        /*Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];*/
         [Window setHidesOnDeactivate:false];
     } else {
         Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
