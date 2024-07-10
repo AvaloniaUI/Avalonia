@@ -116,17 +116,19 @@ namespace Avalonia.Media.TextFormatting
             switch (baselineAlignment)
             {
                 case BaselineAlignment.Top:
-                    return 0;
-                case BaselineAlignment.Center:
-                    return textLine.Height / 2 - textRun.Size.Height / 2;
-                case BaselineAlignment.Bottom:
-                    return textLine.Height - textRun.Size.Height;
-                case BaselineAlignment.Baseline:
                 case BaselineAlignment.TextTop:
+                    return baseline;
+                case BaselineAlignment.Center:
+                    return textLine.Height / 2 + baseline - textRun.Size.Height / 2;
+                case BaselineAlignment.Bottom:
                 case BaselineAlignment.TextBottom:
-                case BaselineAlignment.Subscript:
+                    return textLine.Height - (textRun.Size.Height - baseline);
+                case BaselineAlignment.Baseline:
+                    return textLine.Baseline;
                 case BaselineAlignment.Superscript:
-                    return textLine.Baseline - baseline;
+                    return textLine.Height / 2 - textRun.Size.Height / 2;
+                case BaselineAlignment.Subscript:
+                    return textLine.Baseline + textRun.Size.Height / 2;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(baselineAlignment), baselineAlignment, null);
             }
