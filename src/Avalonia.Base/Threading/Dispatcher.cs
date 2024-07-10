@@ -56,7 +56,7 @@ public partial class Dispatcher : IDispatcher
             if (platformThreading != null)
                 impl = new LegacyDispatcherImpl(platformThreading);
             else
-                impl = new NullDispatcherImpl();
+                throw new InvalidOperationException("Dispatcher was not initialized. Make sure Avalonia was properly set-up.");
         }
         return new Dispatcher(impl);
     }
