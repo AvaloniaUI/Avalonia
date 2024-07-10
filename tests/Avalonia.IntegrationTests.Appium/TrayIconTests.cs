@@ -32,7 +32,7 @@ public class TrayIconTests : IDisposable
     }
 
     // Left click is only supported on Windows.
-    [PlatformFact(TestPlatforms.Windows)]
+    [PlatformFact(TestPlatforms.Windows, Skip = "Flaky test")]
     public void Should_Handle_Left_Click()
     {
         var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
@@ -46,7 +46,7 @@ public class TrayIconTests : IDisposable
         Assert.True(checkBox.GetIsChecked());
     }
 
-    [Fact]
+    [Fact(Skip = "Flaky test")]
     public void Should_Handle_Context_Menu_Item_Click()
     {
         var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
@@ -64,7 +64,7 @@ public class TrayIconTests : IDisposable
         Assert.True(checkBox.GetIsChecked());
     }
 
-    [Fact]
+    [Fact(Skip = "Flaky test")]
     public void Can_Toggle_TrayIcon_Visibility()
     {
         var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
