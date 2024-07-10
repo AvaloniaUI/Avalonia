@@ -17,6 +17,6 @@ internal static partial class NavigationHelper
         return Task.FromResult(handled);
     }
     
-    [JSImport("window.open")]
+    [JSImport("globalThis.open")]
     public static partial JSObject? WindowOpen(string uri, string target);
 }
