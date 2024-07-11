@@ -255,7 +255,7 @@ namespace Avalonia.Media
                 }
             }
 
-            var p1 = origin + new Point(0, thickness / 2);
+            var p1 = origin;
             var p2 = p1 + new Point(glyphRun.Metrics.Width, 0);
 
             drawingContext.DrawLine(pen, p1, p2);

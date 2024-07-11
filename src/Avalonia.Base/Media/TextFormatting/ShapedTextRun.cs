@@ -45,7 +45,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin)))
+            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin - new Point(0, Baseline))))
             {
                 if (GlyphRun.GlyphInfos.Count == 0)
                 {
@@ -204,8 +204,7 @@ namespace Avalonia.Media.TextFormatting
                 ShapedBuffer.FontRenderingEmSize,
                 Text,
                 ShapedBuffer,
-                biDiLevel: BidiLevel,
-                baselineOrigin: new Point());
+                biDiLevel: BidiLevel);
         }
 
         public void Dispose()
