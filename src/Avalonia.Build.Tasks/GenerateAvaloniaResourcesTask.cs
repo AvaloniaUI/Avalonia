@@ -24,7 +24,7 @@ namespace Avalonia.Build.Tasks
 
         private MessageImportance _reportImportance;
 
-        class Source
+        internal class Source
         {
             public string Path { get; set; }
             public int Size { get; set; }

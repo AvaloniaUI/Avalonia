@@ -21,6 +21,9 @@
     <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\netstandard2.0\PInvoke.dll.refs" Link="Assets\PInvoke.dll.refs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\TestFiles\BuildTasks\root.xml" Link="Assets\root.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
