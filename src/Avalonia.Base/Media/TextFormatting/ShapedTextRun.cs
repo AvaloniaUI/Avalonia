@@ -45,7 +45,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin - new Point(0, Baseline))))
+            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin)))
             {
                 if (GlyphRun.GlyphInfos.Count == 0)
                 {
@@ -64,7 +64,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (Properties.BackgroundBrush != null)
                 {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
+                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds.Translate(new Vector(0, -Baseline)));
                 }
 
                 drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
@@ -204,7 +204,8 @@ namespace Avalonia.Media.TextFormatting
                 ShapedBuffer.FontRenderingEmSize,
                 Text,
                 ShapedBuffer,
-                biDiLevel: BidiLevel);
+                biDiLevel: BidiLevel,
+                baselineOrigin: new Point());
         }
 
         public void Dispose()
