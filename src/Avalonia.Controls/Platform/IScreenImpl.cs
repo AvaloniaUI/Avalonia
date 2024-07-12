@@ -1,25 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Avalonia.Controls.Utils;
 using Avalonia.Metadata;
+using Avalonia.Threading;
+#pragma warning disable CS1591 // Private API doesn't require XML documentation. 
 
 namespace Avalonia.Platform
 {
     [Unstable]
     public interface IScreenImpl
     {
-        /// <summary>
-        /// Gets the total number of screens available on the device.
-        /// </summary>
         int ScreenCount { get; }
-
-        /// <summary>
-        /// Gets the list of all screens available on the device.
-        /// </summary>
         IReadOnlyList<Screen> AllScreens { get; }
-
+        Action? Changed { get; set; }
         Screen? ScreenFromWindow(IWindowBaseImpl window);
-
+        Screen? ScreenFromTopLevel(ITopLevelImpl topLevel);
         Screen? ScreenFromPoint(PixelPoint point);
-
         Screen? ScreenFromRect(PixelRect rect);
+        Task<bool> RequestScreenDetails();
     }
 }
