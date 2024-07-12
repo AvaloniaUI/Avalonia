@@ -109,7 +109,8 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc cref="TopLevel.Screens"/>
-        public new Screens Screens => base.Screens!;
+        public new Screens Screens => base.Screens
+            ?? throw new InvalidOperationException("Windowing backend wasn't properly initialized.");
 
         /// <summary>
         /// Gets or sets the owner of the window.
