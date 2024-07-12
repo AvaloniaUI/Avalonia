@@ -51,15 +51,11 @@ namespace Avalonia.Win32
             {
                 if (_maxAutoSize is null)
                 {
-                    var monitor = UnmanagedMethods.MonitorFromWindow(
-                        Hwnd,
-                        UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+                    var screen = base.Screen.ScreenFromHwnd(Hwnd, UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
                     
-                    if (monitor != IntPtr.Zero)
+                    if (screen is not null)
                     {
-                        var info = UnmanagedMethods.MONITORINFO.Create();
-                        UnmanagedMethods.GetMonitorInfo(monitor, ref info);
-                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(RenderScaling).Size;
+                        _maxAutoSize = screen.WorkingArea.ToRect(RenderScaling).Size;
                     }
                 }
 
