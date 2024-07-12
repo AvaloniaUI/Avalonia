@@ -428,12 +428,22 @@ struct AvnPoint
     double X, Y;
 }
 
+enum AvnScreenOrientation
+{
+    UnknownOrientation,
+    Landscape,
+    Portrait,
+    LandscapeFlipped,
+    PortraitFlipped
+}
+
 struct AvnScreen
 {
     AvnRect Bounds;
     AvnRect WorkingArea;
     float Scaling;
     bool IsPrimary;
+    AvnScreenOrientation Orientation;
 }
 
 enum AvnPixelFormat
@@ -668,7 +678,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv);
      HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv);
      HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv);
-     HRESULT CreateScreens(IAvnScreens** ppv);
+     HRESULT CreateScreens(IAvnScreenEvents* cb, IAvnScreens** ppv);
      HRESULT CreateClipboard(IAvnClipboard** ppv);
      HRESULT CreateDndClipboard(IAvnClipboard** ppv);
      HRESULT CreateCursorFactory(IAvnCursorFactory** ppv);
@@ -716,6 +726,8 @@ interface IAvnTopLevel : IUnknown
      
      HRESULT GetInputMethod(IAvnTextInputMethod **ppv);
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
+     
+     HRESULT GetCurrentDisplayId(uint* ret);
 }
 
 [uuid(e5aca675-02b7-4129-aa79-d6e417210bda), cpp-virtual-inherits]
@@ -917,11 +929,17 @@ interface IAvnFilePickerFileTypes : IUnknown
     HRESULT GetAppleUniformTypeIdentifiers(int index, IAvnStringArray**ppv);
 }
 
+[uuid(424b1bd4-a111-4987-bfd0-9d642154b1b3)]
+interface IAvnScreenEvents : IUnknown
+{
+    HRESULT OnChanged();
+}
+
 [uuid(9a52bc7a-d8c7-4230-8d34-704a0b70a933)]
 interface IAvnScreens : IUnknown
 {
-     HRESULT GetScreenCount(int* ret);
-     HRESULT GetScreen(int index, AvnScreen* ret);
+     HRESULT GetScreenIds(uint* ptrFirstResult, int* ret);
+     HRESULT GetScreen(uint screenId, void** localizedName, AvnScreen* ret);
 }
 
 [uuid(792b1bd4-76cc-46ea-bfd0-9d642154b1b3)]

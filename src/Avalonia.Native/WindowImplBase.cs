@@ -47,14 +47,15 @@ namespace Avalonia.Native
             }
         }
         
-        internal override void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+        internal override void Init(MacOSTopLevelHandle handle)
         {
             _handle = handle;
 
-            base.Init(handle, screens);
+            base.Init(handle);
 
-            var monitor = Screen!.AllScreens.OrderBy(x => x.Scaling)
-                .FirstOrDefault(m => m.Bounds.Contains(Position));
+            var monitor = this.TryGetFeature<IScreenImpl>()!.AllScreens
+                .OrderBy(x => x.Scaling)
+                .First(m => m.Bounds.Contains(Position));
 
             Resize(new Size(monitor!.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
         }
@@ -96,7 +97,8 @@ namespace Avalonia.Native
             Native?.BeginMoveDrag();
         }
 
-        public Size MaxAutoSizeHint => Screen!.AllScreens.Select(s => s.Bounds.Size.ToSize(1))
+        public Size MaxAutoSizeHint => this.TryGetFeature<IScreenImpl>()!.AllScreens
+            .Select(s => s.Bounds.Size.ToSize(1))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
         public void SetTopmost(bool value)

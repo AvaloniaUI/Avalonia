@@ -25,15 +25,15 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                Init(new MacOSTopLevelHandle(_native = factory.CreateWindow(e)), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(_native = factory.CreateWindow(e)));
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
 
-        internal sealed override void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+        internal sealed override void Init(MacOSTopLevelHandle handle)
         {
-            base.Init(handle, screens);
+            base.Init(handle);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents

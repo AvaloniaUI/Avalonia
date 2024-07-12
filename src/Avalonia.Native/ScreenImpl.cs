@@ -2,66 +2,86 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+#nullable enable
 
 namespace Avalonia.Native
 {
-    internal class ScreenImpl : IScreenImpl, IDisposable
+    internal sealed class AvnScreen(uint displayId)
+        : Screen(new PlatformHandle(new IntPtr(displayId), "CGDirectDisplayID"))
     {
-        private IAvnScreens _native;
-
-        public ScreenImpl(IAvnScreens native)
+        public unsafe void Refresh(IAvnScreens native)
         {
-            _native = native;
-        }
+            IAvnString* localizedName = null;
+            var screen = native.GetScreen(displayId, (void**)&localizedName);
 
-        public int ScreenCount => _native.ScreenCount;
-
-        public IReadOnlyList<Screen> AllScreens
-        {
-            get
+            IsPrimary = screen.IsPrimary.FromComBool();
+            Scaling = screen.Scaling;
+            Bounds = screen.Bounds.ToAvaloniaPixelRect();
+            WorkingArea = screen.WorkingArea.ToAvaloniaPixelRect();
+            CurrentOrientation = screen.Orientation switch
             {
-                if (_native != null)
-                {
-                    var count = ScreenCount;
-                    var result = new Screen[count];
-
-                    for (int i = 0; i < count; i++)
-                    {
-                        var screen = _native.GetScreen(i);
-
-                        result[i] = new Screen(
-                            screen.Scaling,
-                            screen.Bounds.ToAvaloniaPixelRect(),
-                            screen.WorkingArea.ToAvaloniaPixelRect(),
-                            screen.IsPrimary.FromComBool());
-                    }
-
-                    return result;
-                }
-
-                return Array.Empty<Screen>();
+                AvnScreenOrientation.UnknownOrientation => ScreenOrientation.None,
+                AvnScreenOrientation.Landscape => ScreenOrientation.Landscape,
+                AvnScreenOrientation.Portrait => ScreenOrientation.Portrait,
+                AvnScreenOrientation.LandscapeFlipped => ScreenOrientation.LandscapeFlipped,
+                AvnScreenOrientation.PortraitFlipped => ScreenOrientation.PortraitFlipped,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            if (localizedName != null
+                && *localizedName is { } avnString)
+            {
+                DisplayName = avnString.String;
+                avnString.Dispose();
             }
         }
+    }
 
-        public void Dispose ()
+    internal class ScreenImpl : ScreensBaseImpl<uint, AvnScreen>, IDisposable
+    {
+        private AvnScreenEvents _events;
+        private IAvnScreens _native;
+
+        public ScreenImpl(Func<IAvnScreenEvents, IAvnScreens> factory)
         {
+            _events = new AvnScreenEvents(this);
+            _native = factory(_events);
+        }
+
+        protected override unsafe int GetScreenCount() => _native.GetScreenIds(null);
+
+        protected override unsafe IReadOnlyList<uint> GetAllScreenKeys()
+        {
+            var screenCount = _native.GetScreenIds(null);
+            var displayIds = new uint[screenCount];
+            fixed (uint* displayIdsPtr = displayIds)
+            {
+                _native.GetScreenIds(displayIdsPtr);
+            }
+
+            return displayIds;
+        }
+
+        protected override AvnScreen CreateScreenFromKey(uint key) => new(key);
+        protected override void RefreshScreen(AvnScreen screen) => screen.Refresh(_native);
+
+        protected override Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
+        {
+            var displayId = ((TopLevelImpl)topLevel).Native?.CurrentDisplayId;
+            return displayId is not null && TryGetScreen(displayId.Value, out var screen) ? screen : null;
+        }
+
+        public void Dispose()
+        {
+            _events?.Dispose();
+            _events = null!;
             _native?.Dispose();
-            _native = null;
+            _native = null!;
         }
 
-        public Screen ScreenFromPoint(PixelPoint point)
+        private class AvnScreenEvents(ScreenImpl screenImpl) : NativeCallbackBase, IAvnScreenEvents
         {
-            return ScreenHelper.ScreenFromPoint(point, AllScreens);
-        }
-
-        public Screen ScreenFromRect(PixelRect rect)
-        {
-            return ScreenHelper.ScreenFromRect(rect, AllScreens);
-        }
-
-        public Screen ScreenFromWindow(IWindowBaseImpl window)
-        {
-            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+            public void OnChanged() => screenImpl.OnChanged();
         }
     }
 }
