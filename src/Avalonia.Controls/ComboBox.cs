@@ -290,26 +290,12 @@ namespace Avalonia.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            if(!e.Handled && e.Source is Visual source)
+            if(e.Handled)
             {
-                if (_popup?.IsInsidePopup(source) == true)
-                {
-                    e.Handled = true;
-                    return;
-                }
+                return;
             }
-
-            if (IsDropDownOpen)
-            {
-                // When a drop-down is open with OverlayDismissEventPassThrough enabled and the control
-                // is pressed, close the drop-down
-                SetCurrentValue(IsDropDownOpenProperty, false);
-                e.Handled = true;
-            }
-            else
-            {
-                PseudoClasses.Set(pcPressed, true);
-            }
+            e.Handled = true;
+            PseudoClasses.Set(pcPressed, true);
         }
 
         /// <inheritdoc/>
