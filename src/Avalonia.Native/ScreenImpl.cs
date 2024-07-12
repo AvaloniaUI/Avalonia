@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using MicroCom.Runtime;
+
 #nullable enable
 
 namespace Avalonia.Native
@@ -11,8 +13,8 @@ namespace Avalonia.Native
     {
         public unsafe void Refresh(IAvnScreens native)
         {
-            IAvnString* localizedName = null;
-            var screen = native.GetScreen(displayId, (void**)&localizedName);
+            void* localizedName = null;
+            var screen = native.GetScreen(displayId, &localizedName);
 
             IsPrimary = screen.IsPrimary.FromComBool();
             Scaling = screen.Scaling;
@@ -27,13 +29,9 @@ namespace Avalonia.Native
                 AvnScreenOrientation.PortraitFlipped => ScreenOrientation.PortraitFlipped,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            
-            if (localizedName != null
-                && *localizedName is { } avnString)
-            {
-                DisplayName = avnString.String;
-                avnString.Dispose();
-            }
+
+            using var avnString = MicroComRuntime.CreateProxyOrNullFor<IAvnString>(localizedName, true);
+            DisplayName = avnString?.String;
         }
     }
 

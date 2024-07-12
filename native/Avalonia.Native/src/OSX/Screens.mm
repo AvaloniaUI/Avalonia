@@ -85,6 +85,10 @@ public:
                 ret->Orientation = isNaturalLandscape ? AvnScreenOrientation::PortraitFlipped : AvnScreenOrientation::LandscapeFlipped;
             }
 
+            if (@available(macOS 10.15, *)) {
+                *localizedName = CreateAvnString([screen localizedName]);
+            }
+
             return S_OK;
         }
     }
