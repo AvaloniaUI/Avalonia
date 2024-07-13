@@ -8,11 +8,9 @@ using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
-    internal class DBusPlatformSettings : DefaultPlatformSettings, IDisposable
+    internal class DBusPlatformSettings : DefaultPlatformSettings
     {
         private readonly OrgFreedesktopPortalSettings? _settings;
-
-        private IDisposable? _disposable;
 
         private PlatformColorValues? _lastColorValues;
         private PlatformThemeVariant? _themeVariant;
@@ -20,34 +18,12 @@ namespace Avalonia.FreeDesktop
 
         public DBusPlatformSettings()
         {
-            if (DBusHelper.DefaultConnection is not {} conn)
-                return;
-            using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
-
-            _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
-        }
-
-        public static DBusPlatformSettings? TryInitialize()
-        {
-            try
-            {
-                var platformSettings = new DBusPlatformSettings();
-                _ = platformSettings.InitializeAsync();
-                return platformSettings;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public async Task InitializeAsync()
-        {
-            if (_settings is null)
+            if (DBusHelper.DefaultConnection is not { } conn)
                 return;
 
-            _disposable = await _settings.WatchSettingChangedAsync(SettingsChangedHandler);
-            await TryGetInitialValuesAsync();
+            _settings = new OrgFreedesktopPortalSettings(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
+            _ = TryGetInitialValuesAsync();
         }
 
         public override PlatformColorValues GetColorValues() => _lastColorValues ?? base.GetColorValues();
@@ -58,7 +34,7 @@ namespace Avalonia.FreeDesktop
             _accentColor = await TryGetAccentColorAsync();
             _lastColorValues = BuildPlatformColorValues();
             if (_lastColorValues is not null)
-                Threading.Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
+                Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
         }
 
         private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
@@ -152,11 +128,6 @@ namespace Avalonia.FreeDesktop
             if (r is < 0 or > 1 || g is < 0 or > 1 || b is < 0 or > 1)
                 return null;
             return Color.FromRgb((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
-        }
-
-        public void Dispose()
-        {
-            _disposable?.Dispose();
         }
     }
 }
