@@ -45,7 +45,7 @@ internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorage
     {
         var path = FileSystemInfo.FullName;
         var pathBytes = Encoding.UTF8.GetBytes(path);
-        return Task.FromResult(Convert.ToBase64String(pathBytes));
+        return Task.FromResult<string?>(Convert.ToBase64String(pathBytes));
     }
 
     public Task ReleaseBookmarkAsync() => Task.CompletedTask;
