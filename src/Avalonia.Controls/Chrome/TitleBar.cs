@@ -1,4 +1,6 @@
 ﻿using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -94,5 +96,8 @@ namespace Avalonia.Controls.Chrome
             _captionButtons?.Detach();
             _captionButtons = null;
         }
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer() => new TitleBarAutomationPeer(this);
     }
 }

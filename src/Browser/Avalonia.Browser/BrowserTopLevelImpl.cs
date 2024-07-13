@@ -186,6 +186,11 @@ namespace Avalonia.Browser
                 return _inputHandler.InputPane;
             }
 
+            if (featureType == typeof(ILauncher))
+            {
+                return new BrowserLauncher();
+            }
+
             return null;
         }
     }
