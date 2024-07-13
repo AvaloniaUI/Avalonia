@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Markup.Parsers;
+using Avalonia.Platform;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -49,7 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             var selectorType = pn.Property.GetClrProperty().Getter.ReturnType;
             var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
             var avaloniaAttachedPropertyT = context.GetAvaloniaTypes().AvaloniaAttachedPropertyT;
-            XamlIlSelectorNode Create(IEnumerable<SelectorGrammar.ISyntax> syntax,
+            XamlIlSelectorNode Create(IEnumerable<ISyntax> syntax,
                 Func<string, string, XamlAstClrTypeReference> typeResolver)
             {
                 XamlIlSelectorNode result = initialNode;
@@ -180,7 +181,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return results ?? result;
             }
 
-            IEnumerable<SelectorGrammar.ISyntax> parsed;
+            IEnumerable<ISyntax> parsed;
             try
             {
                 parsed = SelectorGrammar.Parse(tn.Text);

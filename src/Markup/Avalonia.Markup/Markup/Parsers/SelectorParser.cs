@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Parsers
         }
 
         [RequiresUnreferencedCode(TrimmingMessages.SelectorsParseRequiresUnreferencedCodeMessage)]
-        private Selector? Create(IEnumerable<SelectorGrammar.ISyntax> syntax)
+        private Selector? Create(IEnumerable<ISyntax> syntax)
         {
             var result = default(Selector);
             var results = default(List<Selector>);

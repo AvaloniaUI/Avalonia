@@ -11,7 +11,7 @@ namespace Avalonia.PropertyStore
     {
         Style,
         TemplatedParentTheme,
-        Theme,
+        Theme
     }
 
     internal abstract class ValueFrame

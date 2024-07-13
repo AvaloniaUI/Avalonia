@@ -43,7 +43,7 @@ public class AvaloniaMainActivity : AvaloniaActivity
 
             Lifetime = new SingleViewLifetime();
             Lifetime.Activity = this;
- 
+
             builder
                 .AfterApplicationSetup(_ =>
                 {
