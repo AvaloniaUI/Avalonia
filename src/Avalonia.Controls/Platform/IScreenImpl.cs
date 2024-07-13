@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Avalonia.Controls.Utils;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 #pragma warning disable CS1591 // Private API doesn't require XML documentation. 
@@ -123,12 +122,13 @@ namespace Avalonia.Platform
                 return;
 
             var screens = GetAllScreenKeys();
+            var screensSet = new HashSet<TKey>(screens, screenKeyComparer);
 
             _allScreens = new TScreen[screens.Count];
 
             foreach (var oldScreenKey in _allScreensByKey.Keys)
             {
-                if (!screens.Contains(oldScreenKey))
+                if (!screensSet.Contains(oldScreenKey))
                 {
                     if (_allScreensByKey.TryGetValue(oldScreenKey, out var screen)
                         && _allScreensByKey.Remove(oldScreenKey))
@@ -139,19 +139,19 @@ namespace Avalonia.Platform
             }
 
             int i = 0;
-            foreach (var newScreen in screens)
+            foreach (var newScreenKey in screens)
             {
-                if (_allScreensByKey.TryGetValue(newScreen, out var oldScreen))
+                if (_allScreensByKey.TryGetValue(newScreenKey, out var oldScreen))
                 {
                     ScreenChanged(oldScreen);
                     _allScreens[i] = oldScreen;
                 }
                 else
                 {
-                    var screen = CreateScreenFromKey(newScreen);
-                    ScreenAdded(screen);
-                    _allScreensByKey[newScreen] = screen;
-                    _allScreens[i] = screen;
+                    var newScreen = CreateScreenFromKey(newScreenKey);
+                    ScreenAdded(newScreen);
+                    _allScreensByKey[newScreenKey] = newScreen;
+                    _allScreens[i] = newScreen;
                 }
 
                 i++;

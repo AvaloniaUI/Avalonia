@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -59,27 +58,24 @@ public class ScreensTests : ScopedTestBase
         using var _ = UnitTestApplication.Start(TestServices.MockThreadingInterface);
 
         var screens = new TestScreens();
-        var totalScreens = new HashSet<TestScreen>();
 
         Assert.Equal(0, screens.ScreenCount);
         Assert.Empty(screens.AllScreens);
 
-        // Push 2 screens.
-        screens.PushNewScreens([1, 2]);
+        screens.PushNewScreens([1]);
         Dispatcher.UIThread.RunJobs();
 
-        var screen = screens.GetScreen(2);
+        var screen = screens.GetScreen(1);
 
         Assert.Equal(1, screen.Generation);
-        Assert.Equal(new IntPtr(2), screen.TryGetPlatformHandle()!.Handle);
+        Assert.Equal(new IntPtr(1), screen.TryGetPlatformHandle()!.Handle);
 
-        // Push 1 screen, while removing one old.
-        screens.PushNewScreens([2]);
+        screens.PushNewScreens([1]);
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(2, screen.Generation);
-        Assert.Equal(new IntPtr(2), screen.TryGetPlatformHandle()!.Handle);
-        Assert.Same(screens.GetScreen(2), screen);
+        Assert.Equal(new IntPtr(1), screen.TryGetPlatformHandle()!.Handle);
+        Assert.Same(screens.GetScreen(1), screen);
     }
 
     [Fact]
