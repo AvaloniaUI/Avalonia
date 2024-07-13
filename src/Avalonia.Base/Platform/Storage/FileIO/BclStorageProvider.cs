@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Compatibility;
+using Avalonia.Logging;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
@@ -20,18 +22,12 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     public virtual Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        var file = new FileInfo(bookmark);
-        return file.Exists
-            ? Task.FromResult<IStorageBookmarkFile?>(new BclStorageFile(file))
-            : Task.FromResult<IStorageBookmarkFile?>(null);
+        return Task.FromResult(OpenBookmark(bookmark) as IStorageBookmarkFile);
     }
 
     public virtual Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        var folder = new DirectoryInfo(bookmark);
-        return folder.Exists
-            ? Task.FromResult<IStorageBookmarkFolder?>(new BclStorageFolder(folder))
-            : Task.FromResult<IStorageBookmarkFolder?>(null);
+        return Task.FromResult(OpenBookmark(bookmark) as IStorageBookmarkFolder);
     }
 
     public virtual Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
@@ -114,7 +110,7 @@ internal abstract class BclStorageProvider : IStorageProvider
         if (OperatingSystemEx.IsWindows())
         {
             return Environment.OSVersion.Version.Major < 6 ? null :
-                SHGetKnownFolderPath(s_folderDownloads, 0, IntPtr.Zero);
+                Marshal.PtrToStringUni(SHGetKnownFolderPath(s_folderDownloads, 0, IntPtr.Zero));
         }
 
         if (OperatingSystemEx.IsLinux())
@@ -133,8 +129,24 @@ internal abstract class BclStorageProvider : IStorageProvider
 
         return null;
     }
-    
+
+    private IStorageBookmarkItem? OpenBookmark(string bookmark)
+    {
+        try
+        {
+            var pathBytes = Convert.FromBase64String(bookmark);
+            var path = Encoding.UTF8.GetString(pathBytes);
+            return StorageProviderHelpers.TryCreateBclStorageItem(path);
+        }
+        catch (Exception ex)
+        {
+            Logger.TryGet(LogEventLevel.Information, LogArea.Platform)?
+                .Log(this, "Unable to read file bookmark: {Exception}", ex);
+            return null;
+        }
+    }
+
     private static readonly Guid s_folderDownloads = new Guid("374DE290-123F-4565-9164-39C4925E467B");
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, PreserveSig = false)]
-    private static extern string SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, int flags, IntPtr token);
+    [DllImport("shell32.dll")]
+    private static extern IntPtr SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, int flags, IntPtr token);
 }

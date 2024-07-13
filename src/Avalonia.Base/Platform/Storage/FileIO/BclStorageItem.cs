@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Avalonia.Platform.Storage.FileIO;
@@ -19,7 +20,7 @@ internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorage
 
     public string Name => FileSystemInfo.Name;
 
-    public bool CanBookmark => false;
+    public bool CanBookmark => true;
 
     public Uri Path => GetPathCore(FileSystemInfo);
 
@@ -40,7 +41,13 @@ internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorage
     public Task<IStorageItem?> MoveAsync(IStorageFolder destination) => Task.FromResult(
         WrapFileSystemInfo(MoveCore(FileSystemInfo, destination)));
 
-    public Task<string?> SaveBookmarkAsync() => Task.FromResult<string?>(null);
+    public Task<string?> SaveBookmarkAsync()
+    {
+        var path = FileSystemInfo.FullName;
+        var pathBytes = Encoding.UTF8.GetBytes(path);
+        return Task.FromResult(Convert.ToBase64String(pathBytes));
+    }
+
     public Task ReleaseBookmarkAsync() => Task.CompletedTask;
 
     public void Dispose() { }
