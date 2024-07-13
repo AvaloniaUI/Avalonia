@@ -46,44 +46,11 @@ namespace Avalonia.Platform
         {
             get
             {
-                if (_allScreens == null)
-                {
-                    var screens = GetAllScreenKeys();
-
-                    _allScreens = new TScreen[screens.Count];
-
-                    foreach (var oldScreenKey in _allScreensByKey.Keys)
-                    {
-                        if (!screens.Contains(oldScreenKey))
-                        {
-                            _allScreensByKey.Remove(oldScreenKey);
-                        }
-                    }
-
-                    int i = 0;
-                    foreach (var newScreen in screens)
-                    {
-                        if (_allScreensByKey.TryGetValue(newScreen, out var oldScreen))
-                        {
-                            RefreshScreen(oldScreen);
-                            _allScreens[i] = oldScreen;
-                        }
-                        else
-                        {
-                            var screen = CreateScreenFromKey(newScreen);
-                            RefreshScreen(screen);
-                            _allScreensByKey[newScreen] = screen;
-                            _allScreens[i] = screen;
-                        }
-
-                        i++;
-                    }
-                }
-
+                EnsureScreens();
                 return _allScreens;
             }
         }
-        
+
         public Action? Changed { get; set; }
 
         public Screen? ScreenFromWindow(IWindowBaseImpl window) => ScreenFromTopLevel(window);
@@ -96,12 +63,21 @@ namespace Avalonia.Platform
 
         public void OnChanged()
         {
+            // Mark cached fields invalid.
+            _screenCount = null;
+            _allScreens = null;
+            // Schedule a delayed job, so we can accumulate multiple continuous events into one.
+            // Also, if OnChanged was raises on non-UI thread - dispatch it.
             _onChangeOperation?.Abort();
             _onChangeOperation = Dispatcher.UIThread.InvokeAsync(() =>
             {
-                _screenCount = null;
-                _allScreens = null;
-                Changed?.Invoke();
+                // Ensure screens if there is at least one subscriber already,
+                // Or at least one screen was previously materialized, which we need to update now.
+                if (Changed is not null || _allScreensByKey.Count > 0)
+                {
+                    EnsureScreens();
+                    Changed?.Invoke();
+                }
             }, DispatcherPriority.Input);
         }
 
@@ -114,16 +90,16 @@ namespace Avalonia.Platform
 
         protected bool TryGetScreen(TKey key,  [MaybeNullWhen(false)] out TScreen screen)
         {
-            _ = AllScreens; // ensure it's up to date.
+            EnsureScreens();
             return _allScreensByKey.TryGetValue(key, out screen);
         }
 
+        protected virtual void ScreenAdded(TScreen screen) => ScreenChanged(screen);
+        protected virtual void ScreenChanged(TScreen screen) {}
+        protected virtual void ScreenRemoved(TScreen screen) => screen.OnRemoved();
         protected virtual int GetScreenCount() => AllScreens.Count;
         protected abstract IReadOnlyList<TKey> GetAllScreenKeys();
         protected abstract TScreen CreateScreenFromKey(TKey key);
-        protected virtual void RefreshScreen(TScreen screen)
-        {
-        }
         protected virtual Task<bool> RequestScreenDetailsCore() => Task.FromResult(true);
 
         protected virtual Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
@@ -139,5 +115,47 @@ namespace Avalonia.Platform
         protected virtual Screen? ScreenFromPointCore(PixelPoint point) => ScreenHelper.ScreenFromPoint(point, AllScreens);
 
         protected virtual Screen? ScreenFromRectCore(PixelRect rect) => ScreenHelper.ScreenFromRect(rect, AllScreens);
+
+        [MemberNotNull(nameof(_allScreens))]
+        private void EnsureScreens()
+        {
+            if (_allScreens is not null)
+                return;
+
+            var screens = GetAllScreenKeys();
+
+            _allScreens = new TScreen[screens.Count];
+
+            foreach (var oldScreenKey in _allScreensByKey.Keys)
+            {
+                if (!screens.Contains(oldScreenKey))
+                {
+                    if (_allScreensByKey.TryGetValue(oldScreenKey, out var screen)
+                        && _allScreensByKey.Remove(oldScreenKey))
+                    {
+                        ScreenRemoved(screen);
+                    }
+                }
+            }
+
+            int i = 0;
+            foreach (var newScreen in screens)
+            {
+                if (_allScreensByKey.TryGetValue(newScreen, out var oldScreen))
+                {
+                    ScreenChanged(oldScreen);
+                    _allScreens[i] = oldScreen;
+                }
+                else
+                {
+                    var screen = CreateScreenFromKey(newScreen);
+                    ScreenAdded(screen);
+                    _allScreensByKey[newScreen] = screen;
+                    _allScreens[i] = screen;
+                }
+
+                i++;
+            }
+        }
     }
 }

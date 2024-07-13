@@ -46,7 +46,7 @@ namespace Avalonia.Platform
     /// </summary>
     public class Screen : IEquatable<Screen>
     {
-        private readonly IPlatformHandle? _platformHandle;
+        private IPlatformHandle? _platformHandle;
 
         /// <summary>
         /// Gets the device name associated with a display.
@@ -70,11 +70,6 @@ namespace Avalonia.Platform
         /// <inheritdoc cref="Scaling"/>
         [Obsolete("Use the Scaling property instead.", true), EditorBrowsable(EditorBrowsableState.Never)]
         public double PixelDensity => Scaling;
-
-        /// <summary>
-        /// Gets the overall pixel-size of the screen.
-        /// </summary>
-        public PixelSize Size { get; protected set; }
 
         /// <summary>
         /// Gets the overall pixel-size and position of the screen.
@@ -145,8 +140,8 @@ namespace Avalonia.Platform
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return _platformHandle?.GetHashCode()
             // ReSharper disable NonReadonlyMemberInGetHashCode
+            return _platformHandle?.GetHashCode()
                    ?? (IsPrimary, DisplayName, CurrentOrientation, Scaling, Bounds, WorkingArea).GetHashCode();
             // ReSharper restore NonReadonlyMemberInGetHashCode
         }
@@ -194,6 +189,18 @@ namespace Avalonia.Platform
 
             sb.Append(" } ");
             return StringBuilderCache.GetStringAndRelease(sb);
+        }
+
+        /// <summary>
+        /// When screen is removed, we should at least empty all the properties. 
+        /// </summary>
+        internal void OnRemoved()
+        {
+            DisplayName = null;
+            Bounds = WorkingArea = default;
+            Scaling = default;
+            CurrentOrientation = default;
+            _platformHandle = null;
         }
     }
 }

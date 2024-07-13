@@ -40,7 +40,7 @@ internal unsafe class ScreenImpl : ScreensBaseImpl<nint, WinScreen>
     }
 
     protected override WinScreen CreateScreenFromKey(nint key) => new(key);
-    protected override void RefreshScreen(WinScreen screen) => screen.Refresh();
+    protected override void ScreenChanged(WinScreen screen) => screen.Refresh();
 
     protected override Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
     {

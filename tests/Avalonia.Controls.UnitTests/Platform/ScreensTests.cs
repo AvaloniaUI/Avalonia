@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
+#nullable enable
 
 namespace Avalonia.Controls.UnitTests.Platform;
 
@@ -44,10 +47,39 @@ public class ScreensTests : ScopedTestBase
         
         Assert.Collection(
             totalScreens,
-            s1 => Assert.Equal(1, s1.Generation),
-            s2 => Assert.Equal(2, s2.Generation), // this screen survived first OnChange event, instance should be presenver.
+            s1 => Assert.True(s1.Generation < 0), // this screen was removed.
+            s2 => Assert.Equal(2, s2.Generation), // this screen survived first OnChange event, instance should be preserved.
             s3 => Assert.Equal(1, s3.Generation),
             s4 => Assert.Equal(1, s4.Generation));
+    }
+
+    [Fact]
+    public void Should_Preserve_Old_Screens_On_Changes_Same_Instance()
+    {
+        using var _ = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+
+        var screens = new TestScreens();
+        var totalScreens = new HashSet<TestScreen>();
+
+        Assert.Equal(0, screens.ScreenCount);
+        Assert.Empty(screens.AllScreens);
+
+        // Push 2 screens.
+        screens.PushNewScreens([1, 2]);
+        Dispatcher.UIThread.RunJobs();
+
+        var screen = screens.GetScreen(2);
+
+        Assert.Equal(1, screen.Generation);
+        Assert.Equal(new IntPtr(2), screen.TryGetPlatformHandle()!.Handle);
+
+        // Push 1 screen, while removing one old.
+        screens.PushNewScreens([2]);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(2, screen.Generation);
+        Assert.Equal(new IntPtr(2), screen.TryGetPlatformHandle()!.Handle);
+        Assert.Same(screens.GetScreen(2), screen);
     }
 
     [Fact]
@@ -71,6 +103,49 @@ public class ScreensTests : ScopedTestBase
 
         Assert.Equal(1, hasChangedTimes);
     }
+
+    [Fact]
+    public void Should_Raise_Event_When_Screen_Changed_From_Another_Thread()
+    {
+        using var _ = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+
+        var hasChangedTimes = 0;
+        var screens = new TestScreens();
+        screens.Changed = () =>
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            hasChangedTimes += 1;
+        };
+
+        Task.Run(() => screens.PushNewScreens([1, 2])).Wait();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(1, hasChangedTimes);
+    }
+
+    
+    [Fact]
+    public void Should_Trigger_Changed_When_Screen_Removed()
+    {
+        using var _ = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+
+        var screens = new TestScreens();
+        screens.PushNewScreens([1, 2]);
+        Dispatcher.UIThread.RunJobs();
+
+        var hasChangedTimes = 0;
+        var screen = screens.GetScreen(2);
+        screens.Changed = () =>
+        {
+            Assert.True(screen.Generation < 0);
+            hasChangedTimes += 1;
+        };
+
+        screens.PushNewScreens([1]);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(1, hasChangedTimes);
+    }
     
     private class TestScreens : ScreensBaseImpl<int, TestScreen>
     {
@@ -91,12 +166,12 @@ public class ScreensTests : ScopedTestBase
         protected override IReadOnlyList<int> GetAllScreenKeys() => _keys;
 
         protected override TestScreen CreateScreenFromKey(int key) => new(key);
-        protected override void RefreshScreen(TestScreen screen) => screen.Refresh();
+        protected override void ScreenChanged(TestScreen screen) => screen.Generation++;
+        protected override void ScreenRemoved(TestScreen screen) => screen.Generation = -1000;
     }
 
     public class TestScreen(int key) : Screen(new PlatformHandle(new IntPtr(key), "TestHandle"))
     {
-        public int Generation { get; private set; }
-        public void Refresh() { Generation++; }
+        public int Generation { get; set; }
     }
 }

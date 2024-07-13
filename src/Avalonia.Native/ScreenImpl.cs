@@ -61,7 +61,7 @@ namespace Avalonia.Native
         }
 
         protected override AvnScreen CreateScreenFromKey(uint key) => new(key);
-        protected override void RefreshScreen(AvnScreen screen) => screen.Refresh(_native);
+        protected override void ScreenChanged(AvnScreen screen) => screen.Refresh(_native);
 
         protected override Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
         {
