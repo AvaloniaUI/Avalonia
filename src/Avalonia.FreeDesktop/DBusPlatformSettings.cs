@@ -46,6 +46,7 @@ namespace Avalonia.FreeDesktop
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
+                    // Variants-in-Variants are automatically collapsed by Tmds.DBus.Protocol, so need to do so here as normally necessary
                     value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
                 return ToColorScheme(value.GetUInt32());
             }
