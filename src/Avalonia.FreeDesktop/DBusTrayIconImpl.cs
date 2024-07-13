@@ -13,7 +13,7 @@ namespace Avalonia.FreeDesktop
     internal class DBusTrayIconImpl : ITrayIconImpl
     {
         private static int s_trayIconInstanceId;
-        public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, new byte[] { 255, 0, 0, 0 });
+        public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, [255, 0, 0, 0]);
 
         private readonly Connection? _connection;
         private readonly OrgFreedesktopDBus? _dBus;
@@ -249,7 +249,7 @@ namespace Avalonia.FreeDesktop
 
         public void SetIcon((int, int, byte[]) dbusPixmap)
         {
-            IconPixmap = new[] { dbusPixmap };
+            IconPixmap = [dbusPixmap];
             InvalidateAll();
         }
 
