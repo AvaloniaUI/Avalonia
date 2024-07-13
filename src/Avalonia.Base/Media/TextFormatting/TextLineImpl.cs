@@ -748,6 +748,10 @@ namespace Avalonia.Media.TextFormatting
 
                     remainingLength -= coveredLength;
                 }
+                else if (currentIndexedRun.TextRun is ShapedTextRun { GlyphRun.InkBounds.Width: < 0.1f })
+                {
+                    break;
+                }
             }
 
             result.Sort(TextBoundsComparer);
