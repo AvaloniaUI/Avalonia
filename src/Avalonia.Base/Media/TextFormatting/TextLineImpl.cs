@@ -1020,10 +1020,10 @@ namespace Avalonia.Media.TextFormatting
 
             var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
 
-            if (characterLength == 0 && currentRun.Text.Length > 0)
+            if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
                 //Make sure we are properly dealing with zero width space runs
-                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span);
+                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(startIndex));
 
                 while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
                 {
@@ -1089,13 +1089,26 @@ namespace Avalonia.Media.TextFormatting
 
             var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
 
-            //Make sure we properly deal with zero width space runs
-            if (characterLength == 0 && currentRun.Length > 0 && currentRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace == 0)
+            if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
-                characterLength = currentRun.Length;
+                //Make sure we are properly dealing with zero width space runs
+                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(startIndex));
+
+                while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
+                {
+                    if (codepoint.IsWhiteSpace)
+                    {
+                        characterLength++;
+                        remainingLength--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
-            if(startHit.FirstCharacterIndex > endHit.FirstCharacterIndex)
+            if (startHit.FirstCharacterIndex > endHit.FirstCharacterIndex)
             {
                 startHit = endHit;
             }
