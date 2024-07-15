@@ -143,6 +143,7 @@ namespace Avalonia.Controls
             SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
         }
 
+        private IDisposable? _scopeBinding;
         public MenuItem()
         {
             // HACK: This nasty but it's all WPF's fault. Grid uses an inherited attached
@@ -162,6 +163,11 @@ namespace Avalonia.Controls
             // causing the shared size scope in the parent MenuItem to be used, breaking
             // menu layout.
 
+            
+        }
+
+        private void SubscribeToParnetSizeScope()
+        {
             var parentSharedSizeScope = this.GetObservable(VisualParentProperty)
                 .Select(x =>
                 {
@@ -171,7 +177,7 @@ namespace Avalonia.Controls
                 })
                 .Switch();
 
-            this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
+            _scopeBinding = this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
         }
 
         /// <summary>
@@ -440,8 +446,15 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-
+            SubscribeToParnetSizeScope();
             TryUpdateCanExecute();
+        }
+
+        /// <inheritdoc /> 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            _scopeBinding?.Dispose();
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
