@@ -731,27 +731,26 @@ namespace Avalonia.Media.TextFormatting
                         }
                 }
 
-                if (coveredLength > 0)
+                if (coveredLength == 0)
                 {
-                    if (lastBounds != null && TryMergeWithLastBounds(currentBounds, lastBounds))
-                    {
-                        currentBounds = lastBounds;
-
-                        result[result.Count - 1] = currentBounds;
-                    }
-                    else
-                    {
-                        result.Add(currentBounds);
-                    }
-
-                    lastBounds = currentBounds;
-
-                    remainingLength -= coveredLength;
-                }
-                else if (currentIndexedRun.TextRun is ShapedTextRun { GlyphRun.InkBounds.Width: < 0.1f })
-                {
+                    //This should never happen
                     break;
                 }
+
+                if (lastBounds != null && TryMergeWithLastBounds(currentBounds, lastBounds))
+                {
+                    currentBounds = lastBounds;
+
+                    result[result.Count - 1] = currentBounds;
+                }
+                else
+                {
+                    result.Add(currentBounds);
+                }
+
+                lastBounds = currentBounds;
+
+                remainingLength -= coveredLength;
             }
 
             result.Sort(TextBoundsComparer);
@@ -1021,10 +1020,23 @@ namespace Avalonia.Media.TextFormatting
 
             var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
 
-            //Make sure we properly deal with zero width space runs
-            if (characterLength == 0 && currentRun.Length > 0 && currentRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace == 0)
+            if (characterLength == 0 && currentRun.Text.Length > 0)
             {
-                characterLength = currentRun.Length;
+                //Make sure we are properly dealing with zero width space runs
+                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span);
+
+                while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
+                {
+                    if (codepoint.IsWhiteSpace)
+                    {
+                        characterLength++;
+                        remainingLength--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
             if (endX < startX)
