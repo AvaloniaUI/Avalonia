@@ -44,8 +44,7 @@ internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorage
     public Task<string?> SaveBookmarkAsync()
     {
         var path = FileSystemInfo.FullName;
-        var pathBytes = Encoding.UTF8.GetBytes(path);
-        return Task.FromResult<string?>(Convert.ToBase64String(pathBytes));
+        return Task.FromResult<string?>(StorageBookmarkHelper.EncodeBclBookmark(path));
     }
 
     public Task ReleaseBookmarkAsync() => Task.CompletedTask;

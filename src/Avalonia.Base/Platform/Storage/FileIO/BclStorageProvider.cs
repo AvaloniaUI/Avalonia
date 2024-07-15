@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Compatibility;
 using Avalonia.Logging;
@@ -134,9 +133,12 @@ internal abstract class BclStorageProvider : IStorageProvider
     {
         try
         {
-            var pathBytes = Convert.FromBase64String(bookmark);
-            var path = Encoding.UTF8.GetString(pathBytes);
-            return StorageProviderHelpers.TryCreateBclStorageItem(path);
+            if (StorageBookmarkHelper.TryDecodeBclBookmark(bookmark, out var localPath))
+            {
+                return StorageProviderHelpers.TryCreateBclStorageItem(localPath);   
+            }
+
+            return null;
         }
         catch (Exception ex)
         {

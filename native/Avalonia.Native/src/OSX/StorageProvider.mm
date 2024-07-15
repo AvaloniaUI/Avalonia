@@ -71,9 +71,9 @@ class StorageProvider : public ComSingleObject<IAvnStorageProvider, &IID_IAvnSto
 public:
     FORWARD_IUNKNOWN()
 
-    virtual HRESULT SaveBookmark (
-        IAvnString* fileUriStr,
-        IAvnString** ppv
+    virtual HRESULT SaveBookmarkToBytes (
+         IAvnString* fileUriStr,
+         IAvnString** ppv
     ) override
     {
         @autoreleasepool
@@ -86,28 +86,23 @@ public:
             auto bookmarkData = [fileUri bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
             if (bookmarkData)
             {
-                auto bookmarkStr = [bookmarkData base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
-                *ppv = CreateAvnString(bookmarkStr);
-            }
-            else{
-                *ppv = CreateAvnString([error localizedDescription]);
+                *ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
             }
             return S_OK;
         }
     }
 
-    virtual HRESULT ReadBookmark (
-        IAvnString* bookmarkStr,
-        IAvnString** ppv
+    virtual HRESULT ReadBookmarkFromBytes (
+       void* ptr,
+       int len,
+       IAvnString** ppv
     ) override {
         @autoreleasepool
         {
             if(ppv == nullptr)
                 return E_POINTER;
-            
-            auto bookmark = GetNSStringAndRelease(bookmarkStr);
-            auto bookmarkData = [[NSData alloc] initWithBase64EncodedString: bookmark options:NSDataBase64DecodingIgnoreUnknownCharacters];
-            
+
+            auto bookmarkData = [[NSData alloc] initWithBytes:ptr length:len];
             auto fileUri = [NSURL URLByResolvingBookmarkData: bookmarkData
                                                      options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI
                                                relativeToURL:nil
@@ -125,7 +120,6 @@ public:
     virtual void ReleaseBookmark (
         IAvnString* fileUriStr
     ) override {
-        auto fileUri = GetNSStringAndRelease(fileUriStr);
         // no-op
     }
 

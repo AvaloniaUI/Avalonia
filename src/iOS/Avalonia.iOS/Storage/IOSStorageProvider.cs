@@ -10,11 +10,14 @@ using UniformTypeIdentifiers;
 using UTTypeLegacy = MobileCoreServices.UTType;
 using UTType = UniformTypeIdentifiers.UTType;
 using System.Runtime.Versioning;
+using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.iOS.Storage;
 
 internal class IOSStorageProvider : IStorageProvider
 {
+    public static ReadOnlySpan<byte> PlatformKey => "ios"u8; 
+
     private readonly AvaloniaView _view;
     public IOSStorageProvider(AvaloniaView view)
     {
@@ -217,20 +220,30 @@ internal class IOSStorageProvider : IStorageProvider
         return tcs.Task;
     }
 
-    private NSUrl? GetBookmarkedUrl(string bookmark)
+    private unsafe NSUrl? GetBookmarkedUrl(string bookmark)
     {
-        var url = NSUrl.FromBookmarkData(new NSData(bookmark, NSDataBase64DecodingOptions.None),
-            NSUrlBookmarkResolutionOptions.WithoutUI, null, out var isStale, out var error);
-        if (isStale)
+        if (StorageBookmarkHelper.TryDecodeBookmark(PlatformKey, bookmark, out var nativeBookmark))
         {
-            Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(this, "Stale bookmark detected");
+            fixed (byte* bytes = nativeBookmark)
+            {
+                var url = NSUrl.FromBookmarkData(
+                    new NSData(new IntPtr(bytes), new UIntPtr((uint)nativeBookmark.Length), null),
+                    NSUrlBookmarkResolutionOptions.WithoutUI, null, out var isStale, out var error);
+                if (isStale)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(this, "Stale bookmark detected");
+                }
+
+                if (error != null)
+                {
+                    throw new NSErrorException(error);
+                }
+
+                return url;
+            }
         }
-            
-        if (error != null)
-        {
-            throw new NSErrorException(error);
-        }
-        return url;
+
+        return null;
     }
 
     private static string[] FileTypesToUTTypeLegacy(IReadOnlyList<FilePickerFileType>? filePickerFileTypes)

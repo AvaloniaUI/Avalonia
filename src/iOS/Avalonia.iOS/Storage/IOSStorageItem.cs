@@ -134,7 +134,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         return Task.CompletedTask;
     }
 
-    public Task<string?> SaveBookmarkAsync()
+    public unsafe Task<string?> SaveBookmarkAsync()
     {
         try
         {
@@ -143,7 +143,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 return Task.FromResult<string?>(null);
             }
 
-            var newBookmark = Url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out var bookmarkError);
+            using var newBookmark = Url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, [], null, out var bookmarkError);
             if (bookmarkError is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.IOSPlatform)?.
@@ -151,8 +151,9 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 return Task.FromResult<string?>(null);
             }
 
+            var bytes = new Span<byte>((void*)newBookmark.Bytes, (int)newBookmark.Length);
             return Task.FromResult<string?>(
-                newBookmark.GetBase64EncodedString(NSDataBase64EncodingOptions.None));
+                StorageBookmarkHelper.EncodeBookmark(IOSStorageProvider.PlatformKey, bytes));
         }
         finally
         {

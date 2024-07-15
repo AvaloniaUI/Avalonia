@@ -33,12 +33,12 @@ internal sealed class StorageProviderImpl(TopLevelImpl topLevel, StorageProvider
 
     public Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        return Task.FromResult(native.TryGetStorageItem(native.ReadBookmark(bookmark)) as IStorageBookmarkFile);
+        return Task.FromResult(native.TryGetStorageItem(native.ReadBookmark(bookmark, false)) as IStorageBookmarkFile);
     }
 
     public Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        return Task.FromResult(native.TryGetStorageItem(native.ReadBookmark(bookmark)) as IStorageBookmarkFolder);
+        return Task.FromResult(native.TryGetStorageItem(native.ReadBookmark(bookmark, true)) as IStorageBookmarkFolder);
     }
 
     public Task<IStorageFile?> TryGetFileFromPathAsync(Uri fileUri)

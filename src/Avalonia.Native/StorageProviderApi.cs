@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -96,18 +97,36 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
         }
     }
 
+    // Avalonia.Native technically can be used for more than just macOS,
+    // In which case we should provide different bookmark platform keys, and parse accordingly.
+    private static ReadOnlySpan<byte> MacOSKey => "macOS"u8;
     public string? SaveBookmark(Uri uri)
     {
         using var uriString = new AvnString(uri.AbsoluteUri);
-        using var bookmarkStr = _native.SaveBookmark(uriString);
-        return bookmarkStr?.String;
+        using var bookmarkStr = _native.SaveBookmarkToBytes(uriString);
+        return StorageBookmarkHelper.EncodeBookmark(MacOSKey, bookmarkStr?.Bytes);
     }
 
-    public Uri? ReadBookmark(string bookmark)
+    // Support both kinds of bookmarks when reading.
+    // Since "save bookmark" implementation will be different depending on the configuration.
+    public unsafe Uri? ReadBookmark(string bookmark, bool isDirectory)
     {
-        using var bookmarkStr = new AvnString(bookmark);
-        using var uriString = _native.ReadBookmark(bookmarkStr);
-        return uriString is not null && Uri.TryCreate(uriString.String, UriKind.Absolute, out var uri) ? uri : null;
+        if (StorageBookmarkHelper.TryDecodeBookmark(MacOSKey, bookmark, out var bytes))
+        {
+            fixed (byte* ptr = bytes)
+            {
+                using var uriString = _native.ReadBookmarkFromBytes(ptr, bytes.Length);
+                return uriString is not null && Uri.TryCreate(uriString.String, UriKind.Absolute, out var uri) ?
+                    uri :
+                    null;
+            }
+        }
+        if (StorageBookmarkHelper.TryDecodeBclBookmark(bookmark, out var path))
+        {
+            return StorageProviderHelpers.UriFromFilePath(path, isDirectory);
+        }
+
+        return null;
     }
 
     public void ReleaseBookmark(Uri uri)
