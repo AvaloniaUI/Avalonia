@@ -11,15 +11,17 @@ namespace Avalonia.Platform.Storage.FileIO;
 /// </summary>
 /// <remarks>
 /// Bookmarks are encoded as:
-/// 0-15  - platform key
+/// 0-6 - avalonia prefix with version number
+/// 7-15  - platform key
 /// 16+ - native bookmark value
 /// Which is then encoded in Base64.
 /// </remarks>
 internal static class StorageBookmarkHelper
 {
-    private const int PrefixLength = 16;
+    private const int HeaderLength = 16;
 
-    private static ReadOnlySpan<byte> FakeBclBookmarkPlatform => "avalonia-bcl"u8;
+    private static ReadOnlySpan<byte> AvaHeaderPrefix => "ava.v1."u8;
+    private static ReadOnlySpan<byte> FakeBclBookmarkPlatform => "bcl"u8;
 
     [return: NotNullIfNotNull(nameof(nativeBookmark))]
     public static string? EncodeBookmark(ReadOnlySpan<byte> platform, string? nativeBookmark) =>
@@ -32,19 +34,22 @@ internal static class StorageBookmarkHelper
             return null;
         }
 
-        if (platform.Length > PrefixLength)
-            throw new ArgumentException($"Platform name should not be longer than {PrefixLength} bytes", nameof(platform));
+        if (platform.Length > HeaderLength)
+        {
+            throw new ArgumentException($"Platform name should not be longer than {HeaderLength} bytes", nameof(platform));
+        }
 
-        var arrayLength = PrefixLength + nativeBookmarkBytes.Length;
+        var arrayLength = HeaderLength + nativeBookmarkBytes.Length;
         var arrayPool = ArrayPool<byte>.Shared.Rent(arrayLength);
         try
         {
             // Write platform into first 16 bytes.
             var arraySpan = arrayPool.AsSpan(0, arrayLength);
-            platform.CopyTo(arraySpan);
+            AvaHeaderPrefix.CopyTo(arraySpan);
+            platform.CopyTo(arraySpan.Slice(AvaHeaderPrefix.Length));
 
             // Write bookmark bytes.
-            nativeBookmarkBytes.CopyTo(arraySpan.Slice(PrefixLength));
+            nativeBookmarkBytes.CopyTo(arraySpan.Slice(HeaderLength));
 
             // We must use span overload because ArrayPool might return way too big array. 
 #if NET6_0_OR_GREATER
@@ -61,7 +66,7 @@ internal static class StorageBookmarkHelper
 
     public static bool TryDecodeBookmark(ReadOnlySpan<byte> platform, string? base64bookmark, [NotNullWhen(true)] out byte[]? nativeBookmark)
     {
-        if (platform.Length > PrefixLength
+        if (platform.Length > HeaderLength
             || platform.Length == 0
             || base64bookmark is null
             || base64bookmark.Length % 4 != 0)
@@ -73,7 +78,7 @@ internal static class StorageBookmarkHelper
         Span<byte> decodedBookmark;
 #if NET6_0_OR_GREATER
         // Each base64 character represents 6 bits, but to be safe, 
-        var arrayPool = ArrayPool<byte>.Shared.Rent(PrefixLength + base64bookmark.Length * 6);
+        var arrayPool = ArrayPool<byte>.Shared.Rent(HeaderLength + base64bookmark.Length * 6);
         if (Convert.TryFromBase64Chars(base64bookmark, arrayPool, out int bytesWritten))
         {
             decodedBookmark = arrayPool.AsSpan().Slice(0, bytesWritten);
@@ -88,16 +93,18 @@ internal static class StorageBookmarkHelper
 #endif
         try
         {
-            if (decodedBookmark.Length < PrefixLength)
+            if (decodedBookmark.Length < HeaderLength
+                // Check if decoded string starts with the correct prefix, checking v1 at the same time.
+                && !AvaHeaderPrefix.SequenceEqual(decodedBookmark.Slice(0, AvaHeaderPrefix.Length)))
             {
                 nativeBookmark = null;
                 return false;
             }
 
-            var actualPlatform = decodedBookmark.Slice(0, platform.Length);
+            var actualPlatform = decodedBookmark.Slice(AvaHeaderPrefix.Length, platform.Length);
             if (actualPlatform.SequenceEqual(platform))
             {
-                nativeBookmark = decodedBookmark.Slice(PrefixLength).ToArray();
+                nativeBookmark = decodedBookmark.Slice(HeaderLength).ToArray();
                 return true;
             }
 
