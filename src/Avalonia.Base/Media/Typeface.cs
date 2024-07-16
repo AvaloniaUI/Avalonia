@@ -32,9 +32,9 @@ namespace Avalonia.Media
             }
 
             FontFamily = fontFamily ?? FontFamily.Default;
-            Style      = style;
-            Weight     = weight;
-            Stretch    = stretch;
+            Style = style;
+            Weight = weight;
+            Stretch = stretch;
         }
 
         /// <summary>
