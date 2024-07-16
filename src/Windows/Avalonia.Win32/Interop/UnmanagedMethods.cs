@@ -1176,10 +1176,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetPointerTouchInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_TOUCH_INFO[] touchInfos);
 
-        [DllImport("user32.dll")]
-        public static extern bool EnumDisplayMonitors(nint hdc, nint lprcClip,
-            delegate* unmanaged[Cdecl]<nint, nint, nint, nint, int> lpfnEnum, nint dwData);
-
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
