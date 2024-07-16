@@ -22,9 +22,21 @@ namespace Avalonia.Platform
     }
 
     [PrivateApi]
-    public abstract class ScreensBaseImpl<TKey, TScreen>(IEqualityComparer<TKey>? screenKeyComparer) : IScreenImpl
+    public class PlatformScreen(IPlatformHandle platformHandle) : Screen
+    {
+        public override IPlatformHandle? TryGetPlatformHandle() => platformHandle;
+
+        public override int GetHashCode() => platformHandle.GetHashCode();
+        public override bool Equals(object? obj)
+        {
+            return obj is PlatformScreen other && platformHandle.Equals(other.TryGetPlatformHandle()!);
+        }
+    }
+
+    [PrivateApi]
+    public abstract class ScreensBase<TKey, TScreen>(IEqualityComparer<TKey>? screenKeyComparer) : IScreenImpl
         where TKey : notnull
-        where TScreen : Screen
+        where TScreen : PlatformScreen
     {
         private readonly Dictionary<TKey, TScreen> _allScreensByKey = screenKeyComparer is not null ?
             new Dictionary<TKey, TScreen>(screenKeyComparer) :
@@ -34,7 +46,7 @@ namespace Avalonia.Platform
         private bool? _screenDetailsRequestGranted;
         private DispatcherOperation? _onChangeOperation;
 
-        protected ScreensBaseImpl() : this(null)
+        protected ScreensBase() : this(null)
         {
             
         }

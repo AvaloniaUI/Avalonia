@@ -344,12 +344,21 @@ namespace Avalonia.Headless
         }
     }
 
-    internal class HeadlessScreensStub : ScreensBaseImpl<int, Screen>
+    internal class HeadlessScreensStub : ScreensBase<int, PlatformScreen>
     {
         protected override IReadOnlyList<int> GetAllScreenKeys() => new[] { 1 };
 
-        protected override Screen CreateScreenFromKey(int key) =>
-            new(1, new PixelRect(0, 0, 1920, 1280), new PixelRect(0, 0, 1920, 1280), true);
+        protected override PlatformScreen CreateScreenFromKey(int key) => new PlatformScreenStub(key);
+
+        private class PlatformScreenStub : PlatformScreen
+        {
+            public PlatformScreenStub(int key) : base(new PlatformHandle((nint)key, nameof(HeadlessScreensStub)))
+            {
+                Scaling = 1;
+                Bounds = WorkingArea = new PixelRect(0, 0, 1920, 1280);
+                IsPrimary = true;
+            }
+        }
     }
 
     internal static class TextTestHelper

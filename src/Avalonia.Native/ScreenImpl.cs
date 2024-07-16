@@ -9,7 +9,7 @@ using MicroCom.Runtime;
 namespace Avalonia.Native
 {
     internal sealed class AvnScreen(uint displayId)
-        : Screen(new PlatformHandle(new IntPtr(displayId), "CGDirectDisplayID"))
+        : PlatformScreen(new PlatformHandle(new IntPtr(displayId), "CGDirectDisplayID"))
     {
         public unsafe void Refresh(IAvnScreens native)
         {
@@ -35,7 +35,7 @@ namespace Avalonia.Native
         }
     }
 
-    internal class ScreenImpl : ScreensBaseImpl<uint, AvnScreen>, IDisposable
+    internal class ScreenImpl : ScreensBase<uint, AvnScreen>, IDisposable
     {
         private IAvnScreens _native;
 

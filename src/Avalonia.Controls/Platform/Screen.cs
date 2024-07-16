@@ -46,8 +46,6 @@ namespace Avalonia.Platform
     /// </summary>
     public class Screen : IEquatable<Screen>
     {
-        private IPlatformHandle? _platformHandle;
-
         /// <summary>
         /// Gets the device name associated with a display.
         /// </summary>
@@ -113,11 +111,7 @@ namespace Avalonia.Platform
             IsPrimary = isPrimary;
         }
 
-        [PrivateApi]
-        protected Screen(IPlatformHandle platformHandle)
-        {
-            _platformHandle = platformHandle;
-        }
+        private protected Screen() { }
 
         /// <summary>
         /// Tries to get the platform handle for the Screen.
@@ -126,41 +120,14 @@ namespace Avalonia.Platform
         /// An <see cref="IPlatformHandle"/> describing the screen handle, or null if the handle
         /// could not be retrieved.
         /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => _platformHandle;
-        
-        /// <inheritdoc/>
-        public override bool Equals(object? obj)
-        {
-            if (obj is null) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Screen)obj);
-        }
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            // ReSharper disable NonReadonlyMemberInGetHashCode
-            return _platformHandle?.GetHashCode()
-                   ?? (IsPrimary, DisplayName, CurrentOrientation, Scaling, Bounds, WorkingArea).GetHashCode();
-            // ReSharper restore NonReadonlyMemberInGetHashCode
-        }
+        public virtual IPlatformHandle? TryGetPlatformHandle() => null;
 
         /// <inheritdoc/>
         public bool Equals(Screen? other)
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-
-            if (_platformHandle is not null)
-                return other._platformHandle?.Equals(_platformHandle) ?? false;
-
-            return IsPrimary == other.IsPrimary
-                   && DisplayName == other.DisplayName
-                   && CurrentOrientation == other.CurrentOrientation
-                   && Scaling.Equals(other.Scaling)
-                   && Bounds.Equals(other.Bounds)
-                   && WorkingArea.Equals(other.WorkingArea);
+            return base.Equals(other);
         }
 
         public static bool operator ==(Screen? left, Screen? right)
@@ -200,7 +167,6 @@ namespace Avalonia.Platform
             Bounds = WorkingArea = default;
             Scaling = default;
             CurrentOrientation = default;
-            _platformHandle = null;
         }
     }
 }

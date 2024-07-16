@@ -10,7 +10,7 @@ using winmdroot = global::Windows.Win32;
 
 namespace Avalonia.Win32;
 
-internal unsafe class ScreenImpl : ScreensBaseImpl<nint, WinScreen>
+internal unsafe class ScreenImpl : ScreensBase<nint, WinScreen>
 {
     protected override int GetScreenCount() => GetSystemMetrics(SystemMetric.SM_CMONITORS);
 

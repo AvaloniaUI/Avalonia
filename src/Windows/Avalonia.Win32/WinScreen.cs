@@ -9,7 +9,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32;
 
-internal sealed unsafe class WinScreen(IntPtr hMonitor) : Screen(new PlatformHandle(hMonitor, "HMonitor"))
+internal sealed unsafe class WinScreen(IntPtr hMonitor) : PlatformScreen(new PlatformHandle(hMonitor, "HMonitor"))
 {
     private static readonly Lazy<bool> s_hasGetDpiForMonitor = new(() =>
     {

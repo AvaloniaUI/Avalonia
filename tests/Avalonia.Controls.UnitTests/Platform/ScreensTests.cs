@@ -143,7 +143,7 @@ public class ScreensTests : ScopedTestBase
         Assert.Equal(1, hasChangedTimes);
     }
     
-    private class TestScreens : ScreensBaseImpl<int, TestScreen>
+    private class TestScreens : ScreensBase<int, TestScreen>
     {
         private IReadOnlyList<int> _keys = [];
         private int _count;
@@ -166,7 +166,7 @@ public class ScreensTests : ScopedTestBase
         protected override void ScreenRemoved(TestScreen screen) => screen.Generation = -1000;
     }
 
-    public class TestScreen(int key) : Screen(new PlatformHandle(new IntPtr(key), "TestHandle"))
+    public class TestScreen(int key) : PlatformScreen(new PlatformHandle(new IntPtr(key), "TestHandle"))
     {
         public int Generation { get; set; }
     }
