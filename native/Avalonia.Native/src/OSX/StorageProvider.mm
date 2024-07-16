@@ -73,7 +73,7 @@ public:
 
     virtual HRESULT SaveBookmarkToBytes (
          IAvnString* fileUriStr,
-         IAvnString** err,
+         void** err,
          IAvnString** ppv
     ) override
     {
