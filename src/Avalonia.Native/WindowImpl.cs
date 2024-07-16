@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
@@ -156,6 +157,9 @@ namespace Avalonia.Native
         
         private void InvalidateExtendedMargins()
         {
+            if(_native is MicroComProxyBase pb && pb.IsDisposed) 
+                return;
+
             if (WindowState ==  WindowState.FullScreen)
             {
                 ExtendedMargins = new Thickness();
