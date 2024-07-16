@@ -56,7 +56,7 @@ public static class StorageProviderExtensions
     {
         // We can avoid double escaping of the path by checking for BclStorageFolder.
         // Ideally, `folder.Path.LocalPath` should also work, as that's only available way for the users.
-        if (item is BclStorageItem storageItem)
+        if (item is IStorageItemWithFileSystemInfo storageItem)
         {
             return storageItem.FileSystemInfo.FullName;
         }

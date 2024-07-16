@@ -4,12 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
-internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorageBookmarkItem
+internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorageBookmarkItem, IStorageItemWithFileSystemInfo
 {
     public FileSystemInfo FileSystemInfo { get; } = fileSystemInfo switch
     {

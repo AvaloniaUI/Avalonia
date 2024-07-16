@@ -11,7 +11,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Native;
 
-internal class StorageItem : IStorageBookmarkItem
+internal class StorageItem : IStorageBookmarkItem, IStorageItemWithFileSystemInfo
 {
     private readonly StorageProviderApi _storageProviderApi;
     private readonly FileSystemInfo _fileSystemInfo;
