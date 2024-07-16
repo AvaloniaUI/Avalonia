@@ -254,17 +254,24 @@ namespace ControlCatalog.Pages
 
                 if (file is not null)
                 {
-                    // Sync disposal of StreamWriter is not supported on WASM
+                    try
+                    {
+                        // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
-                    await using var stream = await file.OpenWriteAsync();
-                    await using var writer = new System.IO.StreamWriter(stream);
+                        await using var stream = await file.OpenWriteAsync();
+                        await using var writer = new System.IO.StreamWriter(stream);
 #else
-                    using var stream = await file.OpenWriteAsync();
-                    using var writer = new System.IO.StreamWriter(stream);
+                        using var stream = await file.OpenWriteAsync();
+                        using var writer = new System.IO.StreamWriter(stream);
 #endif
-                    await writer.WriteLineAsync(openedFileContent.Text);
+                        await writer.WriteLineAsync(openedFileContent.Text);
 
-                    SetFolder(await file.GetParentAsync());
+                        SetFolder(await file.GetParentAsync());
+                    }
+                    catch (Exception ex)
+                    {
+                        openedFileContent.Text = ex.ToString();
+                    }
                 }
 
                 await SetPickerResult(file is null ? null : new[] { file });
@@ -357,7 +364,14 @@ namespace ControlCatalog.Pages
             Content:
             ";
 
-                        resultText += await ReadTextFromFile(file, 500);
+                        try
+                        {
+                            resultText += await ReadTextFromFile(file, 500);
+                        }
+                        catch (Exception ex)
+                        {
+                            resultText += ex.ToString();
+                        }
                     }
 
                     openedFileContent.Text = resultText;
@@ -395,7 +409,7 @@ namespace ControlCatalog.Pages
             }
         }
 
-        public static async Task<string> ReadTextFromFile(IStorageFile file, int length)
+        internal static async Task<string> ReadTextFromFile(IStorageFile file, int length)
         {
 #if NET6_0_OR_GREATER
             await using var stream = await file.OpenReadAsync();
