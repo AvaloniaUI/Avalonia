@@ -37,13 +37,12 @@ namespace Avalonia.Native
 
     internal class ScreenImpl : ScreensBaseImpl<uint, AvnScreen>, IDisposable
     {
-        private AvnScreenEvents _events;
         private IAvnScreens _native;
 
         public ScreenImpl(Func<IAvnScreenEvents, IAvnScreens> factory)
         {
-            _events = new AvnScreenEvents(this);
-            _native = factory(_events);
+            using var events = new AvnScreenEvents(this);
+            _native = factory(events);
         }
 
         protected override unsafe int GetScreenCount() => _native.GetScreenIds(null);
@@ -71,8 +70,6 @@ namespace Avalonia.Native
 
         public void Dispose()
         {
-            _events?.Dispose();
-            _events = null!;
             _native?.Dispose();
             _native = null!;
         }

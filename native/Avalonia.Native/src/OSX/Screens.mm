@@ -3,13 +3,16 @@
 
 class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
 {
+private:
+    ComPtr<IAvnScreenEvents> _events;
 public:
     FORWARD_IUNKNOWN()
 
     Screens(IAvnScreenEvents* events) {
-        CGDisplayRegisterReconfigurationCallback(CGDisplayReconfigurationCallBack, events);
+        _events = events;
+        CGDisplayRegisterReconfigurationCallback(CGDisplayReconfigurationCallBack, this);
     }
-    
+
     virtual HRESULT GetScreenIds (
         unsigned int* ptrFirstResult,
         int* screenCound) override
@@ -94,9 +97,10 @@ public:
     }
 
 private:
-    static void CGDisplayReconfigurationCallBack(CGDirectDisplayID display, CGDisplayChangeSummaryFlags flags, void *userInfo)
+    static void CGDisplayReconfigurationCallBack(CGDirectDisplayID display, CGDisplayChangeSummaryFlags flags, void *screens)
     {
-        auto events = (IAvnScreenEvents*)userInfo;
+        auto object = (Screens *)screens;
+        auto events = object->_events;
         if (events != nil) {
             events->OnChanged();
         }
