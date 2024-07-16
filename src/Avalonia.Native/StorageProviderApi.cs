@@ -61,6 +61,8 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
             if (!scopeOpened)
             {
                 RemoveUse(this, uriString);
+                Logger.TryGet(LogEventLevel.Information, LogArea.macOSPlatform)?
+                     .Log(this, "OpenSecurityScope returned false for the {Uri}", uriString);
                 return null;
             }
         }
