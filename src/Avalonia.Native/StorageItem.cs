@@ -15,18 +15,18 @@ internal class StorageItem : IStorageBookmarkItem
 {
     private readonly StorageProviderApi _storageProviderApi;
     private readonly FileSystemInfo _fileSystemInfo;
-    private readonly Uri _scopeOwnerUri;
 
     protected StorageItem(StorageProviderApi storageProviderApi, FileSystemInfo fileSystemInfo, Uri uri, Uri scopeOwnerUri)
     {
         _storageProviderApi = storageProviderApi;
         Path = uri;
         _fileSystemInfo = fileSystemInfo;
-        _scopeOwnerUri = scopeOwnerUri;
+        ScopeOwnerUri = scopeOwnerUri;
     }
 
     public string Name => _fileSystemInfo.Name;
     public Uri Path { get; }
+    public Uri ScopeOwnerUri { get; }
 
     public Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
@@ -36,15 +36,17 @@ internal class StorageItem : IStorageBookmarkItem
     }
 
     public bool CanBookmark => true;
+    public FileSystemInfo FileSystemInfo => _fileSystemInfo;
 
     protected IDisposable? OpenScope()
     {
-        return _storageProviderApi.OpenSecurityScope(_scopeOwnerUri.AbsoluteUri);
+        return _storageProviderApi.OpenSecurityScope(ScopeOwnerUri.AbsoluteUri);
     }
 
     public Task<string?> SaveBookmarkAsync()
     {
-        return Task.FromResult(_storageProviderApi.SaveBookmark(Path))!;
+        using var scope = OpenScope();
+        return Task.FromResult(_storageProviderApi.SaveBookmark(Path));
     }
 
     public Task ReleaseBookmarkAsync()
@@ -129,7 +131,7 @@ internal class StorageFolder(
             using var scope = OpenScope();
             foreach (var item in BclStorageItem.GetItemsCore(directoryInfo))
             {
-                yield return WrapFileSystemInfo(item, scopeOwnerUri);
+                yield return WrapFileSystemInfo(item, ScopeOwnerUri);
             }
         }
     }
@@ -138,13 +140,13 @@ internal class StorageFolder(
     {
         using var scope = OpenScope();
         var file = BclStorageItem.CreateFileCore(directoryInfo, name);
-        return Task.FromResult((IStorageFile?)WrapFileSystemInfo(file, scopeOwnerUri));
+        return Task.FromResult((IStorageFile?)WrapFileSystemInfo(file, ScopeOwnerUri));
     }
 
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         using var scope = OpenScope();
         var folder = BclStorageItem.CreateFolderCore(directoryInfo, name);
-        return Task.FromResult((IStorageFolder?)WrapFileSystemInfo(folder, scopeOwnerUri));
+        return Task.FromResult((IStorageFolder?)WrapFileSystemInfo(folder, ScopeOwnerUri));
     }
 }

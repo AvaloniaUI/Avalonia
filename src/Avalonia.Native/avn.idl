@@ -903,7 +903,7 @@ interface IAvnStorageProvider : IUnknown
                                  [const] char* initialFile,
                                  IAvnFilePickerFileTypes* filters);
 
-     HRESULT SaveBookmarkToBytes(IAvnString*fileUri, IAvnString**ppv);
+     HRESULT SaveBookmarkToBytes(IAvnString*fileUri, void**err, IAvnString**ppv);
      HRESULT ReadBookmarkFromBytes(void* ptr, int len, IAvnString**ppv);
 
      void ReleaseBookmark(IAvnString*fileUri);

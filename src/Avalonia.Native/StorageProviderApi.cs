@@ -4,14 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Logging;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Reactive;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native;
 
@@ -100,10 +101,20 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
     // Avalonia.Native technically can be used for more than just macOS,
     // In which case we should provide different bookmark platform keys, and parse accordingly.
     private static ReadOnlySpan<byte> MacOSKey => "macOS"u8;
-    public string? SaveBookmark(Uri uri)
+    public unsafe string? SaveBookmark(Uri uri)
     {
+        void* error = null;
         using var uriString = new AvnString(uri.AbsoluteUri);
-        using var bookmarkStr = _native.SaveBookmarkToBytes(uriString);
+        using var bookmarkStr = _native.SaveBookmarkToBytes(uriString, &error);
+
+        if (error != null)
+        {
+            using var errorStr = MicroComRuntime.CreateProxyOrNullFor<IAvnString>(error, true);
+            Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)?
+                .Log(this, "SaveBookmark for {Uri} failed with an error\r\n{Error}", uri, errorStr.String);
+            return null;
+        }
+
         return StorageBookmarkHelper.EncodeBookmark(MacOSKey, bookmarkStr?.Bytes);
     }
 

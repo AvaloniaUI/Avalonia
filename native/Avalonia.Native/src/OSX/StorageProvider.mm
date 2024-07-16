@@ -73,6 +73,7 @@ public:
 
     virtual HRESULT SaveBookmarkToBytes (
          IAvnString* fileUriStr,
+         IAvnString** err,
          IAvnString** ppv
     ) override
     {
@@ -87,6 +88,10 @@ public:
             if (bookmarkData)
             {
                 *ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
+            }
+            if (error != nil)
+            {
+                *err = CreateAvnString([error localizedDescription]);
             }
             return S_OK;
         }
