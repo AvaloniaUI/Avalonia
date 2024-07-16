@@ -1,4 +1,5 @@
 EnumDisplayMonitors
+EnumDisplayMonitors
 GetMonitorInfo
 MONITORINFOEX
 EnumDisplaySettings

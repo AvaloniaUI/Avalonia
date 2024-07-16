@@ -4,7 +4,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
+using Windows.Win32;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using winmdroot = global::Windows.Win32;
 
 namespace Avalonia.Win32;
 
@@ -18,7 +20,7 @@ internal unsafe class ScreenImpl : ScreensBaseImpl<nint, WinScreen>
         var gcHandle = GCHandle.Alloc(screens);
         try
         {
-            EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, &EnumDisplayMonitorsCallback, (IntPtr)gcHandle);
+            PInvoke.EnumDisplayMonitors(default, default(winmdroot.Foundation.RECT*), EnumDisplayMonitorsCallback, (IntPtr)gcHandle);
         }
         finally
         {
@@ -27,15 +29,18 @@ internal unsafe class ScreenImpl : ScreensBaseImpl<nint, WinScreen>
 
         return screens;
 
-        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-        static int EnumDisplayMonitorsCallback(nint monitor, nint hdcMonitor, nint lprcMonitor, nint dwData)
+        static winmdroot.Foundation.BOOL EnumDisplayMonitorsCallback(
+            winmdroot.Graphics.Gdi.HMONITOR monitor,
+            winmdroot.Graphics.Gdi.HDC hdcMonitor,
+            winmdroot.Foundation.RECT* lprcMonitor,
+            winmdroot.Foundation.LPARAM dwData)
         {
             if (GCHandle.FromIntPtr(dwData).Target is List<nint> screens)
             {
                 screens.Add(monitor);
-                return 1;
+                return true;
             }
-            return 0;
+            return false;
         }
     }
 
