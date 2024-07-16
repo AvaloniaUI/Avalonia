@@ -18,7 +18,9 @@ public class StorageProviderHelperTests
 
         Assert.NotNull(bookmark);
 
-        Assert.True(StorageBookmarkHelper.TryDecodeBookmark(platform, bookmark, out var nativeBookmarkRet));
+        Assert.Equal(
+            StorageBookmarkHelper.DecodeResult.Success,
+            StorageBookmarkHelper.TryDecodeBookmark(platform, bookmark, out var nativeBookmarkRet));
 
         Assert.NotNull(nativeBookmarkRet);
 
@@ -44,8 +46,29 @@ public class StorageProviderHelperTests
         var platform = "test"u8;
         var expectedNativeBookmarkBytes = Encoding.UTF8.GetBytes(expectedNativeBookmark);
 
-        Assert.True(StorageBookmarkHelper.TryDecodeBookmark(platform, encodedBookmark, out var nativeBookmark));
+        Assert.Equal(
+            StorageBookmarkHelper.DecodeResult.Success,
+            StorageBookmarkHelper.TryDecodeBookmark(platform, encodedBookmark, out var nativeBookmark));
 
         Assert.Equal(expectedNativeBookmarkBytes, nativeBookmark);
+    }
+
+    [Theory]
+    [InlineData("YXZhLnYxLmJjbAAAAAAAAEM6Ly9maWxlLnR4dA==", "C://file.txt")]
+    [InlineData("C://file.txt", "C://file.txt")]
+    public void Can_Decode_Bcl_Bookmarks(string bookmark, string expected)
+    {
+        var a = StorageBookmarkHelper.EncodeBclBookmark(expected);
+        Assert.True(StorageBookmarkHelper.TryDecodeBclBookmark(bookmark, out var localPath));
+        Assert.Equal(expected, localPath);
+    }
+
+    [Theory]
+    [InlineData("YXZhLnYxLnRlc3QAAAAAAEM6Ly9maWxlLnR4dA==")] // "test" platform passed instead of "bcl"
+    [InlineData("ZYXasHKJASd87124")]
+    public void Fails_To_Decode_Invalid_Bcl_Bookmarks(string bookmark)
+    { 
+        Assert.False(StorageBookmarkHelper.TryDecodeBclBookmark(bookmark, out var localPath));
+        Assert.Null(localPath);
     }
 }

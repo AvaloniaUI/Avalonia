@@ -106,26 +106,12 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        await AvaloniaModule.ImportStorage();
-        if (StorageBookmarkHelper.TryDecodeBookmark(BrowserBookmarkKey, bookmark, out var nativeBookmark))
-        {
-            var item = await StorageHelper.OpenBookmark(Encoding.UTF8.GetString(nativeBookmark));
-            return item is not null ? new JSStorageFile(item) : null;   
-        }
-
-        return null;
+        return await DecodeBookmark(bookmark) as IStorageBookmarkFile;
     }
-
+    
     public async Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        await AvaloniaModule.ImportStorage();;
-        if (StorageBookmarkHelper.TryDecodeBookmark(BrowserBookmarkKey, bookmark, out var nativeBookmark))
-        {
-            var item = await StorageHelper.OpenBookmark(Encoding.UTF8.GetString(nativeBookmark));
-            return item is not null ? new JSStorageFolder(item) : null;   
-        }
-
-        return null;
+        return await DecodeBookmark(bookmark) as IStorageBookmarkFolder;
     }
 
     public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
@@ -169,6 +155,24 @@ internal class BrowserStorageProvider : IStorageProvider
         var includeAll = input?.Contains(FilePickerFileTypes.All) == true || types is null;
 
         return (types, !includeAll);
+    }
+
+    private async Task<IStorageBookmarkItem?> DecodeBookmark(string bookmark)
+    {
+        await AvaloniaModule.ImportStorage();
+        var item = StorageBookmarkHelper.TryDecodeBookmark(BrowserBookmarkKey, bookmark, out var bytes) switch
+        {
+            StorageBookmarkHelper.DecodeResult.Success => await StorageHelper.OpenBookmark(Encoding.UTF8.GetString(bytes!)),
+            // Attempt to decode 11.0 browser bookmarks
+            StorageBookmarkHelper.DecodeResult.InvalidFormat => await StorageHelper.OpenBookmark(bookmark),
+            _ => null
+        };
+        return item?.GetPropertyAsString("kind") switch
+        {
+            "directory" => new JSStorageFolder(item),
+            "file" => new JSStorageFile(item),
+            _ => null
+        };
     }
 }
 

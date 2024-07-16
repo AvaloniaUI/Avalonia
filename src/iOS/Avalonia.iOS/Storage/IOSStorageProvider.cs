@@ -222,28 +222,39 @@ internal class IOSStorageProvider : IStorageProvider
 
     private unsafe NSUrl? GetBookmarkedUrl(string bookmark)
     {
-        if (StorageBookmarkHelper.TryDecodeBookmark(PlatformKey, bookmark, out var nativeBookmark))
+        return StorageBookmarkHelper.TryDecodeBookmark(PlatformKey, bookmark, out var bytes) switch
         {
-            fixed (byte* bytes = nativeBookmark)
+            StorageBookmarkHelper.DecodeResult.Success => DecodeFromBytes(bytes!),
+            // Attempt to decode 11.0 ios bookmarks
+            StorageBookmarkHelper.DecodeResult.InvalidFormat => DecodeFromNSData(new NSData(bookmark, NSDataBase64DecodingOptions.None)),
+            _ => null
+        };
+
+        NSUrl DecodeFromBytes(byte[] bytes)
+        {
+            fixed (byte* ptr = bytes)
             {
-                var url = NSUrl.FromBookmarkData(
-                    new NSData(new IntPtr(bytes), new UIntPtr((uint)nativeBookmark.Length), null),
-                    NSUrlBookmarkResolutionOptions.WithoutUI, null, out var isStale, out var error);
-                if (isStale)
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(this, "Stale bookmark detected");
-                }
-
-                if (error != null)
-                {
-                    throw new NSErrorException(error);
-                }
-
-                return url;
+                using var data = new NSData(new IntPtr(ptr), new UIntPtr((uint)bytes.Length), null);
+                return DecodeFromNSData(data);
             }
         }
 
-        return null;
+        NSUrl DecodeFromNSData(NSData nsData)
+        {
+            var url = NSUrl.FromBookmarkData(nsData,
+                NSUrlBookmarkResolutionOptions.WithoutUI, null, out var isStale, out var error);
+            if (isStale)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(this, "Stale bookmark detected");
+            }
+
+            if (error != null)
+            {
+                throw new NSErrorException(error);
+            }
+
+            return url;
+        }
     }
 
     private static string[] FileTypesToUTTypeLegacy(IReadOnlyList<FilePickerFileType>? filePickerFileTypes)

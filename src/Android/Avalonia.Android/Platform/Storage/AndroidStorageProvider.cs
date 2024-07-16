@@ -138,14 +138,15 @@ internal class AndroidStorageProvider : IStorageProvider
 
     private static AndroidUri? DecodeUriFromBookmark(string bookmark)
     {
-        if (StorageBookmarkHelper.TryDecodeBookmark(AndroidKey, bookmark, out var bytes))
+        return StorageBookmarkHelper.TryDecodeBookmark(AndroidKey, bookmark, out var bytes) switch
         {
-            return AndroidUri.Parse(Encoding.UTF8.GetString(bytes));
-        }
-
-        return null;
+            StorageBookmarkHelper.DecodeResult.Success => AndroidUri.Parse(Encoding.UTF8.GetString(bytes!)),
+            // Attempt to decode 11.0 android bookmarks
+            StorageBookmarkHelper.DecodeResult.InvalidFormat => AndroidUri.Parse(bookmark),
+            _ => null
+        };
     }
-    
+
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
         var mimeTypes = options.FileTypeFilter?.Where(t => t != FilePickerFileTypes.All)

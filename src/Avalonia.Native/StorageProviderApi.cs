@@ -124,7 +124,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
     // Since "save bookmark" implementation will be different depending on the configuration.
     public unsafe Uri? ReadBookmark(string bookmark, bool isDirectory)
     {
-        if (StorageBookmarkHelper.TryDecodeBookmark(MacOSKey, bookmark, out var bytes))
+        if (StorageBookmarkHelper.TryDecodeBookmark(MacOSKey, bookmark, out var bytes) == StorageBookmarkHelper.DecodeResult.Success)
         {
             fixed (byte* ptr = bytes)
             {

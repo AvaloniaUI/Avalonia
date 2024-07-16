@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text;
 
 namespace Avalonia.Platform.Storage.FileIO;
@@ -19,7 +20,6 @@ namespace Avalonia.Platform.Storage.FileIO;
 internal static class StorageBookmarkHelper
 {
     private const int HeaderLength = 16;
-
     private static ReadOnlySpan<byte> AvaHeaderPrefix => "ava.v1."u8;
     private static ReadOnlySpan<byte> FakeBclBookmarkPlatform => "bcl"u8;
 
@@ -64,7 +64,14 @@ internal static class StorageBookmarkHelper
         }
     }
 
-    public static bool TryDecodeBookmark(ReadOnlySpan<byte> platform, string? base64bookmark, [NotNullWhen(true)] out byte[]? nativeBookmark)
+    public enum DecodeResult
+    {
+        Success = 0,
+        InvalidFormat,
+        InvalidPlatform
+    }
+
+    public static DecodeResult TryDecodeBookmark(ReadOnlySpan<byte> platform, string? base64bookmark, out byte[]? nativeBookmark)
     {
         if (platform.Length > HeaderLength
             || platform.Length == 0
@@ -72,7 +79,7 @@ internal static class StorageBookmarkHelper
             || base64bookmark.Length % 4 != 0)
         {
             nativeBookmark = null;
-            return false;
+            return DecodeResult.InvalidFormat;
         }
 
         Span<byte> decodedBookmark;
@@ -86,7 +93,7 @@ internal static class StorageBookmarkHelper
         else
         {
             nativeBookmark = null;
-            return false;
+            return DecodeResult.InvalidFormat;
         }
 #else
         decodedBookmark = Convert.FromBase64String(base64bookmark).AsSpan();
@@ -98,18 +105,18 @@ internal static class StorageBookmarkHelper
                 && !AvaHeaderPrefix.SequenceEqual(decodedBookmark.Slice(0, AvaHeaderPrefix.Length)))
             {
                 nativeBookmark = null;
-                return false;
+                return DecodeResult.InvalidFormat;
             }
 
             var actualPlatform = decodedBookmark.Slice(AvaHeaderPrefix.Length, platform.Length);
-            if (actualPlatform.SequenceEqual(platform))
+            if (!actualPlatform.SequenceEqual(platform))
             {
-                nativeBookmark = decodedBookmark.Slice(HeaderLength).ToArray();
-                return true;
+                nativeBookmark = null;
+                return DecodeResult.InvalidPlatform;
             }
 
-            nativeBookmark = null;
-            return false;
+            nativeBookmark = decodedBookmark.Slice(HeaderLength).ToArray();
+            return DecodeResult.Success;
         }
         finally
         {
@@ -123,9 +130,20 @@ internal static class StorageBookmarkHelper
 
     public static bool TryDecodeBclBookmark(string nativeBookmark, [NotNullWhen(true)] out string? localPath)
     {
-        if (TryDecodeBookmark(FakeBclBookmarkPlatform, nativeBookmark, out var bytes))
+        var decodeResult = TryDecodeBookmark(FakeBclBookmarkPlatform, nativeBookmark, out var bytes);
+        if (decodeResult == DecodeResult.Success)
         {
-            localPath = Encoding.UTF8.GetString(bytes);
+            localPath = Encoding.UTF8.GetString(bytes!);
+            return true;
+        }
+        if (decodeResult == DecodeResult.InvalidFormat
+            && nativeBookmark.IndexOfAny(Path.GetInvalidPathChars()) < 0
+            && !string.IsNullOrEmpty(Path.GetDirectoryName(nativeBookmark)))
+        {
+            // Attempt to restore old BCL bookmarks.
+            // Don't check for File.Exists here, as it will be done at later point in TryGetStorageItem.
+            // Just validate if it looks like a valid file path.
+            localPath = nativeBookmark;
             return true;
         }
 
