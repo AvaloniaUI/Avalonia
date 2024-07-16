@@ -4,8 +4,11 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 
 internal sealed class DataContextNode : DataContextNodeBase
 {
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (source is IDataContextProvider && source is AvaloniaObject ao)
         {
             ao.PropertyChanged += OnPropertyChanged;

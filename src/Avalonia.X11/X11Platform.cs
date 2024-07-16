@@ -68,9 +68,6 @@ namespace Avalonia.X11
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             Resources = new XResources(this);
-            //TODO: log
-            if (options.UseDBusMenu)
-                DBusHelper.TryInitialize();
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
                ? new UiThreadRenderTimer(60)
@@ -134,6 +131,8 @@ namespace Avalonia.X11
         {
             return new X11Window(this, null);
         }
+
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
         public IWindowImpl CreateEmbeddableWindow()
         {

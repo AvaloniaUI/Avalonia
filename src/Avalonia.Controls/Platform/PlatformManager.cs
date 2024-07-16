@@ -36,5 +36,11 @@ namespace Avalonia.Controls.Platform
             var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             return platform.CreateEmbeddableWindow();
         }
+        
+        public static ITopLevelImpl CreateEmbeddableTopLevel()
+        {
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
+            return platform.CreateEmbeddableTopLevel();
+        }
     }
 }

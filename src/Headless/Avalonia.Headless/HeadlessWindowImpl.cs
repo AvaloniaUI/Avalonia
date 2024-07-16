@@ -247,7 +247,7 @@ namespace Avalonia.Headless
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel { get; set; } = WindowTransparencyLevel.Transparent;
 
         public Action? GotInputWhenDisabled { get; set; }
 
@@ -372,7 +372,15 @@ namespace Avalonia.Headless
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            
+            foreach (var item in transparencyLevel)
+            {
+                if (item == WindowTransparencyLevel.Transparent) {
+                    TransparencyLevel = item;
+                    return;
+                }
+            }
+
+            TransparencyLevel = WindowTransparencyLevel.None;
         }
 
         public void SetParent(IWindowImpl? parent)

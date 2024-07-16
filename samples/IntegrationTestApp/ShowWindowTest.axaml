@@ -5,7 +5,7 @@
         Name="SecondaryWindow"
         x:DataType="Window"
         Title="Show Window Test">
-  <integrationTestApp:MeasureBorder Name="MyBorder">
+  <integrationTestApp:MeasureBorder Name="MyBorder" Background="{DynamicResource SystemRegionBrush}">
     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
       <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
       <TextBox Name="CurrentClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"

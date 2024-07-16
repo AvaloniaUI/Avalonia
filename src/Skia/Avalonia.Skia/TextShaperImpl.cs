@@ -142,7 +142,7 @@ namespace Avalonia.Skia
 
             var offsetX = position.XOffset * textScale;
 
-            var offsetY = position.YOffset * textScale;
+            var offsetY = -position.YOffset * textScale;
 
             return new Vector(offsetX, offsetY);
         }

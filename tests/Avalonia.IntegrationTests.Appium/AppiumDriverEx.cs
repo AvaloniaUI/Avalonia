@@ -67,6 +67,12 @@ public static class AppiumDriverEx
     public static IReadOnlyList<AppiumWebElement> FindElementsByClassName(this IFindsElement session, string criteria) =>
         session.FindElements(By.ClassName(criteria));
 
+    public static AppiumWebElement FindElementByTagName(this IFindsElement session, string criteria) =>
+        session.FindElement(By.TagName(criteria));
+
+    public static IReadOnlyList<AppiumWebElement> FindElementsByTagName(this IFindsElement session, string criteria) =>
+        session.FindElements(By.TagName(criteria));
+
     public static void AddAdditionalCapability(this AppiumOptions options, string name, object value)
     {
         if (name == MobileCapabilityType.AutomationName)

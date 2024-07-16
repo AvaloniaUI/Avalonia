@@ -15,22 +15,22 @@
 #import "WindowProtocol.h"
 #import "WindowInterfaces.h"
 #include "WindowBaseImpl.h"
+#include "WindowImpl.h"
 #include "AvnTextInputMethod.h"
 #include "AvnView.h"
 
+@class AutoFitContentView;
 
 WindowBaseImpl::~WindowBaseImpl() {
     View = nullptr;
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) {
+WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) : TopLevelImpl(events) {
+    _children = std::list<WindowBaseImpl*>();
     _shown = false;
     _inResize = false;
     BaseEvents = events;
-    View = [[AvnView alloc] initWithParent:this];
-    InputMethod = new AvnTextInputMethod(View);
-    StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
     lastPositionSet = { 0, 0 };
     hasPosition = false;
@@ -41,6 +41,8 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) {
     
     CreateNSWindow(usePanel);
     
+    StandardContainer = [[AutoFitContentView new] initWithContent:View];
+    
     [Window setContentView:StandardContainer];
     [Window setBackingType:NSBackingStoreBuffered];
     [Window setContentMinSize:lastMinSize];
@@ -48,36 +50,8 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) {
     [Window setOpaque:false];
 }
 
-HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
-    START_COM_CALL;
-
-    if (ret == nullptr) {
-        return E_POINTER;
-    }
-
-    *ret = (__bridge void *) View;
-
-    return S_OK;
-}
-
-HRESULT WindowBaseImpl::ObtainNSViewHandleRetained(void **ret) {
-    START_COM_CALL;
-
-    if (ret == nullptr) {
-        return E_POINTER;
-    }
-
-    *ret = (__bridge_retained void *) View;
-
-    return S_OK;
-}
-
 NSWindow *WindowBaseImpl::GetNSWindow() {
     return Window;
-}
-
-AvnView *WindowBaseImpl::GetNSView() {
-    return View;
 }
 
 HRESULT WindowBaseImpl::ObtainNSWindowHandleRetained(void **ret) {
@@ -117,7 +91,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         auto collectionBehavior = [Window collectionBehavior];
         [Window setCollectionBehavior:collectionBehavior & ~NSWindowCollectionBehaviorFullScreenPrimary];
 
-        UpdateStyle();
+        UpdateAppearance();
         
         [Window invalidateShadow];
 
@@ -219,20 +193,6 @@ HRESULT WindowBaseImpl::Close() {
     }
 }
 
-HRESULT WindowBaseImpl::GetClientSize(AvnSize *ret) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if (ret == nullptr)
-            return E_POINTER;
-
-        ret->Width = lastSize.width;
-        ret->Height = lastSize.height;
-
-        return S_OK;
-    }
-}
-
 HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
     START_COM_CALL;
 
@@ -246,23 +206,6 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
             ret->Height = frame.size.height;
         }
 
-        return S_OK;
-    }
-}
-
-HRESULT WindowBaseImpl::GetScaling(double *ret) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if (ret == nullptr)
-            return E_POINTER;
-
-        if (Window == nullptr) {
-            *ret = 1;
-            return S_OK;
-        }
-
-        *ret = [Window backingScaleFactor];
         return S_OK;
     }
 }
@@ -330,23 +273,13 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
 
                 lastSize = NSSize{x, y};
 
-                [Window setContentSize:lastSize];
+                SetClientSize(lastSize);
                 [Window invalidateShadow];
             }
         }
         @finally {
             _inResize = false;
         }
-
-        return S_OK;
-    }
-}
-
-HRESULT WindowBaseImpl::Invalidate(__attribute__((unused)) AvnRect rect) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        [View setNeedsDisplayInRect:[View frame]];
 
         return S_OK;
     }
@@ -431,119 +364,6 @@ HRESULT WindowBaseImpl::SetPosition(AvnPoint point) {
     }
 }
 
-HRESULT WindowBaseImpl::PointToClient(AvnPoint point, AvnPoint *ret) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if (ret == nullptr) {
-            return E_POINTER;
-        }
-
-        point = ConvertPointY(point);
-        NSRect convertRect = [Window convertRectFromScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
-        auto viewPoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
-
-        *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
-
-        return S_OK;
-    }
-}
-
-HRESULT WindowBaseImpl::PointToScreen(AvnPoint point, AvnPoint *ret) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if (ret == nullptr) {
-            return E_POINTER;
-        }
-
-        auto cocoaViewPoint = ToNSPoint([View translateLocalPoint:point]);
-        NSRect convertRect = [Window convertRectToScreen:NSMakeRect(cocoaViewPoint.x, cocoaViewPoint.y, 0.0, 0.0)];
-        auto cocoaScreenPoint = NSPointFromCGPoint(NSMakePoint(convertRect.origin.x, convertRect.origin.y));
-        *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
-
-        return S_OK;
-    }
-}
-
-HRESULT WindowBaseImpl::SetCursor(IAvnCursor *cursor) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        Cursor *avnCursor = dynamic_cast<Cursor *>(cursor);
-        this->cursor = avnCursor->GetNative();
-        UpdateCursor();
-
-        if (avnCursor->IsHidden()) {
-            [NSCursor hide];
-        } else {
-            [NSCursor unhide];
-        }
-
-        return S_OK;
-    }
-}
-
-void WindowBaseImpl::UpdateCursor() {
-    if (cursor != nil) {
-        [cursor set];
-    }
-}
-
-HRESULT WindowBaseImpl::CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget **ppv) {
-    START_COM_CALL;
-
-    if(![NSThread isMainThread])
-        return COR_E_INVALIDOPERATION;
-
-    if (View == NULL)
-        return E_FAIL;
-
-    auto target = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: nil];
-    *ppv = [target createSoftwareRenderTarget];
-    [View setRenderTarget: target];
-    return S_OK;
-}
-
-HRESULT WindowBaseImpl::CreateGlRenderTarget(IAvnGlContext* glContext, IAvnGlSurfaceRenderTarget **ppv) {
-    START_COM_CALL;
-
-    if(![NSThread isMainThread])
-        return COR_E_INVALIDOPERATION;
-
-    if (View == NULL)
-        return E_FAIL;
-
-    auto target = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: glContext];
-    *ppv = [target createSurfaceRenderTarget];
-    [View setRenderTarget: target];
-    return S_OK;
-}
-
-HRESULT WindowBaseImpl::CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget **ppv) {
-    START_COM_CALL;
-
-    if(![NSThread isMainThread])
-        return COR_E_INVALIDOPERATION;
-
-    if (View == NULL)
-        return E_FAIL;
-
-    auto target = [[MetalRenderTarget alloc] initWithDevice: device];
-    [View setRenderTarget: target];
-    [target getRenderTarget: ppv];
-    return S_OK;
-}
-
-HRESULT WindowBaseImpl::CreateNativeControlHost(IAvnNativeControlHost **retOut) {
-    START_COM_CALL;
-
-    if (View == NULL)
-        return E_FAIL;
-    *retOut = ::CreateNativeControlHost(View);
-    return S_OK;
-}
-
 HRESULT WindowBaseImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
     START_COM_CALL;
 
@@ -619,8 +439,12 @@ bool WindowBaseImpl::IsModal() {
     return false;
 }
 
-void WindowBaseImpl::UpdateStyle() {
+void WindowBaseImpl::UpdateAppearance() {
     [Window setStyleMask:CalculateStyleMask()];
+}
+
+void WindowBaseImpl::SetClientSize(NSSize size){
+    [Window setContentSize:lastSize];
 }
 
 void WindowBaseImpl::CleanNSWindow() {
@@ -654,19 +478,35 @@ void WindowBaseImpl::BringToFront()
     // do nothing.
 }
 
-HRESULT WindowBaseImpl::GetInputMethod(IAvnTextInputMethod **retOut) {
+HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
     START_COM_CALL;
 
-    *retOut = InputMethod;
+    @autoreleasepool {
+        if(Parent != nullptr)
+        {
+            Parent->_children.remove(this);
+        }
 
-    return S_OK;
-}
+        auto cparent = dynamic_cast<WindowImpl *>(parent);
+        
+        Parent = cparent;
 
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
-{
-    @autoreleasepool
-    {
-        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
-        return ptr;
+        _isModal = Parent != nullptr;
+        
+        if(Parent != nullptr && Window != nullptr){
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
+
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+                
+            cparent->_children.push_back(this);
+                
+            UpdateAppearance();
+        }
+
+        return S_OK;
     }
 }

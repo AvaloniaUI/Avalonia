@@ -1072,14 +1072,14 @@ namespace Avalonia.Skia
 
             SKShaderTileMode tileX =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
 
             SKShaderTileMode tileY =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
@@ -1225,14 +1225,14 @@ namespace Avalonia.Skia
 
             SKShaderTileMode tileX =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
 
             SKShaderTileMode tileY =
                 tileBrush.TileMode == TileMode.None
-                    ? SKShaderTileMode.Clamp
+                    ? SKShaderTileMode.Decal
                     : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
                         ? SKShaderTileMode.Mirror
                         : SKShaderTileMode.Repeat;
