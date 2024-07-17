@@ -17,7 +17,7 @@ namespace Avalonia.IntegrationTests.Appium
             tab.Click();
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Pointer_Capture_Is_Released_When_Showing_Dialog()
         {
             var button = _session.FindElementByAccessibilityId("PointerPageShowDialog");
