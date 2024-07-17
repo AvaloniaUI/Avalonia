@@ -163,7 +163,9 @@ namespace Avalonia.Controls
                 var tl = visual.PointToScreen(visual.Bounds.TopLeft);
                 var br = visual.PointToScreen(visual.Bounds.BottomRight);
 
-                return ScreenFromBounds(new PixelRect(tl, br));
+                // Attempt to get screen from the physical position on any screen first. Fallback to the screen hosting top level.
+                return ScreenFromBounds(new PixelRect(tl, br))
+                    ?? ScreenFromTopLevel(topLevel);
             }
             else
             {
