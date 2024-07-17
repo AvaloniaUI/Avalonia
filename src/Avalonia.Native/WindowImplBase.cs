@@ -70,9 +70,9 @@ namespace Avalonia.Native
             Native?.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }
         
-        public override void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public override void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            Native?.SetFrameThemeVariant((AvnPlatformThemeVariant)themeVariant);
+            Native?.SetFrameThemeVariant((AvnPlatformThemeVariant)(themeVariant ?? PlatformThemeVariant.Light));
         }
 
         public override void Dispose()

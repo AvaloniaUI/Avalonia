@@ -894,9 +894,9 @@ namespace Avalonia.Win32
             }
         }
 
-        public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public unsafe void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            _currentThemeVariant = themeVariant;
+            _currentThemeVariant = themeVariant ?? PlatformThemeVariant.Light;
             if (Win32Platform.WindowsVersion.Build >= 22000)
             {
                 var pvUseBackdropBrush = themeVariant == PlatformThemeVariant.Dark ? 1 : 0;
