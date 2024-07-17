@@ -842,6 +842,8 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
+            _scrollAnchorProvider?.UnregisterAnchorCandidate(element);
+
             var recycleKey = element.GetValue(RecycleKeyProperty);
             
             if (recycleKey is null || recycleKey == s_itemIsItsOwnContainer)
