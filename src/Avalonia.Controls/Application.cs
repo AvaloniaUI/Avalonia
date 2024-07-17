@@ -370,7 +370,16 @@ namespace Avalonia
             if (change.Property == RequestedThemeVariantProperty)
             {
                 if (change.GetNewValue<ThemeVariant>() is { } themeVariant)
-                    SetValue(ActualThemeVariantProperty, themeVariant);
+                {
+                    if (themeVariant == ThemeVariant.Default && PlatformSettings?.GetColorValues() is { } currentColors)
+                    {
+                        SetValue(ActualThemeVariantProperty, (ThemeVariant)currentColors.ThemeVariant);
+                    }
+                    else
+                    {
+                        SetValue(ActualThemeVariantProperty, themeVariant);   
+                    }
+                }
             }
             else if (change.Property == ActualThemeVariantProperty)
             {
