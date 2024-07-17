@@ -129,9 +129,9 @@ namespace Avalonia.X11
 
             int defaultWidth = 0, defaultHeight = 0;
 
-            if (!_popup && Screen != null)
+            if (!_popup && _platform.Screens != null)
             {
-                var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
+                var monitor = _platform.Screens.AllScreens.OrderBy(x => x.Scaling)
                    .FirstOrDefault(m => m.Bounds.Contains(_position ?? default));
 
                 if (monitor != null)
@@ -932,7 +932,14 @@ namespace Avalonia.X11
             }
 
             if (featureType == typeof(IX11OptionsToplevelImplFeature))
+            {
                 return this;
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return _platform.Screens;
+            }
 
             return null;
         }
@@ -1167,9 +1174,6 @@ namespace Avalonia.X11
             }
         }
 
-
-        public IScreenImpl Screen => _platform.Screens;
-
         public Size MaxAutoSizeHint => _platform.X11Screens.AllScreens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
@@ -1318,6 +1322,15 @@ namespace Avalonia.X11
                 // so setting it again forces the update
                 UpdateMotifHints();
             }
+            else
+            {
+                // Showing a dialog should result in pointer capture being lost. We don't currently use XGrabPointer on
+                // X11 to implement pointer capture, so no we have no OS-level event to hook into. Instead, release the 
+                // pointer capture when the owner window is disabled. This behavior matches win32, which sends a
+                // WM_CANCELMODE message when EnableWindow(hWnd, false) is called from SetEnabled.
+                _mouse.PlatformCaptureLost();
+                _touch.PlatformCaptureLost();
+            }
         }
 
         private void UpdateWMHints()
@@ -1392,7 +1405,7 @@ namespace Avalonia.X11
                 var ptr = (IntPtr*)prop.ToPointer();
                 var newAtoms = new HashSet<IntPtr>();
                 for (var c = 0; c < nitems.ToInt64(); c++) 
-                    newAtoms.Add(*ptr);
+                    newAtoms.Add(*(ptr+c));
                 XFree(prop);
                 foreach(var atom in atoms)
                     if (enable)

@@ -3,26 +3,24 @@
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 
 namespace Avalonia.Media.Fonts.Tables.Name
 {
     internal class NameTable
     {
         internal const string TableName = "name";
-        internal static OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
+        internal static readonly OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
 
         private readonly NameRecord[] _names;
 
-        internal NameTable(NameRecord[] names, IReadOnlyList<CultureInfo> languages)
+        internal NameTable(NameRecord[] names, IReadOnlyList<ushort> languages)
         {
             _names = names;
             Languages = languages;
         }
 
-        public IReadOnlyList<CultureInfo> Languages { get; }
+        public IReadOnlyList<ushort> Languages { get; }
 
         /// <summary>
         /// Gets the name of the font.
@@ -30,7 +28,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
         /// <value>
         /// The name of the font.
         /// </value>
-        public string Id(CultureInfo culture)
+        public string Id(ushort culture)
             => GetNameById(culture, KnownNameIds.UniqueFontID);
 
         /// <summary>
@@ -39,7 +37,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
         /// <value>
         /// The name of the font.
         /// </value>
-        public string FontName(CultureInfo culture)
+        public string FontName(ushort culture)
             => GetNameById(culture, KnownNameIds.FullFontName);
 
         /// <summary>
@@ -48,7 +46,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
         /// <value>
         /// The name of the font.
         /// </value>
-        public string FontFamilyName(CultureInfo culture)
+        public string FontFamilyName(ushort culture)
             => GetNameById(culture, KnownNameIds.FontFamilyName);
 
         /// <summary>
@@ -57,12 +55,12 @@ namespace Avalonia.Media.Fonts.Tables.Name
         /// <value>
         /// The name of the font.
         /// </value>
-        public string FontSubFamilyName(CultureInfo culture)
+        public string FontSubFamilyName(ushort culture)
             => GetNameById(culture, KnownNameIds.FontSubfamilyName);
 
-        public string GetNameById(CultureInfo culture, KnownNameIds nameId)
+        public string GetNameById(ushort culture, KnownNameIds nameId)
         {
-            var languageId = culture.LCID;
+            var languageId = culture;
             NameRecord? usaVersion = null;
             NameRecord? firstWindows = null;
             NameRecord? first = null;
@@ -97,7 +95,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
                    string.Empty;
         }
 
-        public string GetNameById(CultureInfo culture, ushort nameId)
+        public string GetNameById(ushort culture, ushort nameId)
             => GetNameById(culture, (KnownNameIds)nameId);
 
         public static NameTable Load(IGlyphTypeface glyphTypeface)
@@ -160,7 +158,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 readable.LoadValue(reader);
             }
 
-            var cultures = new List<CultureInfo>();
+            var cultures = new List<ushort>();
 
             foreach (var nameRecord in names)
             {
@@ -169,15 +167,11 @@ namespace Avalonia.Media.Fonts.Tables.Name
                     continue;
                 }
 
-                var culture = new CultureInfo(nameRecord.LanguageID);
-
-                if (!cultures.Contains(culture))
+                if (!cultures.Contains(nameRecord.LanguageID))
                 {
-                    cultures.Add(culture);
+                    cultures.Add(nameRecord.LanguageID);
                 }
             }
-
-            //var languages = languageNames.Select(x => x.Value).ToArray();
 
             return new NameTable(names, cultures);
         }

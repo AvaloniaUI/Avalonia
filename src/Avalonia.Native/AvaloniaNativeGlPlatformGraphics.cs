@@ -190,10 +190,10 @@ namespace Avalonia.Native
 
     class GlPlatformSurface : IGlPlatformSurface
     {
-        private readonly IAvnWindowBase _window;
-        public GlPlatformSurface(IAvnWindowBase window)
+        private readonly IAvnTopLevel _topLevel;
+        public GlPlatformSurface(IAvnTopLevel topLevel)
         {
-            _window = window;
+            _topLevel = topLevel;
         }
         
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
@@ -201,7 +201,7 @@ namespace Avalonia.Native
             if (!Dispatcher.UIThread.CheckAccess())
                 throw new RenderTargetNotReadyException();
             var avnContext = (GlContext)context;
-            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget(avnContext.Context), avnContext);
+            return new GlPlatformSurfaceRenderTarget(_topLevel.CreateGlRenderTarget(avnContext.Context), avnContext);
         }
 
     }

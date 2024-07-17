@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Avalonia.Win32.Interop;
+using Windows.Win32;
+using Windows.Win32.Graphics.Gdi;
 using MicroCom.Runtime;
 
 // ReSharper disable InconsistentNaming
@@ -1175,12 +1177,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetPointerTouchInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_TOUCH_INFO[] touchInfos);
 
-        [DllImport("user32.dll")]
-        public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
-                                                      MonitorEnumDelegate lpfnEnum, IntPtr dwData);
-
-        public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
-
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
@@ -1637,10 +1633,6 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
-
-        [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [DllImport("user32")]
         public static extern bool GetTouchInputInfo(
@@ -2129,23 +2121,17 @@ namespace Avalonia.Win32.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct MONITORINFO
+        internal struct MONITORINFOEX
         {
-            public int cbSize;
-            public RECT rcMonitor;
-            public RECT rcWork;
-            public int dwFlags;
+            internal MONITORINFO Base;
 
-            public static MONITORINFO Create()
-            {
-                return new MONITORINFO() { cbSize = Marshal.SizeOf<MONITORINFO>() };
-            }
+            internal __char_32 szDevice;
 
-            public enum MonitorOptions : uint
+            public static MONITORINFOEX Create()
             {
-                MONITOR_DEFAULTTONULL = 0x00000000,
-                MONITOR_DEFAULTTOPRIMARY = 0x00000001,
-                MONITOR_DEFAULTTONEAREST = 0x00000002
+                var info = new MONITORINFO();
+                info.cbSize = (uint)Marshal.SizeOf<MONITORINFOEX>();
+                return new MONITORINFOEX() { Base = info };
             }
         }
 
