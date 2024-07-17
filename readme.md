@@ -1,5 +1,7 @@
-![Star our repo to show support](https://user-images.githubusercontent.com/552074/235945895-1b896994-a0b6-4e7c-a522-c5688c4ec1b9.png)
-![Header](https://user-images.githubusercontent.com/552074/235865745-2a8e7274-4f66-4f77-8f05-feeb76e7d478.png)
+
+![Star Banner](https://github.com/AvaloniaUI/Avalonia/assets/552074/0f7f683f-2ddd-401f-ba28-3f703cc78ee0)
+![Header](https://github.com/AvaloniaUI/Avalonia/assets/552074/d8388fc4-469e-47c5-926d-faf25233ad4e)
+
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
  [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
@@ -45,9 +47,7 @@ Install-Package Avalonia.Desktop
 ```
 
 ## Showcase
-[![Showcase_Banner](https://user-images.githubusercontent.com/552074/235946124-bf6fda52-0c9f-4730-868b-0de957e5b97b.png)](https://avaloniaui.net/showcase)
-
-
+[![Showcase_Banner@3x](https://github.com/AvaloniaUI/Avalonia/assets/552074/8a0af0e9-e45e-442c-830d-4af3767d6469)](https://avaloniaui.net/showcase)
 
 See what others have built with Avalonia UI on our [Showcase](https://avaloniaui.net/Showcase). We welcome submissions! 
 
@@ -101,12 +101,6 @@ Donate with BTC or use [Open Collective](https://opencollective.com/avalonia).
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/Avalonia#backer)]
 
 <a href="https://opencollective.com/Avalonia#backers" target="_blank"><img src="https://opencollective.com/Avalonia/backers.svg?width=890"></a>
-
-### Sponsors
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/Avalonia#sponsor)]
-
-<a href="https://aws.amazon.com/developer/language/net/" target="_blank"><img src="https://github.com/AvaloniaUI/Avalonia/assets/552074/7771d8b9-ef84-4503-9889-033a87d2c852"></a>
 
 ## Commercial Support 
 

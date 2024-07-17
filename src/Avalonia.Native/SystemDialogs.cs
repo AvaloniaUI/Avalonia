@@ -14,12 +14,12 @@ namespace Avalonia.Native
 {
     internal class SystemDialogs : BclStorageProvider
     {
-        private readonly WindowBaseImpl _window;
+        private readonly TopLevelImpl _topLevel;
         private readonly IAvnSystemDialogs _native;
 
-        public SystemDialogs(WindowBaseImpl window, IAvnSystemDialogs native)
+        public SystemDialogs(TopLevelImpl topLevel, IAvnSystemDialogs native)
         {
-            _window = window;
+            _topLevel = topLevel;
             _native = native;
         }
 
@@ -36,7 +36,7 @@ namespace Avalonia.Native
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
-            _native.OpenFileDialog((IAvnWindow)_window.Native,
+            _native.OpenFileDialog((IAvnWindow)_topLevel.Native,
                                     events,
                                     options.AllowMultiple.AsComBool(),
                                     options.Title ?? string.Empty,
@@ -57,7 +57,7 @@ namespace Avalonia.Native
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
-            _native.SaveFileDialog((IAvnWindow)_window.Native,
+            _native.SaveFileDialog((IAvnWindow)_topLevel.Native,
                         events,
                         options.Title ?? string.Empty,
                         suggestedDirectory,
@@ -76,7 +76,7 @@ namespace Avalonia.Native
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
-            _native.SelectFolderDialog((IAvnWindow)_window.Native, events, options.AllowMultiple.AsComBool(), options.Title ?? "", suggestedDirectory);
+            _native.SelectFolderDialog((IAvnWindow)_topLevel.Native, events, options.AllowMultiple.AsComBool(), options.Title ?? "", suggestedDirectory);
 
             var result = await events.Task.ConfigureAwait(false);
             return result?.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray()

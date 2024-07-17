@@ -58,7 +58,8 @@
                    IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsDropDownOpen,
                                             Mode=TwoWay}"
-                   PlacementTarget="{TemplateBinding}">
+                   PlacementTarget="{TemplateBinding}"
+                   InheritsTransform="True">
               <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">

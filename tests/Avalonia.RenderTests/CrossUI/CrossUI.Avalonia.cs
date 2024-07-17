@@ -201,6 +201,11 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
                                         Point2 = q.Point2,
                                         IsStroked = q.IsStroked
                                     },
+                                    CrossPathSegment.PolyLine p => new PolyLineSegment()
+                                    {
+                                        Points = p.Points.ToList(),
+                                        IsStroked = p.IsStroked
+                                    },
                                     _ => throw new InvalidOperationException()
                                 }))
                         }))

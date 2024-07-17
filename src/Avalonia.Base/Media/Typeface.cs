@@ -31,7 +31,7 @@ namespace Avalonia.Media
                 throw new ArgumentException("Font stretch must be > 1.");
             }
 
-            FontFamily = fontFamily;
+            FontFamily = fontFamily ?? FontFamily.Default;
             Style = style;
             Weight = weight;
             Stretch = stretch;

@@ -190,6 +190,7 @@ namespace Avalonia.RenderTests.WpfCompare
                                 CrossPathSegment.Arc arc => new ArcSegment(arc.Point.ToWpf(), arc.Size.ToWpf(), arc.RotationAngle, arc.IsLargeArc, (SweepDirection)arc.SweepDirection, s.IsStroked),
                                 CrossPathSegment.CubicBezier cubicBezier => new BezierSegment(cubicBezier.Point1.ToWpf(), cubicBezier.Point2.ToWpf(), cubicBezier.Point3.ToWpf(), cubicBezier.IsStroked),
                                 CrossPathSegment.QuadraticBezier quadraticBezier => new QuadraticBezierSegment(quadraticBezier.Point1.ToWpf(), quadraticBezier.Point2.ToWpf(), quadraticBezier.IsStroked),
+                                CrossPathSegment.PolyLine polyLine => new PolyLineSegment(polyLine.Points.Select(p => p.ToWpf()).ToList(), polyLine.IsStroked),
                                 _ => throw new NotImplementedException(),
                             }), f.Closed)))
                 };

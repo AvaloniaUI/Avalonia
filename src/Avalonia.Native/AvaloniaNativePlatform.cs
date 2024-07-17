@@ -30,7 +30,12 @@ namespace Avalonia.Native
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result = new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
+            var factoryProxy = MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true);
+
+            AvaloniaLocator.CurrentMutable.Bind<IAvaloniaNativeFactory>().ToConstant(factoryProxy);
+            
+            var result = new AvaloniaNativePlatform(factoryProxy);
+            
             result.DoInitialize(options);
 
             return result;
@@ -105,6 +110,7 @@ namespace Avalonia.Native
                 .Bind<IDispatcherImpl>()
                 .ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
+                .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
@@ -195,6 +201,11 @@ namespace Avalonia.Native
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
+        }
+        
+        public ITopLevelImpl CreateEmbeddableTopLevel()
+        {
+            return new EmbeddableTopLevelImpl(_factory);
         }
     }
 }

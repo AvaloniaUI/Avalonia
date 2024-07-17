@@ -80,7 +80,10 @@ namespace Avalonia.Skia
             lock (_lock)
             {
                 _pathCache.UpdateIfNeeded(StrokePath, pen);
-                return _pathCache.RenderBounds;
+                var bounds = _pathCache.RenderBounds;
+                if (StrokePath != FillPath && FillPath != null)
+                    bounds = bounds.Union(FillPath.Bounds.ToAvaloniaRect());
+                return bounds;
             }
         }
 
