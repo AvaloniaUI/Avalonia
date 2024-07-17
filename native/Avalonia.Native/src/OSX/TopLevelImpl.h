@@ -58,7 +58,8 @@ public:
     virtual HRESULT PointToScreen(AvnPoint point, AvnPoint *ret) override;
      
     virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
-                         
+
+    virtual HRESULT GetCurrentDisplayId (CGDirectDisplayID* ret) override;
 protected:
     NSCursor *cursor;
     virtual void UpdateAppearance();

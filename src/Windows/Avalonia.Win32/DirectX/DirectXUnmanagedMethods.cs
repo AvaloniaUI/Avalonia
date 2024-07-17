@@ -17,12 +17,6 @@ namespace Avalonia.Win32.DirectX
         [DllImport("dxgi", ExactSpelling = true, PreserveSig = false)]
         internal static extern void CreateDXGIFactory1(ref Guid riid, out void* ppFactory);
 
-        [DllImport("user32", ExactSpelling = true)]
-        internal static extern bool GetMonitorInfoW(HANDLE hMonitor, IntPtr lpmi);
-
-        [DllImport("user32", ExactSpelling = true)]
-        internal static extern bool EnumDisplaySettingsW(ushort* lpszDeviceName, uint iModeNum, DEVMODEW* lpDevMode);
-
         [DllImport("d3d11", ExactSpelling = true, PreserveSig = false)]
         public static extern void D3D11CreateDevice(
             IntPtr adapter, D3D_DRIVER_TYPE DriverType,

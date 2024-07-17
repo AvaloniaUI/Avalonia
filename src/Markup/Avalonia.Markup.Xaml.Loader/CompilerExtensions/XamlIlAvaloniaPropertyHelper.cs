@@ -88,12 +88,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return new XamlIlAvaloniaPropertyFieldNode(context.GetAvaloniaTypes(), lineInfo, found);
             }
 
-            var clrProperty =
-                ((XamlAstClrProperty)new PropertyReferenceResolver().Transform(context,
-                    forgedReference));
-            return new XamlIlAvaloniaPropertyNode(lineInfo,
-                context.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty"),
-                clrProperty);
+            var clrProperty = (XamlAstClrProperty)new PropertyReferenceResolver().Transform(context, forgedReference);
+            var avaloniaPropertyBaseType = context.GetAvaloniaTypes().AvaloniaProperty;
+
+            // PropertyReferenceResolver.Transform failed resolving property, return empty stub from here:
+            if (clrProperty.DeclaringType == XamlPseudoType.Unknown)
+            {
+                return new XamlIlAvaloniaPropertyNode(lineInfo, avaloniaPropertyBaseType, clrProperty, XamlPseudoType.Unknown);
+            }
+
+            return new XamlIlAvaloniaPropertyNode(lineInfo, avaloniaPropertyBaseType, clrProperty);
         }
 
         public static IXamlType GetAvaloniaPropertyType(IXamlField field,
@@ -124,12 +128,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     
     class XamlIlAvaloniaPropertyNode : XamlAstNode, IXamlAstValueNode, IXamlIlAstEmitableNode, IXamlIlAvaloniaPropertyNode
     {
-        public XamlIlAvaloniaPropertyNode(IXamlLineInfo lineInfo, IXamlType type, XamlAstClrProperty property) : base(lineInfo)
+        public XamlIlAvaloniaPropertyNode(IXamlLineInfo lineInfo, IXamlType type, XamlAstClrProperty property, IXamlType propertyType) : base(lineInfo)
         {
             Type = new XamlAstClrTypeReference(this, type, false);
             Property = property;
-            AvaloniaPropertyType = Property.Getter?.ReturnType
-                                   ?? Property.Setters.First().Parameters[0];
+            AvaloniaPropertyType = propertyType;
+        }
+
+        public XamlIlAvaloniaPropertyNode(IXamlLineInfo lineInfo, IXamlType type, XamlAstClrProperty property)
+            : this(lineInfo, type, property, GetPropertyType(property))
+        {
         }
 
         public XamlAstClrProperty Property { get; }
@@ -143,6 +151,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         }
 
         public IXamlType AvaloniaPropertyType { get; }
+
+        private static IXamlType GetPropertyType(XamlAstClrProperty property) =>
+            property.Getter?.ReturnType
+            ?? property.Setters.FirstOrDefault()?.Parameters[0]
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve \"{property.DeclaringType.Name}.{property.Name}\" property type. There is no setter or getter.");
     }
 
     class XamlIlAvaloniaPropertyFieldNode : XamlAstNode, IXamlAstValueNode, IXamlIlAstEmitableNode, IXamlIlAvaloniaPropertyNode

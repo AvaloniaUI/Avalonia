@@ -64,7 +64,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (Properties.BackgroundBrush != null)
                 {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
+                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds.Translate(new Vector(0, -Baseline)));
                 }
 
                 drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
@@ -204,7 +204,8 @@ namespace Avalonia.Media.TextFormatting
                 ShapedBuffer.FontRenderingEmSize,
                 Text,
                 ShapedBuffer,
-                biDiLevel: BidiLevel);
+                biDiLevel: BidiLevel,
+                baselineOrigin: new Point());
         }
 
         public void Dispose()

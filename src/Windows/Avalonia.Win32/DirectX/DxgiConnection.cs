@@ -122,19 +122,10 @@ namespace Avalonia.Win32.DirectX
                     using var output = MicroComRuntime.CreateProxyFor<IDXGIOutput>(outputPointer, true);
                     DXGI_OUTPUT_DESC outputDesc = output.Desc;
 
+                    var screen = Win32Platform.Instance.Screen.ScreenFromHMonitor((IntPtr)outputDesc.Monitor.Value);
+                    var frequency = screen?.Frequency ?? highestRefreshRate;
 
-                    // this handle need not closing, by the way. 
-                    HANDLE monitorH = outputDesc.Monitor;
-                    MONITORINFOEXW monInfo = default;
-                    // by setting cbSize we tell Windows to fully populate the extended info 
-
-                    monInfo.Base.cbSize = sizeof(MONITORINFOEXW);
-                    GetMonitorInfoW(monitorH, (IntPtr)(&monInfo));
-
-                    DEVMODEW devMode = default;
-                    EnumDisplaySettingsW(outputDesc.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
-
-                    if (highestRefreshRate < devMode.dmDisplayFrequency)
+                    if (highestRefreshRate < frequency)
                     {
                         // ooh I like this output! 
                         if (_output is not null)
@@ -143,7 +134,7 @@ namespace Avalonia.Win32.DirectX
                             _output = null;
                         }
                         _output = MicroComRuntime.CloneReference(output);
-                        highestRefreshRate = devMode.dmDisplayFrequency;
+                        highestRefreshRate = frequency;
                     }
                     // and then increment index to move onto the next monitor 
                     outputIndex++;
