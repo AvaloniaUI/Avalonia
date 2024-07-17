@@ -209,8 +209,9 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Should_Handle_Numeric_AccessKey()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
             var button = new Button();
-            var root = new TestRoot(button) { IsEnabled = false };
+            var root = new TestRoot(button);
             var target = new AccessKeyHandler();
             var raised = 0;
 
@@ -222,12 +223,12 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(0, raised);
 
             KeyDown(root, Key.D1, KeyModifiers.Alt);
-            Assert.Equal(0, raised);
+            Assert.Equal(1, raised);
 
             KeyUp(root, Key.D1, KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
-            Assert.Equal(0, raised);
+            Assert.Equal(1, raised);
         }
 
         private static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
