@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using Avalonia.Media.Fonts;
 
@@ -17,8 +16,9 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Gets the localized family names.
+        /// <para>Keys are culture identifiers.</para>
         /// </summary>
-        IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }
+        IReadOnlyDictionary<ushort, string> FamilyNames { get; }
 
         /// <summary>
         /// Gets supported font features.
