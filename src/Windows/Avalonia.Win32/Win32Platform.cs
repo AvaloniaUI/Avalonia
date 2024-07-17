@@ -56,7 +56,8 @@ namespace Avalonia.Win32
         }
 
         internal static Win32Platform Instance => s_instance;
-        internal static IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+        internal IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+        internal ScreenImpl Screen => (ScreenImpl)AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
 
         internal IntPtr Handle => _hwnd;
 
@@ -91,6 +92,7 @@ namespace Avalonia.Win32
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
+                .Bind<IScreenImpl>().ToSingleton<ScreenImpl>()
                 .Bind<IDispatcherImpl>().ToConstant(s_instance._dispatcher)
                 .Bind<IRenderTimer>().ToConstant(renderTimer)
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)

@@ -24,11 +24,6 @@ namespace Avalonia.Platform
         double DesktopScaling { get; }
 
         /// <summary>
-        /// Gets platform specific display information
-        /// </summary>
-        IScreenImpl? Screen { get; }
-
-        /// <summary>
         /// Get the platform handle.
         /// </summary>
         IPlatformHandle? Handle { get; }
