@@ -49,9 +49,8 @@ namespace ControlCatalog.ViewModels
         {
             while (SelectedItems.Count > 0)
             {
-                Node lastItem = (Node)SelectedItems[0];
+                var lastItem = SelectedItems[0];
                 RecursiveRemove(Items, lastItem);
-                SelectedItems.RemoveAt(0);
             }
 
             bool RecursiveRemove(ObservableCollection<Node> items, Node selectedItem)

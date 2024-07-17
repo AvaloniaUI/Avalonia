@@ -130,6 +130,7 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_DPICHANGED:
+                    if (!_ignoreDpiChanges)
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
@@ -151,6 +152,7 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+                    break;
 
                 case WindowsMessage.WM_GETICON:
                     if (_iconImpl == null)
@@ -655,6 +657,11 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
+                            if (windowState == WindowState.Maximized)
+                            {
+                                MaximizeWithoutCoveringTaskbar();
+                            }
+
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
@@ -715,7 +722,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DISPLAYCHANGE:
                     {
-                        (Screen as ScreenImpl)?.InvalidateScreensCache();
+                        Screen?.OnChanged();
                         return IntPtr.Zero;
                     }
 
@@ -788,6 +795,17 @@ namespace Avalonia.Win32
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
                         return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
+                    }
+                    break;
+                case WindowsMessage.WM_WINDOWPOSCHANGED:
+                    var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
+                    if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                    {
+                        _shown = true;
+                    }
+                    else if ((winPos.flags & (uint)SetWindowPosFlags.SWP_HIDEWINDOW) != 0)
+                    {
+                        _shown = false;
                     }
                     break;
             }

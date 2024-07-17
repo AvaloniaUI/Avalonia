@@ -19,7 +19,7 @@ namespace Avalonia.Skia
         private readonly SKTypeface _typeface;
         private readonly NameTable _nameTable;
         private readonly OS2Table? _os2Table;
-        private readonly HorizontalHeadTable _hhTable;
+        private readonly HorizontalHeadTable? _hhTable;
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
@@ -38,9 +38,9 @@ namespace Avalonia.Skia
             _os2Table = OS2Table.Load(this);
             _hhTable = HorizontalHeadTable.Load(this);
 
-            int ascent;
-            int descent;
-            int lineGap;
+            var ascent = 0;
+            var descent = 0;
+            var lineGap = 0;
 
             if (_os2Table != null && (_os2Table.FontStyle & OS2Table.FontStyleSelection.USE_TYPO_METRICS) != 0)
             {
@@ -50,9 +50,12 @@ namespace Avalonia.Skia
             }
             else
             {
-                ascent = -_hhTable.Ascender;
-                descent = -_hhTable.Descender;
-                lineGap = _hhTable.LineGap;
+                if (_hhTable != null)
+                {
+                    ascent = -_hhTable.Ascender;
+                    descent = -_hhTable.Descender;
+                    lineGap = _hhTable.LineGap;
+                }
             }
 
             if (_os2Table != null && (ascent == 0 || descent == 0))
@@ -97,9 +100,9 @@ namespace Avalonia.Skia
 
             _nameTable = NameTable.Load(this);
 
-            FamilyName = _nameTable.FontFamilyName(CultureInfo.InvariantCulture);
+            FamilyName = _nameTable.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID);
 
-            var familyNames = new Dictionary<CultureInfo, string>(_nameTable.Languages.Count);
+            var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
 
             foreach (var language in _nameTable.Languages)
             {
@@ -109,7 +112,7 @@ namespace Avalonia.Skia
             FamilyNames = familyNames;
         }
 
-        public IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }
+        public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
 
         public IReadOnlyList<OpenTypeTag> SupportedFeatures
         {

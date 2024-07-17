@@ -192,6 +192,12 @@ namespace Avalonia.Controls
             Children.RemoveRange(index, count);
         }
 
+        private protected override void InvalidateMeasureOnChildrenChanged()
+        {
+            // Don't invalidate measure when children are added or removed: the panel is responsible
+            // for managing its children.
+        }
+
         internal void Attach(ItemsControl itemsControl)
         {
             if (ItemsControl is not null)
