@@ -657,6 +657,11 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
+                            if (windowState == WindowState.Maximized)
+                            {
+                                MaximizeWithoutCoveringTaskbar();
+                            }
+
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
