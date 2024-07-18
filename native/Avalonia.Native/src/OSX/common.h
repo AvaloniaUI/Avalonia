@@ -15,7 +15,7 @@ extern IAvnTopLevel* CreateAvnTopLevel(IAvnTopLevelEvents* events);
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
 extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
 extern IAvnSystemDialogs* CreateSystemDialogs();
-extern IAvnScreens* CreateScreens();
+extern IAvnScreens* CreateScreens(IAvnScreenEvents* cb);
 extern IAvnClipboard* CreateClipboard(NSPasteboard*, NSPasteboardItem*);
 extern NSPasteboardItem* TryGetPasteboardItem(IAvnClipboard*);
 extern NSObject<NSDraggingSource>* CreateDraggingSource(NSDragOperation op, IAvnDndResultCallback* cb, void* handle);
@@ -87,6 +87,13 @@ public:
 @interface ActionCallback : NSObject
 - (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
 - (void) action;
+@end
+
+@implementation NSScreen (AvNSScreen)
+- (CGDirectDisplayID)av_displayId
+{
+    return [self.deviceDescription[@"NSScreenNumber"] unsignedIntValue];
+}
 @end
 
 class AvnInsidePotentialDeadlock
