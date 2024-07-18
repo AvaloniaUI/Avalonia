@@ -33,27 +33,18 @@ public class DrawingContextTests : TestBase
     {
         public override void Render(DrawingContext context)
         {
-            base.Render(context);
-
-            // We would like to draw a square by 4 lines.
-
             var pen = new Pen(Brushes.LightGray, 10);
             RenderLine1(context, pen);
             RenderLine2(context, pen);
             RenderLine3(context, pen);
             RenderLine4(context, pen);
 
-            //
-            // It seems that state of RenderDataDrawingContext goes wrong.
-            //
-
             RenderLine1(context, new Pen(Brushes.Red));
-            RenderAText(context, new Point(50, 20));            // It makes the context be transformed with offset (50,20).
+            RenderAText(context, new Point(50, 20));
             RenderLine2(context, new Pen(Brushes.Orange));
-            RenderAText(context, new Point(50, -50));           // It makes the context be transformed with offset (-50,50).
+            RenderAText(context, new Point(50, -50));
             RenderLine3(context, new Pen(Brushes.Yellow));
-            RenderAText(context, new Point(0, 0));              // It makes no sense. The origin will be the same as previous step.
-                                                                //RenderAText(context, new Point(0, 1));            // It makes the context be transformed with offset (0, 1).
+            RenderAText(context, new Point(0, 0));
             RenderLine4(context, new Pen(Brushes.Green));
         }
 
