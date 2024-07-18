@@ -54,7 +54,6 @@ using Avalonia.Rendering.Composition;
         }
 
         public double DesktopScaling => 1;
-        public IScreenImpl Screen { get; }
         public IPlatformHandle Handle { get; }
         public Size ClientSize => ScaledSize;
         public Size? FrameSize => null;

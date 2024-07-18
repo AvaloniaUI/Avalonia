@@ -100,9 +100,9 @@ namespace Avalonia.Skia
 
             _nameTable = NameTable.Load(this);
 
-            FamilyName = _nameTable.FontFamilyName(CultureInfo.InvariantCulture);
+            FamilyName = _nameTable.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID);
 
-            var familyNames = new Dictionary<CultureInfo, string>(_nameTable.Languages.Count);
+            var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
 
             foreach (var language in _nameTable.Languages)
             {
@@ -112,7 +112,7 @@ namespace Avalonia.Skia
             FamilyNames = familyNames;
         }
 
-        public IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }
+        public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
 
         public IReadOnlyList<OpenTypeTag> SupportedFeatures
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Platform;
 using static Avalonia.X11.XLib;
 
@@ -12,7 +13,6 @@ namespace Avalonia.X11.Screens
     {
         private IX11RawScreenInfoProvider _impl;
         private IScalingProvider _scaling;
-        internal event Action Changed;
 
         public X11Screens(AvaloniaX11Platform platform)
         {
@@ -67,7 +67,17 @@ namespace Avalonia.X11.Screens
             XFree(prop);
             return screens;
         }
-        
+
+
+        public Screen ScreenFromTopLevel(ITopLevelImpl topLevel)
+        {
+            if (topLevel is IWindowImpl window)
+            {
+                return ScreenFromWindow(window);
+            }
+
+            return null;
+        }
 
         public Screen ScreenFromPoint(PixelPoint point)
         {
@@ -78,6 +88,8 @@ namespace Avalonia.X11.Screens
         {
             return ScreenHelper.ScreenFromRect(rect, AllScreens);
         }
+
+        public Task<bool> RequestScreenDetails() => Task.FromResult(true);
 
         public Screen ScreenFromWindow(IWindowBaseImpl window)
         {
@@ -98,5 +110,7 @@ namespace Avalonia.X11.Screens
                     .ToArray();
             }
         }
+
+        public Action Changed { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Avalonia.Native
         {
             using (var e = new TopLevelEvents(this))
             {
-                Init(new MacOSTopLevelHandle(factory.CreateTopLevel(e)), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(factory.CreateTopLevel(e)));
             }
         }
     }
