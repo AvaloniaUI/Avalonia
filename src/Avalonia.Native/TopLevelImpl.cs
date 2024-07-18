@@ -108,7 +108,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     public IAvnTopLevel? Native => _handle?.Native;
     public IPlatformHandle? Handle => _handle;
-    public AvaloniaNativeTextInputMethod? InputMethod { get; private set; }
+    public AvaloniaNativeTextInputMethod? InputMethod { get; protected set; }
     public Size ClientSize
     {
         get
