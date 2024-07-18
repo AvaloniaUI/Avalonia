@@ -92,7 +92,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
     }
 
-    internal virtual void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+    internal virtual void Init(MacOSTopLevelHandle handle)
     {
         _handle = handle;
         _savedLogicalSize = ClientSize;
@@ -101,8 +101,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _storageProvider = new SystemDialogs(this, Factory.CreateSystemDialogs());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
-        
-        Screen = new ScreenImpl(screens);
         InputMethod = new AvaloniaNativeTextInputMethod(Native);
     }
 
@@ -158,8 +156,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     public IMouseDevice? MouseDevice => _mouse;
 
     public INativeControlHostImpl? NativeControlHost => _nativeControlHost;
-
-    public IScreenImpl? Screen { get; private set; }
 
     public AutomationPeer? GetAutomationPeer()
     {
@@ -357,6 +353,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
         }
 
+        if (featureType == typeof(IScreenImpl))
+        {
+            return AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
+        }
+
         if (featureType == typeof(ILauncher))
         {
             return new BclLauncher();
@@ -373,7 +374,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _nativeControlHost?.Dispose();
         _nativeControlHost = null;
 
-        (Screen as ScreenImpl)?.Dispose();
         _mouse?.Dispose();
     }
 
