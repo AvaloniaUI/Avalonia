@@ -107,8 +107,7 @@ namespace Avalonia.Native
             }
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>()
-                .ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
+                .Bind<IDispatcherImpl>().ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
@@ -121,7 +120,8 @@ namespace Avalonia.Native
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()))
-                .Bind<IActivatableLifetime>().ToSingleton<MacOSActivatableLifetime>();
+                .Bind<IActivatableLifetime>().ToSingleton<MacOSActivatableLifetime>()
+                .Bind<IStorageProviderFactory>().ToConstant(new StorageProviderApi(_factory.CreateStorageProvider(), options.AppSandboxEnabled));
 
             var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
