@@ -14,7 +14,7 @@ extern void PostDispatcherCallback(IAvnActionCallback* cb);
 extern IAvnTopLevel* CreateAvnTopLevel(IAvnTopLevelEvents* events);
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
 extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
-extern IAvnSystemDialogs* CreateSystemDialogs();
+extern IAvnStorageProvider* CreateStorageProvider();
 extern IAvnScreens* CreateScreens(IAvnScreenEvents* cb);
 extern IAvnClipboard* CreateClipboard(NSPasteboard*, NSPasteboardItem*);
 extern NSPasteboardItem* TryGetPasteboardItem(IAvnClipboard*);
