@@ -287,13 +287,13 @@ public:
         }
     }
     
-    virtual HRESULT CreateScreens (IAvnScreens** ppv) override
+    virtual HRESULT CreateScreens (IAvnScreenEvents* cb, IAvnScreens** ppv) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            *ppv = ::CreateScreens ();
+            *ppv = ::CreateScreens (cb);
             return S_OK;
         }
     }

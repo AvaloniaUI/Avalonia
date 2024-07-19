@@ -125,7 +125,6 @@ namespace Avalonia.Browser
         }
 
         public double DesktopScaling => RenderScaling;
-        public IScreenImpl? Screen { get; }
         public IPlatformHandle? Handle { get; }
         public Size ClientSize => _surface?.ClientSize ?? new Size(1, 1);
         public Size? FrameSize => null;

@@ -196,6 +196,9 @@
       <TabItem Header="HeaderedContentControl">
         <pages:HeaderedContentPage />
       </TabItem>
+      <TabItem Header="Screens">
+        <pages:ScreenPage />
+      </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>
           <StackPanel Width="152" Spacing="8">
