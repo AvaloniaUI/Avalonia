@@ -10,6 +10,7 @@ using Android.Provider;
 using Android.Webkit;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Java.Lang;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
@@ -53,7 +54,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         }
 
         Activity.ContentResolver?.TakePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
-        return Uri.ToString();
+
+        return StorageBookmarkHelper.EncodeBookmark(AndroidStorageProvider.AndroidKey, Uri.ToString()!);
     }
 
     public async Task ReleaseBookmarkAsync()

@@ -677,6 +677,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv);
      HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv);
      HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv);
+     HRESULT CreateStorageProvider(IAvnStorageProvider** ppv);
      HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv);
      HRESULT CreateScreens(IAvnScreenEvents* cb, IAvnScreens** ppv);
      HRESULT CreateClipboard(IAvnClipboard** ppv);
@@ -888,18 +889,18 @@ interface IAvnPlatformThreadingInterface : IUnknown
 [uuid(6c621a6e-e4c1-4ae3-9749-83eeeffa09b6)]
 interface IAvnSystemDialogEvents : IUnknown
 {
-     void OnCompleted(int numResults, void* ptrFirstResult);
+     void OnCompleted(IAvnStringArray*array);
 }
 
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
-interface IAvnSystemDialogs : IUnknown
+interface IAvnStorageProvider : IUnknown
 {
      void SelectFolderDialog(IAvnWindow* parentWindowHandle,
                              IAvnSystemDialogEvents* events,
                              bool allowMultiple,
                              [const] char* title,
                              [const] char* initialPath);
-    
+
      void OpenFileDialog(IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
@@ -907,13 +908,21 @@ interface IAvnSystemDialogs : IUnknown
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
                                  IAvnFilePickerFileTypes* filters);
-    
+
      void SaveFileDialog(IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
                                  IAvnFilePickerFileTypes* filters);
+
+     HRESULT SaveBookmarkToBytes(IAvnString*fileUri, void**err, IAvnString**ppv);
+     HRESULT ReadBookmarkFromBytes(void* ptr, int len, IAvnString**ppv);
+
+     void ReleaseBookmark(IAvnString*fileUri);
+
+     bool OpenSecurityScope(IAvnString*fileUri);
+     void CloseSecurityScope(IAvnString*fileUri);         
 }
 
 [uuid(4d7ab7db-a111-406f-abeb-11cb6aa033d5)]
