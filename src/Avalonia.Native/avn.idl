@@ -678,7 +678,6 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv);
      HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv);
      HRESULT CreateStorageProvider(IAvnStorageProvider** ppv);
-     HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv);
      HRESULT CreateScreens(IAvnScreenEvents* cb, IAvnScreens** ppv);
      HRESULT CreateClipboard(IAvnClipboard** ppv);
      HRESULT CreateDndClipboard(IAvnClipboard** ppv);
