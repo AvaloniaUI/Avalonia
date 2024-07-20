@@ -94,6 +94,27 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="ContextMenu">
+        <StackPanel>
+          <Button Name="ShowContextMenu" Content="Right-click to show context menu.">
+            <Button.ContextMenu>
+              <ContextMenu>
+                <MenuItem Name="ContextMenuItem1" Header="Item 1"/>
+                <MenuItem Name="ContextMenuItem2" Header="Item 2"/>
+              </ContextMenu>
+            </Button.ContextMenu>
+          </Button>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Desktop">
+        <StackPanel>
+          <CheckBox x:FieldModifier="public" Name="TrayIconClicked">Tray Icon Clicked</CheckBox>
+          <CheckBox x:FieldModifier="public" Name="TrayIconMenuClicked">Tray Icon Menu Clicked</CheckBox>
+          <Button Name="ToggleTrayIconVisible" Content="Toggle TrayIcon Visible" />
+        </StackPanel>
+      </TabItem>
+
       <TabItem Header="Gestures">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
