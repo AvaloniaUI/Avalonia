@@ -94,6 +94,19 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="ContextMenu">
+        <StackPanel>
+          <Button Name="ShowContextMenu" Content="Right-click to show context menu.">
+            <Button.ContextMenu>
+              <ContextMenu>
+                <MenuItem Name="ContextMenuItem1" Header="Item 1"/>
+                <MenuItem Name="ContextMenuItem2" Header="Item 2"/>
+              </ContextMenu>
+            </Button.ContextMenu>
+          </Button>
+        </StackPanel>
+      </TabItem>
+
       <TabItem Header="Gestures">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
