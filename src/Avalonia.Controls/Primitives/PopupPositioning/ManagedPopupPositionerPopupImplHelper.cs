@@ -27,12 +27,12 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         {
             get
             {
-                if (_parent.Screen is null)
+                if (_parent.TryGetFeature<IScreenImpl>() is not { } screenImpl)
                 {
                     return Array.Empty<ManagedPopupPositionerScreenInfo>();
                 }
 
-                return _parent.Screen.AllScreens
+                return screenImpl.AllScreens
                     .Select(s => new ManagedPopupPositionerScreenInfo(s.Bounds.ToRect(1), s.WorkingArea.ToRect(1)))
                     .ToArray();
             }

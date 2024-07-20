@@ -65,7 +65,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 {
     protected IInputRoot? _inputRoot;
     private NativeControlHostImpl? _nativeControlHost;
-    private IStorageProvider? _storageProvider;
     private PlatformBehaviorInhibition? _platformBehaviorInhibition;
 
     private readonly MouseDevice? _mouse;
@@ -92,17 +91,14 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
     }
 
-    internal virtual void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+    internal virtual void Init(MacOSTopLevelHandle handle)
     {
         _handle = handle;
         _savedLogicalSize = ClientSize;
         _savedScaling = RenderScaling;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
-        _storageProvider = new SystemDialogs(this, Factory.CreateSystemDialogs());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
-        
-        Screen = new ScreenImpl(screens);
         InputMethod = new AvaloniaNativeTextInputMethod(Native);
     }
 
@@ -158,8 +154,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     public IMouseDevice? MouseDevice => _mouse;
 
     public INativeControlHostImpl? NativeControlHost => _nativeControlHost;
-
-    public IScreenImpl? Screen { get; private set; }
 
     public AutomationPeer? GetAutomationPeer()
     {
@@ -342,11 +336,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             return _nativeControlHost;
         }
 
-        if (featureType == typeof(IStorageProvider))
-        {
-            return _storageProvider;
-        }
-
         if (featureType == typeof(IPlatformBehaviorInhibition))
         {
             return _platformBehaviorInhibition;
@@ -355,6 +344,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         if (featureType == typeof(IClipboard))
         {
             return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+        }
+
+        if (featureType == typeof(IScreenImpl))
+        {
+            return AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
         }
 
         if (featureType == typeof(ILauncher))
@@ -373,7 +367,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _nativeControlHost?.Dispose();
         _nativeControlHost = null;
 
-        (Screen as ScreenImpl)?.Dispose();
         _mouse?.Dispose();
     }
 
