@@ -91,8 +91,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var active = element.WrappedDriver.SwitchTo().ActiveElement() as AppiumWebElement;
-                return element.Id == active?.Id;
+                return element.GetAttribute("HasKeyboardFocus") == "True";
             }
             else
             {
