@@ -29,6 +29,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IXamlType targetType = null;
             IXamlLineInfo lineInfo = null;
 
+            var avaloniaTypes = context.GetAvaloniaTypes();
+
             var styleParent = context.ParentNodes()
                 .OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                 .FirstOrDefault(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
@@ -46,17 +48,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             IXamlType propType = null;
+            IXamlIlAvaloniaPropertyNode avaloniaPropertyNode = null;
             var property = @on.Children.OfType<XamlAstXamlPropertyValueNode>()
                 .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Property");
             if (property != null)
             {
-                var propertyName = property.Values.OfType<XamlAstTextNode>().FirstOrDefault()?.Text;
-                if (propertyName == null)
-                    throw new XamlStyleTransformException("Setter.Property must be a string", node);
+                avaloniaPropertyNode = property.Values.OfType<IXamlIlAvaloniaPropertyNode>().FirstOrDefault();
+                if (avaloniaPropertyNode is null)
+                {
+                    var propertyName = property.Values.OfType<XamlAstTextNode>().FirstOrDefault()?.Text;
+                    if (propertyName == null)
+                        throw new XamlStyleTransformException("Setter.Property must be a string.", node);
 
-                var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                    new XamlAstClrTypeReference(lineInfo, targetType, false), property.Values[0]);
-                property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
+                    avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
+                        new XamlAstClrTypeReference(lineInfo, targetType, false), property.Values[0]);
+
+                    property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
+                }
+
                 propType = avaloniaPropertyNode.AvaloniaPropertyType;
             }
             else
@@ -83,7 +92,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         valueProperty.Values[0]);
 
                 valueProperty.Property = new SetterValueProperty(valueProperty.Property,
-                    on.Type.GetClrType(), propType, context.GetAvaloniaTypes());
+                    on.Type.GetClrType(), propType, avaloniaTypes);
+            }
+
+            // Handling a very specific case, when ITemplate value is used inside of Setter.Value,
+            // Which then is materialized for a specific control, and usually would set TemplatedParent.
+            // Note: this code is not always valid, as TemplatedParent might not be set,
+            // but we have better validation in runtime for TemplatedBinding.
+            // See Correctly_Resolve_TemplateBinding_In_Theme_Detached_Template test.
+            if (!avaloniaTypes.ITemplateOfControl.IsAssignableFrom(propType)
+                && on.Children.OfType<XamlAstObjectNode>()?.FirstOrDefault() is { } valueObj
+                && avaloniaTypes.ITemplateOfControl.IsAssignableFrom(valueObj?.Type.GetClrType()))
+            {
+                on.Children[on.Children.IndexOf(valueObj)] = new AvaloniaXamlIlTargetTypeMetadataNode(valueObj,
+                    new XamlAstClrTypeReference(on, targetType, false),
+                    AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate);
             }
 
             return node;

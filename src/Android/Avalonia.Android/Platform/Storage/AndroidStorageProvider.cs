@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Android;
 using Android.App;
 using Android.Content;
 using Android.Provider;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
 using JavaFile = Java.IO.File;
@@ -15,6 +17,7 @@ namespace Avalonia.Android.Platform.Storage;
 
 internal class AndroidStorageProvider : IStorageProvider
 {
+    public static ReadOnlySpan<byte> AndroidKey => "android"u8;
     private readonly Activity _activity;
 
     public AndroidStorageProvider(Activity activity)
@@ -30,8 +33,8 @@ internal class AndroidStorageProvider : IStorageProvider
 
     public Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        var uri = AndroidUri.Parse(bookmark) ?? throw new ArgumentException("Couldn't parse Bookmark value", nameof(bookmark));
-        return Task.FromResult<IStorageBookmarkFolder?>(new AndroidStorageFolder(_activity, uri, false));
+        var uri = DecodeUriFromBookmark(bookmark);
+        return Task.FromResult<IStorageBookmarkFolder?>(uri is null ? null : new AndroidStorageFolder(_activity, uri, false));
     }
 
     public async Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
@@ -129,8 +132,19 @@ internal class AndroidStorageProvider : IStorageProvider
 
     public Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        var uri = AndroidUri.Parse(bookmark) ?? throw new ArgumentException("Couldn't parse Bookmark value", nameof(bookmark));
-        return Task.FromResult<IStorageBookmarkFile?>(new AndroidStorageFile(_activity, uri));
+        var uri = DecodeUriFromBookmark(bookmark);
+        return Task.FromResult<IStorageBookmarkFile?>(uri is null ? null : new AndroidStorageFile(_activity, uri));
+    }
+
+    private static AndroidUri? DecodeUriFromBookmark(string bookmark)
+    {
+        return StorageBookmarkHelper.TryDecodeBookmark(AndroidKey, bookmark, out var bytes) switch
+        {
+            StorageBookmarkHelper.DecodeResult.Success => AndroidUri.Parse(Encoding.UTF8.GetString(bytes!)),
+            // Attempt to decode 11.0 android bookmarks
+            StorageBookmarkHelper.DecodeResult.InvalidFormat => AndroidUri.Parse(bookmark),
+            _ => null
+        };
     }
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)

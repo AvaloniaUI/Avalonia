@@ -417,14 +417,20 @@ public abstract partial class BindingExpressionTests
 
     protected class PrefixConverter : IValueConverter
     {
+        public PrefixConverter(string? prefix = null) => Prefix = prefix;
+
+        public string? Prefix { get; set; }
+
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (targetType != typeof(string))
                 return value;
 
             var result = value?.ToString() ?? string.Empty;
-            if (parameter is not null)
-                result = parameter.ToString() + result;
+            var prefix = parameter?.ToString() ?? Prefix;
+
+            if (prefix is not null)
+                result = prefix + result;
             return result;
         }
 

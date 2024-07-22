@@ -15,7 +15,7 @@ namespace Avalonia.Diagnostics.Screenshots
     public sealed class FilePickerHandler : BaseRenderToStreamHandler
     {
         private readonly string _title;
-        private readonly string _screenshotRoot;
+        private readonly string? _screenshotRoot;
 
         /// <summary>
         /// Instance FilePickerHandler
@@ -35,7 +35,7 @@ namespace Avalonia.Diagnostics.Screenshots
             string? screenshotRoot = default)
         {
             _title = title ?? "Save Screenshot to ...";
-            _screenshotRoot = screenshotRoot ?? Conventions.DefaultScreenshotsRoot;
+            _screenshotRoot = screenshotRoot;
         }
 
         private static TopLevel GetTopLevel(Control control)
@@ -54,8 +54,15 @@ namespace Avalonia.Diagnostics.Screenshots
         protected override async Task<Stream?> GetStream(Control control)
         {
             var storageProvider = GetTopLevel(control).StorageProvider;
-            var defaultFolder = await storageProvider.TryGetFolderFromPathAsync(_screenshotRoot)
-                                ?? await storageProvider.TryGetWellKnownFolderAsync(WellKnownFolder.Pictures);
+            IStorageFolder? defaultFolder = null;
+            if (_screenshotRoot is not null)
+            {
+                defaultFolder = await storageProvider.TryGetFolderFromPathAsync(_screenshotRoot);
+            }
+            if (defaultFolder is null)
+            {
+                defaultFolder = await storageProvider.TryGetWellKnownFolderAsync(WellKnownFolder.Pictures);
+            }
 
             var result = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {

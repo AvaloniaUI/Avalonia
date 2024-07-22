@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -164,7 +165,10 @@ namespace Avalonia.Controls
 
         void CanExecuteChanged()
         {
-            SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
+            if (!Dispatcher.UIThread.CheckAccess())
+                Dispatcher.UIThread.Invoke(() => CanExecuteChanged());
+            else
+                SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
         }
 
         public bool HasClickHandlers => Click != null;
