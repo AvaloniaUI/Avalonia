@@ -3,5 +3,6 @@ invalidStatus: "pending"
 labelRule:
   values:
     - "bug"
+    - "feature"
     - "enhancement"
     - "area-infrastructure"
