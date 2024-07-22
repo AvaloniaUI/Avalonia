@@ -177,32 +177,7 @@ namespace Avalonia.DesignerSupport.Remote
             var args = ParseCommandLineArgs(cmdline);
             if (args.Debug)
             {
-                // According this https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debugger.launch?view=net-6.0#remarks
-                // documentation, on not windows platform Debugger.Launch() always return true without running a debugger.
-                if (System.Diagnostics.Debugger.Launch())
-                {
-                    // Set timeout at 1 minut.
-                    var time = new System.Diagnostics.Stopwatch();
-                    var timeout = TimeSpan.FromMinutes(1);
-                    time.Start();
-
-                    // wait for the debugger to be attacked or timeout.
-                    while (!System.Diagnostics.Debugger.IsAttached && time.Elapsed < timeout)
-                    {
-                        Log($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Wating attach debugger. Elapsed {time.Elapsed}...");
-                        System.Threading.Thread.Sleep(100);
-                    }
-
-                    time.Stop();
-                    if (time.Elapsed >= timeout)
-                    {
-                        Log("Wating attach debugger timeout.");
-                    }
-                }
-                else
-                {
-                    Log("Debugging cancelled.");
-                }
+                Avalonia.Utilities.DebuggerHelper.Launch(Log);
             }
             var transport = CreateTransport(args);
             if (transport is ITransportWithEnforcedMethod enforcedMethod)
