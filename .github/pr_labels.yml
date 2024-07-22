@@ -4,3 +4,4 @@ labelRule:
   values:
     - "bug"
     - "enhancement"
+    - "area-infrastructure"
