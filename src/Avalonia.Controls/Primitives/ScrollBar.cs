@@ -257,6 +257,17 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+            base.OnPointerWheelChanged(e);
+
+            // We need to handle pointer wheel event to allow scrolling with the pointer wheel. So we raise the event on the scrollviewer's presenter
+            if(!e.Handled && _owner?.Presenter is { } presenter)
+            {
+                presenter.RaiseEvent(e);
+            }
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
