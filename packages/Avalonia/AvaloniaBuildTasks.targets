@@ -109,6 +109,8 @@
 
   <Target Name="PrepareToCompileAvaloniaXaml">
     <PropertyGroup>
+      <AvaloniaSpecificIntermediateDirPath Condition="'$(AvaloniaSpecificIntermediateDirPath)' == ''">$(IntermediateOutputPath)/Avalonia</AvaloniaSpecificIntermediateDirPath>
+      <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(AvaloniaSpecificIntermediateDirPath)/references</AvaloniaXamlReferencesTemporaryFilePath>
       <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
       <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch>
       <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">false</AvaloniaXamlVerboseExceptions>
@@ -134,6 +136,13 @@
     Inputs="@(CompileAvaloniaXamlInputs)"
     Outputs="@(CompileAvaloniaXamlOutputs)"
     Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(DesignTimeBuild) != true AND $(EnableAvaloniaXamlCompilation) != false">
+
+    <MakeDir Directories="$(AvaloniaSpecificIntermediateDirPath)" />
+    <WriteLinesToFile
+      Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
+      File="$(AvaloniaXamlReferencesTemporaryFilePath)"
+      Lines="@(ReferencePathWithRefAssemblies)"
+      Overwrite="true" />
 
     <CompileAvaloniaXamlTask
       AssemblyFile="@(IntermediateAssembly)"
