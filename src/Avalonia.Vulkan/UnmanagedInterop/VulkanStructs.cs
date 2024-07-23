@@ -750,6 +750,13 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public IntPtr name;
     }
 
+    unsafe struct VkMemoryWin32HandlePropertiesKHR
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public uint32_t memoryTypeBits;
+    }
+
     unsafe struct VkMemoryDedicatedAllocateInfo
     {
         public VkStructureType sType;

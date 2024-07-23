@@ -26,6 +26,19 @@ public sealed class CompositionDrawingSurface : CompositionSurface, IDisposable
     }
 
     /// <summary>
+    /// Updates the surface contents using an imported memory image using an external keyed mutex as the means of synchronization
+    /// </summary>
+    /// <param name="image">GPU image with new surface contents</param>
+    /// <param name="acquire">The acquire callback to call before accessing the image</param>
+    /// <param name="release">The release callback to call after accessing the image </param>
+    /// <returns>A task that completes when update operation is completed and user code is free to destroy or dispose the image</returns>
+    public Task UpdateWithExternalKeyedMutexAsync(ICompositionImportedGpuImage image, Action acquire, Action release)
+    {
+        var img = (CompositionImportedGpuImage)image;
+        return Compositor.InvokeServerJobAsync(() => Server.UpdateWithExternalKeyedMutex(img, acquire, release));
+    }
+
+    /// <summary>
     /// Updates the surface contents using an imported memory image using a semaphore pair as the means of synchronization
     /// </summary>
     /// <param name="image">GPU image with new surface contents</param>

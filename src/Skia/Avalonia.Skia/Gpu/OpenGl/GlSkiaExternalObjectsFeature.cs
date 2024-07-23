@@ -168,6 +168,27 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
         }
     }
 
+    public IBitmapImpl SnapshotWithExternalKeyedMutex(Action acquire, Action release)
+    {
+        if (_image is null)
+        {
+            throw new NotSupportedException("Only supported with an external image");
+        }
+
+        using (_gpu.EnsureCurrent())
+        {
+            acquire();
+            try
+            {
+                return TakeSnapshot();
+            }
+            finally
+            {
+                release();
+            }
+        }
+    }
+
     public IBitmapImpl SnapshotWithSemaphores(IPlatformRenderInterfaceImportedSemaphore waitForSemaphore,
         IPlatformRenderInterfaceImportedSemaphore signalSemaphore)
     {

@@ -56,12 +56,23 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
         }
     }
     
-    public void UpdateWithKeyedMutex(CompositionImportedGpuImage image, uint acquireIndex, uint releaseIndex)
+    public void UpdateWithKeyedMutex(CompositionImportedGpuImage image, 
+        uint acquireIndex, uint releaseIndex)
     {
         using (Compositor.RenderInterface.EnsureCurrent())
         {
             PerformSanityChecks(image);
             Update(image.Image.SnapshotWithKeyedMutex(acquireIndex, releaseIndex), image.Context);
+        }
+    }
+
+    public void UpdateWithExternalKeyedMutex(CompositionImportedGpuImage image,
+        Action acquire, Action release)
+    {
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            Update(image.Image.SnapshotWithExternalKeyedMutex(acquire, release), image.Context);
         }
     }
 
