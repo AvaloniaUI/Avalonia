@@ -258,6 +258,15 @@ HRESULT TopLevelImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
     return S_OK;
 }
 
+HRESULT TopLevelImpl::GetCurrentDisplayId (CGDirectDisplayID* ret) {
+    START_COM_CALL;
+
+    auto window = [View window];
+    *ret = [window.screen av_displayId];
+
+    return S_OK;
+}
+
 void TopLevelImpl::UpdateAppearance() {
     
 }

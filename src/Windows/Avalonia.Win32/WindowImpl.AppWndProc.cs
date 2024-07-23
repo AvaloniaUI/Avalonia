@@ -657,6 +657,11 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
+                            if (windowState == WindowState.Maximized)
+                            {
+                                MaximizeWithoutCoveringTaskbar();
+                            }
+
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
@@ -717,7 +722,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DISPLAYCHANGE:
                     {
-                        (Screen as ScreenImpl)?.InvalidateScreensCache();
+                        Screen?.OnChanged();
                         return IntPtr.Zero;
                     }
 

@@ -27,7 +27,6 @@ internal class TopLevelImpl : ITopLevelImpl
     }
 
     public double DesktopScaling => RenderScaling;
-    public IScreenImpl? Screen { get; }
     public IPlatformHandle? Handle { get; }
 
     public Size ClientSize => _view.ClientSize;

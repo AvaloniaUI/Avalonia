@@ -173,7 +173,7 @@ namespace Avalonia.Win32
                 }
             }
 
-            Screen = new ScreenImpl();
+            Screen = Win32Platform.Instance.Screen;
             _storageProvider = new Win32StorageProvider(this);
             _inputPane = WindowsInputPane.TryCreate(this);
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
@@ -274,7 +274,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IScreenImpl Screen { get; }
+        public ScreenImpl Screen { get; }
 
         public IPlatformHandle Handle { get; private set; }
 
@@ -337,6 +337,11 @@ namespace Avalonia.Win32
 
         public object? TryGetFeature(Type featureType)
         {
+            if (featureType == typeof(IScreenImpl))
+            {
+                return Screen;
+            }
+
             if (featureType == typeof(ITextInputMethodImpl))
             {
                 return Imm32InputMethod.Current;
@@ -1041,15 +1046,14 @@ namespace Avalonia.Win32
 
                 // On expand, if we're given a window_rect, grow to it, otherwise do
                 // not resize.
-                MONITORINFO monitor_info = MONITORINFO.Create();
-                GetMonitorInfo(MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST), ref monitor_info);
-
-                var window_rect = monitor_info.rcMonitor.ToPixelRect();
-
-                _isFullScreenActive = true;
-                SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
-                             window_rect.Width, window_rect.Height,
-                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+                var screen = Screen.ScreenFromHwnd(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+                if (screen?.Bounds is { } window_rect)
+                {
+                    _isFullScreenActive = true;
+                    SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
+                                 window_rect.Width, window_rect.Height,
+                                 SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+                }
             }
             else
             {
@@ -1283,34 +1287,28 @@ namespace Avalonia.Win32
 
         private void MaximizeWithoutCoveringTaskbar()
         {
-            IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
-
-            if (monitor != IntPtr.Zero)
+            var screen = Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+            if (screen?.WorkingArea is { } workingArea)
             {
-                var monitorInfo = MONITORINFO.Create();
+                var x = workingArea.X;
+                var y = workingArea.Y;
+                var cx = workingArea.Width;
+                var cy = workingArea.Height;
+                var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                if (GetMonitorInfo(monitor, ref monitorInfo))
+                if (!style.HasFlag(WindowStyles.WS_THICKFRAME))
                 {
-                    var x = monitorInfo.rcWork.left;
-                    var y = monitorInfo.rcWork.top;
-                    var cx = Math.Abs(monitorInfo.rcWork.right - x);
-                    var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
-                    var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
-
-                    if (!style.HasFlag(WindowStyles.WS_THICKFRAME))
-                    {
-                        // When calling SetWindowPos on a maximized window it automatically adjusts
-                        // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
-                        // NO BORDERS, meaning that the window is placed wrong when we have CanResize
-                        // == false. Account for this here.
-                        var borderThickness = BorderThickness;
-                        x -= (int)borderThickness.Left;
-                        cx += (int)borderThickness.Left + (int)borderThickness.Right;
-                        cy += (int)borderThickness.Bottom;
-                    }
-
-                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_FRAMECHANGED);
+                    // When calling SetWindowPos on a maximized window it automatically adjusts
+                    // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
+                    // NO BORDERS, meaning that the window is placed wrong when we have CanResize
+                    // == false. Account for this here.
+                    var borderThickness = BorderThickness;
+                    x -= (int)borderThickness.Left;
+                    cx += (int)borderThickness.Left + (int)borderThickness.Right;
+                    cy += (int)borderThickness.Bottom;
                 }
+
+                SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_FRAMECHANGED);
             }
         }
 

@@ -54,7 +54,6 @@ namespace Avalonia.Controls
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
-            Screens = new Screens(impl.Screen!);
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
@@ -109,7 +108,9 @@ namespace Avalonia.Controls
             private set => SetAndRaise(IsActiveProperty, ref _isActive, value);
         }
 
-        public Screens Screens { get; }
+        /// <inheritdoc cref="TopLevel.Screens"/>
+        public new Screens Screens => base.Screens
+            ?? throw new InvalidOperationException("Windowing backend wasn't properly initialized.");
 
         /// <summary>
         /// Gets or sets the owner of the window.
