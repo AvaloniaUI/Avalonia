@@ -107,25 +107,7 @@ public class D3D11SwapchainImage : ISwapchainImage
                 IsVulkanBacked ? KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle: KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle),
             _properties);
 
-        if (IsVulkanBacked)
-        {
-            LastPresent = _target.UpdateWithExternalKeyedMutexAsync(
-                _imported,
-                () => _mutex.Acquire(1, int.MaxValue),
-                () => _mutex.Release(0));
-        }
-        else
-        {
-            LastPresent = _target.UpdateWithKeyedMutexAsync(_imported, 1, 0);
-        }
-    }
-
-    private void SyncMutex(uint value)
-    {
-        if (value == 1)
-            _mutex.Acquire(1, int.MaxValue);
-        else
-            _mutex.Release(0);
+        LastPresent = _target.UpdateWithKeyedMutexAsync(_imported, 1, 0);
     }
 
     public async ValueTask DisposeAsync()

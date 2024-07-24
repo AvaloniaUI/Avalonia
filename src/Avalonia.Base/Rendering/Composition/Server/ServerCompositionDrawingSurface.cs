@@ -66,16 +66,6 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
         }
     }
 
-    public void UpdateWithExternalKeyedMutex(CompositionImportedGpuImage image,
-        Action acquire, Action release)
-    {
-        using (Compositor.RenderInterface.EnsureCurrent())
-        {
-            PerformSanityChecks(image);
-            Update(image.Image.SnapshotWithExternalKeyedMutex(acquire, release), image.Context);
-        }
-    }
-
     public void UpdateWithSemaphores(CompositionImportedGpuImage image, CompositionImportedGpuSemaphore wait, CompositionImportedGpuSemaphore signal)
     {
         using (Compositor.RenderInterface.EnsureCurrent())

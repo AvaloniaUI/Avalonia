@@ -433,7 +433,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
     unsafe struct VkSubmitInfo
     {
         public VkStructureType sType;
-        public IntPtr pNext;
+        public void* pNext;
         public uint32_t waitSemaphoreCount;
         public VkSemaphore* pWaitSemaphores;
         public VkPipelineStageFlags* pWaitDstStageMask;
@@ -755,6 +755,19 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkStructureType sType;
         public void* pNext;
         public uint32_t memoryTypeBits;
+    }
+
+    unsafe struct VkWin32KeyedMutexAcquireReleaseInfoKHR
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public uint32_t acquireCount;
+        public VkDeviceMemory* pAcquireSyncs;
+        public ulong* pAcquireKeys;
+        public uint* pAcquireTimeouts;
+        public uint releaseCount;
+        public VkDeviceMemory* pReleaseSyncs;
+        public ulong* pReleaseKeys;
     }
 
     unsafe struct VkMemoryDedicatedAllocateInfo

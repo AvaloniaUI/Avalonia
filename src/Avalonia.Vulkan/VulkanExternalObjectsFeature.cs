@@ -106,8 +106,8 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
     {
         if (!SupportedImageHandleTypes.Contains(imageHandleType))
             throw new ArgumentException();
-        //TODO: keyed muted
-        return CompositionGpuImportedImageSynchronizationCapabilities.Semaphores;
+        
+        return CompositionGpuImportedImageSynchronizationCapabilities.Semaphores | CompositionGpuImportedImageSynchronizationCapabilities.KeyedMutex;
     }
 
     public IVulkanExternalImage ImportImage(IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties)

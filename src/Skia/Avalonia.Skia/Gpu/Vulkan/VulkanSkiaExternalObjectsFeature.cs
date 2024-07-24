@@ -67,15 +67,11 @@ internal class VulkanSkiaExternalObjectsFeature : IExternalObjectsRenderInterfac
             _inner = null;
         }
 
-        public IBitmapImpl SnapshotWithKeyedMutex(uint acquireIndex, uint releaseIndex) => throw new NotSupportedException();
-
-        public IBitmapImpl SnapshotWithExternalKeyedMutex(Action acquire, Action release)
+        public IBitmapImpl SnapshotWithKeyedMutex(uint acquireIndex, uint releaseIndex)
         {
-
             var info = _inner!.Info;
-
             _gpu.GrContext.ResetContext();
-            acquire();
+
             var imageInfo = new GRVkImageInfo
             {
                 CurrentQueueFamily = _gpu.Vulkan.Device.GraphicsQueueFamilyIndex,
@@ -102,7 +98,7 @@ internal class VulkanSkiaExternalObjectsFeature : IExternalObjectsRenderInterfac
             var image = surface.Snapshot();
             _gpu.GrContext.Flush();
             //surface.Canvas.Flush();
-            release();
+            _inner.SubmitKeyedMutex(acquireIndex, releaseIndex);
 
             return new ImmutableBitmap(image);
         }
