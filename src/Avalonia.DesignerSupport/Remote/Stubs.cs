@@ -123,9 +123,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
 
         }
-
-        public IScreenImpl Screen { get; } = new ScreenStub();
-
+        
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
         }
@@ -243,26 +241,20 @@ namespace Avalonia.DesignerSupport.Remote
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
     }
 
-    class ScreenStub : IScreenImpl
+    class ScreenStub : ScreensBase<int, PlatformScreen>
     {
-        public int ScreenCount => 1;
+        protected override IReadOnlyList<int> GetAllScreenKeys() => new[] { 1 };
 
-        public IReadOnlyList<Screen> AllScreens { get; } =
-            new Screen[] { new Screen(1, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+        protected override PlatformScreen CreateScreenFromKey(int key) => new PlatformScreenStub(key);
 
-        public Screen ScreenFromPoint(PixelPoint point)
+        private class PlatformScreenStub : PlatformScreen
         {
-            return ScreenHelper.ScreenFromPoint(point, AllScreens);
-        }
-
-        public Screen ScreenFromRect(PixelRect rect)
-        {
-            return ScreenHelper.ScreenFromRect(rect, AllScreens);
-        }
-
-        public Screen ScreenFromWindow(IWindowBaseImpl window)
-        {
-            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+            public PlatformScreenStub(int key) : base(new PlatformHandle((nint) key, nameof(ScreenStub))) 
+            {
+                Scaling = 1;
+                Bounds = WorkingArea = new PixelRect(0, 0, 4000, 4000);
+                IsPrimary = true;
+            }
         }
     }
 
