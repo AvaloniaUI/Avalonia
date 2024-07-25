@@ -19,7 +19,7 @@ internal static class GeneratorContextExtensions
 
     public static void ReportNameGeneratorUnhandledError(this GeneratorExecutionContext context, Exception error) =>
         context.Report(UnhandledErrorDescriptorId,
-            "Unhandled exception occured while generating typed Name references. " +
+            "Unhandled exception occurred while generating typed Name references. " +
             "Please file an issue: https://github.com/avaloniaui/Avalonia",
             error.Message,
             error.ToString());
