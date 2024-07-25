@@ -135,6 +135,14 @@
     Outputs="@(CompileAvaloniaXamlOutputs)"
     Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(DesignTimeBuild) != true AND $(EnableAvaloniaXamlCompilation) != false">
 
+    <!--
+      $(IntermediateOutputPath)/Avalonia/references is using from AvaloniaVS for retrieve library references.
+    -->
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)/Avalonia/references"
+      Lines="@(ReferencePathWithRefAssemblies)"
+      Overwrite="true" />
+
     <CompileAvaloniaXamlTask
       AssemblyFile="@(IntermediateAssembly)"
       References="@(ReferencePathWithRefAssemblies)"
@@ -244,23 +252,5 @@
       ('$(CopyBuildOutputToOutputDirectory)' == '' or '$(CopyBuildOutputToOutputDirectory)' == 'true') and
       '$(SkipCopyBuildProduct)' != 'true'">
     <Delete Files="$(TargetRefPath)" Condition="Exists('$(TargetRefPath)')" />
-  </Target>
-
-  <!--
-  $(IntermediateOutputPath)/Avalonia/references is using from AvaloniaVS for retrieve library references.
-  This target generate $(IntermediateOutputPath)/Avalonia/references for in xplat Template
-  (see: https://github.com/AvaloniaUI/avalonia-dotnet-templates/tree/e4a489ae828f005f625145c563785174403e267c/templates/csharp/xplat).
-  -->
-  <Target Name="GenerateIntellisenseReferences"
-          AfterTargets="AfterCompile"
-          Condition="('@(AvaloniaResource->Count())' == 0) and ('@(AvaloniaXaml->Count())' == 0)">
-    <PropertyGroup>
-      <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
-    </PropertyGroup>
-    <WriteLinesToFile
-      Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
-      File="$(AvaloniaXamlReferencesTemporaryFilePath)"
-      Lines="@(ReferencePathWithRefAssemblies)"
-      Overwrite="true" />
   </Target>
 </Project>
