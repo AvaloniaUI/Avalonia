@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Avalonia.Data;
 using Avalonia.UnitTests;
 using Xunit;
@@ -271,6 +272,39 @@ public partial class BindingExpressionTests
         GC.KeepAlive(data);
     }
 
+    [Fact]
+    public void Updates_Data_Validation_For_Required_DataAnnotation()
+    {
+        var data = new DataAnnotationsViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.RequiredString,
+            enableDataValidation: true);
+
+        AssertBindingError(
+            target,
+            TargetClass.StringProperty,
+            new DataValidationException("String is required!"),
+            BindingErrorType.DataValidationError);
+    }
+
+    [Fact]
+    public void Handles_Indei_And_DataAnnotations_On_Same_Class()
+    {
+        // Issue #15201
+        var data = new IndeiDataAnnotationsViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.RequiredString,
+            enableDataValidation: true);
+
+        AssertBindingError(
+            target,
+            TargetClass.StringProperty,
+            new DataValidationException("String is required!"),
+            BindingErrorType.DataValidationError);
+    }
+
     public class ExceptionViewModel : NotifyingBase
     {
         private int _mustBePositive;
@@ -340,6 +374,42 @@ public partial class BindingExpressionTests
         public override bool HasErrors => false;
         public override IEnumerable? GetErrors(string propertyName) => null;
     }
+
+    private class DataAnnotationsViewModel : NotifyingBase
+    {
+        private string? _requiredString;
+
+        [Required(ErrorMessage = "String is required!")]
+        public string? RequiredString
+        {
+            get { return _requiredString; }
+            set { _requiredString = value; RaisePropertyChanged(); }
+        }
+    }
+
+    private class IndeiDataAnnotationsViewModel : IndeiBase
+    {
+        private string? _requiredString;
+
+        [Required(ErrorMessage = "String is required!")]
+        public string? RequiredString
+        {
+            get { return _requiredString; }
+            set { _requiredString = value; RaisePropertyChanged(); }
+        }
+
+        public override bool HasErrors => RequiredString is null;
+        
+        public override IEnumerable? GetErrors(string propertyName)
+        {
+            if (propertyName == nameof(RequiredString) && RequiredString is null)
+            {
+                return new[] { "String is required!" };
+            }
+
+            return null;
+        }
+    }   
 
     private static void AssertNoError(TargetClass target, AvaloniaProperty property)
     {

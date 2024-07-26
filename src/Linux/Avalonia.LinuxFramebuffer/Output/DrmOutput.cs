@@ -67,9 +67,9 @@ namespace Avalonia.LinuxFramebuffer.Output
                 connectors = connectors.Where(c => c.ConnectorType == connectorType);
             }
 
-            if (options?.ConnectorType_Id is { } connectorType_Id)
+            if (options?.ConnectorTypeId is { } connectorTypeId)
             {
-                connectors = connectors.Where(c => c.ConnectorType_Id == connectorType_Id);
+                connectors = connectors.Where(c => c.ConnectorTypeId == connectorTypeId);
             }
 
             var connector =
@@ -311,7 +311,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                         };
                         while (waitingForFlip)
                         {
-                            var pfd = new pollfd {events = 1, fd = _parent._card.Fd};
+                            var pfd = new PollFd {events = 1, fd = _parent._card.Fd};
                             poll(&pfd, new IntPtr(1), -1);
                             drmHandleEvent(_parent._card.Fd, &ctx);
                         }

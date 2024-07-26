@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Reactive;
 using Avalonia.Styling;
 
@@ -80,6 +81,28 @@ namespace Avalonia.Controls
         internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip?>("ToolTip");
 
+        /// <summary>
+        /// The event raised when a ToolTip is going to be shown on an element.
+        /// </summary>
+        /// <remarks>
+        /// To prevent a tooltip from appearing in the UI, your handler for ToolTipOpening can mark the event data handled.
+        /// Otherwise, the tooltip is displayed, using the value of the ToolTip property as the tooltip content.
+        /// Another possible scenario is that you could write a handler that resets the value of the ToolTip property for the element that is the event source, just before the tooltip is displayed.
+        /// ToolTipOpening will not be raised if the value of ToolTip is null or otherwise unset. Do not deliberately set ToolTip to null while a tooltip is open or opening; this will not have the effect of closing the tooltip, and will instead create an undesirable visual artifact in the UI.
+        /// </remarks>
+        public static readonly RoutedEvent<CancelRoutedEventArgs> ToolTipOpeningEvent =
+            RoutedEvent.Register<ToolTip, CancelRoutedEventArgs>("ToolTipOpening", RoutingStrategies.Direct);
+
+        /// <summary>
+        /// The event raised when a ToolTip on an element that was shown should now be hidden.
+        /// </summary>
+        /// <remarks>
+        /// Marking the ToolTipClosing event as handled does not cancel closing the tooltip.
+        /// Once the tooltip is displayed, closing the tooltip is done only in response to user interaction with the UI.
+        /// </remarks>
+        public static readonly RoutedEvent ToolTipClosingEvent =
+            RoutedEvent.Register<ToolTip, RoutedEventArgs>("ToolTipClosing", RoutingStrategies.Direct);
+    
         private Popup? _popup;
         private Action<IPopupHost?>? _popupHostChangedHandler;
         private CompositeDisposable? _subscriptions;
@@ -91,9 +114,6 @@ namespace Avalonia.Controls
         {
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
         }
-
-        internal Control? AdornedControl { get; private set; }
-        internal event EventHandler? Closed;
 
         /// <summary>
         /// Gets the value of the ToolTip.Tip attached property.
@@ -275,6 +295,38 @@ namespace Avalonia.Controls
         public static void SetServiceEnabled(Control element, bool value) => 
             element.SetValue(ServiceEnabledProperty, value);
 
+        /// <summary>
+        /// Adds a handler for the <see cref="ToolTipOpeningEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be added.</param>
+        public static void AddToolTipOpeningHandler(Control element, EventHandler<CancelRoutedEventArgs> handler) =>
+            element.AddHandler(ToolTipOpeningEvent, handler);
+
+        /// <summary>
+        /// Removes a handler for the <see cref="ToolTipOpeningEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be removed.</param>
+        public static void RemoveToolTipOpeningHandler(Control element, EventHandler<CancelRoutedEventArgs> handler) =>
+            element.RemoveHandler(ToolTipOpeningEvent, handler);
+
+        /// <summary>
+        /// Adds a handler for the <see cref="ToolTipClosingEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be removed.</param>
+        public static void AddToolTipClosingHandler(Control element, EventHandler<RoutedEventArgs> handler) =>
+            element.AddHandler(ToolTipClosingEvent, handler);
+
+        /// <summary>
+        /// Removes a handler for the <see cref="ToolTipClosingEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be removed.</param>
+        public static void RemoveToolTipClosingHandler(Control element, EventHandler<RoutedEventArgs> handler) =>
+            element.RemoveHandler(ToolTipClosingEvent, handler);
+
         private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
@@ -282,8 +334,20 @@ namespace Avalonia.Controls
 
             if (newValue)
             {
+                var args = new CancelRoutedEventArgs(ToolTipOpeningEvent);
+                control.RaiseEvent(args);
+                if (args.Cancel)
+                {
+                    control.SetCurrentValue(IsOpenProperty, false);
+                    return;
+                }
+
                 var tip = GetTip(control);
-                if (tip == null) return;
+                if (tip == null)
+                {
+                    control.SetCurrentValue(IsOpenProperty, false);
+                    return;
+                }
 
                 var toolTip = control.GetValue(ToolTipProperty);
                 if (toolTip == null || (tip != toolTip && tip != toolTip.Content))
@@ -292,25 +356,23 @@ namespace Avalonia.Controls
 
                     toolTip = tip as ToolTip ?? new ToolTip { Content = tip };
                     control.SetValue(ToolTipProperty, toolTip);
-                    toolTip.SetValue(ThemeVariant.RequestedThemeVariantProperty, control.ActualThemeVariant);
                 }
 
                 toolTip.AdornedControl = control;
                 toolTip.Open(control);
-                toolTip?.UpdatePseudoClasses(newValue);
             }
             else if (control.GetValue(ToolTipProperty) is { } toolTip)
             {
                 toolTip.AdornedControl = null;
                 toolTip.Close();
-                toolTip?.UpdatePseudoClasses(newValue);
             }
         }
 
-        IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
-
+        internal Control? AdornedControl { get; private set; }
+        internal event EventHandler? Closed;
         internal IPopupHost? PopupHost => _popup?.Host;
 
+        IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
             add => _popupHostChangedHandler += value; 
@@ -346,6 +408,13 @@ namespace Avalonia.Controls
 
         private void Close()
         {
+            if (AdornedControl is { } adornedControl
+                && GetIsOpen(adornedControl))
+            {
+                var args = new RoutedEventArgs(ToolTipClosingEvent);
+                adornedControl.RaiseEvent(args);
+            }
+
             _subscriptions?.Dispose();
 
             if (_popup is not null)
@@ -366,12 +435,14 @@ namespace Avalonia.Controls
             }
 
             _popupHostChangedHandler?.Invoke(null);
+            UpdatePseudoClasses(false);
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnPopupOpened(object? sender, EventArgs e)
         {
             _popupHostChangedHandler?.Invoke(((Popup)sender!).Host);
+            UpdatePseudoClasses(true);
         }
 
         private void UpdatePseudoClasses(bool newValue)

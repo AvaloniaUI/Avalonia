@@ -119,6 +119,8 @@ namespace Avalonia.Input
                 {
                     pointer?.Capture(null);
                     pointer?.CaptureGestureRecognizer(null);
+                    if (pointer != null)
+                        pointer.IsGestureRecognitionSkipped = false;
                 }
             }
 
@@ -157,6 +159,12 @@ namespace Avalonia.Input
             return _pointers.TryGetValue(ev.RawPointerId, out var pointer)
                 ? pointer
                 : null;
+        }
+
+        internal void PlatformCaptureLost()
+        {
+            foreach (var pointer in _pointers.Values)
+                pointer.Capture(null);
         }
     }
 }

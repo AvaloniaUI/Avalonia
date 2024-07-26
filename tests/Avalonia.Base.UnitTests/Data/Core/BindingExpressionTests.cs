@@ -19,7 +19,7 @@ namespace Avalonia.Base.UnitTests.Data.Core;
 [InvariantCulture]
 public abstract partial class BindingExpressionTests
 {
-    public class Reflection : BindingExpressionTests
+    public partial class Reflection : BindingExpressionTests
     {
         private protected override (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
             Expression<Func<TIn, TOut>> expression,
@@ -73,7 +73,7 @@ public abstract partial class BindingExpressionTests
         }
     }
 
-    public class Compiled : BindingExpressionTests
+    public partial class Compiled : BindingExpressionTests
     {
         private protected override (TargetClass, BindingExpression) CreateTargetCore<TIn, TOut>(
             Expression<Func<TIn, TOut>> expression,
@@ -417,14 +417,20 @@ public abstract partial class BindingExpressionTests
 
     protected class PrefixConverter : IValueConverter
     {
+        public PrefixConverter(string? prefix = null) => Prefix = prefix;
+
+        public string? Prefix { get; set; }
+
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (targetType != typeof(string))
                 return value;
 
             var result = value?.ToString() ?? string.Empty;
-            if (parameter is not null)
-                result = parameter.ToString() + result;
+            var prefix = parameter?.ToString() ?? Prefix;
+
+            if (prefix is not null)
+                result = prefix + result;
             return result;
         }
 

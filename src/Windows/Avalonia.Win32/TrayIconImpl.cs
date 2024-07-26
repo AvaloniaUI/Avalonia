@@ -126,13 +126,7 @@ namespace Avalonia.Win32
             Win32Icon? newIcon = null;
             if (_iconStale && _iconImpl is not null)
             {
-                var scaling = 1.0;
-                if ((HRESULT)GetDpiForMonitor(s_taskBarMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out var dpiY) == HRESULT.S_OK)
-                {
-                    Debug.Assert(dpiX == dpiY);
-                    scaling = dpiX / 96.0;
-                }
-
+                var scaling = GetTaskBarMonScalingOrDefault();
                 newIcon = _iconImpl.LoadSmallIcon(scaling);
             }
 
@@ -173,6 +167,26 @@ namespace Avalonia.Win32
                 _iconStale = false;
             }
         }
+        
+        private double GetTaskBarMonScalingOrDefault()
+        {
+            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8_1)
+            {
+                uint dpiX, dpiY;
+
+                if ((HRESULT)GetDpiForMonitor(
+                        s_taskBarMonitor,
+                        MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                        out dpiX,
+                        out dpiY)  == HRESULT.S_OK)
+                {
+                    Debug.Assert(dpiX == dpiY);
+                    return dpiX / 96.0;
+                }
+            }
+
+            return 1.0;
+        }
 
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -204,8 +218,9 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var _trayMenu = new TrayPopupRoot()
+            var _trayMenu = new TrayPopupRoot
             {
+                Name = "AvaloniaTrayPopupRoot_" + _tooltipText,
                 SystemDecorations = SystemDecorations.None,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,

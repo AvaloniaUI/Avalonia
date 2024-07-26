@@ -976,7 +976,7 @@ namespace Avalonia.Controls
                     PixelSize.FromSize(ownerSize, scaling));
                 var childRect = ownerRect.CenterRect(rect);
 
-                if (Screens.ScreenFromWindow(this)?.WorkingArea is { } constraint)
+                if (Screens.ScreenFromWindow(owner)?.WorkingArea is { } constraint)
                 {
                     var maxX = constraint.Right - rect.Width;
                     var maxY = constraint.Bottom - rect.Height;

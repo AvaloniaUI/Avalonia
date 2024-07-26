@@ -34,9 +34,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return baseKey + $"[{indexerArgumentsKey}]";
         }
 
-        public IXamlType Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, IXamlProperty property, IEnumerable<IXamlAstValueNode> indexerArguments = null, string indexerArgumentsKey = null)
+        public IXamlType Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, IXamlProperty property, IReadOnlyCollection<IXamlAstValueNode> indexerArguments = null, string indexerArgumentsKey = null)
         {
-            indexerArguments = indexerArguments ?? Enumerable.Empty<IXamlAstValueNode>();
+            indexerArguments = indexerArguments ?? Array.Empty<IXamlAstValueNode>();
             var types = context.GetAvaloniaTypes();
             IXamlMethod Get()
             {
@@ -101,10 +101,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     Load(property.Setter, setter.Generator, !property.Getter.IsStatic);
                     
                     setter.Generator.Ldarg(1);
-                    if (property.Setter.Parameters[0].IsValueType)
-                        setter.Generator.Unbox_Any(property.Setter.Parameters[0]);
+
+                    var valueIndex = indexerArguments.Count;
+                    if (property.Setter.Parameters[valueIndex].IsValueType)
+                        setter.Generator.Unbox_Any(property.Setter.Parameters[valueIndex]);
                     else
-                        setter.Generator.Castclass(property.Setter.Parameters[0]);
+                        setter.Generator.Castclass(property.Setter.Parameters[valueIndex]);
                     setter.Generator
                         .EmitCall(property.Setter, true)
                         .Ret();

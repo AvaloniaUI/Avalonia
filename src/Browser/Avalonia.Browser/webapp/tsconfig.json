@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "target": "es2018",
+      "target": "es2019",
       "module": "es2020",
       "strict": true,
       "sourceMap": true,
@@ -11,6 +11,7 @@
       "lib": [
         "dom",
         "es2018",
+        "es2019",
         "esnext.asynciterable"
       ]
     },

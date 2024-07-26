@@ -28,14 +28,12 @@ internal sealed class LogicalNotNode : ExpressionNode, ISettableNode
         return false;
     }
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
         var v = BindingNotification.ExtractValue(source);
 
         if (TryConvert(v, out var value))
-        {
             SetValue(BindingNotification.UpdateValue(source, !value), dataValidationError);
-        }
         else
             SetError($"Unable to convert '{source}' to bool.");
     }

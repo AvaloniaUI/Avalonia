@@ -19,14 +19,12 @@ namespace Avalonia.X11
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
-            var ch = new DumbWindow(_platform.Info);
-            XSync(_platform.Display, false);
-            return ch;
+            return new DumbWindow(_platform.Info, true);
         }
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var holder = new DumbWindow(_platform.Info, Window.Handle.Handle);
+            var holder = new DumbWindow(_platform.Info, true, Window.Handle.Handle);
             Attachment attachment = null;
             try
             {
@@ -50,7 +48,7 @@ namespace Avalonia.X11
             if (!IsCompatibleWith(handle))
                 throw new ArgumentException(handle.HandleDescriptor + " is not compatible with the current window",
                     nameof(handle));
-            var attachment = new Attachment(_platform.Display, new DumbWindow(_platform.Info, Window.Handle.Handle),
+            var attachment = new Attachment(_platform.Display, new DumbWindow(_platform.Info, false, Window.Handle.Handle),
                 _platform.OrphanedWindow, handle) { AttachedTo = this };
             return attachment;
         }
@@ -61,7 +59,7 @@ namespace Avalonia.X11
         {
             private readonly IntPtr _display;
 
-            public DumbWindow(X11Info x11, IntPtr? parent = null)
+            public DumbWindow(X11Info x11, bool sync, IntPtr? parent = null)
             {
                 _display = x11.Display;
                 /*Handle = XCreateSimpleWindow(x11.Display, XLib.XDefaultRootWindow(_display),
@@ -83,6 +81,8 @@ namespace Avalonia.X11
                     new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
                                        SetWindowValuemask.BackPixel |
                                        SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+                if(sync)
+                    XSync(x11.Display, false);
             }
 
             public IntPtr Handle { get; private set; }

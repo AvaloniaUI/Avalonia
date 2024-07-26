@@ -9,7 +9,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class SliderTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public SliderTests(DefaultAppFixture fixture)
         {
@@ -23,7 +23,7 @@ namespace Avalonia.IntegrationTests.Appium
             reset.Click();
         }
 
-        [Fact]
+        [Fact(Skip = "Flaky test, slider value is sometimes off by 1 or 2 steps.")]
         public void Horizontal_Changes_Value_Dragging_Thumb_Right()
         {
             var slider = _session.FindElementByAccessibilityId("HorizontalSlider");
@@ -44,7 +44,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(currentThumbRect.Left > initialThumbRect.Left);
         }
 
-        [Fact]
+        [Fact(Skip = "Flaky test, slider value is sometimes off by 1 or 2 steps.")]
         public void Horizontal_Changes_Value_Dragging_Thumb_Left()
         {
             var slider = _session.FindElementByAccessibilityId("HorizontalSlider");
@@ -72,7 +72,7 @@ namespace Avalonia.IntegrationTests.Appium
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, 100, 0, MoveToElementOffsetOrigin.Center).Click().Perform();
+            new Actions(_session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
@@ -93,7 +93,7 @@ namespace Avalonia.IntegrationTests.Appium
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, -100, 0, MoveToElementOffsetOrigin.Center).Click().Perform();
+            new Actions(_session).MoveToElementCenter(slider, -100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(

@@ -19,6 +19,11 @@ namespace Avalonia.Win32.Interop
         {
             int result = CoCreateInstance(in ShellIds.TaskBarList, IntPtr.Zero, 1, in ShellIds.ITaskBarList2, out IntPtr instance);
 
+            if (result != (int)HRESULT.S_OK)
+            {
+                return IntPtr.Zero;
+            }
+
             var ptr = (ITaskBarList3VTable**)instance.ToPointer();
 
             s_hrInitDelegate ??= Marshal.GetDelegateForFunctionPointer<HrInit>((*ptr)->HrInit);
