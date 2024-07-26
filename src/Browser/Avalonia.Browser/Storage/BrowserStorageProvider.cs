@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform.Storage;
@@ -12,6 +13,7 @@ namespace Avalonia.Browser.Storage;
 
 internal class BrowserStorageProvider : IStorageProvider
 {
+    internal static ReadOnlySpan<byte> BrowserBookmarkKey => "browser"u8;
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
 
@@ -104,16 +106,12 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        await AvaloniaModule.ImportStorage();
-        var item = await StorageHelper.OpenBookmark(bookmark);
-        return item is not null ? new JSStorageFile(item) : null;
+        return await DecodeBookmark(bookmark) as IStorageBookmarkFile;
     }
-
+    
     public async Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        await AvaloniaModule.ImportStorage();
-        var item = await StorageHelper.OpenBookmark(bookmark);
-        return item is not null ? new JSStorageFolder(item) : null;
+        return await DecodeBookmark(bookmark) as IStorageBookmarkFolder;
     }
 
     public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
@@ -158,6 +156,24 @@ internal class BrowserStorageProvider : IStorageProvider
 
         return (types, !includeAll);
     }
+
+    private async Task<IStorageBookmarkItem?> DecodeBookmark(string bookmark)
+    {
+        await AvaloniaModule.ImportStorage();
+        var item = StorageBookmarkHelper.TryDecodeBookmark(BrowserBookmarkKey, bookmark, out var bytes) switch
+        {
+            StorageBookmarkHelper.DecodeResult.Success => await StorageHelper.OpenBookmark(Encoding.UTF8.GetString(bytes!)),
+            // Attempt to decode 11.0 browser bookmarks
+            StorageBookmarkHelper.DecodeResult.InvalidFormat => await StorageHelper.OpenBookmark(bookmark),
+            _ => null
+        };
+        return item?.GetPropertyAsString("kind") switch
+        {
+            "directory" => new JSStorageFolder(item),
+            "file" => new JSStorageFile(item),
+            _ => null
+        };
+    }
 }
 
 internal abstract class JSStorageItem : IStorageBookmarkItem
@@ -188,14 +204,16 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
 
     public bool CanBookmark => StorageHelper.HasNativeFilePicker();
 
-    public Task<string?> SaveBookmarkAsync()
+    public async Task<string?> SaveBookmarkAsync()
     {
         if (!CanBookmark)
         {
-            return Task.FromResult<string?>(null);
+            return null;
         }
 
-        return StorageHelper.SaveBookmark(FileHandle);
+        var nativeBookmark = await StorageHelper.SaveBookmark(FileHandle);
+        return nativeBookmark is null ? null
+            : StorageBookmarkHelper.EncodeBookmark(BrowserStorageProvider.BrowserBookmarkKey, nativeBookmark);
     }
 
     public Task<IStorageFolder?> GetParentAsync()

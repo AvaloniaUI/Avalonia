@@ -8,8 +8,6 @@ namespace Avalonia.Native
     class PopupImpl : WindowBaseImpl, IPopupImpl
     {
         private readonly ITopLevelImpl _parent;
-        private readonly IAvnPopup _native;
-        private readonly AvaloniaNativeTextInputMethod _inputMethod;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
             ITopLevelImpl parent) : base(factory)
@@ -18,7 +16,7 @@ namespace Avalonia.Native
             
             using (var e = new PopupEvents(this))
             {
-                Init(new MacOSTopLevelHandle(_native = factory.CreatePopup(e)));
+                Init(new MacOSTopLevelHandle(factory.CreatePopup(e)));
             }
             
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
@@ -28,11 +26,23 @@ namespace Avalonia.Native
                 parent = popupImpl._parent;
             }
 
+            if (parent is WindowBaseImpl windowBaseImpl)
+            {
+                Native!.SetParent(windowBaseImpl.Native);
+            }
+            
             //Use the parent's input context to process events
             if (parent is TopLevelImpl topLevelImpl)
             {
-                _inputMethod = topLevelImpl.InputMethod;
+                InputMethod = topLevelImpl.InputMethod;
             }
+        }
+
+        public override void Dispose()
+        {
+            Native!.SetParent(null);
+            
+            base.Dispose();
         }
 
         internal sealed override void Init(MacOSTopLevelHandle handle)
@@ -69,16 +79,6 @@ namespace Avalonia.Native
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
             }
-        }
-
-        public override void Show(bool activate, bool isDialog)
-        {
-            var parent = _parent;
-            while (parent is PopupImpl p) 
-                parent = p._parent;
-            if (parent is WindowImpl w)
-                w.Native.TakeFocusFromChildren();
-            base.Show(false, isDialog);
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(Factory, this);

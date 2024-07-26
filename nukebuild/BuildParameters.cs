@@ -116,9 +116,10 @@ public partial class Build
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
-            Version = b.ForceNugetVersion ?? GetVersion();
+            var (propsVersion, propsApiCompatVersion) = GetVersion();
+            Version = b.ForceNugetVersion ?? propsVersion;
 
-            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version.Split('-', StringSplitOptions.None).First()).Major, 0).ToString();
+            ApiValidationBaseline = b.ApiValidationBaseline ?? propsApiCompatVersion;
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
             if (IsRunningOnAzure)
@@ -153,10 +154,13 @@ public partial class Build
             VersionOutputDir = b.VersionOutputDir;
         }
 
-        string GetVersion()
+        (string Version, string ApiCompatVersion) GetVersion()
         {
             var xdoc = XDocument.Load(RootDirectory / "build/SharedVersion.props");
-            return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
+            return (
+                xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value,
+                xdoc.Descendants().First(x => x.Name.LocalName == "ApiCompatVersion").Value
+            );
         }
     }
 
