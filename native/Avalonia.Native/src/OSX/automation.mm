@@ -40,7 +40,7 @@
         
         auto holder = dynamic_cast<INSViewHolder*>(window);
         auto view = holder->GetNSView();
-        return [view window];
+        return (NSAccessibilityElement*)[view window];
     }
     else
     {
