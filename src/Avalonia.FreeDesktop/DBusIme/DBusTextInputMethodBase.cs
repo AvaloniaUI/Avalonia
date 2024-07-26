@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Input.Raw;
@@ -59,12 +60,18 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         private async Task WatchAsync()
         {
+            var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
+            try
+            {
+                _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
+            }
+            catch (DBusException)
+            {
+            }
             foreach (var name in _knownNames)
             {
-                var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
                 try
                 {
-                    _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
                     var nameOwner = await dbus.GetNameOwnerAsync(name);
                     OnNameChange(null, (name, null, nameOwner));
                 }
@@ -84,6 +91,11 @@ namespace Avalonia.FreeDesktop.DBusIme
             if (e is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnNameChange failed: {e}");
+                return;
+            }
+
+            if (!_knownNames.Contains(args.ServiceName))
+            {
                 return;
             }
 
