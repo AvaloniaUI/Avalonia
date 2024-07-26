@@ -90,9 +90,13 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
         base.OnCreate(savedInstanceState);
 
+        if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
+            is AndroidActivatableLifetime activatableLifetime)
+        {
+            activatableLifetime.CurrentIntendActivity = this;
+        }
 
-        // TODO: we probably don't need to create AvaloniaView, if it's just a protocol activation, and main activity is already created.
-        if (Intent?.Data is {} androidUri
+        if (Intent?.Data is { } androidUri
             && androidUri.IsAbsolute
             && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
         {
@@ -142,7 +146,7 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         {
             if (_listener is not null)
             {
-            _view.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
+                _view.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
             }
             _view.Content = null;
             _view.Dispose();
