@@ -51,9 +51,14 @@ namespace Avalonia.IntegrationTests.Appium
             if (OperatingSystem.IsWindows())
             {
                 var titlebar = window.FindElementsByTagName("TitleBar").FirstOrDefault();
-                var closeButton = titlebar?.FindElementByName("Close");
-                var minimizeButton = titlebar?.FindElementByName("Minimize");
-                var maximizeButton = titlebar?.FindElementByName("Maximize");
+
+                // HACK: WinAppDriver doesn't expose AutomationId for title bar buttons for some
+                // reason (inspect.exe can see them?!) and the Names are localized so we can't rely on them.
+                // We're just going to have to guess which button is which I guess.
+                var buttons = titlebar?.FindElementsByXPath(".//Button");
+                var closeButton = buttons?.Count > 3 ? buttons[2] : null;
+                var minimizeButton = buttons?.Count > 1 ? buttons[0] : null;
+                var maximizeButton = buttons?.Count > 2 ? buttons[1] : null;
                 return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
             }
 
