@@ -8,6 +8,8 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using Avalonia.Platform;
+using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
 
@@ -22,6 +24,7 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
     private GlobalLayoutListener? _listener;
     private object? _content;
+    private bool _contentViewSet;
     internal AvaloniaView? _view;
 
     public Action<int, Result, Intent?>? ActivityResult { get; set; }
@@ -39,6 +42,17 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
                 _content = value;
                 if (_view is not null)
                 {
+                    if (!_contentViewSet)
+                    {
+                        _contentViewSet = true;
+
+                        SetContentView(_view);
+
+                        _listener = new GlobalLayoutListener(_view);
+
+                        _view.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
+                    }
+
                     _view.Content = _content;
                 }
             }
@@ -76,11 +90,6 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
         base.OnCreate(savedInstanceState);
 
-        SetContentView(_view);
-
-        _listener = new GlobalLayoutListener(_view);
-
-        _view.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
 
         // TODO: we probably don't need to create AvaloniaView, if it's just a protocol activation, and main activity is already created.
         if (Intent?.Data is {} androidUri
@@ -131,8 +140,11 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     {
         if (_view is not null)
         {
-            _view.Content = null;
+            if (_listener is not null)
+            {
             _view.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
+            }
+            _view.Content = null;
             _view.Dispose();
             _view = null;
         }
