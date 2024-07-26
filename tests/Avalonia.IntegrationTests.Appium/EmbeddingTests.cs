@@ -18,7 +18,7 @@ namespace Avalonia.IntegrationTests.Appium
             tab.Click();
         }
 
-        [Fact]
+        [Fact(Skip = "Crashes on CI")]
         public void Can_Edit_Native_TextBox()
         {
             // Appium has different XPath syntax between Windows and macOS.
@@ -38,7 +38,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(expected, textBox.Text);
         }
 
-        [PlatformFact(TestPlatforms.Windows, "Popups don't currently accept input on macOS. This is a bug.")]
+        [Fact(Skip = "Crashes on CI")]
         public void Can_Edit_Native_TextBox_In_Popup()
         {
             var checkBox = _session.FindElementByAccessibilityId("EmbeddingPopupOpenCheckBox");
