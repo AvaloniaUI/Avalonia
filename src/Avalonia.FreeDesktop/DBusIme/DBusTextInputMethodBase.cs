@@ -65,8 +65,9 @@ namespace Avalonia.FreeDesktop.DBusIme
             {
                 _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
             }
-            catch (DBusException)
+            catch (DBusException e)
             {
+                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"WatchNameOwnerChangedAsync failed: {e}");
             }
             foreach (var name in _knownNames)
             {
@@ -75,8 +76,9 @@ namespace Avalonia.FreeDesktop.DBusIme
                     var nameOwner = await dbus.GetNameOwnerAsync(name);
                     OnNameChange(null, (name, null, nameOwner));
                 }
-                catch (DBusException)
+                catch (DBusException e)
                 {
+                    Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"GetNameOwnerAsync failed: {e}");
                 }
             }
         }
