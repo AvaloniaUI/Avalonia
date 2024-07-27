@@ -5,7 +5,6 @@
         xmlns:integrationTestApp="using:IntegrationTestApp"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
-        Name="MainWindow"
         Icon="/Assets/icon.ico"
         Title="IntegrationTestApp"
         x:DataType="integrationTestApp:MainWindow">
@@ -24,7 +23,7 @@
       </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>
-  <DockPanel>
+  <DockPanel Background="{DynamicResource SystemRegionBrush}">
     <NativeMenuBar DockPanel.Dock="Top"/>
     <StackPanel DockPanel.Dock="Bottom" Margin="4" Orientation="Horizontal">
       <TextBlock Margin="0,0,4,0">WindowState:</TextBlock>
@@ -94,6 +93,27 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="ContextMenu">
+        <StackPanel>
+          <Button Name="ShowContextMenu" Content="Right-click to show context menu.">
+            <Button.ContextMenu>
+              <ContextMenu>
+                <MenuItem Name="ContextMenuItem1" Header="Item 1"/>
+                <MenuItem Name="ContextMenuItem2" Header="Item 2"/>
+              </ContextMenu>
+            </Button.ContextMenu>
+          </Button>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Desktop">
+        <StackPanel>
+          <CheckBox x:FieldModifier="public" Name="TrayIconClicked">Tray Icon Clicked</CheckBox>
+          <CheckBox x:FieldModifier="public" Name="TrayIconMenuClicked">Tray Icon Menu Clicked</CheckBox>
+          <Button Name="ToggleTrayIconVisible" Content="Toggle TrayIcon Visible" />
+        </StackPanel>
+      </TabItem>
+
       <TabItem Header="Gestures">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
@@ -137,6 +157,21 @@
           </StackPanel>
         </DockPanel>
       </TabItem>
+
+      <TabItem Header="Pointer">
+        <StackPanel>
+          <!-- Trigger with PointerPressed rather using a Button so we have access to the pointer. -->
+          <Border Name="PointerPageShowDialog"
+                  Background="{DynamicResource ButtonBackground}"
+                  HorizontalAlignment="Left"
+                  Padding="{DynamicResource ButtonPadding}"
+                  AutomationProperties.AccessibilityView="Control"
+                  PointerPressed="PointerPageShowDialogPressed">
+            <TextBlock>Show Dialog</TextBlock>
+          </Border>
+          <TextBlock Name="PointerCaptureStatus"/>
+        </StackPanel>
+      </TabItem>
       
       <TabItem Header="Window">
         <Grid ColumnDefinitions="*,8,*">
@@ -170,6 +205,7 @@
             <Button Name="EnterFullscreen">Enter Fullscreen</Button>
             <Button Name="ExitFullscreen">Exit Fullscreen</Button>
             <Button Name="RestoreAll">Restore All</Button>
+            <Button Name="ShowTopmostWindow">Show Topmost Window</Button>
           </StackPanel>
           <StackPanel Grid.Column="2">
             <Button Name="ShowTransparentWindow">Transparent Window</Button>
@@ -177,7 +213,20 @@
           </StackPanel>
         </Grid>
       </TabItem>
-      
+
+      <TabItem Header="Window Decorations">
+        <StackPanel Spacing="4">
+          <CheckBox Name="WindowExtendClientAreaToDecorationsHint" Content="Extend Client Area to Decorations" />
+          <CheckBox Name="WindowForceSystemChrome" Content="Force SystemChrome" />
+          <CheckBox Name="WindowPreferSystemChrome" Content="Prefer SystemChrome" />
+          <CheckBox Name="WindowMacThickSystemChrome" Content="Mac Thick SystemChrome" />
+          <TextBox Name="WindowTitleBarHeightHint" Text="-1" Watermark="In dips" />
+          <Button Name="ApplyWindowDecorations" Content="Apply decorations on this Window"  />
+          <Button Name="ShowNewWindowDecorations" Content="Show new Window with decorations" />
+          <TextBox Name="WindowDecorationProperties" AcceptsReturn="True" />
+        </StackPanel>
+      </TabItem>
+
       <TabItem Header="Slider">
           <DockPanel>
             <DockPanel DockPanel.Dock="Top">
@@ -193,6 +242,19 @@
       
       <TabItem Header="ScrollBar">
         <ScrollBar Name="MyScrollBar" Orientation="Horizontal" AllowAutoHide="False" Width="200" Height="30" Value="20"/>
+      </TabItem>
+      
+      <TabItem Header="Screens">
+        <StackPanel Spacing="4">
+          <Button Name="ScreenRefresh" Content="Refresh" />
+          <TextBox Name="ScreenName" Watermark="DisplayName" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenHandle" Watermark="Handle" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenScaling" Watermark="Scaling" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenBounds" Watermark="Bounds" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenWorkArea" Watermark="WorkArea" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenOrientation" Watermark="Orientation" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenSameReference" Watermark="Is same reference" UseFloatingWatermark="true" />
+        </StackPanel>
       </TabItem>
     </TabControl>
   </DockPanel>
