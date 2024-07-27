@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -97,13 +99,15 @@ namespace Avalonia.X11
         private AvaloniaX11Platform _platform;
 
         private XIValuatorClassInfo? _pressureXIValuatorClassInfo;
+        private XIValuatorClassInfo? _touchMajorXIValuatorClassInfo;
+        private XIValuatorClassInfo? _touchMinorXIValuatorClassInfo;
 
         public bool Init(AvaloniaX11Platform platform)
         {
             _platform = platform;
             _x11 = platform.Info;
             _multitouch = platform.Options?.EnableMultiTouch ?? true;
-            var devices =(XIDeviceInfo*) XIQueryDevice(_x11.Display,
+            var devices = (XIDeviceInfo*) XIQueryDevice(_x11.Display,
                 (int)XiPredefinedDeviceId.XIAllMasterDevices, out int num);
             for (var c = 0; c < num; c++)
             {
@@ -118,8 +122,16 @@ namespace Avalonia.X11
 
             if (_multitouch)
             {
+                // ABS_MT_TOUCH_MAJOR ABS_MT_TOUCH_MINOR
+                // https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html
+                var touchMajorAtom = XInternAtom(_x11.Display, "Abs MT Touch Major", false);
+                var touchMinorAtom = XInternAtom(_x11.Display, "Abs MT Touch Minor", false);
+
                 var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
                 _pressureXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == pressureAtom);
+
+                _touchMajorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMajorAtom);
+                _touchMinorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMinorAtom);
             }
 
             /*
@@ -253,6 +265,52 @@ namespace Avalonia.X11
                         // In our API we use range from 0.0 to 1.0.
                         var pressure = (pressureValue - valuatorClassInfo.Min) / (valuatorClassInfo.Max - valuatorClassInfo.Min);
                         rawPointerPoint.Pressure = (float)pressure;
+                    }
+                }
+
+                if(_touchMajorXIValuatorClassInfo is {} touchMajorXIValuatorClassInfo)
+                {
+                    double? touchMajor = null;
+                    double? touchMinor = null;
+                    PixelRect screenBounds = default;
+                    if (ev.Valuators.TryGetValue(touchMajorXIValuatorClassInfo.Number, out var touchMajorValue))
+                    {
+                        Debug.Assert(client is IWindowImpl);
+                        if (client is IWindowImpl windowImpl)
+                        {
+                            var screen = _platform.X11Screens.ScreenFromWindow(windowImpl);
+                            Debug.Assert(screen != null);
+                            screenBounds = screen.Bounds;
+
+                            // As https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html says, using `screenBounds.Width` is not accurate enough.
+                            touchMajor = (touchMajorValue - touchMajorXIValuatorClassInfo.Min) /
+                                         (touchMajorXIValuatorClassInfo.Max - touchMajorXIValuatorClassInfo.Min) * screenBounds.Width;
+                        }
+                    }
+
+                    if (touchMajor != null)
+                    {
+                        if(_touchMinorXIValuatorClassInfo is {} touchMinorXIValuatorClassInfo)
+                        {
+                            if (ev.Valuators.TryGetValue(touchMinorXIValuatorClassInfo.Number, out var touchMinorValue))
+                            {
+                                touchMinor = (touchMinorValue - touchMinorXIValuatorClassInfo.Min) /
+                                             (touchMinorXIValuatorClassInfo.Max - touchMinorXIValuatorClassInfo.Min) * screenBounds.Height;
+                            }
+                        }
+
+                        if (touchMinor == null)
+                        {
+                            touchMinor = touchMajor;
+                        }
+
+                        rawPointerPoint.ContactRect = new Rect
+                        (
+                            ev.Position.X,
+                            ev.Position.Y,
+                            touchMajor.Value,
+                            touchMinor.Value
+                        );
                     }
                 }
 
