@@ -24,7 +24,7 @@ namespace Avalonia.Build.Tasks
 
         private MessageImportance _reportImportance;
 
-        class Source
+        internal class Source
         {
             public string Path { get; set; }
             public int Size { get; set; }
@@ -38,9 +38,12 @@ namespace Avalonia.Build.Tasks
                 _sourcePath = SPath.Combine(root, relativePath);
                 Size = (int)new FileInfo(_sourcePath).Length;
                 var link = avaloniaResourceItem.GetMetadata("Link");
+                var linkBase = avaloniaResourceItem.GetMetadata("LinkBase");
                 var path = !string.IsNullOrEmpty(link)
                     ? link
-                    : relativePath;
+                    : !string.IsNullOrEmpty(linkBase)
+                        ? linkBase 
+                        : relativePath;
                 Path = "/" + path.Replace('\\', '/');
             }
 
