@@ -732,23 +732,26 @@ namespace Avalonia.Media.TextFormatting
                         }
                 }
 
-                if (coveredLength > 0)
+                if (coveredLength == 0)
                 {
-                    if (lastBounds != null && TryMergeWithLastBounds(currentBounds, lastBounds))
-                    {
-                        currentBounds = lastBounds;
-
-                        result[result.Count - 1] = currentBounds;
-                    }
-                    else
-                    {
-                        result.Add(currentBounds);
-                    }
-
-                    lastBounds = currentBounds;
-
-                    remainingLength -= coveredLength;
+                    //This should never happen
+                    break;
                 }
+
+                if (lastBounds != null && TryMergeWithLastBounds(currentBounds, lastBounds))
+                {
+                    currentBounds = lastBounds;
+
+                    result[result.Count - 1] = currentBounds;
+                }
+                else
+                {
+                    result.Add(currentBounds);
+                }
+
+                lastBounds = currentBounds;
+
+                remainingLength -= coveredLength;
             }
 
             result.Sort(TextBoundsComparer);
@@ -1018,10 +1021,23 @@ namespace Avalonia.Media.TextFormatting
 
             var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
 
-            //Make sure we properly deal with zero width space runs
-            if (characterLength == 0 && currentRun.Length > 0 && currentRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace == 0)
+            if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
-                characterLength = currentRun.Length;
+                //Make sure we are properly dealing with zero width space runs
+                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(startIndex));
+
+                while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
+                {
+                    if (codepoint.IsWhiteSpace)
+                    {
+                        characterLength++;
+                        remainingLength--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
             if (endX < startX)
@@ -1074,13 +1090,26 @@ namespace Avalonia.Media.TextFormatting
 
             var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
 
-            //Make sure we properly deal with zero width space runs
-            if (characterLength == 0 && currentRun.Length > 0 && currentRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace == 0)
+            if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
-                characterLength = currentRun.Length;
+                //Make sure we are properly dealing with zero width space runs
+                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(startIndex));
+
+                while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
+                {
+                    if (codepoint.IsWhiteSpace)
+                    {
+                        characterLength++;
+                        remainingLength--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
-            if(startHit.FirstCharacterIndex > endHit.FirstCharacterIndex)
+            if (startHit.FirstCharacterIndex > endHit.FirstCharacterIndex)
             {
                 startHit = endHit;
             }

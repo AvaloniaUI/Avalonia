@@ -276,13 +276,13 @@ public:
         }
     }
     
-    virtual HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv) override
+    virtual HRESULT CreateStorageProvider(IAvnStorageProvider** ppv) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            *ppv = ::CreateSystemDialogs();
+            *ppv = ::CreateStorageProvider();
             return  S_OK;
         }
     }
