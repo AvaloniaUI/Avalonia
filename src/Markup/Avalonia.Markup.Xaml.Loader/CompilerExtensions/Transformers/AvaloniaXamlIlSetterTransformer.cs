@@ -87,9 +87,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 && XamlTransformHelpers.TryGetCorrectlyTypedValue(context, textValue,
                     propType, out _))
             {
-                
                 var setterValueProperty = new SetterValueProperty(
-                    (IXamlLineInfo)valueProperty?.Property ?? textValue,
+                    (IXamlLineInfo?)valueProperty?.Property ?? textValue,
                     on.Type.GetClrType(), propType, avaloniaTypes);
                 if (valueProperty is not null)
                 {
