@@ -66,6 +66,36 @@ namespace Avalonia.Media.TextFormatting
                                                 currentBreakPosition = nextBreakPosition;
                                             }
 
+                                            var codepoint = Codepoint.ReadAt(currentRun.Text.Span, currentBreakPosition, out _);
+
+                                            //Handle strings that might look like a file path here
+                                            if (codepoint.Value == '\\')
+                                            {
+                                                var graphemeEnumerator =
+                                                    new GraphemeEnumerator(
+                                                        currentRun.Text.Span.Slice(currentBreakPosition));
+
+                                                var lengthInPath = 0;
+                                                var breakPositionInPath = 0;
+
+                                                while (graphemeEnumerator.MoveNext(out var grapheme))
+                                                {
+                                                    if (currentBreakPosition + lengthInPath + grapheme.Length >= measuredLength)
+                                                    {
+                                                        break;
+                                                    }
+
+                                                    lengthInPath += grapheme.Length;
+
+                                                    if (grapheme.FirstCodepoint.Value is '\\')
+                                                    {
+                                                        breakPositionInPath = lengthInPath;
+                                                    }
+                                                }
+
+                                                currentBreakPosition += breakPositionInPath;
+                                            }
+
                                             measuredLength = currentBreakPosition;
                                         }
                                     }
