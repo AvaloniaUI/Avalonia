@@ -144,7 +144,13 @@ namespace Avalonia.Input.Raw
         public float YTilt { get; set; }
 
         /// <inheritdoc cref="PointerPointProperties.ContactRect" />
-        public Rect ContactRect { get; set; }
+        public Rect ContactRect
+        {
+            get => _contactRect ?? new Rect(Position, new Size());
+            set => _contactRect = value;
+        }
+
+        private Rect? _contactRect;
 
         public RawPointerPoint()
         {
