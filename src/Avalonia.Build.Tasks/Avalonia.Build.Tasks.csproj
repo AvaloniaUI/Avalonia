@@ -117,6 +117,7 @@
       <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
       <Compile Include="..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
       <Compile Include="..\Avalonia.Base\Utilities\SpanHelpers.cs" Link="Utilities\SpanHelpers.cs" />
+      <Compile Include="..\Shared\DebuggerHelper.cs" Link="DebuggerHelper.cs" />
       <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
       <Compile Include="..\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
