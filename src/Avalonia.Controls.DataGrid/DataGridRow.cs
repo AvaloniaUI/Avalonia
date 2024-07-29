@@ -85,6 +85,33 @@ namespace Avalonia.Controls
             set { SetValue(HeaderProperty, value); }
         }
 
+        public static readonly DirectProperty<DataGridRow, bool> IsSelectedProperty =
+            AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
+                nameof(IsSelected),
+                o => o.IsSelected,
+                (o, v) => o.IsSelected = v);
+
+        public bool IsSelected
+        {
+            get
+            {
+                if (OwningGrid == null || Slot == -1)
+                {
+                    // The Slot can be -1 if we're about to reuse or recycle this row, but the layout cycle has not
+                    // passed so we don't know the outcome yet.  We don't care whether or not it's selected in this case
+                    return false;
+                }
+                return OwningGrid.GetRowSelection(Slot);
+            }
+            set
+            {
+                if (OwningGrid != null && Slot != -1)
+                {
+                    OwningGrid.SetRowSelection(Slot, value, false);
+                }
+            }
+        }
+
         public static readonly DirectProperty<DataGridRow, bool> IsValidProperty =
             AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
                 nameof(IsValid),
@@ -349,20 +376,6 @@ namespace Avalonia.Controls
                     return OwningGrid.IsRowRecyclable(this);
                 }
                 return true;
-            }
-        }
-
-        internal bool IsSelected
-        {
-            get
-            {
-                if (OwningGrid == null || Slot == -1)
-                {
-                    // The Slot can be -1 if we're about to reuse or recycle this row, but the layout cycle has not
-                    // passed so we don't know the outcome yet.  We don't care whether or not it's selected in this case
-                    return false;
-                }
-                return OwningGrid.GetRowSelection(Slot);
             }
         }
 
