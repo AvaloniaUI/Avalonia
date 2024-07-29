@@ -341,9 +341,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         }
                         nodes.Add(new ElementNamePathElementNode(elementName.Name, elementType));
                         break;
-                    case RawSourceBindingExpressionNode rawSource:
-                        nodes.Add(new RawSourcePathElementNode(rawSource.RawSource));
-                        break;
                     case BindingExpressionGrammar.TypeCastNode typeCastNode:
                         var castType = GetType(typeCastNode.Namespace, typeCastNode.TypeName);
 
@@ -879,28 +876,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             public IXamlType Type => _arrayType.ArrayElementType!;
-        }
-
-        class RawSourcePathElementNode : XamlAstNode, IXamlIlBindingPathElementNode
-        {
-            private readonly IXamlAstValueNode _rawSource;
-
-            public RawSourcePathElementNode(IXamlAstValueNode rawSource)
-                : base(rawSource)
-            {
-                _rawSource = rawSource;
-
-            }
-
-            public IXamlType Type => _rawSource.Type.GetClrType();
-
-            public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
-            {
-                context.Emit(_rawSource, codeGen, Type);
-                codeGen
-                    .EmitCall(context.GetAvaloniaTypes()
-                    .CompiledBindingPathBuilder.GetMethod(m => m.Name == "SetRawSource"));
-            }
         }
 
         class TypeCastPathElementNode : IXamlIlBindingPathElementNode
