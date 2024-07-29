@@ -71,6 +71,26 @@ public class DataGridRowTests
         Assert.All(rows, x => Assert.False(x.IsSelected));
     }
 
+    [Fact]
+    public void Can_Toggle_IsSelected_Via_DataGrid()
+    {
+        using var app = Start();
+        var items = Enumerable.Range(0, 100).Select(x => new Model($"Item {x}")).ToList();
+        items[2].IsSelected = true;
+
+        var target = CreateTarget(items, [IsSelectedBinding()]);
+        var rows = GetRows(target);
+
+        Assert.Equal(0, GetFirstRealizedRowIndex(target));
+        Assert.Equal(4, GetLastRealizedRowIndex(target));
+        Assert.All(rows, x => Assert.Equal(x.Index == 2, x.IsSelected));
+
+        target.SelectedItems.Remove(items[2]);
+
+        Assert.All(rows, x => Assert.False(x.IsSelected));
+        Assert.False(items[2].IsSelected);
+    }
+
     private static IDisposable Start()
     {
         return UnitTestApplication.Start(TestServices.StyledWindow);
