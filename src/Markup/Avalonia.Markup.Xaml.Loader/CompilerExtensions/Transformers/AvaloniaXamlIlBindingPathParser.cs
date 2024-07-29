@@ -336,20 +336,4 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlType Type { get; set; }
     }
-
-    class RawSourceBindingExpressionNode : XamlAstNode, BindingExpressionGrammar.INode
-    {
-        public RawSourceBindingExpressionNode(IXamlAstValueNode rawSource)
-            : base(rawSource)
-        {
-            RawSource = rawSource;
-        }
-
-        public IXamlAstValueNode RawSource { get; private set; }
-
-        public override void VisitChildren(IXamlAstVisitor visitor)
-        {
-            RawSource = (IXamlAstValueNode)RawSource.Visit(visitor);
-        }
-    }
 }
