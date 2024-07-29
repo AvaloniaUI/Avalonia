@@ -79,17 +79,32 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             var valueProperty = on.Children
-                .OfType<XamlAstXamlPropertyValueNode>().FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value");
-            if (valueProperty?.Values.Count == 1 && valueProperty.Values[0] is XamlAstTextNode)
+                .OfType<XamlAstXamlPropertyValueNode>()
+                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value" && p.Values.Count == 1 && p.Values[0] is XamlAstTextNode);
+            var textValue = valueProperty?.Values.FirstOrDefault() as XamlAstTextNode
+                            ?? on.Children.OfType<XamlAstTextNode>().FirstOrDefault();
+            if (textValue is not null
+                && XamlTransformHelpers.TryGetCorrectlyTypedValue(context, textValue,
+                    propType, out _))
             {
-                if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context, valueProperty.Values[0],
-                        propType, out var converted))
-                    throw new XamlStyleTransformException(
-                        $"Unable to convert property value to {propType.GetFqn()}",
-                        valueProperty.Values[0]);
-
-                valueProperty.Property = new SetterValueProperty(valueProperty.Property,
+                
+                var setterValueProperty = new SetterValueProperty(
+                    (IXamlLineInfo)valueProperty?.Property ?? textValue,
                     on.Type.GetClrType(), propType, avaloniaTypes);
+                if (valueProperty is not null)
+                {
+                    valueProperty.Property = setterValueProperty;
+                }
+                else
+                {
+                    on.Children[on.Children.IndexOf(textValue)] =
+                        new XamlAstXamlPropertyValueNode(textValue, setterValueProperty, textValue, false);
+                }
+            }
+            // If we have `Value` property with plain text content that wasn't parsed, throw an exception.
+            else if (valueProperty is not null && textValue is not null)
+            {
+                throw new XamlStyleTransformException($"Unable to convert property value to {propType.GetFqn()}", textValue);
             }
 
             // Handling a very specific case, when ITemplate value is used inside of Setter.Value,
