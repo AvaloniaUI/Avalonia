@@ -31,6 +31,8 @@ public class DrawingContextTests : TestBase
 
     internal class RenderControl : Control
     {
+        private static readonly Typeface s_typeface = new Typeface(TestFontFamily);
+
         public override void Render(DrawingContext context)
         {
             var pen = new Pen(Brushes.LightGray, 10);
@@ -59,7 +61,7 @@ public class DrawingContextTests : TestBase
             {
                 context.DrawText(
                     new FormattedText("any text to render", CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                        Typeface.Default, 12, Brushes.Black), point);
+                        s_typeface, 12, Brushes.Black), point);
             }
         }
     }
