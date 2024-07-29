@@ -29,7 +29,7 @@ internal static class GeneratorContextExtensions
             $"Avalonia x:Name generator was unable to generate names for type '{typeName}'. " +
             $"The type '{typeName}' does not exist in the assembly.");
 
-    private static void Report(this GeneratorExecutionContext context, string id, string title, string message = null, string description = null) =>
+    private static void Report(this GeneratorExecutionContext context, string id, string title, string? message = null, string? description = null) =>
         context.ReportDiagnostic(
             Diagnostic.Create(
                 new DiagnosticDescriptor(

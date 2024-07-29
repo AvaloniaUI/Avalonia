@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class AvaloniaXamlIlCompiler : XamlILCompiler
     {
-        private readonly IXamlType _contextType;
+        private readonly IXamlType _contextType = null!;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
         private readonly AvaloniaBindingExtensionTransformer _bindingTransformer;
 
@@ -156,7 +156,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 #if !XAMLX_CECIL_INTERNAL
         [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
 #endif
-        public XamlDocument Parse(string xaml, IXamlType overrideRootType)
+        public XamlDocument Parse(string xaml, IXamlType? overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
             {
@@ -192,7 +192,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return parsed;
         }
 
-        public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string baseUri, IFileSource fileSource)
+        public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string? baseUri, IFileSource? fileSource)
         {
             Compile(
                 document,
@@ -211,7 +211,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 #if !XAMLX_CECIL_INTERNAL
         [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
 #endif
-        public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
+        public void ParseAndCompile(string xaml, string? baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
         {
             var parsed = Parse(xaml, overrideRootType);
 
