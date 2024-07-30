@@ -275,7 +275,7 @@ namespace Avalonia.X11
                     PixelRect screenBounds = default;
                     if (ev.Valuators.TryGetValue(touchMajorXIValuatorClassInfo.Number, out var touchMajorValue))
                     {
-                        var screen = _platform.X11Screens.ScreenFromPoint(new PixelPoint((int)ev.Position.X, (int)ev.Position.Y));
+                        var screen = _platform.X11Screens.ScreenFromPoint(new PixelPoint((int)ev.RootPosition.X, (int)ev.RootPosition.Y));
                         Debug.Assert(screen != null);
                         if (screen != null)
                         {
@@ -284,6 +284,17 @@ namespace Avalonia.X11
                             // As https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html says, using `screenBounds.Width` is not accurate enough.
                             touchMajor = (touchMajorValue - touchMajorXIValuatorClassInfo.Min) /
                                 (touchMajorXIValuatorClassInfo.Max - touchMajorXIValuatorClassInfo.Min) * screenBounds.Width;
+
+                            var windowScreenWidth = 0d;
+                            var isSameAsTouchScreen = false;
+                            if (client is IWindowImpl windowImpl)
+                            {
+                                var windowScreen = _platform.X11Screens.ScreenFromWindow(windowImpl);
+                                isSameAsTouchScreen = windowScreen == screen;
+                                windowScreenWidth = windowScreen?.Bounds.Width ?? windowScreenWidth;
+                            }
+
+                            Console.WriteLine($"Position={ev.Position.X:0.00},{ev.Position.Y:0.00}; TouchMajor={touchMajorValue:0.00};Max={touchMajorXIValuatorClassInfo.Max:0.00};Min={touchMajorXIValuatorClassInfo.Min:0.00};ScreenWidth={screenBounds.Width};TouchWidth={touchMajor}; IsSameAsTouchScreen={isSameAsTouchScreen}; WindowScreenWidth={windowScreenWidth}\r\n");
                         }
                     }
 
@@ -295,6 +306,8 @@ namespace Avalonia.X11
                             {
                                 touchMinor = (touchMinorValue - touchMinorXIValuatorClassInfo.Min) /
                                              (touchMinorXIValuatorClassInfo.Max - touchMinorXIValuatorClassInfo.Min) * screenBounds.Height;
+
+                                Console.WriteLine($"TouchMinor={touchMinorValue:0.00};Max={touchMinorXIValuatorClassInfo.Max:0.00};Min={touchMinorXIValuatorClassInfo.Min:0.00};ScreenHeight={screenBounds.Height};TouchWidth={touchMajor};r\n");
                             }
                         }
 
@@ -397,6 +410,7 @@ namespace Avalonia.X11
         public RawInputModifiers Modifiers { get; }
         public ulong Timestamp { get; }
         public Point Position { get; }
+        public Point RootPosition { get; }
         public int Button { get; set; }
         public int Detail { get; set; }
         public bool Emulated { get; set; }
@@ -442,6 +456,7 @@ namespace Avalonia.X11
 
             Valuators = new Dictionary<int, double>();
             Position = new Point(ev->event_x, ev->event_y);
+            RootPosition = new Point(ev->root_x, ev->root_y);
             var values = ev->valuators.Values;
             if(ev->valuators.Mask != null)
                 for (var c = 0; c < ev->valuators.MaskLen * 8; c++)
