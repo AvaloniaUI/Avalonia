@@ -21,6 +21,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.IPopupHost.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Screens.#ctor(Avalonia.Platform.IScreenImpl)</Target>
     <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
@@ -40,6 +46,12 @@
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Avalonia.Controls.Notifications.INotificationManager.CloseAll</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.IPopupHost.ConfigurePosition(Avalonia.Controls.Primitives.PopupPositioning.PopupPositionRequest)</Target>
     <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
   </Suppression>
