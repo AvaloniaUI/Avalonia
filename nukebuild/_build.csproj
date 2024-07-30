@@ -20,7 +20,6 @@
     <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
-    <PackageReference Include="Microsoft.Debugging.Tools.PdbStr" Version="20230731.1609.0" GeneratePathProperty="true" PrivateAssets="All"/>
     <PackageReference Include="Microsoft.Build.Framework" Version="17.3.2" PrivateAssets="All" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">
       <PrivateAssets>all</PrivateAssets>
@@ -29,6 +28,7 @@
 
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[8.0.200]" />
     <PackageDownload Include="Microsoft.DotNet.GenAPI.Tool" Version="[8.0.300-preview.24115.44]" />
+    <PackageDownload Include="dotnet-ilrepack" Version="[1.0.0]" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,9 +38,7 @@
     <!-- Common build related files -->
     <Compile Remove="Numerge/**/*.*" />
     <Compile Include="Numerge/Numerge/**/*.cs" Exclude="Numerge/Numerge/obj/**/*.cs" />
-    <EmbeddedResource Include="$(PkgMicrosoft_Debugging_Tools_PdbStr)/content/x86/pdbstr.exe" />
     <EmbeddedResource Include="../build/avalonia.snk" />
-    <Compile Remove="il-repack\ILRepack\Application.cs" />
   </ItemGroup>
 
   <ItemGroup>
