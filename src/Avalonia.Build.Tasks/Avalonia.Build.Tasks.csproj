@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-      <TargetFrameworks>netstandard2.0</TargetFrameworks>
+      <TargetFramework>netstandard2.0</TargetFramework>
+      <Nullable>enable</Nullable>
       <GenerateDocumentationFile>false</GenerateDocumentationFile>
       <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
       <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
@@ -114,16 +115,18 @@
       <Compile Include="../Avalonia.Base/RelativePoint.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
-      <Compile Include="..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
-      <Compile Include="..\Avalonia.Base\Utilities\SpanHelpers.cs" Link="Utilities\SpanHelpers.cs" />
-      <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
-      <Compile Include="..\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
-      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
-      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
+      <Compile Include="../Avalonia.Base/Compatibility/NullableAttributes.cs" Link="Compatibility/NullableAttributes.cs" />
+      <Compile Include="../Avalonia.Base/Compatibility/TrimmingAttributes.cs" Link="Compatibility/TrimmingAttributes.cs" />
+      <Compile Include="../Avalonia.Base/Utilities/SpanHelpers.cs" Link="Utilities/SpanHelpers.cs" />
+      <Compile Include="../Shared/StringCompatibilityExtensions.cs" Link="Compatibility/StringCompatibilityExtensions.cs" />
+      <Compile Include="../Shared/IsExternalInit.cs" Link="Compatibility/IsExternalInit.cs" />
+      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/obj/**/*.cs" />
+      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/Compatibility/*.cs" />
+      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/IL/SreTypeSystem.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.5" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     </ItemGroup>
-  <Import Project="..\..\build\SourceGenerators.props" />
+  <Import Project="../../build/SourceGenerators.props" />
+  <Import Project="../../build/NullableEnable.props" />
 </Project>
