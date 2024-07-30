@@ -118,17 +118,16 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // #8733
             var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
             
             new Actions(_session)
                 .MoveToElement(border)
                 .DoubleClick()
                 .Perform();
             
-            Thread.Sleep(100);
-            
-            new Actions(_session).MoveToElement(lastGesture, 200, 200).DoubleClick().Perform();
+            var border2 = _session.FindElementByAccessibilityId("GestureBorder2");
+            new Actions(_session).MoveToElement(border2).DoubleClick().Perform();
 
+            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
             Assert.Equal("DoubleTapped2", lastGesture.Text);
         }
 
