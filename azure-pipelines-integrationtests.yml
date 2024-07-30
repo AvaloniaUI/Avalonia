@@ -82,12 +82,18 @@ jobs:
       command: 'build'
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
-  - task: DotNetCoreCLI@2
+  - task: VSBuild@1
+    displayName: 'Build test project'
+    inputs:
+      solution: 'tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+
+  - task: VSTest@2
     displayName: 'Run Integration Tests'
     inputs:
-      command: 'test'
-      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
-      arguments: '-l "console;verbosity=detailed"'
+      testAssemblyVer2: '**/Avalonia.IntegrationTests.Appium.dll'
+      runSettingsFile: 'tests\Avalonia.IntegrationTests.Appium\ci.runsettings'
 
   - task: Windows Application Driver@0
     inputs:
