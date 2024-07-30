@@ -56,7 +56,6 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(_session).ClickAndHold(thumb).MoveByOffset(-100, 0).Release().Perform();
 
-            _output.WriteLine(_session.PageSource);
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
                 _session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
@@ -100,6 +99,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(_session).MoveToElementCenter(slider, -100, 0).Click().Perform();
 
+            _output.WriteLine(_session.PageSource);
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
                 _session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
