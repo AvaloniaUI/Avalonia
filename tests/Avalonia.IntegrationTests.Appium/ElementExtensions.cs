@@ -147,6 +147,7 @@ namespace Avalonia.IntegrationTests.Appium
                 var oldChildWindows = session.FindElements(By.XPath("//Window"));
 
                 element.Click();
+                Thread.Sleep(500);
 
                 var newHandle = session.WindowHandles.Except(oldHandles).SingleOrDefault();
 
