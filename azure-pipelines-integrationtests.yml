@@ -86,8 +86,6 @@ jobs:
     displayName: 'Build test project'
     inputs:
       solution: 'tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
 
   - task: VSTest@2
     displayName: 'Run Integration Tests'
