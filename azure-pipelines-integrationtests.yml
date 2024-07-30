@@ -34,8 +34,7 @@ jobs:
       command: 'build'
       projects: 'tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj'
   
-  - task: printAllVariables@1
-    displayName: 'Print all variables via extension'
+  - pwsh: (gci  env:* | sort-object name)
 
   - task: VSTest@2
     displayName: 'Run Integration Tests'
