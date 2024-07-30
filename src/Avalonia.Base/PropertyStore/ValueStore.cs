@@ -292,6 +292,42 @@ namespace Avalonia.PropertyStore
             return property.GetDefaultValue(Owner);
         }
 
+        public BindingExpressionBase? GetExpression(AvaloniaProperty property)
+        {
+            var evaluatedLocalValue = false;
+
+            bool TryGetLocalValue(out BindingExpressionBase? result)
+            {
+                if (!evaluatedLocalValue)
+                {
+                    evaluatedLocalValue = true;
+
+                    if (_localValueBindings?.TryGetValue(property.Id, out var o) == true)
+                    {
+                        result = o as BindingExpressionBase;
+                        return true;
+                    }
+                }
+
+                result = null;
+                return false;
+            }
+
+            for (var i = _frames.Count - 1; i >= 0; --i)
+            {
+                var frame = _frames[i];
+
+                if (frame.Priority > BindingPriority.LocalValue && TryGetLocalValue(out var localExpression))
+                    return localExpression;
+
+                if (frame.TryGetEntryIfActive(property, out var entry, out _))
+                    return entry as BindingExpressionBase;
+            }
+
+            TryGetLocalValue(out var e);
+            return e;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static EffectiveValue<T> CastEffectiveValue<T>(EffectiveValue value)
         {
@@ -468,7 +504,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="entry">The binding entry.</param>
         /// <param name="priority">The priority of binding which produced a new value.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnBindingValueChanged(
             IValueEntry entry,
             BindingPriority priority)
@@ -592,7 +627,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnLocalValueBindingCompleted(AvaloniaProperty property, IDisposable observer)
         {
             if (_localValueBindings is not null &&

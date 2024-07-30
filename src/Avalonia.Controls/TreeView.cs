@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
@@ -296,6 +297,12 @@ namespace Avalonia.Controls
             }
 
             return TreeItemFromContainer(this, container);
+        }
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TreeViewAutomationPeer(this);
         }
 
         private protected override void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

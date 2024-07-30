@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Markup.Xaml;
 
@@ -16,6 +17,11 @@ namespace ControlCatalog.Pages
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void ToolTipOpening(object? sender, CancelRoutedEventArgs args)
+        {
+            ((Control)args.Source!).SetValue(ToolTip.TipProperty, "New tip set from ToolTipOpening.");
         }
 
         public CustomPopupPlacement CustomPlacementCallback(Size popupSize, Rect targetRect, Point offset)

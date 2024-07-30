@@ -6,20 +6,21 @@ namespace Avalonia.Rendering.Composition.Drawing;
 
 internal class CompositionRenderDataSceneBrushContent : ISceneBrushContent
 {
-    public CompositionRenderData RenderData { get; }
+    public ServerCompositionRenderData RenderData { get; }
     private readonly Rect? _rect;
 
-    public CompositionRenderDataSceneBrushContent(ITileBrush brush, CompositionRenderData renderData, Rect? rect,
-        bool useScalableRasterization)
+    public record Properties(ServerCompositionRenderData RenderData, Rect? Rect, bool UseScalableRasterization);
+
+    public CompositionRenderDataSceneBrushContent(ITileBrush brush, Properties properties)
     {
         Brush = brush;
-        _rect = rect;
-        UseScalableRasterization = useScalableRasterization;
-        RenderData = renderData;
+        _rect = properties.Rect;
+        UseScalableRasterization = properties.UseScalableRasterization;
+        RenderData = properties.RenderData;
     }
 
     public ITileBrush Brush { get; }
-    public Rect Rect => _rect ?? (RenderData.Server?.Bounds?.ToRect() ?? default);
+    public Rect Rect => _rect ?? (RenderData?.Bounds?.ToRect() ?? default);
 
     public double Opacity => Brush.Opacity;
     public ITransform? Transform => Brush.Transform;
@@ -36,11 +37,11 @@ internal class CompositionRenderDataSceneBrushContent : ISceneBrushContent
         {
             var oldTransform = context.Transform;
             context.Transform = transform.Value * oldTransform;
-            RenderData.Server.Render(context);
+            RenderData.Render(context);
             context.Transform = oldTransform;
         }
         else
-            RenderData.Server.Render(context);
+            RenderData.Render(context);
     }
 
     public bool UseScalableRasterization { get; }

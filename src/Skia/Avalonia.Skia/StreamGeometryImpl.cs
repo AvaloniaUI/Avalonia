@@ -88,6 +88,22 @@ namespace Avalonia.Skia
             private bool _isFigureBroken;
             private bool Duplicate => _isFilled && !ReferenceEquals(_geometryImpl._fillPath, Stroke);
 
+            private void EnsureSeparateFillPath()
+            {
+                if (Stroke == Fill)
+                    _geometryImpl._fillPath = Stroke.Clone();
+            }
+            
+            private void BreakFigure()
+            {
+                if (!_isFigureBroken)
+                {
+                    _isFigureBroken = true;
+                    EnsureSeparateFillPath();
+                }
+                    
+            }
+
             /// <summary>
             /// Initializes a new instance of the <see cref="StreamContext"/> class.
             /// <param name="geometryImpl">Geometry to operate on.</param>
@@ -134,11 +150,8 @@ namespace Avalonia.Skia
             /// <inheritdoc />
             public void BeginFigure(Point startPoint, bool isFilled)
             {
-                if (!isFilled)
-                {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-                }
+                if (!isFilled) 
+                    EnsureSeparateFillPath();
 
                 _isFilled = isFilled;
                 _startPoint = startPoint;
@@ -179,7 +192,7 @@ namespace Avalonia.Skia
                 {
                     if (_isFigureBroken)
                     {
-                        LineTo(_startPoint);
+                        Stroke.LineTo(_startPoint.ToSKPoint());
                         _isFigureBroken = false;
                     }
                     else
@@ -204,11 +217,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point.X, (float)point.Y);
                 }
                 if (Duplicate)
@@ -236,11 +245,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point.X, (float)point.Y);
                 }
                 if (Duplicate)
@@ -263,11 +268,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point3.X, (float)point3.Y);
                 }
                 if (Duplicate)
@@ -283,11 +284,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point2.X, (float)point2.Y);
                 }
                 if (Duplicate)

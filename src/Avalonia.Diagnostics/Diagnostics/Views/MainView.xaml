@@ -72,6 +72,7 @@
             </MenuItem.Icon>
           </MenuItem>
         </MenuItem>
+        <MenuItem Header="_HotKeys" Command="{Binding ShowHotKeys}" />
       </MenuItem>
       <MenuItem Header="_Overlays">
         <MenuItem Header="Margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">
@@ -255,6 +256,7 @@
       <TabStripItem Content="Logical Tree" />
       <TabStripItem Content="Visual Tree" />
       <TabStripItem Content="Events" />
+      <TabStripItem Content="HotKeys" IsVisible="False" />
     </TabStrip>
 
     <ContentControl Grid.Row="2"

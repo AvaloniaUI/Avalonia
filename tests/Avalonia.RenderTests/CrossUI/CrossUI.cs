@@ -158,17 +158,18 @@ public abstract record class CrossPathSegment(bool IsStroked)
     public record Arc(Point Point, Size Size, double RotationAngle, bool IsLargeArc, SweepDirection SweepDirection, bool IsStroked) : CrossPathSegment(IsStroked);
     public record CubicBezier(Point Point1, Point Point2, Point Point3, bool IsStroked) : CrossPathSegment(IsStroked);
     public record QuadraticBezier(Point Point1, Point Point2, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record PolyLine(IEnumerable<Point> Points, bool IsStroked) : CrossPathSegment(IsStroked);
 }
 
 public class CrossDrawingBrush : CrossTileBrush
 {
-    public CrossDrawing Drawing;
+    public required CrossDrawing Drawing { get; set; }
 }
 
 public class CrossPen
 {
-    public CrossBrush Brush;
-    public double Thickness = 1;
+    public required CrossBrush Brush { get; set; }
+    public double Thickness { get; set; } = 1;
     public PenLineJoin LineJoin { get; set; } = PenLineJoin.Miter;
     public PenLineCap LineCap { get; set; } = PenLineCap.Flat;
 }
@@ -212,7 +213,7 @@ public class CrossBitmapImage : CrossImage
 
 public class CrossDrawingImage : CrossImage
 {
-    public CrossDrawing Drawing;
+    public required CrossDrawing Drawing { get; set; }
 }
 
 
@@ -251,12 +252,14 @@ public class CrossFuncControl : CrossControl
 
 public class CrossImageControl : CrossControl
 {
-    public CrossImage Image;
+    public required CrossImage Image { get; set; }
+
     public override void Render(ICrossDrawingContext ctx)
     {
         base.Render(ctx);
         var rc = new Rect(Bounds.Size);
-        ctx.DrawImage(Image, rc);
+        var image = Image;
+        ctx.DrawImage(image, rc);
     }
 }
 

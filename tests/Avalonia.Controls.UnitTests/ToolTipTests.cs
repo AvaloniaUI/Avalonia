@@ -369,6 +369,87 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ToolTip_Events_Order_Is_Defined()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var tip = new ToolTip() { Content = "Tip" };
+            var target = new Decorator()
+            {
+                [ToolTip.TipProperty] = tip,
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            var eventsOrder = new List<(string eventName, object sender, object source)>();
+
+            ToolTip.AddToolTipOpeningHandler(target,
+                (sender, args) => eventsOrder.Add(("Opening", sender, args.Source)));
+            ToolTip.AddToolTipClosingHandler(target,
+                (sender, args) => eventsOrder.Add(("Closing", sender, args.Source)));
+
+            SetupWindowAndActivateToolTip(target);
+
+            Assert.True(ToolTip.GetIsOpen(target));
+
+            target[ToolTip.TipProperty] = null;
+
+            Assert.False(ToolTip.GetIsOpen(target));
+
+            Assert.Equal(
+                new[]
+                {
+                    ("Opening", (object)target, (object)target),
+                    ("Closing", target, target)
+                },
+                eventsOrder);
+        }
+        
+        [Fact]
+        public void ToolTip_Is_Not_Opened_If_Opening_Event_Handled()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var tip = new ToolTip() { Content = "Tip" };
+            var target = new Decorator()
+            {
+                [ToolTip.TipProperty] = tip,
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            ToolTip.AddToolTipOpeningHandler(target,
+                (sender, args) => args.Cancel = true);
+
+            SetupWindowAndActivateToolTip(target);
+
+            Assert.False(ToolTip.GetIsOpen(target));
+        }
+
+        [Fact]
+        public void ToolTip_Can_Be_Replaced_On_The_Fly_Via_Opening_Event()
+        {
+            using var app = UnitTestApplication.Start(ConfigureServices(TestServices.FocusableWindow));
+
+            var tip1 = new ToolTip() { Content = "Hi" };
+            var tip2 = new ToolTip() { Content = "Bye" };
+            var target = new Decorator()
+            {
+                [ToolTip.TipProperty] = tip1,
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            ToolTip.AddToolTipOpeningHandler(target,
+                (sender, args) => target[ToolTip.TipProperty] = tip2);
+
+            SetupWindowAndActivateToolTip(target);
+
+            Assert.True(ToolTip.GetIsOpen(target));
+
+            target[ToolTip.TipProperty] = null;
+
+            Assert.False(ToolTip.GetIsOpen(target));
+		}
+
+        [Fact]
         public void Should_Close_When_Pointer_Leaves_Window()
         {
             using (UnitTestApplication.Start(TestServices.FocusableWindow))

@@ -1442,6 +1442,17 @@ namespace Avalonia.Controls
 
                                 var backspacePosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
+                                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
+
+                                var backspaceCharacterHit = _presenter.TextLayout.TextLines[lineIndex]
+                                    .GetBackspaceCaretCharacterHit(new CharacterHit(caretIndex));
+
+                                if (backspaceCharacterHit.FirstCharacterIndex > backspacePosition &&
+                                    backspaceCharacterHit.FirstCharacterIndex < caretIndex)
+                                {
+                                    backspacePosition = backspaceCharacterHit.FirstCharacterIndex;
+                                }
+
                                 if (caretIndex != backspacePosition)
                                 {
                                     var start = Math.Min(backspacePosition, caretIndex);
@@ -1456,6 +1467,8 @@ namespace Avalonia.Controls
                                     SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
 
                                     SetCurrentValue(CaretIndexProperty, start);
+
+                                    _presenter.MoveCaretToTextPosition(start, true);
                                 }
                             }
 
@@ -1724,6 +1737,8 @@ namespace Avalonia.Controls
 
             if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
             {
+                _imClient.ShowInputPanel();
+
                 var text = Text;
                 var clickInfo = e.GetCurrentPoint(this);
                 if (text != null && !(clickInfo.Pointer?.Captured is Border))

@@ -816,7 +816,7 @@ namespace Avalonia.Controls.UnitTests
             popupImpl.SetupGet(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
 
-            windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);
+            windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
                 inputManager: new InputManager(),

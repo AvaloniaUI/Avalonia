@@ -16,11 +16,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPath()
             => _elements = Array.Empty<ICompiledBindingPathElement>();
 
-        internal CompiledBindingPath(ICompiledBindingPathElement[] elements, object? rawSource)
-        {
-            _elements = elements;
-            RawSource = rawSource;
-        }
+        internal CompiledBindingPath(ICompiledBindingPathElement[] elements)
+            => _elements = elements;
 
         internal void BuildExpression(List<ExpressionNode> result, out bool isRooted)
         {
@@ -97,8 +94,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         internal SourceMode SourceMode => Array.Exists(_elements, e => e is IControlSourceBindingPathElement)
             ? SourceMode.Control : SourceMode.Data;
 
-        internal object? RawSource { get; }
-
         /// <inheritdoc />
         public override string ToString()
             => string.Concat((IEnumerable<ICompiledBindingPathElement>) _elements);
@@ -107,7 +102,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     public class CompiledBindingPathBuilder
     {
         private readonly int _apiVersion;
-        private object? _rawSource;
         private readonly List<ICompiledBindingPathElement> _elements = new();
 
         public CompiledBindingPathBuilder()
@@ -210,13 +204,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
+        [Obsolete("This method doesn't do anything anymore. Use Binding.Source instead.")]
         public CompiledBindingPathBuilder SetRawSource(object? rawSource)
         {
-            _rawSource = rawSource;
             return this;
         }
 
-        public CompiledBindingPath Build() => new CompiledBindingPath(_elements.ToArray(), _rawSource);
+        public CompiledBindingPath Build() => new CompiledBindingPath(_elements.ToArray());
     }
 
     internal interface ICompiledBindingPathElement
