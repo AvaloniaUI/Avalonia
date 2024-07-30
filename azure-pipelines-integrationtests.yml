@@ -48,7 +48,7 @@ jobs:
       testResultsFormat: 'XUnit'
       testResultsFiles: '**/TestResults.xml'
 
-  - publish: $(Common.TestResultsDirectory)
+  - publish: $(Agent.TempDirectory)
     displayName: 'Publish test artifacts'
     condition: failed()
 
