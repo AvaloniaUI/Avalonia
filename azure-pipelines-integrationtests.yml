@@ -40,8 +40,14 @@ jobs:
       testAssemblyVer2: '**/Avalonia.IntegrationTests.Appium.dll'
       runSettingsFile: 'tests\Avalonia.IntegrationTests.Appium\ci.runsettings'
 
-  - publish: D:\a\_temp\TestResults
+  - task: PublishTestResults@2
     displayName: 'Publish test results'
+    inputs:
+      testResultsFormat: 'XUnit'
+      testResultsFiles: '**/TestResults.xml'
+
+  - publish: $(Common.TestResultsDirectory)
+    displayName: 'Publish test artifacts'
     condition: failed()
 
   - task: Windows Application Driver@0
