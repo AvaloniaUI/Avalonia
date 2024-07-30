@@ -13,7 +13,7 @@ internal static class XYFocusHelpers
     {
         return keyDeviceType switch
         {
-            null => true, // programmatic input, allow any subtree.
+            null => !modes.Equals(XYFocusNavigationModes.Disabled), // programmatic input, allow any subtree except Disabled.
             KeyDeviceType.Keyboard => modes.HasFlag(XYFocusNavigationModes.Keyboard),
             KeyDeviceType.Gamepad => modes.HasFlag(XYFocusNavigationModes.Gamepad),
             KeyDeviceType.Remote => modes.HasFlag(XYFocusNavigationModes.Remote),
