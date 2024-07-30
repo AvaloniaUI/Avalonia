@@ -75,6 +75,8 @@ namespace Avalonia.IntegrationTests.Appium
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
+            _output.WriteLine(_session.PageSource);
+            _output.WriteLine("===> CLICK ON SLIDER <===");
             new Actions(_session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
             _output.WriteLine(_session.PageSource);
