@@ -275,16 +275,15 @@ namespace Avalonia.X11
                     PixelRect screenBounds = default;
                     if (ev.Valuators.TryGetValue(touchMajorXIValuatorClassInfo.Number, out var touchMajorValue))
                     {
-                        Debug.Assert(client is IWindowImpl);
-                        if (client is IWindowImpl windowImpl)
+                        var screen = _platform.X11Screens.ScreenFromPoint(new PixelPoint((int)ev.Position.X, (int)ev.Position.Y));
+                        Debug.Assert(screen != null);
+                        if (screen != null)
                         {
-                            var screen = _platform.X11Screens.ScreenFromWindow(windowImpl);
-                            Debug.Assert(screen != null);
                             screenBounds = screen.Bounds;
 
                             // As https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html says, using `screenBounds.Width` is not accurate enough.
                             touchMajor = (touchMajorValue - touchMajorXIValuatorClassInfo.Min) /
-                                         (touchMajorXIValuatorClassInfo.Max - touchMajorXIValuatorClassInfo.Min) * screenBounds.Width;
+                                (touchMajorXIValuatorClassInfo.Max - touchMajorXIValuatorClassInfo.Min) * screenBounds.Width;
                         }
                     }
 
