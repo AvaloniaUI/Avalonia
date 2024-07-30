@@ -40,6 +40,10 @@ jobs:
       testAssemblyVer2: '**/Avalonia.IntegrationTests.Appium.dll'
       runSettingsFile: 'tests\Avalonia.IntegrationTests.Appium\ci.runsettings'
 
+  - publish: D:\a\_temp\TestResults
+    displayName: 'Publish test results'
+    condition: failed()
+
   - task: Windows Application Driver@0
     inputs:
       OperationType: 'Stop'
