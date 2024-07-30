@@ -85,6 +85,7 @@ jobs:
   - task: VSBuild@1
     displayName: 'Build test project'
     inputs:
+      restoreNugetPackages: true
       solution: 'tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj'
 
   - task: VSTest@2
