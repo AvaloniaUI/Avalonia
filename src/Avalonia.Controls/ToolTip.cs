@@ -437,14 +437,14 @@ namespace Avalonia.Controls
                 adornedControl.RaiseEvent(args);
             }
 
-            _subscriptions?.Dispose();
-
             if (_popup is not null)
             {
                 _popup.IsOpen = false;
                 _popup.SetPopupParent(null);
                 _popup.PlacementTarget = null;
             }
+
+            _subscriptions?.Dispose();
         }
 
         private void OnPopupClosed(object? sender, EventArgs e)
