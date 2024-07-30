@@ -284,17 +284,6 @@ namespace Avalonia.X11
                             // As https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html says, using `screenBounds.Width` is not accurate enough.
                             touchMajor = (touchMajorValue - touchMajorXIValuatorClassInfo.Min) /
                                 (touchMajorXIValuatorClassInfo.Max - touchMajorXIValuatorClassInfo.Min) * screenBounds.Width;
-
-                            var windowScreenWidth = 0d;
-                            var isSameAsTouchScreen = false;
-                            if (client is IWindowImpl windowImpl)
-                            {
-                                var windowScreen = _platform.X11Screens.ScreenFromWindow(windowImpl);
-                                isSameAsTouchScreen = windowScreen == screen;
-                                windowScreenWidth = windowScreen?.Bounds.Width ?? windowScreenWidth;
-                            }
-
-                            Console.WriteLine($"Position={ev.Position.X:0.00},{ev.Position.Y:0.00}; TouchMajor={touchMajorValue:0.00};Max={touchMajorXIValuatorClassInfo.Max:0.00};Min={touchMajorXIValuatorClassInfo.Min:0.00};ScreenWidth={screenBounds.Width};TouchWidth={touchMajor}; IsSameAsTouchScreen={isSameAsTouchScreen}; WindowScreenWidth={windowScreenWidth}\r\n");
                         }
                     }
 
@@ -306,8 +295,6 @@ namespace Avalonia.X11
                             {
                                 touchMinor = (touchMinorValue - touchMinorXIValuatorClassInfo.Min) /
                                              (touchMinorXIValuatorClassInfo.Max - touchMinorXIValuatorClassInfo.Min) * screenBounds.Height;
-
-                                Console.WriteLine($"TouchMinor={touchMinorValue:0.00};Max={touchMinorXIValuatorClassInfo.Max:0.00};Min={touchMinorXIValuatorClassInfo.Min:0.00};ScreenHeight={screenBounds.Height};TouchWidth={touchMajor};r\n");
                             }
                         }
 
