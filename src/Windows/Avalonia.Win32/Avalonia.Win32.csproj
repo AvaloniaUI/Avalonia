@@ -4,6 +4,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- We still keep BinaryFormatter for WinForms compatibility. -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
   </PropertyGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
@@ -23,6 +24,7 @@
     <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
     <MicroComIdl Include="DirectX\directx.idl" CSharpInteropPath="DirectX\directx.Generated.cs" />
     <MicroComIdl Include="DComposition\dcomp.idl" CSharpInteropPath="DComposition\DComp.Generated.cs" />
+    <ProjectReference Include="..\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
@@ -35,6 +37,8 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="windows" />
     <InternalsVisibleTo Include="Avalonia.Win32.Interoperability, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Direct2D1, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>

@@ -1,0 +1,27 @@
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
+
+namespace Avalonia.Win32.Interop.Automation
+{
+#if NET8_0_OR_GREATER
+    [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf8)]
+#else
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+#endif
+    [Guid("36dc7aef-33e6-4691-afe1-2be7274b3d33")]
+    internal partial interface IRangeValueProvider
+    {
+        void SetValue(double value);
+        double Value();
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        bool IsReadOnly();
+
+        double Maximum();
+        double Minimum();
+        double LargeChange();
+        double SmallChange();
+    }
+}
