@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
 
@@ -8,7 +9,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class ContextMenuTests
     {
-        private readonly AppiumDriver _session;
+        private readonly AppiumDriver<AppiumWebElement> _session;
 
         public ContextMenuTests(DefaultAppFixture fixture)
         {
