@@ -3,6 +3,7 @@ using System.Globalization;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Avalonia.IntegrationTests.Appium
 {
@@ -10,8 +11,9 @@ namespace Avalonia.IntegrationTests.Appium
     public class SliderTests
     {
         private readonly AppiumDriver _session;
+        private readonly ITestOutputHelper _output;
 
-        public SliderTests(DefaultAppFixture fixture)
+        public SliderTests(DefaultAppFixture fixture, ITestOutputHelper output)
         {
             _session = fixture.Session;
 
@@ -21,6 +23,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             var reset = _session.FindElementByAccessibilityId("ResetSliders");
             reset.Click();
+            _output = output;
         }
 
         [Fact(Skip = "Flaky test, slider value is sometimes off by 1 or 2 steps.")]
@@ -74,6 +77,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(_session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
+            _output.WriteLine(_session.PageSource);
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
                 _session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
