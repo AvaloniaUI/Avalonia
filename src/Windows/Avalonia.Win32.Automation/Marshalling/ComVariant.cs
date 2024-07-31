@@ -109,6 +109,12 @@ internal struct ComVariant : IDisposable
         
         Unsafe.SkipInit(out ComVariant variant);
 
+        if (value.GetType().IsEnum)
+        {
+            var underlyingType = Enum.GetUnderlyingType(value.GetType());
+            value = Convert.ChangeType(value, underlyingType);
+        }
+
         if (value is short)
         {
             variant.VarType = VarEnum.VT_I2;

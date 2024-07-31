@@ -24,7 +24,7 @@ namespace Avalonia.Win32.Interop.Automation
         Document = 6,
     }
 #if NET8_0_OR_GREATER
-    [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf8)]
+    [GeneratedComInterface]
 #else
     [ComImport()]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -48,7 +48,8 @@ namespace Avalonia.Win32.Interop.Automation
 #endif
             object value, [MarshalAs(UnmanagedType.Bool)] bool backward);
 
-        ITextRangeProvider FindText(string text,
+        ITextRangeProvider FindText(
+            [MarshalAs(UnmanagedType.BStr)] string text,
             [MarshalAs(UnmanagedType.Bool)] bool backward,
             [MarshalAs(UnmanagedType.Bool)] bool ignoreCase);
 #if NET8_0_OR_GREATER
@@ -60,6 +61,7 @@ namespace Avalonia.Win32.Interop.Automation
 #endif
         IReadOnlyList<double> GetBoundingRectangles();
         IRawElementProviderSimple GetEnclosingElement();
+        [return: MarshalAs(UnmanagedType.BStr)]
         string GetText(int maxLength);
         int Move(TextUnit unit, int count);
         int MoveEndpointByUnit(TextPatternRangeEndpoint endpoint, TextUnit unit, int count);

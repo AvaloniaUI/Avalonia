@@ -20,7 +20,7 @@ namespace Avalonia.Win32.Interop.Automation
 // why given that IRawElementProviderSimple and IRawElementProviderFragmentRoot seem to get
 // called fine when they're internal, but I lost a couple of days to this.
 #if NET8_0_OR_GREATER
-    [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf8)]
+    [GeneratedComInterface]
 #else
     [ComImport()]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

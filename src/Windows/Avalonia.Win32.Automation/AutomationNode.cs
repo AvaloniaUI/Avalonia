@@ -97,30 +97,20 @@ namespace Avalonia.Win32.Automation
 
         public virtual object? GetPatternProvider(int patternId)
         {
-            object? ThisIfPeerImplementsProvider<TAvn, TNative>()
-            {
-                if (Peer.GetProvider<TAvn>() is AutomationNode provider)
-                {
-                    return provider;
-                }
-
-                return null;
-            }
+            AutomationNode? ThisIfPeerImplementsProvider<T>() => Peer.GetProvider<T>() is object ? this : null;
 
             return (UiaPatternId)patternId switch
             {
-                UiaPatternId.ExpandCollapse =>
-                    ThisIfPeerImplementsProvider<AAP.IExpandCollapseProvider, UIA.IExpandCollapseProvider>(),
-                UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider, UIA.IInvokeProvider>(),
-                UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider, UIA.IRangeValueProvider>(),
-                UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider, UIA.IScrollProvider>(),
+                UiaPatternId.ExpandCollapse => ThisIfPeerImplementsProvider<AAP.IExpandCollapseProvider>(),
+                UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider>(),
+                UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider>(),
+                UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider>(),
                 UiaPatternId.ScrollItem => this,
-                UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider, UIA.ISelectionProvider>(),
-                UiaPatternId.SelectionItem =>
-                    ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider, UIA.ISelectionItemProvider>(),
-                UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider, UIA.IToggleProvider>(),
-                UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider, UIA.IValueProvider>(),
-                _ => default,
+                UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
+                UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
+                UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
+                _ => null,
             };
         }
 

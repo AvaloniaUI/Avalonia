@@ -7,7 +7,7 @@ using Avalonia.Win32.Automation.Marshalling;
 namespace Avalonia.Win32.Interop.Automation
 {
 #if NET8_0_OR_GREATER
-    [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf8)]
+    [GeneratedComInterface]
 #else
     [ComImport()]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -15,6 +15,7 @@ namespace Avalonia.Win32.Interop.Automation
     [Guid("6278cab1-b556-4a1a-b4e0-418acc523201")]
     internal partial interface IMultipleViewProvider
     {
+        [return: MarshalAs(UnmanagedType.BStr)]
         string GetViewName(int viewId);
         void SetCurrentView(int viewId);
         int GetCurrentView();
