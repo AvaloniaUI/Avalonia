@@ -15,12 +15,6 @@ jobs:
     inputs:
       packageType: sdk
       useGlobalJson: true
-
-  - task: Windows Application Driver@0
-    inputs:
-      OperationType: 'Start'
-      AgentResolution: '4K'
-    displayName: 'Start WinAppDriver'
   
   - task: DotNetCoreCLI@2
     displayName: 'Build IntegrationTestApp'
@@ -33,8 +27,12 @@ jobs:
     inputs:
       command: 'build'
       projects: 'tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj'
-  
-  - pwsh: (gci  env:* | sort-object name)
+
+  - task: Windows Application Driver@0
+    displayName: 'Start WinAppDriver'
+    inputs:
+      OperationType: 'Start'
+      AgentResolution: '4K'
 
   - task: VSTest@2
     displayName: 'Run Integration Tests'
@@ -42,17 +40,14 @@ jobs:
       testAssemblyVer2: '**/Avalonia.IntegrationTests.Appium.dll'
       runSettingsFile: 'tests\Avalonia.IntegrationTests.Appium\ci.runsettings'
 
+  - task: Windows Application Driver@0
+    displayName: 'Stop WinAppDriver'
+    inputs:
+      OperationType: 'Stop'
+
   - task: PublishTestResults@2
     displayName: 'Publish test results'
     inputs:
       testResultsFormat: 'XUnit'
-      testResultsFiles: '**/TestResults.xml'
-
-  - publish: $(Agent.TempDirectory)
-    displayName: 'Publish test artifacts'
-    condition: failed()
-
-  - task: Windows Application Driver@0
-    inputs:
-      OperationType: 'Stop'
-    displayName: 'Stop WinAppDriver'
+      testResultsFiles: '**/*.trx'
+    condition: succeededOrFailed()
