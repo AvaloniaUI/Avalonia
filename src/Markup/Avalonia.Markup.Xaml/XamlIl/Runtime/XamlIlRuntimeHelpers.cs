@@ -361,7 +361,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         {
             return new RootServiceProvider(new NameScope(), null);
         }
-        public static IServiceProvider CreateRootServiceProviderV3(IServiceProvider parentServiceProvider)
+        public static IServiceProvider CreateRootServiceProviderV3(IServiceProvider? parentServiceProvider)
         {
             return new RootServiceProvider(new NameScope(), parentServiceProvider);
         }

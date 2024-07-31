@@ -1236,6 +1236,40 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.True(firstBounds.TextRunBounds.Count > 0);
             }
         }
+        
+
+        [Fact]
+        public void Should_GetTextBounds_NotInfiniteLoop()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var shaperOption = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, 0, CultureInfo.CurrentCulture);
+                var shaperOption2 = new TextShaperOptions(Typeface.Default.GlyphTypeface, 11, 0, CultureInfo.CurrentCulture);
+
+                var textRuns = new List<TextRun>
+                {
+                    new ShapedTextRun(TextShaper.Current.ShapeText("قرأ ", shaperOption), defaultProperties),
+                    new ShapedTextRun(TextShaper.Current.ShapeText("Wikipedia\u2122", shaperOption), defaultProperties),
+                    new ShapedTextRun(TextShaper.Current.ShapeText("\u200e ", shaperOption2), defaultProperties),
+                    new ShapedTextRun(TextShaper.Current.ShapeText("طوال اليوم", shaperOption), defaultProperties),
+                    new ShapedTextRun(TextShaper.Current.ShapeText(".", shaperOption), defaultProperties)
+                };
+
+                var textSource = new FixedRunsTextSource(textRuns);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                            true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                textLine.GetTextBounds(4, 11);
+            }
+        }
 
         [Fact]
         public void Should_GetTextBounds_Bidi()
