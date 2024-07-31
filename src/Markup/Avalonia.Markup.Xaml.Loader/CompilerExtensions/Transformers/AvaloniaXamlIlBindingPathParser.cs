@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using Avalonia.Markup.Parsers;
 using Avalonia.Utilities;
-using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
-using XamlParseException = XamlX.XamlParseException;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
@@ -81,11 +79,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
-        private static BindingExpressionGrammar.INode ConvertLongFormPropertiesToBindingExpressionNode(
+        private static BindingExpressionGrammar.INode? ConvertLongFormPropertiesToBindingExpressionNode(
             AstTransformationContext context,
             XamlAstObjectNode binding)
         {
-            BindingExpressionGrammar.INode convertedNode = null;
+            BindingExpressionGrammar.INode? convertedNode = null;
 
             var syntheticCompiledBindingProperties = binding.Children.OfType<XamlAstXamlPropertyValueNode>()
                 .Where(v => v.Property is AvaloniaSyntheticCompiledBindingProperty)
@@ -195,17 +193,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                     if (treeType == "Visual")
                     {
-                        convertedNode = new VisualAncestorBindingExpressionNode
+                        convertedNode = new VisualAncestorBindingExpressionNode(ancestorType!)
                         {
-                            Type = ancestorType,
                             Level = ancestorLevel
                         };
                     }
                     else if (treeType == "Logical")
                     {
-                        convertedNode = new LogicalAncestorBindingExpressionNode
+                        convertedNode = new LogicalAncestorBindingExpressionNode(ancestorType!)
                         {
-                            Type = ancestorType,
                             Level = ancestorLevel
                         };
                     }
@@ -238,7 +234,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         throw new XamlBindingsTransformException("TargetType has to be set on ControlTemplate or it should be defined inside of a Style.", binding);
                     } 
 
-                    convertedNode = new TemplatedParentBindingExpressionNode { Type = parentType };
+                    convertedNode = new TemplatedParentBindingExpressionNode(parentType);
                 }
                 else
                 {
@@ -260,8 +256,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         private static bool GetRelativeSourceObjectFromAssignment(
             AstTransformationContext context,
-            XamlAstXamlPropertyValueNode relativeSourceProperty,
-            out XamlAstObjectNode relativeSourceObject)
+            XamlAstXamlPropertyValueNode? relativeSourceProperty,
+            [NotNullWhen(true)] out XamlAstObjectNode? relativeSourceObject)
         {
             relativeSourceObject = null;
             if (relativeSourceProperty is null)
@@ -320,36 +316,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
     }
 
-    class VisualAncestorBindingExpressionNode : BindingExpressionGrammar.INode
+    class VisualAncestorBindingExpressionNode(IXamlType type) : BindingExpressionGrammar.INode
     {
-        public IXamlType Type { get; set; }
+        public IXamlType Type { get; set; } = type;
         public int Level { get; set; }
     }
 
-    class LogicalAncestorBindingExpressionNode : BindingExpressionGrammar.INode
+    class LogicalAncestorBindingExpressionNode(IXamlType type) : BindingExpressionGrammar.INode
     {
-        public IXamlType Type { get; set; }
+        public IXamlType Type { get; set; } = type;
         public int Level { get; set; }
     }
 
-    class TemplatedParentBindingExpressionNode : BindingExpressionGrammar.INode
+    class TemplatedParentBindingExpressionNode(IXamlType type) : BindingExpressionGrammar.INode
     {
-        public IXamlType Type { get; set; }
-    }
-
-    class RawSourceBindingExpressionNode : XamlAstNode, BindingExpressionGrammar.INode
-    {
-        public RawSourceBindingExpressionNode(IXamlAstValueNode rawSource)
-            : base(rawSource)
-        {
-            RawSource = rawSource;
-        }
-
-        public IXamlAstValueNode RawSource { get; private set; }
-
-        public override void VisitChildren(IXamlAstVisitor visitor)
-        {
-            RawSource = (IXamlAstValueNode)RawSource.Visit(visitor);
-        }
+        public IXamlType Type { get; set; } = type;
     }
 }
