@@ -262,8 +262,18 @@ namespace Avalonia.Controls.Primitives
             base.OnPointerWheelChanged(e);
 
             // We need to handle pointer wheel event to allow scrolling with the pointer wheel. So we raise the event on the scrollviewer's presenter
-            if(!e.Handled && _owner?.Presenter is { } presenter)
+            if (!e.Handled && _owner?.Presenter is { } presenter && VisualRoot is Visual root)
             {
+                e.Handled = true;
+                e = new PointerWheelEventArgs(
+                    this,
+                    e.Pointer,
+                    root,
+                    e.GetPosition(root),
+                    e.Timestamp,
+                    new PointerPointProperties((RawInputModifiers)e.KeyModifiers, PointerUpdateKind.Other),
+                    e.KeyModifiers,
+                    e.Delta);
                 presenter.RaiseEvent(e);
             }
         }
