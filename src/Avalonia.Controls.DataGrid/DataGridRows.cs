@@ -677,7 +677,7 @@ namespace Avalonia.Controls
                 {
                     if (DisplayData.GetDisplayedElement(slot) is DataGridRow row)
                     {
-                        row.UpdatePseudoClasses(); ;
+                        row.ApplyState();
                     }
                     slot = GetNextVisibleSlot(slot);
                 }
@@ -1513,7 +1513,7 @@ namespace Avalonia.Controls
 
             if (row.IsSelected || row.IsRecycled)
             {
-                row.UpdatePseudoClasses();
+                row.ApplyState();
             }
 
             // Show or hide RowDetails based on DataGrid settings
@@ -1927,7 +1927,7 @@ namespace Avalonia.Controls
             Control element = DisplayData.GetDisplayedElement(slot);
             if (element is DataGridRow row)
             {
-                row.UpdatePseudoClasses();
+                row.ApplyState();
                 EnsureRowDetailsVisibility(row, raiseNotification: true, animate: true);
             }
             else

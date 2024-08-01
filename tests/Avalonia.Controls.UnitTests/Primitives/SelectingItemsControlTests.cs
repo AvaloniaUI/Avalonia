@@ -2376,7 +2376,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         target.SelectedValueBinding = new Binding(nameof(ItemModel.Id));
                         break;
                     default:
-                        throw new InvalidOperationException($"Unkown field {field}");
+                        throw new InvalidOperationException($"Unknown field {field}");
                 }
             }
 

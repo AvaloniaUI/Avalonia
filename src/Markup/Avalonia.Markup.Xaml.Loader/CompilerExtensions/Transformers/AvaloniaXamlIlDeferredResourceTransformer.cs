@@ -28,7 +28,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     new XamlDirectCallPropertySetter(types.ResourceDictionaryDeferredAdd),
                 };
             }
-            else if (pa.Property.Name == "Resources" && pa.Property.Getter.ReturnType.Equals(types.IResourceDictionary)
+            else if (pa.Property.Name == "Resources" && pa.Property.Getter?.ReturnType.Equals(types.IResourceDictionary) == true
                 && ShouldBeDeferred(pa.Values[1]))
             {
                 pa.Values[1] = new XamlDeferredContentNode(pa.Values[1], types.XamlIlTypes.Object, context.Configuration);
@@ -132,7 +132,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 emitter.EmitCall(_adder, true);
             }
 
-            public bool Equals(AdderSetter other)
+            public bool Equals(AdderSetter? other)
             {
                 if (ReferenceEquals(null, other))
                     return false;
@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return _getter.Equals(other._getter) && _adder.Equals(other._adder);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => Equals(obj as AdderSetter);
 
             public override int GetHashCode()
