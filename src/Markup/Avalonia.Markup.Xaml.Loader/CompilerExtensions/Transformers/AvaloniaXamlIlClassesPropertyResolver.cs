@@ -49,7 +49,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 {
                     emitter
                         .Stloc(value.Local)
-                        .EmitCall(_types.StyledElementClassesProperty.Getter)
+                        .EmitCall(_types.StyledElementClassesProperty.Getter!)
                         .Ldstr(_className)
                         .Ldloc(value.Local)
                         .EmitCall(_types.Classes.GetMethod(new FindMethodMethodSignature("Set",
