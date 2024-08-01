@@ -40,7 +40,8 @@ partial class Build : NukeBuild
     [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
     Tool ApiGenTool;
 
-
+    [PackageExecutable("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
+    Tool IlRepackTool;
     
     protected override void OnBuildInitialized()
     {
@@ -307,7 +308,8 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
-                                                       Parameters.Version + ".nupkg");
+                                                       Parameters.Version + ".nupkg",
+                                                       IlRepackTool);
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
             EnsureCleanDirectory(Parameters.NugetRoot);
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,

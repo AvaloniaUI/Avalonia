@@ -684,6 +684,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateTextLayout()
         {
+            InvalidateVisual();
             InvalidateMeasure();
         }
 

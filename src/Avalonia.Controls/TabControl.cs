@@ -256,7 +256,7 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (e.NavigationMethod == NavigationMethod.Directional && e.Source is TabItem)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }

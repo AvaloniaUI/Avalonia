@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
@@ -25,15 +26,15 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                Init(new MacOSTopLevelHandle(_native = factory.CreateWindow(e)), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(_native = factory.CreateWindow(e)));
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
 
-        internal sealed override void Init(MacOSTopLevelHandle handle, IAvnScreens screens)
+        internal sealed override void Init(MacOSTopLevelHandle handle)
         {
-            base.Init(handle, screens);
+            base.Init(handle);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -156,6 +157,9 @@ namespace Avalonia.Native
         
         private void InvalidateExtendedMargins()
         {
+            if(_native is MicroComProxyBase pb && pb.IsDisposed) 
+                return;
+
             if (WindowState ==  WindowState.FullScreen)
             {
                 ExtendedMargins = new Thickness();

@@ -93,6 +93,27 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="ContextMenu">
+        <StackPanel>
+          <Button Name="ShowContextMenu" Content="Right-click to show context menu.">
+            <Button.ContextMenu>
+              <ContextMenu>
+                <MenuItem Name="ContextMenuItem1" Header="Item 1"/>
+                <MenuItem Name="ContextMenuItem2" Header="Item 2"/>
+              </ContextMenu>
+            </Button.ContextMenu>
+          </Button>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Desktop">
+        <StackPanel>
+          <CheckBox x:FieldModifier="public" Name="TrayIconClicked">Tray Icon Clicked</CheckBox>
+          <CheckBox x:FieldModifier="public" Name="TrayIconMenuClicked">Tray Icon Menu Clicked</CheckBox>
+          <Button Name="ToggleTrayIconVisible" Content="Toggle TrayIcon Visible" />
+        </StackPanel>
+      </TabItem>
+
       <TabItem Header="Gestures">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
@@ -221,6 +242,19 @@
       
       <TabItem Header="ScrollBar">
         <ScrollBar Name="MyScrollBar" Orientation="Horizontal" AllowAutoHide="False" Width="200" Height="30" Value="20"/>
+      </TabItem>
+      
+      <TabItem Header="Screens">
+        <StackPanel Spacing="4">
+          <Button Name="ScreenRefresh" Content="Refresh" />
+          <TextBox Name="ScreenName" Watermark="DisplayName" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenHandle" Watermark="Handle" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenScaling" Watermark="Scaling" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenBounds" Watermark="Bounds" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenWorkArea" Watermark="WorkArea" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenOrientation" Watermark="Orientation" UseFloatingWatermark="true" />
+          <TextBox Name="ScreenSameReference" Watermark="Is same reference" UseFloatingWatermark="true" />
+        </StackPanel>
       </TabItem>
     </TabControl>
   </DockPanel>

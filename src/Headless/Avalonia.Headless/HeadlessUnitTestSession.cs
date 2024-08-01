@@ -23,7 +23,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
     private readonly AppBuilder _appBuilder;
     private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly BlockingCollection<Action> _queue;
+    private readonly BlockingCollection<(Action, ExecutionContext?)> _queue;
     private readonly Task _dispatchTask;
 
     internal const DynamicallyAccessedMemberTypes DynamicallyAccessed =
@@ -32,7 +32,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
         DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
 
     private HeadlessUnitTestSession(AppBuilder appBuilder, CancellationTokenSource cancellationTokenSource,
-        BlockingCollection<Action> queue, Task dispatchTask)
+        BlockingCollection<(Action, ExecutionContext?)> queue, Task dispatchTask)
     {
         _appBuilder = appBuilder;
         _cancellationTokenSource = cancellationTokenSource;
@@ -40,20 +40,26 @@ public sealed class HeadlessUnitTestSession : IDisposable
         _dispatchTask = dispatchTask;
     }
 
-    /// <inheritdoc cref="Dispatch{TResult}(Func{Task{TResult}}, CancellationToken)"/>
+    /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task Dispatch(Action action, CancellationToken cancellationToken)
     {
-        return Dispatch(() =>
+        return DispatchCore(() =>
         {
             action();
             return Task.FromResult(0);
-        }, cancellationToken);
+        }, false ,cancellationToken);
     }
 
-    /// <inheritdoc cref="Dispatch{TResult}(Func{Task{TResult}}, CancellationToken)"/>
+    /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<TResult> action, CancellationToken cancellationToken)
     {
-        return Dispatch(() => Task.FromResult(action()), cancellationToken);
+        return DispatchCore(() => Task.FromResult(action()), false, cancellationToken);
+    }
+
+    /// <inheritdoc cref="DispatchCore{TResult}"/>
+    public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
+    {
+        return DispatchCore(action, false, cancellationToken);
     }
 
     /// <summary>
@@ -61,11 +67,12 @@ public sealed class HeadlessUnitTestSession : IDisposable
     /// setting app avalonia services, and runs <paramref name="action"/> parameter.
     /// </summary>
     /// <param name="action">Action to execute on the dispatcher thread with avalonia services.</param>
+    /// <param name="captureExecutionContext">Whether dispatch should capture ExecutionContext.</param>
     /// <param name="cancellationToken">Cancellation token to cancel execution.</param>
     /// <exception cref="ObjectDisposedException">
     /// If global session was already cancelled and thread killed, it's not possible to dispatch any actions again
     /// </exception>
-    public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
+    internal Task<TResult> DispatchCore<TResult>(Func<Task<TResult>> action, bool captureExecutionContext, CancellationToken cancellationToken)
     {
         if (_cancellationTokenSource.IsCancellationRequested)
         {
@@ -73,9 +80,10 @@ public sealed class HeadlessUnitTestSession : IDisposable
         }
 
         var token = _cancellationTokenSource.Token;
+        var executionContext = captureExecutionContext ? ExecutionContext.Capture() : null;
 
         var tcs = new TaskCompletionSource<TResult>();
-        _queue.Add(() =>
+        _queue.Add((() =>
         {
             var cts = new CancellationTokenSource();
             using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
@@ -84,7 +92,6 @@ public sealed class HeadlessUnitTestSession : IDisposable
             try
             {
                 using var application = EnsureApplication();
-
                 var task = action();
                 if (task.Status != TaskStatus.RanToCompletion)
                 {
@@ -110,7 +117,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
             {
                 tcs.TrySetException(ex);
             }
-        });
+        }, executionContext));
         return tcs.Task;
     }
 
@@ -158,7 +165,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
     {
         var tcs = new TaskCompletionSource<HeadlessUnitTestSession>();
         var cancellationTokenSource = new CancellationTokenSource();
-        var queue = new BlockingCollection<Action>();
+        var queue = new BlockingCollection<(Action, ExecutionContext?)>();
 
         Task? task = null;
         task = Task.Run(() =>
@@ -186,8 +193,15 @@ public sealed class HeadlessUnitTestSession : IDisposable
             {
                 try
                 {
-                    var action = queue.Take(cancellationTokenSource.Token);
-                    action();
+                    var (action, executionContext) = queue.Take(cancellationTokenSource.Token);
+                    if (executionContext is not null)
+                    {
+                        ExecutionContext.Run(executionContext, a => ((Action)a!).Invoke(), action);
+                    }
+                    else
+                    {
+                        action();   
+                    }
                 }
                 catch (OperationCanceledException)
                 {

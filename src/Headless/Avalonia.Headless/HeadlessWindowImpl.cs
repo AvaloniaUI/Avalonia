@@ -19,6 +19,7 @@ namespace Avalonia.Headless
         private static int _nextGlobalZOrder = 1;
 
         private readonly IKeyboardDevice _keyboard;
+        private readonly IScreenImpl _screen;
         private readonly Pointer _mousePointer;
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
@@ -31,6 +32,7 @@ namespace Avalonia.Headless
             IsPopup = isPopup;
             Surfaces = new object[] { this };
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
+            _screen = new HeadlessScreensStub();
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             MouseDevice = new MouseDevice(_mousePointer);
             ClientSize = new Size(1024, 768);
@@ -149,7 +151,6 @@ namespace Avalonia.Headless
 
         }
 
-        public IScreenImpl Screen { get; } = new HeadlessScreensStub();
         public WindowState WindowState { get; set; }
         public Action<WindowState>? WindowStateChanged { get; set; }
         public void SetTitle(string? title)
@@ -265,9 +266,14 @@ namespace Avalonia.Headless
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
         public object? TryGetFeature(Type featureType)
         {
-        	if(featureType == typeof(IClipboard))
+        	if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return _screen;
             }
 
             return null;
