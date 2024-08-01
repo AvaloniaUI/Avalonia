@@ -113,7 +113,7 @@ namespace Avalonia.Media.Fonts
                     fontSimulations |= FontSimulations.Oblique;
                 }
 
-                if ((int)weight >= 600 && glyphTypeface2.Weight != weight)
+                if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
                 {
                     fontSimulations |= FontSimulations.Bold;
                 }
