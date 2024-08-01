@@ -81,10 +81,29 @@ internal partial class CompositorDrawingContextProxy
             Type = PendingCommandType.SetTransform,
             DataUnion = { Transform = m }
         };
-        if (_commands.Count > 0 && _commands[_commands.Count - 1].Type == PendingCommandType.SetTransform)
-            _commands[_commands.Count - 1] = cmd;
-        else
+
+        var hasExistingSetTransform = false;
+
+        for (var index = 0; index < _commands.Count; index++)
+        {
+            var pendingCommand = _commands[index];
+
+            if (pendingCommand.Type != PendingCommandType.SetTransform)
+            {
+                continue;
+            }
+
+            _commands[index] = cmd;
+
+            hasExistingSetTransform = true;
+
+            break;
+        }
+
+        if (!hasExistingSetTransform)
+        {
             _commands.Add(cmd);
+        }
     }
 
 

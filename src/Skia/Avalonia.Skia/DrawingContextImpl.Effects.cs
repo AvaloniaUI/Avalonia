@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using SkiaSharp;
 
@@ -6,6 +7,7 @@ namespace Avalonia.Skia;
 
 partial class DrawingContextImpl
 {
+    private readonly Stack<Matrix> _transformStack = new Stack<Matrix>();
     
     public void PushEffect(IEffect effect)
     {
@@ -14,6 +16,13 @@ partial class DrawingContextImpl
         var paint = SKPaintCache.Shared.Get();
         paint.ImageFilter = filter;
         Canvas.SaveLayer(paint);
+
+        if (_currentTransform.HasValue)
+        {
+            _transformStack.Push(_currentTransform.Value);
+            _currentTransform = Canvas.TotalMatrix.ToAvaloniaMatrix();
+        }
+        
         SKPaintCache.Shared.ReturnReset(paint);
     }
 
@@ -21,6 +30,7 @@ partial class DrawingContextImpl
     {
         CheckLease();
         Canvas.Restore();
+        _currentTransform = _transformStack.Pop();
     }
 
     SKImageFilter? CreateEffect(IEffect effect)

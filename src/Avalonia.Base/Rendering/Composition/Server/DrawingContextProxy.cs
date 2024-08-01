@@ -27,23 +27,20 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
     }
 
     public Matrix? PostTransform { get; set; }
-    Matrix _transform;
 
     public Matrix Transform
     {
-        get => _transform;
+        get => _impl.Transform;
         set
         {
-            _transform = value;
             SetTransform(value);
         }
     }
 
     void SetImplTransform(Matrix m)
     {
-        _transform = m;
         if (PostTransform.HasValue)
-            m = m * PostTransform.Value;
+            m *= PostTransform.Value;
         _impl.Transform = m;
     }
 

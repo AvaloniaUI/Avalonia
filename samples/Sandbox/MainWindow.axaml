@@ -1,4 +1,43 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow" ClipToBounds="False">
+  <Border 
+    HorizontalAlignment="Center" 
+    VerticalAlignment="Center" 
+    Background="AliceBlue">
+    <Border.RenderTransform>
+      <TransformGroup>
+        <SkewTransform AngleX="-5" AngleY="-12"/>
+        <RotateTransform/>
+        <TranslateTransform/>
+      </TransformGroup>
+    </Border.RenderTransform>
+    <TextBlock Text="Avalonia" HorizontalAlignment="Center" VerticalAlignment="Center">
+      <TextBlock.Styles>
+        <Style Selector="TextBlock">
+          <Setter Property="FontSize" Value="48"/>
+          <Setter Property="FontWeight" Value="ExtraBold"/>
+          <Setter Property="Foreground">
+            <Setter.Value>
+              <LinearGradientBrush EndPoint="100%,100%" StartPoint="0%,0%" SpreadMethod="Reflect">
+                <GradientStop Color="#FFCE2121" Offset="0"/>
+                <GradientStop Color="#FF511004" Offset="0.288"/>
+                <GradientStop Color="#FFC79E8C" Offset="0.415"/>
+                <GradientStop Color="#FFFD8644" Offset="0.535"/>
+                <GradientStop Color="#FFF5DB36" Offset="0.696"/>
+                <GradientStop Color="#FF490707" Offset="0.819"/>
+                <GradientStop Color="#FFE7821C" Offset="1"/>
+              </LinearGradientBrush>
+            </Setter.Value>
+          </Setter>
+          <Setter Property="Effect">
+            <Setter.Value>
+              <DropShadowEffect/>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </TextBlock.Styles>
+    </TextBlock>
+  </Border>
+
 </Window>
