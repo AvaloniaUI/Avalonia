@@ -44,11 +44,12 @@ public class InitializeComponentTests
 
         var xaml = await View.Load(markup);
         var classInfo = classResolver.ResolveView(xaml);
+        Assert.NotNull(classInfo);
         var nameResolver = new XamlXNameResolver();
         var names = nameResolver.ResolveNames(classInfo.Xaml);
 
         var generator = new InitializeComponentCodeGenerator(types, devToolsMode);
-        var generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version.ToString();
+        var generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version?.ToString();
 
         var code = generator
             .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
