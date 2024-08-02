@@ -1,4 +1,6 @@
-﻿using Avalonia.Platform;
+﻿using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls;
 
@@ -10,6 +12,7 @@ public class MacOSProperties
     static MacOSProperties()
     {
         IsTemplateIconProperty.Changed.AddClassHandler<TrayIcon>(TrayIconIsTemplateIconChanged);
+        CanBecomeKeyWindowProperty.Changed.AddClassHandler<Popup>(CanBecomeKeyWindowChanged);
     }
 
     /// <summary>
@@ -31,5 +34,35 @@ public class MacOSProperties
     private static void TrayIconIsTemplateIconChanged(TrayIcon trayIcon, AvaloniaPropertyChangedEventArgs args)
     {
         (trayIcon.Impl as ITrayIconWithIsTemplateImpl)?.SetIsTemplateIcon(args.GetNewValue<bool>());
+    }
+
+    /// <summary>
+    /// Defines the CanBecomeKeyWindow attached property.
+    /// </summary>
+    public static readonly AttachedProperty<bool> CanBecomeKeyWindowProperty =
+        AvaloniaProperty.RegisterAttached<MacOSProperties, Popup, bool>("CanBecomeKeyWindow");
+
+    /// <summary>
+    /// A Boolean value that determines whether the native NSWindow can become key window.
+    /// </summary>
+    public static void SetCanBecomeKeyWindow(Popup popup, bool value) =>
+        popup.SetValue(CanBecomeKeyWindowProperty, value);
+
+    /// <summary>
+    /// Returns a Boolean value that determines whether the native NSWindow can become key window.
+    /// </summary>
+    public static bool GetCanBecomeKeyWindow(Popup popup) => popup.GetValue(CanBecomeKeyWindowProperty);
+
+    private static void CanBecomeKeyWindowChanged(Popup popup, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (popup is not { Host: PopupRoot root })
+        {
+            return;
+        }
+        
+        if (root.PlatformImpl is INativePopupImpl nativePopupImpl)
+        {
+            nativePopupImpl.CanBecomeKeyWindow = args.GetNewValue<bool>();
+        }
     }
 }

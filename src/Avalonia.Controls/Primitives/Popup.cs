@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Diagnostics;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
@@ -494,6 +495,11 @@ namespace Avalonia.Controls.Primitives
 
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
 
+            if (popupHost is PopupRoot { PlatformImpl: INativePopupImpl nativePopupImpl })
+            {
+                nativePopupImpl.CanBecomeKeyWindow = MacOSProperties.GetCanBecomeKeyWindow(this);
+            }
+            
             popupHost.Show();
 
             using (BeginIgnoringIsOpen())

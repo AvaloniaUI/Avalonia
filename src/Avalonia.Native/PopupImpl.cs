@@ -1,14 +1,15 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    class PopupImpl : WindowBaseImpl, IPopupImpl
+    class PopupImpl : WindowBaseImpl, IPopupImpl, INativePopupImpl
     {
         private readonly ITopLevelImpl _parent;
-
+        
         public PopupImpl(IAvaloniaNativeFactory factory,
             ITopLevelImpl parent) : base(factory)
         {
@@ -36,6 +37,12 @@ namespace Avalonia.Native
             {
                 InputMethod = topLevelImpl.InputMethod;
             }
+        }
+
+        public bool CanBecomeKeyWindow
+        {
+            get => Native!.CanBecomeKeyWindow != 0;
+            set => Native!.SetCanBecomeKeyWindow(value ? 1 : 0);
         }
 
         public override void Dispose()
