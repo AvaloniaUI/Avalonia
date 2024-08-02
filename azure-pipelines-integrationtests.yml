@@ -91,7 +91,7 @@ jobs:
   - task: VSTest@2
     displayName: 'Run Integration Tests'
     inputs:
-      testAssemblyVer2: '**/Avalonia.IntegrationTests.Appium.dll'
+      testAssemblyVer2: '**\bin\**\Avalonia.IntegrationTests.Appium.dll'
       runSettingsFile: 'tests\Avalonia.IntegrationTests.Appium\record-video.runsettings'
 
   - task: PublishTestResults@2
