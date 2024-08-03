@@ -83,11 +83,23 @@ jobs:
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Integration Tests'
-    retryCountOnTaskFailure: 3
+    displayName: 'Build test project'
     inputs:
-      command: 'test'
-      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+      command: 'build'
+      projects: 'tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj'
+
+  - task: VSTest@2
+    displayName: 'Run Integration Tests'
+    inputs:
+      testAssemblyVer2: '**\bin\**\Avalonia.IntegrationTests.Appium.dll'
+      runSettingsFile: 'tests\Avalonia.IntegrationTests.Appium\record-video.runsettings'
+
+  - task: PublishTestResults@2
+    displayName: 'Publish test results'
+    inputs:
+      testResultsFormat: 'XUnit'
+      testResultsFiles: '**/*.trx'
+    condition: succeededOrFailed()
 
   - task: Windows Application Driver@0
     inputs:
