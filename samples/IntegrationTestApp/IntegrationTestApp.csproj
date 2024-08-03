@@ -27,6 +27,9 @@
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
   </ItemGroup>
   
+    <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
+  </ItemGroup>
+
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
