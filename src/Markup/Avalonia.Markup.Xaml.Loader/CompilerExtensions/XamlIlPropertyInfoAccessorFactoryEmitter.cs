@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     {
         private const string IndexerClosureFactoryMethodName = "CreateAccessor";
         private readonly IXamlTypeBuilder<IXamlILEmitter> _indexerClosureTypeBuilder;
-        private IXamlType _indexerClosureType;
+        private IXamlType? _indexerClosureType;
         public XamlIlPropertyInfoAccessorFactoryEmitter(IXamlTypeBuilder<IXamlILEmitter> indexerClosureType)
         {
             _indexerClosureTypeBuilder = indexerClosureType;
@@ -57,7 +57,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             context.Emit(value, codeGen, intType);
-            codeGen.Newobj(_indexerClosureType.FindConstructor(new List<IXamlType> { intType }));
+            codeGen.Newobj(_indexerClosureType.GetConstructor(new List<IXamlType> { intType }));
             EmitLoadPropertyAccessorFactory(context, codeGen, _indexerClosureType, IndexerClosureFactoryMethodName, isStatic: false);
             return EmitCreateAccessorFactoryDelegate(context, codeGen);
         }

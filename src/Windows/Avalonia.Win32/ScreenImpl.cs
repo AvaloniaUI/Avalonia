@@ -1,124 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Metadata;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Win32.Interop;
+using Windows.Win32;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using winmdroot = global::Windows.Win32;
 
-namespace Avalonia.Win32
+namespace Avalonia.Win32;
+
+internal unsafe class ScreenImpl : ScreensBase<nint, WinScreen>
 {
-    internal class ScreenImpl : IScreenImpl
+    protected override int GetScreenCount() => GetSystemMetrics(SystemMetric.SM_CMONITORS);
+
+    protected override IReadOnlyList<nint> GetAllScreenKeys()
     {
-        private Screen[]? _allScreens;
-
-        /// <inheritdoc />
-        public int ScreenCount
+        var screens = new List<nint>();
+        var gcHandle = GCHandle.Alloc(screens);
+        try
         {
-            get => GetSystemMetrics(SystemMetric.SM_CMONITORS);
+            PInvoke.EnumDisplayMonitors(default, default(winmdroot.Foundation.RECT*), EnumDisplayMonitorsCallback, (IntPtr)gcHandle);
+        }
+        finally
+        {
+            gcHandle.Free();
         }
 
-        /// <inheritdoc />
-        public IReadOnlyList<Screen> AllScreens
+        return screens;
+
+        static winmdroot.Foundation.BOOL EnumDisplayMonitorsCallback(
+            winmdroot.Graphics.Gdi.HMONITOR monitor,
+            winmdroot.Graphics.Gdi.HDC hdcMonitor,
+            winmdroot.Foundation.RECT* lprcMonitor,
+            winmdroot.Foundation.LPARAM dwData)
         {
-            get
+            if (GCHandle.FromIntPtr(dwData).Target is List<nint> screens)
             {
-                if (_allScreens == null)
-                {
-                    int index = 0;
-                    Screen[] screens = new Screen[ScreenCount];
-                    EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
-                        (IntPtr monitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr data) =>
-                        {
-                            MONITORINFO monitorInfo = MONITORINFO.Create();
-                            if (GetMonitorInfo(monitor, ref monitorInfo))
-                            {
-                                var dpi = 1.0;
-
-                                var shcore = LoadLibrary("shcore.dll");
-                                var method = GetProcAddress(shcore, nameof(GetDpiForMonitor));
-                                if (method != IntPtr.Zero)
-                                {
-                                    GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
-                                    dpi = x;
-                                }
-                                else
-                                {
-                                    var hdc = GetDC(IntPtr.Zero);
-
-                                    double virtW = GetDeviceCaps(hdc, DEVICECAP.HORZRES);
-                                    double physW = GetDeviceCaps(hdc, DEVICECAP.DESKTOPHORZRES);
-
-                                    dpi = (96d * physW / virtW);
-
-                                    ReleaseDC(IntPtr.Zero, hdc);
-                                }
-
-                                RECT bounds = monitorInfo.rcMonitor;
-                                RECT workingArea = monitorInfo.rcWork;
-                                PixelRect avaloniaBounds = bounds.ToPixelRect();
-                                PixelRect avaloniaWorkArea = workingArea.ToPixelRect();
-                                screens[index] =
-                                    new WinScreen(dpi / 96.0d, avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1,
-                                        monitor);
-                                index++;
-                            }
-                            return true;
-                        }, IntPtr.Zero);
-                    _allScreens = screens;
-                }
-                return _allScreens;
+                screens.Add(monitor);
+                return true;
             }
+            return false;
         }
+    }
 
-        public void InvalidateScreensCache()
+    protected override WinScreen CreateScreenFromKey(nint key) => new(key);
+    protected override void ScreenChanged(WinScreen screen) => screen.Refresh();
+
+    protected override Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
+    {
+        if (topLevel.Handle?.Handle is { } handle)
         {
-            _allScreens = null;
+            return ScreenFromHwnd(handle);
         }
 
-        /// <inheritdoc />
-        public Screen? ScreenFromWindow(IWindowBaseImpl window)
+        return null;
+    }
+
+    protected override Screen? ScreenFromPointCore(PixelPoint point)
+    {
+        var monitor = MonitorFromPoint(new POINT
         {
-            var handle = window.Handle?.Handle;
+            X = point.X,
+            Y = point.Y
+        }, UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONULL);
 
-            if (handle is null)
-            {
-                return null;
-            }
-            
-            var monitor = MonitorFromWindow(handle.Value, MONITOR.MONITOR_DEFAULTTONULL);
+        return ScreenFromHMonitor(monitor);
+    }
 
-            return FindScreenByHandle(monitor);
-        }
-
-        /// <inheritdoc />
-        public Screen? ScreenFromPoint(PixelPoint point)
+    protected override Screen? ScreenFromRectCore(PixelRect rect)
+    {
+        var monitor = MonitorFromRect(new RECT
         {
-            var monitor = MonitorFromPoint(new POINT
-            {
-                X = point.X,
-                Y = point.Y
-            }, MONITOR.MONITOR_DEFAULTTONULL);
+            left = rect.TopLeft.X,
+            top = rect.TopLeft.Y,
+            right = rect.TopRight.X,
+            bottom = rect.BottomRight.Y
+        }, UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONULL);
 
-            return FindScreenByHandle(monitor);
-        }
+        return ScreenFromHMonitor(monitor);
+    }
 
-        /// <inheritdoc />
-        public Screen? ScreenFromRect(PixelRect rect)
-        {
-            var monitor = MonitorFromRect(new RECT
-            {
-                left = rect.TopLeft.X,
-                top = rect.TopLeft.Y,
-                right = rect.TopRight.X,
-                bottom = rect.BottomRight.Y
-            }, MONITOR.MONITOR_DEFAULTTONULL);
+    public WinScreen? ScreenFromHMonitor(IntPtr hmonitor)
+    {
+        if (TryGetScreen(hmonitor, out var screen))
+            return screen;
 
-            return FindScreenByHandle(monitor);
-        }
+        return null;
+    }
 
-        private Screen? FindScreenByHandle(IntPtr handle)
-        {
-            return AllScreens.Cast<WinScreen>().FirstOrDefault(m => m.Handle == handle);
-        }
+    public WinScreen? ScreenFromHwnd(IntPtr hwnd, MONITOR flags = MONITOR.MONITOR_DEFAULTTONULL)
+    {
+        var monitor = MonitorFromWindow(hwnd, flags);
+
+        return ScreenFromHMonitor(monitor);
     }
 }

@@ -64,7 +64,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (Properties.BackgroundBrush != null)
                 {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
+                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds.Translate(new Vector(0, -Baseline)));
                 }
 
                 drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
@@ -98,7 +98,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
         /// </returns>
-        internal bool TryMeasureCharacters(double availableWidth, out int length)
+        public bool TryMeasureCharacters(double availableWidth, out int length)
         {
             length = 0;
             var currentWidth = 0.0;

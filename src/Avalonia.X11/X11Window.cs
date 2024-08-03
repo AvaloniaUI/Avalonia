@@ -129,9 +129,9 @@ namespace Avalonia.X11
 
             int defaultWidth = 0, defaultHeight = 0;
 
-            if (!_popup && Screen != null)
+            if (!_popup && _platform.Screens != null)
             {
-                var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
+                var monitor = _platform.Screens.AllScreens.OrderBy(x => x.Scaling)
                    .FirstOrDefault(m => m.Bounds.Contains(_position ?? default));
 
                 if (monitor != null)
@@ -932,7 +932,14 @@ namespace Avalonia.X11
             }
 
             if (featureType == typeof(IX11OptionsToplevelImplFeature))
+            {
                 return this;
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return _platform.Screens;
+            }
 
             return null;
         }
@@ -1166,9 +1173,6 @@ namespace Avalonia.X11
                     XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
             }
         }
-
-
-        public IScreenImpl Screen => _platform.Screens;
 
         public Size MaxAutoSizeHint => _platform.X11Screens.AllScreens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
