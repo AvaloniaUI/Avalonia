@@ -109,7 +109,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc />
         public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
         {
-            // Direct2D doesnt have this sadly.
+            // Direct2D doesn't have this sadly.
             Logger.TryGet(LogEventLevel.Warning, LogArea.Visual)?.Log(this, "TryGetPointAndTangentAtDistance is not available in Direct2D.");
             point = new Point();
             tangent = new Point();
@@ -118,7 +118,7 @@ namespace Avalonia.Direct2D1.Media
 
         public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
         {
-            // Direct2D doesnt have this too sadly.
+            // Direct2D doesn't have this too sadly.
             Logger.TryGet(LogEventLevel.Warning, LogArea.Visual)?.Log(this, "TryGetSegment is not available in Direct2D.");
 
             segmentGeometry = null;
