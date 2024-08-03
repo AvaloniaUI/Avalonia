@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -20,12 +21,32 @@ namespace Avalonia.Controls.UnitTests
 
         protected override void SetupWindowMock(Mock<IWindowImpl> windowImpl) { }
 
-        protected override void VerifyToolTipType(Control control) => 
-            Assert.IsType<PopupRoot>(control.GetValue(ToolTip.ToolTipProperty).VisualRoot);
+        protected override void VerifyToolTipType(Control control)
+        {
+            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            Assert.IsType<PopupRoot>(toolTip.PopupHost);
+            Assert.Same(toolTip.VisualRoot, toolTip.PopupHost);
+        }
     }
 
-    public class ToolTipTests_Overlay : ToolTipTests
+    public class ToolTipTests_Overlay : ToolTipTests, IDisposable
     {
+        private readonly IDisposable _toolTipOpenSubscription;
+
+        public ToolTipTests_Overlay()
+        {
+            _toolTipOpenSubscription = ToolTip.IsOpenProperty.Changed.Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs<bool>>(e =>
+            {
+                if (e.Sender is Visual { VisualRoot: {} root } visual)
+                    OverlayLayer.GetOverlayLayer(visual).Measure(root.ClientSize);
+            }));
+        }
+
+        public void Dispose()
+        {
+            _toolTipOpenSubscription.Dispose();
+        }
+
         protected override TestServices ConfigureServices(TestServices baseServices) =>
             baseServices.With(windowingPlatform: new MockWindowingPlatform(popupImpl: window => null));
 
@@ -34,8 +55,12 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.CreatePopup()).Returns(default(IPopupImpl));
         }
 
-        protected override void VerifyToolTipType(Control control) => 
-            Assert.IsType<OverlayPopupHost>(control.GetValue(ToolTip.ToolTipProperty).PopupHost);
+        protected override void VerifyToolTipType(Control control)
+        {
+            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            Assert.IsType<OverlayPopupHost>(toolTip.PopupHost);
+            Assert.Same(toolTip.VisualRoot, control.VisualRoot);
+        }
     }
 
     public abstract class ToolTipTests
@@ -223,8 +248,11 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(ConfigureServices(TestServices.StyledWindow)))
             {
                 var toolTip = new ToolTip();
-                var window = new Window();
 
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                SetupWindowMock(windowImpl);
+                var window = new Window(windowImpl.Object);
+    
                 var decorator = new Decorator()
                 {
                     [ToolTip.TipProperty] = toolTip
