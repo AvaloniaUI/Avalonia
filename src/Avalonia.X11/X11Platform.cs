@@ -70,7 +70,7 @@ namespace Avalonia.X11
             Resources = new XResources(this);
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
-               ? new UiThreadRenderTimer(60)
+               ? new ExperimentalUiThreadRenderTimer(60)
                : new SleepLoopRenderTimer(60);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
