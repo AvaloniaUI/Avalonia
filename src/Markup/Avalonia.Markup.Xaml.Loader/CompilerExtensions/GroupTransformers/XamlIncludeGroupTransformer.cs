@@ -192,7 +192,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         var uriPath = new Uri(originalAssetPath, (UriKind)uriKind);
         if (!uriPath.IsAbsoluteUri)
         {
-            var baseUrl = context.CurrentDocument.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
+            var baseUrl = context.CurrentDocument?.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
             uriPath = new Uri(new Uri(baseUrl, UriKind.Absolute), uriPath);
         }
         else if (!uriPath.Scheme.Equals("avares", StringComparison.CurrentCultureIgnoreCase))
@@ -218,7 +218,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         {
             codeGen.Ldloc(context.ContextLocal);
             var method = context.GetAvaloniaTypes().RuntimeHelpers
-                .FindMethod(m => m.Name == "CreateRootServiceProviderV3");
+                .GetMethod(m => m.Name == "CreateRootServiceProviderV3");
             codeGen.EmitCall(method);
 
             return XamlILNodeEmitResult.Type(0, Type.GetClrType());

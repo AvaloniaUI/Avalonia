@@ -6,31 +6,25 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium;
 
 [Collection("Default")]
-public class ScreenTests
+public class ScreenTests : TestBase
 {
-    private readonly AppiumDriver _session;
-
     public ScreenTests(DefaultAppFixture fixture)
+        : base(fixture, "Screens")
     {
-        _session = fixture.Session;
-
-        var tabs = _session.FindElementByAccessibilityId("MainTabs");
-        var tab = tabs.FindElementByName("Screens");
-        tab.Click();
     }
 
     [Fact]
     public void Can_Read_Current_Screen_Info()
     {
-        var refreshButton = _session.FindElementByAccessibilityId("ScreenRefresh");
+        var refreshButton = Session.FindElementByAccessibilityId("ScreenRefresh");
         refreshButton.SendClick();
 
-        var screenName = _session.FindElementByAccessibilityId("ScreenName").Text;
-        var screenHandle = _session.FindElementByAccessibilityId("ScreenHandle").Text;
-        var screenBounds = Rect.Parse(_session.FindElementByAccessibilityId("ScreenBounds").Text);
-        var screenWorkArea = Rect.Parse(_session.FindElementByAccessibilityId("ScreenWorkArea").Text);
-        var screenScaling = double.Parse(_session.FindElementByAccessibilityId("ScreenScaling").Text, NumberStyles.Float, CultureInfo.InvariantCulture);
-        var screenOrientation = Enum.Parse<ScreenOrientation>(_session.FindElementByAccessibilityId("ScreenOrientation").Text);
+        var screenName = Session.FindElementByAccessibilityId("ScreenName").Text;
+        var screenHandle = Session.FindElementByAccessibilityId("ScreenHandle").Text;
+        var screenBounds = Rect.Parse(Session.FindElementByAccessibilityId("ScreenBounds").Text);
+        var screenWorkArea = Rect.Parse(Session.FindElementByAccessibilityId("ScreenWorkArea").Text);
+        var screenScaling = double.Parse(Session.FindElementByAccessibilityId("ScreenScaling").Text, NumberStyles.Float, CultureInfo.InvariantCulture);
+        var screenOrientation = Enum.Parse<ScreenOrientation>(Session.FindElementByAccessibilityId("ScreenOrientation").Text);
 
         Assert.NotNull(screenName);
         Assert.NotNull(screenHandle);
@@ -45,17 +39,17 @@ public class ScreenTests
     [Fact]
     public void Returns_The_Same_Screen_Instance()
     {
-        var refreshButton = _session.FindElementByAccessibilityId("ScreenRefresh");
+        var refreshButton = Session.FindElementByAccessibilityId("ScreenRefresh");
         refreshButton.SendClick();
 
-        var screenName1 = _session.FindElementByAccessibilityId("ScreenName").Text;
-        var screenHandle1 = _session.FindElementByAccessibilityId("ScreenHandle").Text;
+        var screenName1 = Session.FindElementByAccessibilityId("ScreenName").Text;
+        var screenHandle1 = Session.FindElementByAccessibilityId("ScreenHandle").Text;
 
         refreshButton.SendClick();
 
-        var screenName2 = _session.FindElementByAccessibilityId("ScreenName").Text;
-        var screenHandle2 = _session.FindElementByAccessibilityId("ScreenHandle").Text;
-        var screenSameReference = bool.Parse(_session.FindElementByAccessibilityId("ScreenSameReference").Text);
+        var screenName2 = Session.FindElementByAccessibilityId("ScreenName").Text;
+        var screenHandle2 = Session.FindElementByAccessibilityId("ScreenHandle").Text;
+        var screenSameReference = bool.Parse(Session.FindElementByAccessibilityId("ScreenSameReference").Text);
 
         Assert.Equal(screenName1, screenName2);
         Assert.Equal(screenHandle1, screenHandle2);
