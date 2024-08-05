@@ -40,5 +40,31 @@
         /// <returns>The formatted line.</returns>
         public abstract TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null);
+
+        /// <summary>
+        /// Creates a shaped symbol.
+        /// </summary>
+        /// <param name="textRun">The symbol run to shape.</param>
+        /// <param name="flowDirection">The flow direction.</param>
+        /// <returns>
+        /// The shaped symbol.
+        /// </returns>
+        public static ShapedTextRun CreateSymbol(TextRun textRun, FlowDirection flowDirection)
+        {
+            var textShaper = TextShaper.Current;
+
+            var glyphTypeface = textRun.Properties!.CachedGlyphTypeface;
+
+            var fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
+
+            var cultureInfo = textRun.Properties.CultureInfo;
+
+            var shaperOptions = new TextShaperOptions(glyphTypeface, textRun.Properties.FontFeatures,
+                fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
+
+            var shapedBuffer = textShaper.ShapeText(textRun.Text, shaperOptions);
+
+            return new ShapedTextRun(shapedBuffer, textRun.Properties);
+        }
     }
 }

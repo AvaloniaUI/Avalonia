@@ -1,30 +1,23 @@
 ﻿using System;
-using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class EmbeddingTests
+    public class EmbeddingTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public EmbeddingTests(DefaultAppFixture fixture)
+            : base(fixture, "Embedding")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Embedding");
-            tab.Click();
         }
 
-        [Fact(Skip = "Crashes on CI")]
+        [Fact]
         public void Can_Edit_Native_TextBox()
         {
             // Appium has different XPath syntax between Windows and macOS.
             var textBox = OperatingSystem.IsWindows() ?
-                _session.FindElementByXPath($"//*[@AutomationId='NativeTextBox']//*[1]") :
-                _session.FindElementByXPath($"//*[@identifier='NativeTextBox']//*[1]");
+                Session.FindElementByXPath($"//*[@AutomationId='NativeTextBox']//*[1]") :
+                Session.FindElementByXPath($"//*[@identifier='NativeTextBox']//*[1]");
 
             Assert.Equal("Native text box", textBox.Text);
 
@@ -38,18 +31,18 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(expected, textBox.Text);
         }
 
-        [Fact(Skip = "Crashes on CI")]
+        [Fact]
         public void Can_Edit_Native_TextBox_In_Popup()
         {
-            var checkBox = _session.FindElementByAccessibilityId("EmbeddingPopupOpenCheckBox");
+            var checkBox = Session.FindElementByAccessibilityId("EmbeddingPopupOpenCheckBox");
             checkBox.Click();
 
             try
             {
                 // Appium has different XPath syntax between Windows and macOS.
                 var textBox = OperatingSystem.IsWindows() ?
-                    _session.FindElementByXPath($"//*[@AutomationId='NativeTextBoxInPopup']//*[1]") :
-                    _session.FindElementByXPath($"//*[@identifier='NativeTextBoxInPopup']//*[1]");
+                    Session.FindElementByXPath($"//*[@AutomationId='NativeTextBoxInPopup']//*[1]") :
+                    Session.FindElementByXPath($"//*[@identifier='NativeTextBoxInPopup']//*[1]");
 
                 Assert.Equal("Native text box", textBox.Text);
 

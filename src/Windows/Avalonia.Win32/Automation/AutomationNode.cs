@@ -119,6 +119,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.IsControlElement => InvokeSync(() => Peer.IsControlElement()),
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
                 UiaPropertyId.IsKeyboardFocusable => InvokeSync(() => Peer.IsKeyboardFocusable()),
+                UiaPropertyId.IsOffscreen => InvokeSync(() => Peer.IsOffscreen()),
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
                 UiaPropertyId.ProcessId => Process.GetCurrentProcess().Id,
