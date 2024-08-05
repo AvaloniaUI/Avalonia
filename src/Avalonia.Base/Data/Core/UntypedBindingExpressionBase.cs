@@ -410,6 +410,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     private protected void PublishValue(object? value, BindingError? error = null)
     {
         Debug.Assert(value is not BindingNotification);
+        Debug.Assert(value != BindingOperations.DoNothing);
 
         if (!IsRunning)
             return;

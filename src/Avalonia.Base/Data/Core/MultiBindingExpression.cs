@@ -109,19 +109,21 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
                 return;
         }
 
-        var culture = _converterCulture ?? CultureInfo.CurrentCulture;
-
         if (_converter is not null)
         {
+            var culture = _converterCulture ?? CultureInfo.CurrentCulture;
             var converted = _converter.Convert(_valuesView, TargetType, _converterParameter, culture);
 
             converted = BindingNotification.ExtractValue(converted);
 
-            if (converted == null)
-                converted = _targetNullValue;
-            if (converted == AvaloniaProperty.UnsetValue)
-                converted = _fallbackValue;
-            PublishValue(converted);
+            if (converted != BindingOperations.DoNothing)
+            {
+                if (converted == null)
+                    converted = _targetNullValue;
+                if (converted == AvaloniaProperty.UnsetValue)
+                    converted = _fallbackValue;
+                PublishValue(converted);
+            }
         }
         else
         {
