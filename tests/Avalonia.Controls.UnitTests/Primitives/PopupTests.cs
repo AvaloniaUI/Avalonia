@@ -1223,23 +1223,21 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popupParent = new Border { Child = popup };
                 var root = PreparedWindow(popupParent);
 
-                popup.CustomPopupPlacementCallback = (popupSize, targetRect, offset) =>
+                popup.CustomPopupPlacementCallback = (parameters) =>
                 {
-                    Assert.Equal(popupContent.Width, popupSize.Width);
-                    Assert.Equal(popupContent.Height, popupSize.Height);
+                    Assert.Equal(popupContent.Width, parameters.PopupSize.Width);
+                    Assert.Equal(popupContent.Height, parameters.PopupSize.Height);
 
-                    Assert.Equal(root.Width, targetRect.Width);
-                    Assert.Equal(root.Height, targetRect.Height);
+                    Assert.Equal(root.Width, parameters.AnchorRectangle.Width);
+                    Assert.Equal(root.Height, parameters.AnchorRectangle.Height);
 
-                    Assert.Equal(popup.HorizontalOffset, offset.X);
-                    Assert.Equal(popup.VerticalOffset, offset.Y);
+                    Assert.Equal(popup.HorizontalOffset, parameters.Offset.X);
+                    Assert.Equal(popup.VerticalOffset, parameters.Offset.Y);
 
                     callbackExecuted++;
 
-                    return new CustomPopupPlacement
-                    {
-                        Anchor = PopupAnchor.Top, Gravity = PopupGravity.Bottom, Offset = offset
-                    };
+                    parameters.Anchor = PopupAnchor.Top;
+                    parameters.Gravity = PopupGravity.Bottom;
                 };
 
                 root.LayoutManager.ExecuteInitialLayoutPass();

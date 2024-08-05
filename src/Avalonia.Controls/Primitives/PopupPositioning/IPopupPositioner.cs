@@ -485,17 +485,30 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             }
             else if (positionRequest.Placement == PlacementMode.Custom)
             {
-                positionerParameters.AnchorRectangle = CalculateAnchorRect(topLevel, positionRequest);
-
-                var customPlacement = positionRequest.PlacementCallback?
-                    .Invoke(popupSize, positionerParameters.AnchorRectangle, positionRequest.Offset)
-                    ?? throw new InvalidOperationException(
+                if (positionRequest.PlacementCallback is null)
+                    throw new InvalidOperationException(
                         "CustomPopupPlacementCallback property must be set, when Placement=PlacementMode.Custom");
 
-                positionerParameters.Anchor = customPlacement.Anchor;
-                positionerParameters.Gravity = customPlacement.Gravity;
-                positionerParameters.ConstraintAdjustment = customPlacement.ConstraintAdjustment;
-                positionerParameters.Offset = customPlacement.Offset;
+                positionerParameters.AnchorRectangle = CalculateAnchorRect(topLevel, positionRequest);
+
+                var customPlacementParameters = new CustomPopupPlacement(
+                    popupSize,
+                    positionRequest.Target)
+                {
+                    AnchorRectangle = positionerParameters.AnchorRectangle,
+                    Anchor = positionerParameters.Anchor,
+                    Gravity = positionerParameters.Gravity,
+                    ConstraintAdjustment = positionerParameters.ConstraintAdjustment,
+                    Offset = positionerParameters.Offset
+                };
+
+                positionRequest.PlacementCallback.Invoke(customPlacementParameters);
+
+                positionerParameters.AnchorRectangle = customPlacementParameters.AnchorRectangle;
+                positionerParameters.Anchor = customPlacementParameters.Anchor;
+                positionerParameters.Gravity = customPlacementParameters.Gravity;
+                positionerParameters.ConstraintAdjustment = customPlacementParameters.ConstraintAdjustment;
+                positionerParameters.Offset = customPlacementParameters.Offset;
             }
             else
             {

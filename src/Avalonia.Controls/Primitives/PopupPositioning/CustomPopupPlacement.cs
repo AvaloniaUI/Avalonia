@@ -1,18 +1,37 @@
-namespace Avalonia.Controls.Primitives.PopupPositioning;
+﻿namespace Avalonia.Controls.Primitives.PopupPositioning;
 
 /// <summary>
-/// Defines custom placement parameters for a Popup control.
+/// Defines custom placement parameters for a <see cref="CustomPopupPlacementCallback"/> callback.
 /// </summary>
-public record struct CustomPopupPlacement
+public record CustomPopupPlacement
 {
     private PopupGravity _gravity;
     private PopupAnchor _anchor;
+
+    internal CustomPopupPlacement(Size popupSize, Visual target)
+    {
+        PopupSize = popupSize;
+        Target = target;
+    }
+
+    /// <summary>
+    /// The <see cref="Size"/> of the <see cref="Popup"/> control.
+    /// </summary>
+    public Size PopupSize { get; }
+
+    /// <summary>
+    /// Placement target of the popup.
+    /// </summary>
+    public Visual Target { get; }
+
+    /// <see cref="PopupPositionerParameters.AnchorRectangle"/>
+    public Rect AnchorRectangle { get; set; }
 
     /// <see cref="PopupPositionerParameters.Anchor"/>
     public PopupAnchor Anchor
     {
         get => _anchor;
-        init
+        set
         {
             PopupPositioningEdgeHelper.ValidateEdge(value);
             _anchor = value;
@@ -23,7 +42,7 @@ public record struct CustomPopupPlacement
     public PopupGravity Gravity
     {
         get => _gravity;
-        init
+        set
         {
             PopupPositioningEdgeHelper.ValidateGravity(value);
             _gravity = value;
@@ -31,8 +50,8 @@ public record struct CustomPopupPlacement
     }
 
     /// <see cref="PopupPositionerParameters.ConstraintAdjustment"/>
-    public PopupPositionerConstraintAdjustment ConstraintAdjustment { get; init; }
+    public PopupPositionerConstraintAdjustment ConstraintAdjustment { get; set; }
 
     /// <see cref="PopupPositionerParameters.Offset"/>
-    public Point Offset { get; init; }
+    public Point Offset { get; set; }
 }
