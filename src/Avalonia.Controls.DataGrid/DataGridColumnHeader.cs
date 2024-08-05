@@ -6,6 +6,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Automation.Peers;
@@ -74,6 +75,7 @@ namespace Avalonia.Controls
             AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x, e) => x.OnAreSeparatorsVisibleChanged(e));
             PressedMixin.Attach<DataGridColumnHeader>();
             IsTabStopProperty.OverrideDefaultValue<DataGridColumnHeader>(false);
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<DataGridColumnHeader>(IsOffscreenBehavior.FromClip);
         }
 
         /// <summary>
