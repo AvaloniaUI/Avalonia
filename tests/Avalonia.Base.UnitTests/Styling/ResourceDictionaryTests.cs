@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Moq;
 using Xunit;
@@ -246,6 +247,62 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Null(target.Owner);
             Assert.Null(((ResourceDictionary)target.MergedDictionaries[0]).Owner);
         }
+        
+        [Fact]
+        public void GetResourceObservable_Reacts_To_All_ResourceChange()
+        {
+            var host = new UserControl();
+            
+            var values = new List<object>();
+            
+            var observable = host.GetResourceObservable("foo").Subscribe(a => values.Add(a));
+            Assert.Equal(1, values.Count);
+            Assert.IsType<UnsetValueType>(values[0]);
+            
+            host.Resources["foo"] = "bar";
+            
+            Assert.Equal(2, values.Count);
+            Assert.Equal("bar", values[1]);
 
+            host.Resources["123"] = "456";
+            
+            Assert.Equal(3, values.Count);
+            Assert.Equal("bar", values[2]);
+            
+            host.Resources.Remove("123");
+            Assert.Equal(4, values.Count);
+            Assert.Equal("bar", values[3]);
+            
+            host.Resources.Remove("foo");
+            Assert.Equal(5, values.Count);
+            Assert.IsType<UnsetValueType>(values[4]);
+        }
+        
+        [Fact]
+        public void GetResourceObservableByKey_Reacts_To_Single_ResourceChange()
+        {
+            var host = new UserControl();
+            
+            var values = new List<object>();
+            
+            var observable = host.GetResourceObservableByKey("foo").Subscribe(a => values.Add(a));
+
+            Assert.Equal(1, values.Count);
+            Assert.IsType<UnsetValueType>(values[0]);
+            
+            host.Resources["foo"] = "bar";
+            
+            Assert.Equal(2, values.Count);
+            Assert.Equal("bar", values[1]);
+
+            host.Resources["123"] = "456";
+            
+            Assert.Equal(2, values.Count);
+
+            host.Resources.Remove("foo");
+            
+            Assert.Equal(3, values.Count);
+            Assert.IsType<UnsetValueType>(values[2]);
+        }
     }
 }

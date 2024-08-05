@@ -302,7 +302,7 @@ namespace Avalonia
             try
             {
                 _notifyingResourcesChanged = true;
-                ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
+                ResourcesChanged?.Invoke(this, e);
             }
             finally
             {
