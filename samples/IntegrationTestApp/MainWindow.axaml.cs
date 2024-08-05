@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Avalonia;
 using Avalonia.Controls;
 using IntegrationTestApp.Models;
 using IntegrationTestApp.Pages;
@@ -20,6 +22,7 @@ namespace IntegrationTestApp
 
             DataContext = viewModel;
             AppOverlayPopups.Text = Program.OverlayPopups ? "Overlay Popups" : "Native Popups";
+            PositionChanged += OnPositionChanged;
         }
 
         private MainWindowViewModel? ViewModel => (MainWindowViewModel?)DataContext;
@@ -51,6 +54,22 @@ namespace IntegrationTestApp
         {
             if (Pager.SelectedItem is Page page)
                 PagerContent.Child = page.CreateContent();
+        }
+
+        private void OnPositionChanged(object? sender, PixelPointEventArgs e)
+        {
+            // HACK: Toggling the window decorations can cause the window to be moved off screen, 
+            // causing test failures. Until this bug is fixed, detect this and move the window
+            // to the screen origin. See #11411.
+            if (Screens.ScreenFromWindow(this) is { } screen)
+            {
+                var bounds = new PixelRect(
+                    e.Point,
+                    PixelSize.FromSize(ClientSize, DesktopScaling));
+
+                if (!screen.WorkingArea.Contains(bounds))
+                    Position = screen.WorkingArea.Position;
+            }
         }
 
         private static IEnumerable<Page> CreatePages()
