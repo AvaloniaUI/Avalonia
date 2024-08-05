@@ -1,30 +1,23 @@
-﻿using OpenQA.Selenium.Interactions;
-using Xunit;
+﻿using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class PointerTests
+    public class PointerTests : TestBase
     {
-        private readonly AppiumDriver _session;
-
         public PointerTests(DefaultAppFixture fixture)
+            : base(fixture, "Pointer")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Pointer");
-            tab.Click();
         }
 
         [Fact]
         public void Pointer_Capture_Is_Released_When_Showing_Dialog()
         {
-            var button = _session.FindElementByAccessibilityId("PointerPageShowDialog");
+            var button = Session.FindElementByAccessibilityId("PointerPageShowDialog");
 
             button.OpenWindowWithClick().Dispose();
 
-            var status = _session.FindElementByAccessibilityId("PointerCaptureStatus");
+            var status = Session.FindElementByAccessibilityId("PointerCaptureStatus");
             Assert.Equal("None", status.Text);
         }
     }

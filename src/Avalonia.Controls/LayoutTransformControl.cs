@@ -192,6 +192,14 @@ namespace Avalonia.Controls
             ApplyLayoutTransform();
         }
 
+        /*
+         * About AcceptableDelta and DecimalsAfterRound - Original comment from the Silverlight code explains:
+         * // Note: AcceptableDelta and DecimalsAfterRound work around double arithmetic rounding issues on Silverlight.
+         *
+         * The DecimalsAfterRound property here was increased from the original 4 to 8 because of issues when zooming in
+         * and out at the end of very large objects.
+         */
+
         /// <summary>
         /// Acceptable difference between two doubles.
         /// </summary>
@@ -200,7 +208,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Number of decimals to round the Matrix to.
         /// </summary>
-        private const int DecimalsAfterRound = 4;
+        private const int DecimalsAfterRound = 8;
 
         /// <summary>
         /// Actual DesiredSize of Child element (the value it returned from its MeasureOverride method).
