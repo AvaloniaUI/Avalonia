@@ -62,6 +62,24 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(control.Value, expected);
         }
 
+        [Fact]
+        public void FormatString_Is_Applied_Immediately()
+        {
+            RunTest((control, textbox) =>
+            {
+                const decimal value = 10.11m;
+
+                // Establish and verify initial conditions.
+                control.FormatString = "F0";
+                control.Value = value;
+                Assert.Equal(value.ToString("F0"), control.Text);
+
+                // Check that FormatString is applied.
+                control.FormatString = "F2";
+                Assert.Equal(value.ToString("F2"), control.Text);
+            });
+        }
+
         public static IEnumerable<object[]> Increment_Decrement_TestData()
         {
             // if min and max are not defined and value was null, 0 should be ne new value after spin

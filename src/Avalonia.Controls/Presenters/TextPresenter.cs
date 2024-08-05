@@ -604,6 +604,7 @@ namespace Avalonia.Controls.Presenters
             _textLayout?.Dispose();
             _textLayout = null;
 
+            InvalidateVisual();
             InvalidateMeasure();
         }
 

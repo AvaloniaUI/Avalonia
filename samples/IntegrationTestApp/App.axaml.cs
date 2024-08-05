@@ -10,12 +10,13 @@ namespace IntegrationTestApp
 {
     public class App : Application
     {
+        private MainWindow? _mainWindow;
+
         public App()
         {
-            ShowWindowCommand = MiniCommand.Create(() =>
+            TrayIconCommand = MiniCommand.Create<string>(name =>
             {
-                var window = new Window() { Title = "TrayIcon demo window" };
-                window.Show();
+                _mainWindow!.Get<CheckBox>(name).IsChecked = true;
             });
             DataContext = this;
         }
@@ -29,12 +30,12 @@ namespace IntegrationTestApp
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                desktop.MainWindow = _mainWindow = new MainWindow();
             }
 
             base.OnFrameworkInitializationCompleted();
         }
 
-        public ICommand ShowWindowCommand { get; }
+        public ICommand TrayIconCommand { get; }
     }
 }
