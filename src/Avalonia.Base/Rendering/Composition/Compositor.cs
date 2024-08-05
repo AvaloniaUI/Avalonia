@@ -5,6 +5,7 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Server;
@@ -34,6 +35,7 @@ namespace Avalonia.Rendering.Composition
         private CompositionBatch? _pendingBatch;
         private readonly object _pendingBatchLock = new();
         private readonly List<Action> _pendingServerCompositorJobs = new();
+        private readonly List<Action> _pendingServerCompositorPostTargetJobs = new();
         private DiagnosticTextRenderer? _diagnosticTextRenderer;
         private readonly Action _triggerCommitRequested;
 
@@ -170,14 +172,23 @@ namespace Avalonia.Rendering.Composition
                     _disposeOnNextBatch.Clear();
                 }
 
-                if (_pendingServerCompositorJobs.Count > 0)
+                
+                static void SerializeServerJobs(BatchStreamWriter writer, List<Action> list, object startMarker, object endMarker)
                 {
-                    writer.WriteObject(ServerCompositor.RenderThreadJobsStartMarker);
-                    foreach (var job in _pendingServerCompositorJobs)
-                        writer.WriteObject(job);
-                    writer.WriteObject(ServerCompositor.RenderThreadJobsEndMarker);
+                    if (list.Count > 0)
+                    {
+                        writer.WriteObject(startMarker);
+                        foreach (var job in list)
+                            writer.WriteObject(job);
+                        writer.WriteObject(endMarker);
+                    }
+                    list.Clear();
                 }
-                _pendingServerCompositorJobs.Clear();
+
+                SerializeServerJobs(writer, _pendingServerCompositorJobs, ServerCompositor.RenderThreadJobsStartMarker,
+                    ServerCompositor.RenderThreadJobsEndMarker);
+                SerializeServerJobs(writer, _pendingServerCompositorPostTargetJobs, ServerCompositor.RenderThreadPostTargetJobsStartMarker,
+                    ServerCompositor.RenderThreadPostTargetJobsEndMarker);
             }
             
             _nextCommit.CommittedAt = Server.Clock.Elapsed;
@@ -227,21 +238,21 @@ namespace Avalonia.Rendering.Composition
             RequestCommitAsync();
         }
 
-        internal void PostServerJob(Action job)
+        internal void PostServerJob(Action job, bool postTarget = false)
         {
             Dispatcher.VerifyAccess();
-            _pendingServerCompositorJobs.Add(job);
+            (postTarget ? _pendingServerCompositorPostTargetJobs : _pendingServerCompositorJobs).Add(job);
             RequestCommitAsync();
         }
 
-        internal Task InvokeServerJobAsync(Action job) =>
+        internal Task InvokeServerJobAsync(Action job, bool postTarget = false) =>
             InvokeServerJobAsync<object?>(() =>
             {
                 job();
                 return null;
-            });
+            }, postTarget);
 
-        internal Task<T> InvokeServerJobAsync<T>(Func<T> job)
+        internal Task<T> InvokeServerJobAsync<T>(Func<T> job, bool postTarget = false)
         {
             var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
             PostServerJob(() =>
@@ -254,7 +265,7 @@ namespace Avalonia.Rendering.Composition
                 {
                     tcs.TrySetException(e);
                 }
-            });
+            }, postTarget);
             return tcs.Task;
         }
 
@@ -274,6 +285,16 @@ namespace Avalonia.Rendering.Composition
         {
             (await GetRenderInterfacePublicFeatures().ConfigureAwait(false)).TryGetValue(featureType, out var rv);
             return rv;
+        }
+
+        public async Task<Bitmap> CreateCompositionVisualSnapshot(CompositionVisual visual, double scaling)
+        {
+            if (visual.Compositor != this)
+                throw new InvalidOperationException();
+            if (visual.Root == null)
+                throw new InvalidOperationException();
+            var impl = await InvokeServerJobAsync(() => _server.CreateCompositionVisualSnapshot(visual.Server, scaling), true);
+            return new Bitmap(RefCountable.Create(impl));
         }
         
         /// <summary>

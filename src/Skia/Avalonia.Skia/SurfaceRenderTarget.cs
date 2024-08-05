@@ -11,7 +11,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl, IDrawingContextLayerWithRenderContextAffinityImpl
     {
         private readonly ISkiaSurface _surface;
         private readonly SKCanvas _canvas;
@@ -233,6 +233,15 @@ namespace Avalonia.Skia
             public ISkiaGpuRenderSession? Session;
 
             public bool DisableManualFbo;
+        }
+
+        public bool HasRenderContextAffinity => _grContext != null;
+        public IBitmapImpl CreateNonAffinedSnapshot()
+        {
+            if (!HasRenderContextAffinity)
+                throw new InvalidOperationException();
+            using var image = SnapshotImage();
+            return new ImmutableBitmap(image.ToRasterImage(true));
         }
     }
 }

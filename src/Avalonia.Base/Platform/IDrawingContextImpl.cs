@@ -229,4 +229,10 @@ namespace Avalonia.Platform
         /// </summary>
         bool CanBlit { get; }
     }
+
+    public interface IDrawingContextLayerWithRenderContextAffinityImpl : IDrawingContextLayerImpl
+    {
+        bool HasRenderContextAffinity { get; }
+        IBitmapImpl CreateNonAffinedSnapshot();
+    }
 }
