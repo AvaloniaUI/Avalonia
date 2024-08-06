@@ -5,10 +5,9 @@ using Android.Runtime;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Input.TextInput;
 
-namespace Avalonia.Android
+namespace Avalonia.Android.Platform.Input
 {
     internal interface IAndroidInputMethod
     {
@@ -21,18 +20,18 @@ namespace Avalonia.Android
 
         public InputMethodManager IMM { get; }
 
-        void OnBatchEditedEnded();
+        void OnBatchEditEnded();
     }
 
     enum CustomImeFlags
-    { 
+    {
         ActionNone = 0x00000001,
-       ActionGo = 0x00000002,
-       ActionSearch = 0x00000003,
-       ActionSend = 0x00000004,
-       ActionNext = 0x00000005,
-       ActionDone = 0x00000006,
-       ActionPrevious = 0x00000007,
+        ActionGo = 0x00000002,
+        ActionSearch = 0x00000003,
+        ActionSend = 0x00000004,
+        ActionNext = 0x00000005,
+        ActionDone = 0x00000006,
+        ActionPrevious = 0x00000007,
     }
 
     internal class AndroidInputMethod<TView> : ITextInputMethodImpl, IAndroidInputMethod
@@ -79,7 +78,7 @@ namespace Avalonia.Android
             {
                 _host.RequestFocus();
 
-                _imm.RestartInput(View);              
+                _imm.RestartInput(View);
 
                 _imm.ShowSoftInput(_host, ShowFlags.Implicit);
 
@@ -110,27 +109,29 @@ namespace Avalonia.Android
 
         private void _client_SelectionChanged(object? sender, EventArgs e)
         {
-            if (_inputConnection is null || _inputConnection.IsInBatchEdit)
+            if (_inputConnection is null || _inputConnection.IsInBatchEdit || _inputConnection.IsInUpdate)
                 return;
             OnSelectionChanged();
         }
 
         private void OnSelectionChanged()
         {
-            if (Client is null || _inputConnection is null)
+            if (Client is null || _inputConnection is null || _inputConnection.IsInUpdate)
             {
                 return;
             }
 
             OnSurroundingTextChanged();
 
+            _inputConnection.IsInUpdate = true;
+
             var selection = Client.Selection;
 
-            _inputConnection.SetSelection(selection.Start, selection.End);
-
-            var composition = _inputConnection.EditableWrapper.CurrentComposition;
+            var composition = _inputConnection.EditBuffer.HasComposition ? _inputConnection.EditBuffer.Composition!.Value : new TextSelection(-1,-1);
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, composition.Start, composition.End);
+
+            _inputConnection.IsInUpdate = false;
         }
 
         private void _client_SurroundingTextChanged(object? sender, EventArgs e)
@@ -140,7 +141,7 @@ namespace Avalonia.Android
             OnSurroundingTextChanged();
         }
 
-        public void OnBatchEditedEnded()
+        public void OnBatchEditEnded()
         {
             if (_inputConnection is null || _inputConnection.IsInBatchEdit)
                 return;
@@ -149,56 +150,32 @@ namespace Avalonia.Android
 
         private void OnSurroundingTextChanged()
         {
-            if(_client is null || _inputConnection is null)
+            if (_client is null || _inputConnection is null || _inputConnection.IsInUpdate)
             {
                 return;
             }
 
-            var surroundingText = _client.SurroundingText ?? "";
-            var editableText = _inputConnection.EditableWrapper.ToString();
-
-            if (editableText != surroundingText)
+            if (_inputConnection.IsInMonitorMode)
             {
-                _inputConnection.EditableWrapper.IgnoreChange = true;
+                var surroundingText = _client.SurroundingText ?? "";
 
-                var diff = GetDiff();
+                var selection = _client.Selection;
 
-                _inputConnection.Editable.Replace(diff.index, editableText.Length, diff.diff);
-
-                _inputConnection.EditableWrapper.IgnoreChange = false;
-
-                if(diff.index == 0)
+                var extractedText = new ExtractedText
                 {
-                    var selection = _client.Selection;
-                    _client.Selection = new TextSelection(selection.Start, 0);
-                    _client.Selection = selection;
-                }
-            }
+                    Text = new Java.Lang.String(surroundingText),
+                    SelectionStart = selection.Start,
+                    SelectionEnd = selection.End,
+                    PartialEndOffset = surroundingText.Length
+                };
 
-            (int index, string diff) GetDiff()
-            {
-                int index = 0;
-
-                var longerLength = Math.Max(surroundingText.Length, editableText.Length);
-
-                for (int i = 0; i < longerLength; i++)
-                {
-                    if (surroundingText.Length == i || editableText.Length == i || surroundingText[i] != editableText[i])
-                    {
-                        index = i;
-                        break;
-                    }
-                }
-
-                var diffString = surroundingText.Substring(index, surroundingText.Length - index);
-
-                return (index, diffString);
+                _imm.UpdateExtractedText(_host, _inputConnection.ExtractedTextToken, extractedText);
             }
         }
 
         public void SetCursorRect(Rect rect)
         {
-            
+
         }
 
         public void SetOptions(TextInputOptions options)
@@ -212,22 +189,22 @@ namespace Avalonia.Android
 
                 outAttrs.InputType = options.ContentType switch
                 {
-                    TextInputContentType.Email => global::Android.Text.InputTypes.TextVariationEmailAddress,
-                    TextInputContentType.Number => global::Android.Text.InputTypes.ClassNumber,
-                    TextInputContentType.Password => global::Android.Text.InputTypes.TextVariationPassword,
-                    TextInputContentType.Digits => global::Android.Text.InputTypes.ClassPhone,
-                    TextInputContentType.Url => global::Android.Text.InputTypes.TextVariationUri,
-                    _ => global::Android.Text.InputTypes.ClassText
+                    TextInputContentType.Email => InputTypes.TextVariationEmailAddress,
+                    TextInputContentType.Number => InputTypes.ClassNumber,
+                    TextInputContentType.Password => InputTypes.TextVariationPassword,
+                    TextInputContentType.Digits => InputTypes.ClassPhone,
+                    TextInputContentType.Url => InputTypes.TextVariationUri,
+                    _ => InputTypes.ClassText
                 };
 
                 if (options.AutoCapitalization)
                 {
-                    outAttrs.InitialCapsMode = global::Android.Text.CapitalizationMode.Sentences;
-                    outAttrs.InputType |= global::Android.Text.InputTypes.TextFlagCapSentences;
+                    outAttrs.InitialCapsMode = CapitalizationMode.Sentences;
+                    outAttrs.InputType |= InputTypes.TextFlagCapSentences;
                 }
 
                 if (options.Multiline)
-                    outAttrs.InputType |= global::Android.Text.InputTypes.TextFlagMultiLine;
+                    outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
                 outAttrs.ImeOptions = options.ReturnKeyType switch
                 {
