@@ -30,12 +30,12 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets Avalonia rendering modes with fallbacks.
         /// The first element in the array has the highest priority.
-        /// The default value is: <see cref="iOSRenderingMode.OpenGl"/>. 
+        /// The default value is: <see cref="iOSRenderingMode.Metal"/>. 
         /// </summary>
         /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
         public IReadOnlyList<iOSRenderingMode> RenderingMode { get; set; } = new[]
         {
-            iOSRenderingMode.OpenGl, iOSRenderingMode.Metal
+            iOSRenderingMode.Metal, iOSRenderingMode.OpenGl
         };
     }
 
