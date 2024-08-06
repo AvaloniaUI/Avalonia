@@ -115,6 +115,7 @@ namespace Avalonia.iOS
             {
 #if !MACCATALYST
                 if (renderingMode == iOSRenderingMode.OpenGl
+                    && ObjCRuntime.Runtime.Arch != Arch.SIMULATOR
                     && !OperatingSystem.IsMacCatalyst()
 #pragma warning disable CA1422
                     && Eagl.EaglPlatformGraphics.TryCreate() is { } eaglGraphics)
