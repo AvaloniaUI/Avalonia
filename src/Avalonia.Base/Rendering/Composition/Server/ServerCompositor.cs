@@ -25,7 +25,6 @@ namespace Avalonia.Rendering.Composition.Server
         private readonly Queue<Action> _receivedJobQueue = new();
         private readonly Queue<Action> _receivedPostTargetJobQueue = new();
         public long LastBatchId { get; private set; }
-        public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
         private readonly List<ServerCompositionTarget> _activeTargets = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
@@ -62,8 +61,6 @@ namespace Avalonia.Rendering.Composition.Server
             lock (_batches) 
                 _batches.Enqueue(batch);
         }
-
-        internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
         readonly List<CompositionBatch> _reusableToNotifyProcessedList = new();
         readonly List<CompositionBatch> _reusableToNotifyRenderedList = new();
@@ -168,8 +165,14 @@ namespace Avalonia.Rendering.Composition.Server
             _reusableToNotifyRenderedList.Clear();
         }
 
-        public void Render() => Render(true);
-        public void Render(bool catchExceptions)
+        // This Render overload can be called outside of the compositor, like MediaContext.SyncCommit.
+        // In this case we can't use external timestamp, as it might be out-sync with IRenderLoop.
+        // Instead, pass last known ServerNow time.
+        public void Render(bool catchExceptions) => Render(ServerNow, catchExceptions);
+
+        void IRenderLoopTask.Render(TimeSpan timestamp) => Render(timestamp, true);
+
+        private void Render(TimeSpan timestamp, bool catchExceptions)
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -179,7 +182,7 @@ namespace Avalonia.Rendering.Composition.Server
                 try
                 {
                     using (Dispatcher.UIThread.DisableProcessing()) 
-                        RenderReentrancySafe(catchExceptions);
+                        RenderReentrancySafe(timestamp, catchExceptions);
                 }
                 finally
                 {
@@ -187,10 +190,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
             }
             else
-                RenderReentrancySafe(catchExceptions);
+                RenderReentrancySafe(timestamp, catchExceptions);
         }
         
-        private void RenderReentrancySafe(bool catchExceptions)
+        private void RenderReentrancySafe(TimeSpan timestamp, bool catchExceptions)
         {
             lock (_lock)
             {
@@ -199,7 +202,7 @@ namespace Avalonia.Rendering.Composition.Server
                     try
                     {
                         _safeThread = Thread.CurrentThread;
-                        RenderCore(catchExceptions);
+                        RenderCore(timestamp, catchExceptions);
                     }
                     finally
                     {
@@ -213,9 +216,9 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
         
-        private void RenderCore(bool catchExceptions)
+        private void RenderCore(TimeSpan timestamp, bool catchExceptions)
         {
-            UpdateServerTime();
+            ServerNow = timestamp;
             ApplyPendingBatches();
             NotifyBatchesProcessed();
 
