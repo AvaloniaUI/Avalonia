@@ -391,7 +391,7 @@ namespace Avalonia.Base.UnitTests.Layout
 
             root.LayoutManager.ExecuteLayoutPass();
 
-            //altough nonArrageableTargets has rubbish logic and can't be measured/arranged properly
+            //although nonArrageableTargets has rubbish logic and can't be measured/arranged properly
             //layoutmanager should process properly other visuals
             Assert.All(targets, c => Assert.True(c.Arranged));
         }

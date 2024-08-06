@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
@@ -21,8 +22,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public static (XamlLanguageTypeMappings language, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emit) Configure(IXamlTypeSystem typeSystem)
         {
             var runtimeHelpers = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
-            var assignBindingAttribute = typeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
-            var bindingType = typeSystem.GetType("Avalonia.Data.IBinding");
             var rv = new XamlLanguageTypeMappings(typeSystem)
             {
                 SupportInitialize = typeSystem.GetType("System.ComponentModel.ISupportInitialize"),
@@ -89,7 +88,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlTypeSystem typeSystem,
             IXamlILContextDefinition<IXamlILEmitter> definition)
         {
-            var nameScopeType = typeSystem.FindType("Avalonia.Controls.INameScope");
+            var nameScopeType = typeSystem.GetType("Avalonia.Controls.INameScope");
             var field = definition.TypeBuilder.DefineField(nameScopeType,
                 ContextNameScopeFieldName, XamlVisibility.Public, false);
             definition.ConstructorBuilder.Generator
@@ -97,7 +96,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 .Ldarg(1)
                 .Ldtype(nameScopeType)
                 .EmitCall(mappings.ServiceProvider.GetMethod(new FindMethodMethodSignature("GetService",
-                    typeSystem.FindType("System.Object"), typeSystem.FindType("System.Type"))))
+                    typeSystem.GetType("System.Object"), typeSystem.GetType("System.Type"))))
                 .Stfld(field);
         }
 
@@ -107,26 +106,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlILContextDefinition<IXamlILEmitter> definition,
             IXamlType runtimeHelpers)
         {
-            var interfaceType = typeSystem.FindType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlEagerParentStackProvider");
+            var interfaceType = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlEagerParentStackProvider");
 
             definition.TypeBuilder.AddInterfaceImplementation(interfaceType);
 
             // IReadOnlyList<object> DirectParentsStack => (IReadOnlyList<object>)ParentsStack;
             var directParentsGetter = ImplementInterfacePropertyGetter("DirectParentsStack");
             directParentsGetter.Generator
-                .LdThisFld(definition.ParentListField)
+                .LdThisFld(definition.ParentListField!)
                 .Castclass(directParentsGetter.ReturnType)
                 .Ret();
 
             var serviceProviderGetServiceMethod = mappings.ServiceProvider.GetMethod(new FindMethodMethodSignature(
                 "GetService",
-                typeSystem.FindType("System.Object"),
-                typeSystem.FindType("System.Type")));
+                typeSystem.GetType("System.Object"),
+                typeSystem.GetType("System.Type")));
 
             var asEagerParentStackProviderMethod = runtimeHelpers.GetMethod(new FindMethodMethodSignature(
                 "AsEagerParentStackProvider",
                 interfaceType,
-                mappings.ParentStackProvider)
+                mappings.ParentStackProvider!)
             {
                 IsStatic = true
             });
@@ -136,14 +135,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             var parentProviderGetter = ImplementInterfacePropertyGetter("ParentProvider");
             parentProviderGetter.Generator
                 .LdThisFld(definition.ParentServiceProviderField)
-                .Ldtype(mappings.ParentStackProvider)
+                .Ldtype(mappings.ParentStackProvider!)
                 .EmitCall(serviceProviderGetServiceMethod)
                 .EmitCall(asEagerParentStackProviderMethod)
                 .Ret();
 
             IXamlMethodBuilder<IXamlILEmitter> ImplementInterfacePropertyGetter(string propertyName)
             {
-                var interfaceGetter = interfaceType.FindMethod(m => m.Name == "get_" + propertyName);
+                var interfaceGetter = interfaceType.GetMethod(m => m.Name == "get_" + propertyName);
 
                 var getter = definition.TypeBuilder.DefineMethod(
                     interfaceGetter.ReturnType,
@@ -193,7 +192,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 _avaloniaListConverter = typeSystem.GetType("Avalonia.Collections.AvaloniaListConverter`1");
             }
 
-            IXamlType LookupConverter(IXamlType type)
+            IXamlType? LookupConverter(IXamlType type)
             {
                 foreach(var p in _converters)
                     if (p.Key.Equals(type))
@@ -205,41 +204,44 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             class ConstructedAttribute : IXamlCustomAttribute
             {
-                public bool Equals(IXamlCustomAttribute other) => false;
+                public bool Equals(IXamlCustomAttribute? other) => false;
                 
                 public IXamlType Type { get; }
-                public List<object> Parameters { get; }
-                public Dictionary<string, object> Properties { get; }
+                public List<object?> Parameters { get; }
+                public Dictionary<string, object?> Properties { get; }
 
-                public ConstructedAttribute(IXamlType type, List<object> parameters, Dictionary<string, object> properties)
+                public ConstructedAttribute(IXamlType type, List<object?>? parameters, Dictionary<string, object?>? properties)
                 {
                     Type = type;
-                    Parameters = parameters ?? new List<object>();
-                    Properties = properties ?? new Dictionary<string, object>();
+                    Parameters = parameters ?? new List<object?>();
+                    Properties = properties ?? new Dictionary<string, object?>();
                 }
             }
             
-            public IXamlCustomAttribute GetCustomAttribute(IXamlType type, IXamlType attributeType)
+            public IXamlCustomAttribute? GetCustomAttribute(IXamlType type, IXamlType attributeType)
             {
                 if (attributeType.Equals(_typeConverterAttribute))
                 {
                     var conv = LookupConverter(type);
                     if (conv != null)
-                        return new ConstructedAttribute(_typeConverterAttribute, new List<object>() {conv}, null);
+                        return new ConstructedAttribute(_typeConverterAttribute, [conv], null);
                 }
 
                 return null;
             }
 
-            public IXamlCustomAttribute GetCustomAttribute(IXamlProperty property, IXamlType attributeType)
+            public IXamlCustomAttribute? GetCustomAttribute(IXamlProperty property, IXamlType attributeType)
             {
                 return null;
             }
         }
 
-        public static bool CustomValueConverter(AstTransformationContext context,
-            IXamlAstValueNode node, IReadOnlyList<IXamlCustomAttribute> customAttributes, IXamlType type,
-            out IXamlAstValueNode result)
+        public static bool CustomValueConverter(
+            AstTransformationContext context,
+            IXamlAstValueNode node,
+            IReadOnlyList<IXamlCustomAttribute>? customAttributes,
+            IXamlType type,
+            [NotNullWhen(true)] out IXamlAstValueNode? result)
         {
             if (node is AvaloniaXamlIlOptionMarkupExtensionTransformer.OptionsMarkupExtensionNode optionsNode)
             {
