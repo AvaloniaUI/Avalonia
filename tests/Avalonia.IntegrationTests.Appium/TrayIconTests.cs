@@ -10,49 +10,43 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium;
 
 [Collection("Default")]
-public class TrayIconTests : IDisposable
+public class TrayIconTests : TestBase, IDisposable
 {
-    private readonly AppiumDriver _session;
     private readonly AppiumDriver? _rootSession;
     private const string TrayIconName = "IntegrationTestApp TrayIcon";
 
     public TrayIconTests(DefaultAppFixture fixture)
+        : base(fixture, "Desktop")
     {
-        _session = fixture.Session;
-
         // "Root" is a special name for windows the desktop session, that has access to task bar.
         if (OperatingSystem.IsWindows())
         {
             _rootSession = fixture.CreateNestedSession("Root");
         }
-
-        var tabs = _session.FindElementByAccessibilityId("MainTabs");
-        var tab = tabs.FindElementByName("Desktop");
-        tab.Click();
     }
 
     // Left click is only supported on Windows.
     [PlatformFact(TestPlatforms.Windows, Skip = "Flaky test")]
     public void Should_Handle_Left_Click()
     {
-        var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
-        Assert.NotNull(avaloinaTrayIconButton);
+        var avaloniaTrayIconButton = GetTrayIconButton(_rootSession ?? Session, TrayIconName);
+        Assert.NotNull(avaloniaTrayIconButton);
 
-        avaloinaTrayIconButton.SendClick();
+        avaloniaTrayIconButton.SendClick();
 
         Thread.Sleep(2000);
         
-        var checkBox = _session.FindElementByAccessibilityId("TrayIconClicked");
+        var checkBox = Session.FindElementByAccessibilityId("TrayIconClicked");
         Assert.True(checkBox.GetIsChecked());
     }
 
     [Fact(Skip = "Flaky test")]
     public void Should_Handle_Context_Menu_Item_Click()
     {
-        var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
-        Assert.NotNull(avaloinaTrayIconButton);
+        var avaloniaTrayIconButton = GetTrayIconButton(_rootSession ?? Session, TrayIconName);
+        Assert.NotNull(avaloniaTrayIconButton);
 
-        var contextMenu = ShowAndGetTrayMenu(avaloinaTrayIconButton, TrayIconName);
+        var contextMenu = ShowAndGetTrayMenu(avaloniaTrayIconButton, TrayIconName);
         Assert.NotNull(contextMenu);
 
         var menuItem = contextMenu.FindElementByName("Raise Menu Clicked");
@@ -60,26 +54,26 @@ public class TrayIconTests : IDisposable
 
         Thread.Sleep(2000);
 
-        var checkBox = _session.FindElementByAccessibilityId("TrayIconMenuClicked");
+        var checkBox = Session.FindElementByAccessibilityId("TrayIconMenuClicked");
         Assert.True(checkBox.GetIsChecked());
     }
 
     [Fact(Skip = "Flaky test")]
     public void Can_Toggle_TrayIcon_Visibility()
     {
-        var avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
-        Assert.NotNull(avaloinaTrayIconButton);
+        var avaloniaTrayIconButton = GetTrayIconButton(_rootSession ?? Session, TrayIconName);
+        Assert.NotNull(avaloniaTrayIconButton);
 
-        var toggleButton = _session.FindElementByAccessibilityId("ToggleTrayIconVisible");
+        var toggleButton = Session.FindElementByAccessibilityId("ToggleTrayIconVisible");
         toggleButton.SendClick();
 
-        avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
-        Assert.Null(avaloinaTrayIconButton);
+        avaloniaTrayIconButton = GetTrayIconButton(_rootSession ?? Session, TrayIconName);
+        Assert.Null(avaloniaTrayIconButton);
 
         toggleButton.SendClick();
 
-        avaloinaTrayIconButton = GetTrayIconButton(_rootSession ?? _session, TrayIconName);
-        Assert.NotNull(avaloinaTrayIconButton);
+        avaloniaTrayIconButton = GetTrayIconButton(_rootSession ?? Session, TrayIconName);
+        Assert.NotNull(avaloniaTrayIconButton);
     }
 
     private static AppiumWebElement? GetTrayIconButton(AppiumDriver session, string trayIconName)

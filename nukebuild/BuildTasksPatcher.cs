@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using ILRepacking;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Nuke.Common.Tooling;
 
 public class BuildTasksPatcher
 {
@@ -56,7 +56,7 @@ public class BuildTasksPatcher
         return null;
     }
 
-    public static void PatchBuildTasksInPackage(string packagePath)
+    public static void PatchBuildTasksInPackage(string packagePath, Tool ilRepackTool)
     {
         using (var archive = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.ReadWrite),
             ZipArchiveMode.Update))
@@ -70,7 +70,7 @@ public class BuildTasksPatcher
                     Directory.CreateDirectory(tempDir);
                     var temp = Path.Combine(tempDir, entry.Name);
                     var output = temp + ".output";
-                    File.Copy(typeof(Microsoft.Build.Framework.ITask).Assembly.GetModules()[0].FullyQualifiedName,
+                    File.Copy(GetAssemblyPath(typeof(Microsoft.Build.Framework.ITask)),
                         Path.Combine(tempDir, "Microsoft.Build.Framework.dll"));
                     var patched = new MemoryStream();
                     try
@@ -78,22 +78,15 @@ public class BuildTasksPatcher
                         entry.ExtractToFile(temp, true);
                         // Get Original SourceLinkInfo Content
                         var sourceLinkInfoContent = GetSourceLinkInfo(temp);
-                        var repack = new ILRepacking.ILRepack(new RepackOptions()
-                        {
-                            Internalize = true,
-                            InputAssemblies = new[]
-                            {
-                                temp,
-                                typeof(Mono.Cecil.AssemblyDefinition).Assembly.GetModules()[0].FullyQualifiedName,
-                                typeof(Mono.Cecil.Rocks.MethodBodyRocks).Assembly.GetModules()[0].FullyQualifiedName,
-                                typeof(Mono.Cecil.Pdb.PdbReaderProvider).Assembly.GetModules()[0].FullyQualifiedName,
-                                typeof(Mono.Cecil.Mdb.MdbReaderProvider).Assembly.GetModules()[0].FullyQualifiedName,
-                            },
-                            SearchDirectories = Array.Empty<string>(),
-                            DebugInfo = true, // Allowed read debug info
-                            OutputFile = output
-                        });
-                        repack.Repack();
+
+                        var cecilAsm = GetAssemblyPath(typeof(Mono.Cecil.AssemblyDefinition));
+                        var cecilRocksAsm = GetAssemblyPath(typeof(Mono.Cecil.Rocks.MethodBodyRocks));
+                        var cecilPdbAsm = GetAssemblyPath(typeof(Mono.Cecil.Pdb.PdbReaderProvider));
+                        var cecilMdbAsm = GetAssemblyPath(typeof(Mono.Cecil.Mdb.MdbReaderProvider));
+
+                        ilRepackTool.Invoke(
+                            $"/internalize /out:\"{output}\" \"{temp}\" \"{cecilAsm}\" \"{cecilRocksAsm}\" \"{cecilPdbAsm}\" \"{cecilMdbAsm}\"",
+                            tempDir);
 
                         // 'hurr-durr assembly with the same name is already loaded' prevention
                         using (var asm = AssemblyDefinition.ReadAssembly(output,
@@ -161,4 +154,7 @@ public class BuildTasksPatcher
             }
         }
     }
+
+    private static string GetAssemblyPath(Type typeInAssembly)
+        => typeInAssembly.Assembly.GetModules()[0].FullyQualifiedName;
 }

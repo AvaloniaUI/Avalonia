@@ -10,11 +10,14 @@ using UniformTypeIdentifiers;
 using UTTypeLegacy = MobileCoreServices.UTType;
 using UTType = UniformTypeIdentifiers.UTType;
 using System.Runtime.Versioning;
+using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.iOS.Storage;
 
 internal class IOSStorageProvider : IStorageProvider
 {
+    public static ReadOnlySpan<byte> PlatformKey => "ios"u8; 
+
     private readonly AvaloniaView _view;
     public IOSStorageProvider(AvaloniaView view)
     {
@@ -217,20 +220,41 @@ internal class IOSStorageProvider : IStorageProvider
         return tcs.Task;
     }
 
-    private NSUrl? GetBookmarkedUrl(string bookmark)
+    private unsafe NSUrl? GetBookmarkedUrl(string bookmark)
     {
-        var url = NSUrl.FromBookmarkData(new NSData(bookmark, NSDataBase64DecodingOptions.None),
-            NSUrlBookmarkResolutionOptions.WithoutUI, null, out var isStale, out var error);
-        if (isStale)
+        return StorageBookmarkHelper.TryDecodeBookmark(PlatformKey, bookmark, out var bytes) switch
         {
-            Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(this, "Stale bookmark detected");
-        }
-            
-        if (error != null)
+            StorageBookmarkHelper.DecodeResult.Success => DecodeFromBytes(bytes!),
+            // Attempt to decode 11.0 ios bookmarks
+            StorageBookmarkHelper.DecodeResult.InvalidFormat => DecodeFromNSData(new NSData(bookmark, NSDataBase64DecodingOptions.None)),
+            _ => null
+        };
+
+        NSUrl DecodeFromBytes(byte[] bytes)
         {
-            throw new NSErrorException(error);
+            fixed (byte* ptr = bytes)
+            {
+                using var data = new NSData(new IntPtr(ptr), new UIntPtr((uint)bytes.Length), null);
+                return DecodeFromNSData(data);
+            }
         }
-        return url;
+
+        NSUrl DecodeFromNSData(NSData nsData)
+        {
+            var url = NSUrl.FromBookmarkData(nsData,
+                NSUrlBookmarkResolutionOptions.WithoutUI, null, out var isStale, out var error);
+            if (isStale)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(this, "Stale bookmark detected");
+            }
+
+            if (error != null)
+            {
+                throw new NSErrorException(error);
+            }
+
+            return url;
+        }
     }
 
     private static string[] FileTypesToUTTypeLegacy(IReadOnlyList<FilePickerFileType>? filePickerFileTypes)

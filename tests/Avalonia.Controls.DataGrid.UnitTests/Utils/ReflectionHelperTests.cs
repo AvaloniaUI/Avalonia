@@ -2,7 +2,7 @@
 using Avalonia.Controls.Utils;
 using Xunit;
 
-namespace Avalonia.Controls.DataGrid.UnitTests.Utils
+namespace Avalonia.Controls.DataGridTests.Utils
 {
     public class ReflectionHelperTests
     {
