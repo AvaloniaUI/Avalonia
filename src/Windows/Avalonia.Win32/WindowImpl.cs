@@ -262,14 +262,8 @@ namespace Avalonia.Win32
         {
             get
             {
-                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
-                {
-                    GetWindowRect(_hwnd, out var rcWindow);
-                    return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
-                }
-
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf<RECT>());
-                return new Size(rect.Width, rect.Height) / RenderScaling;
+                GetWindowRect(_hwnd, out var rcWindow);
+                return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
             }
         }
 
@@ -504,6 +498,7 @@ namespace Avalonia.Win32
             var result = DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
             return result == 0;
         }
+
         public IEnumerable<object> Surfaces
             => _glSurface is null ?
                 new object[] { Handle, _framebuffer } :
@@ -514,15 +509,10 @@ namespace Avalonia.Win32
             get
             {
                 GetWindowRect(_hwnd, out var rc);
-
-                var border = HiddenBorderSize;
-                return new PixelPoint(rc.left + border.Width, rc.top + border.Height);
+                return new PixelPoint(rc.left, rc.top);
             }
             set
             {
-                var border = HiddenBorderSize;
-                value = new PixelPoint(value.X - border.Width, value.Y - border.Height);
-
                 SetWindowPos(
                     Handle.Handle,
                     IntPtr.Zero,
@@ -536,23 +526,6 @@ namespace Avalonia.Win32
 
         private bool HasFullDecorations => _windowProperties.Decorations == SystemDecorations.Full;
 
-        private PixelSize HiddenBorderSize
-        {
-            get
-            {
-                // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
-                if (Win32Platform.WindowsVersion.Major < 10 || !HasFullDecorations || GetStyle().HasFlag(WindowStyles.WS_POPUP))
-                {
-                    return PixelSize.Empty;
-                }
-
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf<RECT>());
-                GetWindowRect(_hwnd, out var frameRect);
-                var borderWidth = GetSystemMetrics(SystemMetric.SM_CXBORDER);
-
-                return new PixelSize(clientRect.left - frameRect.left - borderWidth, 0);
-            }
-        }
 
         public void Move(PixelPoint point) => Position = point;
 
@@ -588,24 +561,28 @@ namespace Avalonia.Win32
 
             GetWindowPlacement(_hwnd, out var windowPlacement);
 
-            var clientScreenOrigin = new POINT();
-            ClientToScreen(_hwnd, ref clientScreenOrigin);
-
             var requestedClientRect = new RECT
             {
-                left = clientScreenOrigin.X,
-                right = clientScreenOrigin.X + requestedClientWidth,
-
-                top = clientScreenOrigin.Y,
-                bottom = clientScreenOrigin.Y + requestedClientHeight,
+                left = 0,
+                top = 0,
+                right = requestedClientWidth,
+                bottom = requestedClientHeight
             };
 
             var requestedWindowRect = _isClientAreaExtended ? requestedClientRect : ClientRectToWindowRect(requestedClientRect);
+            var windowWidth = requestedWindowRect.Width;
+            var windowHeight = requestedWindowRect.Height;
 
-            if (requestedWindowRect.Width == windowPlacement.NormalPosition.Width && requestedWindowRect.Height == windowPlacement.NormalPosition.Height)
+            if (windowWidth == windowPlacement.NormalPosition.Width && windowHeight == windowPlacement.NormalPosition.Height)
             {
                 return;
             }
+
+            var position = Position;
+            requestedWindowRect.left = position.X;
+            requestedWindowRect.top = position.Y;
+            requestedWindowRect.right = position.X + windowWidth;
+            requestedWindowRect.bottom = position.Y + windowHeight;
 
             windowPlacement.NormalPosition = requestedWindowRect;
 
@@ -991,14 +968,8 @@ namespace Avalonia.Win32
             if (fullscreen)
             {
                 GetWindowRect(_hwnd, out var windowRect);
-                GetClientRect(_hwnd, out var clientRect);
 
-                clientRect.left += windowRect.left;
-                clientRect.right += windowRect.left;
-                clientRect.top += windowRect.top;
-                clientRect.bottom += windowRect.top;
-
-                _savedWindowInfo.WindowRect = clientRect;
+                _savedWindowInfo.WindowRect = windowRect;
 
                 var current = GetStyle();
                 var currentEx = GetExtendedStyle();
@@ -1108,15 +1079,7 @@ namespace Avalonia.Win32
                 _isClientAreaExtended = false;
                 return;
             }
-            GetClientRect(_hwnd, out var rcClient);
             GetWindowRect(_hwnd, out var rcWindow);
-
-            // Inform the application of the frame change.
-            SetWindowPos(_hwnd,
-                IntPtr.Zero,
-                rcWindow.left, rcWindow.top,
-                rcClient.Width, rcClient.Height,
-                SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOACTIVATE);
 
             if (_isClientAreaExtended && WindowState != WindowState.FullScreen)
             {
@@ -1137,8 +1100,6 @@ namespace Avalonia.Win32
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
 
-                Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), WindowResizeReason.Layout);
-
                 unsafe
                 {
                     int cornerPreference = (int)DwmWindowCornerPreference.DWMWCP_DEFAULT;
@@ -1155,6 +1116,13 @@ namespace Avalonia.Win32
             {
                 DisableCloseButton(_hwnd);
             }
+
+            // Inform the application of the frame change.
+            SetWindowPos(_hwnd,
+                IntPtr.Zero,
+                rcWindow.left, rcWindow.top,
+                0, 0,
+                SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOSIZE);
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
@@ -1424,7 +1392,7 @@ namespace Avalonia.Win32
                 {
                     style &= ~(fullDecorationFlags | WindowStyles.WS_THICKFRAME);
 
-                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized && newProperties.IsResizable)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
                     }
@@ -1467,23 +1435,12 @@ namespace Avalonia.Win32
 
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-
                 if (_shown || forceChanges)
                 {
-                    GetClientRect(_hwnd, out var oldClientRect);
-                    var oldClientRectOrigin = new POINT();
-                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                    oldClientRect.Offset(oldClientRectOrigin);
+                    GetWindowRect(_hwnd, out var rcWindow);
 
-                    var newRect = oldClientRect;
-
-                    if (newProperties.Decorations == SystemDecorations.Full)
-                    {
-                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
-                    }
-
-                    SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                    SetWindowPos(_hwnd, IntPtr.Zero, rcWindow.left, rcWindow.top, 0 ,0,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOSIZE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
             }
