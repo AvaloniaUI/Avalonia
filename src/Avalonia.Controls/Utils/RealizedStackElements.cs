@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
@@ -42,16 +43,17 @@ namespace Avalonia.Controls.Utils
         public IReadOnlyList<double> SizeU => _sizes ??= new List<double>();
 
         /// <summary>
-        /// Gets the position of the first element on the primary axis.
+        /// Gets the position of the first element on the primary axis, or NaN if the position is
+        /// unstable.
         /// </summary>
-        public double StartU => _startU;
+        public double StartU => _startUUnstable ? double.NaN : _startU;
 
         /// <summary>
         /// Adds a newly realized element to the collection.
         /// </summary>
         /// <param name="index">The index of the element.</param>
         /// <param name="element">The element.</param>
-        /// <param name="u">The position of the elemnt on the primary axis.</param>
+        /// <param name="u">The position of the element on the primary axis.</param>
         /// <param name="sizeU">The size of the element on the primary axis.</param>
         public void Add(int index, Control element, double u, double sizeU)
         {
@@ -100,76 +102,6 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// Gets or estimates the index and start U position of the anchor element for the
-        /// specified viewport.
-        /// </summary>
-        /// <param name="viewportStartU">The U position of the start of the viewport.</param>
-        /// <param name="viewportEndU">The U position of the end of the viewport.</param>
-        /// <param name="itemCount">The number of items in the list.</param>
-        /// <param name="estimatedElementSizeU">The current estimated element size.</param>
-        /// <returns>
-        /// A tuple containing:
-        /// - The index of the anchor element, or -1 if an anchor could not be determined
-        /// - The U position of the start of the anchor element, if determined
-        /// </returns>
-        /// <remarks>
-        /// This method tries to find an existing element in the specified viewport from which
-        /// element realization can start. Failing that it estimates the first element in the
-        /// viewport.
-        /// </remarks>
-        public (int index, double position) GetOrEstimateAnchorElementForViewport(
-            double viewportStartU,
-            double viewportEndU,
-            int itemCount,
-            ref double estimatedElementSizeU)
-        {
-            // We have no elements, nothing to do here.
-            if (itemCount <= 0)
-                return (-1, 0);
-
-            // If we're at 0 then display the first item.
-            if (MathUtilities.IsZero(viewportStartU))
-                return (0, 0);
-
-            if (_sizes is not null && !_startUUnstable)
-            {
-                var u = _startU;
-
-                for (var i = 0; i < _sizes.Count; ++i)
-                {
-                    var size = _sizes[i];
-
-                    if (double.IsNaN(size))
-                        break;
-
-                    var endU = u + size;
-
-                    if (endU > viewportStartU && u < viewportEndU)
-                        return (FirstIndex + i, u);
-
-                    u = endU;
-                }
-            }
-
-            // We don't have any realized elements in the requested viewport, or can't rely on
-            // StartU being valid. Estimate the index using only the estimated size. First,
-            // estimate the element size, using defaultElementSizeU if we don't have any realized
-            // elements.
-            var estimatedSize = EstimateElementSizeU() switch
-            {
-                -1 => estimatedElementSizeU,
-                double v => v,
-            };
-
-            // Store the estimated size for the next layout pass.
-            estimatedElementSizeU = estimatedSize;
-
-            // Estimate the element at the start of the viewport.
-            var index = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
-            return (index, index * estimatedSize);
-        }
-
-        /// <summary>
         /// Gets the position of the element with the requested index on the primary axis, if realized.
         /// </summary>
         /// <returns>
@@ -191,61 +123,6 @@ namespace Avalonia.Controls.Utils
                 u += _sizes[i];
 
             return u;
-        }
-
-        public double GetOrEstimateElementU(int index, ref double estimatedElementSizeU)
-        {
-            // Return the position of the existing element if realized.
-            var u = GetElementU(index);
-
-            if (!double.IsNaN(u))
-                return u;
-
-            // Estimate the element size, using defaultElementSizeU if we don't have any realized
-            // elements.
-            var estimatedSize = EstimateElementSizeU() switch
-            {
-                -1 => estimatedElementSizeU,
-                double v => v,
-            };
-
-            // Store the estimated size for the next layout pass.
-            estimatedElementSizeU = estimatedSize;
-
-            // TODO: Use _startU to work this out.
-            return index * estimatedSize;
-        }
-
-        /// <summary>
-        /// Estimates the average U size of all elements in the source collection based on the
-        /// realized elements.
-        /// </summary>
-        /// <returns>
-        /// The estimated U size of an element, or -1 if not enough information is present to make
-        /// an estimate.
-        /// </returns>
-        public double EstimateElementSizeU()
-        {
-            var total = 0.0;
-            var divisor = 0.0;
-
-            // Average the size of the realized elements.
-            if (_sizes is not null)
-            {
-                foreach (var size in _sizes)
-                {
-                    if (double.IsNaN(size))
-                        continue;
-                    total += size;
-                    ++divisor;
-                }
-            }
-
-            // We don't have any elements on which to base our estimate.
-            if (divisor == 0 || total == 0)
-                return -1;
-
-            return total / divisor;
         }
 
         /// <summary>
@@ -538,6 +415,34 @@ namespace Avalonia.Controls.Utils
             _elements?.Clear();
             _sizes?.Clear();
         }
-    }
 
+        /// <summary>
+        /// Validates that <see cref="StartU"/> is still valid.
+        /// </summary>
+        /// <param name="orientation">The panel orientation.</param>
+        /// <remarks>
+        /// If the U size of any element in the realized elements has changed, then the value of
+        /// <see cref="StartU"/> should be considered unstable.
+        /// </remarks>
+        public void ValidateStartU(Orientation orientation)
+        {
+            if (_elements is null || _sizes is null || _startUUnstable)
+                return;
+
+            for (var i = 0; i < _elements.Count; ++i)
+            {
+                if (_elements[i] is not { } element)
+                    continue;
+
+                var sizeU = orientation == Orientation.Horizontal ?
+                    element.DesiredSize.Width : element.DesiredSize.Height;
+
+                if (sizeU != _sizes[i])
+                {
+                    _startUUnstable = true;
+                    break;
+                }
+            }
+        }
+    }
 }

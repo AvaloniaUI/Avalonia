@@ -217,6 +217,11 @@ namespace Avalonia.X11
                      detail == XiEnterLeaveDetail.XINotifyVirtual)
                     && buttons == default)
                 {
+                    foreach (var scroller in _pointerDevice.Scrollers)
+                    {
+                       _pointerDevice.Valuators[scroller.Number].Value = 0;
+                    }
+                    
                     client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, (ulong)ev.time.ToInt64(),
                         client.InputRoot,
                         RawPointerEventType.LeaveWindow, new Point(ev.event_x, ev.event_y), buttons));

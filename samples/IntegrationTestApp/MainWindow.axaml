@@ -107,14 +107,6 @@
         </StackPanel>
       </TabItem>
 
-      <TabItem Header="Desktop">
-        <StackPanel>
-          <CheckBox x:FieldModifier="public" Name="TrayIconClicked">Tray Icon Clicked</CheckBox>
-          <CheckBox x:FieldModifier="public" Name="TrayIconMenuClicked">Tray Icon Menu Clicked</CheckBox>
-          <Button Name="ToggleTrayIconVisible" Content="Toggle TrayIcon Visible" />
-        </StackPanel>
-      </TabItem>
-
       <TabItem Header="Gestures">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">

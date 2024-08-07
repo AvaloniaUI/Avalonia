@@ -573,7 +573,10 @@ namespace Avalonia.Media
                     }
                 }
 
-                nextCluster = _glyphInfos[currentIndex].GlyphCluster;
+                if (_glyphInfos.Count > 0 && currentIndex <= _glyphInfos.Count)
+                {
+                    nextCluster = _glyphInfos[currentIndex].GlyphCluster;
+                }
             }
 
             var clusterLength = Math.Max(0, nextCluster - cluster);
@@ -638,7 +641,7 @@ namespace Avalonia.Media
         {
             int firstCluster, lastCluster;
 
-            if (Characters.IsEmpty)
+            if (Characters.IsEmpty || _glyphInfos.Count == 0)
             {
                 firstCluster = 0;
                 lastCluster = 0;
