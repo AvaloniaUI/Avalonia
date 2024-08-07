@@ -77,6 +77,7 @@ namespace Avalonia.UnitTests
                 .Bind<IDispatcherImpl>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
+                .Bind<PlatformPointerConfiguration>().ToSingleton<PlatformPointerConfiguration>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IAccessKeyHandler>().ToConstant(Services.AccessKeyHandler)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -480,9 +481,11 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
+            var contextGestures = AvaloniaLocator.Current.GetService<PlatformPointerConfiguration>()?.OpenContextMenu;
+
             if (e.Source == this
                 && !e.Handled
-                && e.InitialPressMouseButton == MouseButton.Right)
+                && contextGestures?.Any(x => x.Matches(e)) == true)
             {
                 var args = new ContextRequestedEventArgs(e);
                 RaiseEvent(args);
