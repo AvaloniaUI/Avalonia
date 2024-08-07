@@ -289,8 +289,9 @@ namespace Avalonia.Controls
                     OnClick();
                     e.Handled = true;
                     break;
-
                 case Key.Space:
+                    // Handle Space only current focus control
+                    if (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() == this)
                     {
                         if (ClickMode == ClickMode.Press)
                         {
@@ -299,22 +300,21 @@ namespace Avalonia.Controls
 
                         IsPressed = true;
                         e.Handled = true;
-                        break;
                     }
-
+                    break;
                 case Key.Escape when Flyout != null:
                     // If Flyout doesn't have focusable content, close the flyout here
                     CloseFlyout();
                     break;
             }
-
             base.OnKeyDown(e);
         }
 
         /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (e.Key == Key.Space)
+            // Handle Space only current focus control
+            if (e.Key == Key.Space && TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() == this)
             {
                 if (ClickMode == ClickMode.Release)
                 {
