@@ -27,6 +27,12 @@ namespace Avalonia.Layout
         void InvalidateArrange(Layoutable control);
 
         /// <summary>
+        /// Notifies the layout manager that a control queues a calculation of the effective viewport.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        void InvalidateViewport(Visual control);
+
+        /// <summary>
         /// Executes a layout pass.
         /// </summary>
         /// <remarks>
