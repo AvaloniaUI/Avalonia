@@ -1421,8 +1421,6 @@ namespace Avalonia.Win32
 
             if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
             {
-                var style = GetStyle();
-
                 var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
 
                 var margins = new MARGINS
@@ -1437,10 +1435,9 @@ namespace Avalonia.Win32
 
                 if (_shown || forceChanges)
                 {
-                    GetWindowRect(_hwnd, out var rcWindow);
-
-                    SetWindowPos(_hwnd, IntPtr.Zero, rcWindow.left, rcWindow.top, 0 ,0,
-                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOSIZE |
+                    SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0 ,0,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                        SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOMOVE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
             }
