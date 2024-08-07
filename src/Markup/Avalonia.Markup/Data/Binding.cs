@@ -73,11 +73,11 @@ namespace Avalonia.Data
         }
 
         private protected override BindingExpressionBase Instance(
-            AvaloniaProperty targetProperty,
             AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
             object? anchor)
         {
-            var enableDataValidation = targetProperty.GetMetadata(target).EnableDataValidation ?? false;
+            var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
             return InstanceCore(targetProperty, target, anchor, enableDataValidation);
         }
 

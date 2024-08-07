@@ -21,6 +21,7 @@ namespace Avalonia.Data
         IDisposable
     {
         private bool _isSetterValue;
+        private bool _hasPublishedValue;
 
         public TemplateBinding()
             : base(BindingPriority.Template)
@@ -82,7 +83,7 @@ namespace Avalonia.Data
             return new(target, InstanceCore(), Mode, BindingPriority.Template);
         }
 
-        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
         {
             return InstanceCore();
         }
@@ -108,6 +109,7 @@ namespace Avalonia.Data
 
         protected override void StartCore()
         {
+            _hasPublishedValue = false;
             OnTemplatedParentChanged();
             if (TryGetTarget(out var target))
                 target.PropertyChanged += OnTargetPropertyChanged;
@@ -199,11 +201,12 @@ namespace Avalonia.Data
 
                 value = ConvertToTargetType(value);
                 PublishValue(value, error);
+                _hasPublishedValue = true;
 
                 if (Mode == BindingMode.OneTime)
                     Stop();
             }
-            else
+            else if (_hasPublishedValue)
             {
                 PublishValue(AvaloniaProperty.UnsetValue);
             }
