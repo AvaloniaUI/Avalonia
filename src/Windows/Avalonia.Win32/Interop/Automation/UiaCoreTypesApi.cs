@@ -20,9 +20,6 @@ namespace Avalonia.Win32.Interop.Automation
         internal const int UIA_E_NOCLICKABLEPOINT = unchecked((int)0x80040202);
         internal const int UIA_E_PROXYASSEMBLYNOTLOADED = unchecked((int)0x80040203);
 
-        private static bool? s_isNetComInteropAvailable;
-        internal static bool IsNetComInteropAvailable => s_isNetComInteropAvailable ??= GetIsNetComInteropAvailable();
-
         internal static int UiaLookupId(AutomationIdType type, ref Guid guid)
         {   
             return RawUiaLookupId( type, ref guid );
@@ -52,19 +49,6 @@ namespace Avalonia.Win32.Interop.Automation
             }
 
             Marshal.ThrowExceptionForHR(hr, (IntPtr)(-1));
-        }
-        
-        private static bool GetIsNetComInteropAvailable()
-        {
-#if NET6_0_OR_GREATER
-            if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-            {
-                return false;
-            }
-#endif
-
-            var comConfig = AppContext.GetData("System.Runtime.InteropServices.BuiltInComInterop.IsSupported") as string;
-            return comConfig == null || bool.Parse(comConfig);
         }
 
         [DllImport("UIAutomationCore.dll", EntryPoint = "UiaLookupId", CharSet = CharSet.Unicode)]

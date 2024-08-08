@@ -27,4 +27,33 @@ namespace Avalonia.Win32.Automation
             InvokeSync(() => Peer.BringIntoView());
         }
     }
+
+
+#if NET6_0_OR_GREATER
+
+    internal unsafe partial class AutomationNodeWrapper : UIA.IScrollProvider, UIA.IScrollItemProvider
+    {
+        public void* IScrollProviderInst { get; init; }
+        public void* IScrollItemProviderInst { get; init; }
+
+
+        double UIA.IScrollProvider.HorizontalScrollPercent => UIA.IScrollProviderNativeWrapper.GetHorizontalScrollPercent(IScrollProviderInst);
+
+        double UIA.IScrollProvider.VerticalScrollPercent => UIA.IScrollProviderNativeWrapper.GetVerticalScrollPercent(IScrollProviderInst);
+
+        double UIA.IScrollProvider.HorizontalViewSize => UIA.IScrollProviderNativeWrapper.GetHorizontalViewSize(IScrollProviderInst);
+
+        double UIA.IScrollProvider.VerticalViewSize => UIA.IScrollProviderNativeWrapper.GetVerticalViewSize(IScrollProviderInst);
+
+        bool UIA.IScrollProvider.HorizontallyScrollable => UIA.IScrollProviderNativeWrapper.GetHorizontallyScrollable(IScrollProviderInst);
+
+        bool UIA.IScrollProvider.VerticallyScrollable => UIA.IScrollProviderNativeWrapper.GetVerticallyScrollable(IScrollProviderInst);
+
+        void UIA.IScrollProvider.Scroll(ScrollAmount horizontalAmount, ScrollAmount verticalAmount) => UIA.IScrollProviderNativeWrapper.Scroll(IScrollProviderInst, horizontalAmount, verticalAmount);
+
+        void UIA.IScrollProvider.SetScrollPercent(double horizontalPercent, double verticalPercent) => UIA.IScrollProviderNativeWrapper.SetScrollPercent(IScrollProviderInst, horizontalPercent, verticalPercent);
+
+        void UIA.IScrollItemProvider.ScrollIntoView() => UIA.IScrollItemProviderNativeWrapper.ScrollIntoView(IScrollItemProviderInst);
+    }
+#endif
 }
