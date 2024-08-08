@@ -75,6 +75,11 @@ namespace Avalonia.Skia
                 currentX += advance;
             }
 
+            if (runBounds.Left < 0)
+            {
+                runBounds = runBounds.Translate(new Vector(-runBounds.Left, 0));
+            }
+
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
             BaselineOrigin = baselineOrigin;
