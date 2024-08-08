@@ -22,6 +22,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays a hierarchical tree of data.
     /// </summary>
+    [Avalonia.Metadata.ItemType(typeof(TreeViewItem))]
     public class TreeView : ItemsControl, ICustomKeyboardNavigation
     {
         /// <summary>
