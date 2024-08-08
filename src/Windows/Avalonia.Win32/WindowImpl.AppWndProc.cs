@@ -657,6 +657,11 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
+                            if (windowState == WindowState.Maximized)
+                            {
+                                MaximizeWithoutCoveringTaskbar();
+                            }
+
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
@@ -717,7 +722,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DISPLAYCHANGE:
                     {
-                        (Screen as ScreenImpl)?.InvalidateScreensCache();
+                        Screen?.OnChanged();
                         return IntPtr.Zero;
                     }
 
@@ -941,7 +946,7 @@ namespace Avalonia.Win32
                     {
                         continue;
                     }
-                    // Skip poins older from previous WM_MOUSEMOVE point.
+                    // Skip points older from previous WM_MOUSEMOVE point.
                     if (historyInfo.time < prevMovePoint.time ||
                         (historyInfo.time == prevMovePoint.time &&
                             historyInfo.x == prevMovePoint.x &&

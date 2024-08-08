@@ -462,7 +462,7 @@
 
                 if (!NSPointInRect(viewPoint, view.bounds))
                 {
-                    auto avnPoint = [AvnView toAvnPoint:windowPoint];
+                    auto avnPoint = ToAvnPoint(windowPoint);
                     auto point = [self translateLocalPoint:avnPoint];
                     AvnVector delta = { 0, 0 };
 

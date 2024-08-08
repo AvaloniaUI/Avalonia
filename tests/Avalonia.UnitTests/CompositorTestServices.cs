@@ -159,7 +159,6 @@ public class CompositorTestServices : IDisposable
         }
 
         public double DesktopScaling => 1;
-        public IScreenImpl Screen { get; }
         public IPlatformHandle Handle { get; }
         public Size ClientSize { get; }
         public Size? FrameSize { get; }

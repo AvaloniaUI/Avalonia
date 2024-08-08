@@ -15,6 +15,6 @@ internal interface IBinding2 : IBinding
 {
     BindingExpressionBase Instance(
         AvaloniaObject target,
-        AvaloniaProperty targetProperty,
+        AvaloniaProperty? targetProperty,
         object? anchor);
 }
