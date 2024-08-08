@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.DirectX
 {
@@ -17,8 +18,8 @@ namespace Avalonia.Win32.DirectX
         [DllImport("dxgi", ExactSpelling = true, PreserveSig = false)]
         internal static extern void CreateDXGIFactory1(ref Guid riid, out void* ppFactory);
 
-        [DllImport("d3d11", ExactSpelling = true, PreserveSig = false)]
-        public static extern void D3D11CreateDevice(
+        [DllImport("d3d11", ExactSpelling = true)]
+        public static extern UnmanagedMethods.HRESULT D3D11CreateDevice(
             IntPtr adapter, D3D_DRIVER_TYPE DriverType,
             IntPtr Software,
             uint Flags,
