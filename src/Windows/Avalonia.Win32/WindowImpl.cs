@@ -1133,6 +1133,7 @@ namespace Avalonia.Win32
         {
             if (!_shown)
             {
+                UpdateExtendMargins();
                 return;
             }
 

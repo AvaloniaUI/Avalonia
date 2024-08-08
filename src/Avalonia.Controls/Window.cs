@@ -743,6 +743,8 @@ namespace Avalonia.Controls
 
                 StartRendering();
                 PlatformImpl?.Show(ShowActivated, false);
+                WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
+                OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
                 OnOpened(EventArgs.Empty);
                 _wasShownBefore = true;
             }
