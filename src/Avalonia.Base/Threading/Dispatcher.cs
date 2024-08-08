@@ -64,7 +64,7 @@ public partial class Dispatcher : IDispatcher
     /// <summary>
     /// Checks that the current thread is the UI thread.
     /// </summary>
-    public bool CheckAccess() => _impl?.CurrentThreadIsLoopThread ?? true;
+    public bool CheckAccess() => _impl.CurrentThreadIsLoopThread;
 
     /// <summary>
     /// Checks that the current thread is the UI thread and throws if not.
