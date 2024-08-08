@@ -81,6 +81,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Preferred location is to the right of the target element, with the bottom edge of popup aligned with bottom edge of the target element.
         /// </summary>
-        RightEdgeAlignedBottom
+        RightEdgeAlignedBottom,
+
+        /// <summary>
+        /// A position and repositioning behavior that is defined by the <see cref="Popup.CustomPopupPlacementCallback"/> property.
+        /// </summary>
+        Custom
     }
 }

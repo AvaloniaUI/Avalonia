@@ -26,6 +26,13 @@ namespace Avalonia.Controls
             _pointerEventArgs = pointerEventArgs;
         }
 
+        /// <inheritdoc cref="ContextRequestedEventArgs()" />
+        public ContextRequestedEventArgs(ContextRequestedEventArgs contextRequestedEventArgs)
+            : this()
+        {
+            _pointerEventArgs = contextRequestedEventArgs._pointerEventArgs;
+        }
+
         /// <summary>
         /// Gets the x- and y-coordinates of the pointer position, optionally evaluated against a coordinate origin of a supplied <see cref="Control"/>.
         /// </summary>
