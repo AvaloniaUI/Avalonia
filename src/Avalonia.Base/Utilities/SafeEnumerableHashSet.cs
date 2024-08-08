@@ -5,12 +5,12 @@ using System.Collections.Generic;
 namespace Avalonia.Utilities
 {
     /// <summary>
-    /// Implements a simple list which is safe to modify during enumeration.
+    /// Implements a simple set which is safe to modify during enumeration.
     /// </summary>
     /// <typeparam name="T">The item type.</typeparam>
     /// <remarks>
-    /// Implements a list which, when written to while enumerating, performs a copy of the list
-    /// items. Note this this class doesn't actually implement <see cref="IList{T}"/> as it's not
+    /// Implements a set which, when written to while enumerating, performs a copy of the set
+    /// items. Note this class doesn't actually implement <see cref="ISet{T}"/> as it's not
     /// currently needed - feel free to add missing methods etc.
     /// </remarks>
     internal class SafeEnumerableHashSet<T> : IEnumerable<T>
