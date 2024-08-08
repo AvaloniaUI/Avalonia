@@ -342,10 +342,10 @@ namespace Avalonia.Controls.Primitives
 
                     if (oldSelection?.Length > 0)
                     {
-                        RaiseEvent(new SelectionChangedEventArgs(
+                        RaiseEvent(
                             SelectionChangedEvent,
-                            oldSelection,
-                            Array.Empty<object>()));
+                            static (e, ctx) => new SelectionChangedEventArgs(e, ctx, Array.Empty<object>()),
+                            oldSelection);
                     }
 
                     InitializeSelectionModel(_selection);
@@ -1006,16 +1006,13 @@ namespace Avalonia.Controls.Primitives
                 UpdateSelectedValueFromItem();
             }
 
-            var route = BuildEventRoute(SelectionChangedEvent);
-
-            if (route.HasHandlers)
-            {
-                var ev = new SelectionChangedEventArgs(
-                    SelectionChangedEvent,
-                    e.DeselectedItems.ToArray(),
-                    e.SelectedItems.ToArray());
-                RaiseEvent(ev);
-            }
+            RaiseEvent(
+                SelectionChangedEvent,
+                static (evnt, ctx) => new SelectionChangedEventArgs(
+                    evnt,
+                    ctx.DeselectedItems.ToArray(),
+                    ctx.SelectedItems.ToArray()),
+                e);
         }
 
         /// <summary>
@@ -1248,10 +1245,10 @@ namespace Avalonia.Controls.Primitives
 
             if (SelectedIndex != -1)
             {
-                RaiseEvent(new SelectionChangedEventArgs(
+                RaiseEvent(
                     SelectionChangedEvent,
-                    Array.Empty<object>(),
-                    Selection.SelectedItems.ToArray()));
+                    static (e, ctx) => new SelectionChangedEventArgs(e, Array.Empty<object>(), ctx.SelectedItems.ToArray()),
+                    Selection);
             }
         }
 

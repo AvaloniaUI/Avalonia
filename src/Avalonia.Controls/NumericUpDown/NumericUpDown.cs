@@ -650,8 +650,10 @@ namespace Avalonia.Controls
         /// <param name="newValue">The new value.</param>
         protected virtual void RaiseValueChangedEvent(decimal? oldValue, decimal? newValue)
         {
-            var e = new NumericUpDownValueChangedEventArgs(ValueChangedEvent, oldValue, newValue);
-            RaiseEvent(e);
+            RaiseEvent(
+                ValueChangedEvent,
+                static (e, ctx) => new NumericUpDownValueChangedEventArgs(e, ctx.oldValue, ctx.newValue),
+                (oldValue, newValue));
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 ﻿using System;
-using Avalonia.Collections.Pooled;
+using Avalonia.Utilities;
 
 namespace Avalonia.Interactivity
 {
@@ -8,8 +8,7 @@ namespace Avalonia.Interactivity
     /// </summary>
     public class EventRoute : IDisposable
     {
-        private readonly RoutedEvent _event;
-        private PooledList<RouteItem>? _route;
+        private LightweightEventRoute _lightweightEventRoute;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RoutedEvent"/> class.
@@ -17,16 +16,18 @@ namespace Avalonia.Interactivity
         /// <param name="e">The routed event to be raised.</param>
         public EventRoute(RoutedEvent e)
         {
-            e = e ?? throw new ArgumentNullException(nameof(e));
+            ThrowHelper.ThrowIfNull(e, nameof(e));
 
-            _event = e;
-            _route = null;
+            _lightweightEventRoute = new LightweightEventRoute(e);
         }
+
+        internal EventRoute(LightweightEventRoute lightweightEventRoute)
+            => _lightweightEventRoute = lightweightEventRoute;
 
         /// <summary>
         /// Gets a value indicating whether the route has any handlers.
         /// </summary>
-        public bool HasHandlers => _route?.Count > 0;
+        public bool HasHandlers => _lightweightEventRoute.HasHandlers;
 
         /// <summary>
         /// Adds a handler to the route.
@@ -49,11 +50,10 @@ namespace Avalonia.Interactivity
             bool handledEventsToo = false,
             Action<Delegate, object, RoutedEventArgs>? adapter = null)
         {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            ThrowHelper.ThrowIfNull(target, nameof(target));
+            ThrowHelper.ThrowIfNull(handler, nameof(handler));
 
-            _route ??= new PooledList<RouteItem>(16);
-            _route.Add(new RouteItem(target, handler, adapter, routes, handledEventsToo));
+            _lightweightEventRoute.Add(target, handler, routes, handledEventsToo, adapter);
         }
 
         /// <summary>
@@ -62,10 +62,9 @@ namespace Avalonia.Interactivity
         /// <param name="target">The target on which the event should be raised.</param>
         public void AddClassHandler(Interactive target)
         {
-            target = target ?? throw new ArgumentNullException(nameof(target));
+            ThrowHelper.ThrowIfNull(target, nameof(target));
 
-            _route ??= new PooledList<RouteItem>(16);
-            _route.Add(new RouteItem(target, null, null, 0, false));
+            _lightweightEventRoute.AddClassHandler(target);
         }
 
         /// <summary>
@@ -75,118 +74,16 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         public void RaiseEvent(Interactive source, RoutedEventArgs e)
         {
-            source = source ?? throw new ArgumentNullException(nameof(source));
-            e = e ?? throw new ArgumentNullException(nameof(e));
+            ThrowHelper.ThrowIfNull(source, nameof(source));
+            ThrowHelper.ThrowIfNull(e, nameof(e));
 
-            e.Source = source;
-
-            if (_event.RoutingStrategies == RoutingStrategies.Direct)
-            {
-                e.Route = RoutingStrategies.Direct;
-                RaiseEventImpl(e);
-                _event.InvokeRouteFinished(e);
-            }
-            else
-            {
-                if (_event.RoutingStrategies.HasAllFlags(RoutingStrategies.Tunnel))
-                {
-                    e.Route = RoutingStrategies.Tunnel;
-                    RaiseEventImpl(e);
-                    _event.InvokeRouteFinished(e);
-                }
-
-                if (_event.RoutingStrategies.HasAllFlags(RoutingStrategies.Bubble))
-                {
-                    e.Route = RoutingStrategies.Bubble;
-                    RaiseEventImpl(e);
-                    _event.InvokeRouteFinished(e);
-                }
-            }
+            _lightweightEventRoute.RaiseEventWithArgs(source, e);
         }
 
         /// <summary>
         /// Disposes of the event route.
         /// </summary>
         public void Dispose()
-        {
-            _route?.Dispose();
-            _route = null;
-        }
-
-        private void RaiseEventImpl(RoutedEventArgs e)
-        {
-            if (_route is null)
-            {
-                return;
-            }
-
-            Interactive? lastTarget = null;
-            var start = 0;
-            var end = _route.Count;
-            var step = 1;
-
-            if (e.Route == RoutingStrategies.Tunnel)
-            {
-                start = end - 1;
-                step = end = -1;
-            }
-
-            for (var i = start; i != end; i += step)
-            {
-                var entry = _route[i];
-
-                // If we've got to a new control then call any RoutedEvent.Raised listeners.
-                if (entry.Target != lastTarget)
-                {
-                    _event.InvokeRaised(entry.Target, e);
-
-                    // If this is a direct event and we've already raised events then we're finished.
-                    if (e.Route == RoutingStrategies.Direct && lastTarget is object)
-                    {
-                        return;
-                    }
-
-                    lastTarget = entry.Target;
-                }
-
-                // Raise the event handler.
-                if (entry.Handler is object &&
-                    entry.Routes.HasAllFlags(e.Route) &&
-                    (!e.Handled || entry.HandledEventsToo))
-                {
-                    if (entry.Adapter is object)
-                    {
-                        entry.Adapter(entry.Handler, entry.Target, e);
-                    }
-                    else
-                    {
-                        entry.Handler.DynamicInvoke(entry.Target, e);
-                    }
-                }
-            }
-        }
-
-        private readonly struct RouteItem
-        {
-            public RouteItem(
-                Interactive target,
-                Delegate? handler,
-                Action<Delegate, object, RoutedEventArgs>? adapter,
-                RoutingStrategies routes,
-                bool handledEventsToo)
-            {
-                Target = target;
-                Handler = handler;
-                Adapter = adapter;
-                Routes = routes;
-                HandledEventsToo = handledEventsToo;
-            }
-
-            public Interactive Target { get; }
-            public Delegate? Handler { get; }
-            public Action<Delegate, object, RoutedEventArgs>? Adapter { get; }
-            public RoutingStrategies Routes { get; }
-            public bool HandledEventsToo { get; }
-        }
+            => _lightweightEventRoute.Dispose();
     }
 }

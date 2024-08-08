@@ -128,11 +128,10 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var eventArgs = new RoutedEventArgs(CopyingToClipboardEvent);
+            var eventArgs = RaiseEvent(CopyingToClipboardEvent);
+            var handled = eventArgs?.Handled ?? false;
 
-            RaiseEvent(eventArgs);
-
-            if (!eventArgs.Handled)
+            if (!handled)
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 

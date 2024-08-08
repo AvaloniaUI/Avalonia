@@ -165,7 +165,7 @@ namespace Avalonia.Controls.Notifications
                     return;
                 }
 
-                RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
+                RaiseEvent(NotificationClosedEvent);
             }
         }
 

@@ -711,7 +711,7 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+                RaiseEvent(WindowOpenedEvent);
 
                 EnsureInitialized();
                 ApplyStyling();
@@ -791,7 +791,7 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("The window is already being shown.");
                 }
 
-                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+                RaiseEvent(WindowOpenedEvent);
 
                 EnsureInitialized();
                 ApplyStyling();
@@ -1054,7 +1054,7 @@ namespace Avalonia.Controls
 
         private protected sealed override void HandleClosed()
         {
-            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
+            RaiseEvent(WindowClosedEvent);
 
             base.HandleClosed();
 

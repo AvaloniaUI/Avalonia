@@ -199,10 +199,10 @@ namespace Avalonia.Controls
                 return default;
 
             _isInLayout = true;
+            var orientation = Orientation;
 
             try
             {
-                var orientation = Orientation;
                 var u = _realizedElements!.StartU;
 
                 for (var i = 0; i < _realizedElements.Count; ++i)
@@ -237,7 +237,7 @@ namespace Avalonia.Controls
             {
                 _isInLayout = false;
 
-                RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
+                RaiseEvent(orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent);
             }
         }
 
