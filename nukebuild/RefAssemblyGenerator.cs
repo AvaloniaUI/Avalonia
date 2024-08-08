@@ -83,7 +83,7 @@ public class RefAssemblyGenerator
         {
             type.Methods.Add(new MethodDefinition(
                 "(This interface or abstract class is -not- implementable by user code !)",
-                MethodAttributes.Public
+                MethodAttributes.Assembly
                 | MethodAttributes.Virtual
                 | MethodAttributes.Abstract
                 | MethodAttributes.NewSlot
