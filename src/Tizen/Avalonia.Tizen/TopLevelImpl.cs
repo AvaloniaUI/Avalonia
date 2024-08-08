@@ -70,7 +70,7 @@ internal class TopLevelImpl : ITopLevelImpl
         //
     }
 
-    public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+    public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
     {
         //
     }
