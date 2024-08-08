@@ -92,6 +92,11 @@ public partial class XYFocus
             return null;
         }
 
+        if(!(XYFocusHelpers.FindXYSearchRoot(inputElement, keyDeviceType) is InputElement searchRoot))
+        {
+            return null;
+        }
+
         _instance.SetManifoldsFromBounds(bounds);
 
         return _instance.GetNextFocusableElement(direction, inputElement, engagedControl, true, new XYFocusOptions
@@ -99,7 +104,7 @@ public partial class XYFocus
             KeyDeviceType = keyDeviceType,
             FocusedElementBounds = bounds,
             UpdateManifold = true,
-            SearchRoot = owner as InputElement ?? inputElement.GetVisualRoot() as InputElement
+            SearchRoot = searchRoot
         });
     }
 

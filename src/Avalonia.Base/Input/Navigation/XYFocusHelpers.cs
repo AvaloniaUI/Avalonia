@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input;
 
@@ -13,11 +14,25 @@ internal static class XYFocusHelpers
     {
         return keyDeviceType switch
         {
-            null => true, // programmatic input, allow any subtree.
+            null => !modes.Equals(XYFocusNavigationModes.Disabled), // programmatic input, allow any subtree except Disabled.
             KeyDeviceType.Keyboard => modes.HasFlag(XYFocusNavigationModes.Keyboard),
             KeyDeviceType.Gamepad => modes.HasFlag(XYFocusNavigationModes.Gamepad),
             KeyDeviceType.Remote => modes.HasFlag(XYFocusNavigationModes.Remote),
             _ => throw new ArgumentOutOfRangeException(nameof(keyDeviceType), keyDeviceType, null)
         };
+    }
+
+    internal static InputElement? FindXYSearchRoot(this InputElement visual, KeyDeviceType? keyDeviceType)
+    {
+        InputElement candidate = visual;
+        InputElement? candidateParent = visual.FindAncestorOfType<InputElement>();
+
+        while (candidateParent is not null && candidateParent.IsAllowedXYNavigationMode(keyDeviceType))
+        {
+            candidate = candidateParent;
+            candidateParent = candidate.FindAncestorOfType<InputElement>();
+        }
+
+        return candidate;
     }
 }
