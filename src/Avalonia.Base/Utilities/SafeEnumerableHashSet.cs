@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Avalonia.Utilities
@@ -12,77 +13,67 @@ namespace Avalonia.Utilities
     /// items. Note this this class doesn't actually implement <see cref="IList{T}"/> as it's not
     /// currently needed - feel free to add missing methods etc.
     /// </remarks>
-    internal class SafeEnumerableList<T> : IEnumerable<T>
+    internal class SafeEnumerableHashSet<T> : IEnumerable<T>
     {
-        private List<T> _list = new();
+        private HashSet<T> _hashSet = new();
         private int _generation;
         private int _enumCount = 0;
 
-        public int Count => _list.Count;
-        internal List<T> Inner => _list;
+        public int Count => _hashSet.Count;
+        internal HashSet<T> Inner => _hashSet;
 
-        public void Add(T item) => GetList().Add(item);
-        public bool Remove(T item) => GetList().Remove(item);
+        public void Add(T item) => GetSet().Add(item);
+        public bool Remove(T item) => GetSet().Remove(item);
 
-        public Enumerator GetEnumerator() => new(this, _list);
+        public Enumerator GetEnumerator() => new(this, _hashSet);
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
-        private List<T> GetList()
+        private HashSet<T> GetSet()
         {
             if (_enumCount > 0)
             {
-                _list = new(_list);
+                // .NET has a fastpath for cloning a hashset when passed in via the constructor
+                _hashSet = new(_hashSet);
                 ++_generation;
                 _enumCount = 0;
             }
 
-            return _list;
+            return _hashSet;
         }
 
         public struct Enumerator : IEnumerator<T>, IEnumerator
         {
-            private readonly SafeEnumerableList<T> _owner;
-            private readonly List<T> _list;
+            private readonly SafeEnumerableHashSet<T> _owner;
             private readonly int _generation;
-            private int _index;
-            private T? _current;
+            private HashSet<T>.Enumerator _enumerator;
 
-            internal Enumerator(SafeEnumerableList<T> owner, List<T> list)
+            internal Enumerator(SafeEnumerableHashSet<T> owner, HashSet<T> list)
             {
                 _owner = owner;
-                _list = list;
                 _generation = owner._generation;
-                _index = 0;
-                _current = default;
                 ++_owner._enumCount;
+                _enumerator = list.GetEnumerator();
             }
 
             public void Dispose()
             {
+                _enumerator.Dispose();
                 if (_owner._generation == _generation)
                     --_owner._enumCount;
             }
 
             public bool MoveNext()
             {
-                if (_index < _list.Count)
-                {
-                    _current = _list[_index++];
-                    return true;
-                }
-
-                _current = default;
-                return false;
+                return _enumerator.MoveNext();
             }
 
-            public T Current => _current!;
-            object? IEnumerator.Current => _current;
+            public T Current => _enumerator.Current;
+            object? IEnumerator.Current => _enumerator.Current;
 
             void IEnumerator.Reset()
             {
-                _index = 0;
-                _current = default;
+                throw new NotSupportedException();
             }
         }
     }
