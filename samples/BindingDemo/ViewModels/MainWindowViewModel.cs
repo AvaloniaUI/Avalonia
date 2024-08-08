@@ -1,14 +1,13 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using MiniMvvm;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using Avalonia.Controls.Selection;
+using Avalonia.Threading;
 
 namespace BindingDemo.ViewModels
 {
@@ -54,8 +53,7 @@ namespace BindingDemo.ViewModels
                 }
             });
 
-            CurrentTimeObservable = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
-                .Select(x => DateTimeOffset.Now);
+            CurrentTimeObservable = new DispatcherTimerObservable(TimeSpan.FromMilliseconds(500));
         }
 
         public ObservableCollection<TestItem> Items { get; }
@@ -114,6 +112,32 @@ namespace BindingDemo.ViewModels
         bool CanDo(object parameter)
         {
             return BooleanFlag;
+        }
+
+        private class DispatcherTimerObservable(TimeSpan interval) : IObservable<DateTimeOffset>
+        {
+            public IDisposable Subscribe(IObserver<DateTimeOffset> observer)
+            {
+                var timer = new DispatcherTimer();
+                timer.Tag = observer;
+                timer.Interval = interval;
+                timer.Tick += static (s, _) =>
+                {
+                    var observer = (IObserver<DateTimeOffset>)((DispatcherTimer)s!).Tag!;
+                    observer.OnNext(DateTimeOffset.Now);
+                };
+                timer.Start();
+                return new Disposable(timer, observer);
+            }
+
+            private class Disposable(DispatcherTimer timer, IObserver<DateTimeOffset> observer) : IDisposable
+            {
+                public void Dispose()
+                {
+                    timer.Stop();
+                    observer.OnCompleted();
+                }
+            }
         }
     }
 }

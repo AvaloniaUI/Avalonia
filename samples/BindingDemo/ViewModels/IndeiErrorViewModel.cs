@@ -13,8 +13,13 @@ namespace BindingDemo.ViewModels
 
         public IndeiErrorViewModel()
         {
-            this.WhenAnyValue(x => x.Maximum, x => x.Value)
-                .Subscribe(_ => UpdateErrors());
+            PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(Maximum) || args.PropertyName == nameof(Value))
+                {
+                    UpdateErrors();
+                }
+            };
         }
 
         public bool HasErrors
