@@ -101,7 +101,10 @@ namespace Avalonia.Animation
         {
             try
             {
-                InternalStep(frameTick);
+                if (_targetControl is Visual { IsEffectivelyVisible: false })
+                    return;
+                
+                InternalStep(frameTick); 
             }
             catch (Exception e)
             {

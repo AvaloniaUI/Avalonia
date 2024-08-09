@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Logging;
 using Avalonia.Media;
@@ -11,10 +12,10 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     internal class TransformAnimator : Animator<double>
     {
-        DoubleAnimator? _doubleAnimator;
+        private LightweightSubject<double>? _subject2;
 
         /// <inheritdoc/>
-        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> obsMatch, Action? onComplete)
+        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var ctrl = (Visual)control;
 
@@ -50,35 +51,42 @@ namespace Avalonia.Animation.Animators
 
                 var renderTransformType = ctrl.RenderTransform.GetType();
 
-                if (_doubleAnimator == null)
-                {
-                    _doubleAnimator = new DoubleAnimator();
-
-                    foreach (AnimatorKeyFrame keyframe in this)
-                    {
-                        _doubleAnimator.Add(keyframe);
-                    }
-
-                    _doubleAnimator.Property = Property;
-                }
+                var _targetProperty = Property;
 
                 // It's a transform object so let's target that.
+                Transform? _targetTransform = null;
+                
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
+                    _targetTransform = (Transform)ctrl.RenderTransform;
                 }
+
                 // It's a TransformGroup and try finding the target there.
-                else if (renderTransformType == typeof(TransformGroup))
+                if (renderTransformType == typeof(TransformGroup))
                 {
-                    foreach (Transform transform in ((TransformGroup)ctrl.RenderTransform).Children)
+                    foreach (var transform in ((TransformGroup)ctrl.RenderTransform).Children)
                     {
                         if (transform.GetType() == Property.OwnerType)
-                        {
-                            return _doubleAnimator.Apply(animation, transform, clock ?? control.Clock, obsMatch, onComplete);
+                        {                    
+                            _targetTransform = transform;
+                            break;
                         }
                     }
                 }
 
+                if (_targetTransform is not null)
+                {
+                    var _subject1 = new DisposeAnimationInstanceSubject<double>(this, animation,
+                        control, clock, onComplete);
+                    
+                    _subject2 = new LightweightSubject<double>();
+                    
+                    var sideBinding = _targetTransform.Bind((AvaloniaProperty<double>)_targetProperty,
+                        _subject2, BindingPriority.Animation);
+                    
+                    return new CompositeDisposable(match.Subscribe(_subject1), _subject1, sideBinding);
+                }
+        
                 Logger.TryGet(LogEventLevel.Warning, LogArea.Animations)?.Log(
                     control,
                     $"Cannot find the appropriate transform: \"{Property.OwnerType}\" in {control}.");
@@ -92,7 +100,11 @@ namespace Avalonia.Animation.Animators
             return null;
         }
 
-        /// <inheritdoc/> 
-        public override double Interpolate(double p, double o, double n) => 0;
+        /// <inheritdoc/>  
+        public override double Interpolate(double progress, double oldValue, double newValue)
+        {
+            _subject2?.OnNext(((newValue - oldValue) * progress) + oldValue);
+            return default;
+        }
     }
 }
