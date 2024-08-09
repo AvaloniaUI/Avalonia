@@ -84,6 +84,20 @@ namespace Avalonia.X11.Screens
             return ScreenHelper.ScreenFromPoint(point, AllScreens);
         }
 
+        internal PixelRect? GetScreenBoundsFromPoint(PixelPoint point)
+        {
+            // Why not ScreenFromPoint? Because the AllScreens property will create some Screen instances which will cause the stress of GC. This method will be called in every touch event, so we need to avoid the GC stress.
+            foreach (var screen in _impl.Screens)
+            {
+                if (screen.Bounds.ContainsExclusive(point))
+                {
+                    return screen.Bounds;
+                }
+            }
+
+            return null;
+        }
+
         public Screen ScreenFromRect(PixelRect rect)
         {
             return ScreenHelper.ScreenFromRect(rect, AllScreens);
