@@ -147,6 +147,12 @@ namespace Avalonia.Controls
         public void AddDeferred(object key, IDeferredContent deferredContent)
             => Add(key, deferredContent);
 
+        public void AddNotShared(object key, Func<IServiceProvider?, object?> factory)
+            => Add(key, new NotSharedDeferredItem(factory));
+
+        public void AddNotShared(object key, INotSharedDeferredContent notSharedDeferredContent)
+            => Add(key, notSharedDeferredContent);
+
         public void Clear()
         {
             if (_inner?.Count > 0)
@@ -236,12 +242,16 @@ namespace Avalonia.Controls
                     try
                     {
                         _lastDeferredItemKey = key;
-                        _inner[key] = value = deferred.Build(null) switch
+                        value = deferred.Build(null) switch
                         {
                             ITemplateResult t => t.Result,
                             { } v => v,
                             _ => null,
                         };
+                        if (deferred is not INotSharedDeferredContent)
+                        {
+                            _inner[key] = value;
+                        }
                     }
                     finally
                     {
@@ -250,7 +260,6 @@ namespace Avalonia.Controls
                 }
                 return true;
             }
-
             value = null;
             return false;
         }
@@ -374,6 +383,12 @@ namespace Avalonia.Controls
         {
             private readonly Func<IServiceProvider?,object?> _factory;
             public DeferredItem(Func<IServiceProvider?, object?> factory) => _factory = factory;
+            public object? Build(IServiceProvider? serviceProvider) => _factory(serviceProvider);
+        }
+
+        private sealed class NotSharedDeferredItem(Func<IServiceProvider?, object?> factory) : INotSharedDeferredContent
+        {
+            private readonly Func<IServiceProvider?, object?> _factory = factory;
             public object? Build(IServiceProvider? serviceProvider) => _factory(serviceProvider);
         }
     }

@@ -58,6 +58,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return false;
             }
 
+            var sharedVisitor = new NotSharedVisitor();
+            _ = sharedVisitor.Visit(node);
+            // Ingnore if Element is marked with x:Shared="false"
+            if (sharedVisitor.Count > 0)
+            {
+                return false;
+            }
+
             // Do not defer resources, if it has any x:Name registration, as it cannot be delayed.
             // This visitor will count x:Name registrations, ignoring nested NestedScopeMetadataNode scopes.
             // We set target scope level to 0, assuming that this resource node is a scope of itself.
