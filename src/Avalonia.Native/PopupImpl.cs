@@ -87,6 +87,22 @@ namespace Avalonia.Native
         {
         }
 
+        public void TakeFocus()
+        {
+            var parent = _parent;
+
+            while (parent != null)
+            {
+                if (parent is PopupImpl popup)
+                    parent = popup._parent;
+                else
+                    break;
+            }
+            
+            if (parent is WindowImpl w)
+                w.Native.TakeFocusFromChildren();
+        }
+
         public IPopupPositioner PopupPositioner { get; }
     }
 }

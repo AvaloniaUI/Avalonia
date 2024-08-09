@@ -142,6 +142,8 @@ namespace Avalonia.Controls.Primitives
 
         public void SetChild(Control? control) => Content = control;
 
+        public void TakeFocus() => PlatformImpl?.TakeFocus();
+
         Visual IPopupHost.HostedVisualTreeRoot => this;
         
         protected override Size MeasureOverride(Size availableSize)

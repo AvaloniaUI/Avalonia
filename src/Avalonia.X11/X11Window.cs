@@ -1559,5 +1559,10 @@ namespace Avalonia.X11
                 }
             }
         }
+
+        public void TakeFocus()
+        {
+            // TODO: Not yet implemented: need to check if this is required on X11 or not.
+        }
     }
 }
