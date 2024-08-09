@@ -1,4 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -47,5 +50,54 @@ public class SetterTests : XamlTestBase
 
             Assert.Equal(typeof(ContentControl), setter.Property.OwnerType);
         }
+    }
+
+    [Theory]
+    [InlineData("{x:Static InputElement.KeyDownEvent}","OnKeyDown")]
+    [InlineData("KeyDown","OnKeyDown")]
+    [InlineData("KeyDown", "OnKeyDownUnspecific")]
+    [InlineData("KeyDown","OnKeyDownStatic")]
+    public void EventSetter_Should_Be_Registered(string eventName, string handlerName)
+    {
+        using (UnitTestApplication.Start(TestServices.StyledWindow))
+        {
+            var window = (WindowWithEventHandler)AvaloniaRuntimeXamlLoader.Load($"""
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.WindowWithEventHandler'>
+    <Window.Styles>
+        <Style Selector='Window'>
+            <EventSetter Event='{eventName}'
+                         Handler='{handlerName}' />
+        </Style>
+    </Window.Styles>
+</Window>
+""");
+            var callbackCalled = false;
+            window.Callback += _ => callbackCalled = true;
+
+            window.Show();
+            
+            window.RaiseEvent(new KeyEventArgs() { RoutedEvent = InputElement.KeyDownEvent });
+
+            Assert.True(callbackCalled);
+        }
+    }
+}
+
+public class WindowWithEventHandler : Window
+{
+    public Action<RoutedEventArgs> Callback;
+    public void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        Callback?.Invoke(e);
+    }
+    public void OnKeyDownUnspecific(object sender, RoutedEventArgs e)
+    {
+        Callback?.Invoke(e);
+    }
+    public static void OnKeyDownStatic(object sender, RoutedEventArgs e)
+    {
+        ((WindowWithEventHandler)sender).Callback?.Invoke(e);
     }
 }
