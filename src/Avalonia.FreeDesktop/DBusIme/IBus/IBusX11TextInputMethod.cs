@@ -51,17 +51,16 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 Client.SetPreeditText(_preeditText, _preeditText == null ? null : _preeditCursor);
         }
 
-        private void OnUpdatePreedit(Exception? arg1, (DBusVariantItem text, uint cursor_pos, bool visible) preeditComponents)
+        private void OnUpdatePreedit(Exception? arg1, (VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
         {
-            if (preeditComponents.text is { Value: DBusStructItem { Count: >= 3 } structItem } &&
-                structItem[2] is DBusStringItem stringItem)
+            if (preeditComponents.Text is { Type: VariantValueType.Struct, Count: >= 3 } structItem && structItem.GetItem(2) is { Type: VariantValueType.String} stringItem)
             {
-                _preeditText = stringItem.Value;
+                _preeditText = stringItem.GetString();
                 _preeditCursor = _preeditText != null
                     ? Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
-                        (int)Math.Min(preeditComponents.cursor_pos, int.MaxValue), false)
+                        (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false)
                     : 0;
-                
+
                 _preeditShown = true;
             }
             else
@@ -102,13 +101,13 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             });
         }
 
-        private void OnCommitText(Exception? e, DBusVariantItem variantItem)
+        private void OnCommitText(Exception? e, VariantValue variantItem)
         {
-            if (_insideReset > 0) 
+            if (_insideReset > 0)
             {
                 // For some reason iBus can trigger a CommitText while being reset.
                 // Thankfully the signal is sent _during_ Reset call processing,
-                // so it arrives on-the-wire before Reset call result, so we can 
+                // so it arrives on-the-wire before Reset call result, so we can
                 // check if we have any pending Reset calls and ignore the signal here
                 return;
             }
@@ -118,8 +117,8 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 return;
             }
 
-            if (variantItem.Value is DBusStructItem { Count: >= 3 } structItem && structItem[2] is DBusStringItem stringItem)
-                FireCommit(stringItem.Value);
+            if (variantItem.Count >= 3 && variantItem.GetItem(2) is { Type: VariantValueType.String } stringItem)
+                FireCommit(stringItem.GetString());
         }
 
         protected override Task DisconnectAsync() => _service?.DestroyAsync() ?? Task.CompletedTask;
