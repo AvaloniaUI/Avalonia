@@ -136,6 +136,7 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
     class AvaloniaCrossDrawingContext : ICrossDrawingContext
     {
         private readonly DrawingContext _ctx;
+        private readonly Stack<DrawingContext.PushedState> _stack = new();
 
         public AvaloniaCrossDrawingContext(DrawingContext ctx)
         {
@@ -296,7 +297,31 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
                 return new DrawingImage(ConvertDrawing(di.Drawing));
             throw new NotSupportedException();
         }
-    
+
+        public void PushTransform(Matrix matrix)
+        {
+            _stack.Push(_ctx.PushTransform(matrix));
+        }
+
+        public void Pop()
+        {
+            var state = _stack.Pop();
+
+            state.Dispose();
+        }
+
+        public void DrawLine(CrossPen pen, Point p1, Point p2)
+        {
+            var avPen = ConvertPen(pen);
+
+            if (avPen == null)
+            {
+                return;
+            }
+
+            _ctx.DrawLine(avPen, p1, p2);
+        }
+
         public void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc) => _ctx.DrawRectangle(ConvertBrush(brush), ConvertPen(pen), rc);
         public void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geometry) =>
             _ctx.DrawGeometry(ConvertBrush(brush), ConvertPen(pen), ConvertGeometry(geometry));

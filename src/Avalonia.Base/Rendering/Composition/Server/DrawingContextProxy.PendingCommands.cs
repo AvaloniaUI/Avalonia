@@ -148,5 +148,10 @@ internal partial class CompositorDrawingContextProxy
             ExecCommand(ref commands[index]);
 
         _commands.Clear();
+
+        if (Transform != _impl.Transform)
+        {
+            _impl.Transform = Transform;
+        }
     }
 }
