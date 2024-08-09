@@ -88,6 +88,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             InsertBefore<AvaloniaXamlIlTransformInstanceAttachedProperties>(new AvaloniaXamlIlTransformRoutedEvent());
 
+            InsertAfter<AvaloniaXamlIlDeferredResourceTransformer>(new XSharedTransformer());
+
             Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());

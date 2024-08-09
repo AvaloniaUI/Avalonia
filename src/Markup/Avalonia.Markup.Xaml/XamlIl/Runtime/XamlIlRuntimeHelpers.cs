@@ -51,6 +51,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             return new PointerDeferredContent<T>(resourceNodes, rootObject, parentScope, typedBuilder);
         }
 
+        // The builder is typed as IntPtr instead of delegate*<IServiceProvider, object> because Reflection.Emit has
+        // trouble with generic methods containing function pointers. See https://github.com/dotnet/runtime/issues/100020
+        public static unsafe INotSharedDeferredContent NotSharedDeferredTransformationFactoryV0<T>(
+            /*delegate*<IServiceProvider, object>*/ IntPtr builder,
+            IServiceProvider provider)
+        {
+            var resourceNodes = AsResourceNodesStack(provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>());
+            var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
+            var parentScope = provider.GetService<INameScope>();
+            var typedBuilder = (delegate*<IServiceProvider, object>)builder;
+
+            return new PointerNotShardDeferredContent<T>(resourceNodes, rootObject, parentScope, typedBuilder);
+        }
+
         private static IResourceNode[] AsResourceNodesStack(IAvaloniaXamlIlParentStackProvider provider)
         {
             var buffer = s_resourceNodeBuffer ??= new List<IResourceNode>(8);
@@ -184,6 +198,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             private readonly delegate*<IServiceProvider, object> _builder;
 
             public PointerDeferredContent(
+                IResourceNode[] parentResourceNodes,
+                object rootObject,
+                INameScope? parentNameScope,
+                delegate*<IServiceProvider, object> builder)
+                : base(parentResourceNodes, rootObject, parentNameScope)
+                => _builder = builder;
+
+            protected override object InvokeBuilder(IServiceProvider serviceProvider)
+                => _builder(serviceProvider);
+        }
+
+        private sealed unsafe class PointerNotShardDeferredContent<T> : DeferredContent<T>,INotSharedDeferredContent
+        {
+            private readonly delegate*<IServiceProvider, object> _builder;
+
+            public PointerNotShardDeferredContent(
                 IResourceNode[] parentResourceNodes,
                 object rootObject,
                 INameScope? parentNameScope,
