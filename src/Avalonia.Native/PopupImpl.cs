@@ -87,6 +87,10 @@ namespace Avalonia.Native
         {
         }
 
+        public void TakeFocus() 
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
     }
 }
