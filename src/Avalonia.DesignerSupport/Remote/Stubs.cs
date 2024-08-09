@@ -200,6 +200,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
         public object TryGetFeature(Type featureType) => null;
+        public void TakeFocus() { }
     }
 
     class ClipboardStub : IClipboard

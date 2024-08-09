@@ -71,6 +71,11 @@ namespace Avalonia.Controls.Primitives
             _shown = false;
         }
 
+        public void TakeFocus()
+        {
+            // Nothing to do here: overlay popups are implemented inside the window.
+        }
+
         /// <inheritdoc />
         public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
