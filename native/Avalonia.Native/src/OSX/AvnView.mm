@@ -306,10 +306,10 @@
             if(parent != nullptr){
                 auto parentWindow = parent->Window;
                 
-                [parentWindow makeFirstResponder:parent->View];
+                auto view = parent->View;
+                
+                [parentWindow makeFirstResponder:view];
             }
-        } else{
-            [self becomeFirstResponder];
         }
     }
        

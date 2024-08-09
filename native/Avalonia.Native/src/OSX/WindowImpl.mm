@@ -22,6 +22,7 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events) : TopLevelImpl(events), WindowB
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
+    WindowBaseImpl::CanBecomeKeyWindow = true;
     Parent = nullptr;
     WindowEvents = events;
 

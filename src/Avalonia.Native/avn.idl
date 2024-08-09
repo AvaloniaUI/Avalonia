@@ -736,6 +736,8 @@ interface IAvnWindowBase : IAvnTopLevel
      HRESULT GetFrameSize(AvnSize*result);
      HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
      HRESULT SetParent(IAvnWindowBase* parent);
+     HRESULT SetCanBecomeKeyWindow(bool canBecomeKeyWindow);
+     HRESULT GetCanBecomeKeyWindow(bool* ret);
      HRESULT Show(bool activate, bool isDialog);
      HRESULT Hide();
      HRESULT Close();
