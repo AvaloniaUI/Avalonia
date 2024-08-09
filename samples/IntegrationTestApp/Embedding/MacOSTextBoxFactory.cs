@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using MonoMac.AppKit;
 
 namespace IntegrationTestApp.Embedding;
@@ -12,13 +13,21 @@ internal class MacOSTextBoxFactory : INativeTextBoxFactory
         return new MacOSTextBox();
     }
 
-    private class MacOSTextBox : INativeTextBoxImpl
+    private class MacOSTextBox : NSTextView, INativeTextBoxImpl
     {
+        private DispatcherTimer _timer;
+        
         public MacOSTextBox()
         {
-            var textView = new NSTextView();
-            textView.TextStorage.Append(new("Native text box"));
-            Handle = new MacOSViewHandle(textView);
+            TextStorage.Append(new("Native text box"));
+            Handle = new MacOSViewHandle(this);
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromMilliseconds(400);
+            _timer.Tick += (_, _) =>
+            {
+                Hovered?.Invoke(this, EventArgs.Empty);
+                _timer.Stop();
+            };
         }
 
         public IPlatformHandle Handle { get; }
@@ -26,5 +35,36 @@ internal class MacOSTextBoxFactory : INativeTextBoxFactory
         public event EventHandler? ContextMenuRequested;
         public event EventHandler? Hovered;
         public event EventHandler? PointerExited;
+
+        public override void MouseEntered(NSEvent theEvent)
+        {
+            _timer.Stop();
+            _timer.Start();
+            base.MouseEntered(theEvent);
+        }
+
+        public override void MouseExited(NSEvent theEvent)
+        {
+            _timer.Stop();
+            PointerExited?.Invoke(this, EventArgs.Empty);
+            base.MouseExited(theEvent);
+        }
+
+        public override void MouseMoved(NSEvent theEvent)
+        {
+            _timer.Stop();
+            _timer.Start();
+            base.MouseMoved(theEvent);
+        }
+
+        public override void RightMouseDown(NSEvent theEvent)
+        {
+            ContextMenuRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        public override void RightMouseUp(NSEvent theEvent)
+        {
+            // Don't call base to prevent default action.
+        }
     }
 }
