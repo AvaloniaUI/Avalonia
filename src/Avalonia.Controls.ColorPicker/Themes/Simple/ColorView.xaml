@@ -471,6 +471,7 @@
                              Height="32"
                              MaxLength="9"
                              Padding="10,6,6,5"
+                             VerticalContentAlignment="Center"
                              HorizontalAlignment="Stretch"
                              CornerRadius="0,0,0,0" />
                   </Grid>
