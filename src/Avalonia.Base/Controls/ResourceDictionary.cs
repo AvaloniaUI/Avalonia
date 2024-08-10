@@ -147,9 +147,6 @@ namespace Avalonia.Controls
         public void AddDeferred(object key, IDeferredContent deferredContent)
             => Add(key, deferredContent);
 
-        public void AddNotShared(object key, Func<IServiceProvider?, object?> factory)
-            => Add(key, new NotSharedDeferredItem(factory));
-
         public void AddNotShared(object key, INotSharedDeferredContent notSharedDeferredContent)
             => Add(key, notSharedDeferredContent);
 
