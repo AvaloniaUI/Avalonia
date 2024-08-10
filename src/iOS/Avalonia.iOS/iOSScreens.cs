@@ -2,23 +2,12 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Avalonia.iOS;
 
-/// <summary>
-/// Represents UIScreen handle.
-/// </summary>
-/// <param name="screen"><see cref="UIScreen"/> instance.</param>
-public class UIScreenPlatformHandle(UIScreen screen) : PlatformHandle(screen.Handle.Handle, nameof(UIScreen))
-{
-    /// <summary>
-    /// <see cref="UIScreen"/> instance associated with this platform handle.
-    /// </summary>
-    public UIScreen Screen => screen;
-}
-
-internal class iOSScreen(UIScreen screen) : PlatformScreen(new UIScreenPlatformHandle(screen))
+internal class iOSScreen(UIScreen screen) : PlatformScreen(new PlatformHandle(screen.Handle.Handle, nameof(UIScreen)))
 {
     public void Refresh()
     {

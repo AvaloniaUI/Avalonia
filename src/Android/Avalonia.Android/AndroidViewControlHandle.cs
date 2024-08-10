@@ -1,5 +1,5 @@
 ﻿using System;
-
+using Android.Runtime;
 using Android.Views;
 
 using Avalonia.Controls.Platform;
@@ -7,25 +7,16 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    public class JavaObjectPlatformHandle : PlatformHandle
+    public class AndroidViewControlHandle : PlatformHandle, INativeControlHostDestroyableControlHandle
     {
-        internal const string JavaObjectDescriptor = "JavaObjectHandle";
+        internal static string AndroidViewDescriptor = "android.view.View"; 
 
-        public JavaObjectPlatformHandle(Java.Lang.Object obj) : base(obj.Handle, JavaObjectDescriptor)
+        public AndroidViewControlHandle(View view) : base(view.Handle, AndroidViewDescriptor)
         {
-            Object = obj;
+            View = view;
         }
 
-        public Java.Lang.Object Object { get; }
-    }
-
-    public class AndroidViewControlHandle : JavaObjectPlatformHandle, INativeControlHostDestroyableControlHandle
-    {
-        public AndroidViewControlHandle(View view) : base(view)
-        {
-        }
-
-        public View View => (View)base.Object;
+        public View View { get; private set; }
 
         public void Destroy()
         {
