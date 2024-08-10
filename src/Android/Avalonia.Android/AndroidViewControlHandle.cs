@@ -7,20 +7,25 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    public class AndroidViewControlHandle : INativeControlHostDestroyableControlHandle
+    public class JavaObjectPlatformHandle : PlatformHandle
     {
-        internal const string AndroidDescriptor = "JavaObjectHandle";
+        internal const string JavaObjectDescriptor = "JavaObjectHandle";
 
-        public AndroidViewControlHandle(View view)
+        public JavaObjectPlatformHandle(Java.Lang.Object obj) : base(obj.Handle, JavaObjectDescriptor)
         {
-            View = view;
+            Object = obj;
         }
 
-        public View View { get; }
+        public Java.Lang.Object Object { get; }
+    }
 
-        public string HandleDescriptor => AndroidDescriptor;
+    public class AndroidViewControlHandle : JavaObjectPlatformHandle, INativeControlHostDestroyableControlHandle
+    {
+        public AndroidViewControlHandle(View view) : base(view)
+        {
+        }
 
-        IntPtr IPlatformHandle.Handle => View.Handle;
+        public View View => (View)base.Object;
 
         public void Destroy()
         {
