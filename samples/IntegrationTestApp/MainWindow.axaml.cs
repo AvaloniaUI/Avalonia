@@ -10,6 +10,9 @@ namespace IntegrationTestApp
     {
         public MainWindow()
         {
+            // Set name in code behind, so source generator will ignore it.
+            Name = "MainWindow";
+
             InitializeComponent();
 
             var viewModel = new MainWindowViewModel(CreatePages());
