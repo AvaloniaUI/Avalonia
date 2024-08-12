@@ -290,8 +290,8 @@ namespace Avalonia.Controls
                     e.Handled = true;
                     break;
                 case Key.Space:
-                    // Handle Space only current focus control
-                    if (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() == this)
+                    // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+                    if (IsFocused)
                     {
                         if (ClickMode == ClickMode.Press)
                         {
@@ -313,8 +313,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            // Handle Space only current focus control
-            if (e.Key == Key.Space && TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() == this)
+            // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+            if (e.Key == Key.Space && IsFocused)
             {
                 if (ClickMode == ClickMode.Release)
                 {
