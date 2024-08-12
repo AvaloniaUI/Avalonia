@@ -157,14 +157,11 @@ namespace Avalonia.Android.Platform.Input
         {
             if (buffer.HasComposition)
             {
-                buffer.Remove(buffer.Composition!.Value.Start, buffer.Composition!.Value.End - buffer.Composition!.Value.Start);
-                buffer.Insert(buffer.Composition!.Value.Start, _text);
+                buffer.Replace(buffer.Composition!.Value.Start, buffer.Composition!.Value.End, _text);
             }
             else
             {
-                buffer.Remove(buffer.Selection.Start, buffer.Selection.End - buffer.Selection.Start);
-                buffer.Insert(buffer.Selection.Start, _text);
-
+                buffer.Replace(buffer.Selection.Start, buffer.Selection.End, _text);
             }
             var newCursor = _newCursorPosition > 0 ? buffer.Selection.Start + _newCursorPosition - 1 : buffer.Selection.Start + _newCursorPosition - _text.Length;
             buffer.Selection = new TextSelection(newCursor, newCursor);
