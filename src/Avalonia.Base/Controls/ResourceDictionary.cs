@@ -147,8 +147,8 @@ namespace Avalonia.Controls
         public void AddDeferred(object key, IDeferredContent deferredContent)
             => Add(key, deferredContent);
 
-        public void AddNotShared(object key, INotSharedDeferredContent notSharedDeferredContent)
-            => Add(key, notSharedDeferredContent);
+        public void AddNotSharedDeferred(object key, IDeferredContent deferredContent)
+            => Add(key, new NotSharedDeferredItem(deferredContent));
 
         public void Clear()
         {
@@ -383,10 +383,10 @@ namespace Avalonia.Controls
             public object? Build(IServiceProvider? serviceProvider) => _factory(serviceProvider);
         }
 
-        private sealed class NotSharedDeferredItem(Func<IServiceProvider?, object?> factory) : INotSharedDeferredContent
+        private sealed class NotSharedDeferredItem(IDeferredContent deferredContent) : INotSharedDeferredContent
         {
-            private readonly Func<IServiceProvider?, object?> _factory = factory;
-            public object? Build(IServiceProvider? serviceProvider) => _factory(serviceProvider);
+            private readonly IDeferredContent _deferredContent = deferredContent ;
+            public object? Build(IServiceProvider? serviceProvider) => _deferredContent.Build(serviceProvider);
         }
     }
 }

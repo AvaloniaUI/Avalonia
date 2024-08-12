@@ -38,7 +38,7 @@ public class XSharedDirectiveTests : XamlTestBase
             var implicitSharedInstance2 = window.FindResource("ImplicitSharedResource");
             Assert.NotNull(implicitSharedInstance2);
 
-            Assert.True(ReferenceEquals(implicitSharedInstance1, implicitSharedInstance2));
+            Assert.Same(implicitSharedInstance1, implicitSharedInstance2);
 
             var notSharedResource1 = window.FindResource("NotSharedResource");
             Assert.NotNull(notSharedResource1);
@@ -46,7 +46,7 @@ public class XSharedDirectiveTests : XamlTestBase
             var notSharedResource2 = window.FindResource("NotSharedResource");
             Assert.NotNull(notSharedResource2);
 
-            Assert.True(!ReferenceEquals(notSharedResource1, notSharedResource2));
+            Assert.NotSame(notSharedResource1, notSharedResource2);
 
             Assert.Equal(notSharedResource1.ToString(), notSharedResource2.ToString());
         }

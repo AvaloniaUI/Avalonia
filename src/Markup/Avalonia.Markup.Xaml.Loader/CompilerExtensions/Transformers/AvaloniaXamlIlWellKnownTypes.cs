@@ -118,7 +118,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IResourceDictionary { get; }
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
-        public IXamlMethod ResourceDictionaryNotSharedAdd { get; }
+        public IXamlMethod ResourceDictionaryNotSharedDeferedAdd { get; }
         public IXamlMethod ResourceDictionaryEnsureCapacity { get; }
         public IXamlMethod ResourceDictionaryGetCount { get; }
         public IXamlType IThemeVariantProvider { get; }
@@ -130,7 +130,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IReadOnlyListOfT { get; }
         public IXamlType ControlTemplate { get; }
         public IXamlType EventHandlerT {  get; }
-        public IXamlMethod? NotSharedDeferredContentExecutorCustomization { get; set; }
 
         sealed internal class InteractivityWellKnownTypes
         {
@@ -314,7 +313,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
             ResourceDictionaryDeferredAdd = ResourceDictionary.GetMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
                 cfg.TypeSystem.GetType("Avalonia.Controls.IDeferredContent"));
-            ResourceDictionaryNotSharedAdd = ResourceDictionary.GetMethod("AddNotShared", XamlIlTypes.Void, true, XamlIlTypes.Object,
+            ResourceDictionaryNotSharedDeferedAdd = ResourceDictionary.GetMethod("AddNotSharedDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
                 cfg.TypeSystem.GetType("Avalonia.Controls.INotSharedDeferredContent"));
 
             ResourceDictionaryEnsureCapacity = ResourceDictionary.GetMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
@@ -328,9 +327,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");
             EventHandlerT = cfg.TypeSystem.GetType("System.EventHandler`1");
             Interactivity = new InteractivityWellKnownTypes(cfg);
-            var runtimeHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
-            NotSharedDeferredContentExecutorCustomization =
-                runtimeHelpers.FindMethod(m => m.Name == "NotSharedDeferredTransformationFactoryV0");
         }
     }
 
