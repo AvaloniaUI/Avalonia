@@ -147,6 +147,26 @@ namespace Avalonia.Android.Platform.Input
                     }
             }
 
+            var eventTime = SystemClock.UptimeMillis();
+            SendKeyEvent(new KeyEvent(eventTime,
+                                      eventTime,
+                                      KeyEventActions.Down,
+                                      Keycode.Enter,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      KeyEventFlags.SoftKeyboard | KeyEventFlags.KeepTouchMode | KeyEventFlags.EditorAction));
+            SendKeyEvent(new KeyEvent(eventTime,
+                                      eventTime,
+                                      KeyEventActions.Up,
+                                      Keycode.Enter,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      KeyEventFlags.SoftKeyboard | KeyEventFlags.KeepTouchMode | KeyEventFlags.EditorAction));
+
             return InputMethod.IsActive;
         }
 
