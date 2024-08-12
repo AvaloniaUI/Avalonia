@@ -262,7 +262,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false, extendClientArea: extendClientArea))
             {
-                var secondaryWindow = Session.GetWindowById("SecondaryWindow");
+                var secondaryWindow = GetWindow("SecondaryWindow");
                 AppiumWebElement? maximizeButton;
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -413,12 +413,12 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
                 // but in the meantime use the `parent::' selector to return the parent "real" window. 
-                return _session.FindElementByXPath(
+                return Session.FindElementByXPath(
                     $"XCUIElementTypeWindow//*[@identifier='{identifier}']/parent::XCUIElementTypeWindow");
             }
             else
             {
-                return _session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
+                return Session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
             }
         }
 

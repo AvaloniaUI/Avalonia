@@ -179,21 +179,4 @@ public partial class WindowPage : UserControl
                 window.WindowState = WindowState.Normal;
         }
     }
-
-    private void ShowTopmostWindow_Click(object? sender, RoutedEventArgs e)
-    {
-        var mainWindow = new TopmostWindowTest("OwnerWindow") 
-        { 
-            Topmost = true,
-            Title = "Owner Window" 
-        };
-        var ownedWindow = new TopmostWindowTest("OwnedWindow")
-        { 
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Title = "Owned Window" 
-        };
-
-        mainWindow.Show();
-        ownedWindow.Show(mainWindow);
-    }
 }

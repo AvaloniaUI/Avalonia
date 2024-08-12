@@ -423,7 +423,7 @@ namespace Avalonia.IntegrationTests.Appium
 
         private AppiumWebElement GetWindow(string identifier)
         {
-            return Session.GetWindowById(identifier);
+            return GetWindow(identifier);
         }
 
         private int GetWindowOrder(string identifier)

@@ -5,7 +5,6 @@
         xmlns:vm="using:IntegrationTestApp.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
-        Name="MainWindow"
         Icon="/Assets/icon.ico"
         Title="IntegrationTestApp"
         x:DataType="vm:MainWindowViewModel">

@@ -6,7 +6,7 @@ using IntegrationTestApp.ViewModels;
 
 namespace IntegrationTestApp
 {
-    public class MainWindow : Window
+    public partial class MainWindow : Window
     {
         public MainWindow()
         {
@@ -23,7 +23,6 @@ namespace IntegrationTestApp
 
         private void InitializeViewMenu(IEnumerable<Page> pages)
         {
-            var mainTabs = this.Get<TabControl>("MainTabs");
             var viewMenu = (NativeMenuItem?)NativeMenu.GetMenu(this)?.Items[1];
 
             foreach (var page in pages)
@@ -64,9 +63,7 @@ namespace IntegrationTestApp
                 new("Gestures", () => new GesturesPage()),
                 new("ListBox", () => new ListBoxPage()),
                 new("Menu", () => new MenuPage()),
-                new("Pointer", () => new PointerPage()),
                 new("RadioButton", () => new RadioButtonPage()),
-                new("Screens", () => new ScreensPage()),
                 new("ScrollBar", () => new ScrollBarPage()),
                 new("Slider", () => new SliderPage()),
                 new("Window Decorations", () => new WindowDecorationsPage()),

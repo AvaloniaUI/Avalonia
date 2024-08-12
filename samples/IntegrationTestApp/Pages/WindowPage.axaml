@@ -35,7 +35,6 @@
       <Button Name="EnterFullscreen" Click="EnterFullscreen_Click">Enter Fullscreen</Button>
       <Button Name="ExitFullscreen" Click="ExitFullscreen_Click">Exit Fullscreen</Button>
       <Button Name="RestoreAll" Click="RestoreAll_Click">Restore All</Button>
-      <Button Name="ShowTopmostWindow" Click="ShowTopmostWindow_Click">Show Topmost Window</Button>
     </StackPanel>
     <StackPanel Grid.Column="2">
       <Button Name="ShowTransparentWindow" Click="ShowTransparentWindow_Click">Transparent Window</Button>
