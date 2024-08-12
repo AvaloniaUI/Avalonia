@@ -67,7 +67,7 @@ public sealed class PolyBezierSegment : PathSegment
                 Logging.Logger.TryGet(Logging.LogEventLevel.Warning,
                     Logging.LogArea.Visual)
                     ?.Log(nameof(PolyBezierSegment),
-                        $"{nameof(PolyBezierSegment)} has ivalid number of points. Last {Math.Abs(delta)} will be ignored.");
+                        $"{nameof(PolyBezierSegment)} has ivalid number of points. Last {Math.Abs(delta)} points will be ignored.");
             }
         }
     }
