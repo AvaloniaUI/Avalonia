@@ -65,7 +65,7 @@ namespace Avalonia.LinuxFramebuffer
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct pollfd {
+    struct PollFd {
         public int   fd;         /* file descriptor */
         public short events;     /* requested events */
         public short revents;    /* returned events */

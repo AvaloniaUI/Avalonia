@@ -5,6 +5,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Logging;
+using Avalonia.Metadata;
 using Avalonia.Styling;
 
 namespace Avalonia.Data
@@ -20,13 +21,14 @@ namespace Avalonia.Data
         IDisposable
     {
         private bool _isSetterValue;
+        private bool _hasPublishedValue;
 
         public TemplateBinding()
             : base(BindingPriority.Template)
         {
         }
 
-        public TemplateBinding(AvaloniaProperty property)
+        public TemplateBinding([InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)] AvaloniaProperty property)
             : base(BindingPriority.Template)
         {
             Property = property;
@@ -64,6 +66,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.
         /// </summary>
+        [InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)]
         public AvaloniaProperty? Property { get; set; }
 
         /// <inheritdoc/>
@@ -80,7 +83,7 @@ namespace Avalonia.Data
             return new(target, InstanceCore(), Mode, BindingPriority.Template);
         }
 
-        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
         {
             return InstanceCore();
         }
@@ -106,6 +109,7 @@ namespace Avalonia.Data
 
         protected override void StartCore()
         {
+            _hasPublishedValue = false;
             OnTemplatedParentChanged();
             if (TryGetTarget(out var target))
                 target.PropertyChanged += OnTargetPropertyChanged;
@@ -197,11 +201,12 @@ namespace Avalonia.Data
 
                 value = ConvertToTargetType(value);
                 PublishValue(value, error);
+                _hasPublishedValue = true;
 
                 if (Mode == BindingMode.OneTime)
                     Stop();
             }
-            else
+            else if (_hasPublishedValue)
             {
                 PublishValue(AvaloniaProperty.UnsetValue);
             }

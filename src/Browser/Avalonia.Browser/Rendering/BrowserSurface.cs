@@ -40,14 +40,12 @@ internal abstract class BrowserSurface : IDisposable
 
     protected virtual void Initialize()
     {
-        CanvasHelper.OnSizeChanged(JsSurface, OnSizeChanged);
-        var w = JsSurface.GetPropertyAsDouble("width");
-        var h = JsSurface.GetPropertyAsDouble("height");
+        var w = JsSurface.GetPropertyAsInt32("width");
+        var h = JsSurface.GetPropertyAsInt32("height");
         var s = JsSurface.GetPropertyAsDouble("scaling");
-        Console.WriteLine($"Initial size: {w} {h} {s}");
-        OnSizeChanged((int)w, (int)h, s);
+        OnSizeChanged(w, h, s);
     }
-    
+
     public virtual void Dispose()
     {
         CanvasHelper.Destroy(JsSurface);
@@ -57,9 +55,8 @@ internal abstract class BrowserSurface : IDisposable
         ClientSize = default;
     }
 
-    protected virtual void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
+    public virtual void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
     {
-        Console.WriteLine($"OnSizeChanged: {Dispatcher.UIThread.CheckAccess()} {pixelWidth} {pixelHeight} {dpr} ");
         var oldScaling = Scaling;
         var oldClientSize = ClientSize;
         RenderSize = new PixelSize((int)pixelWidth, (int)pixelHeight);

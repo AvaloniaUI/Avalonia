@@ -9,7 +9,8 @@ namespace Avalonia.Vulkan.Interop;
 
 internal partial class VulkanDevice : IVulkanDevice
 {
-    private readonly VkDevice _handle;
+    private readonly VulkanInstanceApi _instanceApi;
+    private VkDevice _handle;
     private readonly VkPhysicalDevice _physicalDeviceHandle;
     private readonly VkQueue _mainQueue;
     private readonly uint _graphicsQueueIndex;
@@ -17,14 +18,15 @@ internal partial class VulkanDevice : IVulkanDevice
     private Thread? _lockedByThread;
     private int _lockCount;
 
-    private VulkanDevice(IVulkanInstance instance, VkDevice handle, VkPhysicalDevice physicalDeviceHandle,
+    private VulkanDevice(VulkanInstanceApi instanceApi, VkDevice handle, VkPhysicalDevice physicalDeviceHandle,
         VkQueue mainQueue, uint graphicsQueueIndex, string[] enabledExtensions)
     {
+        _instanceApi = instanceApi;
         _handle = handle;
         _physicalDeviceHandle = physicalDeviceHandle;
         _mainQueue = mainQueue;
         _graphicsQueueIndex = graphicsQueueIndex;
-        Instance = instance;
+        Instance = _instanceApi.Instance;
         EnabledExtensions = enabledExtensions;
     }
 
@@ -59,7 +61,11 @@ internal partial class VulkanDevice : IVulkanDevice
     public IVulkanInstance Instance { get; }
     public void Dispose()
     {
-        // TODO
+        if (_handle.Handle != IntPtr.Zero)
+        {
+            _instanceApi.DestroyDevice(_handle, IntPtr.Zero);
+            _handle = default;
+        }
     }
 
     public object? TryGetFeature(Type featureType) => null;

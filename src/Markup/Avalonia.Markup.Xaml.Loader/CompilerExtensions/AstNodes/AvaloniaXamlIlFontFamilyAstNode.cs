@@ -28,8 +28,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes
         {
             codeGen
                 .Ldloc(context.ContextLocal)
-                .Castclass(context.Configuration.TypeMappings.UriContextProvider)
-                .EmitCall(context.Configuration.TypeMappings.UriContextProvider.FindMethod(
+                .Castclass(context.Configuration.TypeMappings.UriContextProvider!)
+                .EmitCall(context.Configuration.TypeMappings.UriContextProvider!.GetMethod(
                     "get_BaseUri", _types.Uri, false))
                 .Ldstr(_text)
                 .Newobj(_types.FontFamilyConstructorUriName);

@@ -50,6 +50,8 @@ using Avalonia.Rendering.Composition;
         {
         }
 
+        public double DesktopScaling => 1;
+        public IPlatformHandle Handle { get; }
         public Size ClientSize => ScaledSize;
         public Size? FrameSize => null;
         public IPopupImpl CreatePopup() => null;

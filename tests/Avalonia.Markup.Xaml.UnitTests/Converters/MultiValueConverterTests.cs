@@ -21,12 +21,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:c='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Converters;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TextBlock Name='textBlock'>
-        <TextBlock.Text>
+        <TextBlock.Tag>
             <MultiBinding Converter='{x:Static c:TestMultiValueConverter.Instance}' FallbackValue='bar'>
                 <Binding Path='Item1' />
                 <Binding Path='Item2' />
             </MultiBinding>
-        </TextBlock.Text>
+        </TextBlock.Tag>
     </TextBlock>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
@@ -35,13 +35,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 window.ApplyTemplate();
 
                 window.DataContext = Tuple.Create(2, 2);
-                Assert.Equal("foo", textBlock.Text);
+                Assert.Equal("foo", textBlock.Tag);
 
                 window.DataContext = Tuple.Create(-3, 3);
-                Assert.Equal("foo", textBlock.Text);
+                Assert.Equal("foo", textBlock.Tag);
 
                 window.DataContext = Tuple.Create(0, 2);
-                Assert.Equal("bar", textBlock.Text);
+                Assert.Equal("bar", textBlock.Tag);
             }
         }
     }

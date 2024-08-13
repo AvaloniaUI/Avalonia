@@ -459,7 +459,7 @@ namespace Avalonia.Data
         {
             if (value is UnsetValueType)
             {
-                throw new InvalidOperationException("AvaloniaValue.UnsetValue is not a valid value for BindingValue<>.");
+                throw new InvalidOperationException("AvaloniaProperty.UnsetValue is not a valid value for BindingValue<>.");
             }
 
             if (value is DoNothingType)
