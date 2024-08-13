@@ -21,8 +21,8 @@ public class AvaloniaMainActivity : AvaloniaActivity
         {
             initialContent ??= Lifetime.MainView; 
 
-            Lifetime.Activity = this;
             _view = new AvaloniaView(this) { Content = initialContent };
+            Lifetime.Activity = this;
         }
         else
         {
