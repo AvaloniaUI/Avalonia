@@ -1,0 +1,103 @@
+<StackPanel xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            xmlns:data="using:Avalonia.Data.Core"
+            x:ClassModifier="internal"
+            x:DataType="data:BindingExpression"
+            x:Class="Avalonia.Diagnostics.Views.BindingExpressionView"
+            >
+  <StackPanel.Styles>
+    <StyleInclude Source="/Diagnostics/Styles/BindingGrid.axaml"/>
+  </StackPanel.Styles>
+  <TextBlock Text="Binding" FontWeight="Bold"/>
+  <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+    <TextBlock Text="Path:"
+               Classes="Label"
+               />
+    <TextBlock Text="{Binding Description}"
+               Classes="Value"
+               />
+    <TextBlock Text="Mode:"
+               Classes="Label"
+               Grid.Row="1"
+               />
+    <TextBlock Text="{Binding Mode}"
+               Classes="Value"
+               Grid.Row="1"
+               />
+    <TextBlock Text="Source:"
+               Classes="Label"
+               Grid.Row="2"
+               />
+    <TextBlock Text="{Binding LeafNode.Source,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="2"
+               />
+    <TextBlock Text="Converter:"
+               Classes="Label"
+               Grid.Row="3"
+               />
+    <TextBlock Text="{Binding Converter,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="3"
+               />
+    <TextBlock Text="ConverterCulture:"
+               Classes="Label"
+               Grid.Row="4"
+               />
+    <TextBlock Text="{Binding ConverterCulture,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="4"
+               />
+    <TextBlock Text="ConverterParameter:"
+               Classes="Label"
+               Grid.Row="5"
+               />
+    <TextBlock Text="{Binding ConverterParameter,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="5"
+               />
+    <TextBlock Text="StringFormat:"
+               Classes="Label"
+               Grid.Row="6"
+               />
+    <TextBlock Text="{Binding StringFormat,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="6"
+               />
+    <TextBlock Text="TargetNullValue:"
+               Classes="Label"
+               Grid.Row="7"
+               />
+    <TextBlock Text="{Binding TargetNullValue,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="7"
+               />
+    <TextBlock Text="FallbackValue:"
+               Classes="Label"
+               Grid.Row="8"
+               />
+    <TextBlock Text="{Binding FallbackValue,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="8"
+               />
+    <TextBlock Text="UpdateSourceTrigger:"
+               Classes="Label"
+               Grid.Row="9"
+               />
+    <TextBlock Text="{Binding UpdateSourceTrigger}"
+               Classes="Value"
+               Grid.Row="9"
+               />
+    <TextBlock Text="Error:"
+               Classes="Label"
+               Grid.Row="10"
+               />
+    <TextBlock Text="{Binding ErrorType}"
+               Classes="Value"
+               Grid.Row="10"
+               />
+  </Grid>
+</StackPanel>

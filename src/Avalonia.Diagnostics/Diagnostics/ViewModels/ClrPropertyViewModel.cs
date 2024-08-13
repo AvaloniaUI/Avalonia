@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reflection;
+using Avalonia.Data;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -42,6 +43,8 @@ namespace Avalonia.Diagnostics.ViewModels
         public override Type AssignedType => _assignedType;
         public override Type PropertyType => _propertyType;
         public override bool IsReadonly => !Property.CanWrite;
+        public override BindingExpressionBase? Binding => default;
+
 
         public override object? Value
         {

@@ -12,6 +12,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _priority;
         private string _group;
         private readonly Type _propertyType;
+        private BindingExpressionBase? _binding;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -35,6 +36,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public override bool? IsAttached => Property.IsAttached;
         public override string Priority => _priority;
         public override Type AssignedType => _assignedType;
+        public override BindingExpressionBase? Binding => _binding;
 
         public override object? Value
         {
@@ -59,6 +61,13 @@ namespace Avalonia.Diagnostics.ViewModels
         // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
         public override void Update()
         {
+            _binding = BindingOperations.GetBindingExpressionBase(_target, Property);
+            if (_binding is Avalonia.Data.Core.MultiBindingExpression b)
+            {
+                //System.Diagnostics.Debugger.Break();
+                //b.ErrorType
+               
+            }
             if (Property.IsDirect)
             {
                 object? value;
@@ -114,6 +123,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
             RaisePropertyChanged(nameof(Type));
+            RaisePropertyChanged(nameof(Binding));
+            RaisePropertyChanged(nameof(IsBinded));
+            RaisePropertyChanged(nameof(BindingErrorType));
         }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)

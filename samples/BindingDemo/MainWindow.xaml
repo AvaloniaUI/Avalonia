@@ -133,6 +133,14 @@
             <SolidColorBrush Color="Yellow"/>
           </TextBlock.Background>
         </TextBlock>
+        <TextBlock>
+          <TextBlock.Text>
+            <MultiBinding StringFormat="\{0\} \{1\}">
+              <Binding Path="Items[1].StringValue"/>
+              <Binding Path="DoubleValue"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
       </StackPanel>
     </TabItem>
   </TabControl>

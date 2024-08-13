@@ -1,0 +1,81 @@
+<StackPanel xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            xmlns:data="using:Avalonia.Data.Core"
+            x:Class="Avalonia.Diagnostics.Views.MultiBindingExpressionView"
+            x:ClassModifier="internal"
+            x:DataType="data:MultiBindingExpression"
+            >
+  <StackPanel.Styles>
+    <StyleInclude Source="/Diagnostics/Styles/BindingGrid.axaml"/>
+  </StackPanel.Styles>
+  <TextBlock Text="MultiBinding" FontWeight="Bold"/>
+  <Grid ColumnDefinitions="Auto,*"
+        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+    <TextBlock Text="Converter:"
+               Classes="Label"
+               Grid.Row="0"
+             />
+    <TextBlock Text="{Binding Converter,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="0"
+             />
+    <TextBlock Text="ConverterCulture:"
+               Classes="Label"
+               Grid.Row="1"
+             />
+    <TextBlock Text="{Binding ConverterCulture,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="1"
+             />
+    <TextBlock Text="ConverterParameter:"
+               Classes="Label"
+               Grid.Row="2"
+             />
+    <TextBlock Text="{Binding ConverterParameter,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="2"
+             />
+    <TextBlock Text="StringFormat:"
+               Classes="Label"
+               Grid.Row="3"
+             />
+    <TextBlock Text="{Binding StringFormat,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="3"
+             />
+    <TextBlock Text="TargetNullValue:"
+               Classes="Label"
+               Grid.Row="4"
+             />
+    <TextBlock Text="{Binding TargetNullValue,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="4"
+             />
+    <TextBlock Text="FallbackValue:"
+               Classes="Label"
+               Grid.Row="5"
+             />
+    <TextBlock Text="{Binding FallbackValue,TargetNullValue=(x:Null)}"
+               Classes="Value"
+               Grid.Row="5"
+             />
+    <TextBlock Text="Error:"
+               Classes="Label"
+               Grid.Row="6"
+             />
+    <TextBlock Text="{Binding ErrorType}"
+               Classes="Value"
+               Grid.Row="6"
+             />
+  </Grid>
+  <TextBlock Text=">Bindings"
+             FontStyle="Italic"
+             FontWeight="Bold"
+             Padding="5 0"/>
+  <ItemsControl ItemsSource="{Binding Expressions}"
+                Padding="10 0 0 0"
+                />
+</StackPanel>

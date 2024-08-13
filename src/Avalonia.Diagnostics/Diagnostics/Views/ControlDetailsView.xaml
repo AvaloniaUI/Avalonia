@@ -6,6 +6,7 @@
              xmlns:vm="using:Avalonia.Diagnostics.ViewModels"
              xmlns:lb="using:Avalonia.Diagnostics.Behaviors"
              xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             xmlns:data="using:Avalonia.Data.Core"
              x:Class="Avalonia.Diagnostics.Views.ControlDetailsView"
              x:Name="Main"
              x:DataType="vm:ControlDetailsViewModel">
@@ -20,6 +21,10 @@
       <conv:BoolToImageConverter x:Key="pc"
                                  TrueImage="{StaticResource PinIcon}"
                                  FalseImage="{StaticResource UnpinIcon}"/>
+      <conv:BindingErrorTypeToBrushConverter x:Key="BindError"
+                                             None="#FF0078D7"
+                                             DataValidationError="Orange"
+                                             Error="Red"/>
     </ResourceDictionary>
   </UserControl.Resources>
 
@@ -97,10 +102,35 @@
                            Width="12" 
                            Height="12"/>
                   </ToggleButton>
-                  <TextBlock Text="{Binding Name}"
-                             Classes.Pinned="{Binding IsPinned}"
-                             VerticalAlignment="Center"
+                  <Panel>
+                    <Rectangle Stroke="Black"
+                               Fill="{Binding BindingErrorType,Converter={StaticResource BindError}}"
+                               Width="8"
+                               Height="8"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Left"
+                               Margin="0 6 0 0"
+                               IsVisible="{Binding IsBinded, Mode=OneWay}"
+                               >
+                      <ToolTip.Tip>
+                        <ContentControl Content="{Binding Binding, Mode=OneWay}">
+                          <ContentControl.DataTemplates>
+                            <DataTemplate x:DataType="data:BindingExpression">
+                              <local:BindingExpressionView/>
+                            </DataTemplate>
+                            <DataTemplate x:DataType="data:MultiBindingExpression">
+                              <local:MultiBindingExpressionView/>
+                            </DataTemplate>
+                          </ContentControl.DataTemplates>
+                        </ContentControl>
+                      </ToolTip.Tip>
+                    </Rectangle>
+                    <TextBlock Text="{Binding Name}"
+                               Classes.Pinned="{Binding IsPinned}"
+                               VerticalAlignment="Center"
+                               Margin="8 0 0 0"
                              />
+                  </Panel>
                 </DockPanel>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>

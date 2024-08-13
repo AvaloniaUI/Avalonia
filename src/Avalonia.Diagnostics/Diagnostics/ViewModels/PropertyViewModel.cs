@@ -1,4 +1,6 @@
 ﻿using System;
+using Avalonia.Data;
+using Avalonia.Data.Core;
 
 namespace Avalonia.Diagnostics.ViewModels;
 
@@ -16,6 +18,11 @@ internal abstract class PropertyViewModel : ViewModelBase
     public abstract bool? IsAttached { get; }
     public abstract void Update();
     public abstract Type PropertyType { get; }
+    public abstract BindingExpressionBase? Binding { get; }
+    public bool IsBinded => Binding is BindingExpression or MultiBindingExpression;
+    public BindingErrorType? BindingErrorType => Binding is UntypedBindingExpressionBase
+        ? ((UntypedBindingExpressionBase)Binding).ErrorType
+        : default;
 
     public string Type => PropertyType == AssignedType ?
         PropertyType.GetTypeName() :
@@ -25,5 +32,5 @@ internal abstract class PropertyViewModel : ViewModelBase
 
     public bool IsPinned { get => _isPinned; set => RaiseAndSetIfChanged(ref _isPinned, value); }
 
-    public string FullName => $"{GetType().Name.Replace("PropertyViewModel","")}:{DeclaringType?.FullName}.{Name}";
+    public string FullName => $"{GetType().Name.Replace("PropertyViewModel", "")}:{DeclaringType?.FullName}.{Name}";
 }

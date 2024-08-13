@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Data.Converters;
 
 namespace Avalonia.Data.Core;
@@ -57,7 +58,7 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
 
         for (var i = 0; i < _bindings.Length; ++i)
         {
-            var binding = _bindings[i]; 
+            var binding = _bindings[i];
 
             if (binding is not IBinding2 b)
                 throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
@@ -130,4 +131,21 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
             PublishValue(_valuesView);
         }
     }
+
+    public IEnumerable<BindingExpressionBase> Expressions =>
+        _expressions.OfType<BindingExpressionBase>();
+
+    public IMultiValueConverter? Converter => _converter;
+
+    public CultureInfo? ConverterCulture => _converterCulture;
+
+    public object? ConverterParameter => _converterParameter;
+
+    public object? FallbackValue => _fallbackValue;
+    public object? TargetNullValue => _targetNullValue;
+
+    public string? StringFormat =>
+        _converter is StringFormatMultiValueConverter c
+         ? c.Format
+        : null;
 }

@@ -1,0 +1,17 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="TextBlock.Label">
+    <Setter Property="Grid.Column"  Value="0"/>
+  </Style>
+  <Style Selector="TextBlock.Value">
+    <Setter Property="Grid.Column"  Value="1"/>
+    <Setter Property="TextAlignment" Value="Right"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+  </Style>
+</Styles>
