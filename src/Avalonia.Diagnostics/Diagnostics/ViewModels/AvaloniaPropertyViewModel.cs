@@ -62,12 +62,6 @@ namespace Avalonia.Diagnostics.ViewModels
         public override void Update()
         {
             _binding = BindingOperations.GetBindingExpressionBase(_target, Property);
-            if (_binding is Avalonia.Data.Core.MultiBindingExpression b)
-            {
-                //System.Diagnostics.Debugger.Break();
-                //b.ErrorType
-               
-            }
             if (Property.IsDirect)
             {
                 object? value;
