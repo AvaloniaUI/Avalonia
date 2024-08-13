@@ -121,6 +121,7 @@ namespace Avalonia.Android
                 var settings =
                     AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
                 settings?.OnViewConfigurationChanged(context);
+                ((AndroidScreens)_view.TryGetFeature<IScreenImpl>()!).OnChanged();
             }
         }
 

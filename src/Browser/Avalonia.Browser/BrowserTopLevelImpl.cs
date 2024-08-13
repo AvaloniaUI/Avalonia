@@ -165,6 +165,11 @@ namespace Avalonia.Browser
                 return AvaloniaLocator.Current.GetService<ISystemNavigationManagerImpl>();
             }
 
+            if (featureType == typeof(IScreenImpl))
+            {
+                return AvaloniaLocator.Current.GetService<IScreenImpl>();
+            }
+
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
