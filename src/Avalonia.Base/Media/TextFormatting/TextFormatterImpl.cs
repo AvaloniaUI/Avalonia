@@ -680,7 +680,7 @@ namespace Avalonia.Media.TextFormatting
             var glyph = glyphTypeface.GetGlyph(s_empty[0]);
             var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex, 0.0) };
 
-            var shapedBuffer = new ShapedBuffer(s_empty.AsMemory(), glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
+            var shapedBuffer = new ShapedBuffer(ReadOnlyMemory<char>.Empty, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
                 (sbyte)flowDirection);
 
             var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
