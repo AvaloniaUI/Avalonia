@@ -1,5 +1,7 @@
 ﻿using System;
+using Android.Text;
 using Android.Views;
+using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Input.TextInput;
 
@@ -77,6 +79,17 @@ namespace Avalonia.Android.Platform.Input
         }
 
         public string Text => _textInputMethod.Client?.SurroundingText ?? "";
+
+        public ExtractedText? ExtractedText => new ExtractedText
+        {
+            Flags = Text.Contains('\n') ? 0 : ExtractedTextFlags.SingleLine,
+            PartialStartOffset = -1,
+            PartialEndOffset = Text.Length,
+            SelectionStart = Selection.Start,
+            SelectionEnd = Selection.End,
+            StartOffset = 0,
+            Text = new SpannableString(Text)
+        };
 
         internal void Remove(int index, int length)
         {

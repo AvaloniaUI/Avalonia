@@ -21,7 +21,9 @@ namespace Avalonia.Android.Platform.Input
 
         public override void Apply(TextEditBuffer buffer)
         {
-            buffer.Selection = new TextSelection(Math.Max(_start, 0), Math.Min(_end, buffer.Text.Length));
+            var start = Math.Clamp(_start, 0, buffer.Text.Length);
+            var end = Math.Clamp(_end, 0, buffer.Text.Length);
+            buffer.Selection = new TextSelection(start, end);
         }
     }
 
