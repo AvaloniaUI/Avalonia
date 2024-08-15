@@ -1183,7 +1183,7 @@ namespace Avalonia.Controls
                             row.EnsureHeaderStyleAndVisibility(null);
                             if (newValueRows)
                             {
-                                row.UpdatePseudoClasses();
+                                row.ApplyState();
                                 row.EnsureHeaderVisibility();
                             }
                         }
@@ -1720,7 +1720,7 @@ namespace Avalonia.Controls
                     // State for the old row needs to be applied after setting the new value
                     if (oldMouseOverRow != null)
                     {
-                        oldMouseOverRow.UpdatePseudoClasses();
+                        oldMouseOverRow.ApplyState();
                     }
 
                     if (_mouseOverRowIndex.HasValue)
@@ -1732,7 +1732,7 @@ namespace Avalonia.Controls
                             Debug.Assert(newMouseOverRow != null);
                             if (newMouseOverRow != null)
                             {
-                                newMouseOverRow.UpdatePseudoClasses();
+                                newMouseOverRow.ApplyState();
                             }
                         }
                     }
@@ -4177,7 +4177,7 @@ namespace Avalonia.Controls
                             if (editingRow.IsValid)
                             {
                                 editingRow.IsValid = false;
-                                editingRow.UpdatePseudoClasses();
+                                editingRow.ApplyState();
                             }
                         }
 
@@ -4368,7 +4368,7 @@ namespace Avalonia.Controls
             //IsTabStop = true;
             if (IsSlotVisible(EditingRow.Slot))
             {
-                EditingRow.UpdatePseudoClasses();
+                EditingRow.ApplyState();
             }
             ResetEditingRow();
             if (keepFocus)
@@ -6224,7 +6224,7 @@ namespace Avalonia.Controls
                             cell.UpdatePseudoClasses();
                         }
                     }
-                    EditingRow.UpdatePseudoClasses();
+                    EditingRow.ApplyState();
                 }
             }
             IsValid = true;

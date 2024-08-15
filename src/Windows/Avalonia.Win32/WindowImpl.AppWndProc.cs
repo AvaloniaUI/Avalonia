@@ -946,7 +946,7 @@ namespace Avalonia.Win32
                     {
                         continue;
                     }
-                    // Skip poins older from previous WM_MOUSEMOVE point.
+                    // Skip points older from previous WM_MOUSEMOVE point.
                     if (historyInfo.time < prevMovePoint.time ||
                         (historyInfo.time == prevMovePoint.time &&
                             historyInfo.x == prevMovePoint.x &&
