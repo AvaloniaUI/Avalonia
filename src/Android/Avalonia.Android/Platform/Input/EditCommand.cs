@@ -21,7 +21,9 @@ namespace Avalonia.Android.Platform.Input
 
         public override void Apply(TextEditBuffer buffer)
         {
-            buffer.Selection = new TextSelection(Math.Max(_start, 0), Math.Min(_end, buffer.Text.Length));
+            var start = Math.Clamp(_start, 0, buffer.Text.Length);
+            var end = Math.Clamp(_end, 0, buffer.Text.Length);
+            buffer.Selection = new TextSelection(start, end);
         }
     }
 
@@ -157,14 +159,11 @@ namespace Avalonia.Android.Platform.Input
         {
             if (buffer.HasComposition)
             {
-                buffer.Remove(buffer.Composition!.Value.Start, buffer.Composition!.Value.End - buffer.Composition!.Value.Start);
-                buffer.Insert(buffer.Composition!.Value.Start, _text);
+                buffer.Replace(buffer.Composition!.Value.Start, buffer.Composition!.Value.End, _text);
             }
             else
             {
-                buffer.Remove(buffer.Selection.Start, buffer.Selection.End - buffer.Selection.Start);
-                buffer.Insert(buffer.Selection.Start, _text);
-
+                buffer.Replace(buffer.Selection.Start, buffer.Selection.End, _text);
             }
             var newCursor = _newCursorPosition > 0 ? buffer.Selection.Start + _newCursorPosition - 1 : buffer.Selection.Start + _newCursorPosition - _text.Length;
             buffer.Selection = new TextSelection(newCursor, newCursor);

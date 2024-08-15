@@ -44,6 +44,20 @@ namespace Avalonia.Android.Platform.Input
 
         public bool IsInUpdate { get; set; }
 
+        internal void UpdateState()
+        {
+            var selection = _editBuffer.Selection;
+
+            if (IsInMonitorMode && InputMethod.Client is { } client)
+            {
+                InputMethod.IMM.UpdateExtractedText(InputMethod.View, ExtractedTextToken,
+                    _editBuffer.ExtractedText);
+            }
+
+            var composition = _editBuffer.HasComposition ? _editBuffer.Composition!.Value : new TextSelection(-1, -1);
+            InputMethod.IMM.UpdateSelection(InputMethod.View, selection.Start, selection.End, composition.Start, composition.End);
+        }
+
         public bool SetComposingRegion(int start, int end)
         {
             if (InputMethod.IsActive)
@@ -101,6 +115,8 @@ namespace Avalonia.Android.Platform.Input
                 }
                 IsInUpdate = false;
             }
+
+            UpdateState();
             return IsInBatchEdit;
         }
 
@@ -147,6 +163,26 @@ namespace Avalonia.Android.Platform.Input
                     }
             }
 
+            var eventTime = SystemClock.UptimeMillis();
+            SendKeyEvent(new KeyEvent(eventTime,
+                                      eventTime,
+                                      KeyEventActions.Down,
+                                      Keycode.Enter,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      KeyEventFlags.SoftKeyboard | KeyEventFlags.KeepTouchMode | KeyEventFlags.EditorAction));
+            SendKeyEvent(new KeyEvent(eventTime,
+                                      eventTime,
+                                      KeyEventActions.Up,
+                                      Keycode.Enter,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      KeyEventFlags.SoftKeyboard | KeyEventFlags.KeepTouchMode | KeyEventFlags.EditorAction));
+
             return InputMethod.IsActive;
         }
 
@@ -161,19 +197,7 @@ namespace Avalonia.Android.Platform.Input
                 return null;
             }
 
-            var extract = new ExtractedText
-            {
-                Flags = 0,
-                PartialStartOffset = -1,
-                PartialEndOffset = -1,
-                SelectionStart = _editBuffer.Selection.Start,
-                SelectionEnd = _editBuffer.Selection.End,
-                StartOffset = 0
-            };
-
-            extract.Text = new SpannableString(_editBuffer.Text);
-
-            return extract;
+            return _editBuffer.ExtractedText;
         }
 
         public bool PerformContextMenuAction(int id)
