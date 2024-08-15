@@ -179,6 +179,10 @@ namespace Avalonia.Direct2D1
             }
 
             public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => _platform.CreateRenderTarget(surfaces);
+
+            public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling) =>
+                new WicRenderTargetBitmapImpl(pixelSize, new Vector(96 * scaling, 96 * scaling));
+
             public bool IsLost => false;
             public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
         }

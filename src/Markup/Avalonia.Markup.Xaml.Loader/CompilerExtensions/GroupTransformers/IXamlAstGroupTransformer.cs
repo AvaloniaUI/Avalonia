@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Xml;
-using XamlX;
+﻿using System.Collections.Generic;
 using XamlX.Ast;
 using XamlX.Transform;
 
@@ -18,7 +15,7 @@ internal class AstGroupTransformationContext : AstTransformationContext
     }
 
     public override string Document => CurrentDocument?.FileSource?.FilePath ?? "{unknown document}";
-    public IXamlDocumentResource CurrentDocument { get; set; }
+    public IXamlDocumentResource? CurrentDocument { get; set; }
     
     public IReadOnlyCollection<IXamlDocumentResource> Documents { get; }
 
