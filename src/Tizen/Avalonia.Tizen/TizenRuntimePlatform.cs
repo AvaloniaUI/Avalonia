@@ -22,7 +22,7 @@ internal static class TizenRuntimePlatformServices
 
 internal class TizenRuntimePlatform : StandardRuntimePlatform
 {
-    private static readonly Lazy<RuntimePlatformInfo> Info = new(() =>
+    public static readonly Lazy<RuntimePlatformInfo> Info = new(() =>
     {
         global::Tizen.System.Information.TryGetValue("http://tizen.org/feature/profile", out string profile);
 
