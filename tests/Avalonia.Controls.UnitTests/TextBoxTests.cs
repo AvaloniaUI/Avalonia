@@ -1492,6 +1492,43 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Backspace_Should_Delete_Last_Character_In_Line_And_Keep_Caret_On_Same_Line()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "a\nb",
+                CaretIndex = 3
+            };
+            textBox.ApplyTemplate();
+
+            var topLevel = new TestTopLevel(CreateMockTopLevelImpl().Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            var textPresenter = textBox.FindDescendantOfType<TextPresenter>();
+            Assert.NotNull(textPresenter);
+
+            var oldCaretY = textPresenter.GetCursorRectangle().Top;
+            Assert.NotEqual(0, oldCaretY);
+
+            RaiseKeyEvent(textBox, Key.Back, KeyModifiers.None);
+
+            Assert.Equal("a\n", textBox.Text);
+            Assert.Equal(2, textBox.CaretIndex);
+            Assert.Equal(2, textPresenter.CaretIndex);
+
+            var caretY = textPresenter.GetCursorRectangle().Top;
+            Assert.Equal(oldCaretY, caretY);
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
