@@ -614,12 +614,7 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SHOWWINDOW:
-                    _shown = wParam != default;
-
-                    if (_isClientAreaExtended)
-                    {
-                        ExtendClientArea();
-                    }
+                    OnShowHideMessage(wParam != default);
                     break;
 
                 case WindowsMessage.WM_SIZE:
@@ -801,11 +796,11 @@ namespace Avalonia.Win32
                     var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
                     if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
                     {
-                        _shown = true;
+                        OnShowHideMessage(true);
                     }
                     else if ((winPos.flags & (uint)SetWindowPosFlags.SWP_HIDEWINDOW) != 0)
                     {
-                        _shown = false;
+                        OnShowHideMessage(false);
                     }
                     break;
             }
@@ -852,6 +847,16 @@ namespace Avalonia.Win32
             }
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private void OnShowHideMessage(bool shown)
+        {
+            _shown = shown;
+
+            if (_isClientAreaExtended)
+            {
+                ExtendClientArea();
+            }
         }
 
         private Lazy<IReadOnlyList<RawPointerPoint>?>? CreateLazyIntermediatePoints(POINTER_INFO info)
