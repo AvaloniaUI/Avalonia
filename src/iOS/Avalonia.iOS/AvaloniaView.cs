@@ -222,7 +222,6 @@ namespace Avalonia.iOS
             }
 
             public double DesktopScaling => RenderScaling;
-            public IScreenImpl? Screen { get; }
             public IPlatformHandle? Handle { get; }
             public Size ClientSize => new Size(_view.Bounds.Width, _view.Bounds.Height);
             public Size? FrameSize => null;
@@ -295,6 +294,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(ILauncher))
                 {
                     return new IOSLauncher();
+                }
+
+                if (featureType == typeof(IScreenImpl))
+                {
+                    return (iOSScreens)AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
                 }
 
                 return null;

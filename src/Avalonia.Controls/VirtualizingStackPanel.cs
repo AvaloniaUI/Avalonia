@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -159,6 +160,7 @@ namespace Avalonia.Controls
 
             try
             {
+                _realizedElements?.ValidateStartU(Orientation);
                 _realizedElements ??= new();
                 _measureElements ??= new();
 
@@ -178,6 +180,10 @@ namespace Avalonia.Controls
                 // Now swap the measureElements and realizedElements collection.
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
                 _measureElements.ResetForReuse();
+
+                // If there is a focused element is outside the visible viewport (i.e.
+                // _focusedElement is non-null), ensure it's measured.
+                _focusedElement?.Measure(availableSize);
 
                 return CalculateDesiredSize(orientation, items.Count, viewport);
             }
@@ -213,6 +219,16 @@ namespace Avalonia.Controls
                         _scrollAnchorProvider?.RegisterAnchorCandidate(e);
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
+                }
+
+                // Ensure that the focused element is in the correct position.
+                if (_focusedElement is not null && _focusedIndex >= 0)
+                {
+                    u = GetOrEstimateElementU(_focusedIndex);
+                    var rect = orientation == Orientation.Horizontal ?
+                        new Rect(u, 0, _focusedElement.DesiredSize.Width, finalSize.Height) :
+                        new Rect(0, u, finalSize.Width, _focusedElement.DesiredSize.Height);
+                    _focusedElement.Arrange(rect);
                 }
 
                 return finalSize;
@@ -389,7 +405,7 @@ namespace Avalonia.Controls
                 scrollToElement.Measure(Size.Infinity);
 
                 // Get the expected position of the element and put it in place.
-                var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
+                var anchorU = GetOrEstimateElementU(index);
                 var rect = Orientation == Orientation.Horizontal ?
                     new Rect(anchorU, 0, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height) :
                     new Rect(0, anchorU, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height);
@@ -472,11 +488,12 @@ namespace Avalonia.Controls
             }
             else
             {
-                (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
+                GetOrEstimateAnchorElementForViewport(
                     viewportStart,
                     viewportEnd,
                     items.Count,
-                    ref _lastEstimatedElementSizeU);
+                    out anchorIndex,
+                    out anchorU);
             }
 
             // Check if the anchor element is not within the currently realized elements.
@@ -531,11 +548,97 @@ namespace Avalonia.Controls
             if (_realizedElements is null)
                 return _lastEstimatedElementSizeU;
 
-            var result = _realizedElements.EstimateElementSizeU();
-            if (result >= 0)
-                _lastEstimatedElementSizeU = result;
-            return _lastEstimatedElementSizeU;
+            var orientation = Orientation;
+            var total = 0.0;
+            var divisor = 0.0;
+
+            // Average the desired size of the realized, measured elements.
+            foreach (var element in _realizedElements.Elements)
+            {
+                if (element is null || !element.IsMeasureValid)
+                    continue;
+                var sizeU = orientation == Orientation.Horizontal ?
+                    element.DesiredSize.Width :
+                    element.DesiredSize.Height;
+                total += sizeU;
+                ++divisor;
+            }
+
+            // Check we have enough information on which to base our estimate.
+            if (divisor == 0 || total == 0)
+                return _lastEstimatedElementSizeU;
+
+            // Store and return the estimate.
+            return _lastEstimatedElementSizeU = total / divisor;
         }
+
+        private void GetOrEstimateAnchorElementForViewport(
+            double viewportStartU,
+            double viewportEndU,
+            int itemCount,
+            out int index,
+            out double position)
+        {
+            // We have no elements, or we're at the start of the viewport.
+            if (itemCount <= 0 || MathUtilities.IsZero(viewportStartU))
+            {
+                index = 0;
+                position = 0;
+                return;
+            }
+
+            // If we have realised elements and a valid StartU then try to use this information to
+            // get the anchor element.
+            if (_realizedElements?.StartU is { } u && !double.IsNaN(u))
+            {
+                var orientation = Orientation;
+
+                for (var i = 0; i < _realizedElements.Elements.Count; ++i)
+                {
+                    if (_realizedElements.Elements[i] is not { } element)
+                        continue;
+
+                    var sizeU = orientation == Orientation.Horizontal ?
+                        element.DesiredSize.Width :
+                        element.DesiredSize.Height;
+                    var endU = u + sizeU;
+
+                    if (endU > viewportStartU && u < viewportEndU)
+                    {
+                        index = _realizedElements.FirstIndex + i;
+                        position = u;
+                        return;
+                    }
+
+                    u = endU;
+                }
+            }
+
+            // We don't have any realized elements in the requested viewport, or can't rely on
+            // StartU being valid. Estimate the index using only the estimated element size.
+            var estimatedSize = EstimateElementSizeU();
+
+            // Estimate the element at the start of the viewport.
+            var startIndex = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
+            index = startIndex;
+            position = startIndex * estimatedSize;
+        }
+
+        private double GetOrEstimateElementU(int index)
+        {
+            // Return the position of the existing element if realized.
+            var u = _realizedElements?.GetElementU(index) ?? double.NaN;
+
+            if (!double.IsNaN(u))
+                return u;
+
+            // Estimate the element size.
+            var estimatedSize = EstimateElementSizeU();
+
+            // TODO: Use _startU to work this out.
+            return index * estimatedSize;
+        }
+
 
         private void RealizeElements(
             IReadOnlyList<object?> items,

@@ -164,6 +164,8 @@ namespace Avalonia.Skia
         public bool IsLost => _glContext.IsLost;
         public IDisposable EnsureCurrent() => _glContext.EnsureCurrent();
         public IPlatformGraphicsContext? PlatformGraphicsContext => _glContext;
+        public IScopedResource<GRContext> TryGetGrContext() =>
+            ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 
         public object? TryGetFeature(Type featureType)
         {

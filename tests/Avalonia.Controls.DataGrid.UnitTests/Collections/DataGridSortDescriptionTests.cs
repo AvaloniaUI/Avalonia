@@ -4,7 +4,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Xunit;
 
-namespace Avalonia.Controls.DataGrid.UnitTests.Collections
+namespace Avalonia.Controls.DataGridTests.Collections
 {
 
     public class DataGridSortDescriptionTests
