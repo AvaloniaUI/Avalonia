@@ -118,6 +118,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IResourceDictionary { get; }
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
+        public IXamlMethod ResourceDictionaryNotSharedDeferredAdd { get; }
         public IXamlMethod ResourceDictionaryEnsureCapacity { get; }
         public IXamlMethod ResourceDictionaryGetCount { get; }
         public IXamlType IThemeVariantProvider { get; }
@@ -312,6 +313,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
             ResourceDictionaryDeferredAdd = ResourceDictionary.GetMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
                 cfg.TypeSystem.GetType("Avalonia.Controls.IDeferredContent"));
+            ResourceDictionaryNotSharedDeferredAdd = ResourceDictionary.GetMethod("AddNotSharedDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
+                cfg.TypeSystem.GetType("Avalonia.Controls.IDeferredContent"));
+
             ResourceDictionaryEnsureCapacity = ResourceDictionary.GetMethod("EnsureCapacity", XamlIlTypes.Void, true, XamlIlTypes.Int32);
             ResourceDictionaryGetCount = ResourceDictionary.GetMethod("get_Count", XamlIlTypes.Int32, true);
             IThemeVariantProvider = cfg.TypeSystem.GetType("Avalonia.Controls.IThemeVariantProvider");
