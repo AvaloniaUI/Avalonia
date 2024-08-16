@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 && ShouldBeDeferred(pa.Values[1]))
             {
                 IXamlMethod addMethod = TryGetSharedValue(pa.Values[1], out var isShared) && !isShared
-                    ? types.ResourceDictionaryNotSharedDeferedAdd
+                    ? types.ResourceDictionaryNotSharedDeferredAdd
                     : types.ResourceDictionaryDeferredAdd;
 
                 pa.Values[1] = new XamlDeferredContentNode(pa.Values[1], types.XamlIlTypes.Object, context.Configuration);
@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 && ShouldBeDeferred(pa.Values[1]))
             {
                 IXamlMethod addMethod = TryGetSharedValue(pa.Values[1], out var isShared) && !isShared
-                    ? types.ResourceDictionaryNotSharedDeferedAdd
+                    ? types.ResourceDictionaryNotSharedDeferredAdd
                     : types.ResourceDictionaryDeferredAdd;
 
                 pa.Values[1] = new XamlDeferredContentNode(pa.Values[1], types.XamlIlTypes.Object, context.Configuration);

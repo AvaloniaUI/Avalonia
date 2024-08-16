@@ -245,7 +245,7 @@ namespace Avalonia.Controls
                             { } v => v,
                             _ => null,
                         };
-                        if (deferred is not INotSharedDeferredContent)
+                        if (deferred is not NotSharedDeferredItem)
                         {
                             _inner[key] = value;
                         }
@@ -383,7 +383,7 @@ namespace Avalonia.Controls
             public object? Build(IServiceProvider? serviceProvider) => _factory(serviceProvider);
         }
 
-        private sealed class NotSharedDeferredItem(IDeferredContent deferredContent) : INotSharedDeferredContent
+        private sealed class NotSharedDeferredItem(IDeferredContent deferredContent) : IDeferredContent
         {
             private readonly IDeferredContent _deferredContent = deferredContent ;
             public object? Build(IServiceProvider? serviceProvider) => _deferredContent.Build(serviceProvider);
