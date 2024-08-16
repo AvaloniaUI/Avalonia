@@ -289,8 +289,9 @@ namespace Avalonia.Controls
                     OnClick();
                     e.Handled = true;
                     break;
-
                 case Key.Space:
+                    // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+                    if (IsFocused)
                     {
                         if (ClickMode == ClickMode.Press)
                         {
@@ -299,22 +300,21 @@ namespace Avalonia.Controls
 
                         IsPressed = true;
                         e.Handled = true;
-                        break;
                     }
-
+                    break;
                 case Key.Escape when Flyout != null:
                     // If Flyout doesn't have focusable content, close the flyout here
                     CloseFlyout();
                     break;
             }
-
             base.OnKeyDown(e);
         }
 
         /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (e.Key == Key.Space)
+            // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+            if (e.Key == Key.Space && IsFocused)
             {
                 if (ClickMode == ClickMode.Release)
                 {
