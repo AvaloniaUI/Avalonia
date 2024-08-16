@@ -23,6 +23,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         private readonly Queue<CompositionBatch> _batches = new Queue<CompositionBatch>();
         private readonly Queue<Action> _receivedJobQueue = new();
+        private readonly Queue<Action> _receivedPostTargetJobQueue = new();
         public long LastBatchId { get; private set; }
         public TimeSpan ServerNow { get; private set; }
         private readonly List<ServerCompositionTarget> _activeTargets = new();
@@ -35,6 +36,8 @@ namespace Avalonia.Rendering.Composition.Server
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
+        internal static readonly object RenderThreadPostTargetJobsStartMarker = new();
+        internal static readonly object RenderThreadPostTargetJobsEndMarker = new();
         public CompositionOptions Options { get; }
         public ServerCompositorAnimations Animations { get; }
 
@@ -80,7 +83,12 @@ namespace Avalonia.Rendering.Composition.Server
                         var readObject = stream.ReadObject();
                         if (readObject == RenderThreadJobsStartMarker)
                         {
-                            ReadServerJobs(stream);
+                            ReadServerJobs(stream, _receivedJobQueue, RenderThreadJobsEndMarker);
+                            continue;
+                        }
+                        if (readObject == RenderThreadPostTargetJobsStartMarker)
+                        {
+                            ReadServerJobs(stream, _receivedPostTargetJobQueue, RenderThreadPostTargetJobsEndMarker);
                             continue;
                         }
 
@@ -108,11 +116,11 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
-        void ReadServerJobs(BatchStreamReader reader)
+        void ReadServerJobs(BatchStreamReader reader, Queue<Action> queue, object endMarker)
         {
             object? readObject;
-            while ((readObject = reader.ReadObject()) != RenderThreadJobsEndMarker)
-                _receivedJobQueue.Enqueue((Action)readObject!);
+            while ((readObject = reader.ReadObject()) != endMarker)
+                queue.Enqueue((Action)readObject!);
         }
 
         void ReadDisposeJobs(BatchStreamReader reader)
@@ -125,12 +133,12 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
-        void ExecuteServerJobs()
+        void ExecuteServerJobs(Queue<Action> queue)
         {
-            while(_receivedJobQueue.Count > 0)
+            while(queue.Count > 0)
                 try
                 {
-                    _receivedJobQueue.Dequeue()();
+                    queue.Dequeue()();
                 }
                 catch
                 {
@@ -224,9 +232,10 @@ namespace Avalonia.Rendering.Composition.Server
                 if(!RenderInterface.IsReady)
                     return;
                 RenderInterface.EnsureValidBackendContext();
-                ExecuteServerJobs();
+                ExecuteServerJobs(_receivedJobQueue);
                 foreach (var t in _activeTargets)
                     t.Render();
+                ExecuteServerJobs(_receivedPostTargetJobQueue);
             }
             catch (Exception e) when(RT_OnContextLostExceptionFilterObserver(e) && catchExceptions)
             {

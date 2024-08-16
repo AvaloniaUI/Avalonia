@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -62,6 +63,7 @@ namespace Avalonia.Controls
             PressedMixin.Attach<TreeViewItem>();
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<TreeViewItem>(IsOffscreenBehavior.FromClip);
             RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
         }
 

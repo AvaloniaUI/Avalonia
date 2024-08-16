@@ -59,11 +59,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         }
 
         private protected override BindingExpressionBase Instance(
-            AvaloniaProperty targetProperty,
             AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
             object? anchor)
         {
-            var enableDataValidation = targetProperty.GetMetadata(target).EnableDataValidation ?? false;
+            var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
             return InstanceCore(target, targetProperty, anchor, enableDataValidation);
         }
 

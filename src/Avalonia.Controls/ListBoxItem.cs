@@ -1,3 +1,4 @@
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -30,6 +31,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<ListBoxItem>(IsSelectedProperty);
             PressedMixin.Attach<ListBoxItem>();
             FocusableProperty.OverrideDefaultValue<ListBoxItem>(true);
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<ListBoxItem>(IsOffscreenBehavior.FromClip);
         }
 
         /// <summary>
