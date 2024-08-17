@@ -9,11 +9,10 @@ using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -1492,6 +1491,30 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void InputMethodClient_SurroundingText_Returns_Empty_For_Empty_Line()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "",
+                CaretIndex = 0
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var client = eventArgs.Client;
+            Assert.NotNull(client);
+            Assert.Equal(string.Empty, client.SurroundingText);
+        }
+  
         [Fact]
         public void Backspace_Should_Delete_Last_Character_In_Line_And_Keep_Caret_On_Same_Line()
         {
