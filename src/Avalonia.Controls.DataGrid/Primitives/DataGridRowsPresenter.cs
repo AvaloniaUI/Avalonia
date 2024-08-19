@@ -32,20 +32,6 @@ namespace Avalonia.Controls.Primitives
             set;
         }
 
-        private double _measureHeightOffset = 0;
-
-        private double CalculateEstimatedAvailableHeight(Size availableSize)
-        {
-            if (!Double.IsPositiveInfinity(availableSize.Height))
-            {
-                return availableSize.Height + _measureHeightOffset;
-            }
-            else
-            {
-                return availableSize.Height;
-            }
-        }
-
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
@@ -88,11 +74,6 @@ namespace Avalonia.Controls.Primitives
             if (OwningGrid.RowsPresenterAvailableSize.HasValue)
             {
                 var availableHeight = OwningGrid.RowsPresenterAvailableSize.Value.Height;
-                if (!Double.IsPositiveInfinity(availableHeight))
-                {
-                    _measureHeightOffset = finalSize.Height - availableHeight;
-                    OwningGrid.RowsPresenterEstimatedAvailableHeight = finalSize.Height;
-                }
             }
 
             OwningGrid.OnFillerColumnWidthNeeded(finalSize.Width);
@@ -167,7 +148,6 @@ namespace Avalonia.Controls.Primitives
             // The DataGrid uses the RowsPresenter available size in order to autogrow
             // and calculate the scrollbars
             OwningGrid.RowsPresenterAvailableSize = availableSize;
-            OwningGrid.RowsPresenterEstimatedAvailableHeight = CalculateEstimatedAvailableHeight(availableSize);
 
             OwningGrid.OnRowsMeasure();
 
