@@ -54,4 +54,10 @@
     <InternalsVisibleTo Include="Avalonia.Browser.Blazor, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\Shared\RawEventGrouping.cs">
+      <Link>RawEventGrouping.cs</Link>
+    </Compile>
+  </ItemGroup>
+
 </Project>

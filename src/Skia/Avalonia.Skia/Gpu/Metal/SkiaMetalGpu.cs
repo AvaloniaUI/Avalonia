@@ -34,6 +34,10 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
     public IDisposable EnsureCurrent() => _device.EnsureCurrent();
     public IPlatformGraphicsContext? PlatformGraphicsContext => _device;
 
+    public IScopedResource<GRContext> TryGetGrContext() =>
+        ScopedResource<GRContext>.Create(_context ?? throw new ObjectDisposedException(nameof(SkiaMetalApi)),
+            EnsureCurrent().Dispose);
+
     public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
     {
         foreach (var surface in surfaces)

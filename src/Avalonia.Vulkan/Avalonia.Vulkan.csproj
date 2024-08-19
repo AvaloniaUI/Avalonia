@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
@@ -14,4 +14,9 @@
     <Import Project="..\..\build\SourceGenerators.props" />
     <Import Project="..\..\build\TrimmingEnable.props" />
     <Import Project="..\..\build\NullableEnable.props" />
+
+  <ItemGroup>
+    <Compile Remove="..\Shared\SourceGeneratorAttributes.cs" />
+  </ItemGroup>
+
 </Project>

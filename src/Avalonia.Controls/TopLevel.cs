@@ -140,6 +140,7 @@ namespace Avalonia.Controls
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private IMediaProvider? _mediaProvider;
+        private Screens? _screens;
         private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
         
         /// <summary>
@@ -237,7 +238,7 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
             {
                 variant ??= ThemeVariant.Default;
-                PlatformImpl.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
+                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
             });
 
             _keyboardNavigationHandler?.SetOwner(this);
@@ -255,7 +256,6 @@ namespace Avalonia.Controls
             }
 
             ClientSize = impl.ClientSize;
-            FrameSize = impl.FrameSize;
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
@@ -431,7 +431,7 @@ namespace Avalonia.Controls
         /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
         /// could not be retrieved.
         /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => (PlatformImpl as IWindowBaseImpl)?.Handle;
+        public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
 
         private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<TValue> onValue)
         {
@@ -543,7 +543,7 @@ namespace Avalonia.Controls
         public double RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
-        
+
         /// <summary>
         /// File System storage service used for file pickers and bookmarks.
         /// </summary>
@@ -562,6 +562,12 @@ namespace Avalonia.Controls
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
         public IInputPane? InputPane => PlatformImpl?.TryGetFeature<IInputPane>();
         public ILauncher Launcher => PlatformImpl?.TryGetFeature<ILauncher>() ?? new NoopLauncher();
+
+        /// <summary>
+        /// Gets platform screens implementation.
+        /// </summary>
+        public Screens? Screens => _screens ??=
+            PlatformImpl?.TryGetFeature<IScreenImpl>() is { } screenImpl ? new Screens(screenImpl) : null;
 
         /// <summary>
         /// Gets the platform's clipboard implementation
@@ -737,7 +743,6 @@ namespace Avalonia.Controls
         internal virtual void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             ClientSize = clientSize;
-            FrameSize = PlatformImpl!.FrameSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.ExecuteLayoutPass();
@@ -798,7 +803,6 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnOpened(EventArgs e)
         {
-            FrameSize = PlatformImpl?.FrameSize;
             Dispatcher.UIThread.Send(_ => Opened?.Invoke(this, e));
         }
 
@@ -905,12 +909,12 @@ namespace Avalonia.Controls
 
         private void UpdateToolTip(Rect dirtyRect)
         {
-            if (_tooltipService != null && _pointerOverPreProcessor?.LastPosition is { } lastPos)
+            if (_tooltipService != null && IsPointerOver && _pointerOverPreProcessor?.LastPosition is { } lastPos)
             {
                 var clientPoint = this.PointToClient(lastPos);
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    _tooltipService.Update(HitTester.HitTestFirst(clientPoint, this, null));
+                    _tooltipService.Update(this, HitTester.HitTestFirst(clientPoint, this, null));
                 }
             }
         }

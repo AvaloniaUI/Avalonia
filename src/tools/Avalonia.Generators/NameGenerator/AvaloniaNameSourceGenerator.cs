@@ -57,7 +57,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
                 && sourceItemGroup == "AvaloniaXaml");
     }
 
-    private static INameGenerator CreateNameGenerator(GeneratorExecutionContext context)
+    private static INameGenerator? CreateNameGenerator(GeneratorExecutionContext context)
     {
         var options = new GeneratorOptions(context);
         if (!options.AvaloniaNameGeneratorIsEnabled)

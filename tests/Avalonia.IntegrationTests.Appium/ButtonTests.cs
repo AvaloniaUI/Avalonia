@@ -1,27 +1,19 @@
-﻿using System.Runtime.InteropServices;
-using OpenQA.Selenium.Appium;
-using Xunit;
+﻿using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class ButtonTests
+    public class ButtonTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public ButtonTests(DefaultAppFixture fixture)
+            : base(fixture, "Button")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Button");
-            tab.Click();
         }
 
         [Fact]
         public void DisabledButton()
         {
-            var button = _session.FindElementByAccessibilityId("DisabledButton");
+            var button = Session.FindElementByAccessibilityId("DisabledButton");
 
             Assert.Equal("Disabled Button", button.Text);
             Assert.False(button.Enabled);
@@ -30,7 +22,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void EffectivelyDisabledButton()
         {
-            var button = _session.FindElementByAccessibilityId("EffectivelyDisabledButton");
+            var button = Session.FindElementByAccessibilityId("EffectivelyDisabledButton");
 
             Assert.Equal("Effectively Disabled Button", button.Text);
             Assert.False(button.Enabled);
@@ -39,7 +31,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void BasicButton()
         {
-            var button = _session.FindElementByAccessibilityId("BasicButton");
+            var button = Session.FindElementByAccessibilityId("BasicButton");
 
             Assert.Equal("Basic Button", button.Text);
             Assert.True(button.Enabled);
@@ -48,7 +40,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void ButtonWithTextBlock()
         {
-            var button = _session.FindElementByAccessibilityId("ButtonWithTextBlock");
+            var button = Session.FindElementByAccessibilityId("ButtonWithTextBlock");
 
             Assert.Equal("Button with TextBlock", button.Text);
         }
@@ -56,7 +48,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void ButtonWithAcceleratorKey()
         {
-            var button = _session.FindElementByAccessibilityId("ButtonWithAcceleratorKey");
+            var button = Session.FindElementByAccessibilityId("ButtonWithAcceleratorKey");
 
             Assert.Equal("Ctrl+B", button.GetAttribute("AcceleratorKey"));
         }

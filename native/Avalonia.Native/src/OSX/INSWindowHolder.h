@@ -11,6 +11,10 @@
 struct INSWindowHolder
 {
     virtual NSWindow* _Nonnull GetNSWindow () = 0;
+};
+
+struct INSViewHolder
+{
     virtual AvnView* _Nonnull GetNSView () = 0;
 };
 

@@ -58,7 +58,7 @@ namespace Avalonia.Media
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);
 
-        private InlineDictionary<Compositor, CompositionRenderDataSceneBrushContent?> _renderDataDictionary;
+        private InlineDictionary<Compositor, CompositionRenderData?> _renderDataDictionary;
 
         private protected override void OnReferencedFromCompositor(Compositor c)
         {
@@ -69,33 +69,27 @@ namespace Avalonia.Media
         protected override void OnUnreferencedFromCompositor(Compositor c)
         {
             if (_renderDataDictionary.TryGetAndRemoveValue(c, out var content))
-                content?.RenderData.Dispose();
+                content?.Dispose();
             base.OnUnreferencedFromCompositor(c);
         }
         
         private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
             base.SerializeChanges(c, writer);
-            if (_renderDataDictionary.TryGetValue(c, out var content))
-                writer.WriteObject(content);
+            if (_renderDataDictionary.TryGetValue(c, out var content) && content != null)
+                writer.WriteObject(new CompositionRenderDataSceneBrushContent.Properties(content.Server, null, true));
             else
                 writer.WriteObject(null);
         }
         
-        CompositionRenderDataSceneBrushContent? CreateServerContent(Compositor c)
+        CompositionRenderData? CreateServerContent(Compositor c)
         {
             if (Drawing == null)
                 return null;
             
             using var recorder = new RenderDataDrawingContext(c);
             Drawing?.Draw(recorder);
-            var renderData = recorder.GetRenderResults();
-            if (renderData == null)
-                return null;
-            
-            return new CompositionRenderDataSceneBrushContent(
-                (ServerCompositionSimpleContentBrush)((ICompositionRenderResource<IBrush>)this).GetForCompositor(c),
-                renderData, null, true);
+            return recorder.GetRenderResults();
         }
     }
 }

@@ -57,7 +57,6 @@ namespace Avalonia.Data
         /// <param name="value">The binding value.</param>
         public BindingNotification(object? value)
         {
-            Debug.Assert(value is not BindingNotification);
             _value = value;
         }
 
@@ -179,7 +178,7 @@ namespace Avalonia.Data
         /// to <paramref name="value"/>. If <paramref name="value"/> is a
         /// <see cref="BindingNotification"/> then the value will first be extracted.
         /// </remarks>
-        public static object? UpdateValue(object o, object value)
+        public static object? UpdateValue(object? o, object value)
         {
             if (o is BindingNotification n)
             {

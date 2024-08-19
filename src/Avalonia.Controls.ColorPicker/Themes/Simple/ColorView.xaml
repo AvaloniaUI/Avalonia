@@ -306,7 +306,8 @@
             <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
                      IsVisible="{TemplateBinding IsColorSpectrumVisible}">
               <TabItem.Header>
-                <Border Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}"
+                        Background="Transparent">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewSpectrumIconGeometry}" />
@@ -371,7 +372,8 @@
             <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
                      IsVisible="{TemplateBinding IsColorPaletteVisible}">
               <TabItem.Header>
-                <Border Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}"
+                        Background="Transparent">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewPaletteIconGeometry}" />
@@ -406,7 +408,8 @@
             <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
                      IsVisible="{TemplateBinding IsColorComponentsVisible}">
               <TabItem.Header>
-                <Border Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}"
+                        Background="Transparent">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewComponentsIconGeometry}" />
@@ -467,6 +470,8 @@
                              AutomationProperties.Name="Hexadecimal Color"
                              Height="32"
                              MaxLength="9"
+                             Padding="10,6,6,5"
+                             VerticalContentAlignment="Center"
                              HorizontalAlignment="Stretch"
                              CornerRadius="0,0,0,0" />
                   </Grid>

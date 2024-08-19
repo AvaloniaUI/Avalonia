@@ -24,7 +24,6 @@ namespace ControlCatalog.Pages
             collectionView1.SortDescriptions.Add(dataGridSortDescription);
             var dg1 = this.Get<DataGrid>("dataGrid1");
             dg1.IsReadOnly = true;
-            dg1.LoadingRow += Dg1_LoadingRow;
             dg1.Sorting += (s, a) =>
             {
                 var binding = (a.Column as DataGridBoundColumn)?.Binding as Binding;
@@ -64,11 +63,6 @@ namespace ControlCatalog.Pages
         }
 
         public IEnumerable<Person> DataGrid3Source { get; }
-        
-        private void Dg1_LoadingRow(object? sender, DataGridRowEventArgs e)
-        {
-            e.Row.Header = e.Row.GetIndex() + 1;
-        }
 
         private void InitializeComponent()
         {

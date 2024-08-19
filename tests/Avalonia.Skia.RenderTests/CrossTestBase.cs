@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Avalonia.Skia.RenderTests;
@@ -19,7 +21,7 @@ class CrossFactAttribute : FactAttribute
     
 }
 
-class CrossThreoryAttribute : TheoryAttribute
+class CrossTheoryAttribute : TheoryAttribute
 {
     
 }
@@ -35,6 +37,8 @@ public class CrossTestBase : IDisposable
 
     protected void RenderAndCompare(CrossControl root, [CallerMemberName] string? testName = null, double dpi = 96)
     {
+        ArgumentException.ThrowIfNullOrEmpty(testName, nameof(testName));
+
         var dir = Path.Combine(TestRenderHelper.GetTestsDirectory(), "TestFiles", "CrossTests", _groupName);
         if (!Directory.Exists(dir))
             Directory.CreateDirectory(dir);

@@ -54,7 +54,7 @@ namespace Avalonia.Win32.Automation
         {
             get
             {
-                var handle = WindowImpl?.Handle.Handle ?? IntPtr.Zero;
+                var handle = WindowImpl?.Handle?.Handle ?? IntPtr.Zero;
                 if (handle == IntPtr.Zero)
                     return null;
                 var hr = UiaCoreProviderApi.UiaHostProviderFromHwnd(handle, out var result);

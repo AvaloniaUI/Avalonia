@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Rendering;
+using Avalonia.Controls;
 using Avalonia.Metadata;
 
 namespace Avalonia.Browser;
@@ -52,6 +55,12 @@ public record BrowserPlatformOptions
     /// For more details, see https://github.com/jimmywarting/native-file-system-adapter#a-note-when-downloading-with-the-polyfilled-version.
     /// </summary>
     public bool PreferFileDialogPolyfill { get; set; }
+
+    /// <summary>
+    /// Defines if Avalonia should create a controlled dispatcher loop on the web worker thread.
+    /// If used only when WasmEnableThreads is set to true. Default value is true.
+    /// </summary>
+    public bool? PreferManagedThreadDispatcher { get; set; } = true;
 }
 
 public static class BrowserAppBuilder
@@ -62,8 +71,9 @@ public static class BrowserAppBuilder
     /// <param name="builder">Application builder.</param>
     /// <param name="mainDivId">ID of the html element where avalonia content should be rendered.</param>
     /// <param name="options">Browser backend specific options.</param>
-    public static async Task StartBrowserAppAsync(this AppBuilder builder, string mainDivId,
-        BrowserPlatformOptions? options = null)
+    public static async Task StartBrowserAppAsync(
+        this AppBuilder builder,
+        string mainDivId, BrowserPlatformOptions? options = null)
     {
         if (mainDivId is null)
         {
@@ -77,8 +87,35 @@ public static class BrowserAppBuilder
             .AfterApplicationSetup(_ =>
             {
                 lifetime.View = new AvaloniaView(mainDivId);
-            })
-            .SetupWithLifetime(lifetime);
+            });
+
+        if (BrowserWindowingPlatform.IsManagedDispatcherEnabled)
+        {
+            var tcs = new TaskCompletionSource();
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    builder
+                        .SetupWithLifetime(lifetime);
+                    tcs.TrySetResult();
+                    builder.Instance!.Run(CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            });
+#pragma warning disable CA1416
+            thread.Start();
+#pragma warning restore CA1416
+            await tcs.Task;
+        }
+        else
+        {
+            builder
+                .SetupWithLifetime(lifetime);
+        }
     }
 
     /// <summary>
@@ -101,12 +138,19 @@ public static class BrowserAppBuilder
 
     internal static async Task<AppBuilder> PreSetupBrowser(AppBuilder builder, BrowserPlatformOptions? options)
     {
-        options ??= new BrowserPlatformOptions();
+        options ??= AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
         options.FrameworkAssetPathResolver ??= fileName => $"./{fileName}";
 
         AvaloniaLocator.CurrentMutable.Bind<BrowserPlatformOptions>().ToConstant(options);
 
         await AvaloniaModule.ImportMain();
+
+        BrowserWindowingPlatform.GlobalThis = DomHelper.GetGlobalThis();
+
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
+        {
+            await RenderWorker.InitializeAsync();
+        }
 
         if (builder.WindowingSubsystemInitializer is null)
         {

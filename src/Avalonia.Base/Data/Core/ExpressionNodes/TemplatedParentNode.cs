@@ -22,8 +22,11 @@ internal sealed class TemplatedParentNode : SourceNode
         throw new InvalidOperationException("Cannot find a StyledElement to get a TemplatedParent.");
     }
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (source is StyledElement newElement)
         {
             newElement.PropertyChanged += OnPropertyChanged;

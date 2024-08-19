@@ -21,6 +21,7 @@ namespace Avalonia.Android
         private readonly ViewImpl _view;
 
         private IDisposable? _timerSubscription;
+        private bool _surfaceCreated;
 
         public AvaloniaView(Context context) : base(context)
         {
@@ -32,6 +33,18 @@ namespace Avalonia.Android
 
             this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
+
+            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+        }
+
+        private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
+        {
+            _surfaceCreated = true;
+
+            if (Visibility == ViewStates.Visible)
+            {
+                OnVisibilityChanged(true);
+            }
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
@@ -43,9 +56,10 @@ namespace Avalonia.Android
             set { _root.Content = value; }
         }
 
-        protected override void Dispose(bool disposing)
+        internal new void Dispose()
         {
-            base.Dispose(disposing);
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
             _root?.Dispose();
             _root = null!;
         }
@@ -68,9 +82,11 @@ namespace Avalonia.Android
             OnVisibilityChanged(visibility == ViewStates.Visible);
         }
 
-        private void OnVisibilityChanged(bool isVisible)
+        internal void OnVisibilityChanged(bool isVisible)
         {
-            if (isVisible)
+            if (_root == null || !_surfaceCreated)
+                return;
+            if (isVisible && _timerSubscription == null)
             {
                 if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
                 {
@@ -84,10 +100,11 @@ namespace Avalonia.Android
                     (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
                 }
             }
-            else
+            else if (!isVisible && _timerSubscription != null)
             {
                 _root.StopRendering();
                 _timerSubscription?.Dispose();
+                _timerSubscription = null;
             }
         }
         
@@ -104,6 +121,7 @@ namespace Avalonia.Android
                 var settings =
                     AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
                 settings?.OnViewConfigurationChanged(context);
+                ((AndroidScreens)_view.TryGetFeature<IScreenImpl>()!).OnChanged();
             }
         }
 

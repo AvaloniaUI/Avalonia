@@ -19,6 +19,7 @@ using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
+using NuGet.Configuration;
 using Nuke.Common.IO;
 
 /*
@@ -39,7 +40,8 @@ partial class Build : NukeBuild
     [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
     Tool ApiGenTool;
 
-
+    [PackageExecutable("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
+    Tool IlRepackTool;
     
     protected override void OnBuildInitialized()
     {
@@ -306,7 +308,8 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
-                                                       Parameters.Version + ".nupkg");
+                                                       Parameters.Version + ".nupkg",
+                                                       IlRepackTool);
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
             EnsureCleanDirectory(Parameters.NugetRoot);
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
@@ -366,6 +369,9 @@ partial class Build : NukeBuild
         {
             if (!Parameters.IsPackingToLocalCache)
                 throw new InvalidOperationException();
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(
+                Settings.LoadDefaultSettings(RootDirectory));
             
             foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
             {
@@ -376,11 +382,11 @@ partial class Build : NukeBuild
                     .Elements().First(x => x.Name.LocalName == "metadata")
                     .Elements().First(x => x.Name.LocalName == "id").Value;
 
-                var packagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".nuget",
-                    "packages",
+                var packagePath = Path.Combine(
+                    globalPackagesFolder,
                     packageId.ToLowerInvariant(),
                     BuildParameters.LocalBuildVersion);
+
                 if (Directory.Exists(packagePath))
                     Directory.Delete(packagePath, true);
                 Directory.CreateDirectory(packagePath);

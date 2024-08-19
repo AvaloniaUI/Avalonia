@@ -420,19 +420,6 @@ namespace Avalonia
             }
         }
 
-        internal StyleDiagnostics GetStyleDiagnosticsInternal()
-        {
-            var styles = new List<AppliedStyle>();
-
-            foreach (var frame in GetValueStore().Frames)
-            {
-                if (frame is IStyleInstance style)
-                    styles.Add(new(style));
-            }
-
-            return new StyleDiagnostics(styles);
-        }
-
         /// <inheritdoc/>
         void ILogical.NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {

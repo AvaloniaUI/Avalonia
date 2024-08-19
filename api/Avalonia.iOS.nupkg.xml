@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.iOS.UIViewControlHandle.get_HandleDescriptor</Target>
+    <Left>baseline/net8.0-tvos17.0/Avalonia.iOS.dll</Left>
+    <Right>target/net8.0-tvos17.0/Avalonia.iOS.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:Avalonia.iOS.UIViewControlHandle</Target>
+    <Left>baseline/net8.0-tvos17.0/Avalonia.iOS.dll</Left>
+    <Right>target/net8.0-tvos17.0/Avalonia.iOS.dll</Right>
+  </Suppression>
+</Suppressions>

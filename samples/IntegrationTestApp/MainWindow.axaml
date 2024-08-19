@@ -2,13 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:integrationTestApp="using:IntegrationTestApp"
+        xmlns:vm="using:IntegrationTestApp.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
-        Name="MainWindow"
         Icon="/Assets/icon.ico"
         Title="IntegrationTestApp"
-        x:DataType="integrationTestApp:MainWindow">
+        x:DataType="vm:MainWindowViewModel">
   <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="File">
@@ -19,181 +18,34 @@
       <NativeMenuItem Header="View">
         <NativeMenu/>
       </NativeMenuItem>
-      <NativeMenuItem Header="_Options">
+      <NativeMenuItem Header="_Options"> 
         <NativeMenu/>
       </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>
-  <DockPanel>
+  <DockPanel Background="{DynamicResource SystemRegionBrush}">
     <NativeMenuBar DockPanel.Dock="Top"/>
     <StackPanel DockPanel.Dock="Bottom" Margin="4" Orientation="Horizontal">
       <TextBlock Margin="0,0,4,0">WindowState:</TextBlock>
-      <TextBlock Name="MainWindowState" Text="{Binding WindowState}"/>
+      <TextBlock Name="MainWindowState" Text="{Binding $parent[Window].WindowState}"/>
       <TextBlock Name="AppOverlayPopups" Margin="8 0"/>
     </StackPanel>
+
+    <DockPanel>
+      <ListBox Name="Pager"
+               DockPanel.Dock="Left"
+               DisplayMemberBinding="{Binding Name}"
+               ItemsSource="{Binding Pages}"
+               SelectedItem="{Binding SelectedPage}"
+               SelectionChanged="Pager_SelectionChanged">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel/>
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+      </ListBox>
+      <Decorator Name="PagerContent"/>
+    </DockPanel>
     
-    <TabControl TabStripPlacement="Left" Name="MainTabs">
-      <TabItem Header="Automation">
-        <StackPanel>
-          <TextBlock Name="TextBlockWithName">TextBlockWithName</TextBlock>
-          <TextBlock Name="NotTheAutomationId" AutomationProperties.AutomationId="TextBlockWithNameAndAutomationId">
-            TextBlockWithNameAndAutomationId
-          </TextBlock>
-          <TextBlock Name="TextBlockAsLabel">Label for TextBox</TextBlock>
-          <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}">
-            Foo
-          </TextBox>
-        </StackPanel>
-      </TabItem>
-      
-      <TabItem Header="Button">
-        <StackPanel>
-          <Button Name="DisabledButton" IsEnabled="False">
-            Disabled Button
-          </Button>
-          <Button Name="EffectivelyDisabledButton" Command="{ReflectionBinding DoesntExist}">
-            Effectively Disabled Button
-          </Button>
-          <Button Name="BasicButton">
-            Basic Button
-          </Button>
-          <Button Name="ButtonWithTextBlock">
-            <TextBlock>Button with TextBlock</TextBlock>
-          </Button>
-          <Button Name="ButtonWithAcceleratorKey" HotKey="Ctrl+B">Button with Accelerator Key</Button>
-        </StackPanel>
-      </TabItem>
-
-      <TabItem Header="RadioButton">
-        <StackPanel Orientation="Vertical">
-          <RadioButton Name="BasicRadioButton">Sample RadioButton</RadioButton>
-          <StackPanel Orientation="Vertical">
-            <RadioButton Name="ThreeStatesRadioButton1" IsChecked="True" IsThreeState="True">Three States: Option 1</RadioButton>
-            <RadioButton Name="ThreeStatesRadioButton2" IsChecked="False" IsThreeState="True">Three States: Option 2</RadioButton>
-          </StackPanel>
-        </StackPanel>
-      </TabItem>
-      
-      <TabItem Header="CheckBox">
-        <StackPanel>
-          <CheckBox Name="UncheckedCheckBox">Unchecked</CheckBox>
-          <CheckBox Name="CheckedCheckBox" IsChecked="True">Checked</CheckBox>
-          <CheckBox Name="ThreeStateCheckBox" IsThreeState="True" IsChecked="{x:Null}">ThreeState</CheckBox>
-        </StackPanel>
-      </TabItem>
-
-      <TabItem Header="ComboBox">
-        <StackPanel>
-          <ComboBox Name="BasicComboBox">
-            <ComboBoxItem>Item 0</ComboBoxItem>
-            <ComboBoxItem>Item 1</ComboBoxItem>
-          </ComboBox>
-          <CheckBox Name="ComboBoxWrapSelection" IsChecked="{Binding #BasicComboBox.WrapSelection}">Wrap Selection</CheckBox>
-          <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
-          <Button Name="ComboBoxSelectFirst">Select First</Button>
-        </StackPanel>
-      </TabItem>
-
-      <TabItem Header="Gestures">
-        <DockPanel>
-          <DockPanel DockPanel.Dock="Top">
-            <Button Name="ResetGestures" DockPanel.Dock="Right">Reset</Button>
-            <TextBlock Name="LastGesture" />
-          </DockPanel>
-          <Panel>
-            <Border Name="GestureBorder" Background="Blue"
-                    AutomationProperties.AccessibilityView="Content"
-                    AutomationProperties.ControlTypeOverride="Image"/>
-            <Border Name="GestureBorder2" Background="Green" IsVisible="False"
-                    AutomationProperties.AccessibilityView="Content"
-                    AutomationProperties.ControlTypeOverride="Image"/>
-          </Panel>
-        </DockPanel>
-      </TabItem>
-
-      <TabItem Header="ListBox">
-        <DockPanel>
-          <StackPanel DockPanel.Dock="Bottom">
-            <Button Name="ListBoxSelectionClear">Clear Selection</Button>
-          </StackPanel>
-          <ListBox Name="BasicListBox" ItemsSource="{Binding ListBoxItems}" SelectionMode="Multiple"/>
-        </DockPanel>
-      </TabItem>
-      
-      <TabItem Header="Menu">
-        <DockPanel>
-          <Menu DockPanel.Dock="Top">
-            <MenuItem Name="RootMenuItem" Header="_Root">
-              <MenuItem Name="Child1MenuItem" Header="_Child 1" InputGesture="Ctrl+O" Click="MenuClicked"/>
-              <MenuItem Name="Child2MenuItem" Header="C_hild 2">
-                <MenuItem Name="GrandchildMenuItem" Header="_Grandchild" Click="MenuClicked"/>
-              </MenuItem>
-            </MenuItem>
-          </Menu>
-          <StackPanel>
-            <TextBlock Name="ClickedMenuItem">None</TextBlock>
-            <Button Name="MenuClickedMenuItemReset">Reset</Button>
-            <TextBox Name="MenuFocusTest"/>
-          </StackPanel>
-        </DockPanel>
-      </TabItem>
-      
-      <TabItem Header="Window">
-        <Grid ColumnDefinitions="*,8,*">
-          <StackPanel Grid.Column="0">
-            <TextBox Name="ShowWindowSize" Watermark="Window Size"/>
-            <ComboBox Name="ShowWindowMode" SelectedIndex="0">
-              <ComboBoxItem>NonOwned</ComboBoxItem>
-              <ComboBoxItem>Owned</ComboBoxItem>
-              <ComboBoxItem>Modal</ComboBoxItem>
-            </ComboBox>
-            <ComboBox Name="ShowWindowLocation" SelectedIndex="0">
-              <ComboBoxItem>Manual</ComboBoxItem>
-              <ComboBoxItem>CenterScreen</ComboBoxItem>
-              <ComboBoxItem>CenterOwner</ComboBoxItem>
-            </ComboBox>
-            <ComboBox Name="ShowWindowState" SelectedIndex="0">
-              <ComboBoxItem Name="ShowWindowStateNormal">Normal</ComboBoxItem>
-              <ComboBoxItem Name="ShowWindowStateMinimized">Minimized</ComboBoxItem>
-              <ComboBoxItem Name="ShowWindowStateMaximized">Maximized</ComboBoxItem>
-              <ComboBoxItem Name="ShowWindowStateFullScreen">FullScreen</ComboBoxItem>
-            </ComboBox>
-            <ComboBox Name="ShowWindowSystemDecorations" SelectedIndex="2">
-              <ComboBoxItem Name="ShowWindowSystemDecorationsNone">None</ComboBoxItem>
-              <ComboBoxItem Name="ShowWindowSystemDecorationsBorderOnly">BorderOnly</ComboBoxItem>
-              <ComboBoxItem Name="ShowWindowSystemDecorationsFull">Full</ComboBoxItem>
-            </ComboBox>
-            <CheckBox Name="ShowWindowExtendClientAreaToDecorationsHint">ExtendClientAreaToDecorationsHint</CheckBox>
-            <CheckBox Name="ShowWindowCanResize" IsChecked="True">Can Resize</CheckBox>
-            <Button Name="ShowWindow">Show Window</Button>
-            <Button Name="SendToBack">Send to Back</Button>
-            <Button Name="EnterFullscreen">Enter Fullscreen</Button>
-            <Button Name="ExitFullscreen">Exit Fullscreen</Button>
-            <Button Name="RestoreAll">Restore All</Button>
-          </StackPanel>
-          <StackPanel Grid.Column="2">
-            <Button Name="ShowTransparentWindow">Transparent Window</Button>
-            <Button Name="ShowTransparentPopup">Transparent Popup</Button>
-          </StackPanel>
-        </Grid>
-      </TabItem>
-      
-      <TabItem Header="Slider">
-          <DockPanel>
-            <DockPanel DockPanel.Dock="Top">
-              <TextBox Name="HorizontalSliderValue"
-                       DockPanel.Dock="Right"
-                       Text="{Binding #HorizontalSlider.Value, Mode=OneWay, StringFormat=\{0:0\}}"
-                       VerticalAlignment="Top"/>
-              <Slider Name="HorizontalSlider" Value="50"/>
-            </DockPanel>
-            <Button Name="ResetSliders">Reset</Button>
-          </DockPanel>
-      </TabItem>
-      
-      <TabItem Header="ScrollBar">
-        <ScrollBar Name="MyScrollBar" Orientation="Horizontal" AllowAutoHide="False" Width="200" Height="30" Value="20"/>
-      </TabItem>
-    </TabControl>
   </DockPanel>
 </Window>

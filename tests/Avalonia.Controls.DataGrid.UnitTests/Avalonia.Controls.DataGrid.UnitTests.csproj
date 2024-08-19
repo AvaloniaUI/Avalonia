@@ -3,6 +3,7 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
+    <RootNamespace>Avalonia.Controls.DataGridTests</RootNamespace>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />

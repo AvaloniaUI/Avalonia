@@ -108,6 +108,24 @@ public class AvaloniaIntrinsicsTests : XamlTestBase
             Assert.Contains(contains, runtimeXamlDiagnostic.Title, StringComparison.OrdinalIgnoreCase);
         }
     }
+
+    /// <summary>
+    /// GitHub Issue <see href="https://github.com/AvaloniaUI/Avalonia/issues/15320">#15320</see>
+    /// </summary>
+    [Fact]
+    public void Should_Parse_Formatted_Color_Tag()
+    {
+        var target = AvaloniaRuntimeXamlLoader
+                .Parse<ResourceDictionary>($"""
+                                            <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                                                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                                                <Color x:Key="ColorKey">
+                                                    White
+                                                </Color>
+                                            </ResourceDictionary>
+                                            """);
+        Assert.NotNull(target);
+    }
 }
 
 public class TestIntrinsicsControl : Control

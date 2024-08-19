@@ -34,8 +34,10 @@ namespace Avalonia.Controls
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public class Button : ContentControl, ICommandSource, IClickableControl
     {
-        private const string pcPressed    = ":pressed";
+        private const string pcPressed = ":pressed";
         private const string pcFlyoutOpen = ":flyout-open";
+        private EventHandler? _canExecuteChangeHandler = default;
+        private EventHandler CanExecuteChangedHandler => _canExecuteChangeHandler ??= new(CanExecuteChanged);
 
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
@@ -250,10 +252,11 @@ namespace Avalonia.Controls
 
             base.OnAttachedToLogicalTree(e);
 
-            if (Command != null)
+            (var command, var parameter) = (Command, CommandParameter);
+            if (command is not null)
             {
-                Command.CanExecuteChanged += CanExecuteChanged;
-                CanExecuteChanged(this, EventArgs.Empty);
+                command.CanExecuteChanged += CanExecuteChangedHandler;
+                CanExecuteChanged(command, parameter);
             }
         }
 
@@ -269,9 +272,9 @@ namespace Avalonia.Controls
 
             base.OnDetachedFromLogicalTree(e);
 
-            if (Command != null)
+            if (Command is { } command)
             {
-                Command.CanExecuteChanged -= CanExecuteChanged;
+                command.CanExecuteChanged -= CanExecuteChangedHandler;
             }
         }
 
@@ -286,8 +289,9 @@ namespace Avalonia.Controls
                     OnClick();
                     e.Handled = true;
                     break;
-
                 case Key.Space:
+                    // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+                    if (IsFocused)
                     {
                         if (ClickMode == ClickMode.Press)
                         {
@@ -296,22 +300,21 @@ namespace Avalonia.Controls
 
                         IsPressed = true;
                         e.Handled = true;
-                        break;
                     }
-
+                    break;
                 case Key.Escape when Flyout != null:
                     // If Flyout doesn't have focusable content, close the flyout here
                     CloseFlyout();
                     break;
             }
-
             base.OnKeyDown(e);
         }
 
         /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (e.Key == Key.Space)
+            // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+            if (e.Key == Key.Space && IsFocused)
             {
                 if (ClickMode == ClickMode.Release)
                 {
@@ -343,9 +346,10 @@ namespace Avalonia.Controls
                 var e = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(e);
 
-                if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
+                (var command, var parameter) = (Command, CommandParameter);
+                if (!e.Handled && command is not null && command.CanExecute(parameter))
                 {
-                    Command.Execute(CommandParameter);
+                    command.Execute(parameter);
                     e.Handled = true;
                 }
             }
@@ -390,12 +394,22 @@ namespace Avalonia.Controls
 
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                IsPressed = true;
-                e.Handled = true;
-
-                if (ClickMode == ClickMode.Press)
+                if (_isFlyoutOpen && IsEffectivelyEnabled)
                 {
+                    // When a flyout is open with OverlayDismissEventPassThrough enabled and the button is pressed,
+                    // close the flyout, but do not transition to a pressed state
+                    e.Handled = true;
                     OnClick();
+                }
+                else
+                {
+                    IsPressed = true;
+                    e.Handled = true;
+
+                    if (ClickMode == ClickMode.Press)
+                    {
+                        OnClick();
+                    }
                 }
             }
         }
@@ -451,25 +465,24 @@ namespace Avalonia.Controls
 
             if (change.Property == CommandProperty)
             {
+                var (oldValue, newValue) = change.GetOldAndNewValue<ICommand?>();
                 if (((ILogical)this).IsAttachedToLogicalTree)
                 {
-                    var (oldValue, newValue) = change.GetOldAndNewValue<ICommand?>();
                     if (oldValue is ICommand oldCommand)
                     {
-                        oldCommand.CanExecuteChanged -= CanExecuteChanged;
+                        oldCommand.CanExecuteChanged -= CanExecuteChangedHandler;
                     }
 
                     if (newValue is ICommand newCommand)
                     {
-                        newCommand.CanExecuteChanged += CanExecuteChanged;
+                        newCommand.CanExecuteChanged += CanExecuteChangedHandler;
                     }
                 }
-
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(newValue, CommandParameter);
             }
             else if (change.Property == CommandParameterProperty)
             {
-                CanExecuteChanged(this, EventArgs.Empty);
+                CanExecuteChanged(Command, change.NewValue);
             }
             else if (change.Property == IsCancelProperty)
             {
@@ -557,7 +570,18 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void CanExecuteChanged(object? sender, EventArgs e)
         {
-            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+            CanExecuteChanged(Command, CommandParameter);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private void CanExecuteChanged(ICommand? command, object? parameter)
+        {
+            if (!((ILogical)this).IsAttachedToLogicalTree)
+            {
+                return;
+            }
+
+            var canExecute = command == null || command.CanExecute(parameter);
 
             if (canExecute != _commandCanExecute)
             {

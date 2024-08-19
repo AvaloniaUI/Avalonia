@@ -130,6 +130,9 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
+      <TabItem Header="OpenGL Lease">
+        <pages:OpenGlLeasePage />
+      </TabItem>
       <TabItem Header="Platform Information">
         <pages:PlatformInfoPage />
       </TabItem>
@@ -195,6 +198,9 @@
       </TabItem>
       <TabItem Header="HeaderedContentControl">
         <pages:HeaderedContentPage />
+      </TabItem>
+      <TabItem Header="Screens">
+        <pages:ScreenPage />
       </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>
