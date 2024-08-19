@@ -305,8 +305,8 @@ namespace Avalonia.Markup.UnitTests.Data
             [InlineData(false)]
             public void Should_Log_Invalid_TargetNullValue(bool rooted)
             {
-                var target = new Decorator { };
-                var binding = new Binding() { TargetNullValue = "foo" };
+                var target = new Decorator { DataContext = new { Bar = (string?) null }  };
+                var binding = new Binding("Bar") { TargetNullValue = "foo" };
 
                 if (rooted)
                     new TestRoot(target);
@@ -314,7 +314,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 // An invalid target null value is invalid whether the control is rooted or not.
                 using (AssertLog(
                     target,
-                    "",
+                    binding.Path,
                     "Could not convert TargetNullValue 'foo' to 'System.Double'.",
                     level: LogEventLevel.Error,
                     property: Visual.OpacityProperty))
