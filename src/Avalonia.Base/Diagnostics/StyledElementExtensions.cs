@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Diagnostics;
+using Avalonia.Metadata;
+
+namespace Avalonia.Diagnostics;
 
 /// <summary>
 /// Defines diagnostic extensions on <see cref="StyledElement"/>s.
 /// </summary>
+[PrivateApi]
 public static class StyledElementExtensions
 {
     /// <summary>
