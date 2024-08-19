@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -18,6 +20,26 @@ namespace Avalonia.Controls
         private bool _queuedForMoveResize;
         private readonly List<Visual> _propertyChangedSubscriptions = new();
 
+        static NativeControlHost()
+        {
+            FlowDirectionProperty.Changed.AddClassHandler<NativeControlHost>(OnFlowDirectionChanged);
+        }
+
+        internal IPlatformHandle? NativeControlHandle
+        {
+            get => _nativeControlHandle;
+            set
+            {
+                if (_nativeControlHandle != value)
+                {
+                    _nativeControlHandle = value;
+                    NativeControlHandleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        internal event EventHandler? NativeControlHandleChanged;
+
         /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -32,6 +54,12 @@ namespace Avalonia.Controls
             }
 
             UpdateHost();
+        }
+        
+        private static void OnFlowDirectionChanged(NativeControlHost nativeControlHost,
+            AvaloniaPropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            nativeControlHost.TryUpdateNativeControlPosition();
         }
 
         private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -76,20 +104,20 @@ namespace Avalonia.Controls
                 }
 
                 // If there is no attachment, but the control exists,
-                // attempt to attach to to the current toplevel or destroy the control if it's incompatible
-                if (_attachment == null && _nativeControlHandle != null)
+                // attempt to attach to the current toplevel or destroy the control if it's incompatible
+                if (_attachment == null && NativeControlHandle != null)
                 {
-                    if (_currentHost.IsCompatibleWith(_nativeControlHandle))
-                        _attachment = _currentHost.CreateNewAttachment(_nativeControlHandle);
+                    if (_currentHost.IsCompatibleWith(NativeControlHandle))
+                        _attachment = _currentHost.CreateNewAttachment(NativeControlHandle);
                     else
                         DestroyNativeControl();
                 }
 
                 // There is no control handle an no attachment, create both
-                if (_nativeControlHandle == null)
+                if (NativeControlHandle == null)
                 {
                     _attachment = _currentHost.CreateNewAttachment(parent =>
-                        _nativeControlHandle = CreateNativeControlCore(parent));
+                        NativeControlHandle = CreateNativeControlCore(parent));
                 }
             }
             else
@@ -99,7 +127,7 @@ namespace Avalonia.Controls
                     _attachment.AttachedTo = null;
                 
                 // Don't destroy the control immediately, it might be just being reparented to another TopLevel
-                if (_nativeControlHandle != null && !_queuedForDestruction)
+                if (NativeControlHandle != null && !_queuedForDestruction)
                 {
                     _queuedForDestruction = true;
                     Dispatcher.UIThread.Post(CheckDestruction, DispatcherPriority.Background);
@@ -118,10 +146,12 @@ namespace Avalonia.Controls
             Debug.Assert(_currentRoot is not null);
 
             var bounds = Bounds;
-            var position = this.TranslatePoint(default, _currentRoot);
-            if (position == null)
+            // Native window is not rendered by Avalonia
+            var transformToVisual = this.TransformToVisual(_currentRoot);
+            if (transformToVisual == null)
                 return null;
-            return new Rect(position.Value, bounds.Size);
+            var position = new Rect(default, bounds.Size).TransformToAABB(transformToVisual.Value).Position;
+            return new Rect(position, bounds.Size);
         }
 
         private void EnqueueForMoveResize()
@@ -166,20 +196,24 @@ namespace Avalonia.Controls
 
         private void DestroyNativeControl()
         {
-            if (_nativeControlHandle != null)
+            if (NativeControlHandle != null)
             {
                 _attachment?.Dispose();
                 _attachment = null;
                 
-                DestroyNativeControlCore(_nativeControlHandle);
-                _nativeControlHandle = null;
+                DestroyNativeControlCore(NativeControlHandle);
+                NativeControlHandle = null;
             }
         }
 
         protected virtual void DestroyNativeControlCore(IPlatformHandle control)
         {
-            ((INativeControlHostDestroyableControlHandle)control).Destroy();
+            if (control is INativeControlHostDestroyableControlHandle nativeControlHostDestroyableControlHandle)
+            {
+                nativeControlHostDestroyableControlHandle.Destroy();
+            }
         }
-        
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new NativeControlHostPeer(this);
     }
 }

@@ -40,7 +40,9 @@
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Header}"
-                ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                RecognizesAccessKey="True"
+                />
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
                     CornerRadius="{DynamicResource ControlCornerRadius}"

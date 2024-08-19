@@ -21,7 +21,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             // - The property has a single value
             if (node is XamlPropertyAssignmentNode prop &&
                 prop.Property is XamlIlAvaloniaProperty avaloniaProperty &&
-                context.ParentNodes().Any(IsControlTemplate) &&
+                context.ParentNodes().Any(c => c is AvaloniaXamlIlTargetTypeMetadataNode
+                {
+                    ScopeType: AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate
+                }) &&
                 prop.Values.Count == 1)
             {
                 var priorityValueSetters = new List<IXamlPropertySetter>();
@@ -47,12 +50,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return node;
-        }
-
-        private static bool IsControlTemplate(IXamlAstNode node)
-        {
-            return node is AvaloniaXamlIlTargetTypeMetadataNode tt &&
-                tt.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate;
         }
     }
 }

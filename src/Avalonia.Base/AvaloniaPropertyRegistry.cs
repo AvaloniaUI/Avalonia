@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Avalonia
 {
@@ -38,6 +41,53 @@ namespace Avalonia
         /// </summary>
         internal IReadOnlyCollection<AvaloniaProperty> Properties => _properties.Values;
 
+        private object _unregisteringLocker = new object();
+        /// <summary>
+        /// Unregister all<see cref="AvaloniaProperty"/>s registered on types
+        /// </summary>
+        /// <param name="types"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public bool UnregisterByModule(IEnumerable<Type> types)
+        {
+            _ = types ?? throw new ArgumentNullException(nameof(types));
+
+            lock (_unregisteringLocker)
+            {
+                try
+                {
+                    foreach (var type in types)
+                    {
+                        Unregister(_registered, type);
+                        Unregister(_attached, type);
+                        Unregister(_direct, type);
+                        Unregister(_registeredCache,type);
+                        Unregister(_attachedCache,type);
+                        Unregister(_directCache,type);
+                        Unregister(_inheritedCache,type);
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        private void Unregister( Dictionary<Type, List<AvaloniaProperty>> dictionary,Type type)
+        {
+            dictionary.Remove(type);
+        }
+        private void Unregister( Dictionary<Type, Dictionary<int, AvaloniaProperty>> dictionary,Type type)
+        {
+            foreach (var keyValuePair in dictionary)
+            {
+                foreach (var key in keyValuePair.Value)
+                {
+                    key.Value.Unregister(type);
+                }
+            }
+        }
         /// <summary>
         /// Gets all non-attached <see cref="AvaloniaProperty"/>s registered on a type.
         /// </summary>
@@ -47,7 +97,6 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegistered(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
             if (_registeredCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -55,21 +104,20 @@ namespace Avalonia
 
             var t = type;
             result = new List<AvaloniaProperty>();
-
-            while (t != null)
+            lock (_unregisteringLocker)
             {
-                // Ensure the type's static ctor has been run.
-                RuntimeHelpers.RunClassConstructor(t.TypeHandle);
-
-                if (_registered.TryGetValue(t, out var registered))
+                while (t != null)
                 {
-                    result.AddRange(registered.Values);
+                    // Ensure the type's static ctor has been run.
+                    RuntimeHelpers.RunClassConstructor(t.TypeHandle);
+                    if (_registered.TryGetValue(t, out var registered))
+                    {
+                        result.AddRange(registered.Values);
+                    }
+                    t = t.BaseType;
                 }
-
-                t = t.BaseType;
+                _registeredCache.Add(type, result);
             }
-
-            _registeredCache.Add(type, result);
             return result;
         }
 
@@ -81,7 +129,6 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegisteredAttached(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
             if (_attachedCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -89,18 +136,18 @@ namespace Avalonia
 
             var t = type;
             result = new List<AvaloniaProperty>();
-
-            while (t != null)
+            lock (_unregisteringLocker)
             {
-                if (_attached.TryGetValue(t, out var attached))
+                while (t != null)
                 {
-                    result.AddRange(attached.Values);
+                    if (_attached.TryGetValue(t, out var attached))
+                    {
+                        result.AddRange(attached.Values);
+                    }
+                    t = t.BaseType;
                 }
-
-                t = t.BaseType;
+                _attachedCache.Add(type, result);
             }
-
-            _attachedCache.Add(type, result);
             return result;
         }
 
@@ -112,7 +159,6 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegisteredDirect(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
             if (_directCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -120,18 +166,18 @@ namespace Avalonia
 
             var t = type;
             result = new List<AvaloniaProperty>();
-
-            while (t != null)
+            lock (_unregisteringLocker)
             {
-                if (_direct.TryGetValue(t, out var direct))
+                while (t != null)
                 {
-                    result.AddRange(direct.Values);
+                    if (_direct.TryGetValue(t, out var direct))
+                    {
+                        result.AddRange(direct.Values);
+                    }
+                    t = t.BaseType;
                 }
-
-                t = t.BaseType;
+                _directCache.Add(type, result);
             }
-
-            _directCache.Add(type, result);
             return result;
         }
 
@@ -143,7 +189,6 @@ namespace Avalonia
         public IReadOnlyList<AvaloniaProperty> GetRegisteredInherited(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
-
             if (_inheritedCache.TryGetValue(type, out var result))
             {
                 return result;
@@ -182,7 +227,11 @@ namespace Avalonia
                 }
             }
 
-            _inheritedCache.Add(type, result);
+            lock (_unregisteringLocker)
+            {
+                _inheritedCache.Add(type, result);
+            }
+            
             return result;
         }
 
@@ -211,7 +260,7 @@ namespace Avalonia
             DirectPropertyBase<T> property)
         {
             return FindRegisteredDirect(o, property) ??
-                throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
+                   throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
         }
 
         /// <summary>
@@ -371,41 +420,44 @@ namespace Avalonia
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
             _ = property ?? throw new ArgumentNullException(nameof(property));
-
-            if (!_registered.TryGetValue(type, out var inner))
+            lock (_unregisteringLocker)
             {
-                inner = new Dictionary<int, AvaloniaProperty>();
-                inner.Add(property.Id, property);
-                _registered.Add(type, inner);
-            }
-            else if (!inner.ContainsKey(property.Id))
-            {
-                inner.Add(property.Id, property);
-            }
-
-            if (property.IsDirect)
-            {
-                if (!_direct.TryGetValue(type, out inner))
+                if (!_registered.TryGetValue(type, out var inner))
                 {
                     inner = new Dictionary<int, AvaloniaProperty>();
                     inner.Add(property.Id, property);
-                    _direct.Add(type, inner);
+                    _registered.Add(type, inner);
                 }
                 else if (!inner.ContainsKey(property.Id))
                 {
                     inner.Add(property.Id, property);
                 }
 
-                _directCache.Clear();
-            }
+                if (property.IsDirect)
+                {
+                    if (!_direct.TryGetValue(type, out inner))
+                    {
+                        inner = new Dictionary<int, AvaloniaProperty>();
+                        inner.Add(property.Id, property);
+                        _direct.Add(type, inner);
+                    }
+                    else if (!inner.ContainsKey(property.Id))
+                    {
+                        inner.Add(property.Id, property);
+                    }
 
-            if (!_properties.ContainsKey(property.Id))
-            {
-                _properties.Add(property.Id, property);
+                    _directCache.Clear();
+                }
+
+                if (!_properties.ContainsKey(property.Id))
+                {
+                    _properties.Add(property.Id, property);
+                }
+            
+                _registeredCache.Clear();
+                _inheritedCache.Clear();
             }
             
-            _registeredCache.Clear();
-            _inheritedCache.Clear();
         }
 
         /// <summary>
@@ -422,26 +474,29 @@ namespace Avalonia
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
             _ = property ?? throw new ArgumentNullException(nameof(property));
-
+            
             if (!property.IsAttached)
             {
                 throw new InvalidOperationException(
                     "Cannot register a non-attached property as attached.");
             }
-
-            if (!_attached.TryGetValue(type, out var inner))
+            lock (_unregisteringLocker)
             {
-                inner = new Dictionary<int, AvaloniaProperty>();
-                inner.Add(property.Id, property);
-                _attached.Add(type, inner);
-            }
-            else
-            {
-                inner.Add(property.Id, property);
-            }
+                if (!_attached.TryGetValue(type, out var inner))
+                {
+                    inner = new Dictionary<int, AvaloniaProperty>();
+                    inner.Add(property.Id, property);
+                    _attached.Add(type, inner);
+                }
+                else
+                {
+                    inner.Add(property.Id, property);
+                }
             
-            _attachedCache.Clear();
-            _inheritedCache.Clear();
+                _attachedCache.Clear();
+                _inheritedCache.Clear();
+            }
+           
         }
     }
 }

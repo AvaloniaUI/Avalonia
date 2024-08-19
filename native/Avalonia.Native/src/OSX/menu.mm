@@ -1,4 +1,5 @@
 
+
 #include "common.h"
 #include "menu.h"
 #include "KeyTransform.h"
@@ -201,6 +202,17 @@ HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
     @autoreleasepool
     {
         [_native setState:(isChecked && _isCheckable ? NSOnState : NSOffState)];
+        return S_OK;
+    }
+}
+
+HRESULT AvnAppMenuItem::SetIsVisible (bool isVisible)
+{
+    START_COM_CALL;
+    
+    @autoreleasepool
+    {
+        [_native setHidden:!isVisible];
         return S_OK;
     }
 }

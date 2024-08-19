@@ -1,7 +1,6 @@
 using System;
 using Foundation;
 using Avalonia.Controls.ApplicationLifetimes;
-
 using UIKit;
 
 namespace Avalonia.iOS
@@ -15,7 +14,7 @@ namespace Avalonia.iOS
     public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate
         where TApp : Application, new()
     {
-        private EventHandler<ActivatedEventArgs> _onActivated, _onDeactivated;
+        private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
 
         public AvaloniaAppDelegate()
         {
@@ -33,20 +32,22 @@ namespace Avalonia.iOS
             add { _onDeactivated += value; }
             remove { _onDeactivated -= value; }
         }
-        
+
+        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS();
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
-        
+
         [Export("window")]
-        public UIWindow Window { get; set; }
+        public UIWindow? Window { get; set; }
 
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
-            var builder = AppBuilder.Configure<TApp>().UseiOS();
+            var builder = CreateAppBuilder();
+            builder = CustomizeAppBuilder(builder);
 
-            var lifetime = new SingleViewLifetime(this);
+            var lifetime = new SingleViewLifetime();
 
-            builder.AfterSetup(_ =>
+            builder.AfterApplicationSetup(_ =>
             {
                 Window = new UIWindow();
 
@@ -60,11 +61,9 @@ namespace Avalonia.iOS
                 view.InitWithController(controller);
             });
 
-            CustomizeAppBuilder(builder);
-
             builder.SetupWithLifetime(lifetime);
 
-            Window.MakeKeyAndVisible();
+            Window!.MakeKeyAndVisible();
 
             return true;
         }
@@ -74,7 +73,16 @@ namespace Avalonia.iOS
         {
             if (Uri.TryCreate(url.ToString(), UriKind.Absolute, out var uri))
             {
-                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(ActivationKind.OpenUri, uri));
+#if !TVOS
+                if (uri.Scheme == Uri.UriSchemeFile)
+                {
+                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new[] { Storage.IOSStorageItem.CreateItem(url) }));
+                }
+                else
+#endif
+                {
+                    _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));   
+                }
                 return true;
             }
 

@@ -139,7 +139,7 @@
               <ContentPresenter x:Name="PART_ContentPresenter"
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
-              <Rectangle Name="LightDismissLayer"/>
+              <Rectangle Name="LightDismissLayer" IsVisible="False"/>
             </Panel>
 
           </Grid>
@@ -237,7 +237,7 @@
       </Style>
     </Style>
 
-    <Style Selector="^:lightdismiss /template/ Rectangle#LightDismissLayer">
+    <Style Selector="^:lightDismiss /template/ Rectangle#LightDismissLayer">
       <Setter Property="Fill" Value="{DynamicResource SplitViewLightDismissOverlayBackground}" />
     </Style>
     <Style Selector="^:overlay:open /template/ Rectangle#LightDismissLayer">

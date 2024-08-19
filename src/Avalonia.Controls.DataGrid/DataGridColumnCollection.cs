@@ -12,7 +12,6 @@ namespace Avalonia.Controls
 {
     internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
     {
-        private readonly Dictionary<int, int> _columnsMap = new Dictionary<int, int>();
         private readonly DataGrid _owningGrid;
 
         public DataGridColumnCollection(DataGrid owningGrid)
@@ -237,7 +236,8 @@ namespace Avalonia.Controls
 
         protected override void SetItem(int columnIndex, DataGridColumn dataGridColumn)
         {
-            throw new NotSupportedException();
+            RemoveItem(columnIndex);
+            InsertItem(columnIndex, dataGridColumn);
         }
 
         internal bool DisplayInOrder(int columnIndex1, int columnIndex2)
@@ -279,12 +279,10 @@ namespace Avalonia.Controls
             VisibleStarColumnCount = 0;
             VisibleEdgedColumnsWidth = 0;
             VisibleColumnCount = 0;
-            _columnsMap.Clear();
 
             for (int columnIndex = 0; columnIndex < ItemsInternal.Count; columnIndex++)
             {
                 var item = ItemsInternal[columnIndex];
-                _columnsMap[columnIndex] = item.DisplayIndex;
                 if (item.IsVisible)
                 {
                     VisibleColumnCount++;
@@ -296,11 +294,6 @@ namespace Avalonia.Controls
                     VisibleEdgedColumnsWidth += item.ActualWidth;
                 }
             }
-        }
-
-        internal int GetColumnDisplayIndex(int columnIndex)
-        {
-            return _columnsMap.TryGetValue(columnIndex, out var displayIndex) ? displayIndex : -1;
         }
 
         internal DataGridColumn GetColumnAtDisplayIndex(int displayIndex)

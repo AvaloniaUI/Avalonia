@@ -1,6 +1,8 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -28,7 +30,12 @@ namespace Avalonia.Native
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result = new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
+            var factoryProxy = MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true);
+
+            AvaloniaLocator.CurrentMutable.Bind<IAvaloniaNativeFactory>().ToConstant(factoryProxy);
+            
+            var result = new AvaloniaNativePlatform(factoryProxy);
+            
             result.DoInitialize(options);
 
             return result;
@@ -100,9 +107,9 @@ namespace Avalonia.Native
             }
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>()
-                .ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
+                .Bind<IDispatcherImpl>().ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
+                .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
@@ -112,7 +119,9 @@ namespace Avalonia.Native
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
-                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
+                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()))
+                .Bind<IActivatableLifetime>().ToSingleton<MacOSActivatableLifetime>()
+                .Bind<IStorageProviderFactory>().ToConstant(new StorageProviderApi(_factory.CreateStorageProvider(), options.AppSandboxEnabled));
 
             var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
@@ -121,6 +130,14 @@ namespace Avalonia.Native
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
 
             AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
+
+            AvaloniaLocator.CurrentMutable.Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
+                    {
+                        { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
+                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
+                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
+                        { Key.Up , "↑" }
+                    }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"));
 
             foreach (var mode in _options.RenderingMode)
             {
@@ -136,15 +153,14 @@ namespace Avalonia.Native
                         // ignored
                     }
                 }
-#pragma warning disable CS0618
                 else if (mode == AvaloniaNativeRenderingMode.Metal)
-#pragma warning restore CS0618
                 {
                     try
                     {
                         var metal = new MetalPlatformGraphics(_factory);
                         metal.CreateContext().Dispose();
                         _platformGraphics = metal;
+                        break;
                     }
                     catch
                     {
@@ -161,6 +177,7 @@ namespace Avalonia.Native
             
 
             Compositor = new Compositor(_platformGraphics, true);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
 
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         }
@@ -184,6 +201,11 @@ namespace Avalonia.Native
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
+        }
+        
+        public ITopLevelImpl CreateEmbeddableTopLevel()
+        {
+            return new EmbeddableTopLevelImpl(_factory);
         }
     }
 }

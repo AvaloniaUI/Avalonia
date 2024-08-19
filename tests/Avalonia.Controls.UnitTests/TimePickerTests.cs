@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -52,11 +55,41 @@ namespace Avalonia.Controls.UnitTests
                 container = (desc.ElementAt(1) as Button).Content as Grid;
                 Assert.True(container != null);
 
-                var periodTextHost = container.Children[4] as Border;
+                var periodTextHost = container.Children[6] as Border;
                 Assert.True(periodTextHost != null);
                 Assert.True(periodTextHost.IsVisible);
 
                 timePicker.ClockIdentifier = "24HourClock";
+                Assert.False(periodTextHost.IsVisible);
+            }
+        }
+        
+        [Fact]
+        public void UseSeconds_Equals_False_Should_Hide_Seconds()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TimePicker timePicker = new TimePicker()
+                {
+                    UseSeconds = true,
+                    Template = CreateTemplate()
+                };
+                timePicker.ApplyTemplate();
+
+                var desc = timePicker.GetVisualDescendants();
+                Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
+                Grid container = null;
+
+                Assert.True(desc.ElementAt(1) is Button);
+
+                container = (desc.ElementAt(1) as Button).Content as Grid;
+                Assert.True(container != null);
+
+                var periodTextHost = container.Children[4] as Border;
+                Assert.True(periodTextHost != null);
+                Assert.True(periodTextHost.IsVisible);
+
+                timePicker.UseSeconds = false;
                 Assert.False(periodTextHost.IsVisible);
             }
         }
@@ -87,15 +120,20 @@ namespace Avalonia.Controls.UnitTests
                 var minuteTextHost = container.Children[2] as Border;
                 Assert.True(minuteTextHost != null);
                 var minuteText = minuteTextHost.Child as TextBlock;
+                var secondTextHost = container.Children[4] as Border;
+                Assert.True(secondTextHost != null);
+                var secondText = secondTextHost.Child as TextBlock;
 
                 TimeSpan ts = TimeSpan.FromHours(10);
                 timePicker.SelectedTime = ts;
-                Assert.False(hourText.Text == "hour");
-                Assert.False(minuteText.Text == "minute");
+                Assert.NotNull(hourText.Text);
+                Assert.NotNull(minuteText.Text);
+                Assert.NotNull(secondText.Text);
 
                 timePicker.SelectedTime = null;
-                Assert.True(hourText.Text == "hour");
-                Assert.True(minuteText.Text == "minute");
+                Assert.Null(hourText.Text);
+                Assert.Null(minuteText.Text);
+                Assert.Null(secondText.Text);
             }
         }
         
@@ -119,7 +157,7 @@ namespace Avalonia.Controls.UnitTests
                 var container = (desc.ElementAt(1) as Button).Content as Grid;
                 Assert.True(container != null);
 
-                var periodTextHost = container.Children[4] as Border;
+                var periodTextHost = container.Children[6] as Border;
                 Assert.NotNull(periodTextHost);
                 var periodText = periodTextHost.Child as TextBlock;
                 Assert.NotNull(periodTextHost);
@@ -130,6 +168,48 @@ namespace Avalonia.Controls.UnitTests
 
                 timePicker.SelectedTime = null;
                 Assert.False(string.IsNullOrEmpty(periodText.Text));
+            }
+        }
+
+        [Fact]
+        public void SelectedTime_EnableDataValidation()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var handled = false;
+                var timePicker = new TimePicker();
+
+                timePicker.SelectedTimeChanged += (s, e) =>
+                {
+                    var minTime = new TimeSpan(10, 0, 0);
+                    var maxTime = new TimeSpan(15, 0, 0);
+
+                    if (e.NewTime < minTime)
+                        throw new DataValidationException($"time is less than {maxTime}");
+
+                    if (e.NewTime > maxTime)
+                        throw new DataValidationException($"time is over {maxTime}");
+
+                    handled = true;
+                };
+
+                // time is less than
+                Assert.Throws<DataValidationException>(() => timePicker.SelectedTime = new TimeSpan(1, 2, 3));
+
+                // time is over
+                Assert.Throws<DataValidationException>(() => timePicker.SelectedTime = new TimeSpan(21, 22, 23));
+
+                var exception = new DataValidationException("failed validation");
+                var observable =
+                    new BehaviorSubject<BindingNotification>(new BindingNotification(exception,
+                        BindingErrorType.DataValidationError));
+                timePicker.Bind(TimePicker.SelectedTimeProperty, observable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(timePicker));
+
+                Dispatcher.UIThread.RunJobs();
+                timePicker.SelectedTime = new TimeSpan(11, 12, 13);
+                Assert.True(handled);
             }
         }
 
@@ -182,10 +262,20 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_ThirdPickerHost",
                     Child = new TextBlock
                     {
-                        Name = "PART_PeriodTextBlock"
+                        Name = "PART_SecondTextBlock"
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(thirdPickerHost, 4);
+                
+                var fourthPickerHost = new Border
+                {
+                    Name = "PART_FourthPickerHost",
+                    Child = new TextBlock
+                    {
+                        Name = "PART_PeriodTextBlock"
+                    }.RegisterInNameScope(scope)
+                }.RegisterInNameScope(scope);
+                Grid.SetColumn(fourthPickerHost, 6);
 
                 var firstSpacer = new Rectangle
                 {
@@ -198,8 +288,14 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_SecondColumnDivider"
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(secondSpacer, 3);
+                
+                var thirdSpacer = new Rectangle
+                {
+                    Name = "PART_ThirdColumnDivider"
+                }.RegisterInNameScope(scope);
+                Grid.SetColumn(thirdSpacer, 5);
 
-                contentGrid.Children.AddRange(new Control[] { firstPickerHost, firstSpacer, secondPickerHost, secondSpacer, thirdPickerHost });
+                contentGrid.Children.AddRange(new Control[] { firstPickerHost, firstSpacer, secondPickerHost, secondSpacer, thirdPickerHost, thirdSpacer, fourthPickerHost });
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
                 return layoutRoot;

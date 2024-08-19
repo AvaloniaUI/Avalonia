@@ -432,13 +432,14 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if ((key == Key.Space || key == Key.Enter) && IsEffectivelyEnabled) // Key.GamepadA is not currently supported
+            if ((key == Key.Space || key == Key.Enter) && IsEffectivelyEnabled)
             {
                 // Since the TextBox is used for direct date entry,
                 // it isn't supported to open the popup/flyout using these keys.
                 // Other controls open the popup/flyout here.
             }
-            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
+            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
             {
                 // It is only possible to open the popup using these keys.
                 // This is important as the down key is handled by calendar.
@@ -628,10 +629,22 @@ namespace Avalonia.Controls
 
         private void DropDownButton_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            _ignoreButtonClick = _isPopupClosing;
+            if (_isFlyoutOpen && (_dropDownButton?.IsEffectivelyEnabled == true) && e.GetCurrentPoint(_dropDownButton).Properties.IsLeftButtonPressed)
+            {
+                // When a flyout is open with OverlayDismissEventPassThrough enabled and the drop-down button
+                // is pressed, close the flyout
+                _ignoreButtonClick = true;
 
-            _isPressed = true;
-            UpdatePseudoClasses();
+                e.Handled = true;
+                TogglePopUp();
+            }
+            else
+            {
+                _ignoreButtonClick = _isPopupClosing;
+
+                _isPressed = true;
+                UpdatePseudoClasses();
+            }
         }
 
         private void DropDownButton_PointerReleased(object? sender, PointerReleasedEventArgs e)

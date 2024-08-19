@@ -10,7 +10,7 @@ using Avalonia.Utilities;
 using Xunit;
 namespace Avalonia.Base.UnitTests;
 
-public class DispatcherTests
+public partial class DispatcherTests
 {
     class SimpleDispatcherImpl : IDispatcherImpl, IDispatcherImplWithPendingInput
     {
@@ -400,7 +400,7 @@ public class DispatcherTests
                 Assert.Throws<InvalidOperationException>(() => Dispatcher.UIThread.RunJobs());
             }
 
-            var avaloniaContext = new AvaloniaSynchronizationContext(true);
+            var avaloniaContext = new AvaloniaSynchronizationContext(Dispatcher.UIThread, DispatcherPriority.Default, true);
             SynchronizationContext.SetSynchronizationContext(avaloniaContext);
 
             var waitHandle = new ManualResetEvent(true);

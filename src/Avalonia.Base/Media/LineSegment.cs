@@ -24,7 +24,7 @@ namespace Avalonia.Media
 
         internal override void ApplyTo(StreamGeometryContext ctx)
         {
-            ctx.LineTo(Point);
+            ctx.LineTo(Point, IsStroked);
         }
 
         public override string ToString()

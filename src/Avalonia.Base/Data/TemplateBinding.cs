@@ -1,100 +1,53 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Avalonia.Reactive;
+using Avalonia.Data.Core;
+using Avalonia.Logging;
+using Avalonia.Metadata;
 using Avalonia.Styling;
-using Avalonia.Threading;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding to a property on a control's templated parent.
     /// </summary>
-    public class TemplateBinding : IObservable<object?>,
+    public partial class TemplateBinding : UntypedBindingExpressionBase,
         IBinding,
+        IBinding2,
         IDescription,
-        IAvaloniaSubject<object?>,
         ISetterValue,
         IDisposable
     {
-        private IObserver<object?>? _observer;
         private bool _isSetterValue;
-        private StyledElement? _target;
-        private Type? _targetType;
-        private bool _hasProducedValue;
+        private bool _hasPublishedValue;
 
         public TemplateBinding()
+            : base(BindingPriority.Template)
         {
         }
 
-        public TemplateBinding(AvaloniaProperty property)
+        public TemplateBinding([InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)] AvaloniaProperty property)
+            : base(BindingPriority.Template)
         {
             Property = property;
-        }
-
-        public IDisposable Subscribe(IObserver<object?> observer)
-        {
-            _ = observer ?? throw new ArgumentNullException(nameof(observer));
-            Dispatcher.UIThread.VerifyAccess();
-
-            if (_observer != null)
-            {
-                throw new InvalidOperationException("The observable can only be subscribed once.");
-            }
-
-            _observer = observer;
-            Subscribed();
-
-            return this;
-        }
-
-        public virtual void Dispose()
-        {
-            Unsubscribed();
-            _observer = null;
-        }
-
-        /// <inheritdoc/>
-        public InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false)
-        {
-            // Usually each `TemplateBinding` will only be instantiated once; in this case we can
-            // use the `TemplateBinding` object itself as the instanced binding in order to save
-            // allocating a new object.
-            //
-            // If the binding appears in a `Setter`, then make a clone and instantiate that because
-            // because the setter can outlive the control and cause a leak.
-            if (_target is null && !_isSetterValue)
-            {
-                _target = (StyledElement)target;
-                _targetType = targetProperty?.PropertyType;
-
-                return new InstancedBinding(
-                    this,
-                    Mode == BindingMode.Default ? BindingMode.OneWay : Mode,
-                    BindingPriority.Template);
-            }
-            else
-            {
-                var clone = new TemplateBinding
-                {
-                    Converter = Converter,
-                    ConverterParameter = ConverterParameter,
-                    Property = Property,
-                    Mode = Mode,
-                };
-
-                return clone.Initiate(target, targetProperty, anchor, enableDataValidation);
-            }
         }
 
         /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
         public IValueConverter? Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the culture in which to evaluate the converter.
+        /// </summary>
+        /// <value>The default value is null.</value>
+        /// <remarks>
+        /// If this property is not set then <see cref="CultureInfo.CurrentCulture"/> will be used.
+        /// </remarks>
+        [TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
+        public CultureInfo? ConverterCulture { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
@@ -104,116 +57,202 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
-        public BindingMode Mode { get; set; }
+        public new BindingMode Mode 
+        { 
+            get => base.Mode;
+            set => base.Mode = value;
+        }
 
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.
         /// </summary>
+        [InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)]
         public AvaloniaProperty? Property { get; set; }
 
         /// <inheritdoc/>
-        public string Description => "TemplateBinding: " + Property;
+        public override string Description => "TemplateBinding: " + Property;
 
-        void IObserver<object?>.OnCompleted() => throw new NotImplementedException();
-        void IObserver<object?>.OnError(Exception error) => throw new NotImplementedException();
+        public IBinding ProvideValue() => this;
 
-        void IObserver<object?>.OnNext(object? value)
+        public InstancedBinding? Initiate(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor = null,
+            bool enableDataValidation = false)
         {
-            if (_target?.TemplatedParent is { } templatedParent && Property is not null)
+            return new(target, InstanceCore(), Mode, BindingPriority.Template);
+        }
+
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
+        {
+            return InstanceCore();
+        }
+
+        internal override bool WriteValueToSource(object? value)
+        {
+            if (Property is not null && TryGetTemplatedParent(out var templatedParent))
             {
                 if (Converter is not null)
-                {
-                    value = Converter.ConvertBack(
-                        value,
-                        Property.PropertyType,
-                        ConverterParameter,
-                        CultureInfo.CurrentCulture);
-                }
+                    value = ConvertBack(Converter, ConverterCulture, ConverterParameter, value, TargetType);
 
-                templatedParent.SetCurrentValue(Property, value);
+                if (value != BindingOperations.DoNothing)
+                    templatedParent.SetCurrentValue(Property, value);
+
+                return true;
             }
+
+            return false;
         }
 
         /// <inheritdoc/>
         void ISetterValue.Initialize(SetterBase setter) => _isSetterValue = true;
 
-        private void Subscribed()
+        protected override void StartCore()
         {
-            TemplatedParentChanged();
+            _hasPublishedValue = false;
+            OnTemplatedParentChanged();
+            if (TryGetTarget(out var target))
+                target.PropertyChanged += OnTargetPropertyChanged;
+        }
 
-            if (_target is not null)
+        protected override void StopCore()
+        {
+            if (TryGetTarget(out var target))
             {
-                _target.PropertyChanged += TargetPropertyChanged;
+                if (target is StyledElement targetElement &&
+                    targetElement?.TemplatedParent is { } templatedParent)
+                {
+                    templatedParent.PropertyChanged -= OnTemplatedParentPropertyChanged;
+                }
+
+                if (target is not null)
+                {
+                    target.PropertyChanged -= OnTargetPropertyChanged;
+                }
             }
         }
 
-        private void Unsubscribed()
+        private object? ConvertToTargetType(object? value)
         {
-            if (_target?.TemplatedParent is { } templatedParent)
-            {
-                templatedParent.PropertyChanged -= TemplatedParentPropertyChanged;
-            }
+            var converter = TargetTypeConverter.GetDefaultConverter();
 
-            if (_target is not null)
+            if (converter.TryConvert(value, TargetType, CultureInfo.InvariantCulture, out var result))
             {
-                _target.PropertyChanged -= TargetPropertyChanged;
+                return result;
+            }
+            else
+            {
+                if (TryGetTarget(out var target))
+                {
+                    var valueString = value?.ToString() ?? "(null)";
+                    var valueTypeName = value?.GetType().FullName ?? "null";
+                    var message = $"Could not convert '{valueString}' ({valueTypeName}) to '{TargetType}'.";
+                    Log(target, message, LogEventLevel.Warning);
+                }
+
+                return AvaloniaProperty.UnsetValue;
+            }
+        }
+
+        private TemplateBinding InstanceCore()
+        {
+            if (Mode is BindingMode.OneTime or BindingMode.OneWayToSource)
+                throw new NotSupportedException("TemplateBinding does not support OneTime or OneWayToSource bindings.");
+
+            // Usually each `TemplateBinding` will only be instantiated once; in this case we can
+            // use the `TemplateBinding` object itself as the binding expression in order to save
+            // allocating a new object.
+            //
+            // If the binding appears in a `Setter`, then make a clone and instantiate that because
+            // because the setter can outlive the control and cause a leak.
+            if (!_isSetterValue)
+            {
+                return this;
+            }
+            else
+            {
+                var clone = new TemplateBinding
+                {
+                    Converter = Converter,
+                    ConverterCulture = ConverterCulture,
+                    ConverterParameter = ConverterParameter,
+                    Mode = Mode,
+                    Property = Property,
+                };
+
+                return clone;
             }
         }
 
         private void PublishValue()
         {
-            if (_target?.TemplatedParent is { } templatedParent)
+            if (Mode == BindingMode.OneWayToSource)
+                return;
+
+            if (TryGetTemplatedParent(out var templatedParent))
             {
                 var value = Property is not null ?
                     templatedParent.GetValue(Property) :
-                    _target.TemplatedParent;
+                    templatedParent;
+                BindingError? error = null;
 
                 if (Converter is not null)
-                {
-                    value = Converter.Convert(value, _targetType ?? typeof(object), ConverterParameter, CultureInfo.CurrentCulture);
-                }
+                    value = Convert(Converter, ConverterCulture, ConverterParameter, value, TargetType, ref error);
 
-                _observer?.OnNext(value);
-                _hasProducedValue = true;
+                value = ConvertToTargetType(value);
+                PublishValue(value, error);
+                _hasPublishedValue = true;
+
+                if (Mode == BindingMode.OneTime)
+                    Stop();
             }
-            else if (_hasProducedValue)
+            else if (_hasPublishedValue)
             {
-                _observer?.OnNext(AvaloniaProperty.UnsetValue);
-                _hasProducedValue = false;
+                PublishValue(AvaloniaProperty.UnsetValue);
             }
         }
 
-        private void TemplatedParentChanged()
+        private void OnTemplatedParentChanged()
         {
-            if (_target?.TemplatedParent is { } templatedParent)
-            {
-                templatedParent.PropertyChanged += TemplatedParentPropertyChanged;
-            }
+            if (TryGetTemplatedParent(out var templatedParent))
+                templatedParent.PropertyChanged += OnTemplatedParentPropertyChanged;
 
             PublishValue();
         }
 
-        private void TargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        private void OnTemplatedParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == Property)
+                PublishValue();
+        }
+
+        private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == StyledElement.TemplatedParentProperty)
             {
                 if (e.OldValue is AvaloniaObject oldValue)
-                {
-                    oldValue.PropertyChanged -= TemplatedParentPropertyChanged;
-                }
+                    oldValue.PropertyChanged -= OnTemplatedParentPropertyChanged;
 
-                TemplatedParentChanged();
+                OnTemplatedParentChanged();
             }
-        }
-
-        private void TemplatedParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Property == Property)
+            else if (Mode is BindingMode.TwoWay or BindingMode.OneWayToSource && e.Property == TargetProperty)
             {
-                PublishValue();
+                WriteValueToSource(e.NewValue);
             }
         }
 
-        public IBinding ProvideValue() => this;
+        private bool TryGetTemplatedParent([NotNullWhen(true)] out AvaloniaObject? result)
+        {
+            if (TryGetTarget(out var target) &&
+                target is StyledElement targetElement &&
+                targetElement.TemplatedParent is { } templatedParent)
+            {
+                result = templatedParent;
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
     }
 }

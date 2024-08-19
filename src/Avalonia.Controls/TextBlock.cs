@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Text;
 using Avalonia.Automation.Peers;
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -14,7 +15,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    [DebuggerDisplay("Text = {" + nameof(DebugText) + "}")]
     public class TextBlock : Control, IInlineHost
     {
         /// <summary>
@@ -149,6 +149,12 @@ namespace Avalonia.Controls
             Inline.TextDecorationsProperty.AddOwner<TextBlock>();
 
         /// <summary>
+        /// Defines the <see cref="FontFeatures"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
+            TextElement.FontFeaturesProperty.AddOwner<TextBlock>();
+
+        /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
         public static readonly DirectProperty<TextBlock, InlineCollection?> InlinesProperty =
@@ -210,8 +216,6 @@ namespace Avalonia.Controls
             get => GetValue(TextProperty);
             set => SetValue(TextProperty, value);
         }
-
-        private string? DebugText => Text ?? Inlines?.Text;
 
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.
@@ -337,6 +341,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(TextDecorationsProperty);
             set => SetValue(TextDecorationsProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font features.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => GetValue(FontFeaturesProperty);
+            set => SetValue(FontFeaturesProperty, value);
         }
 
         /// <summary>
@@ -635,6 +648,7 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
+                FontFeatures,
                 FontSize,
                 TextDecorations,
                 Foreground);
@@ -670,12 +684,17 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateTextLayout()
         {
+            InvalidateVisual();
+            InvalidateMeasure();
+        }
+
+        protected override void OnMeasureInvalidated()
+        {
             _textLayout?.Dispose();
             _textLayout = null;
+            _textRuns = null;
 
-            InvalidateVisual();
-
-            InvalidateMeasure();
+            base.OnMeasureInvalidated();
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -684,6 +703,8 @@ namespace Avalonia.Controls
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
             _constraint = availableSize.Deflate(padding);
+
+            //Reset TextLayout otherwise constraint might be outdated.
             _textLayout?.Dispose();
             _textLayout = null;
 
@@ -691,8 +712,6 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
-                VisualChildren.Clear();
-
                 var textRuns = new List<TextRun>();
 
                 foreach (var inline in inlines!)
@@ -701,21 +720,6 @@ namespace Avalonia.Controls
                 }
 
                 _textRuns = textRuns;
-
-                foreach (var textLine in TextLayout.TextLines)
-                {
-                    foreach (var run in textLine.TextRuns)
-                    {
-                        if (run is DrawableTextRun drawable)
-                        {
-                            if (drawable is EmbeddedControlRun controlRun
-                                && controlRun.Control is Control control)
-                            {
-                                VisualChildren.Add(control);
-                            }
-                        }
-                    }
-                }
             }
 
             var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
@@ -805,6 +809,7 @@ namespace Avalonia.Controls
 
                 case nameof(Text):
                 case nameof(TextDecorations):
+                case nameof(FontFeatures):
                 case nameof(Foreground):
                     {
                         InvalidateTextLayout();
@@ -827,24 +832,42 @@ namespace Avalonia.Controls
 
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
+            VisualChildren.Clear();
+
             if (oldValue is not null)
             {
                 oldValue.LogicalChildren = null;
                 oldValue.InlineHost = null;
-                oldValue.Invalidated -= (s, e) => InvalidateTextLayout();
+                oldValue.Invalidated -= Invalidated;
             }
 
             if (newValue is not null)
             {
                 newValue.LogicalChildren = LogicalChildren;
                 newValue.InlineHost = this;
-                newValue.Invalidated += (s, e) => InvalidateTextLayout();
+                newValue.Invalidated += Invalidated;
             }
+
+            return;
+
+            void Invalidated(object? sender, EventArgs e) => InvalidateMeasure();
         }
 
         void IInlineHost.Invalidate()
         {
-            InvalidateTextLayout();
+            InvalidateMeasure();
+        }
+
+        IAvaloniaList<Visual> IInlineHost.VisualChildren => VisualChildren;
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Text), Text ?? Inlines?.Text, true);
+            }
         }
 
         protected readonly record struct SimpleTextSource : ITextSource
@@ -876,9 +899,9 @@ namespace Avalonia.Controls
             }
         }
 
-#pragma warning disable CA1815 // Equals und Gleichheitsoperator für Werttypen außer Kraft setzen
+#pragma warning disable CA1815
         protected readonly struct InlinesTextSource : ITextSource
-#pragma warning restore CA1815 // Equals und Gleichheitsoperator für Werttypen außer Kraft setzen
+#pragma warning restore CA1815
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
             private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;

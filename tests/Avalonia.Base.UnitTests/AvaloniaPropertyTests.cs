@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 using Xunit;
 
@@ -79,6 +80,27 @@ namespace Avalonia.Base.UnitTests
 
             var result = target.GetMetadata<Class2>();
             Assert.Equal(BindingMode.TwoWay, result.DefaultBindingMode);
+        }
+
+        [Fact]
+        public void Default_Metadata_Cannot_Be_Changed_After_Property_Initialization()
+        {
+            var metadata = new TestMetadata();
+            var property = new TestProperty<string>("test", typeof(Class1), metadata);
+
+            Assert.Throws<InvalidOperationException>(() => metadata.Merge(new TestMetadata(), property));
+        }
+
+        [Fact]
+        public void Overridden_Metadata_Cannot_Be_Changed_After_OverrideMetadata()
+        {
+            var metadata = new TestMetadata(BindingMode.TwoWay);
+            var overridden = new TestMetadata();
+            var property = new TestProperty<string>("test", typeof(Class1), metadata);
+
+            property.OverrideMetadata<Class2>(overridden);
+
+            Assert.Throws<InvalidOperationException>(() => overridden.Merge(new TestMetadata(), property));
         }
 
         [Fact]

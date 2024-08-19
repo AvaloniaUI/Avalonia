@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using Avalonia;
@@ -60,14 +62,19 @@ namespace Avalonia.LinuxFramebuffer
 
             var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
 
+            var timer = opts.ShouldRenderOnUIThread
+                ? new UiThreadRenderTimer(opts.Fps)
+                : new DefaultRenderTimer(opts.Fps);
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
+                .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"));
             
             Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
@@ -84,7 +91,7 @@ namespace Avalonia.LinuxFramebuffer
         }
     }
 
-    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
+    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime, ISingleTopLevelApplicationLifetime
     {
         private readonly IOutputBackend _fb;
         private readonly IInputBackend? _inputBackend;
@@ -110,25 +117,7 @@ namespace Avalonia.LinuxFramebuffer
             {
                 if (_topLevel == null)
                 {
-                    var inputBackend = _inputBackend;
-                    if (inputBackend == null)
-                    {
-                        if (Environment.GetEnvironmentVariable("AVALONIA_USE_EVDEV") == "1")
-                            inputBackend = EvDevBackend.CreateFromEnvironment();
-                        else
-                            inputBackend = new LibInputBackend();
-                    }
-
-                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, inputBackend));
-                    tl.Prepare();
-                    tl.StartRendering();
-                    _topLevel = tl;
-                    
-
-                    if (_topLevel is IFocusScope scope && _topLevel.FocusManager is FocusManager focusManager)
-                    {
-                        focusManager.SetFocusScope(scope);
-                    }
+                    EnsureTopLevel();
                 }
 
                 _topLevel.Content = value;
@@ -152,6 +141,38 @@ namespace Avalonia.LinuxFramebuffer
             ExitCode = e.ApplicationExitCode;
             _cts.Cancel();
         }
+
+        public TopLevel? TopLevel
+        {
+            get
+            {
+                EnsureTopLevel();
+                return _topLevel;
+            }
+        }
+
+        [MemberNotNull(nameof(_topLevel))]
+        private void EnsureTopLevel()
+        {
+            var inputBackend = _inputBackend;
+            if (inputBackend == null)
+            {
+                if (Environment.GetEnvironmentVariable("AVALONIA_USE_EVDEV") == "1")
+                    inputBackend = EvDevBackend.CreateFromEnvironment();
+                else
+                    inputBackend = new LibInputBackend();
+            }
+
+            var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, inputBackend));
+            tl.Prepare();
+            tl.StartRendering();
+            _topLevel = tl;
+
+            if (_topLevel is IFocusScope scope && _topLevel.FocusManager is FocusManager focusManager)
+            {
+                focusManager.SetFocusScope(scope);
+            }
+        }
     }
 }
 
@@ -161,6 +182,10 @@ public static class LinuxFramebufferPlatformExtensions
         => StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: null) { Scaling = scaling }, inputBackend);
     public static int StartLinuxFbDev(this AppBuilder builder, string[] args, string fbdev, PixelFormat? format, double scaling, IInputBackend? inputBackend = default)
         => StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling }, inputBackend);
+
+    public static int StartLinuxFbDev(this AppBuilder builder, string[] args, FbDevOutputOptions options,
+        IInputBackend? inputBackend = default)
+        => StartLinuxDirect(builder, args, new FbdevOutput(options), inputBackend);
 
     public static int StartLinuxDrm(this AppBuilder builder, string[] args, string? card = null, double scaling = 1, IInputBackend? inputBackend = default)
         => StartLinuxDirect(builder, args, new DrmOutput(card) { Scaling = scaling }, inputBackend);

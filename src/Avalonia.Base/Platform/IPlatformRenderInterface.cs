@@ -199,6 +199,9 @@ namespace Avalonia.Platform
         public PixelFormat DefaultPixelFormat { get; }
 
         bool IsSupportedBitmapPixelFormat(PixelFormat format);
+        
+        bool SupportsRegions { get; }
+        IPlatformRenderInterfaceRegion CreateRegion();
     }
 
     [Unstable, PrivateApi]
@@ -212,10 +215,23 @@ namespace Avalonia.Platform
         /// </param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
         IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
+
+        /// <summary>
+        /// Creates an offscreen render target 
+        /// </summary>
+        /// <param name="pixelSize">The size, in pixels, of the render target</param>
+        /// <param name="scaling">The scaling which will be reported by IBitmap.Dpi</param>
+        /// <returns></returns>
+        IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling);
         
         /// <summary>
         /// Indicates that the context is no longer usable. This method should be thread-safe
         /// </summary>
         bool IsLost { get; }
+        
+        /// <summary>
+        /// Exposes features that should be available for consumption while context isn't active (e. g. from the UI thread)
+        /// </summary>
+        IReadOnlyDictionary<Type, object> PublicFeatures { get; }
     }
 }

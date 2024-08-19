@@ -34,7 +34,8 @@
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             Content="{TemplateBinding SelectionBoxItem}"
-                            ContentTemplate="{TemplateBinding ItemTemplate}" />
+                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}">
+            </ContentControl>
             <ToggleButton Name="toggle"
                           Grid.Column="1"
                           Background="Transparent"
@@ -57,7 +58,8 @@
                    IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsDropDownOpen,
                                             Mode=TwoWay}"
-                   PlacementTarget="{TemplateBinding}">
+                   PlacementTarget="{TemplateBinding}"
+                   InheritsTransform="True">
               <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">

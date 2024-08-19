@@ -97,7 +97,7 @@ namespace Avalonia.Media
 
         internal override void ApplyTo(StreamGeometryContext ctx)
         {
-            ctx.ArcTo(Point, Size, RotationAngle, IsLargeArc, SweepDirection);
+            ctx.ArcTo(Point, Size, RotationAngle, IsLargeArc, SweepDirection, IsStroked);
         }
 
         public override string ToString()

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
@@ -16,11 +17,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
     public class StyleTests : XamlTestBase
     {
-        static StyleTests()
-        {
-            GC.KeepAlive(typeof(ItemsRepeater));
-        }
-
         [Fact]
         public void Color_Can_Be_Added_To_Style_Resources()
         {
@@ -400,53 +396,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_Can_Use_NthChild_Selector_With_ItemsRepeater()
-        {
-            GC.KeepAlive(typeof(ItemsRepeater));
-            
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <Window.Styles>
-        <Style Selector='TextBlock'>
-            <Setter Property='Foreground' Value='Transparent'/>
-        </Style>
-        <Style Selector='TextBlock:nth-child(2n)'>
-            <Setter Property='Foreground' Value='{Binding}'/>
-        </Style>
-    </Window.Styles>
-    <ItemsRepeater x:Name='list' />
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var collection = new ObservableCollection<IBrush>()
-                {
-                    Brushes.Red, Brushes.Green, Brushes.Blue
-                };
-
-                var list = window.FindControl<ItemsRepeater>("list");
-                list.ItemsSource = collection;
-
-                window.Show();
-
-                IEnumerable<IBrush> GetColors() => Enumerable.Range(0, list.ItemsSourceView.Count)
-                    .Select(t => (list.GetOrCreateElement(t) as TextBlock)!.Foreground);
-
-                Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
-
-                collection.Remove(Brushes.Green);
-
-                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors().ToList());
-
-                collection.Add(Brushes.Violet);
-                collection.Add(Brushes.Black);
-
-                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
-            }
-        }
-
-        [Fact]
         public void Style_Can_Use_Or_Selector_1()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -653,6 +602,42 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                     inner => Assert.IsAssignableFrom<XmlException>(inner),
                     inner => Assert.IsAssignableFrom<XmlException>(inner),
                     inner => Assert.IsAssignableFrom<XmlException>(inner));
+            }
+        }
+
+        [Fact]
+        public void Correctly_Resolve_TemplateBinding_In_Style_With_Template_Selector()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+       xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+       Selector='u|TestTemplatedControl /template/ Border'>
+    <Setter Property='Tag' Value='{{TemplateBinding TestData}}'/>
+</Style>";
+
+                var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var setter = Assert.IsType<Setter>(Assert.Single(style.Setters));
+
+                Assert.Equal(TestTemplatedControl.TestDataProperty, (setter.Value as TemplateBinding)?.Property);
+            }
+        }
+
+        [Fact]
+        public void Fails_To_Resolve_TemplateBinding_In_Style_Without_Template_Metadata()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Style xmlns='https://github.com/avaloniaui'
+       Selector='Border'>
+    <Setter Property='Tag' Value='{{TemplateBinding TestData}}'/>
+</Style>";
+
+                var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Contains("ControlTemplate", exception.Message);
             }
         }
     }

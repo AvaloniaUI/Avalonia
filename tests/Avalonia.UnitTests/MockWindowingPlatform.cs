@@ -34,9 +34,8 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
-            windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
-
             windowImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
+            windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(CreateScreenMock().Object);
 
             windowImpl.Setup(x => x.CreatePopup()).Returns(() =>
             {
@@ -151,6 +150,8 @@ namespace Avalonia.UnitTests
                 return mock.Object;
             }
         }
+
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
         public IWindowImpl CreateEmbeddableWindow()
         {

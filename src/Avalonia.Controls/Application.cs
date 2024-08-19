@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IApplicationPlatformEvents
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IApplicationPlatformEvents, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -42,6 +42,8 @@ namespace Avalonia
         private bool _notifyingResourcesChanged;
         private Action<IReadOnlyList<IStyle>>? _stylesAdded;
         private Action<IReadOnlyList<IStyle>>? _stylesRemoved;
+        private IApplicationLifetime? _applicationLifetime;
+        private bool _setupCompleted;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -60,7 +62,7 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
-        /// <inheritdoc/>
+        [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
         /// <inheritdoc/>
@@ -170,15 +172,28 @@ namespace Avalonia
 
         /// <inheritdoc/>
         bool IStyleHost.IsStylesInitialized => _styles != null;
-       
+
         /// <summary>
         /// Application lifetime, use it for things like setting the main window and exiting the app from code
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
         /// - <see cref="ISingleViewApplicationLifetime"/>
         /// - <see cref="IControlledApplicationLifetime"/> 
+        /// - <see cref="IActivatableApplicationLifetime"/> 
         /// </summary>
-        public IApplicationLifetime? ApplicationLifetime { get; set; }
+        public IApplicationLifetime? ApplicationLifetime
+        {
+            get => _applicationLifetime;
+            set
+            {
+                if (_setupCompleted)
+                {
+                    throw new InvalidOperationException($"It's not possible to change {nameof(ApplicationLifetime)} after Application was initialized.");
+                }
+
+                _applicationLifetime = value;
+            }
+        }
 
         /// <summary>
         /// Represents a contract for accessing global platform-specific settings.
@@ -189,7 +204,7 @@ namespace Avalonia
         /// which should always be preferred over a global one,
         /// as specific top levels might have different settings set-up. 
         /// </remarks>
-        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        public IPlatformSettings? PlatformSettings => this.TryGetFeature<IPlatformSettings>();
         
         event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
@@ -207,7 +222,7 @@ namespace Avalonia
         /// Initializes the application by loading XAML etc.
         /// </summary>
         public virtual void Initialize() { }
-
+        
         /// <inheritdoc/>
         public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
@@ -253,6 +268,7 @@ namespace Avalonia
                 .Bind<IThemeVariantHost>().ToConstant(this)
                 .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
+                .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
 
@@ -263,13 +279,15 @@ namespace Avalonia
 
             AvaloniaLocator.CurrentMutable.Bind<IGlobalClock>()
                 .ToConstant(MediaContext.Instance.Clock);
+
+            _setupCompleted = true;
         }
 
         public virtual void OnFrameworkInitializationCompleted()
         {
         }
         
-        void  IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
+        void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
         {
             UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }
@@ -312,7 +330,34 @@ namespace Avalonia
             get => _name;
             set => SetAndRaise(NameProperty, ref _name, value);
         }
-        
+
+        /// <summary>
+        /// Queries for an optional feature.
+        /// </summary>
+        /// <param name="featureType">Feature type.</param>
+        /// <remarks>
+        /// Features currently supported by <see cref="Application.TryGetFeature"/>:
+        /// <list type="bullet">
+        /// <item>IPlatformSettings</item>
+        /// <item>IActivatableApplicationLifetime</item>
+        /// </list>
+        /// </remarks>
+        public object? TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IPlatformSettings))
+            {
+                return AvaloniaLocator.Current.GetService<IPlatformSettings>();
+            }
+
+            if (featureType == typeof(IActivatableLifetime))
+            {
+                return AvaloniaLocator.Current.GetService<IActivatableLifetime>();
+            }
+
+            // Do not return just any service from AvaloniaLocator.
+            return null;
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);

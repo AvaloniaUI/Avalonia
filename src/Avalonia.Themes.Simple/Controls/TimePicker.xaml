@@ -110,6 +110,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_HourTextBlock"
+                             Text="{DynamicResource StringTimePickerHourText}"
                              Padding="{DynamicResource TimePickerHostPadding}"
                              HorizontalAlignment="Center"
                              FontFamily="{TemplateBinding FontFamily}"
@@ -128,6 +129,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_MinuteTextBlock"
+                             Text="{DynamicResource StringTimePickerMinuteText}"
                              Padding="{DynamicResource TimePickerHostPadding}"
                              HorizontalAlignment="Center"
                              FontFamily="{TemplateBinding FontFamily}"
@@ -140,9 +142,28 @@
                            Width="{DynamicResource TimePickerSpacerThemeWidth}"
                            HorizontalAlignment="Center"
                            Fill="{DynamicResource TimePickerSpacerFill}" />
-
+                
                 <Border x:Name="PART_ThirdPickerHost"
                         Grid.Column="4"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+                  <TextBlock x:Name="PART_SecondTextBlock"
+                             Text="{DynamicResource StringTimePickerSecondText}"
+                             Padding="{DynamicResource TimePickerHostPadding}"
+                             HorizontalAlignment="Center"
+                             FontFamily="{TemplateBinding FontFamily}"
+                             FontSize="{TemplateBinding FontSize}"
+                             FontWeight="{TemplateBinding FontWeight}" />
+                </Border>
+
+                <Rectangle Name="PART_ThirdColumnDivider"
+                           Grid.Column="5"
+                           Width="{DynamicResource TimePickerSpacerThemeWidth}"
+                           HorizontalAlignment="Center"
+                           Fill="{DynamicResource TimePickerSpacerFill}" />
+
+                <Border x:Name="PART_FourthPickerHost"
+                        Grid.Column="6"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                   <TextBlock x:Name="PART_PeriodTextBlock"
@@ -152,6 +173,12 @@
                              FontSize="{TemplateBinding FontSize}"
                              FontWeight="{TemplateBinding FontWeight}" />
                 </Border>
+                
+                <Rectangle Name="PART_ThirdColumnDivider"
+                           Grid.Column="5"
+                           Width="{DynamicResource TimePickerSpacerThemeWidth}"
+                           HorizontalAlignment="Center"
+                           Fill="{DynamicResource TimePickerSpacerFill}" />
               </Grid>
             </Button>
 
@@ -228,9 +255,24 @@
                 <RepeatButton Name="PART_MinuteDownButton"
                               Theme="{StaticResource SimpleDateTimePickerDownButton}" />
               </Panel>
+              
+              <Panel Name="PART_SecondHost"
+                     Grid.Column="4">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Hidden">
+                  <DateTimePickerPanel Name="PART_SecondSelector"
+                                       ItemHeight="{DynamicResource TimePickerFlyoutPresenterItemHeight}"
+                                       PanelType="Second"
+                                       ShouldLoop="True" />
+                </ScrollViewer>
+                <RepeatButton Name="PART_SecondUpButton"
+                              Theme="{StaticResource SimpleDateTimePickerUpButton}" />
+                <RepeatButton Name="PART_SecondDownButton"
+                              Theme="{StaticResource SimpleDateTimePickerDownButton}" />
+              </Panel>
 
               <Panel Name="PART_PeriodHost"
-                     Grid.Column="4">
+                     Grid.Column="6">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Hidden">
                   <DateTimePickerPanel Name="PART_PeriodSelector"
@@ -262,6 +304,11 @@
                          Fill="{DynamicResource ThemeControlMidHighBrush}" />
               <Rectangle Name="PART_SecondSpacer"
                          Grid.Column="3"
+                         Width="{DynamicResource TimePickerSpacerThemeWidth}"
+                         HorizontalAlignment="Center"
+                         Fill="{DynamicResource ThemeControlMidHighBrush}" />
+              <Rectangle Name="PART_ThirdSpacer"
+                         Grid.Column="5"
                          Width="{DynamicResource TimePickerSpacerThemeWidth}"
                          HorizontalAlignment="Center"
                          Fill="{DynamicResource ThemeControlMidHighBrush}" />

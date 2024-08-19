@@ -15,6 +15,7 @@
         <!-- Resources and brushes will be merged into current dictionary for slightly better performance and possible optimizations -->
         <MergeResourceInclude Source="/Accents/BaseResources.xaml" />
         <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
+        <MergeResourceInclude Source="/Strings/InvariantResources.xaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->

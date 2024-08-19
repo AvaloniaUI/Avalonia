@@ -1,140 +1,56 @@
 using System;
-using System.Runtime.Versioning;
-using Android.App;
-using Android.Content;
-using Android.Content.PM;
 using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using AndroidX.AppCompat.App;
+using Avalonia.Android.Platform;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform;
 
-namespace Avalonia.Android
+namespace Avalonia.Android;
+
+public class AvaloniaMainActivity : AvaloniaActivity
 {
-    public class AvaloniaMainActivity : AppCompatActivity, IAvaloniaActivity
+    private protected static SingleViewLifetime? Lifetime;
+
+    private protected override void InitializeAvaloniaView(object? initialContent)
     {
-        private EventHandler<ActivatedEventArgs> _onActivated, _onDeactivated;
-        
-        public Action<int, Result, Intent> ActivityResult { get; set; }
-        public Action<int, string[], Permission[]> RequestPermissionsResult { get; set; }
-
-        public event EventHandler<AndroidBackRequestedEventArgs> BackRequested;
-        event EventHandler<ActivatedEventArgs> IAvaloniaActivity.Activated
+        // Android can run OnCreate + InitializeAvaloniaView multiple times per process lifetime.
+        // On each call we need to create new AvaloniaView, but we can't recreate Avalonia nor Avalonia controls.
+        // So, if lifetime was already created previously - recreate AvaloniaView.
+        // If not, initialize Avalonia, and create AvaloniaView inside of AfterSetup callback.
+        // We need this AfterSetup callback to match iOS/Browser behavior and ensure that view/toplevel is available in custom AfterSetup calls.
+        if (Lifetime is not null)
         {
-            add { _onActivated += value; }
-            remove { _onActivated -= value; }
+            initialContent ??= Lifetime.MainView; 
+
+            _view = new AvaloniaView(this) { Content = initialContent };
+            Lifetime.Activity = this;
+        }
+        else
+        {
+            var builder = CreateAppBuilder();
+            builder = CustomizeAppBuilder(builder);
+
+            Lifetime = new SingleViewLifetime();
+            Lifetime.Activity = this;
+ 
+            builder
+                .AfterApplicationSetup(_ =>
+                {
+                    _view = new AvaloniaView(this) { Content = initialContent };
+                })
+                .SetupWithLifetime(Lifetime);
+
+            // AfterPlatformServicesSetup should always be called. If it wasn't, we have an unusual problem.
+            if (_view is null)
+                throw new InvalidOperationException("Unknown error: AvaloniaView initialization has failed.");
         }
 
-        event EventHandler<ActivatedEventArgs> IAvaloniaActivity.Deactivated
+        if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
+            is AndroidActivatableLifetime activatableLifetime)
         {
-            add { _onDeactivated += value; }
-            remove { _onDeactivated -= value; }
-        }
-
-        public override void OnBackPressed()
-        {
-            var eventArgs = new AndroidBackRequestedEventArgs();
-
-            BackRequested?.Invoke(this, eventArgs);
-
-            if (!eventArgs.Handled)
-            {
-                base.OnBackPressed();
-            }
-        }
-
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            base.OnCreate(savedInstanceState);
-            
-            if (Intent?.Data is {} androidUri
-                && androidUri.IsAbsolute
-                && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var protocolUri))
-            {
-                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(ActivationKind.OpenUri, protocolUri));
-            }
-        }
-
-        protected override void OnStop()
-        {
-            _onDeactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
-            base.OnStop();
-        }
-
-        protected override void OnStart()
-        {
-            _onActivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
-            base.OnStart();
-        }
-
-        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
-        {
-            base.OnActivityResult(requestCode, resultCode, data);
-
-            ActivityResult?.Invoke(requestCode, resultCode, data);
-        }
-
-        [SupportedOSPlatform("android23.0")]
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
-        {
-            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-            RequestPermissionsResult?.Invoke(requestCode, permissions, grantResults);
+            activatableLifetime.CurrentMainActivity = this;
         }
     }
 
-    public abstract partial class AvaloniaMainActivity<TApp> : AvaloniaMainActivity  where TApp : Application, new()
-    {
-        internal AvaloniaView View { get; set; }
-
-        private GlobalLayoutListener _listener;
-
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            InitializeApp();
-
-            base.OnCreate(savedInstanceState);
-
-            SetContentView(View);
-
-            _listener = new GlobalLayoutListener(View);
-
-            View.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
-        }
-
-        protected override void OnResume()
-        {
-            base.OnResume();
-
-            // Android only respects LayoutInDisplayCutoutMode value if it has been set once before window becomes visible.
-            if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window is { Attributes: { } attributes })
-            {
-                attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
-            }
-        }
-
-        protected override void OnDestroy()
-        {
-            View.Content = null;
-
-            View.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
-
-            base.OnDestroy();
-        }
-
-        private class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
-        {
-            private readonly AvaloniaView _view;
-
-            public GlobalLayoutListener(AvaloniaView view)
-            {
-                _view = view;
-            }
-
-            public void OnGlobalLayout()
-            {
-                _view.TopLevelImpl?.Resize(_view.TopLevelImpl.ClientSize);
-            }
-        }
-    }
+    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseAndroid();
+    protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 }

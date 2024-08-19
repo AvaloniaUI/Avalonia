@@ -1,10 +1,11 @@
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
 internal partial class ServerCompositionSurfaceVisual
 {
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+    protected override void RenderCore(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
     {
         if (Surface == null)
             return;
@@ -13,7 +14,7 @@ internal partial class ServerCompositionSurfaceVisual
         var bmp = Surface.Bitmap.Item;
 
         //TODO: add a way to always render the whole bitmap instead of just assuming 96 DPI
-        canvas.DrawBitmap(Surface.Bitmap.Item, 1, new Rect(bmp.PixelSize.ToSize(1)), new Rect(
+        context.Canvas.DrawBitmap(Surface.Bitmap.Item, 1, new Rect(bmp.PixelSize.ToSize(1)), new Rect(
             new Size(Size.X, Size.Y)));
     }
 

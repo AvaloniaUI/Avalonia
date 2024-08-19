@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -19,9 +20,10 @@ namespace Avalonia.Diagnostics.Views
     internal class MainWindow : Window, IStyleHost
     {
         private readonly IDisposable? _inputSubscription;
-        private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
+        private readonly HashSet<Popup> _frozenPopupStates;
         private AvaloniaObject? _root;
         private PixelPoint _lastPointerPosition;
+        private HotKeyConfiguration? _hotKeys;
 
         public MainWindow()
         {
@@ -45,7 +47,7 @@ namespace Avalonia.Diagnostics.Views
                     }
                 });
             
-            _frozenPopupStates = new Dictionary<Popup, IDisposable>();
+            _frozenPopupStates = new HashSet<Popup>();
 
             EventHandler? lh = default;
             lh = (s, e) =>
@@ -101,7 +103,7 @@ namespace Avalonia.Diagnostics.Views
 
             foreach (var state in _frozenPopupStates)
             {
-                state.Value.Dispose();
+                state.Closing -= PopupOnClosing;
             }
 
             _frozenPopupStates.Clear();
@@ -168,15 +170,9 @@ namespace Avalonia.Diagnostics.Views
 
         private void RawKeyDown(RawKeyEventArgs e)
         {
-            var vm = (MainViewModel?)DataContext;
-            if (vm is null)
-            {
-                return;
-            }
-
-            var root = vm.PointerOverRoot as TopLevel;
-
-            if (root is null)
+            if (_hotKeys is null ||
+                DataContext is not MainViewModel vm ||
+                vm.PointerOverRoot is not TopLevel root)
             {
                 return;
             }
@@ -186,82 +182,122 @@ namespace Avalonia.Diagnostics.Views
                 root = pr.ParentTopLevel;
             }
 
-            switch (e.Modifiers)
+            var modifiers = MergeModifiers(e.Key, e.Modifiers.ToKeyModifiers());
+
+            if (IsMatched(_hotKeys.ValueFramesFreeze, e.Key, modifiers))
             {
-                case RawInputModifiers.Control when (e.Key == Key.LeftShift || e.Key == Key.RightShift):
-                case RawInputModifiers.Shift when (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl):
-                case RawInputModifiers.Shift | RawInputModifiers.Control:
+                FreezeValueFrames(vm);
+            }
+            else if (IsMatched(_hotKeys.ValueFramesUnfreeze, e.Key, modifiers))
+            {
+                UnfreezeValueFrames(vm);
+            }
+            else if (IsMatched(_hotKeys.TogglePopupFreeze, e.Key, modifiers))
+            {
+                ToggleFreezePopups(root, vm);
+            }
+            else if (IsMatched(_hotKeys.ScreenshotSelectedControl, e.Key, modifiers))
+            {
+                ScreenshotSelectedControl(vm);
+            }
+            else if (IsMatched(_hotKeys.InspectHoveredControl, e.Key, modifiers))
+            {
+                InspectHoveredControl(root, vm);
+            }
+
+            static bool IsMatched(KeyGesture gesture, Key key, KeyModifiers modifiers)
+            {
+                return (gesture.Key == key || gesture.Key == Key.None) && modifiers.HasAllFlags(gesture.KeyModifiers);
+            }
+
+            // When Control, Shift, or Alt are initially pressed, they are the Key and not part of Modifiers
+            // This merges so modifier keys alone can more easily trigger actions
+            static KeyModifiers MergeModifiers(Key key, KeyModifiers modifiers)
+            {
+                return key switch
                 {
-                    Control? control = null;
+                    Key.LeftCtrl or Key.RightCtrl => modifiers | KeyModifiers.Control,
+                    Key.LeftShift or Key.RightShift => modifiers | KeyModifiers.Shift,
+                    Key.LeftAlt or Key.RightAlt => modifiers | KeyModifiers.Alt,
+                    _ => modifiers
+                };
+            }
+        }
 
-                    foreach (var popupRoot in GetPopupRoots(root))
-                    {
-                        control = GetHoveredControl(popupRoot);
+        private void FreezeValueFrames(MainViewModel vm)
+        {
+            vm.EnableSnapshotStyles(true);
+        }
 
-                        if (control != null)
-                        {
-                            break;
-                        }
-                    }
+        private void UnfreezeValueFrames(MainViewModel vm)
+        {
+            vm.EnableSnapshotStyles(false);
+        }
 
-                    control ??= GetHoveredControl(root);
+        private void ToggleFreezePopups(TopLevel root, MainViewModel vm)
+        {
+            vm.FreezePopups = !vm.FreezePopups;
 
-                    if (control != null)
-                    {
-                        vm.SelectControl(control);
-                    }
-
-                    break;
-                }
-
-                case RawInputModifiers.Control | RawInputModifiers.Alt when e.Key == Key.F:
+            foreach (var popupRoot in GetPopupRoots(root))
+            {
+                if (popupRoot.Parent is Popup popup)
                 {
-                    vm.FreezePopups = !vm.FreezePopups;
-
-                    foreach (var popupRoot in GetPopupRoots(root))
+                    if (vm.FreezePopups)
                     {
-                        if (popupRoot.Parent is Popup popup)
-                        {
-                            if (vm.FreezePopups)
-                            {
-                                var lightDismissEnabledState = popup.SetValue(
-                                    Popup.IsLightDismissEnabledProperty,
-                                    !vm.FreezePopups,
-                                    BindingPriority.Animation);
-
-                                if (lightDismissEnabledState != null)
-                                {
-                                    _frozenPopupStates[popup] = lightDismissEnabledState;
-                                }
-                            }
-                            else
-                            {
-                                //TODO Use Dictionary.Remove(Key, out Value) in netstandard 2.1
-                                if (_frozenPopupStates.TryGetValue(popup, out var value))
-                                {
-                                    value.Dispose();
-                                    _frozenPopupStates.Remove(popup);
-                                }
-                            }
-                        }
+                        popup.Closing += PopupOnClosing;
+                        _frozenPopupStates.Add(popup);
                     }
-
-                    break;
-                }
-
-                case RawInputModifiers.Alt when e.Key == Key.S || e.Key == Key.D:
-                {
-                    vm.EnableSnapshotStyles(e.Key == Key.S);
-
-                    break;
+                    else
+                    {
+                        popup.Closing -= PopupOnClosing;
+                        _frozenPopupStates.Remove(popup);
+                    }
                 }
             }
         }
 
+        private void ScreenshotSelectedControl(MainViewModel vm)
+        {
+            vm.Shot(null);
+        }
+
+        private void InspectHoveredControl(TopLevel root, MainViewModel vm)
+        {
+            Control? control = null;
+
+            foreach (var popupRoot in GetPopupRoots(root))
+            {
+                control = GetHoveredControl(popupRoot);
+
+                if (control != null)
+                {
+                    break;
+                }
+            }
+
+            control ??= GetHoveredControl(root);
+
+            if (control != null)
+            {
+                vm.SelectControl(control);
+            }
+        }
+
+        private void PopupOnClosing(object? sender, CancelEventArgs e)
+        {
+            var vm = (MainViewModel?)DataContext;
+            if (vm?.FreezePopups == true)
+            {
+                e.Cancel = true;
+            }
+        }
+        
         private void RootClosed(object? sender, EventArgs e) => Close();
 
         public void SetOptions(DevToolsOptions options)
         {
+            _hotKeys = options.HotKeys;
+
             (DataContext as MainViewModel)?.SetOptions(options);
             if (options.ThemeVariant is { } themeVariant)
             {

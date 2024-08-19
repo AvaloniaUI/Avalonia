@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
@@ -24,6 +25,12 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="BackgroundSizing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BackgroundSizing> BackgroundSizingProperty =
+            Border.BackgroundSizingProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
@@ -171,10 +178,12 @@ namespace Avalonia.Controls.Presenters
         {
             AffectsRender<ContentPresenter>(
                 BackgroundProperty,
+                BackgroundSizingProperty,
                 BorderBrushProperty,
                 BorderThicknessProperty,
-                CornerRadiusProperty,
-                BoxShadowProperty);
+                BoxShadowProperty,
+                CornerRadiusProperty);
+
             AffectsArrange<ContentPresenter>(HorizontalContentAlignmentProperty, VerticalContentAlignmentProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
         }
@@ -184,45 +193,42 @@ namespace Avalonia.Controls.Presenters
             UpdatePseudoClasses();
         }
 
-        /// <summary>
-        /// Gets or sets a brush with which to paint the background.
-        /// </summary>
+        /// <inheritdoc cref="Border.Background"/>
         public IBrush? Background
         {
             get => GetValue(BackgroundProperty);
             set => SetValue(BackgroundProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a brush with which to paint the border.
-        /// </summary>
+        /// <inheritdoc cref="Border.BackgroundSizing"/>
+        public BackgroundSizing BackgroundSizing
+        {
+            get => GetValue(BackgroundSizingProperty);
+            set => SetValue(BackgroundSizingProperty, value);
+        }
+
+        /// <inheritdoc cref="Border.BorderBrush"/>
         public IBrush? BorderBrush
         {
             get => GetValue(BorderBrushProperty);
             set => SetValue(BorderBrushProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the thickness of the border.
-        /// </summary>
+        /// <inheritdoc cref="Border.BorderThickness"/>
         public Thickness BorderThickness
         {
             get => GetValue(BorderThicknessProperty);
             set => SetValue(BorderThicknessProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the radius of the border rounded corners.
-        /// </summary>
+        /// <inheritdoc cref="Border.CornerRadius"/>
         public CornerRadius CornerRadius
         {
             get => GetValue(CornerRadiusProperty);
             set => SetValue(CornerRadiusProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the box shadow effect parameters
-        /// </summary>
+        /// <inheritdoc cref="Border.BoxShadow"/>
         public BoxShadows BoxShadow
         {
             get => GetValue(BoxShadowProperty);
@@ -541,7 +547,14 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public sealed override void Render(DrawingContext context)
         {
-            _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
+            _borderRenderer.Render(
+                context,
+                Bounds.Size,
+                LayoutThickness,
+                CornerRadius,
+                BackgroundSizing,
+                Background,
+                BorderBrush,
                 BoxShadow);
         }
 
@@ -708,6 +721,18 @@ namespace Avalonia.Controls.Presenters
         {
             var host = e.NewValue as IContentPresenterHost;
             Host = host?.RegisterContentPresenter(this) == true ? host : null;
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Host), Host, false);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Content), Content, true);
+            }
         }
     }
 }

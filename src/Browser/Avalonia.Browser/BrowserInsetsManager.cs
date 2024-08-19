@@ -1,48 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Browser.Interop;
+﻿using Avalonia.Browser.Interop;
 using Avalonia.Controls.Platform;
 using Avalonia.Media;
-using static Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.Browser
 {
-    internal class BrowserInsetsManager : IInsetsManager
+    internal class BrowserInsetsManager : InsetsManagerBase
     {
-        public bool? IsSystemBarVisible
+        public override bool? IsSystemBarVisible
         {
             get
             {
-                return DomHelper.IsFullscreen();
+                return DomHelper.IsFullscreen(BrowserWindowingPlatform.GlobalThis);
             }
             set
             {
-                DomHelper.SetFullscreen(!value ?? false);
+                _ = DomHelper.SetFullscreen(BrowserWindowingPlatform.GlobalThis, !value ?? false);
             }
         }
 
-        public bool DisplayEdgeToEdge { get; set; }
+        public override bool DisplayEdgeToEdge { get; set; }
 
-        public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
-
-        public Thickness SafeAreaPadding
+        public override Thickness SafeAreaPadding
         {
             get
             {
-                var padding = DomHelper.GetSafeAreaPadding();
+                var padding = DomHelper.GetSafeAreaPadding(BrowserWindowingPlatform.GlobalThis);
 
                 return new Thickness(padding[0], padding[1], padding[2], padding[3]);
             }
         }
 
-        public Color? SystemBarColor { get; set; }
+        public override Color? SystemBarColor { get; set; }
 
         public void NotifySafeAreaPaddingChanged()
         {
-            SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
+            OnSafeAreaChanged(new SafeAreaChangedArgs(SafeAreaPadding));
         }
     }
 }

@@ -61,14 +61,14 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
     {
         if (_trackedObjects != null)
             foreach (var tracked in _trackedObjects)
-                tracked.obj.SubscribeToInvalidation(tracked.member, this);
+                tracked.obj.GetOrCreateAnimations().SubscribeToInvalidation(tracked.member, this);
     }
 
     public virtual void Deactivate()
     {
         if (_trackedObjects != null)
             foreach (var tracked in _trackedObjects)
-                tracked.obj.UnsubscribeFromInvalidation(tracked.member, this);
+                tracked.obj.Animations?.UnsubscribeFromInvalidation(tracked.member, this);
     }
 
     public void Invalidate()
@@ -76,7 +76,7 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
         if (_invalidated)
             return;
         _invalidated = true;
-        TargetObject.NotifyAnimatedValueChanged(Property);
+        TargetObject.Animations?.NotifyAnimationInstanceInvalidated(Property);
     }
 
     public void OnTick() => Invalidate();

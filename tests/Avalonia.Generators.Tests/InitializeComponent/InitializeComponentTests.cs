@@ -3,7 +3,6 @@ using Avalonia.Generators.Common;
 using Avalonia.Generators.Compiler;
 using Avalonia.Generators.NameGenerator;
 using Avalonia.Generators.Tests.InitializeComponent.GeneratedInitializeComponent;
-using Avalonia.Generators.Tests.OnlyProperties.GeneratedCode;
 using Avalonia.Generators.Tests.Views;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -45,19 +44,22 @@ public class InitializeComponentTests
 
         var xaml = await View.Load(markup);
         var classInfo = classResolver.ResolveView(xaml);
+        Assert.NotNull(classInfo);
         var nameResolver = new XamlXNameResolver();
         var names = nameResolver.ResolveNames(classInfo.Xaml);
 
-        var generator = new InitializeComponentCodeGenerator(types);
+        var generator = new InitializeComponentCodeGenerator(types, devToolsMode);
+        var generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version?.ToString();
 
         var code = generator
             .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
             .Replace("\r", string.Empty);
 
-        var expected = await InitializeComponentCode.Load(expectation);
-            
+        var expected = (await InitializeComponentCode.Load(expectation))
+            .Replace("\r", string.Empty)
+            .Replace("$GeneratorVersion", generatorVersion);
             
         CSharpSyntaxTree.ParseText(code);
-        Assert.Equal(expected.Replace("\r", string.Empty), code);
+        Assert.Equal(expected, code);
     }
 }

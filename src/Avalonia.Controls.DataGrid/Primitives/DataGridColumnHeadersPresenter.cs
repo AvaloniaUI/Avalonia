@@ -8,6 +8,8 @@ using Avalonia.Media;
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -116,14 +118,19 @@ namespace Avalonia.Controls.Primitives
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
             return child is DataGridColumnHeader header
-                ? OwningGrid.ColumnsInternal.GetColumnDisplayIndex(header.ColumnIndex)
+                ? header.OwningColumn?.DisplayIndex ?? -1
                 : throw new InvalidOperationException("Invalid cell type");
         }
 
         bool IChildIndexProvider.TryGetTotalCount(out int count)
         {
-            count = OwningGrid.ColumnsInternal.VisibleColumnCount;
+            count = Children.Count - 1; // Adjust for filler column
             return true;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridColumnHeadersPresenterAutomationPeer(this);
         }
 
         /// <summary>

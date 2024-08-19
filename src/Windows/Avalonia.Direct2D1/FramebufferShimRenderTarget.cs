@@ -25,7 +25,7 @@ namespace Avalonia.Direct2D1
             _target = null;
         }
 
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
         {
             if (_target == null)
                 throw new ObjectDisposedException(nameof(FramebufferShimRenderTarget));
@@ -37,7 +37,7 @@ namespace Avalonia.Direct2D1
             }
 
             return new FramebufferShim(locked)
-                .CreateDrawingContext();
+                .CreateDrawingContext(useScaledDrawing);
         }
 
         public bool IsCorrupted => false;
@@ -52,9 +52,9 @@ namespace Avalonia.Direct2D1
                 _target = target;
             }
             
-            public override IDrawingContextImpl CreateDrawingContext()
+            public override IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
             {
-                return base.CreateDrawingContext(() =>
+                return base.CreateDrawingContext(useScaledDrawing, () =>
                 {
                     using (var l = WicImpl.Lock(BitmapLockFlags.Read))
                     {

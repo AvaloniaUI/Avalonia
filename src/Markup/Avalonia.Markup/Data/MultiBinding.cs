@@ -5,13 +5,15 @@ using System.Linq;
 using Avalonia.Reactive;
 using Avalonia.Data.Converters;
 using Avalonia.Metadata;
+using Avalonia.Data.Core;
+using System.ComponentModel;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
     /// </summary>
-    public class MultiBinding : IBinding
+    public class MultiBinding : IBinding2
     {
         /// <summary>
         /// Gets the collection of child bindings.
@@ -23,6 +25,16 @@ namespace Avalonia.Data
         /// Gets or sets the <see cref="IMultiValueConverter"/> to use.
         /// </summary>
         public IMultiValueConverter? Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the culture in which to evaluate the converter.
+        /// </summary>
+        /// <value>The default value is null.</value>
+        /// <remarks>
+        /// If this property is not set then <see cref="CultureInfo.CurrentCulture"/> will be used.
+        /// </remarks>
+        [TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
+        public CultureInfo? ConverterCulture { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
@@ -72,8 +84,25 @@ namespace Avalonia.Data
             object? anchor = null,
             bool enableDataValidation = false)
         {
+            var expression = InstanceCore(target, targetProperty);
+            return new InstancedBinding(target, expression, Mode, Priority);
+        }
+
+        BindingExpressionBase IBinding2.Instance(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor)
+        {
+            return InstanceCore(target, targetProperty);
+        }
+
+        private MultiBindingExpression InstanceCore(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty)
+        {
             var targetType = targetProperty?.PropertyType ?? typeof(object);
             var converter = Converter;
+
             // We only respect `StringFormat` if the type of the property we're assigning to will
             // accept a string. Note that this is slightly different to WPF in that WPF only applies
             // `StringFormat` for target type `string` (not `object`).
@@ -83,62 +112,14 @@ namespace Avalonia.Data
                 converter = new StringFormatMultiValueConverter(StringFormat!, converter);
             }
 
-            var children = Bindings.Select(x => x.Initiate(target, null));
-
-            var input = children.Select(x => x?.Source)
-                                .Where(x => x is not null)!
-                                .CombineLatest()
-                                .Select(x => ConvertValue(x, targetType, converter))
-                                .Where(x => x != BindingOperations.DoNothing);
-
-            var mode = Mode == BindingMode.Default ?
-                targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
-
-            switch (mode)
-            {
-                case BindingMode.OneTime:
-                    return InstancedBinding.OneTime(input, Priority);
-                case BindingMode.OneWay:
-                    return InstancedBinding.OneWay(input, Priority);
-                default:
-                    throw new NotSupportedException(
-                        "MultiBinding currently only supports OneTime and OneWay BindingMode.");
-            }
-        }
-
-        private object ConvertValue(IList<object?> values, Type targetType, IMultiValueConverter? converter)
-        {
-            for (var i = 0; i < values.Count; ++i)
-            {
-                if (values[i] is BindingNotification notification)
-                {
-                    values[i] = notification.Value;
-                }
-            }
-
-            var culture = CultureInfo.CurrentCulture;
-            values = new System.Collections.ObjectModel.ReadOnlyCollection<object?>(values);
-            object? converted;
-            if (converter != null)
-            {
-                converted = converter.Convert(values, targetType, ConverterParameter, culture);
-            }
-            else
-            {
-                converted = values;
-            }
-
-            if (converted == null)
-            {
-                converted = TargetNullValue;
-            }
-
-            if (converted == AvaloniaProperty.UnsetValue)
-            {
-                converted = FallbackValue;
-            }
-
-            return converted;
+            return new MultiBindingExpression(
+                Priority,
+                Bindings,
+                converter,
+                ConverterCulture,
+                ConverterParameter,
+                FallbackValue,
+                TargetNullValue);
         }
     }
 }

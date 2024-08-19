@@ -1,10 +1,9 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using CoreGraphics;
+using Foundation;
 using ObjCRuntime;
 using UIKit;
 
@@ -136,21 +135,16 @@ namespace Avalonia.iOS
         }
     }
 
-    public class UIViewControlHandle : INativeControlHostDestroyableControlHandle
+    public class UIViewControlHandle : PlatformHandle, INativeControlHostDestroyableControlHandle
     {
         internal const string UIViewDescriptor = "UIView";
 
-        
-        public UIViewControlHandle(UIView view)
+        public UIViewControlHandle(UIView view) : base(view.Handle.Handle, UIViewDescriptor)
         {
             View = view;
         }
         
         public UIView View { get; }
-        
-        public string HandleDescriptor => UIViewDescriptor;
-
-        IntPtr IPlatformHandle.Handle => View.Handle.Handle;
 
         public void Destroy()
         {

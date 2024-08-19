@@ -7,7 +7,6 @@ using XamlX.Ast;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
-#nullable enable
 
 internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
 {
@@ -94,7 +93,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                     $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
 
-            var singleRootObject = ((XamlManipulationGroupNode)targetDocumentRoot.Manipulation)
+            var singleRootObject = ((XamlManipulationGroupNode)targetDocumentRoot.Manipulation!)
                 .Children.OfType<XamlObjectInitializationNode>().Single();
             if (singleRootObject.Type != resourceDictionaryType)
             {
@@ -162,14 +161,25 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                         && ThemeVariantNodeEquals(context, key, sameKeyPrevAssignmentNode.Values[0]))
                     {
                         sameKeyPrevValueGroup.Children.AddRange(valueGroup.Children);
+                        FixEnsureCapacityNodes(context, sameKeyPrevValueGroup);
                         children.RemoveAt(i);
                         break;
                     }
                 }
             }
         }
-        
+
+        FixEnsureCapacityNodes(context, resourceDictionaryManipulation);
+
         return node;
+    }
+
+    // // Removes all existing EnsureCapacityNode (from the merged dictionaries) and adds a new one.
+    private static void FixEnsureCapacityNodes(AstGroupTransformationContext context, XamlManipulationGroupNode manipulation)
+    {
+        var children = manipulation.Children;
+        children.RemoveAll(c => c is AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer.EnsureCapacityNode);
+        new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer().Apply(context, manipulation);
     }
 
     public static bool ThemeVariantNodeEquals(AstGroupTransformationContext context, IXamlAstValueNode left, IXamlAstValueNode right)

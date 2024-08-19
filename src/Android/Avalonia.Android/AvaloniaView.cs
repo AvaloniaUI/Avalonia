@@ -20,7 +20,8 @@ namespace Avalonia.Android
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
 
-        private IDisposable _timerSubscription;
+        private IDisposable? _timerSubscription;
+        private bool _surfaceCreated;
 
         public AvaloniaView(Context context) : base(context)
         {
@@ -32,17 +33,38 @@ namespace Avalonia.Android
 
             this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
+
+            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+        }
+
+        private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
+        {
+            _surfaceCreated = true;
+
+            if (Visibility == ViewStates.Visible)
+            {
+                OnVisibilityChanged(true);
+            }
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
+        internal TopLevel? TopLevel => _root;
 
-        public object Content
+        public object? Content
         {
             get { return _root.Content; }
             set { _root.Content = value; }
         }
 
-        public override bool DispatchKeyEvent(KeyEvent e)
+        internal new void Dispose()
+        {
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
+            _root?.Dispose();
+            _root = null!;
+        }
+
+        public override bool DispatchKeyEvent(KeyEvent? e)
         {
             return _view.View.DispatchKeyEvent(e);
         }
@@ -60,9 +82,11 @@ namespace Avalonia.Android
             OnVisibilityChanged(visibility == ViewStates.Visible);
         }
 
-        private void OnVisibilityChanged(bool isVisible)
+        internal void OnVisibilityChanged(bool isVisible)
         {
-            if (isVisible)
+            if (_root == null || !_surfaceCreated)
+                return;
+            if (isVisible && _timerSubscription == null)
             {
                 if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
                 {
@@ -76,14 +100,15 @@ namespace Avalonia.Android
                     (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
                 }
             }
-            else
+            else if (!isVisible && _timerSubscription != null)
             {
                 _root.StopRendering();
                 _timerSubscription?.Dispose();
+                _timerSubscription = null;
             }
         }
         
-        protected override void OnConfigurationChanged(Configuration newConfig)
+        protected override void OnConfigurationChanged(Configuration? newConfig)
         {
             base.OnConfigurationChanged(newConfig);
             OnConfigurationChanged();
@@ -91,8 +116,13 @@ namespace Avalonia.Android
 
         private void OnConfigurationChanged()
         {
-            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
-            settings?.OnViewConfigurationChanged(Context);
+            if (Context is { } context)
+            {
+                var settings =
+                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
+                settings?.OnViewConfigurationChanged(context);
+                ((AndroidScreens)_view.TryGetFeature<IScreenImpl>()!).OnChanged();
+            }
         }
 
         class ViewImpl : TopLevelImpl
@@ -103,20 +133,11 @@ namespace Avalonia.Android
                 View.FocusChange += ViewImpl_FocusChange;
             }
 
-            private void ViewImpl_FocusChange(object sender, FocusChangeEventArgs e)
+            private void ViewImpl_FocusChange(object? sender, FocusChangeEventArgs e)
             {
                 if(!e.HasFocus)
                     LostFocus?.Invoke();
             }
-
-            protected override void OnResized(Size size)
-            {
-                MaxClientSize = size;
-                base.OnResized(size);
-            }
-
-            public WindowState WindowState { get; set; }
-            public IDisposable ShowDialog() => null;
         }
     }
 }

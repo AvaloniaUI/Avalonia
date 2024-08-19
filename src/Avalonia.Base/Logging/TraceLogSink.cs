@@ -80,15 +80,7 @@ namespace Avalonia.Logging
                 }
             }
 
-            if (source is object)
-            {
-                result.Append(" (");
-                result.Append(source.GetType().Name);
-                result.Append(" #");
-                result.Append(source.GetHashCode());
-                result.Append(')');
-            }
-
+            FormatSource(source, result);
             return StringBuilderCache.GetStringAndRelease(result);
         }
 
@@ -132,16 +124,25 @@ namespace Avalonia.Logging
                 }
             }
 
-            if (source is object)
-            {
-                result.Append('(');
-                result.Append(source.GetType().Name);
-                result.Append(" #");
-                result.Append(source.GetHashCode());
-                result.Append(')');
-            }
-
+            FormatSource(source, result);
             return StringBuilderCache.GetStringAndRelease(result);
+        }
+
+        private static void FormatSource(object? source, StringBuilder result)
+        {
+            if (source is null)
+                return;
+
+            result.Append(" (");
+            result.Append(source.GetType().Name);
+            result.Append(" #");
+
+            if (source is StyledElement se && se.Name is not null)
+                result.Append(se.Name);
+            else
+                result.Append(source.GetHashCode());
+
+            result.Append(')');
         }
     }
 }

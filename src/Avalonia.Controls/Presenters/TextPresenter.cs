@@ -153,6 +153,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the font family.
+        /// </summary>
+        public FontFeatureCollection? FontFeatures
+        {
+            get => TextElement.GetFontFeatures(this);
+            set => TextElement.SetFontFeatures(this, value);
+        }
+
+        /// <summary>
         /// Gets or sets the font size.
         /// </summary>
         public double FontSize
@@ -329,7 +338,7 @@ namespace Avalonia.Controls.Presenters
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
 
-            var textLayout = new TextLayout(text, typeface, FontSize, foreground, TextAlignment,
+            var textLayout = new TextLayout(text, typeface, FontFeatures, FontSize, foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
                 flowDirection: FlowDirection, lineHeight: LineHeight, letterSpacing: LetterSpacing);
 
@@ -452,6 +461,8 @@ namespace Avalonia.Controls.Presenters
 
         public void ShowCaret()
         {
+            EnsureCaretTimer();
+            EnsureTextSelectionLayer();
             _caretBlink = true;
             _caretTimer?.Start();
             InvalidateVisual();
@@ -460,10 +471,7 @@ namespace Avalonia.Controls.Presenters
         public void HideCaret()
         {
             _caretBlink = false;
-            if (TextSelectionHandleCanvas != null)
-            {
-                TextSelectionHandleCanvas.ShowHandles = false;
-            }
+            RemoveTextSelectionCanvas();
             _caretTimer?.Stop();
             InvalidateVisual();
         }
@@ -474,6 +482,8 @@ namespace Avalonia.Controls.Presenters
             {
                 return;
             }
+
+            EnsureCaretTimer();
 
             if (_caretTimer?.IsEnabled ?? false)
             {
@@ -531,7 +541,7 @@ namespace Avalonia.Controls.Presenters
             if (!string.IsNullOrEmpty(preeditText))
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
-                        new GenericTextRunProperties(typeface, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
 
@@ -547,7 +557,7 @@ namespace Avalonia.Controls.Presenters
                     textStyleOverrides = new[]
                     {
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
                             foregroundBrush: SelectionForegroundBrush))
                     };
                 }
@@ -592,6 +602,7 @@ namespace Avalonia.Controls.Presenters
             _textLayout?.Dispose();
             _textLayout = null;
 
+            InvalidateVisual();
             InvalidateMeasure();
         }
 
@@ -718,6 +729,14 @@ namespace Avalonia.Controls.Presenters
             _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
 
             CaretChanged();
+        }
+        
+        private void EnsureCaretTimer()
+        {
+            if (_caretTimer == null)
+            {
+                ResetCaretTimer();
+            }
         }
 
         private void ResetCaretTimer()
@@ -887,8 +906,6 @@ namespace Avalonia.Controls.Presenters
             base.OnAttachedToVisualTree(e);
 
             ResetCaretTimer();
-
-            EnsureTextSelectionLayer();
         }
 
         private void EnsureTextSelectionLayer()
@@ -908,6 +925,17 @@ namespace Avalonia.Controls.Presenters
             }
             if (_layer != null && TextSelectionHandleCanvas.VisualParent != _layer)
                 _layer?.Add(TextSelectionHandleCanvas);
+        }
+
+        private void RemoveTextSelectionCanvas()
+        {
+            if(_layer != null && TextSelectionHandleCanvas is { } canvas)
+            {
+                canvas.SetPresenter(null);
+                _layer.Remove(canvas);
+            }
+
+            TextSelectionHandleCanvas = null;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

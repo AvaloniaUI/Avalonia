@@ -128,6 +128,13 @@
           </Span>.
         </SelectableTextBlock>
       </Border>
+      <Border>
+        <TextBlock FontFamily="Times New Roman">
+          <Run Text="ABC" FontFeatures="+c2sc, +smcp"/>
+          <Run Text="DEF"/>
+          <Run Text="0123" FontFeatures="frac"/>
+        </TextBlock> 
+      </Border>
     </WrapPanel>
   </StackPanel>
 </UserControl>

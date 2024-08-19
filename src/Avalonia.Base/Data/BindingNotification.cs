@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Data
 {
@@ -163,6 +165,31 @@ namespace Avalonia.Data
         }
 
         /// <summary>
+        /// Updates the value of an object that may be a <see cref="BindingNotification"/>.
+        /// </summary>
+        /// <param name="o">The object that may be a binding notification.</param>
+        /// <param name="value">The new value.</param>
+        /// <returns>
+        /// The updated binding notification if <paramref name="o"/> is a binding notification;
+        /// otherwise <paramref name="value"/>.
+        /// </returns>
+        /// <remarks>
+        /// If <paramref name="o"/> is a <see cref="BindingNotification"/> then sets its value
+        /// to <paramref name="value"/>. If <paramref name="value"/> is a
+        /// <see cref="BindingNotification"/> then the value will first be extracted.
+        /// </remarks>
+        public static object? UpdateValue(object? o, object value)
+        {
+            if (o is BindingNotification n)
+            {
+                n.SetValue(ExtractValue(value));
+                return n;
+            }
+
+            return value;
+        }
+
+        /// <summary>
         /// Gets an exception from an object that may be a <see cref="BindingNotification"/>.
         /// </summary>
         /// <param name="o">The object.</param>
@@ -259,6 +286,19 @@ namespace Avalonia.Data
         {
             return a?.GetType() == b?.GetType() &&
                    a?.Message == b?.Message;
+        }
+    }
+
+    internal static class BindingErrorTypeExtensions
+    {
+        public static BindingValueType ToBindingValueType(this BindingErrorType type)
+        {
+            return type switch
+            {
+                BindingErrorType.Error => BindingValueType.BindingError,
+                BindingErrorType.DataValidationError => BindingValueType.DataValidationError,
+                _ => BindingValueType.Value,
+            };
         }
     }
 }

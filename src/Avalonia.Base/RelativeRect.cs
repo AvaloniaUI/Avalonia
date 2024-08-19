@@ -152,6 +152,22 @@ namespace Avalonia
                     Rect.Width * size.Width,
                     Rect.Height * size.Height);
         }
+        
+        /// <summary>
+        /// Converts a <see cref="RelativeRect"/> into pixels.
+        /// </summary>
+        /// <param name="boundingBox">The bounding box of the visual.</param>
+        /// <returns>The origin point in pixels.</returns>
+        public Rect ToPixels(Rect boundingBox)
+        {
+            return Unit == RelativeUnit.Absolute ?
+                Rect :
+                new Rect(
+                     boundingBox.X + Rect.X * boundingBox.Width,
+                    boundingBox.Y + Rect.Y * boundingBox.Height,
+                    Rect.Width * boundingBox.Width,
+                    Rect.Height * boundingBox.Height);
+        }
 
         /// <summary>
         /// Parses a <see cref="RelativeRect"/> string.

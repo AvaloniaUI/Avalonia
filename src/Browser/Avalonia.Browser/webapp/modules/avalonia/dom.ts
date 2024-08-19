@@ -1,49 +1,68 @@
+import { JsExports } from "./jsExports";
+
 export class AvaloniaDOM {
+    public static getGlobalThis() {
+        return globalThis;
+    }
+
     public static addClass(element: HTMLElement, className: string): void {
         element.classList.add(className);
     }
 
-    static observeDarkMode(observer: (isDarkMode: boolean, isHighContrast: boolean) => boolean) {
-        if (globalThis.matchMedia === undefined) {
-            return false;
-        }
+    static getFirstElementById(className: string, parent: HTMLElement | Window): Element | null {
+        const parentNode = parent instanceof Window
+            ? parent.document
+            : parent.ownerDocument;
 
-        const colorShemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
-        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+        return parentNode.getElementById(className);
+    }
 
-        colorShemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-            observer(args.matches, prefersContrastMedia.matches);
-        });
-        prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
-            observer(colorShemeMedia.matches, args.matches);
-        });
+    static getFirstElementByClassName(className: string, parent: HTMLElement | Window): Element | null {
+        const parentNode = parent instanceof Window
+            ? parent.document
+            : parent;
 
-        return {
-            isDarkMode: colorShemeMedia.matches,
-            isHighContrast: prefersContrastMedia.matches
-        };
+        const elements = parentNode.getElementsByClassName(className);
+        return elements ? elements[0] : null;
+    }
+
+    static createAvaloniaCanvas(host: HTMLElement): HTMLCanvasElement {
+        const containerId = host.getAttribute("data-containerId") ?? "0000";
+
+        const canvas = document.createElement("canvas");
+        canvas.id = `canvas${containerId}`;
+        canvas.classList.add("avalonia-canvas");
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        canvas.style.position = "absolute";
+
+        return canvas;
+    }
+
+    static attachCanvas(host: HTMLElement, canvas: HTMLCanvasElement): void {
+        host.prepend(canvas);
+    }
+
+    static detachCanvas(host: HTMLElement, canvas: HTMLCanvasElement): void {
+        host.removeChild(canvas);
     }
 
     static createAvaloniaHost(host: HTMLElement) {
-        const randomIdPart = Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 10);
+        const containerId = Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 10);
 
         // Root element
         host.classList.add("avalonia-container");
         host.tabIndex = 0;
+        host.setAttribute("data-containerId", containerId);
         host.oncontextmenu = function () { return false; };
         host.style.overflow = "hidden";
         host.style.touchAction = "none";
 
-        // Rendering target canvas
-        const canvas = document.createElement("canvas");
-        canvas.id = `canvas${randomIdPart}`;
-        canvas.classList.add("avalonia-canvas");
-        canvas.style.width = "100%";
-        canvas.style.position = "absolute";
+        // Canvas is lazily created depending on the rendering mode. See createAvaloniaCanvas usage.
 
         // Native controls host
         const nativeHost = document.createElement("div");
-        nativeHost.id = `nativeHost${randomIdPart}`;
+        nativeHost.id = `nativeHost${containerId}`;
         nativeHost.classList.add("avalonia-native-host");
         nativeHost.style.left = "0px";
         nativeHost.style.top = "0px";
@@ -53,13 +72,14 @@ export class AvaloniaDOM {
 
         // IME
         const inputElement = document.createElement("input");
-        inputElement.id = `inputElement${randomIdPart}`;
+        inputElement.id = `inputElement${containerId}`;
         inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
         inputElement.type = "text";
         inputElement.spellcheck = false;
         inputElement.style.padding = "0";
         inputElement.style.margin = "0";
+        inputElement.style.borderWidth = "0";
         inputElement.style.position = "absolute";
         inputElement.style.overflow = "hidden";
         inputElement.style.borderStyle = "hidden";
@@ -75,35 +95,76 @@ export class AvaloniaDOM {
 
         host.prepend(inputElement);
         host.prepend(nativeHost);
-        host.prepend(canvas);
 
         return {
             host,
-            canvas,
             nativeHost,
             inputElement
         };
     }
 
-    public static isFullscreen(): boolean {
-        return document.fullscreenElement != null;
+    public static isFullscreen(globalThis: Window): boolean {
+        return globalThis.document.fullscreenElement != null;
     }
 
-    public static async setFullscreen(isFullscreen: boolean) {
+    public static async setFullscreen(globalThis: Window, isFullscreen: boolean) {
         if (isFullscreen) {
-            const doc = document.documentElement;
+            const doc = globalThis.document.documentElement;
             await doc.requestFullscreen();
         } else {
-            await document.exitFullscreen();
+            await globalThis.document.exitFullscreen();
         }
     }
 
-    public static getSafeAreaPadding(): number[] {
-        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sat"));
-        const bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sab"));
-        const left = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sal"));
-        const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sar"));
+    public static initGlobalDomEvents(globalThis: Window): void {
+        // Init Safe Area properties.
+        globalThis.document.documentElement.style.setProperty("--av-sat", "env(safe-area-inset-top)");
+        globalThis.document.documentElement.style.setProperty("--av-sar", "env(safe-area-inset-right)");
+        globalThis.document.documentElement.style.setProperty("--av-sab", "env(safe-area-inset-bottom)");
+        globalThis.document.documentElement.style.setProperty("--av-sal", "env(safe-area-inset-left)");
+
+        // Subscribe on DarkMode changes.
+        if (globalThis.matchMedia !== undefined) {
+            const colorSchemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+            const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+
+            colorSchemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+                JsExports.DomHelper.DarkModeChanged(args.matches, prefersContrastMedia.matches);
+            });
+            prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+                JsExports.DomHelper.DarkModeChanged(colorSchemeMedia.matches, args.matches);
+            });
+        }
+
+        globalThis.document.addEventListener("visibilitychange", () => {
+            JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
+        });
+
+        // Report initial value.
+        if (globalThis.document.visibilityState === "visible") {
+            globalThis.setTimeout(() => {
+                JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
+            }, 10);
+        }
+    }
+
+    public static getSafeAreaPadding(globalThis: Window): number[] {
+        const top = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sat"));
+        const bottom = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sab"));
+        const left = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sal"));
+        const right = parseFloat(getComputedStyle(globalThis.document.documentElement).getPropertyValue("--av-sar"));
 
         return [left, top, bottom, right];
+    }
+
+    public static getDarkMode(globalThis: Window): number[] {
+        if (globalThis.matchMedia === undefined) return [0, 0];
+
+        const colorSchemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+        return [
+            colorSchemeMedia.matches ? 1 : 0,
+            prefersContrastMedia.matches ? 1 : 0
+        ];
     }
 }

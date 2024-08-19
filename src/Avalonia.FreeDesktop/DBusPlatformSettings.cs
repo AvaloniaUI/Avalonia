@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -17,10 +18,10 @@ namespace Avalonia.FreeDesktop
 
         public DBusPlatformSettings()
         {
-            if (DBusHelper.Connection is null)
+            if (DBusHelper.DefaultConnection is not { } conn)
                 return;
 
-            _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            _settings = new OrgFreedesktopPortalSettings(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
             _ = TryGetInitialValuesAsync();
         }
@@ -33,7 +34,7 @@ namespace Avalonia.FreeDesktop
             _accentColor = await TryGetAccentColorAsync();
             _lastColorValues = BuildPlatformColorValues();
             if (_lastColorValues is not null)
-                OnColorValuesChanged(_lastColorValues);
+                Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
         }
 
         private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
@@ -41,14 +42,13 @@ namespace Avalonia.FreeDesktop
             try
             {
                 var version = await _settings!.GetVersionPropertyAsync();
-                DBusVariantItem value;
+                VariantValue value;
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
-                    value = (DBusVariantItem)(await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).Value;
-                if (value.Value is DBusUInt32Item dBusUInt32Item)
-                    return ToColorScheme(dBusUInt32Item.Value);
-                return null;
+                    // Variants-in-Variants are automatically collapsed by Tmds.DBus.Protocol, so need to do so here as normally necessary
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
+                return ToColorScheme(value.GetUInt32());
             }
             catch (DBusException)
             {
@@ -61,14 +61,12 @@ namespace Avalonia.FreeDesktop
             try
             {
                 var version = await _settings!.GetVersionPropertyAsync();
-                DBusVariantItem value;
+                VariantValue value;
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = (DBusVariantItem)(await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color")).Value;
-                if (value.Value is DBusStructItem dBusStructItem)
-                    return ToAccentColor(dBusStructItem);
-                return null;
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
+                return ToAccentColor(value);
             }
             catch (DBusException)
             {
@@ -76,20 +74,20 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private void SettingsChangedHandler(Exception? exception, (string @namespace, string key, DBusVariantItem value) valueTuple)
+        private void SettingsChangedHandler(Exception? exception, (string Namespace, string Key, VariantValue Value) tuple)
         {
             if (exception is not null)
                 return;
 
-            switch (valueTuple)
+            switch (tuple)
             {
-                case ("org.freedesktop.appearance", "color-scheme", { } colorScheme):
-                    _themeVariant = ToColorScheme((colorScheme.Value as DBusUInt32Item)!.Value);
+                case ("org.freedesktop.appearance", "color-scheme", var colorScheme):
+                    _themeVariant = ToColorScheme(colorScheme.GetUInt32());
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
                     break;
-                case ("org.freedesktop.appearance", "accent-color", { } accentColor):
-                    _accentColor = ToAccentColor((accentColor.Value as DBusStructItem)!);
+                case ("org.freedesktop.appearance", "accent-color", var accentColor):
+                    _accentColor = ToAccentColor(accentColor);
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
                     break;
@@ -118,16 +116,16 @@ namespace Avalonia.FreeDesktop
             return isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
         }
 
-        private static Color? ToAccentColor(DBusStructItem value)
+        private static Color? ToAccentColor(VariantValue value)
         {
             /*
             Indicates the system's preferred accent color as a tuple of RGB values
             in the sRGB color space, in the range [0,1].
             Out-of-range RGB values should be treated as an unset accent color.
              */
-            var r = (value[0] as DBusDoubleItem)!.Value;
-            var g = (value[1] as DBusDoubleItem)!.Value;
-            var b = (value[2] as DBusDoubleItem)!.Value;
+            var r = value.GetItem(0).GetDouble();
+            var g = value.GetItem(1).GetDouble();
+            var b = value.GetItem(2).GetDouble();
             if (r is < 0 or > 1 || g is < 0 or > 1 || b is < 0 or > 1)
                 return null;
             return Color.FromRgb((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));

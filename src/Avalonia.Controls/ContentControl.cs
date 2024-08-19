@@ -1,6 +1,6 @@
+using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -47,6 +47,7 @@ namespace Avalonia.Controls
             {
                 Name = "PART_ContentPresenter",
                 [~BackgroundProperty] = new TemplateBinding(BackgroundProperty),
+                [~BackgroundSizingProperty] = new TemplateBinding(BackgroundSizingProperty),
                 [~BorderBrushProperty] = new TemplateBinding(BorderBrushProperty),
                 [~BorderThicknessProperty] = new TemplateBinding(BorderThicknessProperty),
                 [~CornerRadiusProperty] = new TemplateBinding(CornerRadiusProperty),
@@ -149,6 +150,16 @@ namespace Avalonia.Controls
             if (e.NewValue is ILogical newChild)
             {
                 LogicalChildren.Add(newChild);
+            }
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Content), Content, includeContent);
             }
         }
     }

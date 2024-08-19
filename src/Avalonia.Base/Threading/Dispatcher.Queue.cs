@@ -65,7 +65,7 @@ public partial class Dispatcher
                 job = _queue.Peek();
             if (job == null)
                 return;
-            if (priority != null && job.Priority < priority.Value)
+            if (job.Priority < priority.Value)
                 return;
             ExecuteJob(job);
         }
@@ -194,7 +194,6 @@ public partial class Dispatcher
                 
                 if (Now - backgroundJobExecutionStartedAt.Value > _maximumInputStarvationTime)
                 {
-                    _signaled = true;
                     RequestBackgroundProcessing();
                     return;
                 }

@@ -19,6 +19,7 @@ internal class Permissions
     public static readonly Privilege MediaStoragePrivilege = new("http://tizen.org/privilege/mediastorage", true);
     public static readonly Privilege RecorderPrivilege = new("http://tizen.org/privilege/recorder", false);
     public static readonly Privilege HapticPrivilege = new("http://tizen.org/privilege/haptic", false);
+    public static readonly Privilege LaunchPrivilege = new("http://tizen.org/privilege/appmanager.launch", false);
 
     public static readonly Privilege[] NetworkPrivileges = { InternetPrivilege, NetworkPrivilege };
     public static readonly Privilege[] MapsPrivileges = { InternetPrivilege, MapServicePrivilege, NetworkPrivilege };

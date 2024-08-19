@@ -18,6 +18,7 @@ using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using System.Collections.Generic;
 
 namespace Avalonia
 {
@@ -55,7 +56,8 @@ namespace Avalonia.Win32
         }
 
         internal static Win32Platform Instance => s_instance;
-        internal static IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+        internal IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+        internal ScreenImpl Screen => (ScreenImpl)AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
 
         internal IntPtr Handle => _hwnd;
 
@@ -90,6 +92,7 @@ namespace Avalonia.Win32
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
+                .Bind<IScreenImpl>().ToSingleton<ScreenImpl>()
                 .Bind<IDispatcherImpl>().ToConstant(s_instance._dispatcher)
                 .Bind<IRenderTimer>().ToConstant(renderTimer)
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
@@ -101,6 +104,7 @@ namespace Avalonia.Win32
                         new KeyGesture(Key.F10, KeyModifiers.Shift)
                     }
                 })
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Win"))
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(NonPumpingWaitHelperImpl.Instance)
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
@@ -127,6 +131,7 @@ namespace Avalonia.Win32
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
             
             s_compositor = new Compositor( platformGraphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(s_compositor);
         }
         
         public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
@@ -214,6 +219,8 @@ namespace Avalonia.Win32
             return new WindowImpl();
         }
 
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
+
         public IWindowImpl CreateEmbeddableWindow()
         {
             var embedded = new EmbeddedWindowImpl();
@@ -225,13 +232,13 @@ namespace Avalonia.Win32
         {
             using (var stream = File.OpenRead(fileName))
             {
-                return CreateIconImpl(stream);
+                return new IconImpl(stream);
             }
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
-            return CreateIconImpl(stream);
+            return new IconImpl(stream);
         }
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
@@ -239,38 +246,8 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
-
-                var iconData = memoryStream.ToArray();
-
-                return new IconImpl(new Win32Icon(iconData), iconData);
-            }
-        }
-
-        private static IconImpl CreateIconImpl(Stream stream)
-        {
-            if (stream.CanSeek)
-            {
-                stream.Position = 0;
-            }
-
-            if (stream is MemoryStream memoryStream)
-            {
-                var iconData = memoryStream.ToArray();
-
-                return new IconImpl(new Win32Icon(iconData), iconData);
-            }
-            else
-            {
-                using (var ms = new MemoryStream())
-                {
-                    stream.CopyTo(ms);
-
-                    ms.Position = 0;
-
-                    var iconData = ms.ToArray();
-
-                    return new IconImpl(new Win32Icon(iconData), iconData);
-                }
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return new IconImpl(memoryStream);
             }
         }
 

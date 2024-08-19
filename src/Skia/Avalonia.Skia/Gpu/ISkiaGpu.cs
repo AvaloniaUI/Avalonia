@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -23,6 +24,14 @@ namespace Avalonia.Skia
         /// <param name="size">size in pixels.</param>
         /// <param name="session">An optional custom render session.</param>
         ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session);
+    }
+
+    //TODO12: Merge into ISkiaGpu
+    [Unstable]
+    public interface ISkiaGpuWithPlatformGraphicsContext : ISkiaGpu
+    {
+        IPlatformGraphicsContext? PlatformGraphicsContext { get; }
+        IScopedResource<GRContext>? TryGetGrContext();
     }
     
     public interface ISkiaSurface : IDisposable

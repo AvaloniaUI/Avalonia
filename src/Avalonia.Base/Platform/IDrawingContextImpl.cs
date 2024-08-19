@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Utilities;
 using Avalonia.Metadata;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Platform
 {
@@ -12,11 +13,6 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IDrawingContextImpl : IDisposable
     {
-        /// <summary>
-        /// Gets or sets the current render options used to control the rendering behavior of drawing operations.
-        /// </summary>
-        RenderOptions RenderOptions { get; set; }
-
         /// <summary>
         /// Gets or sets the current transform of the drawing context.
         /// </summary>
@@ -75,6 +71,18 @@ namespace Avalonia.Platform
         /// </remarks>
         void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect,
             BoxShadows boxShadows = default);
+        
+        /// <summary>
+        /// Draws the specified region with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
+        /// <param name="region">The region to draw.</param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        void DrawRegion(IBrush? brush, IPen? pen, IPlatformRenderInterfaceRegion region);
 
         /// <summary>
         /// Draws an ellipse with the specified Brush and Pen.
@@ -108,7 +116,7 @@ namespace Avalonia.Platform
         /// has to do a format conversion each time a standard render target bitmap is rendered,
         /// but a layer created via this method has no such overhead.
         /// </remarks>
-        IDrawingContextLayerImpl CreateLayer(Size size);
+        IDrawingContextLayerImpl CreateLayer(PixelSize size);
 
         /// <summary>
         /// Pushes a clip rectangle.
@@ -121,11 +129,27 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="clip">The clip rounded rectangle</param>
         void PushClip(RoundedRect clip);
-
+        
+        /// <summary>
+        /// Pushes a clip region.
+        /// </summary>
+        /// <param name="region">The clip region</param>
+        void PushClip(IPlatformRenderInterfaceRegion region);
+        
         /// <summary>
         /// Pops the latest pushed clip rectangle.
         /// </summary>
         void PopClip();
+
+        /// <summary>
+        /// Enforces rendering to happen on an intermediate surface
+        /// </summary>
+        void PushLayer(Rect bounds);
+
+        /// <summary>
+        /// Pops the latest pushed intermediate surface layer.
+        /// </summary>
+        void PopLayer();
 
         /// <summary>
         /// Pushes an opacity value.
@@ -204,5 +228,11 @@ namespace Avalonia.Platform
         /// Returns true if layer supports optimized blit.
         /// </summary>
         bool CanBlit { get; }
+    }
+
+    public interface IDrawingContextLayerWithRenderContextAffinityImpl : IDrawingContextLayerImpl
+    {
+        bool HasRenderContextAffinity { get; }
+        IBitmapImpl CreateNonAffinedSnapshot();
     }
 }

@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (!(node is XamlAstObjectNode on
-                  && on.Type.GetClrType().FullName == "Avalonia.Markup.Xaml.Templates.ControlTemplate"))
+                  && on.Type.GetClrType() == context.GetAvaloniaTypes().ControlTemplate))
                 return node;
             var tt = on.Children.OfType<XamlAstXamlPropertyValueNode>().FirstOrDefault(ch =>
                                               ch.Property.GetClrProperty().Name == "TargetType");
@@ -22,7 +22,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             IXamlAstTypeReference targetType;
 
-            var templatableBaseType = context.Configuration.TypeSystem.GetType("Avalonia.Controls.Control");
+            var templatableBaseType = context.GetAvaloniaTypes().Control;
 
             targetType = tt?.Values.FirstOrDefault() switch
             {
@@ -49,7 +49,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public enum ScopeTypes
         {
-            Style,
+            Style = 1,
             ControlTemplate,
             Transitions
         }

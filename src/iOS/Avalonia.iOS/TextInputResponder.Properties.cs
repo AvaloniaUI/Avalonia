@@ -1,4 +1,3 @@
-#nullable enable
 using Avalonia.Input.TextInput;
 using Foundation;
 using UIKit;

@@ -5,30 +5,30 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Collections.Pooled;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.Input;
-using Avalonia.Metadata;
 using Avalonia.OpenGL.Egl;
-using Avalonia.Platform.Storage;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
-using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.OpenGl;
-using Avalonia.Win32.WinRT.Composition;
+using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.WinRT;
+using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using Avalonia.Input.Platform;
 using System.Diagnostics;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Threading;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
-using static Avalonia.Controls.Platform.Win32SpecificOptions;
+using static Avalonia.Controls.Win32Properties;
+using Avalonia.Logging;
 
 namespace Avalonia.Win32
 {
@@ -54,6 +54,11 @@ namespace Avalonia.Win32
                 { WindowEdge.SouthWest, HitTestValues.HTBOTTOMLEFT },
                 { WindowEdge.West, HitTestValues.HTLEFT }
             };
+
+        /// <summary>
+        /// The Windows DPI which equates to a <see cref="RenderScaling"/> of 1.0.
+        /// </summary>
+        public const double StandardDpi = 96;
 
         private SavedWindowInfo _savedWindowInfo;
         private bool _isFullScreenActive;
@@ -83,10 +88,13 @@ namespace Avalonia.Win32
         private string? _className;
         private IntPtr _hwnd;
         private IInputRoot? _owner;
-        private WindowProperties _windowProperties;
+        protected WindowProperties _windowProperties;
+        private IconImpl? _iconImpl;
+        private readonly Dictionary<(Icons type, uint dpi), Win32Icon> _iconCache = new();
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
+        private uint _dpi = 96;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
         private OleDropTarget? _dropTarget;
@@ -99,6 +107,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
+        private bool _ignoreDpiChanges;
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
@@ -143,7 +152,7 @@ namespace Avalonia.Win32
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-            
+
             if (this is not PopupImpl)
             {
                 UpdateInputMethod(GetKeyboardLayout(0));
@@ -164,7 +173,7 @@ namespace Avalonia.Win32
                 }
             }
 
-            Screen = new ScreenImpl();
+            Screen = Win32Platform.Instance.Screen;
             _storageProvider = new Win32StorageProvider(this);
             _inputPane = WindowsInputPane.TryCreate(this);
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
@@ -175,6 +184,8 @@ namespace Avalonia.Win32
 
         internal IInputRoot Owner
             => _owner ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
+
+        internal WindowImpl? ParentImpl => _parent;
 
         public Action? Activated { get; set; }
 
@@ -246,22 +257,18 @@ namespace Avalonia.Win32
             }
         }
 
-        public Size? FrameSize
+        Size? IWindowBaseImpl.FrameSize => FrameSize;
+
+        public Size FrameSize
         {
             get
             {
-                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
-                {
-                    GetWindowRect(_hwnd, out var rcWindow);
-                    return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
-                }
-
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf<RECT>());
-                return new Size(rect.Width, rect.Height) / RenderScaling;
+                GetWindowRect(_hwnd, out var rcWindow);
+                return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
             }
         }
 
-        public IScreenImpl Screen { get; }
+        public ScreenImpl Screen { get; }
 
         public IPlatformHandle Handle { get; private set; }
 
@@ -283,8 +290,7 @@ namespace Avalonia.Win32
                     return WindowState.FullScreen;
                 }
 
-                var placement = default(WINDOWPLACEMENT);
-                GetWindowPlacement(_hwnd, ref placement);
+                GetWindowPlacement(_hwnd, out var placement);
 
                 return placement.ShowCmd switch
                 {
@@ -325,6 +331,11 @@ namespace Avalonia.Win32
 
         public object? TryGetFeature(Type featureType)
         {
+            if (featureType == typeof(IScreenImpl))
+            {
+                return Screen;
+            }
+
             if (featureType == typeof(ITextInputMethodImpl))
             {
                 return Imm32InputMethod.Current;
@@ -334,7 +345,7 @@ namespace Avalonia.Win32
             {
                 return _nativeControlHost;
             }
-            
+
             if (featureType == typeof(IStorageProvider))
             {
                 return _storageProvider;
@@ -344,10 +355,15 @@ namespace Avalonia.Win32
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
-            
+
             if (featureType == typeof(IInputPane))
             {
                 return _inputPane;
+            }
+
+            if (featureType == typeof(ILauncher))
+            {
+                return new BclLauncher();
             }
 
             return null;
@@ -488,6 +504,7 @@ namespace Avalonia.Win32
             var result = DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
             return result == 0;
         }
+
         public IEnumerable<object> Surfaces
             => _glSurface is null ?
                 new object[] { Handle, _framebuffer } :
@@ -498,15 +515,10 @@ namespace Avalonia.Win32
             get
             {
                 GetWindowRect(_hwnd, out var rc);
-
-                var border = HiddenBorderSize;
-                return new PixelPoint(rc.left + border.Width, rc.top + border.Height);
+                return new PixelPoint(rc.left, rc.top);
             }
             set
             {
-                var border = HiddenBorderSize;
-                value = new PixelPoint(value.X - border.Width, value.Y - border.Height);
-
                 SetWindowPos(
                     Handle.Handle,
                     IntPtr.Zero,
@@ -520,23 +532,6 @@ namespace Avalonia.Win32
 
         private bool HasFullDecorations => _windowProperties.Decorations == SystemDecorations.Full;
 
-        private PixelSize HiddenBorderSize
-        {
-            get
-            {
-                // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
-                if (Win32Platform.WindowsVersion.Major < 10 || !HasFullDecorations || GetStyle().HasFlag(WindowStyles.WS_POPUP))
-                {
-                    return PixelSize.Empty;
-                }
-
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf(typeof(RECT)));
-                GetWindowRect(_hwnd, out var frameRect);
-                var borderWidth = GetSystemMetrics(SystemMetric.SM_CXBORDER);
-
-                return new PixelSize(clientRect.left - frameRect.left - borderWidth, 0);
-            }
-        }
 
         public void Move(PixelPoint point) => Position = point;
 
@@ -550,29 +545,63 @@ namespace Avalonia.Win32
 
         public void Resize(Size value, WindowResizeReason reason)
         {
-            if (WindowState != WindowState.Normal)
-                return;
-
             int requestedClientWidth = (int)(value.Width * RenderScaling);
             int requestedClientHeight = (int)(value.Height * RenderScaling);
 
-            GetClientRect(_hwnd, out var clientRect);
-
-            // do comparison after scaling to avoid rounding issues
-            if (requestedClientWidth != clientRect.Width || requestedClientHeight != clientRect.Height)
+            GetClientRect(_hwnd, out var currentClientRect);
+            if (currentClientRect.Width == requestedClientWidth && currentClientRect.Height == requestedClientHeight)
             {
-                GetWindowRect(_hwnd, out var windowRect);
-
-                using var scope = SetResizeReason(reason);
-                SetWindowPos(
-                    _hwnd,
-                    IntPtr.Zero,
-                    0,
-                    0,
-                    requestedClientWidth + (_isClientAreaExtended ? 0 : windowRect.Width - clientRect.Width),
-                    requestedClientHeight + (_isClientAreaExtended ? 0 : windowRect.Height - clientRect.Height),
-                    SetWindowPosFlags.SWP_RESIZE);
+                // Don't update our window position if the client size is already correct. This leads to Windows updating our
+                // "normal position" (i.e. restored bounds) to match our maximised or areo snap size, which is incorrect behaviour.
+                // We only want to proceed with this method if the new size is coming from Avalonia.
+                return;
             }
+
+            if (_lastWindowState == WindowState.FullScreen)
+            {
+                // Fullscreen mode is really a restored window without a frame filling the whole monitor.
+                // It doesn't make sense to resize the window in this state, so ignore this request.
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)?.Log(this, "Ignoring resize event on fullscreen window.");
+                return;
+            }
+
+            GetWindowPlacement(_hwnd, out var windowPlacement);
+
+            var requestedClientRect = new RECT
+            {
+                left = 0,
+                top = 0,
+                right = requestedClientWidth,
+                bottom = requestedClientHeight
+            };
+
+            var requestedWindowRect = _isClientAreaExtended ? requestedClientRect : ClientRectToWindowRect(requestedClientRect);
+            var windowWidth = requestedWindowRect.Width;
+            var windowHeight = requestedWindowRect.Height;
+
+            if (windowWidth == windowPlacement.NormalPosition.Width && windowHeight == windowPlacement.NormalPosition.Height)
+            {
+                return;
+            }
+
+            var position = Position;
+            requestedWindowRect.left = position.X;
+            requestedWindowRect.top = position.Y;
+            requestedWindowRect.right = position.X + windowWidth;
+            requestedWindowRect.bottom = position.Y + windowHeight;
+
+            windowPlacement.NormalPosition = requestedWindowRect;
+
+            windowPlacement.ShowCmd = !_shown ? ShowWindowCommand.Hide : _lastWindowState switch
+            {
+                WindowState.Minimized => ShowWindowCommand.ShowMinNoActive,
+                WindowState.Maximized => ShowWindowCommand.ShowMaximized,
+                WindowState.Normal => ShowWindowCommand.ShowNoActivate,
+                _ => throw new NotImplementedException(),
+            };
+
+            using var scope = SetResizeReason(reason);
+            SetWindowPlacement(_hwnd, in windowPlacement);
         }
 
         public void Activate()
@@ -596,6 +625,8 @@ namespace Avalonia.Win32
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
+
+            ClearIconCache();
         }
 
         public void Invalidate(Rect rect)
@@ -636,7 +667,6 @@ namespace Avalonia.Win32
         public void Hide()
         {
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
-            _shown = false;
         }
 
         public virtual void Show(bool activate, bool isDialog)
@@ -660,7 +690,24 @@ namespace Avalonia.Win32
 
             _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
 
+            // I can't find mention of this *anywhere* online, but it seems that setting
+            // GWL_HWNDPARENT to a window which is on the non-primary monitor can cause two
+            // WM_DPICHANGED messages to be sent: the first changing the DPI to the parent's DPI,
+            // then another changing the DPI back. This then causes Windows to provide an incorrect
+            // suggested new rectangle to the WM_DPICHANGED message if the window is immediately
+            // moved to the parent window's monitor (e.g. when using
+            // WindowStartupLocation.CenterOwner) causing the window to be shown with an incorrect
+            // size.
+            //
+            // Just ignore any WM_DPICHANGED while we're setting the parent as this shouldn't
+            // change the DPI anyway.
+            _ignoreDpiChanges = true;
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
+            _ignoreDpiChanges = false;
+
+            // Windows doesn't seem to respect the HWND_TOPMOST flag of a window when showing an owned window for the first time.
+            // So we set the HWND_TOPMOST again before the owned window is shown. This only needs to be done once.
+            (parent as WindowImpl)?.EnsureTopmost();
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -721,11 +768,53 @@ namespace Avalonia.Win32
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            var impl = icon as IconImpl;
+            _iconImpl = (IconImpl?)icon;
+            ClearIconCache();
+            RefreshIcon();
+        }
 
-            var hIcon = impl?.HIcon ?? IntPtr.Zero;
-            PostMessage(_hwnd, (int)WindowsMessage.WM_SETICON,
-                new IntPtr((int)Icons.ICON_BIG), hIcon);
+        private void ClearIconCache()
+        {
+            foreach (var icon in _iconCache.Values)
+            {
+                icon.Dispose();
+            }
+            _iconCache.Clear();
+        }
+
+        private Win32Icon? LoadIcon(Icons type, uint dpi)
+        {
+            if (_iconImpl == null)
+            {
+                return null;
+            }
+
+            if (type == Icons.ICON_SMALL2)
+            {
+                type = Icons.ICON_SMALL;
+            }
+
+            var iconKey = (type, dpi);
+            if (!_iconCache.TryGetValue(iconKey, out var icon))
+            {
+                var scale = dpi / 96.0;
+                _iconCache[iconKey] = icon = type switch
+                {
+                    Icons.ICON_SMALL => _iconImpl.LoadSmallIcon(scale),
+                    Icons.ICON_BIG => _iconImpl.LoadBigIcon(scale),
+                    _ => throw new NotImplementedException(),
+                };
+            }
+
+            return icon;
+        }
+
+        private void RefreshIcon()
+        {
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_SMALL, LoadIcon(Icons.ICON_SMALL, _dpi)?.Handle ?? default);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_BIG, LoadIcon(Icons.ICON_BIG, _dpi)?.Handle ?? default);
+
+            TaskBarList.SetOverlayIcon(_hwnd, default, null); // This will prompt the taskbar to redraw the icon
         }
 
         public void ShowTaskbarIcon(bool value)
@@ -771,6 +860,17 @@ namespace Avalonia.Win32
             _topmost = value;
         }
 
+        private void EnsureTopmost()
+        {
+            if(_topmost)
+            {
+                SetWindowPos(_hwnd,
+                    WindowPosZOrder.HWND_TOPMOST,
+                    0, 0, 0, 0,
+                    SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+            }
+        }
+
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             _currentThemeVariant = themeVariant;
@@ -780,15 +880,15 @@ namespace Avalonia.Win32
                 DwmSetWindowAttribute(
                     _hwnd,
                     (int)DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
-                    &pvUseBackdropBrush,
-                    sizeof(int));
+                        &pvUseBackdropBrush,
+                        sizeof(int));
                 if (TransparencyLevel == WindowTransparencyLevel.Mica)
                 {
                     SetTransparencyMica();
                 }
             }
         }
-        
+
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
@@ -848,7 +948,7 @@ namespace Avalonia.Win32
 
             RegisterTouchWindow(_hwnd, 0);
 
-            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
+            if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
             {
                 var monitor = MonitorFromWindow(
                     _hwnd,
@@ -857,10 +957,10 @@ namespace Avalonia.Win32
                 if (GetDpiForMonitor(
                     monitor,
                     MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
-                    out var dpix,
+                    out _dpi,
                     out _) == 0)
                 {
-                    _scaling = dpix / 96.0;
+                    _scaling = _dpi / StandardDpi;
                 }
             }
         }
@@ -902,14 +1002,8 @@ namespace Avalonia.Win32
             if (fullscreen)
             {
                 GetWindowRect(_hwnd, out var windowRect);
-                GetClientRect(_hwnd, out var clientRect);
 
-                clientRect.left += windowRect.left;
-                clientRect.right += windowRect.left;
-                clientRect.top += windowRect.top;
-                clientRect.bottom += windowRect.top;
-
-                _savedWindowInfo.WindowRect = clientRect;
+                _savedWindowInfo.WindowRect = windowRect;
 
                 var current = GetStyle();
                 var currentEx = GetExtendedStyle();
@@ -923,15 +1017,14 @@ namespace Avalonia.Win32
 
                 // On expand, if we're given a window_rect, grow to it, otherwise do
                 // not resize.
-                MONITORINFO monitor_info = MONITORINFO.Create();
-                GetMonitorInfo(MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST), ref monitor_info);
-
-                var window_rect = monitor_info.rcMonitor.ToPixelRect();
-
-                _isFullScreenActive = true;
-                SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
-                             window_rect.Width, window_rect.Height,
-                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+                var screen = Screen.ScreenFromHwnd(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+                if (screen?.Bounds is { } window_rect)
+                {
+                    _isFullScreenActive = true;
+                    SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
+                                 window_rect.Width, window_rect.Height,
+                                 SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+                }
             }
             else
             {
@@ -1019,15 +1112,7 @@ namespace Avalonia.Win32
                 _isClientAreaExtended = false;
                 return;
             }
-            GetClientRect(_hwnd, out var rcClient);
             GetWindowRect(_hwnd, out var rcWindow);
-
-            // Inform the application of the frame change.
-            SetWindowPos(_hwnd,
-                IntPtr.Zero,
-                rcWindow.left, rcWindow.top,
-                rcClient.Width, rcClient.Height,
-                SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOACTIVATE);
 
             if (_isClientAreaExtended && WindowState != WindowState.FullScreen)
             {
@@ -1048,8 +1133,6 @@ namespace Avalonia.Win32
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
 
-                Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), WindowResizeReason.Layout);
-
                 unsafe
                 {
                     int cornerPreference = (int)DwmWindowCornerPreference.DWMWCP_DEFAULT;
@@ -1067,13 +1150,18 @@ namespace Avalonia.Win32
                 DisableCloseButton(_hwnd);
             }
 
+            // Inform the application of the frame change.
+            SetWindowPos(_hwnd,
+                IntPtr.Zero,
+                rcWindow.left, rcWindow.top,
+                0, 0,
+                SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOSIZE);
+
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
 
         private void ShowWindow(WindowState state, bool activate)
         {
-            _shown = true;
-
             if (_isClientAreaExtended)
             {
                 ExtendClientArea();
@@ -1111,7 +1199,7 @@ namespace Avalonia.Win32
 
             newWindowProperties.WindowState = state;
 
-            UpdateWindowProperties(newWindowProperties);
+            UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != SystemDecorations.Full);
 
             if (command.HasValue)
             {
@@ -1167,34 +1255,28 @@ namespace Avalonia.Win32
 
         private void MaximizeWithoutCoveringTaskbar()
         {
-            IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
-
-            if (monitor != IntPtr.Zero)
+            var screen = Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+            if (screen?.WorkingArea is { } workingArea)
             {
-                var monitorInfo = MONITORINFO.Create();
+                var x = workingArea.X;
+                var y = workingArea.Y;
+                var cx = workingArea.Width;
+                var cy = workingArea.Height;
+                var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                if (GetMonitorInfo(monitor, ref monitorInfo))
+                if (!style.HasFlag(WindowStyles.WS_THICKFRAME))
                 {
-                    var x = monitorInfo.rcWork.left;
-                    var y = monitorInfo.rcWork.top;
-                    var cx = Math.Abs(monitorInfo.rcWork.right - x);
-                    var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
-                    var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
-
-                    if (!style.HasFlag(WindowStyles.WS_SIZEFRAME))
-                    {
-                        // When calling SetWindowPos on a maximized window it automatically adjusts
-                        // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
-                        // NO BORDERS, meaning that the window is placed wrong when we have CanResize
-                        // == false. Account for this here.
-                        var borderThickness = BorderThickness;
-                        x -= (int)borderThickness.Left;
-                        cx += (int)borderThickness.Left + (int)borderThickness.Right;
-                        cy += (int)borderThickness.Bottom;
-                    }
-
-                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_FRAMECHANGED);
+                    // When calling SetWindowPos on a maximized window it automatically adjusts
+                    // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
+                    // NO BORDERS, meaning that the window is placed wrong when we have CanResize
+                    // == false. Account for this here.
+                    var borderThickness = BorderThickness;
+                    x -= (int)borderThickness.Left;
+                    cx += (int)borderThickness.Left + (int)borderThickness.Right;
+                    cy += (int)borderThickness.Bottom;
                 }
+
+                SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_FRAMECHANGED);
             }
         }
 
@@ -1313,21 +1395,24 @@ namespace Avalonia.Win32
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
 
+                if (this is EmbeddedWindowImpl)
+                    style |= WindowStyles.WS_CHILD;
+
                 if (IsWindowVisible(_hwnd))
                     style |= WindowStyles.WS_VISIBLE;
 
                 if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
                 {
-                    style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_THICKFRAME;
                     style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
                 else
                 {
-                    style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_THICKFRAME;
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1335,9 +1420,9 @@ namespace Avalonia.Win32
                 }
                 else
                 {
-                    style &= ~fullDecorationFlags;
+                    style &= ~(fullDecorationFlags | WindowStyles.WS_THICKFRAME);
 
-                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized)
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized && newProperties.IsResizable)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
                     }
@@ -1366,8 +1451,6 @@ namespace Avalonia.Win32
 
             if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
             {
-                var style = GetStyle();
-
                 var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
 
                 var margins = new MARGINS
@@ -1380,21 +1463,13 @@ namespace Avalonia.Win32
 
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-                GetClientRect(_hwnd, out var oldClientRect);
-                var oldClientRectOrigin = new POINT();
-                ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                oldClientRect.Offset(oldClientRectOrigin);
-
-                var newRect = oldClientRect;
-
-                if (newProperties.Decorations == SystemDecorations.Full)
+                if (_shown || forceChanges)
                 {
-                    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                    SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0 ,0,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                        SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOMOVE |
+                        SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
-
-                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
-                    SetWindowPosFlags.SWP_FRAMECHANGED);
             }
 
             // Ensure window state if decorations change
@@ -1418,6 +1493,23 @@ namespace Avalonia.Win32
         {
             EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
                            MF_BYCOMMAND | MF_ENABLED);
+        }
+
+        private RECT ClientRectToWindowRect(RECT clientRect, WindowStyles? styleOverride = null, WindowStyles? extendedStyleOverride = null)
+        {
+            var style = styleOverride ?? GetStyle();
+            var extendedStyle = extendedStyleOverride ?? GetExtendedStyle();
+
+            var result = Win32Platform.WindowsVersion < PlatformConstants.Windows10_1607
+                ? AdjustWindowRectEx(ref clientRect, (uint)style, false, (uint)extendedStyle)
+                : AdjustWindowRectExForDpi(ref clientRect, style, false, extendedStyle, (uint)(RenderScaling * StandardDpi));
+
+            if (!result)
+            {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            }
+
+            return clientRect;
         }
 
 #if USE_MANAGED_DRAG
@@ -1468,6 +1560,38 @@ namespace Avalonia.Win32
         }
 
         /// <inheritdoc/>
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        {
+            var handlesToIndex = new Dictionary<IntPtr, int>(windows.Length);
+            var outputArray = new long[windows.Length];
+
+            for (int i = 0; i < windows.Length; i++)
+            {
+                if (windows[i].PlatformImpl is WindowImpl platformImpl)
+                    handlesToIndex.Add(platformImpl.Handle.Handle, i);
+            }
+
+            long nextZOrder = 0;
+            bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam)
+            {
+                if (handlesToIndex.TryGetValue(hWnd, out var index))
+                {
+                    // We negate the z-order so that the topmost window has the highest number.
+                    outputArray[index] = -nextZOrder;
+                    nextZOrder++;
+                }
+                return nextZOrder < outputArray.Length;
+            }
+
+            EnumChildWindows(IntPtr.Zero, EnumWindowsProc, IntPtr.Zero);
+
+            for (int i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = outputArray[i];
+            }
+        }
+
+        /// <inheritdoc/>
         public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
 
         /// <inheritdoc/>
@@ -1505,7 +1629,7 @@ namespace Avalonia.Win32
             public RECT WindowRect { get; set; }
         };
 
-        private struct WindowProperties
+        protected struct WindowProperties
         {
             public bool ShowInTaskbar;
             public bool IsResizable;

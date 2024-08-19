@@ -7,6 +7,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Reactive;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -64,12 +65,7 @@ namespace Avalonia.Controls
                 }
             });
 
-            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
-
-            if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-            {
-                lifetime.Exit += Lifetime_Exit;
-            }
+            Dispatcher.UIThread.ShutdownStarted += ShutdownStarted;
         }
 
         /// <summary>
@@ -182,7 +178,9 @@ namespace Avalonia.Controls
 
         public INativeMenuExporter? NativeMenuExporter => _impl?.MenuExporter;
 
-        private static void Lifetime_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+        internal ITrayIconImpl? Impl => _impl;
+        
+        private static void ShutdownStarted(object? sender, EventArgs? e)
         {
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
             var trayIcons = GetIcons(app);

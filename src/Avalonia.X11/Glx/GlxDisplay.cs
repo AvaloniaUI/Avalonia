@@ -126,7 +126,11 @@ namespace Avalonia.X11.Glx
             GlxContext Create(GlVersion profile)
             {
                 var profileMask = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-                if (profile.Type == GlProfileType.OpenGLES) 
+                if (profile.Type == GlProfileType.OpenGL && 
+                    profile.IsCompatibilityProfile &&
+                    (profile.Major > 3 || profile.Major == 3 && profile.Minor >= 2))
+                    profileMask = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                else if (profile.Type == GlProfileType.OpenGLES) 
                     profileMask = GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
 
                 var attrs = new int[]
@@ -162,16 +166,19 @@ namespace Avalonia.X11.Glx
                 rv = Create(_version.Value);
             }
             
-            foreach (var v in _probeProfiles)
+            if (rv == null)
             {
-                if (v.Type == GlProfileType.OpenGLES
-                    && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
-                    continue;
-                rv = Create(v);
-                if (rv != null)
+                foreach (var v in _probeProfiles)
                 {
-                    _version = v;
-                    break;
+                    if (v.Type == GlProfileType.OpenGLES
+                        && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
+                        continue;
+                    rv = Create(v);
+                    if (rv != null)
+                    {
+                        _version = v;
+                        break;
+                    }
                 }
             }
 

@@ -14,16 +14,17 @@ internal class BrowserDispatcherImpl : IDispatcherImpl
     private bool _signaled;
     private int? _timerId;
 
-    private readonly Action _timerCallback;
-    private readonly Action _signalCallback;
-
     public BrowserDispatcherImpl()
     {
         _thread = Thread.CurrentThread;
         _clock = Stopwatch.StartNew();
 
-        _timerCallback = () => Timer?.Invoke();
-        _signalCallback = () =>
+        TimerHelper.Interval += () =>
+        {
+            Timer?.Invoke();
+        };
+        
+        TimerHelper.Timeout = () =>
         {
             _signaled = false;
             Signaled?.Invoke();
@@ -44,7 +45,7 @@ internal class BrowserDispatcherImpl : IDispatcherImpl
 
         // NOTE: by HTML5 spec minimal timeout is 4ms, but Chrome seems to work well with 1ms as well.
         var interval = 1;
-        CanvasHelper.SetTimeout(_signalCallback, interval);
+        TimerHelper.SetTimeout(interval);
     }
 
     public void UpdateTimer(long? dueTimeInMs)
@@ -52,13 +53,13 @@ internal class BrowserDispatcherImpl : IDispatcherImpl
         if (_timerId is { } timerId)
         {
             _timerId = null;
-            CanvasHelper.ClearInterval(timerId);
+            TimerHelper.ClearInterval(timerId);
         }
 
         if (dueTimeInMs.HasValue)
         {
             var interval = Math.Max(1, dueTimeInMs.Value - _clock.ElapsedMilliseconds);
-            _timerId = CanvasHelper.SetInterval(_timerCallback, (int)interval);
+            _timerId = TimerHelper.SetInterval((int)interval);
         }
     }
 }
