@@ -1,9 +1,4 @@
-﻿using System;
-using Avalonia.Controls.Shapes;
-using Avalonia.Layout;
-using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering;
+﻿using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -30,14 +25,11 @@ namespace Avalonia.Skia.UnitTests
                 var pen = new Pen(Brushes.Black, thickness, null, cap, join, miterLimit);
                 var bounds = geo.GetRenderBounds(pen);
                 var tolerance = 0.001;
-                if (
-                    Math.Abs(bounds.X - x) > tolerance
-                    || Math.Abs(bounds.Y - y) > tolerance
-                    || Math.Abs(bounds.Width - width) > tolerance
-                    || Math.Abs(bounds.Height - height) > tolerance)
-                    Assert.Fail($"Expected {x}:{y}:{width}:{height}, got {bounds}");
-                
-                Assert.Equal(new Rect(x, y, width, height), bounds);
+
+                Assert.Equal(bounds.X, x, tolerance);
+                Assert.Equal(bounds.Y, y, tolerance);
+                Assert.Equal(bounds.Width, width, tolerance);
+                Assert.Equal(bounds.Height, height, tolerance);
             }
         }
     }
