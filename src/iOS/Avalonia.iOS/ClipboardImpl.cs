@@ -37,6 +37,9 @@ namespace Avalonia.iOS
             return Task.CompletedTask;
         }
 
+        public Task SetDataObjectAsync(IDataObject data, bool copy) => 
+            throw new PlatformNotSupportedException();
+
         public Task<string[]> GetFormatsAsync()
         {
             var formats = new List<string>();
