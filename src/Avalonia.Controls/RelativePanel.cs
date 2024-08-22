@@ -1,4 +1,5 @@
-﻿// Ported from https://github.com/HandyOrg/HandyControl/blob/master/src/Shared/HandyControl_Shared/Controls/Panel/RelativePanel.cs
+﻿// Ported from https://github.com/OrgEleCho/EleCho.WpfSuite/blob/master/EleCho.WpfSuite/Panels/RelativePanel.cs
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,534 +12,529 @@ namespace Avalonia.Controls
     /// </summary>
     public partial class RelativePanel : Panel
     {
-        private readonly Graph _childGraph;
+        private readonly Dictionary<Control, Rect> _childLayouts = new();
+        private readonly HashSet<Control> _layoutQueue = new();
 
-        public RelativePanel() => _childGraph = new Graph();
-
-        private Layoutable? GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
+        private Rect MeasureChild(Control uiElement, Size availableSize)
         {
-            var dependency = child.GetValue(property);
-
-            if (dependency is Layoutable layoutable)
+            if (_layoutQueue.Contains(uiElement))
             {
-                if (Children.Contains(layoutable))
-                    return layoutable;
-
-                throw new ArgumentException($"RelativePanel error: Element does not exist in the current context: {property.Name}");
+                throw new InvalidOperationException("Circular dependency detected");
             }
 
-            return null;
+            _layoutQueue.Add(uiElement);
+
+            uiElement.Measure(availableSize);
+
+            Rect layoutInfo = new(double.NaN, double.NaN, uiElement.DesiredSize.Width, uiElement.DesiredSize.Height);
+
+            #region Horizontal Position
+
+            if (GetAlignLeftWithPanel(uiElement))
+            {
+                layoutInfo = layoutInfo.WithX( 0);
+            }
+
+            if (GetAlignRightWithPanel(uiElement))
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                layoutInfo = layoutInfo.WithX( 0);
+            }
+
+            if (GetAlignLeftWith(uiElement) is Control alignLeftWith)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignLeftWith, out var alignLeftWithLayout))
+                {
+                    _childLayouts[alignLeftWith] = alignLeftWithLayout = MeasureChild(alignLeftWith, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(alignLeftWithLayout.Left);
+            }
+
+            if (GetAlignRightWith(uiElement) is Control alignRightWith)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignRightWith, out var alignRightWithLayout))
+                {
+                    _childLayouts[alignRightWith] = alignRightWithLayout = MeasureChild(alignRightWith, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(alignRightWithLayout.Left + alignRightWithLayout.Size.Width - layoutInfo.Size.Width);
+            }
+
+            if (GetRightOf(uiElement) is Control rightOf)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(rightOf, out var rightOfLayout))
+                {
+                    _childLayouts[rightOf] = rightOfLayout = MeasureChild(rightOf, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(rightOfLayout.Left + rightOfLayout.Size.Width);
+            }
+
+            if (GetLeftOf(uiElement) is Control leftOf)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(leftOf, out var leftOfLayout))
+                {
+                    _childLayouts[leftOf] = leftOfLayout = MeasureChild(leftOf, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(leftOfLayout.Left - layoutInfo.Size.Width);
+            }
+
+            if (GetAlignHorizontalCenterWithPanel(uiElement))
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                layoutInfo = layoutInfo.WithX(0);
+            }
+
+            if (GetAlignHorizontalCenterWith(uiElement) is Control alignHorizontalCenterWith)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignHorizontalCenterWith, out var alignHorizontalCenterWithLayout))
+                {
+                    _childLayouts[alignHorizontalCenterWith] = alignHorizontalCenterWithLayout = MeasureChild(alignHorizontalCenterWith, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(alignHorizontalCenterWithLayout.Left - (alignHorizontalCenterWithLayout.Size.Width - layoutInfo.Size.Width) / 2);
+            }
+
+            if (double.IsNaN(layoutInfo.X))
+            {
+                layoutInfo = layoutInfo.WithX(0);
+            }
+
+            #endregion
+
+            #region Vertical position
+
+            if (GetAlignTopWithPanel(uiElement))
+            {
+                layoutInfo = layoutInfo.WithY(0);
+            }
+
+            if (GetAlignRightWithPanel(uiElement))
+            {
+                layoutInfo = layoutInfo.WithY(0);
+            }
+
+            if (GetAlignTopWith(uiElement) is Control alignTopWith)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignTopWith, out var alignTopWithLayout))
+                {
+                    _childLayouts[alignTopWith] = alignTopWithLayout = MeasureChild(alignTopWith, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(alignTopWithLayout.Top);
+            }
+
+            if (GetAlignBottomWith(uiElement) is Control alignBottomWith)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignBottomWith, out var alignBottomWithLayout))
+                {
+                    _childLayouts[alignBottomWith] = alignBottomWithLayout = MeasureChild(alignBottomWith, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(alignBottomWithLayout.Top + alignBottomWithLayout.Size.Height - layoutInfo.Size.Height);
+            }
+
+            if (GetBelow(uiElement) is Control below)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(below, out var belowLayout))
+                {
+                    _childLayouts[below] = belowLayout = MeasureChild(below, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(belowLayout.Top + belowLayout.Size.Height);
+            }
+
+            if (GetAbove(uiElement) is Control above)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(above, out var aboveLayout))
+                {
+                    _childLayouts[above] = aboveLayout = MeasureChild(above, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(aboveLayout.Top - layoutInfo.Size.Height);
+            }
+
+            if (GetAlignVerticalCenterWithPanel(uiElement))
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                layoutInfo = layoutInfo.WithY(0);
+            }
+
+            if (GetAlignVerticalCenterWith(uiElement) is Control alignVerticalCenterWith)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignVerticalCenterWith, out var alignVerticalCenterWithLayout))
+                {
+                    _childLayouts[alignVerticalCenterWith] = alignVerticalCenterWithLayout = MeasureChild(alignVerticalCenterWith, availableSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(alignVerticalCenterWithLayout.Top - (alignVerticalCenterWithLayout.Size.Height - layoutInfo.Size.Height) / 2);
+            }
+
+            if (double.IsNaN(layoutInfo.Y))
+            {
+                layoutInfo = layoutInfo.WithY(0);
+            }
+
+            #endregion
+
+            _layoutQueue.Remove(uiElement);
+
+            return layoutInfo;
         }
 
+        private Rect ArrangeChild(Control uiElement, Size arrangeSize)
+        {
+            if (_layoutQueue.Contains(uiElement))
+            {
+                throw new InvalidOperationException("Circular dependency detected");
+            }
+
+            _layoutQueue.Add(uiElement);
+
+            if (arrangeSize.Width < uiElement.DesiredSize.Width ||
+                arrangeSize.Height < uiElement.DesiredSize.Height)
+            {
+                uiElement.Measure(arrangeSize);
+            }
+
+            Rect layoutInfo = new(double.NaN, double.NaN, uiElement.DesiredSize.Width, uiElement.DesiredSize.Height);
+
+            #region Horizontal Position
+
+            if (GetAlignLeftWithPanel(uiElement))
+            {
+                layoutInfo = layoutInfo.WithX(0);
+            }
+
+            if (GetAlignRightWithPanel(uiElement))
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                layoutInfo = layoutInfo.WithX(arrangeSize.Width - layoutInfo.Size.Width);
+            }
+
+            if (GetAlignLeftWith(uiElement) is Control alignLeftWith)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignLeftWith, out var alignLeftWithLayout))
+                {
+                    _childLayouts[alignLeftWith] = alignLeftWithLayout = ArrangeChild(alignLeftWith, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(alignLeftWithLayout.Left);
+            }
+
+            if (GetAlignRightWith(uiElement) is Control alignRightWith)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignRightWith, out var alignRightWithLayout))
+                {
+                    _childLayouts[alignRightWith] = alignRightWithLayout = ArrangeChild(alignRightWith, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(alignRightWithLayout.Left + alignRightWithLayout.Size.Width - layoutInfo.Size.Width);
+            }
+
+            if (GetRightOf(uiElement) is Control rightOf)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(rightOf, out var rightOfLayout))
+                {
+                    _childLayouts[rightOf] = rightOfLayout = ArrangeChild(rightOf, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(rightOfLayout.Left + rightOfLayout.Size.Width);
+            }
+
+            if (GetLeftOf(uiElement) is Control leftOf)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(leftOf, out var leftOfLayout))
+                {
+                    _childLayouts[leftOf] = leftOfLayout = ArrangeChild(leftOf, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(leftOfLayout.Left - layoutInfo.Size.Width);
+            }
+
+            if (GetAlignHorizontalCenterWithPanel(uiElement))
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                layoutInfo = layoutInfo.WithX((arrangeSize.Width - layoutInfo.Size.Width) / 2);
+            }
+
+            if (GetAlignHorizontalCenterWith(uiElement) is Control alignHorizontalCenterWith)
+            {
+                if (!double.IsNaN(layoutInfo.Left))
+                {
+                    throw new InvalidOperationException("Horizontal position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignHorizontalCenterWith, out var alignHorizontalCenterWithLayout))
+                {
+                    _childLayouts[alignHorizontalCenterWith] = alignHorizontalCenterWithLayout = ArrangeChild(alignHorizontalCenterWith, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithX(alignHorizontalCenterWithLayout.Left - (alignHorizontalCenterWithLayout.Size.Width - layoutInfo.Size.Width) / 2);
+            }
+
+            if (double.IsNaN(layoutInfo.X))
+            {
+                layoutInfo = layoutInfo.WithX(0);
+            }
+
+            #endregion
+
+            #region Vertical position
+
+            if (GetAlignTopWithPanel(uiElement))
+            {
+                layoutInfo = layoutInfo.WithY(0);
+            }
+
+            if (GetAlignBottomWithPanel(uiElement))
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Vertical position of Control can be set only once");
+                }
+
+                layoutInfo = layoutInfo.WithY(0);
+            }
+
+            if (GetAlignTopWith(uiElement) is Control alignTopWith)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Vertical position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignTopWith, out var alignTopWithLayout))
+                {
+                    _childLayouts[alignTopWith] = alignTopWithLayout = ArrangeChild(alignTopWith, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(alignTopWithLayout.Top);
+            }
+
+            if (GetAlignBottomWith(uiElement) is Control alignBottomWith)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Vertical position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignBottomWith, out var alignBottomWithLayout))
+                {
+                    _childLayouts[alignBottomWith] = alignBottomWithLayout = ArrangeChild(alignBottomWith, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(alignBottomWithLayout.Top + alignBottomWithLayout.Size.Height - layoutInfo.Size.Height);
+            }
+
+            if (GetBelow(uiElement) is Control below)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Vertical position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(below, out var belowLayout))
+                {
+                    _childLayouts[below] = belowLayout = ArrangeChild(below, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(belowLayout.Top + belowLayout.Size.Height);
+            }
+
+            if (GetAbove(uiElement) is Control above)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Vertical position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(above, out var aboveLayout))
+                {
+                    _childLayouts[above] = aboveLayout = ArrangeChild(above, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(aboveLayout.Top - layoutInfo.Size.Height);
+            }
+
+            if (GetAlignVerticalCenterWithPanel(uiElement))
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Vertical position of Control can be set only once");
+                }
+
+                layoutInfo = layoutInfo.WithY((arrangeSize.Height - layoutInfo.Size.Height) / 2);
+            }
+
+            if (GetAlignVerticalCenterWith(uiElement) is Control alignVerticalCenterWith)
+            {
+                if (!double.IsNaN(layoutInfo.Top))
+                {
+                    throw new InvalidOperationException("Vertical position of Control can be set only once");
+                }
+
+                if (!_childLayouts.TryGetValue(alignVerticalCenterWith, out var alignVerticalCenterWithLayout))
+                {
+                    _childLayouts[alignVerticalCenterWith] = alignVerticalCenterWithLayout = ArrangeChild(alignVerticalCenterWith, arrangeSize);
+                }
+
+                layoutInfo = layoutInfo.WithY(alignVerticalCenterWithLayout.Top - (alignVerticalCenterWithLayout.Size.Height - layoutInfo.Size.Height) / 2);
+            }
+
+            if (double.IsNaN(layoutInfo.Y))
+            {
+                layoutInfo = layoutInfo.WithY(0);
+            }
+
+            #endregion
+
+            _layoutQueue.Remove(uiElement);
+
+            uiElement.Arrange(new Rect(layoutInfo.Left, layoutInfo.Top, layoutInfo.Size.Width, layoutInfo.Size.Height));
+
+            return layoutInfo;
+        }
+
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            _childGraph.Clear();
-            foreach (var child in Children)
+            foreach (Control child in Children)
             {
-                var node = _childGraph.AddNode(child);
-
-                node.AlignLeftWithNode = _childGraph.AddLink(node, GetDependencyElement(AlignLeftWithProperty, child));
-                node.AlignTopWithNode = _childGraph.AddLink(node, GetDependencyElement(AlignTopWithProperty, child));
-                node.AlignRightWithNode = _childGraph.AddLink(node, GetDependencyElement(AlignRightWithProperty, child));
-                node.AlignBottomWithNode = _childGraph.AddLink(node, GetDependencyElement(AlignBottomWithProperty, child));
-
-                node.LeftOfNode = _childGraph.AddLink(node, GetDependencyElement(LeftOfProperty, child));
-                node.AboveNode = _childGraph.AddLink(node, GetDependencyElement(AboveProperty, child));
-                node.RightOfNode = _childGraph.AddLink(node, GetDependencyElement(RightOfProperty, child));
-                node.BelowNode = _childGraph.AddLink(node, GetDependencyElement(BelowProperty, child));
-
-                node.AlignHorizontalCenterWith = _childGraph.AddLink(node, GetDependencyElement(AlignHorizontalCenterWithProperty, child));
-                node.AlignVerticalCenterWith = _childGraph.AddLink(node, GetDependencyElement(AlignVerticalCenterWithProperty, child));
+                if (!_childLayouts.ContainsKey(child))
+                {
+                    _childLayouts[child] = MeasureChild(child, availableSize);
+                }
             }
 
-            _childGraph.Measure(availableSize);
+            double left = 0;
+            double top = 0;
+            double right = 0;
+            double bottom = 0;
 
-            _childGraph.Reset(false);
-            var calcWidth = Width.IsNaN() && (HorizontalAlignment != HorizontalAlignment.Stretch);
-            var calcHeight = Height.IsNaN() && (VerticalAlignment != VerticalAlignment.Stretch);
+            foreach (var layout in _childLayouts.Values)
+            {
+                left = Math.Min(left, layout.Left);
+                top = Math.Min(top, layout.Top);
+                right = Math.Max(right, layout.Left + layout.Size.Width);
+                bottom = Math.Max(bottom, layout.Top + layout.Size.Height);
+            }
 
-            var boundingSize = _childGraph.GetBoundingSize(calcWidth, calcHeight);
-            _childGraph.Reset();
-            _childGraph.Measure(boundingSize);
-            
-            return boundingSize;
+            var size = new Size(
+                Math.Min(right - left, availableSize.Width), 
+                Math.Min(bottom - top, availableSize.Height));
+
+            _childLayouts.Clear();
+
+            return size;
         }
 
+        /// <inheritdoc/>
         protected override Size ArrangeOverride(Size arrangeSize)
         {
-            _childGraph.GetNodes().Do(node => node.Arrange(arrangeSize));
+            foreach (Control child in Children)
+            {
+                if (!_childLayouts.ContainsKey(child))
+                {
+                    _childLayouts[child] = ArrangeChild(child, arrangeSize);
+                }
+            }
+
+            _childLayouts.Clear();
+
             return arrangeSize;
-        }
-
-        private class GraphNode
-        {
-            public bool Measured { get; set; }
-
-            public Layoutable Element { get; }
-
-            private bool HorizontalOffsetFlag { get; set; }
-
-            private bool VerticalOffsetFlag { get; set; }
-
-            private Size BoundingSize { get; set; }
-
-            public Size OriginDesiredSize { get; set; }
-
-            public double Left { get; set; } = double.NaN;
-
-            public double Top { get; set; } = double.NaN;
-
-            public double Right { get; set; } = double.NaN;
-
-            public double Bottom { get; set; } = double.NaN;
-
-            public HashSet<GraphNode> OutgoingNodes { get; }
-
-            public GraphNode? AlignLeftWithNode { get; set; }
-
-            public GraphNode? AlignTopWithNode { get; set; }
-
-            public GraphNode? AlignRightWithNode { get; set; }
-
-            public GraphNode? AlignBottomWithNode { get; set; }
-
-            public GraphNode? LeftOfNode { get; set; }
-
-            public GraphNode? AboveNode { get; set; }
-
-            public GraphNode? RightOfNode { get; set; }
-
-            public GraphNode? BelowNode { get; set; }
-
-            public GraphNode? AlignHorizontalCenterWith { get; set; }
-
-            public GraphNode? AlignVerticalCenterWith { get; set; }
-
-            public GraphNode(Layoutable element)
-            {
-                OutgoingNodes = new HashSet<GraphNode>();
-                Element = element;
-            }
-
-            public void Arrange(Size arrangeSize) => Element.Arrange(new Rect(Left, Top, Math.Max(arrangeSize.Width - Left - Right, 0), Math.Max(arrangeSize.Height - Top - Bottom, 0)));
-
-            public void Reset(bool clearPos)
-            {
-                if (clearPos)
-                {
-                    Left = double.NaN;
-                    Top = double.NaN;
-                    Right = double.NaN;
-                    Bottom = double.NaN;
-                }
-
-                Measured = false;
-            }
-
-            public Size GetBoundingSize()
-            {
-                if (Left < 0 || Top < 0) return default;
-                if (Measured)
-                    return BoundingSize;
-
-                if (!OutgoingNodes.Any())
-                {
-                    BoundingSize = Element.DesiredSize;
-                    Measured = true;
-                }
-                else
-                {
-                    BoundingSize = GetBoundingSize(this, Element.DesiredSize, OutgoingNodes);
-                    Measured = true;
-                }
-
-                return BoundingSize;
-            }
-
-            private static Size GetBoundingSize(GraphNode prevNode, Size prevSize, IEnumerable<GraphNode> nodes)
-            {
-                foreach (var node in nodes)
-                {
-                    if (node.Measured || !node.OutgoingNodes.Any())
-                    {
-                        if (prevNode.LeftOfNode != null && prevNode.LeftOfNode == node ||
-                            prevNode.RightOfNode != null && prevNode.RightOfNode == node)
-                        {
-                            prevSize = prevSize.WithWidth(prevSize.Width + node.BoundingSize.Width);
-                            if (GetAlignHorizontalCenterWithPanel(node.Element) || node.HorizontalOffsetFlag)
-                            {
-                                prevSize = prevSize.WithWidth(prevSize.Width + prevNode.OriginDesiredSize.Width);
-                                prevNode.HorizontalOffsetFlag = true;
-                            }
-
-                            if (node.VerticalOffsetFlag)
-                            {
-                                prevNode.VerticalOffsetFlag = true;
-                            }
-                        }
-
-                        if (prevNode.AboveNode != null && prevNode.AboveNode == node ||
-                            prevNode.BelowNode != null && prevNode.BelowNode == node)
-                        {
-                            prevSize = prevSize.WithHeight(prevSize.Height + node.BoundingSize.Height);
-                            if (GetAlignVerticalCenterWithPanel(node.Element) || node.VerticalOffsetFlag)
-                            {
-                                prevSize = prevSize.WithHeight(prevSize.Height + node.OriginDesiredSize.Height);
-                                prevNode.VerticalOffsetFlag = true;
-                            }
-
-                            if (node.HorizontalOffsetFlag)
-                            {
-                                prevNode.HorizontalOffsetFlag = true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return GetBoundingSize(node, prevSize, node.OutgoingNodes);
-                    }
-                }
-
-                return prevSize;
-            }
-        }
-
-        private class Graph
-        {
-            private readonly Dictionary<AvaloniaObject, GraphNode> _nodeDic;
-
-            private Size AvailableSize { get; set; }
-
-            public Graph() => _nodeDic = new Dictionary<AvaloniaObject, GraphNode>();
-
-            public IEnumerable<GraphNode> GetNodes() => _nodeDic.Values;
-
-            public void Clear()
-            {
-                AvailableSize = new Size();
-                _nodeDic.Clear();
-            }
-
-            public void Reset(bool clearPos = true) => _nodeDic.Values.Do(node => node.Reset(clearPos));
-
-            public GraphNode? AddLink(GraphNode from, Layoutable? to)
-            {
-                if (to == null)
-                    return null;
-
-                GraphNode nodeTo;
-                if (_nodeDic.ContainsKey(to))
-                {
-                    nodeTo = _nodeDic[to];
-                }
-                else
-                {
-                    nodeTo = new GraphNode(to);
-                    _nodeDic[to] = nodeTo;
-                }
-
-                from.OutgoingNodes.Add(nodeTo);
-                return nodeTo;
-            }
-
-            public GraphNode AddNode(Layoutable value)
-            {
-                if (!_nodeDic.ContainsKey(value))
-                {
-                    var node = new GraphNode(value);
-                    _nodeDic.Add(value, node);
-                    return node;
-                }
-
-                return _nodeDic[value];
-            }
-
-            public void Measure(Size availableSize)
-            {
-                AvailableSize = availableSize;
-                Measure(_nodeDic.Values, null);
-            }
-
-            private void Measure(IEnumerable<GraphNode> nodes, HashSet<AvaloniaObject>? set)
-            {
-                set ??= new HashSet<AvaloniaObject>();
-
-                foreach (var node in nodes)
-                {
-                    if (!node.Measured && !node.OutgoingNodes.Any())
-                    {
-                        MeasureChild(node);
-                        continue;
-                    }
-
-                    if (node.OutgoingNodes.All(item => item.Measured))
-                    {
-                        MeasureChild(node);
-                        continue;
-                    }
-
-                    if (!set.Add(node.Element))
-                        throw new Exception("RelativePanel error: Circular dependency detected. Layout could not complete.");
-
-                    Measure(node.OutgoingNodes, set);
-
-                    if (!node.Measured)
-                    {
-                        MeasureChild(node);
-                    }
-                }
-            }
-
-            private void MeasureChild(GraphNode node)
-            {
-                var child = node.Element;
-                child.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                node.OriginDesiredSize = child.DesiredSize;
-
-                var alignLeftWithPanel = GetAlignLeftWithPanel(child);
-                var alignTopWithPanel = GetAlignTopWithPanel(child);
-                var alignRightWithPanel = GetAlignRightWithPanel(child);
-                var alignBottomWithPanel = GetAlignBottomWithPanel(child);
-
-                if (alignLeftWithPanel)
-                    node.Left = 0;
-                if (alignTopWithPanel)
-                    node.Top = 0;
-                if (alignRightWithPanel)
-                    node.Right = 0;
-                if (alignBottomWithPanel)
-                    node.Bottom = 0;
-
-                if (node.AlignLeftWithNode != null)
-                {
-                    node.Left = node.Left.IsNaN() ? node.AlignLeftWithNode.Left : node.AlignLeftWithNode.Left * 0.5;
-                }
-
-                if (node.AlignTopWithNode != null)
-                {
-                    node.Top = node.Top.IsNaN() ? node.AlignTopWithNode.Top : node.AlignTopWithNode.Top * 0.5;
-                }
-
-                if (node.AlignRightWithNode != null)
-                {
-                    node.Right = node.Right.IsNaN()
-                        ? node.AlignRightWithNode.Right
-                        : node.AlignRightWithNode.Right * 0.5;
-                }
-
-                if (node.AlignBottomWithNode != null)
-                {
-                    node.Bottom = node.Bottom.IsNaN()
-                        ? node.AlignBottomWithNode.Bottom
-                        : node.AlignBottomWithNode.Bottom * 0.5;
-                }
-
-                var availableHeight = AvailableSize.Height - node.Top - node.Bottom;
-                if (availableHeight.IsNaN())
-                {
-                    availableHeight = AvailableSize.Height;
-
-                    if (!node.Top.IsNaN() && node.Bottom.IsNaN())
-                    {
-                        availableHeight -= node.Top;
-                    }
-                    else if (node.Top.IsNaN() && !node.Bottom.IsNaN())
-                    {
-                        availableHeight -= node.Bottom;
-                    }
-                }
-
-                var availableWidth = AvailableSize.Width - node.Left - node.Right;
-                if (availableWidth.IsNaN())
-                {
-                    availableWidth = AvailableSize.Width;
-
-                    if (!node.Left.IsNaN() && node.Right.IsNaN())
-                    {
-                        availableWidth -= node.Left;
-                    }
-                    else if (node.Left.IsNaN() && !node.Right.IsNaN())
-                    {
-                        availableWidth -= node.Right;
-                    }
-                }
-
-                child.Measure(new Size(Math.Max(availableWidth, 0), Math.Max(availableHeight, 0)));
-                var childSize = child.DesiredSize;
-
-                if (node.LeftOfNode != null && node.Left.IsNaN())
-                {
-                    node.Left = node.LeftOfNode.Left - childSize.Width;
-                }
-
-                if (node.AboveNode != null && node.Top.IsNaN())
-                {
-                    node.Top = node.AboveNode.Top - childSize.Height;
-                }
-
-                if (node.RightOfNode != null)
-                {
-                    if (node.Right.IsNaN())
-                    {
-                        node.Right = node.RightOfNode.Right - childSize.Width;
-                    }
-
-                    if (node.Left.IsNaN())
-                    {
-                        node.Left = AvailableSize.Width - node.RightOfNode.Right;
-                    }
-                }
-
-                if (node.BelowNode != null)
-                {
-                    if (node.Bottom.IsNaN())
-                    {
-                        node.Bottom = node.BelowNode.Bottom - childSize.Height;
-                    }
-
-                    if (node.Top.IsNaN())
-                    {
-                        node.Top = AvailableSize.Height - node.BelowNode.Bottom;
-                    }
-                }
-
-                if (node.AlignHorizontalCenterWith != null)
-                {
-                    var halfWidthLeft = (AvailableSize.Width + node.AlignHorizontalCenterWith.Left - node.AlignHorizontalCenterWith.Right - childSize.Width) * 0.5;
-                    var halfWidthRight = (AvailableSize.Width - node.AlignHorizontalCenterWith.Left + node.AlignHorizontalCenterWith.Right - childSize.Width) * 0.5;
-
-                    if (node.Left.IsNaN())
-                        node.Left = halfWidthLeft;
-                    else
-                        node.Left = (node.Left + halfWidthLeft) * 0.5;
-
-                    if (node.Right.IsNaN())
-                        node.Right = halfWidthRight;
-                    else
-                        node.Right = (node.Right + halfWidthRight) * 0.5;
-                }
-
-                if (node.AlignVerticalCenterWith != null)
-                {
-                    var halfHeightTop = (AvailableSize.Height + node.AlignVerticalCenterWith.Top - node.AlignVerticalCenterWith.Bottom - childSize.Height) * 0.5;
-                    var halfHeightBottom = (AvailableSize.Height - node.AlignVerticalCenterWith.Top + node.AlignVerticalCenterWith.Bottom - childSize.Height) * 0.5;
-
-                    if (node.Top.IsNaN())
-                        node.Top = halfHeightTop;
-                    else
-                        node.Top = (node.Top + halfHeightTop) * 0.5;
-
-                    if (node.Bottom.IsNaN())
-                        node.Bottom = halfHeightBottom;
-                    else
-                        node.Bottom = (node.Bottom + halfHeightBottom) * 0.5;
-                }
-
-                if (GetAlignHorizontalCenterWithPanel(child))
-                {
-                    var halfSubWidth = (AvailableSize.Width - childSize.Width) * 0.5;
-
-                    if (node.Left.IsNaN())
-                        node.Left = halfSubWidth;
-                    else
-                        node.Left = (node.Left + halfSubWidth) * 0.5;
-
-                    if (node.Right.IsNaN())
-                        node.Right = halfSubWidth;
-                    else
-                        node.Right = (node.Right + halfSubWidth) * 0.5;
-                }
-
-                if (GetAlignVerticalCenterWithPanel(child))
-                {
-                    var halfSubHeight = (AvailableSize.Height - childSize.Height) * 0.5;
-
-                    if (node.Top.IsNaN())
-                        node.Top = halfSubHeight;
-                    else
-                        node.Top = (node.Top + halfSubHeight) * 0.5;
-
-                    if (node.Bottom.IsNaN())
-                        node.Bottom = halfSubHeight;
-                    else
-                        node.Bottom = (node.Bottom + halfSubHeight) * 0.5;
-                }
-
-                if (node.Left.IsNaN())
-                {
-                    if (!node.Right.IsNaN())
-                        node.Left = AvailableSize.Width - node.Right - childSize.Width;
-                    else
-                    {
-                        node.Left = 0;
-                        node.Right = AvailableSize.Width - childSize.Width;
-                    }
-                }
-                else if (!node.Left.IsNaN() && node.Right.IsNaN())
-                {
-                    node.Right = AvailableSize.Width - node.Left - childSize.Width;
-                }
-
-                if (node.Top.IsNaN())
-                {
-                    if (!node.Bottom.IsNaN())
-                        node.Top = AvailableSize.Height - node.Bottom - childSize.Height;
-                    else
-                    {
-                        node.Top = 0;
-                        node.Bottom = AvailableSize.Height - childSize.Height;
-                    }
-                }
-                else if (!node.Top.IsNaN() && node.Bottom.IsNaN())
-                {
-                    node.Bottom = AvailableSize.Height - node.Top - childSize.Height;
-                }
-
-                node.Measured = true;
-            }
-
-            public Size GetBoundingSize(bool calcWidth, bool calcHeight)
-            {
-                var boundingSize = new Size();
-
-                foreach (var node in _nodeDic.Values)
-                {
-                    var size = node.GetBoundingSize();
-                    boundingSize = boundingSize.WithWidth(Math.Max(boundingSize.Width, size.Width));
-                    boundingSize = boundingSize.WithHeight(Math.Max(boundingSize.Height, size.Height));
-                }
-
-                var availableWidth = double.IsInfinity(AvailableSize.Width) ? boundingSize.Width : AvailableSize.Width;
-                var availableHeight = double.IsInfinity(AvailableSize.Height) ? boundingSize.Height : AvailableSize.Height;
-
-                boundingSize = boundingSize.WithWidth(calcWidth ? boundingSize.Width : availableWidth);
-                boundingSize = boundingSize.WithHeight(calcHeight ? boundingSize.Height : availableHeight);
-                return boundingSize;
-            }
-        }
-    }
-
-    internal static partial class Extensions
-    {
-        /// <summary>
-        ///     Returns a value that indicates whether the specified value is not a number ().
-        /// </summary>
-        /// <param name="d">A double-precision floating-point number.</param>
-        /// <returns>true if  evaluates to ; otherwise, false.</returns>
-        public static bool IsNaN(this double d)
-        {
-            return double.IsNaN(d);
-        }
-
-        public static IEnumerable<TSource> Do<TSource>(this IEnumerable<TSource> source, Action<TSource> predicate)
-        {
-            var enumerable = source as IList<TSource> ?? source.ToList();
-            foreach (var item in enumerable)
-            {
-                predicate.Invoke(item);
-            }
-
-            return enumerable;
         }
     }
 }
