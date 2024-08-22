@@ -990,9 +990,14 @@ namespace Avalonia.Controls.UnitTests
 
             public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
+            public Task SetDataObjectAsync(IDataObject data, bool copy) => Task.CompletedTask;
+
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
             public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
+
+
+           
         }
 
         private class TestTopLevel : TopLevel

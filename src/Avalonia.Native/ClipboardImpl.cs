@@ -9,7 +9,6 @@ using Avalonia.Logging;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
-using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
@@ -155,6 +154,9 @@ namespace Avalonia.Native
             }
             return Task.CompletedTask;
         }
+
+        ///
+        public Task SetDataObjectAsync(IDataObject data, bool copy) => throw new PlatformNotSupportedException();
 
         public Task<string[]> GetFormatsAsync()
         {

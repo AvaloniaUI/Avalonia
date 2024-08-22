@@ -65,6 +65,8 @@ internal class NuiClipboardImpl : IClipboard
         });
     }
 
+    public Task SetDataObjectAsync(IDataObject data, bool copy) => throw new PlatformNotSupportedException();
+
     public Task<object?> GetDataAsync(string format) =>
         throw new PlatformNotSupportedException();
 

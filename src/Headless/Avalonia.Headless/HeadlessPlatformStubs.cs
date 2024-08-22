@@ -6,18 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
-using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
@@ -41,10 +35,11 @@ namespace Avalonia.Headless
             return Task.Run(() => _text = null);
         }
 
-        public Task SetDataObjectAsync(IDataObject data)
-        {
-            return Task.Run(() => _data = data);
-        }
+        public Task SetDataObjectAsync(IDataObject data) =>
+            SetDataObjectAsync(data, false);
+
+        public Task SetDataObjectAsync(IDataObject data, bool copy) =>
+            Task.Run(() => _data = data);
 
         public Task<string[]> GetFormatsAsync()
         {
