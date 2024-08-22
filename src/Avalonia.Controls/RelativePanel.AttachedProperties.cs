@@ -17,14 +17,14 @@ namespace Avalonia.Controls
                 AlignBottomWithPanelProperty, AlignBottomWithProperty, BelowProperty,
                 AlignHorizontalCenterWithPanelProperty, AlignHorizontalCenterWithProperty,
                 AlignVerticalCenterWithPanelProperty, AlignVerticalCenterWithProperty);
-            
+
             AffectsParentMeasure<RelativePanel>(
-                AlignLeftWithProperty, LeftOfProperty,
-                AlignRightWithProperty, RightOfProperty,
-                AlignTopWithProperty, AboveProperty,
-                AlignBottomWithProperty, BelowProperty,
-                AlignHorizontalCenterWithProperty,
-                AlignVerticalCenterWithProperty);
+                AlignLeftWithPanelProperty, AlignLeftWithProperty, LeftOfProperty,
+                AlignRightWithPanelProperty, AlignRightWithProperty, RightOfProperty,
+                AlignTopWithPanelProperty, AlignTopWithProperty, AboveProperty,
+                AlignBottomWithPanelProperty, AlignBottomWithProperty, BelowProperty,
+                AlignHorizontalCenterWithPanelProperty, AlignHorizontalCenterWithProperty,
+                AlignVerticalCenterWithPanelProperty, AlignVerticalCenterWithProperty);
         }
 
         /// <summary>
