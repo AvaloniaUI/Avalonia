@@ -1,5 +1,7 @@
 ﻿using System;
+using Android.Text;
 using Android.Views;
+using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Input.TextInput;
 
@@ -64,15 +66,13 @@ namespace Avalonia.Android.Platform.Input
                 if (HasComposition)
                 {
                     var start = Composition!.Value.Start;
-                    Remove(start, Composition!.Value.End - start);
-                    Insert(start, value ?? "");
+                    Replace(Composition!.Value.Start, Composition!.Value.End, value ?? "");
                     Composition = new TextSelection(start, start  + (value?.Length ?? 0));
                 }
                 else
                 {
                     var start = Selection.Start;
-                    Remove(start, Selection.End - start);
-                    Insert(start, value ?? "");
+                    Replace(start, Selection.End, value ?? "");
                     Composition = new TextSelection(start, start + (value?.Length ?? 0));
                 }
             }
@@ -80,14 +80,16 @@ namespace Avalonia.Android.Platform.Input
 
         public string Text => _textInputMethod.Client?.SurroundingText ?? "";
 
-        internal void Insert(int index, string text)
+        public ExtractedText? ExtractedText => new ExtractedText
         {
-            if (_textInputMethod.Client is { } client)
-            {
-                client.Selection = new TextSelection(index, index);
-                _topLevel.TextInput(text);
-            }
-        }
+            Flags = Text.Contains('\n') ? 0 : ExtractedTextFlags.SingleLine,
+            PartialStartOffset = -1,
+            PartialEndOffset = Text.Length,
+            SelectionStart = Selection.Start,
+            SelectionEnd = Selection.End,
+            StartOffset = 0,
+            Text = new SpannableString(Text)
+        };
 
         internal void Remove(int index, int length)
         {
@@ -96,6 +98,24 @@ namespace Avalonia.Android.Platform.Input
                 client.Selection = new TextSelection(index, index + length);
                 if (length > 0)
                     _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+            }
+        }
+
+        internal void Replace(int start, int end, string text)
+        {
+            if (_textInputMethod.Client is { } client)
+            {
+                var realStart = Math.Min(start, end);
+                var realEnd = Math.Max(start, end);
+                if (realEnd > realStart)
+                {
+                    client.Selection = new TextSelection(realStart, realEnd);
+                    _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+                }
+                _topLevel.TextInput(text);
+                var index = realStart + text.Length;
+                client.Selection = new TextSelection(index, index);
+                Composition = null;
             }
         }
     }

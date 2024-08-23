@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
 using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -614,12 +611,7 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SHOWWINDOW:
-                    _shown = wParam != default;
-
-                    if (_isClientAreaExtended)
-                    {
-                        ExtendClientArea();
-                    }
+                    OnShowHideMessage(wParam != default);
                     break;
 
                 case WindowsMessage.WM_SIZE:
@@ -648,6 +640,8 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
+                        if (IsWindowVisible(_hwnd) && !_shown)
+                            _shown = true;
 
                         if (stateChanged)
                         {
@@ -666,10 +660,16 @@ namespace Avalonia.Win32
 
                             if (_isClientAreaExtended)
                             {
-                                UpdateExtendMargins();
+                                ExtendClientArea();
 
                                 ExtendClientAreaToDecorationsChanged?.Invoke(true);
                             }
+                        }
+                        else if (windowState == WindowState.Maximized && _isClientAreaExtended)
+                        {
+                            ExtendClientArea();
+
+                            ExtendClientAreaToDecorationsChanged?.Invoke(true);
                         }
 
                         return IntPtr.Zero;
@@ -681,8 +681,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOVE:
                     {
-                        PositionChanged?.Invoke(new PixelPoint((short)(ToInt32(lParam) & 0xffff),
-                            (short)(ToInt32(lParam) >> 16)));
+                        PositionChanged?.Invoke(Position);
                         return IntPtr.Zero;
                     }
 
@@ -801,11 +800,11 @@ namespace Avalonia.Win32
                     var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
                     if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
                     {
-                        _shown = true;
+                        OnShowHideMessage(true);
                     }
                     else if ((winPos.flags & (uint)SetWindowPosFlags.SWP_HIDEWINDOW) != 0)
                     {
-                        _shown = false;
+                        OnShowHideMessage(false);
                     }
                     break;
             }
@@ -852,6 +851,16 @@ namespace Avalonia.Win32
             }
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private void OnShowHideMessage(bool shown)
+        {
+            _shown = shown;
+
+            if (_isClientAreaExtended)
+            {
+                ExtendClientArea();
+            }
         }
 
         private Lazy<IReadOnlyList<RawPointerPoint>?>? CreateLazyIntermediatePoints(POINTER_INFO info)

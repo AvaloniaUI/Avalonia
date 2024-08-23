@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Chrome
 
             if (window.WindowState != WindowState.FullScreen)
             {
-                Height = window.WindowDecorationMargin.Top;
+                Height = Math.Max(0, window.WindowDecorationMargin.Top);
 
                 if (_captionButtons != null)
                 {
