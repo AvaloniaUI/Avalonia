@@ -1088,11 +1088,17 @@ namespace Avalonia.Win32
             {
                 // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-pointer_touch_info
                 // > The predicted screen coordinates of the contact area, in pixels. By default, if the device does not report a contact area, this field defaults to a 0-by-0 rectangle centered around the pointer location.
+                var leftTopPixelPoint =
+                    new PixelPoint(info.rcContactLeft, info.rcContactTop);
+                var leftTopPosition = PointToClient(leftTopPixelPoint);
+
                 var bottomRightPixelPoint =
                     new PixelPoint(info.rcContactRight, info.rcContactBottom);
                 var bottomRightPosition = PointToClient(bottomRightPixelPoint);
 
-                pointerPoint.ContactRect = new Rect(point, bottomRightPosition);
+                // Why not use ptPixelLocationX and ptPixelLocationY to as leftTopPosition?
+                // Because ptPixelLocationX and ptPixelLocationY will be the center of the contact area.
+                pointerPoint.ContactRect = new Rect(leftTopPosition, bottomRightPosition);
             }
 
             return pointerPoint;
