@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -275,7 +277,9 @@ namespace Avalonia.X11
                     PixelRect screenBounds = default;
                     if (ev.Valuators.TryGetValue(touchMajorXIValuatorClassInfo.Number, out var touchMajorValue))
                     {
-                        var screenBoundsFromPoint = _platform.X11Screens.GetScreenBoundsFromPoint(new PixelPoint((int)ev.RootPosition.X, (int)ev.RootPosition.Y));
+                        var pixelPoint = new PixelPoint((int)ev.RootPosition.X, (int)ev.RootPosition.Y);
+                        var screen = _platform.Screens.ScreenFromPoint(pixelPoint);
+                        var screenBoundsFromPoint = screen?.Bounds;
                         Debug.Assert(screenBoundsFromPoint != null);
                         if (screenBoundsFromPoint != null)
                         {

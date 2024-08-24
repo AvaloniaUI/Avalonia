@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.GesturesPage">
+  <DockPanel>
+    <DockPanel DockPanel.Dock="Top">
+      <Button Name="ResetGestures"
+              DockPanel.Dock="Right"
+              Click="ResetGestures_Click">
+        Reset
+      </Button>
+      <TextBlock Name="LastGesture" />
+    </DockPanel>
+    <Panel>
+      <Border Name="GestureBorder" Background="Blue"
+              AutomationProperties.AccessibilityView="Content"
+              AutomationProperties.ControlTypeOverride="Image"
+              Tapped="GestureBorder_Tapped"
+              DoubleTapped="GestureBorder_DoubleTapped"
+              Gestures.RightTapped="GestureBorder_RightTapped"/>
+      <Border Name="GestureBorder2" Background="Green" IsVisible="False"
+              AutomationProperties.AccessibilityView="Content"
+              AutomationProperties.ControlTypeOverride="Image"
+              DoubleTapped="GestureBorder2_DoubleTapped"/>
+    </Panel>
+  </DockPanel>
+</UserControl>

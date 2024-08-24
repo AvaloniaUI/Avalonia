@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Metadata;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
 
@@ -60,4 +61,7 @@ internal class StyleValueFrameDiagnostic : IValueFrameDiagnostic
 
         return string.Concat(selectors);
     }
+
+    [Unstable("Compatibility with 11.x")]
+    public AppliedStyle AsAppliedStyle() => new AppliedStyle(_styleInstance);
 }
