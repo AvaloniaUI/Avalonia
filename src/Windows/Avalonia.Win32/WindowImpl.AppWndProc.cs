@@ -1073,13 +1073,29 @@ namespace Avalonia.Win32
         {
             var pointerInfo = info.pointerInfo;
             var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
-            return new RawPointerPoint
+
+            var pointerPoint = new RawPointerPoint
             {
                 Position = point,
                 // POINTER_PEN_INFO.pressure is normalized to a range between 0 and 1024, with 512 as a default.
                 // But in our API we use range from 0.0 to 1.0.
-                Pressure = info.pressure / 1024f
+                Pressure = info.pressure / 1024f,
             };
+
+            // See https://learn.microsoft.com/en-us/windows/win32/inputmsg/touch-mask-constants
+            // > TOUCH_MASK_CONTACTAREA: rcContact of the POINTER_TOUCH_INFO structure is valid.
+            if ((info.touchMask & TouchMask.TOUCH_MASK_CONTACTAREA) != 0)
+            {
+                // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-pointer_touch_info
+                // > The predicted screen coordinates of the contact area, in pixels. By default, if the device does not report a contact area, this field defaults to a 0-by-0 rectangle centered around the pointer location.
+                var bottomRightPixelPoint =
+                    new PixelPoint(info.rcContactRight, info.rcContactBottom);
+                var bottomRightPosition = PointToClient(bottomRightPixelPoint);
+
+                pointerPoint.ContactRect = new Rect(point, bottomRightPosition);
+            }
+
+            return pointerPoint;
         }
         private RawPointerPoint CreateRawPointerPoint(POINTER_PEN_INFO info)
         {
