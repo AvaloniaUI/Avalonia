@@ -160,8 +160,12 @@ namespace Avalonia.Input
         }
 
         public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind,
-            float twist, float pressure, float xTilt, float yTilt, Rect contactRect
-            ) : this (modifiers, kind)
+            float twist, float pressure, float xTilt, float yTilt) : this(modifiers, kind, twist, pressure, xTilt, yTilt, default)
+        {
+        }
+
+        public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind,
+            float twist, float pressure, float xTilt, float yTilt, Rect contactRect) : this(modifiers, kind)
         {
             Twist = twist;
             Pressure = pressure;
