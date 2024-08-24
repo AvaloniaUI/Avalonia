@@ -436,6 +436,26 @@ namespace Avalonia.Win32
                         {
                             foreach (var touchInput in touchInputs)
                             {
+                                var position = PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100));
+                                var rawPointerPoint = new RawPointerPoint()
+                                {
+                                    Position = position,
+                                };
+
+                                // Try to get the touch width and height.
+                                // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-touchinput
+                                // > The width of the touch contact area in hundredths of a pixel in physical screen coordinates. This value is only valid if the dwMask member has the TOUCHEVENTFMASK_CONTACTAREA flag set.
+                                const int TOUCHEVENTFMASK_CONTACTAREA = 0x0004; // Known as TOUCHINPUTMASKF_CONTACTAREA in the docs.
+                                if ((touchInput.Mask & TOUCHEVENTFMASK_CONTACTAREA) != 0)
+                                {
+                                    var bottomRightPixelPoint =
+                                        new PixelPoint((touchInput.X + touchInput.CxContact) / 100,
+                                            (touchInput.Y + touchInput.CyContact) / 100);
+                                    var bottomRightPosition = PointToClient(bottomRightPixelPoint);
+
+                                    rawPointerPoint.ContactRect = new Rect(position, bottomRightPosition);
+                                }
+
                                 input.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                     Owner,
                                     touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_UP) ?
@@ -443,7 +463,7 @@ namespace Avalonia.Win32
                                         touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                             RawPointerEventType.TouchBegin :
                                             RawPointerEventType.TouchUpdate,
-                                    PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
+                                    rawPointerPoint,
                                     WindowsKeyboardDevice.Instance.Modifiers,
                                     touchInput.Id));
                             }
