@@ -307,10 +307,14 @@ namespace Avalonia.X11
                             touchMinor = touchMajor;
                         }
 
+                        var center = ev.Position;
+                        var leftX = center.X - touchMajor.Value / 2;
+                        var topY = center.Y - touchMinor.Value / 2;
+
                         rawPointerPoint.ContactRect = new Rect
                         (
-                            ev.Position.X,
-                            ev.Position.Y,
+                            leftX,
+                            topY,
                             touchMajor.Value,
                             touchMinor.Value
                         );
