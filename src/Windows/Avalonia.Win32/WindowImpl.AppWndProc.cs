@@ -448,12 +448,24 @@ namespace Avalonia.Win32
                                 const int TOUCHEVENTFMASK_CONTACTAREA = 0x0004; // Known as TOUCHINPUTMASKF_CONTACTAREA in the docs.
                                 if ((touchInput.Mask & TOUCHEVENTFMASK_CONTACTAREA) != 0)
                                 {
+                                    var centerX = touchInput.X / 100.0;
+                                    var centerY = touchInput.Y / 100.0;
+
+                                    var rightX = centerX + touchInput.CxContact / 100.0 /
+                                        2 /*The center X add the half width is the right X*/;
+                                    var bottomY = centerY + touchInput.CyContact / 100.0 /
+                                        2 /*The center Y add the half height is the bottom Y*/;
+
                                     var bottomRightPixelPoint =
-                                        new PixelPoint((touchInput.X + touchInput.CxContact) / 100,
-                                            (touchInput.Y + touchInput.CyContact) / 100);
+                                        new PixelPoint((int)rightX, (int)bottomY);
                                     var bottomRightPosition = PointToClient(bottomRightPixelPoint);
 
-                                    rawPointerPoint.ContactRect = new Rect(position, bottomRightPosition);
+                                    var centerPosition = position;
+                                    var halfWidth = bottomRightPosition.X - centerPosition.X;
+                                    var halfHeight = bottomRightPosition.Y - centerPosition.Y;
+                                    var leftTopPosition = new Point(centerPosition.X - halfWidth, centerPosition.Y - halfHeight);
+
+                                    rawPointerPoint.ContactRect = new Rect(leftTopPosition, bottomRightPosition);
                                 }
 
                                 input.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
