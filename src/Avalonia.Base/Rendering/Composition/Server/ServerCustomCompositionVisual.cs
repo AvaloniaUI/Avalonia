@@ -71,11 +71,10 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
             Compositor.AddToClock(this);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
-        IDirtyRectTracker dirtyRects)
+    protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
     {
-        canvas.AutoFlush = true;
-        using var context = new ImmediateDrawingContext(canvas, GlobalTransformMatrix, false);
+        ctx.Canvas.AutoFlush = true;
+        using var context = new ImmediateDrawingContext(ctx.Canvas, GlobalTransformMatrix, false);
         try
         {
             _handler.Render(context, currentTransformedClip.ToRect());
@@ -86,6 +85,6 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
                 ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnRender)} {{0}}", e);
         }
 
-        canvas.AutoFlush = false;
+        ctx.Canvas.AutoFlush = false;
     }
 }

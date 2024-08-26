@@ -7,34 +7,27 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class SliderTests
+    public class SliderTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public SliderTests(DefaultAppFixture fixture)
+            : base(fixture, "Slider")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Slider");
-            tab.Click();
-
-            var reset = _session.FindElementByAccessibilityId("ResetSliders");
+            var reset = Session.FindElementByAccessibilityId("ResetSliders");
             reset.Click();
         }
 
         [Fact]
         public void Horizontal_Changes_Value_Dragging_Thumb_Right()
         {
-            var slider = _session.FindElementByAccessibilityId("HorizontalSlider");
+            var slider = Session.FindElementByAccessibilityId("HorizontalSlider");
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).ClickAndHold(thumb).MoveByOffset(100, 0).Release().Perform();
+            new Actions(Session).ClickAndHold(thumb).MoveByOffset(100, 0).Release().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
-                _session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
+                Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value > 50);
@@ -47,15 +40,15 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Horizontal_Changes_Value_Dragging_Thumb_Left()
         {
-            var slider = _session.FindElementByAccessibilityId("HorizontalSlider");
+            var slider = Session.FindElementByAccessibilityId("HorizontalSlider");
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).ClickAndHold(thumb).MoveByOffset(-100, 0).Release().Perform();
+            new Actions(Session).ClickAndHold(thumb).MoveByOffset(-100, 0).Release().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
-                _session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
+                Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value < 50);
@@ -68,15 +61,15 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Horizontal_Changes_Value_When_Clicking_Increase_Button()
         {
-            var slider = _session.FindElementByAccessibilityId("HorizontalSlider");
+            var slider = Session.FindElementByAccessibilityId("HorizontalSlider");
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, 100, 0, MoveToElementOffsetOrigin.Center).Click().Perform();
+            new Actions(Session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
-                _session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
+                Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value > 50);
@@ -89,15 +82,15 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Horizontal_Changes_Value_When_Clicking_Decrease_Button()
         {
-            var slider = _session.FindElementByAccessibilityId("HorizontalSlider");
+            var slider = Session.FindElementByAccessibilityId("HorizontalSlider");
             var thumb = slider.FindElementByAccessibilityId("thumb");
             var initialThumbRect = thumb.Rect;
 
-            new Actions(_session).MoveToElement(slider, -100, 0, MoveToElementOffsetOrigin.Center).Click().Perform();
+            new Actions(Session).MoveToElementCenter(slider, -100, 0).Click().Perform();
 
             var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
             var boundValue = double.Parse(
-                _session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
+                Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value < 50);

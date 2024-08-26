@@ -46,9 +46,9 @@ class CompositionBorderVisual : CompositionDrawListVisual
         {
         }
 
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
-            IDirtyRectTracker dirtyRects)
+        protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
         {
+            var canvas = ctx.Canvas;
             if (ClipToBounds)
             {
                 var clipRect = Root!.SnapToDevicePixels(new Rect(new Size(Size.X, Size.Y)));
@@ -58,7 +58,7 @@ class CompositionBorderVisual : CompositionDrawListVisual
                     canvas.PushClip(new RoundedRect(clipRect, _cornerRadius));
             }
 
-            base.RenderCore(canvas, currentTransformedClip, dirtyRects);
+            base.RenderCore(ctx, currentTransformedClip);
             
             if(ClipToBounds)
                 canvas.PopClip();

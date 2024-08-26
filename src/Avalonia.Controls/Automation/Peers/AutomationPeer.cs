@@ -154,6 +154,17 @@ namespace Avalonia.Automation.Peers
         public bool IsKeyboardFocusable() => IsKeyboardFocusableCore();
 
         /// <summary>
+        /// Gets a value that indicates whether an element is off the screen.
+        /// </summary>
+        /// <remarks>
+        /// This property does not indicate whether the element is visible. In some circumstances,
+        /// an element is on the screen but is still not visible. For example, if the element is
+        /// on the screen but obscured by other elements, it might not be visible. In this case,
+        /// the method returns false.
+        /// </remarks>
+        public bool IsOffscreen() => IsOffscreenCore();
+
+        /// <summary>
         /// Sets the keyboard focus on the element that is associated with this automation peer.
         /// </summary>
         public void SetFocus() => SetFocusCore();
@@ -245,6 +256,7 @@ namespace Avalonia.Automation.Peers
         protected abstract bool IsControlElementCore();
         protected abstract bool IsEnabledCore();
         protected abstract bool IsKeyboardFocusableCore();
+        protected virtual bool IsOffscreenCore() => false;
         protected abstract void SetFocusCore();
         protected abstract bool ShowContextMenuCore();
 

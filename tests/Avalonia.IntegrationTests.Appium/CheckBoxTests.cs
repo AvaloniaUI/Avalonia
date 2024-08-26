@@ -1,26 +1,19 @@
-﻿using OpenQA.Selenium.Appium;
-using Xunit;
+﻿using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class CheckBoxTests
+    public class CheckBoxTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public CheckBoxTests(DefaultAppFixture fixture)
+            : base(fixture, "CheckBox")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("CheckBox");
-            tab.Click();
         }
 
         [Fact]
         public void UncheckedCheckBox()
         {
-            var checkBox = _session.FindElementByAccessibilityId("UncheckedCheckBox");
+            var checkBox = Session.FindElementByAccessibilityId("UncheckedCheckBox");
 
             Assert.Equal("Unchecked", checkBox.GetName());
             Assert.Equal(false, checkBox.GetIsChecked());
@@ -32,7 +25,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void CheckedCheckBox()
         {
-            var checkBox = _session.FindElementByAccessibilityId("CheckedCheckBox");
+            var checkBox = Session.FindElementByAccessibilityId("CheckedCheckBox");
 
             Assert.Equal("Checked", checkBox.GetName());
             Assert.Equal(true, checkBox.GetIsChecked());
@@ -44,7 +37,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void ThreeStateCheckBox()
         {
-            var checkBox = _session.FindElementByAccessibilityId("ThreeStateCheckBox");
+            var checkBox = Session.FindElementByAccessibilityId("ThreeStateCheckBox");
 
             Assert.Equal("ThreeState", checkBox.GetName());
             Assert.Null(checkBox.GetIsChecked());

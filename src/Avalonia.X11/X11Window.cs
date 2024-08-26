@@ -24,6 +24,7 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
 
 // ReSharper disable IdentifierTypo
@@ -237,10 +238,15 @@ namespace Avalonia.X11
                     _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
-            _storageProvider = new CompositeStorageProvider(new[]
+            _storageProvider = new FallbackStorageProvider(new[]
             {
-                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider?>(null),
-                () => GtkSystemDialog.TryCreate(this)
+                () => _platform.Options.UseDBusFilePicker
+                    ? DBusSystemDialog.TryCreateAsync(Handle)
+                    : Task.FromResult<IStorageProvider?>(null),
+                () => GtkSystemDialog.TryCreate(this),
+                () => Task.FromResult(InputRoot is TopLevel tl
+                    ? (IStorageProvider?)new ManagedStorageProvider(tl)
+                    : null)
             });
 
             platform.X11Screens.Changed += OnScreensChanged;
@@ -1380,7 +1386,7 @@ namespace Avalonia.X11
                 var ptr = (IntPtr*)prop.ToPointer();
                 var newAtoms = new HashSet<IntPtr>();
                 for (var c = 0; c < nitems.ToInt64(); c++) 
-                    newAtoms.Add(*ptr);
+                    newAtoms.Add(*(ptr+c));
                 XFree(prop);
                 foreach(var atom in atoms)
                     if (enable)

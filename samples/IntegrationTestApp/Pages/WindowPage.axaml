@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.WindowPage">
+  <Grid ColumnDefinitions="*,8,*">
+    <StackPanel Grid.Column="0">
+      <TextBox Name="ShowWindowSize" Watermark="Window Size"/>
+      <ComboBox Name="ShowWindowMode" SelectedIndex="0">
+        <ComboBoxItem>NonOwned</ComboBoxItem>
+        <ComboBoxItem>Owned</ComboBoxItem>
+        <ComboBoxItem>Modal</ComboBoxItem>
+      </ComboBox>
+      <ComboBox Name="ShowWindowLocation" SelectedIndex="0">
+        <ComboBoxItem>Manual</ComboBoxItem>
+        <ComboBoxItem>CenterScreen</ComboBoxItem>
+        <ComboBoxItem>CenterOwner</ComboBoxItem>
+      </ComboBox>
+      <ComboBox Name="ShowWindowState" SelectedIndex="0">
+        <ComboBoxItem Name="ShowWindowStateNormal">Normal</ComboBoxItem>
+        <ComboBoxItem Name="ShowWindowStateMinimized">Minimized</ComboBoxItem>
+        <ComboBoxItem Name="ShowWindowStateMaximized">Maximized</ComboBoxItem>
+        <ComboBoxItem Name="ShowWindowStateFullScreen">FullScreen</ComboBoxItem>
+      </ComboBox>
+      <ComboBox Name="ShowWindowSystemDecorations" SelectedIndex="2">
+        <ComboBoxItem Name="ShowWindowSystemDecorationsNone">None</ComboBoxItem>
+        <ComboBoxItem Name="ShowWindowSystemDecorationsBorderOnly">BorderOnly</ComboBoxItem>
+        <ComboBoxItem Name="ShowWindowSystemDecorationsFull">Full</ComboBoxItem>
+      </ComboBox>
+      <CheckBox Name="ShowWindowExtendClientAreaToDecorationsHint">ExtendClientAreaToDecorationsHint</CheckBox>
+      <CheckBox Name="ShowWindowCanResize" IsChecked="True">Can Resize</CheckBox>
+      <Button Name="ShowWindow" Click="ShowWindow_Click">Show Window</Button>
+      <Button Name="SendToBack" Click="SendToBack_Click">Send to Back</Button>
+      <Button Name="EnterFullscreen" Click="EnterFullscreen_Click">Enter Fullscreen</Button>
+      <Button Name="ExitFullscreen" Click="ExitFullscreen_Click">Exit Fullscreen</Button>
+      <Button Name="RestoreAll" Click="RestoreAll_Click">Restore All</Button>
+    </StackPanel>
+    <StackPanel Grid.Column="2">
+      <Button Name="ShowTransparentWindow" Click="ShowTransparentWindow_Click">Transparent Window</Button>
+      <Button Name="ShowTransparentPopup" Click="ShowTransparentPopup_Click">Transparent Popup</Button>
+    </StackPanel>
+  </Grid>
+</UserControl>

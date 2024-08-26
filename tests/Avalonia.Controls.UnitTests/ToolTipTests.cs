@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive;
 using System.Runtime.CompilerServices;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -15,17 +18,64 @@ namespace Avalonia.Controls.UnitTests
     public class ToolTipTests_Popup : ToolTipTests
     {
         protected override TestServices ConfigureServices(TestServices baseServices) => baseServices;
+
+        protected override void SetupWindowMock(Mock<IWindowImpl> windowImpl) { }
+
+        protected override void VerifyToolTipType(Control control)
+        {
+            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            Assert.IsType<PopupRoot>(toolTip.PopupHost);
+            Assert.Same(toolTip.VisualRoot, toolTip.PopupHost);
+        }
     }
 
-    public class ToolTipTests_Overlay : ToolTipTests
+    public class ToolTipTests_Overlay : ToolTipTests, IDisposable
     {
+        private readonly IDisposable _toolTipOpenSubscription;
+
+        public ToolTipTests_Overlay()
+        {
+            _toolTipOpenSubscription = ToolTip.IsOpenProperty.Changed.Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs<bool>>(e =>
+            {
+                if (e.Sender is Visual { VisualRoot: {} root } visual)
+                    OverlayLayer.GetOverlayLayer(visual).Measure(root.ClientSize);
+            }));
+        }
+
+        public void Dispose()
+        {
+            _toolTipOpenSubscription.Dispose();
+        }
+
         protected override TestServices ConfigureServices(TestServices baseServices) =>
             baseServices.With(windowingPlatform: new MockWindowingPlatform(popupImpl: window => null));
+
+        protected override void SetupWindowMock(Mock<IWindowImpl> windowImpl)
+        {
+            windowImpl.Setup(x => x.CreatePopup()).Returns(default(IPopupImpl));
+        }
+
+        protected override void VerifyToolTipType(Control control)
+        {
+            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            Assert.IsType<OverlayPopupHost>(toolTip.PopupHost);
+            Assert.Same(toolTip.VisualRoot, control.VisualRoot);
+        }
     }
 
     public abstract class ToolTipTests
     {
         protected abstract TestServices ConfigureServices(TestServices baseServices);
+
+        protected abstract void SetupWindowMock(Mock<IWindowImpl> windowImpl);
+
+        protected abstract void VerifyToolTipType(Control control);
+
+        private void AssertToolTipOpen(Control control)
+        {
+            Assert.True(ToolTip.GetIsOpen(control));
+            VerifyToolTipType(control);
+        }
 
         private static readonly MouseDevice s_mouseDevice = new(new Pointer(0, PointerType.Mouse, true));
 
@@ -46,7 +96,7 @@ namespace Avalonia.Controls.UnitTests
 
                 SetupWindowAndActivateToolTip(panel, target);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 panel.Children.Remove(target);
 
@@ -74,7 +124,7 @@ namespace Avalonia.Controls.UnitTests
 
                 mouseEnter(target);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 panel.Children.Remove(target);
 
@@ -95,7 +145,7 @@ namespace Avalonia.Controls.UnitTests
 
                 SetupWindowAndActivateToolTip(target);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
             }
         }
 
@@ -112,7 +162,7 @@ namespace Avalonia.Controls.UnitTests
 
                 SetupWindowAndActivateToolTip(target);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
                 Assert.Equal("Tip", target.GetValue(ToolTip.ToolTipProperty).Content);
 
                 ToolTip.SetTip(target, "Tip1");
@@ -139,7 +189,7 @@ namespace Avalonia.Controls.UnitTests
 
                 timer.ForceFire();
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
             }
         }
 
@@ -188,6 +238,7 @@ namespace Avalonia.Controls.UnitTests
                 ToolTip.SetIsOpen(decorator, true);
 
                 Assert.Equal(new[] { ":open" }, toolTip.Classes);
+                VerifyToolTipType(decorator);
             }
         }
 
@@ -197,8 +248,11 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(ConfigureServices(TestServices.StyledWindow)))
             {
                 var toolTip = new ToolTip();
-                var window = new Window();
 
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                SetupWindowMock(windowImpl);
+                var window = new Window(windowImpl.Object);
+    
                 var decorator = new Decorator()
                 {
                     [ToolTip.TipProperty] = toolTip
@@ -211,6 +265,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Presenter.ApplyTemplate();
 
                 ToolTip.SetIsOpen(decorator, true);
+                AssertToolTipOpen(decorator);
                 ToolTip.SetIsOpen(decorator, false);
 
                 Assert.Empty(toolTip.Classes);
@@ -230,7 +285,7 @@ namespace Avalonia.Controls.UnitTests
 
                 SetupWindowAndActivateToolTip(target);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 target[ToolTip.TipProperty] = null;
 
@@ -253,13 +308,13 @@ namespace Avalonia.Controls.UnitTests
 
                 mouseEnter(target);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 var tooltip = Assert.IsType<ToolTip>(target.GetValue(ToolTip.ToolTipProperty));
 
                 mouseEnter(tooltip);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
             }
         }
 
@@ -277,16 +332,16 @@ namespace Avalonia.Controls.UnitTests
                 var mouseEnter = SetupWindowAndGetMouseEnterAction(target);
 
                 mouseEnter(target);
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 var tooltip = Assert.IsType<ToolTip>(target.GetValue(ToolTip.ToolTipProperty));
                 mouseEnter(tooltip);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 mouseEnter(target);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
             }
         }
 
@@ -311,12 +366,12 @@ namespace Avalonia.Controls.UnitTests
                 var mouseEnter = SetupWindowAndGetMouseEnterAction(panel);
 
                 mouseEnter(target);
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 var tooltip = Assert.IsType<ToolTip>(target.GetValue(ToolTip.ToolTipProperty));
                 mouseEnter(tooltip);
 
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 mouseEnter(other);
 
@@ -352,7 +407,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(ToolTip.GetIsOpen(other)); // long delay
 
             mouseEnter(target);
-            Assert.True(ToolTip.GetIsOpen(target)); // no delay
+            AssertToolTipOpen(target); // no delay
 
             mouseEnter(other);
             Assert.True(ToolTip.GetIsOpen(other)); // delay skipped, a tooltip was already open
@@ -360,7 +415,7 @@ namespace Avalonia.Controls.UnitTests
             // Now disable the between-show system
 
             mouseEnter(target);
-            Assert.True(ToolTip.GetIsOpen(target));
+            AssertToolTipOpen(target);
 
             ToolTip.SetBetweenShowDelay(other, -1);
 
@@ -382,7 +437,7 @@ namespace Avalonia.Controls.UnitTests
                 var mouseEnter = SetupWindowAndGetMouseEnterAction(target);
 
                 mouseEnter(target);
-                Assert.True(ToolTip.GetIsOpen(target));
+                AssertToolTipOpen(target);
 
                 var topLevel = TopLevel.GetTopLevel(target);
                 topLevel.PlatformImpl.Input(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel, 
@@ -395,6 +450,8 @@ namespace Avalonia.Controls.UnitTests
         private Action<Control> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string testName = null)
         {
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            SetupWindowMock(windowImpl);
+
             var hitTesterMock = new Mock<IHitTester>();
 
             var window = new Window(windowImpl.Object)

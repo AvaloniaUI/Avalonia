@@ -2,7 +2,6 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 
 namespace IntegrationTestApp
@@ -26,7 +25,7 @@ namespace IntegrationTestApp
         }
     }
     
-    public class ShowWindowTest : Window
+    public partial class ShowWindowTest : Window
     {
         private readonly DispatcherTimer? _timer;
         private readonly TextBox? _orderTextBox;
@@ -44,11 +43,6 @@ namespace IntegrationTestApp
                 _timer.Tick += TimerOnTick;
                 _timer.Start();
             }
-        }
-        
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         protected override void OnOpened(EventArgs e)
