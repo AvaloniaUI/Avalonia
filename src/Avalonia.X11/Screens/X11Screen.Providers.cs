@@ -1,8 +1,6 @@
 
 #nullable enable
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
@@ -11,79 +9,57 @@ namespace Avalonia.X11.Screens;
 
 internal partial class X11Screens
 {
-    internal class X11Screen
+    internal unsafe class X11Screen(MonitorInfo info, X11Info x11, IScalingProvider? scalingProvider, int id) : PlatformScreen(new PlatformHandle(info.Name, "XRandRMonitorName"))
     {
-        public bool IsPrimary { get; set; }
-        public string Name { get; set; }
-        public PixelRect Bounds { get; set; }
         public Size? PhysicalSize { get; set; }
-        public PixelRect WorkingArea { get; set; }
-
-        public X11Screen(
-            PixelRect bounds,
-            bool isPrimary,
-            string name,
-            Size? physicalSize)
-        {
-            IsPrimary = isPrimary;
-            Name = name;
-            Bounds = bounds;
-            PhysicalSize = physicalSize;
-        }
-    }
-
-    internal interface IX11RawScreenInfoProvider
-    {
-        X11Screen[] Screens { get; }
-        event Action? Changed;
-    }
-
-    
-    private class Randr15ScreensImpl : IX11RawScreenInfoProvider
-    {
-        private X11Screen[]? _cache;
-        private readonly X11Info _x11;
-        private readonly IntPtr _window;
-
         // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
-        private const int EDIDStructureLength = 32; 
+        private const int EDIDStructureLength = 32;
 
-        public event Action? Changed;
-        
-        public Randr15ScreensImpl(AvaloniaX11Platform platform)
+        public virtual void Refresh()
         {
-            _x11 = platform.Info;
-            _window = CreateEventWindow(platform, OnEvent);
-            XRRSelectInput(_x11.Display, _window, RandrEventMask.RRScreenChangeNotify);
-        }
+            if (scalingProvider == null)
+                return;
 
-        private void OnEvent(ref XEvent ev)
-        {
-            if ((int)ev.type == _x11.RandrEventBase + (int)RandrEvent.RRScreenChangeNotify)
+            var namePtr = XGetAtomName(x11.Display, info.Name);
+            var name = Marshal.PtrToStringAnsi(namePtr);
+            XFree(namePtr);
+            DisplayName = name;
+            IsPrimary = info.IsPrimary;
+            Bounds = new PixelRect(info.X, info.Y, info.Width, info.Height);
+
+            Size? pSize = null;
+            for (int o = 0; o < info.Outputs.Length; o++)
             {
-                _cache = null;
-                Changed?.Invoke();
+                var outputSize = GetPhysicalMonitorSizeFromEDID(info.Outputs[o]);
+                if (outputSize != null)
+                {
+                    pSize = outputSize;
+                    break;
+                }
             }
+            PhysicalSize = pSize;
+            UpdateWorkArea();
+            Scaling = scalingProvider.GetScaling(this, id);
         }
 
         private unsafe Size? GetPhysicalMonitorSizeFromEDID(IntPtr rrOutput)
         {
-            if (rrOutput == IntPtr.Zero)
+            if (rrOutput == IntPtr.Zero || x11 == null)
                 return null;
-            var properties = XRRListOutputProperties(_x11.Display, rrOutput, out int propertyCount);
+            var properties = XRRListOutputProperties(x11.Display, rrOutput, out int propertyCount);
             var hasEDID = false;
             for (var pc = 0; pc < propertyCount; pc++)
             {
-                if (properties[pc] == _x11.Atoms.EDID)
+                if (properties[pc] == x11.Atoms.EDID)
                     hasEDID = true;
             }
 
             if (!hasEDID)
                 return null;
-            XRRGetOutputProperty(_x11.Display, rrOutput, _x11.Atoms.EDID, 0, EDIDStructureLength, false, false,
-                _x11.Atoms.AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _,
+            XRRGetOutputProperty(x11.Display, rrOutput, x11.Atoms.EDID, 0, EDIDStructureLength, false, false,
+                x11.Atoms.AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _,
                 out IntPtr prop);
-            if (actualType != _x11.Atoms.XA_INTEGER)
+            if (actualType != x11.Atoms.XA_INTEGER)
                 return null;
             if (actualFormat != 8) // Expecting an byte array
                 return null;
@@ -101,7 +77,104 @@ internal partial class X11Screens
             return new Size(width * 10, height * 10);
         }
 
-        public unsafe X11Screen[] Screens
+        protected unsafe void UpdateWorkArea()
+        {
+            var rect = default(PixelRect);
+            //Fallback value
+            rect = rect.Union(Bounds);
+            WorkingArea = Bounds;
+
+            var res = XGetWindowProperty(x11.Display,
+                x11.RootWindow,
+                x11.Atoms._NET_WORKAREA,
+                IntPtr.Zero,
+                new IntPtr(128),
+                false,
+                x11.Atoms.AnyPropertyType,
+                out var type,
+                out var format,
+                out var count,
+                out var bytesAfter,
+                out var prop);
+
+            if (res != (int)Status.Success || type == IntPtr.Zero ||
+                format == 0 || bytesAfter.ToInt64() != 0 || count.ToInt64() % 4 != 0)
+                return;
+
+            var pwa = (IntPtr*)prop;
+            var wa = new PixelRect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
+
+            WorkingArea = Bounds.Intersect(wa);
+            if (WorkingArea.Width <= 0 || WorkingArea.Height <= 0)
+                WorkingArea = Bounds;
+            XFree(prop);
+        }
+    }
+
+    internal class FallBackScreen : X11Screen
+    {
+        public FallBackScreen(PixelRect pixelRect, X11Info x11) : base(default, x11, null, 0)
+        {
+            Bounds = pixelRect;
+            DisplayName = "Default";
+            IsPrimary = true;
+            PhysicalSize = pixelRect.Size.ToSize(Scaling);
+            UpdateWorkArea();
+        }
+        public override void Refresh()
+        {
+        }
+    }
+
+    internal interface IX11RawScreenInfoProvider
+    {
+        nint[] ScreenKeys { get; }
+        event Action? Changed;
+        X11Screen? CreateScreenFromKey(nint key);
+    }
+
+    internal unsafe struct MonitorInfo
+    {
+        public IntPtr Name;
+        public bool IsPrimary;
+        public int X;
+        public int Y;
+        public int Width;
+        public int Height;
+        public IntPtr[] Outputs;
+    }
+
+    private class Randr15ScreensImpl : IX11RawScreenInfoProvider
+    {
+        private MonitorInfo[]? _cache;
+        private readonly X11Info _x11;
+        private readonly IntPtr _window;
+        private readonly IScalingProvider _scalingProvider;
+
+        public nint[] ScreenKeys => MonitorInfos.Select(x => x.Name).ToArray();
+
+        public event Action? Changed;
+
+        public Randr15ScreensImpl(AvaloniaX11Platform platform)
+        {
+            _x11 = platform.Info;
+            _window = CreateEventWindow(platform, OnEvent);
+            _scalingProvider = GetScalingProvider(platform);
+            XRRSelectInput(_x11.Display, _window, RandrEventMask.RRScreenChangeNotify);
+            if (_scalingProvider is IScalingProviderWithChanges scalingWithChanges)
+                scalingWithChanges.SettingsChanged += () => Changed?.Invoke();
+        }
+
+        private void OnEvent(ref XEvent ev)
+        {
+            if ((int)ev.type == _x11.RandrEventBase + (int)RandrEvent.RRScreenChangeNotify)
+            {
+                _cache = null;
+                Changed?.Invoke();
+            }
+        }
+
+        private unsafe MonitorInfo[] MonitorInfos
         {
             get
             {
@@ -109,39 +182,56 @@ internal partial class X11Screens
                     return _cache;
                 var monitors = XRRGetMonitors(_x11.Display, _window, true, out var count);
 
-                var screens = new X11Screen[count];
+                var screens = new MonitorInfo[count];
                 for (var c = 0; c < count; c++)
                 {
                     var mon = monitors[c];
-                    var namePtr = XGetAtomName(_x11.Display, mon.Name);
-                    var name = Marshal.PtrToStringAnsi(namePtr);
-                    XFree(namePtr);
-                    var bounds = new PixelRect(mon.X, mon.Y, mon.Width, mon.Height);
-                    Size? pSize = null;
+                    var outputs = new nint[mon.NOutput];
 
-                    for (int o = 0; o < mon.NOutput; o++)
+                    for (int i = 0; i < outputs.Length; i++)
                     {
-                        var outputSize = GetPhysicalMonitorSizeFromEDID(mon.Outputs[o]);
-                        if (outputSize != null)
-                        {
-                            pSize = outputSize;
-                            break;
-                        }
+                        outputs[i] = mon.Outputs[i];
                     }
 
-                    screens[c] = new X11Screen(bounds, mon.Primary != 0, name ?? string.Empty, pSize);
+                    screens[c] = new MonitorInfo()
+                    {
+                        Name = mon.Name,
+                        IsPrimary = mon.Primary != 0,
+                        X = mon.X,
+                        Y = mon.Y,
+                        Width = mon.Width,
+                        Height = mon.Height,
+                        Outputs = outputs
+                    };
                 }
 
                 XFree(new IntPtr(monitors));
-                _cache = UpdateWorkArea(_x11, screens);
+
                 return screens;
             }
+        }
+
+        public X11Screen? CreateScreenFromKey(nint key)
+        {
+            var info = MonitorInfos.Where(x => x.Name == key).FirstOrDefault();
+
+            var infos = MonitorInfos;
+            for (var i = 0; i < infos.Length; i++)
+            {
+                if (infos[i].Name == key)
+                {
+                    return new X11Screen(info, _x11, _scalingProvider, i);
+                }
+            }
+
+            return null;
         }
     }
 
     private class FallbackScreensImpl : IX11RawScreenInfoProvider
     {
         private readonly X11Info _info;
+        private XGeometry _geo;
 
         public event Action? Changed
         {
@@ -156,22 +246,13 @@ internal partial class X11Screens
                 platform.Globals.RootGeometryChangedChanged += () => UpdateRootWindowGeometry();
         }
 
-        bool UpdateRootWindowGeometry()
-        {
-            var res = XGetGeometry(_info.Display, _info.RootWindow, out var geo);
-            if(res)
-            {
-                Screens = UpdateWorkArea(_info,
-                    new[]
-                    {
-                        new X11Screen(new PixelRect(0, 0, geo.width, geo.height), true, "Default", null)
-                    });
-            }
+        private bool UpdateRootWindowGeometry() => XGetGeometry(_info.Display, _info.RootWindow, out _geo);
 
-            return res;
+        public X11Screen? CreateScreenFromKey(nint key)
+        {
+            return new FallBackScreen(new PixelRect(0, 0, _geo.width, _geo.height), _info);
         }
 
-        public X11Screen[] Screens { get; private set; } = new[]
-            { new X11Screen(new PixelRect(0, 0, 1920, 1280), true, "Default", null) };
+        public nint[] ScreenKeys => new[] { IntPtr.Zero };
     }
 }

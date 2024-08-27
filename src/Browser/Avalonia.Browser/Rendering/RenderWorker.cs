@@ -10,7 +10,7 @@ using Avalonia.Browser.Interop;
 
 namespace Avalonia.Browser.Rendering;
 
-public partial class RenderWorker
+internal partial class RenderWorker
 {
     [DllImport("*")]
     private static extern int pthread_self();
