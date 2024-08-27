@@ -31,8 +31,9 @@ namespace Avalonia
             Optional<T> oldValue,
             BindingValue<T> newValue,
             BindingPriority priority,
-            bool isEffectiveValueChange)
-            : base(sender, priority, isEffectiveValueChange)
+            bool isEffectiveValueChange,
+            bool updateSource = true)
+            : base(sender, priority, isEffectiveValueChange, updateSource)
         {
             Property = property;
             OldValue = oldValue;

@@ -507,7 +507,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         Debug.Assert(_mode is BindingMode.TwoWay or BindingMode.OneWayToSource);
         Debug.Assert(UpdateSourceTrigger is UpdateSourceTrigger.PropertyChanged);
 
-        if (e.Property == TargetProperty)
+        if (e.Property == TargetProperty && e.UpdateSource)
             WriteValueToSource(e.NewValue);
     }
 

@@ -576,7 +576,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object instance.</param>
         /// <param name="value">The value.</param>
-        internal abstract void RouteSetCurrentValue(AvaloniaObject o, object? value);
+        internal abstract void RouteSetCurrentValue(AvaloniaObject o, object? value, bool updateSource = true);
 
         /// <summary>
         /// Routes an untyped SetDirectValueUnchecked call to a typed call.

@@ -183,7 +183,7 @@ namespace Avalonia
             o.SetDirectValueUnchecked<TValue>(this, bindingValue);
         }
 
-        internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)
+        internal override void RouteSetCurrentValue(AvaloniaObject o, object? value, bool updateSource = true)
         {
             RouteSetValue(o, value, BindingPriority.LocalValue);
         }

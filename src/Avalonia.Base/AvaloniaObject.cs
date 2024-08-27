@@ -380,8 +380,8 @@ namespace Avalonia
         /// that priority is <see cref="BindingPriority.Unset"/> or 
         /// <see cref="BindingPriority.Inherited"/>.
         /// </remarks>
-        public void SetCurrentValue(AvaloniaProperty property, object? value) => 
-            property.RouteSetCurrentValue(this, value);
+        public void SetCurrentValue(AvaloniaProperty property, object? value, bool updateSource = true) => 
+            property.RouteSetCurrentValue(this, value, updateSource);
 
         /// <summary>
         /// Sets the value of a dependency property without changing its value source.
@@ -399,7 +399,7 @@ namespace Avalonia
         /// that priority is <see cref="BindingPriority.Unset"/> or 
         /// <see cref="BindingPriority.Inherited"/>.
         /// </remarks>
-        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value, bool updateSource)
         {
             ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
@@ -408,11 +408,11 @@ namespace Avalonia
 
             if (value is UnsetValueType)
             {
-                _values.ClearValue(property);
+                _values.ClearValue(property, updateSource);
             }
             else if (value is not DoNothingType)
             {
-                _values.SetCurrentValue(property, value);
+                _values.SetCurrentValue(property, value, updateSource);
             }
         }
 
@@ -721,9 +721,10 @@ namespace Avalonia
         protected void RaisePropertyChanged<T>(
             DirectPropertyBase<T> property,
             T oldValue,
-            T newValue)
+            T newValue,
+            bool updateSource = true)
         {
-            RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue, true);
+            RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue, true, updateSource);
         }
 
         /// <summary>
@@ -741,7 +742,8 @@ namespace Avalonia
             Optional<T> oldValue,
             BindingValue<T> newValue,
             BindingPriority priority,
-            bool isEffectiveValue)
+            bool isEffectiveValue,
+            bool updateSource = true)
         {
             var e = new AvaloniaPropertyChangedEventArgs<T>(
                 this,
@@ -749,9 +751,16 @@ namespace Avalonia
                 oldValue,
                 newValue,
                 priority,
-                isEffectiveValue);
+                isEffectiveValue,
+                updateSource);
 
             OnPropertyChangedCore(e);
+            
+            if (!EqualityComparer<T>.Equals(GetValue(property), e.NewValue.GetValueOrDefault()))
+            {
+                Console.WriteLine("[AvaloniaObject] Value: {0} obsolete and already replaced by: {1}", e.NewValue.GetValueOrDefault(), GetValue(property));
+                return; // value changed again in the event handler. e is now obsolete, why send it?
+            }
 
             if (isEffectiveValue)
             {

@@ -256,10 +256,10 @@ namespace Avalonia
             return null;
         }
 
-        internal override void RouteSetCurrentValue(AvaloniaObject target, object? value)
+        internal override void RouteSetCurrentValue(AvaloniaObject target, object? value, bool updateSource)
         {
             if (ShouldSetValue(target, value, out var converted))
-                target.SetCurrentValue<TValue>(this, converted);
+                target.SetCurrentValue<TValue>(this, converted, updateSource);
         }
 
         internal override IDisposable RouteBind(

@@ -52,13 +52,14 @@ namespace Avalonia.PropertyStore
 
         public override void SetAndRaise(
             ValueStore owner,
-            IValueEntry value, 
-            BindingPriority priority)
+            IValueEntry value,
+            BindingPriority priority,
+            bool updateSource = true)
         {
             Debug.Assert(priority != BindingPriority.LocalValue);
             UpdateValueEntry(value, priority);
 
-            SetAndRaiseCore(owner,  (StyledProperty<T>)value.Property, GetValue(value), priority);
+            SetAndRaiseCore(owner,  (StyledProperty<T>)value.Property, GetValue(value), priority, updateSource);
 
             if (priority > BindingPriority.LocalValue &&
                 value.GetDataValidationState(out var state, out var error))
@@ -86,9 +87,10 @@ namespace Avalonia.PropertyStore
         public void SetCurrentValueAndRaise(
             ValueStore owner,
             StyledProperty<T> property,
-            T value)
+            T value,
+            bool updateSource)
         {
-            SetAndRaiseCore(owner, property, value, Priority, isOverriddenCurrentValue: true);
+            SetAndRaiseCore(owner, property, value, Priority, updateSource, isOverriddenCurrentValue: true);
         }
 
         public void SetCoercedDefaultValueAndRaise(
@@ -142,7 +144,8 @@ namespace Avalonia.PropertyStore
                 _uncommon._uncoercedValue!, 
                 Priority, 
                 _uncommon._uncoercedBaseValue!,
-                BasePriority);
+                BasePriority,
+                true);
         }
 
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
@@ -206,6 +209,7 @@ namespace Avalonia.PropertyStore
             StyledProperty<T> property,
             T value,
             BindingPriority priority,
+            bool updateSource = true,
             bool isOverriddenCurrentValue = false,
             bool isCoercedDefaultValue = false)
         {
@@ -241,13 +245,14 @@ namespace Avalonia.PropertyStore
             if (valueChanged)
             {
                 using var notifying = PropertyNotifying.Start(owner.Owner, property);
-                owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
+                owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true, updateSource);
+                //if (EqualityComparer<T>.Default.Equals(oldValue, Value)) return;
                 if (property.Inherits)
                     owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
             }
             else if (baseValueChanged)
             {
-                owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
+                owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false, updateSource);
             }
         }
 
@@ -257,7 +262,8 @@ namespace Avalonia.PropertyStore
             T value,
             BindingPriority priority,
             T baseValue,
-            BindingPriority basePriority)
+            BindingPriority basePriority,
+            bool updateSource)
         {
             Debug.Assert(basePriority > BindingPriority.Animation);
             Debug.Assert(priority <= basePriority);
@@ -297,14 +303,14 @@ namespace Avalonia.PropertyStore
             if (valueChanged)
             {
                 using var notifying = PropertyNotifying.Start(owner.Owner, property);
-                owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
+                owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true, updateSource);
                 if (property.Inherits)
                     owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
             }
             
             if (baseValueChanged)
             {
-                owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
+                owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false, updateSource);
             }
         }
 

@@ -41,6 +41,8 @@ namespace Avalonia.Controls
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(ResetOnSpace), true);
 
         private bool _ignoreTextChanges;
+        private string? initialValue;
+        private bool initialValueSet;
 
         static MaskedTextBox()
         {
@@ -281,6 +283,26 @@ namespace Avalonia.Controls
                     e.Handled = true;
                     break;
             }
+            Console.WriteLine("Last Assigned Position = {0}", MaskProvider.LastAssignedPosition);
+            if (MaskProvider.LastAssignedPosition == -1)
+            {
+                if (initialValueSet && string.IsNullOrEmpty(initialValue) && Text != initialValue)
+                {
+                    // will treat null and empty as equivalent, and revert to null
+                    // if the initial value was null and no assigned characters have been entered
+                    _ignoreTextChanges = true;
+                    try
+                    {
+                        SetCurrentValue(TextProperty, initialValue);
+                        MaskProvider.Clear();
+                        RefreshText(MaskProvider, CaretIndex, false);
+                    }
+                    finally
+                    {
+                        _ignoreTextChanges = false;
+                    }
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -303,14 +325,21 @@ namespace Avalonia.Controls
                 {
                     MaskProvider.Set(Text);
                 }
-                RefreshText(MaskProvider, 0);
+                RefreshText(MaskProvider, 0, false);
             }
             if (change.Property == TextProperty && MaskProvider != null && _ignoreTextChanges == false)
-            {
+            { 
+                if (!initialValueSet && !duringRefresh)
+                {
+                    // after the mask is set, Text will be reset by the
+                    // source value bound to this control and captured here
+                    initialValue = Text;
+                    initialValueSet = true;
+                }
                 if (string.IsNullOrEmpty(Text))
                 {
                     MaskProvider.Clear();
-                    RefreshText(MaskProvider, CaretIndex);
+                    RefreshText(MaskProvider, CaretIndex, false);
                     base.OnPropertyChanged(change);
                     return;
                 }
@@ -436,13 +465,16 @@ namespace Avalonia.Controls
             return startPosition;
         }
 
-        private void RefreshText(MaskedTextProvider? provider, int position)
+        private bool duringRefresh;
+        private void RefreshText(MaskedTextProvider? provider, int position, bool updateSource = true)
         {
+            duringRefresh = true;
             if (provider != null)
             {
-                SetCurrentValue(TextProperty, provider.ToDisplayString());
+                SetCurrentValue(TextProperty, provider.ToDisplayString(), updateSource);
                 SetCurrentValue(CaretIndexProperty, position);
             }
+            duringRefresh = false;
         }
 
     }

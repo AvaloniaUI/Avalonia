@@ -15,16 +15,19 @@ namespace Avalonia
             Sender = sender;
             Priority = priority;
             IsEffectiveValueChange = true;
+            UpdateSource = true;
         }
 
         internal AvaloniaPropertyChangedEventArgs(
             AvaloniaObject sender,
             BindingPriority priority,
-            bool isEffectiveValueChange)
+            bool isEffectiveValueChange,
+            bool updateSource = true)
         {
             Sender = sender;
             Priority = priority;
             IsEffectiveValueChange = isEffectiveValueChange;
+            UpdateSource = updateSource;
         }
 
         /// <summary>
@@ -60,6 +63,7 @@ namespace Avalonia
         public BindingPriority Priority { get; private set; }
 
         internal bool IsEffectiveValueChange { get; private set; }
+        internal bool UpdateSource { get; private set; }
 
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();

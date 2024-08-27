@@ -137,7 +137,8 @@ namespace Avalonia.PropertyStore
         public abstract void SetAndRaise(
             ValueStore owner,
             IValueEntry value,
-            BindingPriority priority);
+            BindingPriority priority,
+            bool updateSource = true);
 
         /// <summary>
         /// Sets the value and base value for a LocalValue priority, raising 

@@ -186,7 +186,7 @@ namespace Avalonia.PropertyStore
             return observer;
         }
 
-        public void ClearValue(AvaloniaProperty property)
+        public void ClearValue(AvaloniaProperty property, bool updateSource = true)
         {
             if (TryGetEffectiveValue(property, out var effective) &&
                 (effective.Priority == BindingPriority.LocalValue || effective.IsOverridenCurrentValue))
@@ -229,17 +229,17 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value, bool updateSource)
         {
             if (TryGetEffectiveValue(property, out var v))
             {
-                ((EffectiveValue<T>)v).SetCurrentValueAndRaise(this, property, value);
+                ((EffectiveValue<T>)v).SetCurrentValueAndRaise(this, property, value, updateSource);
             }
             else
             {
                 var effectiveValue = CreateEffectiveValue(property);
                 AddEffectiveValue(property, effectiveValue);
-                effectiveValue.SetCurrentValueAndRaise(this, property, value);
+                effectiveValue.SetCurrentValueAndRaise(this, property, value, updateSource);
             }
         }
 

@@ -224,7 +224,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override void RouteSetCurrentValue(AvaloniaObject o, object value)
+            internal override void RouteSetCurrentValue(AvaloniaObject o, object value, bool updateSource)
             {
                 throw new NotImplementedException();
             }

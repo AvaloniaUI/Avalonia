@@ -107,7 +107,7 @@ namespace Avalonia.Diagnostics.Controls
                      (change.Property == LeftProperty || change.Property == TopProperty ||
                       change.Property == RightProperty || change.Property == BottomProperty))
             {
-                SetCurrentValue(ThicknessProperty, new(Left, Top, Right, Bottom));
+                SetCurrentValue(ThicknessProperty, new(Left, Top, Right, Bottom), true);
             }
         }
     }
