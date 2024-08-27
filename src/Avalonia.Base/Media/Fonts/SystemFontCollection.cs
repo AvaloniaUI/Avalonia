@@ -162,14 +162,21 @@ namespace Avalonia.Media.Fonts
 
                 if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                 {
-                    if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
+                    var familyName = glyphTypeface.FamilyName;
+
+                    if (glyphTypeface is IGlyphTypeface2 glyphTypeface2 && !string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
+                    {
+                        familyName = glyphTypeface2.TypographicFamilyName;
+                    }
+
+                    if (!_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
                     {
                         glyphTypefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
 
-                        if (_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, glyphTypefaces))
+                        if (_glyphTypefaceCache.TryAdd(familyName, glyphTypefaces))
                         {
                             //Move the user defined system font to the start of the collection
-                            _familyNames.Insert(0, glyphTypeface.FamilyName);
+                            _familyNames.Insert(0, familyName);
                         }
                     }
 
