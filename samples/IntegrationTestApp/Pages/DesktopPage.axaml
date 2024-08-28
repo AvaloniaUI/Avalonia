@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.DesktopPage">
+  <StackPanel>
+    <CheckBox x:FieldModifier="public" Name="TrayIconClicked">Tray Icon Clicked</CheckBox>
+    <CheckBox x:FieldModifier="public" Name="TrayIconMenuClicked">Tray Icon Menu Clicked</CheckBox>
+    <Button Name="ToggleTrayIconVisible"
+            Content="Toggle TrayIcon Visible"
+            Click="ToggleTrayIconVisible_Click"/>
+  </StackPanel>
+</UserControl>

@@ -52,9 +52,6 @@ namespace Avalonia.OpenGL
 
         public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
 
-        [GetProcAddress("glGetError")]
-        public partial int GetError();
-
         [GetProcAddress("glClearStencil")]
         public partial void ClearStencil(int s);
 

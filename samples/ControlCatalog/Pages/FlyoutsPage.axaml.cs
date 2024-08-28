@@ -1,5 +1,8 @@
+using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
@@ -70,6 +73,26 @@ namespace ControlCatalog.Pages
                 "    </Flyout>\n</Window.Resources>\n\n" +
                 "Then attach the flyout where you want it:\n" +
                 "<Button Content=\"Launch Flyout here\" Flyout=\"{StaticResource SharedFlyout}\" />";
+        }
+
+        public void CustomPlacementCallback(CustomPopupPlacement placement)
+        {
+            var r = new Random().Next();
+            placement.Anchor = (r % 4) switch
+            {
+                1 => PopupAnchor.Top,
+                2 => PopupAnchor.Left,
+                3 => PopupAnchor.Right,
+                _ => PopupAnchor.Bottom,
+            };
+            placement.Gravity = (r % 4) switch
+            {
+                1 => PopupGravity.Top,
+                2 => PopupGravity.Left,
+                3 => PopupGravity.Right,
+                _ => PopupGravity.Bottom,
+            };
+            placement.Offset = new Point(r % 20, r % 20);
         }
     }
 }

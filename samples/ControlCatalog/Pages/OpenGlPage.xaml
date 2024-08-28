@@ -3,8 +3,11 @@
              x:Class="ControlCatalog.Pages.OpenGlPage"
              xmlns:pages="using:ControlCatalog.Pages"
              xmlns:openGl="clr-namespace:ControlCatalog.Pages.OpenGl">
-  <Grid>
+  <Grid x:Name="MainGrid">
     <pages:OpenGlPageControl x:Name="GL"/>
     <openGl:GlPageKnobs x:Name="Knobs" />
+    <Button x:Name="Snapshot"
+            IsVisible="False"
+            VerticalAlignment="Bottom" HorizontalAlignment="Right"  Click="SnapshotClick">Snapshot</Button>
   </Grid>
 </UserControl>

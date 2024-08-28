@@ -62,7 +62,7 @@ namespace Avalonia.Skia
 
             if (skTypeface != null)
             {
-                fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight, fontStretch);
+                fontKey = new Typeface(skTypeface.FamilyName, (FontStyle)skTypeface.FontStyle.Slant, (FontWeight)skTypeface.FontStyle.Weight, (FontStretch)skTypeface.FontStyle.Width);
 
                 return true;
             }

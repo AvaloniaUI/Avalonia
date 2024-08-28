@@ -5,23 +5,17 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium;
 
 [Collection("WindowDecorations")]
-public class WindowDecorationsTests : IDisposable
+public class WindowDecorationsTests : TestBase, IDisposable
 {
-    private readonly AppiumDriver _session;
-
     public WindowDecorationsTests(DefaultAppFixture fixture)
+        : base(fixture, "Window Decorations")
     {
-        _session = fixture.Session;
-
-        var tabs = _session.FindElementByAccessibilityId("MainTabs");
-        var tab = tabs.FindElementByName("Window Decorations");
-        tab.Click();
     }
 
-    [PlatformFact(TestPlatforms.MacOS)] // TODO fix me on Windows
+    [Fact]
     public void Window_Size_Should_Be_Consistent_Between_Toggles()
     {
-        var window = _session.FindElementByAccessibilityId("MainWindow");
+        var window = Session.FindElementByAccessibilityId("MainWindow");
         var original = window.Size;
 
         // Step 1: keep extend client area to false, but adjust some value that should not have any effect.
@@ -53,13 +47,13 @@ public class WindowDecorationsTests : IDisposable
         SetParameters(false, false, false, false, 1000);
         ApplyToCurrentWindow();
 
-        var currentWindow = _session.GetCurrentSingleWindow();
+        var currentWindow = Session.GetCurrentSingleWindow();
         var systemChrome = currentWindow.GetSystemChromeButtons();
         var clientChrome = currentWindow.GetClientChromeButtons();
 
         AssertSystemChrome(systemChrome, clientChrome, false);
 
-        var props = _session.FindElementByAccessibilityId("WindowDecorationProperties");
+        var props = Session.FindElementByAccessibilityId("WindowDecorationProperties");
         Assert.Equal($"0 0 False", props.Text);
     }
 
@@ -75,13 +69,13 @@ public class WindowDecorationsTests : IDisposable
 
         Thread.Sleep(500);
 
-        var currentWindow = _session.GetCurrentSingleWindow();
+        var currentWindow = Session.GetCurrentSingleWindow();
         var systemChrome = currentWindow.GetSystemChromeButtons();
         var clientChrome = currentWindow.GetClientChromeButtons();
 
         AssertClientChrome(systemChrome, clientChrome, titleBarHeight);
 
-        var props = _session.FindElementByAccessibilityId("WindowDecorationProperties");
+        var props = Session.FindElementByAccessibilityId("WindowDecorationProperties");
         if (titleBarHeight > 0)
         {
             Assert.Equal($"0 {titleBarHeight} True", props.Text);
@@ -100,13 +94,13 @@ public class WindowDecorationsTests : IDisposable
 
         Thread.Sleep(500);
 
-        var currentWindow = _session.GetCurrentSingleWindow();
+        var currentWindow = Session.GetCurrentSingleWindow();
         var systemChrome = currentWindow.GetSystemChromeButtons();
         var clientChrome = currentWindow.GetClientChromeButtons();
 
         AssertSystemChrome(systemChrome, clientChrome, true);
 
-        var props = _session.FindElementByAccessibilityId("WindowDecorationProperties");
+        var props = Session.FindElementByAccessibilityId("WindowDecorationProperties");
         if (titleBarHeight > 0)
         {
             Assert.Equal($"0 {titleBarHeight} True", props.Text);
@@ -125,7 +119,7 @@ public class WindowDecorationsTests : IDisposable
         {
             Thread.Sleep(500);
 
-            var secondaryWindow = _session.GetWindowById("SecondaryWindow");
+            var secondaryWindow = Session.GetWindowById("SecondaryWindow");
             var systemChrome = secondaryWindow.GetSystemChromeButtons();
             var clientChrome = secondaryWindow.GetClientChromeButtons();
 
@@ -145,7 +139,7 @@ public class WindowDecorationsTests : IDisposable
         {
             Thread.Sleep(500);
 
-            var secondaryWindow = _session.GetWindowById("SecondaryWindow");
+            var secondaryWindow = Session.GetWindowById("SecondaryWindow");
             var systemChrome = secondaryWindow.GetSystemChromeButtons();
             var clientChrome = secondaryWindow.GetClientChromeButtons();
 
@@ -202,11 +196,11 @@ public class WindowDecorationsTests : IDisposable
         bool macOsThickSystemChrome,
         int titleBarHeight)
     {
-        var extendClientAreaCheckBox = _session.FindElementByAccessibilityId("WindowExtendClientAreaToDecorationsHint");
-        var forceSystemChromeCheckBox = _session.FindElementByAccessibilityId("WindowForceSystemChrome");
-        var preferSystemChromeCheckBox = _session.FindElementByAccessibilityId("WindowPreferSystemChrome");
-        var macOsThickSystemChromeCheckBox = _session.FindElementByAccessibilityId("WindowMacThickSystemChrome");
-        var titleBarHeightBox = _session.FindElementByAccessibilityId("WindowTitleBarHeightHint");
+        var extendClientAreaCheckBox = Session.FindElementByAccessibilityId("WindowExtendClientAreaToDecorationsHint");
+        var forceSystemChromeCheckBox = Session.FindElementByAccessibilityId("WindowForceSystemChrome");
+        var preferSystemChromeCheckBox = Session.FindElementByAccessibilityId("WindowPreferSystemChrome");
+        var macOsThickSystemChromeCheckBox = Session.FindElementByAccessibilityId("WindowMacThickSystemChrome");
+        var titleBarHeightBox = Session.FindElementByAccessibilityId("WindowTitleBarHeightHint");
 
         if (extendClientAreaCheckBox.GetIsChecked() != extendClientArea)
             extendClientAreaCheckBox.Click();
@@ -225,13 +219,13 @@ public class WindowDecorationsTests : IDisposable
 
     private void ApplyToCurrentWindow()
     {
-        var applyWindowDecorations = _session.FindElementByAccessibilityId("ApplyWindowDecorations");
+        var applyWindowDecorations = Session.FindElementByAccessibilityId("ApplyWindowDecorations");
         applyWindowDecorations.Click();
     }
 
     private IDisposable ApplyOnNewWindow()
     {
-        var showNewWindowDecorations = _session.FindElementByAccessibilityId("ShowNewWindowDecorations");
+        var showNewWindowDecorations = Session.FindElementByAccessibilityId("ShowNewWindowDecorations");
         return showNewWindowDecorations.OpenWindowWithClick();
     }
 

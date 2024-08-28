@@ -375,7 +375,7 @@ namespace Avalonia
                 return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.LocalValue);
             }
 
-            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
+            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
             {
                 return new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
             }

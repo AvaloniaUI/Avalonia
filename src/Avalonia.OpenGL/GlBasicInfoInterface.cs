@@ -25,6 +25,9 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glGetStringi")]
         public partial IntPtr GetStringiNative(int v, int v1);
 
+        [GetProcAddress("glGetError")]
+        public partial int GetError();
+
         public string? GetString(int v)
         {
             var ptr = GetStringNative(v);
@@ -43,9 +46,19 @@ namespace Avalonia.OpenGL
 
         public List<string> GetExtensions()
         {
+            // On some (generally older) versions of OpenGL, GL_EXTENSIONS is a space-separated list of available extensions.
+            // For example:
+            // https://learn.microsoft.com/en-us/windows/win32/opengl/glgetstring
+            // https://docs.gl/gl2/glGetString
+            // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glGetString.xhtml
             var sp = GetString(GlConsts.GL_EXTENSIONS);
             if (sp != null)
                 return sp.Split(' ').ToList();
+            // The OpenGL version is not such a version.
+            // Consume the GL_INVALID_ENUM error from the GetString call above.
+            GetError();
+
+            // For other (generally newer) versions
             GetIntegerv(GlConsts.GL_NUM_EXTENSIONS, out int count);
             var rv = new List<string>(count);
             for (var c = 0; c < count; c++)
