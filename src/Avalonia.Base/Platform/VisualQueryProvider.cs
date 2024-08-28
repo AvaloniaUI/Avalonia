@@ -20,7 +20,7 @@ namespace Avalonia.Platform
         public event EventHandler? WidthChanged;
         public event EventHandler? HeightChanged;
 
-        public void SetSize(double width, double height, Layout.ContainerType containerType)
+        public virtual void SetSize(double width, double height, Layout.ContainerType containerType)
         {
             var currentWidth = Width;
             var currentHeight = Height;
