@@ -4,7 +4,9 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -14,7 +16,7 @@ namespace Avalonia.Controls
     /// A control which decorates a child with a border and background.
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
-    public partial class Border : Decorator, IVisualWithRoundRectClip
+    public partial class Border : Decorator, IVisualWithRoundRectClip, IContainer
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         /// <summary>
@@ -55,10 +57,25 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
             AvaloniaProperty.Register<Border, BoxShadows>(nameof(BoxShadow));
 
+        /// <summary>
+        /// Defines the <see cref="ContainerType"/> property
+        /// </summary>
+        public static readonly StyledProperty<ContainerType> ContainerTypeProperty =
+            AvaloniaProperty.Register<Border, ContainerType>(nameof(ContainerType),
+            defaultValue: ContainerType.Normal);
+
+        /// <summary>
+        /// Defines the <see cref="ContainerName"/> property
+        /// </summary>
+        public static readonly StyledProperty<string?> ContainerNameProperty =
+            AvaloniaProperty.Register<Border, string?>(nameof(ContainerName),
+            defaultValue: null);
+
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
         private Thickness? _layoutThickness;
         private double _scale;
         private CompositionBorderVisual? _borderVisual;
+        private VisualQueryProvider? _queryProvider;
 
         /// <summary>
         /// Initializes static members of the <see cref="Border"/> class.
@@ -144,6 +161,23 @@ namespace Avalonia.Controls
             get => GetValue(BoxShadowProperty);
             set => SetValue(BoxShadowProperty, value);
         }
+
+        /// <inheritdoc/>
+        public ContainerType ContainerType
+        {
+            get => GetValue(ContainerTypeProperty);
+            set => SetValue(ContainerTypeProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public string? ContainerName
+        {
+            get => GetValue(ContainerNameProperty);
+            set => SetValue(ContainerNameProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public VisualQueryProvider QueryProvider => _queryProvider ??= new VisualQueryProvider(this);
 
         private Thickness LayoutThickness
         {

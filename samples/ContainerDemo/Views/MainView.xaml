@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ContainerDemo.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:Class="ContainerDemo.Views.MainView"
+             x:DataType="vm:MainViewModel"
+             ContainerType="WidthAndHeight"
+             ContainerName="Main">
+  <Grid RowDefinitions="Auto,*">
+    <Grid ColumnDefinitions="Auto,*">
+      <ToggleButton Background="Transparent" Padding="10" Margin="10" IsChecked="{Binding IsPaneOpen, Mode=OneWay}" Command="{Binding TogglePaneOpen}">
+        <PathIcon Data="M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z"/>
+      </ToggleButton>
+      <Label Grid.Column="1" VerticalAlignment="Center">Content Queries Demo</Label>
+    </Grid>
+    <SplitView PropertyChanged="SplitView_PropertyChanged" OpenPaneLength="200" IsPaneOpen="{Binding IsPaneOpen}" Name="MainSplitView" Grid.Row="1">
+      <SplitView.Pane>
+        <Grid Margin="10" HorizontalAlignment="Left" RowDefinitions="Auto,*,Auto">
+          <Border Width="100" HorizontalAlignment="Center" Height="100" CornerRadius="50" ClipToBounds="True">
+            <Image Source="/Assets/Avalonia.png" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+          </Border>
+          <TabStrip FontSize="20" Grid.Row="1">
+            <TabStripItem IsSelected="True">Uniform Grid</TabStripItem>
+          </TabStrip>
+          <StackPanel Grid.Row="2">
+            <Label>Avalonia</Label>
+          </StackPanel>
+        </Grid>
+      </SplitView.Pane>
+      <Border ContainerName="UniformGrid" ContainerType="Width">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <Grid RowDefinitions="Auto,*">
+            <UniformGrid Name="ContentGrid">
+              <Border Margin="10" HorizontalAlignment="Stretch" CornerRadius="20" ClipToBounds="True">
+                <Image Stretch="Uniform" HorizontalAlignment="Stretch" Source="/Assets/image1.jpg"/>
+              </Border>
+              <Border Margin="10" HorizontalAlignment="Stretch"
+                      CornerRadius="20"
+                      ClipToBounds="True">
+                <Image Stretch="Uniform"
+                       HorizontalAlignment="Stretch"
+                       Source="/Assets/image2.jpg"/>
+              </Border>
+              <Border Margin="10" HorizontalAlignment="Stretch"
+                      CornerRadius="20"
+                      ClipToBounds="True">
+                <Image Stretch="Uniform"
+                       HorizontalAlignment="Stretch"
+                       Source="/Assets/image3.jpg"/>
+              </Border>
+              <Border Margin="10" HorizontalAlignment="Stretch"
+                      CornerRadius="20"
+                      ClipToBounds="True">
+                <Image Stretch="Uniform"
+                       HorizontalAlignment="Stretch"
+                       Source="/Assets/image4.jpg"/>
+              </Border>
+              <Border Margin="10" HorizontalAlignment="Stretch"
+                      CornerRadius="20"
+                      ClipToBounds="True">
+                <Image Stretch="Uniform"
+                       HorizontalAlignment="Stretch"
+                       Source="/Assets/image5.jpg"/>
+              </Border>
+              <Border Margin="10" HorizontalAlignment="Stretch"
+                      CornerRadius="20"
+                      ClipToBounds="True">
+                <Image Stretch="Uniform"
+                       HorizontalAlignment="Stretch"
+                       Source="/Assets/image6.jpg"/>
+              </Border>
+              <Border HorizontalAlignment="Stretch"
+                      CornerRadius="20"
+                      ClipToBounds="True">
+                <Image Stretch="Uniform"
+                       HorizontalAlignment="Stretch"
+                       Source="/Assets/image7.jpg"/>
+              </Border>
+            </UniformGrid>
+          </Grid>
+        </ScrollViewer>
+      </Border>
+    </SplitView>
+  </Grid>
+</UserControl>

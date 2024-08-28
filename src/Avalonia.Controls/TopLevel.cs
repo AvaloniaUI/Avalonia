@@ -641,6 +641,7 @@ namespace Avalonia.Controls
         }
 
         private IDisposable? _insetsPaddings;
+
         private void InvalidateChildInsetsPadding()
         {
             if (Content is Control child

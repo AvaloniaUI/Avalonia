@@ -1,0 +1,52 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ContainerDemo"
+             x:Class="ContainerDemo.App"
+             RequestedThemeVariant="Dark">
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+      <Style Selector="SplitView#MainSplitView">
+        <Setter Property="DisplayMode"
+                Value="Overlay"/>
+        <Setter Property="UseLightDismissOverlayMode"
+                Value="True"/>
+      </Style>
+      <Container ContainerName="Main" Query="min-width:700">
+        <Style Selector="SplitView#MainSplitView">
+          <Setter Property="DisplayMode" Value="Inline"/>
+          <Setter Property="UseLightDismissOverlayMode"
+                  Value="False"/>
+        </Style>
+      </Container>
+      <Container ContainerName="UniformGrid" Query="max-width:400">
+        <Style Selector="UniformGrid#ContentGrid">
+          <Setter Property="Columns" Value="1"/>
+        </Style>
+      </Container>
+      <Container ContainerName="UniformGrid"
+                 Query="min-width:400">
+        <Style Selector="UniformGrid#ContentGrid">
+          <Setter Property="Columns"
+                  Value="2"/>
+        </Style>
+      </Container>
+      <Container ContainerName="UniformGrid"
+                 Query="min-width:800">
+        <Style Selector="UniformGrid#ContentGrid">
+          <Setter Property="Columns"
+                  Value="3"/>
+        </Style>
+      </Container>
+      <Container ContainerName="UniformGrid"
+                 Query="min-width:1200">
+        <Style Selector="UniformGrid#ContentGrid">
+          <Setter Property="Columns"
+                  Value="4"/>
+        </Style>
+      </Container>
+    </Application.Styles>
+</Application>

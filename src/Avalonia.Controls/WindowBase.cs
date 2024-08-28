@@ -4,7 +4,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -283,6 +282,11 @@ namespace Avalonia.Controls
             ApplyTemplate();
 
             var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);
+
+            if (this is Styling.IContainer container)
+            {
+                container.QueryProvider.SetSize(constraint.Width, constraint.Height, container.ContainerType);
+            }
 
             return MeasureOverride(constraint);
         }

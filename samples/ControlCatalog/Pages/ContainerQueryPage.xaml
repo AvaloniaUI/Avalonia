@@ -1,0 +1,81 @@
+﻿<UserControl x:Class="ControlCatalog.Pages.ContainerQueryPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             d:DesignHeight="800"
+             d:DesignWidth="400"
+             mc:Ignorable="d">
+
+  <StackPanel Spacing="10">
+    <StackPanel.Styles>
+      <Container Query="min-width:780" ContainerName="Test">
+        <Style Selector="UniformGrid#UGrid">
+          <Setter Property="Columns"
+                  Value="3"/>
+        </Style>
+        <Style Selector="TextBlock#widthMatch">
+          <Setter Property="Text"
+                  Value="Matched=min-width:780. 3 Columns"/>
+        </Style>
+      </Container>
+      <Container Query="max-width:780" ContainerName="Test">
+        <Style Selector="UniformGrid#UGrid">
+          <Setter Property="Columns"
+                  Value="2"/>
+        </Style>
+        <Style Selector="TextBlock#widthMatch">
+          <Setter Property="Text"
+                  Value="Matched=max-width:780. 2 Columns"/>
+        </Style>
+      </Container>
+      <Container Query="max-width:640"
+                 ContainerName="Test">
+        <Style Selector="UniformGrid#UGrid">
+          <Setter Property="Columns"
+                  Value="1"/>
+        </Style>
+        <Style Selector="TextBlock#widthMatch">
+          <Setter Property="Text"
+                  Value="Matched=max-width:640. 1 Column"/>
+        </Style>
+      </Container>
+    </StackPanel.Styles>
+    <TextBlock Text="Media Queries" />
+    <TextBlock Name="borderSize"/>
+    <Border ContainerType="WidthAndHeight" ContainerName="Test" Name="border" BorderBrush="Red" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Stretch">
+      <StackPanel Spacing="10" Margin="5">
+        <TextBlock Name="orientation"/>
+        <TextBlock Name="widthMatch"/>
+        <UniformGrid HorizontalAlignment="Stretch"
+                     Name="UGrid">
+          <Border Margin="5"
+                  VerticalAlignment="Stretch"
+                  Height="100"
+                  Background="Lime"/>
+          <Border Margin="5"
+                  VerticalAlignment="Stretch"
+                  Height="100"
+                  Background="Lime"/>
+          <Border Margin="5"
+                  VerticalAlignment="Stretch"
+                  Height="100"
+                  Background="Lime"/>
+          <Border Margin="5"
+                  VerticalAlignment="Stretch"
+                  Height="100"
+                  Background="Lime"/>
+          <Border Margin="5"
+                  VerticalAlignment="Stretch"
+                  Height="100"
+                  Background="Lime"/>
+          <Border Margin="5"
+                  VerticalAlignment="Stretch"
+                  Height="100"
+                  Background="Lime"/>
+        </UniformGrid>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>
