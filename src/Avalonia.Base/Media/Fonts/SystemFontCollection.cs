@@ -160,33 +160,35 @@ namespace Avalonia.Media.Fonts
             {
                 var stream = assetLoader.Open(fontAsset);
 
-                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                if (!fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                 {
-                    var familyName = glyphTypeface.FamilyName;
-
-                    if (glyphTypeface is IGlyphTypeface2 glyphTypeface2 && !string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
-                    {
-                        familyName = glyphTypeface2.TypographicFamilyName;
-                    }
-
-                    if (!_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
-                    {
-                        glyphTypefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
-
-                        if (_glyphTypefaceCache.TryAdd(familyName, glyphTypefaces))
-                        {
-                            //Move the user defined system font to the start of the collection
-                            _familyNames.Insert(0, familyName);
-                        }
-                    }
-
-                    var key = new FontCollectionKey(
-                        glyphTypeface.Style,
-                        glyphTypeface.Weight,
-                        glyphTypeface.Stretch);
-
-                    glyphTypefaces.TryAdd(key, glyphTypeface);
+                    continue;
                 }
+
+                //Add TypographicFamilyName to the cache
+                if (glyphTypeface is IGlyphTypeface2 glyphTypeface2 && !string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
+                {
+                    AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, glyphTypeface);
+                }
+
+                AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
+            }
+
+            return;
+
+            void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+            {
+                var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
+                    x =>
+                    {
+                        _familyNames.Insert(0, familyName);
+
+                        return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                    });
+
+                typefaces.TryAdd(
+                    new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch),
+                    glyphTypeface);
             }
         }
     }

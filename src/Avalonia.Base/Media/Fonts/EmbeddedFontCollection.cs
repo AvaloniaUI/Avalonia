@@ -129,16 +129,13 @@ namespace Avalonia.Media.Fonts
 
         private void AddGlyphTypeface(IGlyphTypeface glyphTypeface)
         {
-            var familyName = glyphTypeface.FamilyName;
-
             if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
             {
+                //Add the TypographicFamilyName to the cache
                 if (!string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
                 {
-                    familyName = glyphTypeface2.TypographicFamilyName;
+                    AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, glyphTypeface);
                 }
-
-                AddGlyphTypefaceByFamilyName(familyName, glyphTypeface);
 
                 foreach (var kvp in glyphTypeface2.FamilyNames)
                 {
@@ -147,7 +144,7 @@ namespace Avalonia.Media.Fonts
             }
             else
             {
-                AddGlyphTypefaceByFamilyName(familyName, glyphTypeface);
+                AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
             }
 
             return;
@@ -157,7 +154,7 @@ namespace Avalonia.Media.Fonts
                 var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
                     x =>
                     {
-                        _fontFamilies.Add(new FontFamily(_key, glyphTypeface.FamilyName));
+                        _fontFamilies.Add(new FontFamily(_key, familyName));
 
                         return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
                     });
