@@ -80,7 +80,6 @@ namespace Avalonia.Rendering.Composition.Server
         partial void DeserializeChangesExtra(BatchStreamReader c)
         {
             _redrawRequested = true;
-            _fullRedrawRequested = true;
         }
 
         public void Render()
