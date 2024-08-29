@@ -1207,8 +1207,8 @@ namespace Avalonia.Win32
         {
             GetPointerDeviceRects(info.sourceDevice, out var pointerDeviceRect, out var displayRect);
             var himetricLocation = new Point(
-                info.ptHimetricLocationX * displayRect.Width / (double)pointerDeviceRect.Width,
-                info.ptHimetricLocationY * displayRect.Height / (double)pointerDeviceRect.Height);
+                info.ptHimetricLocationRawX * displayRect.Width / (double)pointerDeviceRect.Width,
+                info.ptHimetricLocationRawY * displayRect.Height / (double)pointerDeviceRect.Height);
             return himetricLocation;
         }
 
