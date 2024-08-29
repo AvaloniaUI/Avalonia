@@ -1096,9 +1096,10 @@ namespace Avalonia.Win32
         private RawPointerPoint CreateRawPointerPoint(POINTER_TOUCH_INFO info)
         {
             GetPointerDeviceRects(info.pointerInfo.sourceDevice, out var pointerDeviceRect, out var displayRect);
+            var pointerInfo = info.pointerInfo;
             var himetricLocation = new Point(
-                info.pointerInfo.ptHimetricLocationX * displayRect.Width / (double)pointerDeviceRect.Width,
-                info.pointerInfo.ptHimetricLocationY * displayRect.Height / (double)pointerDeviceRect.Height);
+                pointerInfo.ptHimetricLocationX * displayRect.Width / (double)pointerDeviceRect.Width,
+                pointerInfo.ptHimetricLocationY * displayRect.Height / (double)pointerDeviceRect.Height);
             var point = PointToClient(himetricLocation);
 
             var pointerPoint = new RawPointerPoint
@@ -1132,8 +1133,12 @@ namespace Avalonia.Win32
         }
         private RawPointerPoint CreateRawPointerPoint(POINTER_PEN_INFO info)
         {
+            GetPointerDeviceRects(info.pointerInfo.sourceDevice, out var pointerDeviceRect, out var displayRect);
             var pointerInfo = info.pointerInfo;
-            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            var himetricLocation = new Point(
+                pointerInfo.ptHimetricLocationX * displayRect.Width / (double)pointerDeviceRect.Width,
+                pointerInfo.ptHimetricLocationY * displayRect.Height / (double)pointerDeviceRect.Height);
+            var point = PointToClient(himetricLocation);
             return new RawPointerPoint
             {
                 Position = point,
