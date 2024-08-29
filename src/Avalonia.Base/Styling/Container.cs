@@ -56,7 +56,10 @@ namespace Avalonia.Styling
 
         internal override void SetParent(StyleBase? parent)
         {
-            throw new InvalidOperationException("Container cannot be added as a nested style.");
+            if (parent is ControlTheme)
+                base.SetParent(parent);
+            else
+                throw new InvalidOperationException("Container cannot be added as a nested style.");
         }
 
         internal SelectorMatchResult TryAttach(StyledElement target, object? host, FrameType type)

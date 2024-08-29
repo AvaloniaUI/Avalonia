@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Styling.Activators
@@ -61,7 +60,7 @@ namespace Avalonia.Styling.Activators
 
         internal static IContainer? GetContainer(Visual visual, string? containerName)
         {
-            return visual.GetVisualAncestors().Where(x => x is IContainer container && (containerName == null ? container.ContainerName != containerName : true)).FirstOrDefault() as IContainer;
+            return visual.GetVisualAncestors().Where(x => x != visual && x is IContainer container && (containerName == null || container.ContainerName == containerName)).FirstOrDefault() as IContainer;
         }
 
         private void HeightChanged(object? sender, EventArgs e)

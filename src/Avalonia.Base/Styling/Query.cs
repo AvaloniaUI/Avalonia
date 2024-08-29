@@ -79,8 +79,11 @@ namespace Avalonia.Styling
         /// Whether the match should subscribe to changes in order to track the match over time,
         /// or simply return an imcontainerte result.
         /// </param>
+        /// <param name="containerName">
+        /// The name of the container to evaluate.
+        /// </param>
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
-        internal abstract SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe, string? containerName = null);
+        internal abstract SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe, string? containerName);
 
         /// <summary>
         /// Moves to the previous query.
