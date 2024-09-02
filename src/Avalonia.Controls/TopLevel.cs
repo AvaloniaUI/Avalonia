@@ -23,7 +23,6 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -220,7 +219,7 @@ namespace Avalonia.Controls
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
-            Renderer = new CompositingRenderer(this, impl.Compositor, () => impl.Surfaces);
+            Renderer = new CompositingRenderer(this, impl.Compositor, GetSurfaces);
             Renderer.SceneInvalidated += SceneInvalidated;
 
             impl.SetInputRoot(this);
@@ -232,11 +231,11 @@ namespace Avalonia.Controls
             impl.ScalingChanged = HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
-            CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
-            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
+            CreatePlatformImplBinding(TransparencyLevelHintProperty, (plat, hint) => plat.SetTransparencyLevelHint(hint ?? []));
+            CreatePlatformImplBinding(ActualThemeVariantProperty, (plat, variant) =>
             {
                 variant ??= ThemeVariant.Default;
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
+                plat.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
             });
 
             _keyboardNavigationHandler?.SetOwner(this);
@@ -431,7 +430,7 @@ namespace Avalonia.Controls
         /// </returns>
         public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
 
-        private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<TValue> onValue)
+        private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<ITopLevelImpl,TValue> onValue)
         {
             _platformImplBindings.TryGetValue(property, out var actions);
             _platformImplBindings[property] = actions + UpdatePlatformImpl;
@@ -440,9 +439,9 @@ namespace Avalonia.Controls
 
             void UpdatePlatformImpl()
             {
-                if (PlatformImpl is not null)
+                if (PlatformImpl is { } platformImpl)
                 {
-                    onValue(GetValue(property));
+                    onValue(platformImpl, GetValue(property));
                 }
             }
         }
@@ -973,6 +972,11 @@ namespace Avalonia.Controls
                 _diagnostics.PropertyChanged -= OnDiagnosticsPropertyChanged;
                 _layoutManager.LayoutPassTimed = null;
             }
+        }
+
+        private IEnumerable<object> GetSurfaces()
+        {
+            return PlatformImpl?.Surfaces ?? [];
         }
     }
 }

@@ -230,22 +230,28 @@ namespace Avalonia.Controls
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
-            CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
-            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
-            CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
-            CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
+            CreatePlatformImplBinding(TitleProperty,(plat, title) => (plat as IWindowImpl)?.SetTitle(title));
+            CreatePlatformImplBinding(IconProperty, (plat, icon) => (plat as IWindowImpl)?.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
+            CreatePlatformImplBinding(CanResizeProperty,(plat, canResize) => (plat as IWindowImpl)?.CanResize(canResize));
+            CreatePlatformImplBinding(ShowInTaskbarProperty, (plat, show) => (plat as IWindowImpl)?.ShowTaskbarIcon(show));
 
-            CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
-            CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
-            CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, hint => PlatformImpl!.SetExtendClientAreaChromeHints(hint));
-            CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, height => PlatformImpl!.SetExtendClientAreaTitleBarHeightHint(height));
+            CreatePlatformImplBinding(WindowStateProperty, (plat, state) =>
+                {
+                    if (plat is IWindowImpl impl1)
+                    {
+                        impl1.WindowState = state;
+                    }
+                });
+            CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, (plat, hint) => (plat as IWindowImpl)?.SetExtendClientAreaToDecorationsHint(hint));
+            CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, (plat, hint) => (plat as IWindowImpl)?.SetExtendClientAreaChromeHints(hint));
+            CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, (plat, height) => (plat as IWindowImpl)?.SetExtendClientAreaTitleBarHeightHint(height));
 
             CreatePlatformImplBinding(MinWidthProperty, UpdateMinMaxSize);
             CreatePlatformImplBinding(MaxWidthProperty, UpdateMinMaxSize);
             CreatePlatformImplBinding(MinHeightProperty, UpdateMinMaxSize);
             CreatePlatformImplBinding(MaxHeightProperty, UpdateMinMaxSize);
 
-            void UpdateMinMaxSize(double _) => PlatformImpl!.SetMinMaxSize(new Size(MinWidth, MinHeight), new Size(MaxWidth, MaxHeight));
+            void UpdateMinMaxSize(ITopLevelImpl plat, double _) => (plat as IWindowImpl)?.SetMinMaxSize(new Size(MinWidth, MinHeight), new Size(MaxWidth, MaxHeight));
         }
 
         /// <summary>
