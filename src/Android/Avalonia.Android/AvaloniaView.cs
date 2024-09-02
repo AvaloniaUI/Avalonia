@@ -141,7 +141,7 @@ namespace Avalonia.Android
 
         private void SendConfigurationChanged(Configuration? newConfig)
         {
-            _view?.InsetsManager?.SetDefaultSystemLightMode(!(newConfig?.UiMode.HasFlag(UiMode.NightYes) ?? false));
+            _view.InsetsManager?.SetDefaultSystemLightMode(!(newConfig?.UiMode.HasFlag(UiMode.NightYes) ?? false));
             if (Context is { } context && newConfig is { } config)
             {
                 var settings =
