@@ -22,6 +22,7 @@ namespace Avalonia.Android
 
         private IDisposable? _timerSubscription;
         private object? _content;
+        private bool _surfaceCreated;
 
         public AvaloniaView(Context context) : base(context)
         {
@@ -29,6 +30,18 @@ namespace Avalonia.Android
             AddView(_view.View);
 
             this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+
+            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+        }
+
+        private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
+        {
+            _surfaceCreated = true;
+
+            if (Visibility == ViewStates.Visible)
+            {
+                OnVisibilityChanged(true);
+            }
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
@@ -49,16 +62,17 @@ namespace Avalonia.Android
             }
         }
 
-        protected override void Dispose(bool disposing)
+        internal new void Dispose()
         {
-            base.Dispose(disposing);
+            _root?.Dispose();
+            _root = null;
         }
 
         protected override void OnDetachedFromWindow()
         {
             base.OnDetachedFromWindow();
-            _root?.Dispose();
-            _root = null;
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
         }
 
         protected override void OnAttachedToWindow()
@@ -94,8 +108,9 @@ namespace Avalonia.Android
 
         internal void OnVisibilityChanged(bool isVisible)
         {
-            if (_root == null)
+            if (_root == null || !_surfaceCreated)
                 return;
+
             if (isVisible && _timerSubscription == null)
             {
                 if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
@@ -132,6 +147,7 @@ namespace Avalonia.Android
                 var settings =
                     AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
                 settings?.OnViewConfigurationChanged(context, config);
+                ((AndroidScreens)_view.TryGetFeature<IScreenImpl>()!).OnChanged();
             }
         }
 

@@ -1468,7 +1468,7 @@ namespace Avalonia.Controls
 
                                     SetCurrentValue(CaretIndexProperty, start);
 
-                                    _presenter.MoveCaretToTextPosition(start, true);
+                                    _presenter.MoveCaretToTextPosition(start);
                                 }
                             }
 

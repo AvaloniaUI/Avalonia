@@ -10,7 +10,7 @@ namespace Avalonia.Media.Fonts.Tables
     /// Exception font loading can throw if it encounters invalid data during font loading.
     /// </summary>
     /// <seealso cref="Exception" />
-    public class InvalidFontTableException : Exception
+    internal class InvalidFontTableException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InvalidFontTableException"/> class.

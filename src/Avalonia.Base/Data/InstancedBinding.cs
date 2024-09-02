@@ -155,7 +155,7 @@ namespace Avalonia.Data
             _ = observable ?? throw new ArgumentNullException(nameof(observable));
             _ = observer ?? throw new ArgumentNullException(nameof(observer));
 
-            var subject = new CombinedSubject<object?>(observer, observable);
+            var subject = observable == observer ? observable : new CombinedSubject<object?>(observer, observable);
             return new InstancedBinding(subject, BindingMode.TwoWay, priority);
         }
 

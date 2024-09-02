@@ -82,6 +82,10 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallbackProperty"/>
+        public static readonly StyledProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+            Popup.CustomPopupPlacementCallbackProperty.AddOwner<ContextMenu>();
+
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
@@ -183,6 +187,13 @@ namespace Avalonia.Controls
         {
             get => GetValue(PlacementTargetProperty);
             set => SetValue(PlacementTargetProperty, value);
+        }
+
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallback"/>
+        public CustomPopupPlacementCallback? CustomPopupPlacementCallback
+        {
+            get => GetValue(CustomPopupPlacementCallbackProperty);
+            set => SetValue(CustomPopupPlacementCallbackProperty, value);
         }
 
         /// <summary>
@@ -340,6 +351,7 @@ namespace Avalonia.Controls
             _popup.PlacementConstraintAdjustment = PlacementConstraintAdjustment;
             _popup.PlacementGravity = PlacementGravity;
             _popup.PlacementRect = PlacementRect;
+            _popup.CustomPopupPlacementCallback = CustomPopupPlacementCallback;
             _popup.WindowManagerAddShadowHint = WindowManagerAddShadowHint;
             IsOpen = true;
             _popup.IsOpen = true;
