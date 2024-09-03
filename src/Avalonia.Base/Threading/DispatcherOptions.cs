@@ -18,4 +18,10 @@ public class DispatcherOptions
     /// the same thread as rendering.
     /// </remarks>
     public TimeSpan InputStarvationTimeout { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Gets or sets a value indicating whether rendering should be performed synchronously.<br/>
+    /// Otherwise, rendering will be invoked from UI thread to the render thread, back to the UI thread and then back to the render thread.
+    /// </summary>
+    public bool InstantRendering { get; set; } = false;
 }

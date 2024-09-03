@@ -26,6 +26,7 @@ internal partial class MediaContext : ICompositorScheduler
 
     private List<Action>? _invokeOnRenderCallbacks;
     private readonly Stack<List<Action>> _invokeOnRenderCallbackListPool = new();
+    private readonly DispatcherOptions _dispatcherOptions;
 
     private readonly DispatcherTimer _animationsTimer = new(DispatcherPriority.Render)
     {
@@ -37,13 +38,14 @@ internal partial class MediaContext : ICompositorScheduler
 
     private readonly Dictionary<object, TopLevelInfo> _topLevels = new();
 
-    private MediaContext(Dispatcher dispatcher, TimeSpan inputStarvationTimeout)
+    private MediaContext(Dispatcher dispatcher, DispatcherOptions dispatcherOptions)
     {
         _render = Render;
         _inputMarkerHandler = InputMarkerHandler;
         _clock = new(this);
         _dispatcher = dispatcher;
-        MaxSecondsWithoutInput = inputStarvationTimeout.TotalSeconds;
+        _dispatcherOptions = dispatcherOptions;
+        MaxSecondsWithoutInput = dispatcherOptions.InputStarvationTimeout.TotalSeconds;
         _animationsTimer.Tick += (_, _) =>
         {
             _animationsTimer.Stop();
@@ -62,7 +64,7 @@ internal partial class MediaContext : ICompositorScheduler
             if (context == null)
             {
                 var opts = AvaloniaLocator.Current.GetService<DispatcherOptions>() ?? new();
-                context = new MediaContext(Dispatcher.UIThread, opts.InputStarvationTimeout);
+                context = new MediaContext(Dispatcher.UIThread, opts);
                 AvaloniaLocator.CurrentMutable.Bind<MediaContext>().ToConstant(context);
             }
 

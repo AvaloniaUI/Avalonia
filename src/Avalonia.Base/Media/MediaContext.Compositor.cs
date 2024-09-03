@@ -21,9 +21,16 @@ partial class MediaContext
         var commit = compositor.Commit();
         _requestedCommits.Remove(compositor);
         _pendingCompositionBatches[compositor] = commit;
-        commit.Processed.ContinueWith(_ =>
-            _dispatcher.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send),
-            TaskContinuationOptions.ExecuteSynchronously);
+        if (_dispatcherOptions.InstantRendering)
+        {
+            CompositionBatchFinished(compositor, commit);
+        }
+        else
+        {
+            commit.Processed.ContinueWith(_ =>
+                    _dispatcher.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send),
+                TaskContinuationOptions.ExecuteSynchronously);
+        }
         return commit;
     }
     
