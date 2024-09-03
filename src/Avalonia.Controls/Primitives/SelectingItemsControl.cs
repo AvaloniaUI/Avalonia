@@ -817,7 +817,6 @@ namespace Avalonia.Controls.Primitives
             else if (range)
             {
                 using var operation = Selection.BatchUpdate();
-                Selection.Clear();
                 Selection.SelectRange(Selection.AnchorIndex, index);
             }
             else if (!fromFocus && toggle)
