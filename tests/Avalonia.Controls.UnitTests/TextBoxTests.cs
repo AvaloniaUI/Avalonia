@@ -1402,6 +1402,21 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Update_Casing_After_First_Render()
+        {
+            var tb = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abc"
+            };
+
+            tb.Measure(Size.Infinity);
+            tb.CharacterCasing = CharacterCasing.Upper;
+            
+            Assert.Equal("ABC", tb.Text);
+        }
+
+        [Fact]
         public void Should_Move_Caret_To_EndOfLine()
         {
             using (UnitTestApplication.Start(Services))
