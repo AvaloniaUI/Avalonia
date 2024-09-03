@@ -406,7 +406,7 @@ namespace Avalonia.Controls
         private void OnCharacterCasingChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var tb = (TextBox)e.Sender;
-            var newValue = AdjustCasing(tb.Text);
+            var newValue = AdjustCasing(tb.Text, e.GetNewValue<CharacterCasing>());
 
             SetCurrentValue(TextProperty, newValue);
         }
@@ -591,8 +591,8 @@ namespace Avalonia.Controls
             {
                 textBox.SnapshotUndoRedo();
             }
-
-            return value;
+            
+            return AdjustCasing(value, textBox.CharacterCasing);
         }
 
         /// <summary>
@@ -643,6 +643,9 @@ namespace Avalonia.Controls
             set => SetValue(TextAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="CharacterCasing"/> of the TextBox.
+        /// </summary>
         public CharacterCasing CharacterCasing
         {
             get => GetValue(CharacterCasingProperty);
@@ -926,7 +929,7 @@ namespace Avalonia.Controls
                 CoerceValue(CaretIndexProperty);
                 CoerceValue(SelectionStartProperty);
                 CoerceValue(SelectionEndProperty);
-
+                
                 RaiseTextChangeEvents();
 
                 UpdatePseudoclasses();
@@ -1038,7 +1041,7 @@ namespace Avalonia.Controls
             }
 
             input = SanitizeInputText(input);
-            input = AdjustCasing(input);
+            input = AdjustCasing(input, CharacterCasing);
 
             if (string.IsNullOrEmpty(input))
             {
@@ -2134,7 +2137,13 @@ namespace Avalonia.Controls
             return text.Substring(start, end - start);
         }
 
-        private string? AdjustCasing(string? text) => CharacterCasing switch
+        /// <summary>
+        /// Adjust the text casing.
+        /// </summary>
+        /// <param name="text">The text to adjust.</param>
+        /// <param name="characterCasing">The character casing we want.</param>
+        /// <returns></returns>
+        private static string? AdjustCasing(string? text, CharacterCasing characterCasing) => characterCasing switch
         {
             CharacterCasing.Lower => text?.ToLower(System.Globalization.CultureInfo.CurrentCulture),
             CharacterCasing.Upper => text?.ToUpper(System.Globalization.CultureInfo.CurrentCulture),
