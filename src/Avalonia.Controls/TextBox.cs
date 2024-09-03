@@ -146,6 +146,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
 
+        public static readonly StyledProperty<CharacterCasing> CharacterCasingProperty =
+            AvaloniaProperty.Register<TextBox, CharacterCasing>(nameof(CharacterCasing), defaultValue: CharacterCasing.Normal);
+
         /// <summary>
         /// Defines the <see cref="HorizontalAlignment"/> property.
         /// </summary>
@@ -632,6 +635,12 @@ namespace Avalonia.Controls
             set => SetValue(TextAlignmentProperty, value);
         }
 
+        public CharacterCasing CharacterCasing
+        {
+            get => GetValue(CharacterCasingProperty);
+            set => SetValue(CharacterCasingProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
         /// property is not yet set.
@@ -915,6 +924,10 @@ namespace Avalonia.Controls
                 UpdatePseudoclasses();
                 UpdateCommandStates();
             }
+            else if (change.Property == CharacterCasingProperty)
+            {
+                Text = AdjustCasing(Text);
+            }
             else if (change.Property == CaretIndexProperty)
             {
                 OnCaretIndexChanged(change);
@@ -1017,6 +1030,7 @@ namespace Avalonia.Controls
             }
 
             input = SanitizeInputText(input);
+            input = AdjustCasing(input);
 
             if (string.IsNullOrEmpty(input))
             {
@@ -2111,6 +2125,14 @@ namespace Avalonia.Controls
 
             return text.Substring(start, end - start);
         }
+
+        private string? AdjustCasing(string? text) => CharacterCasing switch
+        {
+            CharacterCasing.Lower => text?.ToLower(System.Globalization.CultureInfo.CurrentCulture),
+            CharacterCasing.Upper => text?.ToUpper(System.Globalization.CultureInfo.CurrentCulture),
+            CharacterCasing.Normal => text,
+            _ => text
+        };
 
         /// <summary>
         /// Returns the sum of any vertical whitespace added between the <see cref="ScrollViewer"/> and <see cref="TextPresenter"/> in the control template.
