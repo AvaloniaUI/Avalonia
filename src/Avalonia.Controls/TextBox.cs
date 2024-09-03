@@ -403,6 +403,14 @@ namespace Avalonia.Controls
             set => SetValue(CaretIndexProperty, value);
         }
 
+        private void OnCharacterCasingChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var tb = (TextBox)e.Sender;
+            var newValue = AdjustCasing(tb.Text);
+
+            SetCurrentValue(TextProperty, newValue);
+        }
+
         private void OnCaretIndexChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UndoRedoState state;
@@ -926,7 +934,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == CharacterCasingProperty)
             {
-                Text = AdjustCasing(Text);
+                OnCharacterCasingChanged(change);
             }
             else if (change.Property == CaretIndexProperty)
             {
