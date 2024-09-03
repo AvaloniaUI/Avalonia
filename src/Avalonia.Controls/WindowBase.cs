@@ -47,7 +47,7 @@ namespace Avalonia.Controls
 
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
-            CreatePlatformImplBinding(TopmostProperty, (plat, topmost) => (plat as IWindowImpl)?.SetTopmost(topmost));
+            CreatePlatformImplBinding(TopmostProperty, topmost => PlatformImpl!.SetTopmost(topmost));
             
             FrameSize = impl.FrameSize;
         }
