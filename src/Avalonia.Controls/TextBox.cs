@@ -929,7 +929,6 @@ namespace Avalonia.Controls
                 CoerceValue(CaretIndexProperty);
                 CoerceValue(SelectionStartProperty);
                 CoerceValue(SelectionEndProperty);
-                
                 RaiseTextChangeEvents();
 
                 UpdatePseudoclasses();
