@@ -17,7 +17,7 @@ namespace Avalonia.Controls
     /// Displays <see cref="Content"/> according to an <see cref="IDataTemplate"/>.
     /// </summary>
     [TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
-    public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost, IContainer
+    public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
         /// <summary>
         /// Defines the <see cref="Content"/> property.
@@ -42,16 +42,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             AvaloniaProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
-
-        public static readonly StyledProperty<ContainerType> ContainerTypeProperty =
-            AvaloniaProperty.Register<ContentControl, ContainerType>(nameof(ContainerType),
-            defaultValue: ContainerType.Normal);
-
-        public static readonly StyledProperty<string?> ContainerNameProperty =
-            AvaloniaProperty.Register<ContentControl, string?>(nameof(ContainerName),
-            defaultValue: null);
-
-        private VisualQueryProvider? _queryProvider;
 
         static ContentControl()
         {
@@ -117,23 +107,9 @@ namespace Avalonia.Controls
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
         }
-        
-        public ContainerType ContainerType
-        {
-            get => GetValue(ContainerTypeProperty);
-            set => SetValue(ContainerTypeProperty, value);
-        }
-        
-        public string? ContainerName
-        {
-            get => GetValue(ContainerNameProperty);
-            set => SetValue(ContainerNameProperty, value);
-        }
 
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
-
-        public VisualQueryProvider QueryProvider => _queryProvider ??= new VisualQueryProvider(this);
 
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)

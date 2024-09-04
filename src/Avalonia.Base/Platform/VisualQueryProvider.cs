@@ -4,7 +4,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Platform
 {
-    public class VisualQueryProvider
+    internal class VisualQueryProvider
     {
         private readonly Visual _visual;
 

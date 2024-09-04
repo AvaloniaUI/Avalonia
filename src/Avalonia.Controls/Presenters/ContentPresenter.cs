@@ -429,7 +429,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public VisualQueryProvider QueryProvider => _queryProvider ??= new VisualQueryProvider(this);
+        VisualQueryProvider IContainer.QueryProvider => _queryProvider ??= new VisualQueryProvider(this);
 
         /// <summary>
         /// Gets the host content control.

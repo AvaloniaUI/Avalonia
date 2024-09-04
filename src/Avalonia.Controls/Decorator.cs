@@ -90,7 +90,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public VisualQueryProvider QueryProvider => _queryProvider ??= new VisualQueryProvider(this);
+        VisualQueryProvider IContainer.QueryProvider => _queryProvider ??= new VisualQueryProvider(this);
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
