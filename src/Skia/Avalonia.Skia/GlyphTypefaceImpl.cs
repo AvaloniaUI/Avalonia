@@ -100,6 +100,8 @@ namespace Avalonia.Skia
 
             _nameTable = NameTable.Load(this);
 
+            TypographicFamilyName = _nameTable.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicFamilyName);
+
             FamilyName = _nameTable.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID);
 
             var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
@@ -111,6 +113,8 @@ namespace Avalonia.Skia
 
             FamilyNames = familyNames;
         }
+
+        public string TypographicFamilyName { get; }
 
         public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
 

@@ -13,22 +13,24 @@ internal class VulkanDisplay : IDisposable
     private IVulkanPlatformGraphicsContext _context;
     private VulkanSemaphorePair _semaphorePair;
     private uint _nextImage;
-    private readonly VulkanKhrSurface _surface;
+    private VulkanKhrSurface _surface;
     private VkSurfaceFormatKHR _surfaceFormat;
     private VkSwapchainKHR _swapchain;
     private VkExtent2D _swapchainExtent;
+    private readonly IVulkanKhrSurfacePlatformSurface _platformSurface;
     private VkImage[] _swapchainImages = Array.Empty<VkImage>();
     private VkImageView[] _swapchainImageViews = Array.Empty<VkImageView>();
     public VulkanCommandBufferPool CommandBufferPool { get; private set; }
     public PixelSize Size { get; private set; }
-    
+
     private VulkanDisplay(IVulkanPlatformGraphicsContext context, VulkanKhrSurface surface, VkSwapchainKHR swapchain,
-        VkExtent2D swapchainExtent)
+        VkExtent2D swapchainExtent, IVulkanKhrSurfacePlatformSurface platformSurface)
     {
         _context = context;
         _surface = surface;
         _swapchain = swapchain;
         _swapchainExtent = swapchainExtent;
+        _platformSurface = platformSurface;
         _semaphorePair = new VulkanSemaphorePair(_context);
         CommandBufferPool = new VulkanCommandBufferPool(_context);
         CreateSwapchainImages();
@@ -135,10 +137,11 @@ internal class VulkanDisplay : IDisposable
         _swapchain = default;
     }
 
-    internal static VulkanDisplay CreateDisplay(IVulkanPlatformGraphicsContext context, VulkanKhrSurface surface)
+    internal static VulkanDisplay CreateDisplay(IVulkanPlatformGraphicsContext context, IVulkanKhrSurfacePlatformSurface surface)
     {
-        var swapchain = CreateSwapchain(context, surface, out var extent);
-        return new VulkanDisplay(context, surface, swapchain, extent);
+        var khrSurface = new VulkanKhrSurface(context, surface);
+        var swapchain = CreateSwapchain(context, khrSurface, out var extent);
+        return new VulkanDisplay(context, khrSurface, swapchain, extent, surface);
     }
 
     private void DestroyCurrentImageViews()
@@ -188,19 +191,27 @@ internal class VulkanDisplay : IDisposable
         return imageView;
     }
     
-    private void Recreate()
+    private void RecreateSwapchain()
     {
         _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
         _swapchain = CreateSwapchain(_context, _surface, out var extent, this);
         _swapchainExtent = extent;
         CreateSwapchainImages();
     }
+
+    private void RecreateSurface()
+    {
+        _surface?.Dispose();
+        _surface = new VulkanKhrSurface(_context, _platformSurface);
+        DestroySwapchain();
+        RecreateSwapchain();
+    }
     
     public bool EnsureSwapchainAvailable()
     {
         if (Size != _surface.Size)
         {
-            Recreate();
+            RecreateSwapchain();
             return true;
         }
         return false;
@@ -218,7 +229,9 @@ internal class VulkanDisplay : IDisposable
                 _semaphorePair.ImageAvailableSemaphore.Handle,
                 default, out _nextImage);
             if (acquireResult is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR)
-                Recreate();
+                RecreateSwapchain();
+            else if (acquireResult is VkResult.VK_ERROR_SURFACE_LOST_KHR)
+                RecreateSurface();
             else
             {
                 acquireResult.ThrowOnError("vkAcquireNextImageKHR");
@@ -323,6 +336,8 @@ internal class VulkanDisplay : IDisposable
         DestroySwapchain();
         CommandBufferPool?.Dispose();
         CommandBufferPool = null!;
+        _surface?.Dispose();
+        _surface = null!;
     }
 
 }
