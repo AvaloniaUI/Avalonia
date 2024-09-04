@@ -7,75 +7,104 @@
              d:DesignHeight="800"
              d:DesignWidth="400"
              mc:Ignorable="d">
-
   <StackPanel Spacing="10">
     <StackPanel.Styles>
-      <Container Query="min-width:780" ContainerName="Test">
-        <Style Selector="UniformGrid#UGrid">
-          <Setter Property="Columns"
-                  Value="3"/>
-        </Style>
-        <Style Selector="TextBlock#widthMatch">
-          <Setter Property="Text"
-                  Value="Matched=min-width:780. 3 Columns"/>
-        </Style>
-      </Container>
-      <Container Query="max-width:780" ContainerName="Test">
-        <Style Selector="UniformGrid#UGrid">
-          <Setter Property="Columns"
-                  Value="2"/>
-        </Style>
-        <Style Selector="TextBlock#widthMatch">
-          <Setter Property="Text"
-                  Value="Matched=max-width:780. 2 Columns"/>
-        </Style>
-      </Container>
-      <Container Query="max-width:640"
-                 ContainerName="Test">
-        <Style Selector="UniformGrid#UGrid">
+      <Container ContainerName="UniformGrid"
+                 Query="max-width:400">
+        <Style Selector="UniformGrid#ContentGrid">
           <Setter Property="Columns"
                   Value="1"/>
         </Style>
-        <Style Selector="TextBlock#widthMatch">
-          <Setter Property="Text"
-                  Value="Matched=max-width:640. 1 Column"/>
+      </Container>
+      <Container ContainerName="UniformGrid"
+                 Query="min-width:400">
+        <Style Selector="UniformGrid#ContentGrid">
+          <Setter Property="Columns"
+                  Value="2"/>
+        </Style>
+      </Container>
+      <Container ContainerName="UniformGrid"
+                 Query="min-width:800">
+        <Style Selector="UniformGrid#ContentGrid">
+          <Setter Property="Columns"
+                  Value="3"/>
+        </Style>
+      </Container>
+      <Container ContainerName="UniformGrid"
+                 Query="min-width:1200">
+        <Style Selector="UniformGrid#ContentGrid">
+          <Setter Property="Columns"
+                  Value="4"/>
         </Style>
       </Container>
     </StackPanel.Styles>
-    <TextBlock Text="Media Queries" />
-    <TextBlock Name="borderSize"/>
-    <Border ContainerType="WidthAndHeight" ContainerName="Test" Name="border" BorderBrush="Red" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-      <StackPanel Spacing="10" Margin="5">
-        <TextBlock Name="orientation"/>
-        <TextBlock Name="widthMatch"/>
-        <UniformGrid HorizontalAlignment="Stretch"
-                     Name="UGrid">
-          <Border Margin="5"
-                  VerticalAlignment="Stretch"
-                  Height="100"
-                  Background="Lime"/>
-          <Border Margin="5"
-                  VerticalAlignment="Stretch"
-                  Height="100"
-                  Background="Lime"/>
-          <Border Margin="5"
-                  VerticalAlignment="Stretch"
-                  Height="100"
-                  Background="Lime"/>
-          <Border Margin="5"
-                  VerticalAlignment="Stretch"
-                  Height="100"
-                  Background="Lime"/>
-          <Border Margin="5"
-                  VerticalAlignment="Stretch"
-                  Height="100"
-                  Background="Lime"/>
-          <Border Margin="5"
-                  VerticalAlignment="Stretch"
-                  Height="100"
-                  Background="Lime"/>
-        </UniformGrid>
-      </StackPanel>
+    <TextBlock Text="Dynamically change properties of controls based on the size of a parent container."/>
+    <Border ContainerName="UniformGrid"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            ContainerType="Width">
+      <ScrollViewer VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <Grid RowDefinitions="Auto,*">
+          <UniformGrid Name="ContentGrid">
+            <Border Margin="10"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="20"
+                    ClipToBounds="True">
+              <Image Stretch="Uniform"
+                     HorizontalAlignment="Stretch"
+                     Source="/Assets/image1.jpg"/>
+            </Border>
+            <Border Margin="10"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="20"
+                    ClipToBounds="True">
+              <Image Stretch="Uniform"
+                     HorizontalAlignment="Stretch"
+                     Source="/Assets/image2.jpg"/>
+            </Border>
+            <Border Margin="10"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="20"
+                    ClipToBounds="True">
+              <Image Stretch="Uniform"
+                     HorizontalAlignment="Stretch"
+                     Source="/Assets/image3.jpg"/>
+            </Border>
+            <Border Margin="10"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="20"
+                    ClipToBounds="True">
+              <Image Stretch="Uniform"
+                     HorizontalAlignment="Stretch"
+                     Source="/Assets/image4.jpg"/>
+            </Border>
+            <Border Margin="10"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="20"
+                    ClipToBounds="True">
+              <Image Stretch="Uniform"
+                     HorizontalAlignment="Stretch"
+                     Source="/Assets/image5.jpg"/>
+            </Border>
+            <Border Margin="10"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="20"
+                    ClipToBounds="True">
+              <Image Stretch="Uniform"
+                     HorizontalAlignment="Stretch"
+                     Source="/Assets/image6.jpg"/>
+            </Border>
+            <Border HorizontalAlignment="Stretch"
+                    CornerRadius="20"
+                    ClipToBounds="True">
+              <Image Stretch="Uniform"
+                     HorizontalAlignment="Stretch"
+                     Source="/Assets/image7.jpg"/>
+            </Border>
+          </UniformGrid>
+        </Grid>
+      </ScrollViewer>
     </Border>
   </StackPanel>
 </UserControl>
