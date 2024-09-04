@@ -136,11 +136,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         protected void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, Func<IXamlMethod, bool> method)
         {
-            var queries = context.Configuration.TypeSystem.GetType("Avalonia.Styling.Queries");
+            var queries = context.Configuration.TypeSystem.GetType("Avalonia.Styling.StyleQueries");
             var found = queries.FindMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
             if(found == null)
                 throw new XamlTypeSystemException(
-                                $"Unable to find {TargetType} in Avalonia.Styling.Queries");
+                                $"Unable to find {TargetType} in Avalonia.Styling.StyleQueries");
             codeGen.EmitCall(found);
         }
     }

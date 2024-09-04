@@ -6,7 +6,7 @@ namespace Avalonia.Styling
 {
     internal sealed class WidthQuery : ContainerQuery<(QueryComparisonOperator @operator, double value)>
     {
-        public WidthQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
+        public WidthQuery(StyleQuery? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 
@@ -73,7 +73,7 @@ namespace Avalonia.Styling
 
     internal sealed class HeightQuery : ContainerQuery<(QueryComparisonOperator @operator, double value)>
     {
-        public HeightQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
+        public HeightQuery(StyleQuery? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 

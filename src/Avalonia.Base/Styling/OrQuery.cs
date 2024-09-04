@@ -10,16 +10,16 @@ namespace Avalonia.Styling
     /// <summary>
     /// The OR style query.
     /// </summary>
-    internal sealed class OrQuery : Query
+    internal sealed class OrQuery : StyleQuery
     {
-        private readonly IReadOnlyList<Query> _queries;
+        private readonly IReadOnlyList<StyleQuery> _queries;
         private string? _queryString;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrQuery"/> class.
         /// </summary>
         /// <param name="queries">The querys to OR.</param>
-        public OrQuery(IReadOnlyList<Query> queries)
+        public OrQuery(IReadOnlyList<StyleQuery> queries)
         {
             if (queries is null)
             {
@@ -92,8 +92,8 @@ namespace Avalonia.Styling
             }
         }
 
-        private protected override Query? MovePrevious() => null;
-        private protected override Query? MovePreviousOrParent() => null;
+        private protected override StyleQuery? MovePrevious() => null;
+        private protected override StyleQuery? MovePreviousOrParent() => null;
     }
 }
 

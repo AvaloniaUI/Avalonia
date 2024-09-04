@@ -9,7 +9,7 @@ namespace Avalonia.Styling
     /// </summary>
     public class Container : StyleBase
     {
-        private Query? _query;
+        private StyleQuery? _query;
         private string? _containerName;
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="query">The container selector.</param>
         /// <param name="containerName"></param>
-        public Container(Func<Query?, Query> query, string? containerName = null)
+        public Container(Func<StyleQuery?, StyleQuery> query, string? containerName = null)
         {
             Query = query(null);
             _containerName = containerName;
@@ -33,7 +33,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets or sets the container's query.
         /// </summary>
-        public Query? Query 
+        public StyleQuery? Query 
         {
             get => _query;
             set => _query = value;

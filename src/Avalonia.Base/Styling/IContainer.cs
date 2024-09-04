@@ -11,7 +11,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines the interface for a container
     /// </summary>
-    public interface IContainer
+    internal interface IContainer
     {
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Layout.ContainerType"/> of the container.

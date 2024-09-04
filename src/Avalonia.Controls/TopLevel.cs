@@ -147,6 +147,8 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
+            ContainerTypeProperty.OverrideDefaultValue<TopLevel>(ContainerType.WidthAndHeight);
+
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
             SystemBarColorProperty.Changed.AddClassHandler<Control>((view, e) =>

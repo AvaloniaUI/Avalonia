@@ -283,10 +283,7 @@ namespace Avalonia.Controls
 
             var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);
 
-            if (this is Styling.IContainer container)
-            {
-                container.QueryProvider.SetSize(constraint.Width, constraint.Height, container.ContainerType);
-            }
+            ((Avalonia.Styling.IContainer)this).QueryProvider.SetSize(constraint.Width, constraint.Height, ContainerType);
 
             return MeasureOverride(constraint);
         }

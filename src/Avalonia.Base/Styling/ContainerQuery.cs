@@ -4,12 +4,12 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Styling
 {
-    public abstract class ContainerQuery<T> : Query
+    public abstract class ContainerQuery<T> : StyleQuery
     {
-        private readonly Query? _previous;
+        private readonly StyleQuery? _previous;
         private T _argument;
 
-        public ContainerQuery(Query? previous, T argument)
+        public ContainerQuery(StyleQuery? previous, T argument)
         {
             _previous = previous;
             _argument = argument;
@@ -24,8 +24,8 @@ namespace Avalonia.Styling
             throw new NotImplementedException();
         }
 
-        private protected override Query? MovePrevious() => _previous;
+        private protected override StyleQuery? MovePrevious() => _previous;
 
-        private protected override Query? MovePreviousOrParent() => _previous;
+        private protected override StyleQuery? MovePreviousOrParent() => _previous;
     }
 }
