@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 
@@ -156,10 +157,15 @@ namespace ControlCatalog.Pages
                 }
             }
 
-            dragMe.PointerPressed += DoDrag;
-
+            AddHandler(PointerPressedEvent, DoDrag, RoutingStrategies.Tunnel);
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, DragOver);
+        }
+
+        protected override void OnPointerMoved(PointerEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine(e.GetCurrentPoint(this).Properties.IsLeftButtonPressed);
+            base.OnPointerMoved(e);
         }
 
         private void InitializeComponent()
