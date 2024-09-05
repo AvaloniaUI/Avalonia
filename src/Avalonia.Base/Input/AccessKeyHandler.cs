@@ -231,7 +231,7 @@ namespace Avalonia.Input
                     {
                         MainMenu.Open();
                     }
-                    if (MainMenu is null)
+                    if (MainMenu is null || !MainMenu.IsVisible)
                     {
                         _owner!.ShowAccessKeys = _showingAccessKeys = false;
                     }
