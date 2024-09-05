@@ -198,7 +198,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return unicodeData;
         }
 
-        private static Dictionary<string, int> CreateTagToIndexMappings(IReadOnlyList<DataEntry> entries)
+        public static Dictionary<string, int> CreateTagToIndexMappings(IReadOnlyList<DataEntry> entries)
         {
             var mappings = new Dictionary<string, int>();
 
@@ -210,7 +210,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return mappings;
         }
 
-        private static Dictionary<string, int> CreateNameToIndexMappings(IReadOnlyList<DataEntry> entries)
+        public static Dictionary<string, int> CreateNameToIndexMappings(IReadOnlyList<DataEntry> entries)
         {
             var mappings = new Dictionary<string, int>();
 
