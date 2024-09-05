@@ -7,13 +7,13 @@ namespace Avalonia
 {
     internal static class ClassBindingManager
     {
+        private const string ClassPropertyPrefix = "__AvaloniaReserved::Classes::";
         private static readonly Dictionary<string, AvaloniaProperty> s_RegisteredProperties =
             new Dictionary<string, AvaloniaProperty>();
-        
+
         public static IDisposable Bind(StyledElement target, string className, IBinding source, object anchor)
         {
-            if (!s_RegisteredProperties.TryGetValue(className, out var prop))
-                s_RegisteredProperties[className] = prop = RegisterClassProxyProperty(className);
+            var prop = GetClassProperty(className);
             return target.Bind(prop, source);
         }
 
@@ -21,14 +21,20 @@ namespace Avalonia
             Justification = "Classes.attr binding feature is implemented using intermediate avalonia properties for each class")]
         private static AvaloniaProperty RegisterClassProxyProperty(string className)
         {
-            var prop = AvaloniaProperty.Register<StyledElement, bool>("__AvaloniaReserved::Classes::" + className);
+            var prop = AvaloniaProperty.Register<StyledElement, bool>(ClassPropertyPrefix + className);
             prop.Changed.Subscribe(args =>
             {
                 var classes = ((StyledElement)args.Sender).Classes;
                 classes.Set(className, args.NewValue.GetValueOrDefault());
             });
-            
+
             return prop;
         }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static AvaloniaProperty GetClassProperty(string className) =>
+            s_RegisteredProperties.TryGetValue(ClassPropertyPrefix + className, out var property) 
+                ? property 
+                : s_RegisteredProperties[className] = RegisterClassProxyProperty(className);
     }
 }
