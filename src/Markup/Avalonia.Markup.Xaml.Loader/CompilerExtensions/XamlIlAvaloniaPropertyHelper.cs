@@ -130,7 +130,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     {
         IXamlType AvaloniaPropertyType { get; }
     }
-    
+
+    // Marker interface, used to identify whether the Avalonia property represents Classes
+    interface IXamlIlAvaloniaClassPropertyNode : IXamlIlAvaloniaPropertyNode
+    {
+
+    }
+
     class XamlIlAvaloniaPropertyNode : XamlAstNode, IXamlAstValueNode, IXamlIlAstEmitableNode, IXamlIlAvaloniaPropertyNode
     {
         public XamlIlAvaloniaPropertyNode(IXamlLineInfo lineInfo, IXamlType type, XamlAstClrProperty property, IXamlType propertyType) : base(lineInfo)
@@ -441,7 +447,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     }
 
     sealed class XamlIlAvaloniaClassProperty : XamlAstClrProperty,
-        IXamlIlAvaloniaPropertyNode,
+        IXamlIlAvaloniaClassPropertyNode,
         IXamlAstValueNode,
         IXamlAstLocalsEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
     {

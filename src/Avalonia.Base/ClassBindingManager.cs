@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Reactive;
 
@@ -33,8 +34,21 @@ namespace Avalonia
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static AvaloniaProperty GetClassProperty(string className) =>
-            s_RegisteredProperties.TryGetValue(ClassPropertyPrefix + className, out var property) 
+            s_RegisteredProperties.TryGetValue(ClassPropertyPrefix + className, out var property)
                 ? property 
                 : s_RegisteredProperties[className] = RegisterClassProxyProperty(className);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static bool IsClassesBindingProperty(AvaloniaProperty property, [NotNullWhen(true)] out string? classPropertyName)
+        {
+            
+            classPropertyName = default;
+            if(property.Name?.StartsWith(ClassPropertyPrefix, StringComparison.OrdinalIgnoreCase) == true)
+            {
+                classPropertyName = property.Name.Substring(ClassPropertyPrefix.Length + 1);
+                return true;
+            }
+            return false;
+        }
     }
 }

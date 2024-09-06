@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -10,5 +11,8 @@ namespace Avalonia
 
         public static AvaloniaProperty GetClassProperty(string className) =>
             ClassBindingManager.GetClassProperty(className);
+
+        internal static bool IsClassesBindingProperty(this AvaloniaProperty property, [NotNullWhen(true)] out string? classPropertyName) =>
+            ClassBindingManager.IsClassesBindingProperty(property, out classPropertyName);
     }
 }
