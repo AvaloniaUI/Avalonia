@@ -359,7 +359,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (IsFocused)
+            if (IsFocused && IsEffectivelyEnabled)
             {
                 var key = e.Key;
 
@@ -369,19 +369,16 @@ namespace Avalonia.Controls
                     UpdatePseudoClasses();
 
                     // Consider this a click on the primary button
-                    if (IsEffectivelyEnabled)
-                    {
-                        OnClickPrimary(null);
-                        e.Handled = true;
-                    }
+                    OnClickPrimary(null);
+                    e.Handled = true;
                 }
-                else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
+                else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)
                          && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
                 {
                     OpenFlyout();
                     e.Handled = true;
                 }
-                else if (key == Key.F4 && IsEffectivelyEnabled)
+                else if (key == Key.F4)
                 {
                     OpenFlyout();
                     e.Handled = true;
