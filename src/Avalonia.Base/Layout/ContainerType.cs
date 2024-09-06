@@ -6,22 +6,22 @@
     public enum ContainerType
     {
         /// <summary>
-        /// The container will not be queries for any container size queries.
+        /// The container is not included in any size queries.
         /// </summary>
         Normal,
 
         /// <summary>
-        /// The container can be queried for container size queries for width.
+        /// The container size can be queried for width.
         /// </summary>
         Width,
 
         /// <summary>
-        /// The can be queried for container size queries for height.
+        /// The container size can be queried for height.
         /// </summary>
         Height,
 
         /// <summary>
-        /// The can be queried for container size queries for both width and height.
+        /// The container size can be queried for width and height.
         /// </summary>
         WidthAndHeight
     }
