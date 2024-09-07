@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Automation.Peers
@@ -199,6 +200,19 @@ namespace Avalonia.Automation.Peers
         {
             var view = AutomationProperties.GetAccessibilityView(Owner);
             return view == AccessibilityView.Default ? IsControlElementCore() : view >= AccessibilityView.Control;
+        }
+
+        protected override bool IsOffscreenCore()
+        {
+            return AutomationProperties.GetIsOffscreenBehavior(Owner) switch
+            {
+                IsOffscreenBehavior.Onscreen => false,
+                IsOffscreenBehavior.Offscreen => true,
+                IsOffscreenBehavior.FromClip => Owner.GetTransformedBounds() is not { } bounds ||
+                    MathUtilities.IsZero(bounds.Clip.Width) ||
+                    MathUtilities.IsZero(bounds.Clip.Height),
+                _ => !Owner.IsVisible,
+            };
         }
 
         private static Rect GetBounds(Control control)

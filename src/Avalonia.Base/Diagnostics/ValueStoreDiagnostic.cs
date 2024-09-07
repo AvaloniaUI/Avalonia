@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Metadata;
 using Avalonia.Styling;
 
 namespace Avalonia.Diagnostics;
 
+[PrivateApi]
 public class ValueStoreDiagnostic
 {
     /// <summary>

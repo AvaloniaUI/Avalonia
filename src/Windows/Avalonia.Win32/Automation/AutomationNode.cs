@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop.Automation;
 using AAP = Avalonia.Automation.Provider;
@@ -63,7 +64,7 @@ namespace Avalonia.Win32.Automation
 
         public AutomationPeer Peer { get; protected set; }
 
-        public Rect BoundingRectangle
+        public virtual Rect BoundingRectangle
         {
             get => InvokeSync(() =>
             {
@@ -79,7 +80,7 @@ namespace Avalonia.Win32.Automation
         }
 
         public virtual IRawElementProviderSimple? HostRawElementProvider => null;
-        public ProviderOptions ProviderOptions => ProviderOptions.ServerSideProvider;
+        public virtual ProviderOptions ProviderOptions => ProviderOptions.ServerSideProvider;
 
         [return: MarshalAs(UnmanagedType.IUnknown)]
         public virtual object? GetPatternProvider(int patternId)
@@ -118,6 +119,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.IsControlElement => InvokeSync(() => Peer.IsControlElement()),
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
                 UiaPropertyId.IsKeyboardFocusable => InvokeSync(() => Peer.IsKeyboardFocusable()),
+                UiaPropertyId.IsOffscreen => InvokeSync(() => Peer.IsOffscreen()),
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
                 UiaPropertyId.ProcessId => Process.GetCurrentProcess().Id,
@@ -274,9 +276,12 @@ namespace Avalonia.Win32.Automation
 
         private static AutomationNode Create(AutomationPeer peer)
         {
-            return peer.GetProvider<AAP.IRootProvider>() is object ?
-                new RootAutomationNode(peer) :
-                new AutomationNode(peer);
+            if (peer is InteropAutomationPeer interop)
+                return new InteropAutomationNode(interop);
+            else if (peer.GetProvider<AAP.IRootProvider>() is not null)
+                return new RootAutomationNode(peer);
+            else 
+                return new AutomationNode(peer);
         }
 
         private static UiaControlTypeId ToUiaControlType(AutomationControlType role)

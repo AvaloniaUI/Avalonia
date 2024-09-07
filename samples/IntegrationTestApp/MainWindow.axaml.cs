@@ -1,18 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using Avalonia;
-using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
+using IntegrationTestApp.Models;
+using IntegrationTestApp.Pages;
+using IntegrationTestApp.ViewModels;
 
 namespace IntegrationTestApp
 {
@@ -24,374 +16,84 @@ namespace IntegrationTestApp
             Name = "MainWindow";
 
             InitializeComponent();
-            InitializeViewMenu();
-            InitializeGesturesTab();
-            this.AttachDevTools();
 
+            var viewModel = new MainWindowViewModel(CreatePages());
+            InitializeViewMenu(viewModel.Pages);
+
+            DataContext = viewModel;
             AppOverlayPopups.Text = Program.OverlayPopups ? "Overlay Popups" : "Native Popups";
-
-            AddHandler(Button.ClickEvent, OnButtonClick);
-            ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
-            DataContext = this;
+            PositionChanged += OnPositionChanged;
         }
 
-        public List<string> ListBoxItems { get; }
+        private MainWindowViewModel? ViewModel => (MainWindowViewModel?)DataContext;
 
-        private void InitializeViewMenu()
+        private void InitializeViewMenu(IEnumerable<Page> pages)
         {
             var viewMenu = (NativeMenuItem?)NativeMenu.GetMenu(this)?.Items[1];
 
-            foreach (var tabItem in MainTabs.Items.Cast<TabItem>())
+            foreach (var page in pages)
             {
                 var menuItem = new NativeMenuItem
                 {
-                    Header = (string?)tabItem.Header,
-                    ToolTip = $"Tip:{(string?)tabItem.Header}",
-                    IsChecked = tabItem.IsSelected,
+                    Header = (string?)page.Name,
+                    ToolTip = $"Tip:{(string?)page.Name}",
                     ToggleType = NativeMenuItemToggleType.Radio,
                 };
 
-                menuItem.Click += (_, _) => tabItem.IsSelected = true;
+                menuItem.Click += (_, _) =>
+                {
+                    if (ViewModel is { } viewModel)
+                        viewModel.SelectedPage = page;
+                };
+
                 viewMenu?.Menu?.Items.Add(menuItem);
             }
         }
 
-        private void OnShowWindow()
+        private void Pager_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var sizeTextBox = ShowWindowSize;
-            var modeComboBox = ShowWindowMode;
-            var locationComboBox = ShowWindowLocation;
-            var stateComboBox = ShowWindowState;
-            var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
-            var systemDecorations = ShowWindowSystemDecorations;
-            var extendClientArea = ShowWindowExtendClientAreaToDecorationsHint;
-            var canResizeCheckBox = ShowWindowCanResize;
-            var owner = (Window)this.GetVisualRoot()!;
+            if (Pager.SelectedItem is Page page)
+                PagerContent.Child = page.CreateContent();
+        }
 
-            var window = new ShowWindowTest
+        private void OnPositionChanged(object? sender, PixelPointEventArgs e)
+        {
+            // HACK: Toggling the window decorations can cause the window to be moved off screen, 
+            // causing test failures. Until this bug is fixed, detect this and move the window
+            // to the screen origin. See #11411.
+            if (Screens.ScreenFromWindow(this) is { } screen)
             {
-                WindowStartupLocation = (WindowStartupLocation)locationComboBox.SelectedIndex,
-                CanResize = canResizeCheckBox.IsChecked ?? false,
-            };
+                var bounds = new PixelRect(
+                    e.Point,
+                    PixelSize.FromSize(ClientSize, DesktopScaling));
 
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-            {
-                // Make sure the windows have unique names and AutomationIds.
-                var existing = lifetime.Windows.OfType<ShowWindowTest>().Count();
-                if (existing > 0)
-                {
-                    AutomationProperties.SetAutomationId(window, window.Name + (existing + 1));
-                    window.Title += $" {existing + 1}";
-                }
-            }
-            
-            if (size.HasValue)
-            {
-                window.Width = size.Value.Width;
-                window.Height = size.Value.Height;
-            }
-
-            sizeTextBox.Text = string.Empty;
-            window.ExtendClientAreaToDecorationsHint = extendClientArea.IsChecked ?? false;
-            window.SystemDecorations = (SystemDecorations)systemDecorations.SelectedIndex;
-            window.WindowState = (WindowState)stateComboBox.SelectedIndex;
-
-            switch (modeComboBox.SelectedIndex)
-            {
-                case 0:
-                    window.Show();
-                    break;
-                case 1:
-                    window.Show(owner);
-                    break;
-                case 2:
-                    window.ShowDialog(owner);
-                    break;
+                if (!screen.WorkingArea.Contains(bounds))
+                    Position = screen.WorkingArea.Position;
             }
         }
 
-        private void OnShowTransparentWindow()
+        private static IEnumerable<Page> CreatePages()
         {
-            // Show a background window to make sure the color behind the transparent window is
-            // a known color (green).
-            var backgroundWindow = new Window
-            {
-                Title = "Transparent Window Background",
-                Name = "TransparentWindowBackground",
-                Width = 300,
-                Height = 300,
-                Background = Brushes.Green,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            };
-
-            // This is the transparent window with a red circle.
-            var window = new Window
-            {
-                Title = "Transparent Window",
-                Name = "TransparentWindow",
-                SystemDecorations = SystemDecorations.None,
-                Background = Brushes.Transparent,
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Width = 200,
-                Height = 200,
-                Content = new Border
-                {
-                    Background = Brushes.Red,
-                    CornerRadius = new CornerRadius(100),
-                }
-            };
-
-            window.PointerPressed += (_, _) =>
-            {
-                window.Close();
-                backgroundWindow.Close();
-            };
-
-            backgroundWindow.Show(this);
-            window.Show(backgroundWindow);
-        }
-
-        private void OnShowTransparentPopup()
-        {
-            var popup = new Popup
-            {
-                WindowManagerAddShadowHint = false,
-                Placement = PlacementMode.AnchorAndGravity,
-                PlacementAnchor = PopupAnchor.Top,
-                PlacementGravity = PopupGravity.Bottom,
-                Width= 200,
-                Height= 200,
-                Child = new Border
-                {
-                    Background = Brushes.Red,
-                    CornerRadius = new CornerRadius(100),
-                }
-            };
-
-            // Show a background window to make sure the color behind the transparent window is
-            // a known color (green).
-            var backgroundWindow = new Window
-            {
-                Title = "Transparent Popup Background",
-                Name = "TransparentPopupBackground",
-                Width = 200,
-                Height = 200,
-                Background = Brushes.Green,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Content = new Border
-                {
-                    Name = "PopupContainer",
-                    Child = popup,
-                    [AutomationProperties.AccessibilityViewProperty] = AccessibilityView.Content,
-                }
-            };
-
-            backgroundWindow.PointerPressed += (_, _) => backgroundWindow.Close();
-            backgroundWindow.Show(this);
-
-            popup.Open();
-        }
-
-        private void OnSendToBack()
-        {
-            var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
-
-            foreach (var window in lifetime.Windows.ToArray())
-            {
-                window.Activate();
-            }
-        }
-
-        private void OnRestoreAll()
-        {
-            var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
-
-            foreach (var window in lifetime.Windows.ToArray())
-            {
-                window.Show();
-                if (window.WindowState == WindowState.Minimized)
-                    window.WindowState = WindowState.Normal;
-            }
-        }
-        
-        private void OnShowTopmostWindow()
-        {
-            var mainWindow = new TopmostWindowTest("OwnerWindow") { Topmost = true, Title = "Owner Window"};
-            var ownedWindow = new TopmostWindowTest("OwnedWindow") { WindowStartupLocation = WindowStartupLocation.CenterOwner, Title = "Owned Window"};
-            mainWindow.Show();
-            
-            ownedWindow.Show(mainWindow);
-        }
-
-        private void OnToggleTrayIconVisible()
-        {
-            var icon = TrayIcon.GetIcons(Application.Current!)!.FirstOrDefault()!;
-            icon.IsVisible = !icon.IsVisible;
-        }
-
-        private void InitializeGesturesTab()
-        {
-            var gestureBorder = GestureBorder;
-            var gestureBorder2 = GestureBorder2;
-            var lastGesture = LastGesture;
-            var resetGestures = ResetGestures;
-            gestureBorder.Tapped += (_, _) => lastGesture.Text = "Tapped";
-            
-            gestureBorder.DoubleTapped += (_, _) =>
-            {
-                lastGesture.Text = "DoubleTapped";
-
-                // Testing #8733
-                gestureBorder.IsVisible = false;
-                gestureBorder2.IsVisible = true;
-            };
-
-            gestureBorder2.DoubleTapped += (_, _) =>
-            {
-                lastGesture.Text = "DoubleTapped2";
-            };
-
-            Gestures.AddRightTappedHandler(gestureBorder, (_, _) => lastGesture.Text = "RightTapped");
-            
-            resetGestures.Click += (_, _) =>
-            {
-                lastGesture.Text = string.Empty;
-                gestureBorder.IsVisible = true;
-                gestureBorder2.IsVisible = false;
-            };
-        }
-
-        private void MenuClicked(object? sender, RoutedEventArgs e)
-        {
-            var clickedMenuItemTextBlock = ClickedMenuItem;
-            clickedMenuItemTextBlock.Text = (sender as MenuItem)?.Header?.ToString();
-        }
-
-        private void OnButtonClick(object? sender, RoutedEventArgs e)
-        {
-            var source = e.Source as Button;
-
-            if (source?.Name == nameof(ComboBoxSelectionClear))
-                BasicComboBox.SelectedIndex = -1;
-            if (source?.Name == nameof(ComboBoxSelectFirst))
-                BasicComboBox.SelectedIndex = 0;
-            if (source?.Name == nameof(ListBoxSelectionClear))
-                BasicListBox.SelectedIndex = -1;
-            if (source?.Name == nameof(MenuClickedMenuItemReset))
-                ClickedMenuItem.Text = "None";
-            if (source?.Name == nameof(ResetSliders))
-                HorizontalSlider.Value = 50;
-            if (source?.Name == nameof(ShowTransparentWindow))
-                OnShowTransparentWindow();
-            if (source?.Name == nameof(ShowTransparentPopup))
-                OnShowTransparentPopup();
-            if (source?.Name == nameof(ShowWindow))
-                OnShowWindow();
-            if (source?.Name == nameof(SendToBack))
-                OnSendToBack();
-            if (source?.Name == nameof(EnterFullscreen))
-                WindowState = WindowState.FullScreen;
-            if (source?.Name == nameof(ExitFullscreen))
-                WindowState = WindowState.Normal;
-            if (source?.Name == nameof(ShowTopmostWindow))
-                OnShowTopmostWindow();
-            if (source?.Name == nameof(RestoreAll))
-                OnRestoreAll();
-            if (source?.Name == nameof(ApplyWindowDecorations))
-                OnApplyWindowDecorations(this);
-            if (source?.Name == nameof(ShowNewWindowDecorations))
-                OnShowNewWindowDecorations();
-            if (source?.Name == nameof(ToggleTrayIconVisible))
-                OnToggleTrayIconVisible();
-            if (source?.Name == nameof(ScreenRefresh))
-                OnScreenRefresh();
-        }
-
-        private void OnApplyWindowDecorations(Window window)
-        {
-            window.ExtendClientAreaToDecorationsHint = WindowExtendClientAreaToDecorationsHint.IsChecked!.Value;
-            window.ExtendClientAreaTitleBarHeightHint =
-                int.TryParse(WindowTitleBarHeightHint.Text, out var val) ? val / DesktopScaling : -1;
-            window.ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome
-                | (WindowForceSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.SystemChrome : 0)
-                | (WindowPreferSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.PreferSystemChrome : 0)
-                | (WindowMacThickSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.OSXThickTitleBar : 0);
-            AdjustOffsets(window);
-
-            window.Background = Brushes.Transparent;
-            window.PropertyChanged += WindowOnPropertyChanged;
-
-            void WindowOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-            {
-                var window = (Window)sender!;
-                if (e.Property == OffScreenMarginProperty || e.Property == WindowDecorationMarginProperty)
-                {
-                    AdjustOffsets(window);
-                }
-            }
-
-            void AdjustOffsets(Window window)
-            {
-                window.Padding = window.OffScreenMargin;
-                ((Control)window.Content!).Margin = window.WindowDecorationMargin;
-
-                WindowDecorationProperties.Text =
-                    $"{window.OffScreenMargin.Top * DesktopScaling} {window.WindowDecorationMargin.Top * DesktopScaling} {window.IsExtendedIntoWindowDecorations}";
-            }
-        }
-
-        private void OnShowNewWindowDecorations()
-        {
-            var window = new ShowWindowTest();
-            OnApplyWindowDecorations(window);
-            window.Show();
-        }
-
-        private void PointerPageShowDialogPressed(object? sender, PointerPressedEventArgs e)
-        {
-            void CaptureLost(object? sender, PointerCaptureLostEventArgs e)
-            {
-                PointerCaptureStatus.Text = "None";
-                ((Control)sender!).PointerCaptureLost -= CaptureLost;
-            }
-
-            var captured = e.Pointer.Captured as Control;
-
-            if (captured is not null)
-            {
-                captured.PointerCaptureLost += CaptureLost;
-            }
-
-            PointerCaptureStatus.Text = captured?.ToString() ?? "None";
-
-            var dialog = new Window
-            {
-                Width = 200,
-                Height = 200,
-            };
-            
-            dialog.Content = new Button
-            {
-                Content = "Close",
-                Command = new DelegateCommand(() => dialog.Close()),
-            };
-
-            dialog.ShowDialog(this);
-        }
-
-        private Screen? _lastScreen;
-        private void OnScreenRefresh()
-        {
-            var lastScreen = _lastScreen;
-            var screen = _lastScreen = Screens.ScreenFromWindow(this);
-            ScreenName.Text = screen?.DisplayName;
-            ScreenHandle.Text = screen?.TryGetPlatformHandle()?.ToString();
-            ScreenBounds.Text = screen?.Bounds.ToString();
-            ScreenWorkArea.Text = screen?.WorkingArea.ToString();
-            ScreenScaling.Text = screen?.Scaling.ToString(CultureInfo.InvariantCulture);
-            ScreenOrientation.Text = screen?.CurrentOrientation.ToString();
-            ScreenSameReference.Text = ReferenceEquals(lastScreen, screen).ToString();
+            return
+            [
+                new("Automation", () => new AutomationPage()),
+                new("Button", () => new ButtonPage()),
+                new("CheckBox", () => new CheckBoxPage()),
+                new("ComboBox", () => new ComboBoxPage()),
+                new("ContextMenu", () => new ContextMenuPage()),
+                new("DesktopPage", () => new DesktopPage()),
+                new("Embedding", () => new EmbeddingPage()),
+                new("Gestures", () => new GesturesPage()),
+                new("ListBox", () => new ListBoxPage()),
+                new("Menu", () => new MenuPage()),
+                new("Pointer", () => new PointerPage()),
+                new("RadioButton", () => new RadioButtonPage()),
+                new("Screens", () => new ScreensPage()),
+                new("ScrollBar", () => new ScrollBarPage()),
+                new("Slider", () => new SliderPage()),
+                new("Window Decorations", () => new WindowDecorationsPage()),
+                new("Window", () => new WindowPage()),
+            ];
         }
     }
 }

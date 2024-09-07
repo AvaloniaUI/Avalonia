@@ -296,6 +296,11 @@ namespace Avalonia.iOS
                     return new IOSLauncher();
                 }
 
+                if (featureType == typeof(IScreenImpl))
+                {
+                    return (iOSScreens)AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
+                }
+
                 return null;
             }
         }
