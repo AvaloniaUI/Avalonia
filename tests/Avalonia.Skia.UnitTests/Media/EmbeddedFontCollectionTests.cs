@@ -10,7 +10,9 @@ namespace Avalonia.Skia.UnitTests.Media
     {
         private const string s_notoMono =
             "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
-        
+
+        private const string s_manrope = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope";
+
         [InlineData(FontWeight.SemiLight, FontStyle.Normal)]
         [InlineData(FontWeight.Bold, FontStyle.Italic)]
         [InlineData(FontWeight.Heavy, FontStyle.Oblique)]
@@ -62,6 +64,29 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.True(fontCollection.TryGetGlyphTypeface("T", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
 
                 Assert.Equal("Twitter Color Emoji", glyphTypeface.FamilyName);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Typeface_For_TypographicFamilyName()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var source = new Uri(s_manrope, UriKind.Absolute);
+
+                var fontCollection = new EmbeddedFontCollection(source, source);
+
+                fontCollection.Initialize(new CustomFontManagerImpl());
+
+                Assert.True(fontCollection.TryGetGlyphTypeface("Manrope", FontStyle.Normal, FontWeight.Light, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.Equal("Manrope Light", glyphTypeface.FamilyName);
+
+                Assert.True(glyphTypeface is IGlyphTypeface2);
+
+                var glyphTypeface2 = (IGlyphTypeface2)glyphTypeface;
+
+                Assert.Equal("Manrope", glyphTypeface2.TypographicFamilyName);
             }
         }
     }
