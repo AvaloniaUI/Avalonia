@@ -90,7 +90,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             }
 
             callBase = false;
-            return false;
+            return true;
         }
 
         private static RawInputModifiers GetModifierKeys(KeyEvent e)
