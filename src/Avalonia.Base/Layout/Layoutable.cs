@@ -74,37 +74,37 @@ namespace Avalonia.Layout
         /// Defines the <see cref="Width"/> property.
         /// </summary>
         public static readonly StyledProperty<double> WidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(Width), double.NaN);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(Width), double.NaN, validate: ValidateDimension);
 
         /// <summary>
         /// Defines the <see cref="Height"/> property.
         /// </summary>
         public static readonly StyledProperty<double> HeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(Height), double.NaN);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(Height), double.NaN, validate: ValidateDimension);
 
         /// <summary>
         /// Defines the <see cref="MinWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinWidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MinWidth));
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MinWidth), validate: ValidateMinimumDimension);
 
         /// <summary>
         /// Defines the <see cref="MaxWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxWidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxWidth), double.PositiveInfinity);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxWidth), double.PositiveInfinity, validate: ValidateMaximumDimension);
 
         /// <summary>
         /// Defines the <see cref="MinHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinHeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MinHeight));
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MinHeight), validate: ValidateMinimumDimension);
 
         /// <summary>
         /// Defines the <see cref="MaxHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxHeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxHeight), double.PositiveInfinity);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxHeight), double.PositiveInfinity, validate: ValidateMaximumDimension);
 
         /// <summary>
         /// Defines the <see cref="Margin"/> property.
@@ -152,6 +152,10 @@ namespace Avalonia.Layout
                 HorizontalAlignmentProperty,
                 VerticalAlignmentProperty);
         }
+
+        private static bool ValidateDimension(double value) => double.IsNaN(value) || ValidateMinimumDimension(value);
+        private static bool ValidateMinimumDimension(double value) => !double.IsPositiveInfinity(value) && ValidateMaximumDimension(value);
+        private static bool ValidateMaximumDimension(double value) => value >= 0;
 
         /// <summary>
         /// Occurs when the element's effective viewport changes.

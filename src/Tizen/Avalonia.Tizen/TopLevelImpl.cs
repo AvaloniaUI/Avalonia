@@ -16,6 +16,7 @@ internal class TopLevelImpl : ITopLevelImpl
     private readonly ITizenView _view;
     private readonly NuiClipboardImpl _clipboard;
     private readonly IStorageProvider _storageProvider;
+    private readonly NuiScreens _screen;
 
     public TopLevelImpl(ITizenView view, IEnumerable<object> surfaces)
     {
@@ -24,7 +25,11 @@ internal class TopLevelImpl : ITopLevelImpl
 
         _storageProvider = new TizenStorageProvider();
         _clipboard = new NuiClipboardImpl();
+        _screen = new NuiScreens();
     }
+
+    public double DesktopScaling => RenderScaling;
+    public IPlatformHandle? Handle { get; }
 
     public Size ClientSize => _view.ClientSize;
 
@@ -107,6 +112,11 @@ internal class TopLevelImpl : ITopLevelImpl
         if (featureType == typeof(ILauncher))
         {
             return new TizenLauncher();
+        }
+
+        if (featureType == typeof(IScreenImpl))
+        {
+            return _screen;
         }
 
         return null;

@@ -115,22 +115,22 @@ namespace Avalonia.Build.Tasks
                 // documentation, on not windows platform Debugger.Launch() always return true without running a debugger.
                 if (System.Diagnostics.Debugger.Launch())
                 {
-                    // Set timeout at 1 minut.
+                    // Set timeout at 1 minute.
                     var time = new System.Diagnostics.Stopwatch();
                     var timeout = TimeSpan.FromMinutes(1);
                     time.Start();
 
-                    // wait for the debugger to be attacked or timeout.
+                    // wait for the debugger to be attached or timeout.
                     while (!System.Diagnostics.Debugger.IsAttached && time.Elapsed < timeout)
                     {
-                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Wating attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
+                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Waiting to attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
                         System.Threading.Thread.Sleep(100);
                     }
 
                     time.Stop();
                     if (time.Elapsed >= timeout)
                     {
-                        engine.LogMessage("Wating attach debugger timeout.", MessageImportance.Normal);
+                        engine.LogMessage("Waiting to attach debugger has timed out.", MessageImportance.Normal);
                     }
                 }
                 else

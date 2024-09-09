@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.JavaScript;
+﻿using System.Runtime.InteropServices.JavaScript;
+using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace Avalonia.Browser.Interop;
 
@@ -11,42 +8,26 @@ internal record GLInfo(int ContextId, uint FboId, int Stencils, int Samples, int
 
 internal static partial class CanvasHelper
 {
-    public static (JSObject CanvasView, GLInfo? GLInfo) CreateSurface(
-        JSObject container, BrowserRenderingMode renderingMode)
+    [JSExport]
+    public static Task OnSizeChanged(int topLevelId, double width, double height, double dpr)
     {
-        var isGlMode = renderingMode is BrowserRenderingMode.WebGL1 or BrowserRenderingMode.WebGL2;
-
-        var canvasView = Create(container, (int)renderingMode);
-
-        GLInfo? glInfo = null;
-        if (isGlMode)
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
         {
-            glInfo = new GLInfo(
-                canvasView.GetPropertyAsInt32("contextHandle")!,
-                (uint)canvasView.GetPropertyAsInt32("fboId"),
-                canvasView.GetPropertyAsInt32("stencil"),
-                canvasView.GetPropertyAsInt32("sample"),
-                canvasView.GetPropertyAsInt32("depth"));
+            return Dispatcher.UIThread.InvokeAsync(() => BrowserTopLevelImpl
+                    .TryGetTopLevel(topLevelId)?.Surface?.OnSizeChanged(width, height, dpr))
+                .GetTask();
         }
-
-        return (canvasView, glInfo);
+        else
+        {
+            BrowserTopLevelImpl
+                .TryGetTopLevel(topLevelId)?.Surface?.OnSizeChanged(width, height, dpr);
+            return Task.CompletedTask;
+        }
     }
 
-    [JSImport("CanvasFactory.onSizeChanged", AvaloniaModule.MainModuleName)]
-    public static partial void OnSizeChanged(
-        JSObject canvasSurface,
-        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number, JSType.Number>>]
-        Action<int, int, double> onSizeChanged);
+    [JSImport("CanvasSurface.create", AvaloniaModule.MainModuleName)]
+    public static partial JSObject CreateRenderTargetSurface(JSObject canvasSurface, int[] modes, int topLevelId, int threadId);
 
-    [JSImport("CanvasFactory.create", AvaloniaModule.MainModuleName)]
-    private static partial JSObject Create(JSObject canvasSurface, int mode);
-
-    [JSImport("CanvasFactory.destroy", AvaloniaModule.MainModuleName)]
+    [JSImport("CanvasSurface.destroy", AvaloniaModule.MainModuleName)]
     public static partial void Destroy(JSObject canvasSurface);
-
-    [JSImport("CanvasFactory.ensureSize", AvaloniaModule.MainModuleName)]
-    public static partial void EnsureSize(JSObject canvasSurface);
-
-    [JSImport("CanvasFactory.putPixelData", AvaloniaModule.MainModuleName)]
-    public static partial void PutPixelData(JSObject canvasSurface, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data, int width, int height);
 }

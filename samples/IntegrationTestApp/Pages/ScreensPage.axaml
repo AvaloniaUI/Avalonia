@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.ScreensPage">
+  <StackPanel Spacing="4">
+    <Button Name="ScreenRefresh"
+            Content="Refresh"
+            Click="ScreenRefresh_Click"/>
+    <TextBox Name="ScreenName" Watermark="DisplayName" UseFloatingWatermark="true" />
+    <TextBox Name="ScreenHandle" Watermark="Handle" UseFloatingWatermark="true" />
+    <TextBox Name="ScreenScaling" Watermark="Scaling" UseFloatingWatermark="true" />
+    <TextBox Name="ScreenBounds" Watermark="Bounds" UseFloatingWatermark="true" />
+    <TextBox Name="ScreenWorkArea" Watermark="WorkArea" UseFloatingWatermark="true" />
+    <TextBox Name="ScreenOrientation" Watermark="Orientation" UseFloatingWatermark="true" />
+    <TextBox Name="ScreenSameReference" Watermark="Is same reference" UseFloatingWatermark="true" />
+  </StackPanel>
+</UserControl>

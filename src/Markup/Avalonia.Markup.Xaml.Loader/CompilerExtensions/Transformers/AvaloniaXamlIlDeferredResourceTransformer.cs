@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Visitors;
+using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
@@ -22,23 +23,61 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (pa.Property.DeclaringType == types.ResourceDictionary && pa.Property.Name == "Content"
                 && ShouldBeDeferred(pa.Values[1]))
             {
+                IXamlMethod addMethod = TryGetSharedValue(pa.Values[1], out var isShared) && !isShared
+                    ? types.ResourceDictionaryNotSharedDeferredAdd
+                    : types.ResourceDictionaryDeferredAdd;
+
                 pa.Values[1] = new XamlDeferredContentNode(pa.Values[1], types.XamlIlTypes.Object, context.Configuration);
                 pa.PossibleSetters = new List<IXamlPropertySetter>
                 {
-                    new XamlDirectCallPropertySetter(types.ResourceDictionaryDeferredAdd),
+                    new XamlDirectCallPropertySetter(addMethod),
                 };
             }
-            else if (pa.Property.Name == "Resources" && pa.Property.Getter.ReturnType.Equals(types.IResourceDictionary)
+            else if (pa.Property.Name == "Resources" && pa.Property.Getter?.ReturnType.Equals(types.IResourceDictionary) == true
                 && ShouldBeDeferred(pa.Values[1]))
             {
+                IXamlMethod addMethod = TryGetSharedValue(pa.Values[1], out var isShared) && !isShared
+                    ? types.ResourceDictionaryNotSharedDeferredAdd
+                    : types.ResourceDictionaryDeferredAdd;
+
                 pa.Values[1] = new XamlDeferredContentNode(pa.Values[1], types.XamlIlTypes.Object, context.Configuration);
                 pa.PossibleSetters = new List<IXamlPropertySetter>
                 {
-                    new AdderSetter(pa.Property.Getter, types.ResourceDictionaryDeferredAdd),
+                    new AdderSetter(pa.Property.Getter, addMethod),
                 };
             }
 
             return node;
+
+            bool TryGetSharedValue(IXamlAstValueNode valueNode, out bool value)
+            {
+                value = default;
+                if (valueNode is XamlAstConstructableObjectNode co)
+                {
+                    // Try find x:Share directive
+                    if (co.Children.Find(d => d is XamlAstXmlDirective { Namespace: XamlNamespaces.Xaml2006, Name: "Shared" }) is XamlAstXmlDirective sharedDirective)
+                    {
+                        if (sharedDirective.Values.Count == 1 && sharedDirective.Values[0] is XamlAstTextNode text)
+                        {
+                            if (bool.TryParse(text.Text, out var parseValue))
+                            {
+                                // If the parser succeeds, remove the x:Share directive
+                                co.Children.Remove(sharedDirective);
+                                return true;
+                            }
+                            else
+                            {
+                                context.ReportTransformError("Invalid argument type for x:Shared directive.", node);
+                            }
+                        }
+                        else
+                        {
+                            context.ReportTransformError("Invalid number of arguments for x:Shared directive.", node);
+                        }
+                    }
+                }
+                return false;
+            }
         }
 
         private static bool ShouldBeDeferred(IXamlAstValueNode node)
@@ -71,7 +110,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             return true;
         }
-        
+
         class AdderSetter : IXamlILOptimizedEmitablePropertySetter, IEquatable<AdderSetter>
         {
             private readonly IXamlMethod _getter;
@@ -132,7 +171,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 emitter.EmitCall(_adder, true);
             }
 
-            public bool Equals(AdderSetter other)
+            public bool Equals(AdderSetter? other)
             {
                 if (ReferenceEquals(null, other))
                     return false;
@@ -142,7 +181,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return _getter.Equals(other._getter) && _adder.Equals(other._adder);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => Equals(obj as AdderSetter);
 
             public override int GetHashCode()

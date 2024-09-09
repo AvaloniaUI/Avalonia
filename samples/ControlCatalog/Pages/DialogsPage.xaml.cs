@@ -1,9 +1,11 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -252,17 +254,24 @@ namespace ControlCatalog.Pages
 
                 if (file is not null)
                 {
-                    // Sync disposal of StreamWriter is not supported on WASM
+                    try
+                    {
+                        // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
-                    await using var stream = await file.OpenWriteAsync();
-                    await using var reader = new System.IO.StreamWriter(stream);
+                        await using var stream = await file.OpenWriteAsync();
+                        await using var writer = new System.IO.StreamWriter(stream);
 #else
-                                using var stream = await file.OpenWriteAsync();
-                                using var reader = new System.IO.StreamWriter(stream);
+                        using var stream = await file.OpenWriteAsync();
+                        using var writer = new System.IO.StreamWriter(stream);
 #endif
-                    await reader.WriteLineAsync(openedFileContent.Text);
+                        await writer.WriteLineAsync(openedFileContent.Text);
 
-                    SetFolder(await file.GetParentAsync());
+                        SetFolder(await file.GetParentAsync());
+                    }
+                    catch (Exception ex)
+                    {
+                        openedFileContent.Text = ex.ToString();
+                    }
                 }
 
                 await SetPickerResult(file is null ? null : new[] { file });
@@ -278,8 +287,6 @@ namespace ControlCatalog.Pages
                 });
 
                 await SetPickerResult(folders);
-
-                SetFolder(folders.FirstOrDefault());
             };
             this.Get<Button>("OpenFileFromBookmark").Click += async delegate
             {
@@ -296,7 +303,6 @@ namespace ControlCatalog.Pages
                     : null;
 
                 await SetPickerResult(folder is null ? null : new[] { folder });
-                SetFolder(folder);
             };
             
             this.Get<Button>("LaunchUri").Click += async delegate
@@ -358,16 +364,30 @@ namespace ControlCatalog.Pages
             Content:
             ";
 
-                        resultText += await ReadTextFromFile(file, 500);
+                        try
+                        {
+                            resultText += await ReadTextFromFile(file, 500);
+                        }
+                        catch (Exception ex)
+                        {
+                            resultText += ex.ToString();
+                        }
                     }
 
                     openedFileContent.Text = resultText;
 
-                    var parent = await item.GetParentAsync();
-                    SetFolder(parent);
-                    if (parent is not null)
+                    if (item is IStorageFolder storageFolder)
                     {
-                        mappedResults.Add(FullPathOrName(parent));
+                        SetFolder(storageFolder);
+                    }
+                    else
+                    {
+                        var parent = await item.GetParentAsync();
+                        SetFolder(parent);
+                        if (parent is not null)
+                        {
+                            mappedResults.Add(FullPathOrName(parent));
+                        }
                     }
 
                     foreach (var selectedItem in items)
@@ -389,7 +409,7 @@ namespace ControlCatalog.Pages
             }
         }
 
-        public static async Task<string> ReadTextFromFile(IStorageFile file, int length)
+        internal static async Task<string> ReadTextFromFile(IStorageFile file, int length)
         {
 #if NET6_0_OR_GREATER
             await using var stream = await file.OpenReadAsync();

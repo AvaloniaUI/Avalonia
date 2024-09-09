@@ -30,8 +30,11 @@ internal sealed class NamedElementNode : SourceNode
         return target is not ILogical logical || logical.IsAttachedToLogicalTree;
     }
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (_nameScope.TryGetTarget(out var scope))
             _subscription = NameScopeLocator.Track(scope, _name).Subscribe(SetValue);
         else

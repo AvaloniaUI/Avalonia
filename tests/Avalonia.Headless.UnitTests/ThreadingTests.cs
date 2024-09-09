@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -14,6 +16,7 @@ public class ThreadingTests
 #endif
     public void Should_Be_On_Dispatcher_Thread()
     {
+        ValidateTestContext();
         Dispatcher.UIThread.VerifyAccess();
     }
 
@@ -34,20 +37,40 @@ public class ThreadingTests
 #endif
     public async Task DispatcherTimer_Works_On_The_Same_Thread(int interval)
     {
+        Assert.NotNull(SynchronizationContext.Current);
+        ValidateTestContext();
+        var currentThread = Thread.CurrentThread;
+
         await Task.Delay(100);
 
-        var currentThread = Thread.CurrentThread;
+        ValidateTestContext();
+        Assert.True(currentThread == Thread.CurrentThread);
+
         var tcs = new TaskCompletionSource();
-        var hasCompleted = false;
 
         DispatcherTimer.RunOnce(() =>
         {
-            hasCompleted = currentThread == Thread.CurrentThread;
-
-            tcs.SetResult();
+            try
+            {
+                ValidateTestContext();
+                Assert.True(currentThread == Thread.CurrentThread);
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
         }, TimeSpan.FromTicks(interval));
 
         await tcs.Task; 
-        Assert.True(hasCompleted);
+    }
+
+    private void ValidateTestContext([CallerMemberName] string runningMethodName = null)
+    {
+#if NUNIT
+        var testName = TestContext.CurrentContext.Test.Name;
+        // Test.Name also includes parameters.
+        Assert.AreEqual(testName.Split('(').First(), runningMethodName); 
+#endif
     }
 }

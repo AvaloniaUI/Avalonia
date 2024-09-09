@@ -30,5 +30,18 @@ internal class UntypedObservableBindingExpression : UntypedBindingExpressionBase
 
     void IObserver<object?>.OnCompleted() { }
     void IObserver<object?>.OnError(Exception error) { }
-    void IObserver<object?>.OnNext(object? value) => PublishValue(value);
+    
+    void IObserver<object?>.OnNext(object? value)
+    {
+        if (value is BindingNotification n)
+        {
+            var v = n.Value;
+            var e = n.Error is not null ? new BindingError(n.Error, n.ErrorType) : null;
+            PublishValue(v, e);
+        }
+        else
+        {
+            PublishValue(value);
+        }
+    }
 }

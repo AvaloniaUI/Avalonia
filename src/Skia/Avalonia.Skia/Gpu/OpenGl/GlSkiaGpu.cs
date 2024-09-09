@@ -26,9 +26,19 @@ namespace Avalonia.Skia
             _glContext = context;
             using (_glContext.EnsureCurrent())
             {
-                using (var iface = context.Version.Type == GlProfileType.OpenGL ?
-                    GRGlInterface.CreateOpenGl(proc => context.GlInterface.GetProcAddress(proc)) :
-                    GRGlInterface.CreateGles(proc => context.GlInterface.GetProcAddress(proc)))
+                GRGlInterface iface;
+
+                if (context.TryGetFeature<IGlSkiaSpecificOptionsFeature>() is { } skiaOptions &&
+                    skiaOptions.UseNativeSkiaGrGlInterface)
+                {
+                    iface = GRGlInterface.Create();
+                }
+                else
+                    iface = context.Version.Type == GlProfileType.OpenGL
+                        ? GRGlInterface.CreateOpenGl(proc => context.GlInterface.GetProcAddress(proc))
+                        : GRGlInterface.CreateGles(proc => context.GlInterface.GetProcAddress(proc));
+                
+                using(iface)
                 {
                     _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = true });
                     if (maxResourceBytes.HasValue)
@@ -154,6 +164,8 @@ namespace Avalonia.Skia
         public bool IsLost => _glContext.IsLost;
         public IDisposable EnsureCurrent() => _glContext.EnsureCurrent();
         public IPlatformGraphicsContext? PlatformGraphicsContext => _glContext;
+        public IScopedResource<GRContext> TryGetGrContext() =>
+            ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 
         public object? TryGetFeature(Type featureType)
         {

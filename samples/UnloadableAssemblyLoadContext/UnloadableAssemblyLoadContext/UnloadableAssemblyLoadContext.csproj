@@ -10,19 +10,10 @@
     </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Assets\*" />
-    <AvaloniaResource Include="Assets\Fonts\*" />
+    <Compile Update="**\*.xaml.cs" DependentUpon="%(Filename)" />
+    <AvaloniaResource Include="**\*.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\"/>
-    <AvaloniaResource Include="Assets\**"/>
-  </ItemGroup>
+
   <ImportGroup>
     <Import Project="..\..\..\build\BuildTargets.targets" Condition="Exists('..\..\..\build\BuildTargets.targets')" />
     <Import Project="..\..\..\build\SourceGenerators.props" />

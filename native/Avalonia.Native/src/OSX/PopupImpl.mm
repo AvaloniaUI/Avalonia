@@ -12,7 +12,6 @@
 #import "WindowBaseImpl.h"
 #import "WindowProtocol.h"
 #import <AppKit/AppKit.h>
-#include "PopupImpl.h"
 
 class PopupImpl : public virtual WindowBaseImpl, public IAvnPopup
 {
@@ -23,7 +22,7 @@ private:
     END_INTERFACE_MAP()
     virtual ~PopupImpl(){}
     ComPtr<IAvnWindowEvents> WindowEvents;
-    PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
+    PopupImpl(IAvnWindowEvents* events) : TopLevelImpl(events), WindowBaseImpl(events)
     {
         WindowEvents = events;
         [Window setLevel:NSPopUpMenuWindowLevel];
@@ -35,13 +34,12 @@ protected:
     }
 
 public:
-    virtual bool ShouldTakeFocusOnShow() override
-    {
-        return false;
-    }
-
     virtual HRESULT Show(bool activate, bool isDialog) override
     {
+        auto windowProtocol = GetWindowProtocol();
+        
+        [windowProtocol setEnabled:true];
+        
         return WindowBaseImpl::Show(activate, true);
     }
 };

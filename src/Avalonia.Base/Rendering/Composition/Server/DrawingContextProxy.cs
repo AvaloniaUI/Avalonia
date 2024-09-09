@@ -10,9 +10,6 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
-/// <summary>
-
-/// </summary>
 internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
     IDrawingContextWithAcrylicLikeSupport, IDrawingContextImplWithEffects
 {

@@ -134,32 +134,42 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_lastPoint.HasValue)
+            VectorEventArgs ev;
+
+            if (!_lastPoint.HasValue)
             {
-                var ev = new VectorEventArgs
+                _lastPoint = e.GetPosition(VisualRoot as Visual);
+                e.Pointer.Capture(this);
+
+                ev = new VectorEventArgs
+                {
+                    RoutedEvent = DragStartedEvent,
+                    Vector = (Vector)_lastPoint,
+                };
+            }
+            else
+            {
+                var vector = e.GetPosition(VisualRoot as Visual) - _lastPoint.Value;
+
+                var tapSize = TopLevel.GetTopLevel(this)?.PlatformSettings?.GetTapSize(PointerType.Touch) ?? new Size(10, 10);
+
+                if (Math.Abs(vector.X) < tapSize.Width && Math.Abs(vector.Y) < tapSize.Height)
+                    return;
+
+                ev = new VectorEventArgs
                 {
                     RoutedEvent = DragDeltaEvent,
-                    Vector = e.GetPosition(VisualRoot as Visual) - _lastPoint.Value,
+                    Vector = vector,
                 };
-
-                RaiseEvent(ev);
             }
+
+            RaiseEvent(ev);
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             e.Handled = true;
-            _lastPoint = e.GetPosition(VisualRoot as Visual);
-
-            var ev = new VectorEventArgs
-            {
-                RoutedEvent = DragStartedEvent,
-                Vector = (Vector)_lastPoint,
-            };
-
             PseudoClasses.Add(":pressed");
-
-            RaiseEvent(ev);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)

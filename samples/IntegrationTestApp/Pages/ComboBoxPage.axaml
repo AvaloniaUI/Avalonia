@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.ComboBoxPage">
+  <StackPanel>
+    <ComboBox Name="BasicComboBox">
+      <ComboBoxItem>Item 0</ComboBoxItem>
+      <ComboBoxItem>Item 1</ComboBoxItem>
+    </ComboBox>
+    <CheckBox Name="ComboBoxWrapSelection" IsChecked="{Binding #BasicComboBox.WrapSelection}">Wrap Selection</CheckBox>
+    <Button Name="ComboBoxSelectionClear" Click="ComboBoxSelectionClear_Click">Clear Selection</Button>
+    <Button Name="ComboBoxSelectFirst" Click="ComboBoxSelectFirst_Click">Select First</Button>
+  </StackPanel>
+</UserControl>

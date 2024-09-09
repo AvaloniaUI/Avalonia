@@ -9,6 +9,8 @@ internal class WindowingPlatformStub : IWindowingPlatform
 
     public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
+    public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
+
     public ITrayIconImpl? CreateTrayIcon() => null;
 }
 

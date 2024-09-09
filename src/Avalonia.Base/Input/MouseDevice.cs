@@ -205,6 +205,7 @@ namespace Avalonia.Input
                 {
                     _pointer.Capture(null);
                     _pointer.CaptureGestureRecognizer(null);
+                    _pointer.IsGestureRecognitionSkipped = false;
                     _lastMouseDownButton = default;
                 }
                 return e.Handled;
@@ -303,6 +304,11 @@ namespace Avalonia.Input
         public IPointer? TryGetPointer(RawPointerEventArgs ev)
         {
             return _pointer;
+        }
+
+        internal void PlatformCaptureLost()
+        {
+            _pointer.Capture(null);
         }
     }
 }

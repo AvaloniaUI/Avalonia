@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Primitives
         {
             foreach (Control child in Children)
                 child.Measure(availableSize);
-            return availableSize;
+            return default;
         }
 
         protected override Size ArrangeOverride(Size finalSize)

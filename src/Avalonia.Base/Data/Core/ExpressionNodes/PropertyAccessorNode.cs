@@ -48,8 +48,11 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         var reference = new WeakReference<object?>(source);
 
         if (_plugin.Start(reference, PropertyName) is { } accessor)
