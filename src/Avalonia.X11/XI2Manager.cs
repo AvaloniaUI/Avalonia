@@ -130,10 +130,25 @@ namespace Avalonia.X11
                 var touchMinorAtom = XInternAtom(_x11.Display, "Abs MT Touch Minor", false);
 
                 var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
-                _pressureXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == pressureAtom);
 
-                _touchMajorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMajorAtom);
-                _touchMinorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMinorAtom);
+                var pressureXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == pressureAtom);
+                if (pressureXIValuatorClassInfo.Label == pressureAtom)
+                {
+                    // Why check twice? The XIValuatorClassInfo is struct, so the FirstOrDefault will return the default struct when not found.
+                    _pressureXIValuatorClassInfo = pressureXIValuatorClassInfo;
+                }
+
+                var touchMajorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMajorAtom);
+                if (touchMajorXIValuatorClassInfo.Label == touchMajorAtom)
+                {
+                    _touchMajorXIValuatorClassInfo = touchMajorXIValuatorClassInfo;
+                }
+
+                var touchMinorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMinorAtom);
+                if (touchMinorXIValuatorClassInfo.Label == touchMinorAtom)
+                {
+                    _touchMinorXIValuatorClassInfo = touchMinorXIValuatorClassInfo;
+                }
             }
 
             /*
