@@ -686,8 +686,7 @@ namespace Avalonia.X11
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
-                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
-                        IntPtr.Zero);
+                    MapWindow();
                 }
                 else if (value == WindowState.FullScreen)
                 {
@@ -695,8 +694,7 @@ namespace Avalonia.X11
                     ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
-                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
-                        IntPtr.Zero);
+                    MapWindow();
                 }
                 else
                 {
@@ -704,8 +702,7 @@ namespace Avalonia.X11
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
-                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
-                        IntPtr.Zero);
+                    MapWindow();
                 }
                 WindowStateChanged?.Invoke(value);
             }
@@ -1207,6 +1204,35 @@ namespace Avalonia.X11
             XSendEvent(_x11.Display, _x11.RootWindow, false,
                 new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
 
+        }
+
+        /// <summary>
+        /// Map the window to the screen.
+        /// </summary>
+        /// <remarks>
+        /// Why we map the window using XMapRequestEvent instead of XMapWindow or SendNetWMMessage?<br/>
+        /// See details at https://github.com/AvaloniaUI/Avalonia/pull/16922
+        /// </remarks>
+        private void MapWindow()
+        {
+            var e = new XEvent
+            {
+                MapRequestEvent = new XMapRequestEvent
+                {
+                    type = XEventName.MapRequest,
+                    serial = 0,
+                    display = _x11.Display,
+                    send_event = 1,
+                    parent = _x11.RootWindow,
+                    window = _handle,
+                },
+            };
+            XSendEvent(
+                _x11.Display,
+                _x11.RootWindow,
+                false,
+                new IntPtr((int)EventMask.SubstructureRedirectMask),
+                ref e);
         }
 
         private void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
