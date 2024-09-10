@@ -1220,7 +1220,7 @@ namespace Avalonia.X11
                 MapRequestEvent = new XMapRequestEvent
                 {
                     type = XEventName.MapRequest,
-                    serial = 0,
+                    serial = new IntPtr(0),
                     display = _x11.Display,
                     send_event = 1,
                     parent = _x11.RootWindow,
