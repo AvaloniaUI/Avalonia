@@ -11,6 +11,7 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
@@ -70,8 +71,9 @@ namespace Avalonia.Controls
 
         private void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs<bool> args)
         {
-            TreeViewOwner?.RaiseEvent(new TreeViewItemExpansionChangedEventArgs(TreeView.ExpansionChangedEvent, this,
-                args.NewValue.Value));
+            var routedEvent = args.NewValue.Value ? TreeView.ExpandedEvent : TreeView.CollapsedEvent;
+            var eventArgs = new RoutedEventArgs() { RoutedEvent = routedEvent, Source = this };
+            TreeViewOwner?.RaiseEvent(eventArgs);
         }
 
         /// <summary>
