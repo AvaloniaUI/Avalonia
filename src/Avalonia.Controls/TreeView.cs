@@ -52,6 +52,13 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
             ListBox.SelectionModeProperty.AddOwner<TreeView>();
+        
+        /// <summary>
+        /// Defines the <see cref="ExpansionChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TreeViewItemExpansionChangedEventArgs> ExpansionChangedEvent =
+            RoutedEvent.Register<TreeView, TreeViewItemExpansionChangedEventArgs>(
+                nameof(ExpansionChanged), RoutingStrategies.Bubble);
 
         private static readonly IList Empty = Array.Empty<object>();
         private object? _selectedItem;
@@ -75,6 +82,15 @@ namespace Avalonia.Controls
             add => AddHandler(SelectingItemsControl.SelectionChangedEvent, value);
             remove => RemoveHandler(SelectingItemsControl.SelectionChangedEvent, value);
         }
+
+        /// <summary>
+        /// Represents the event that is raised when the expansion state of a <see cref="TreeViewItem"/> changes within a <see cref="TreeView"/>.
+        /// </summary>
+        public event EventHandler<TreeViewItemExpansionChangedEventArgs> ExpansionChanged
+        {
+            add => AddHandler(ExpansionChangedEvent, value);
+            remove => RemoveHandler(ExpansionChangedEvent, value);
+        } 
 
         /// <summary>
         /// Gets the <see cref="TreeItemContainerGenerator"/> for the tree view.

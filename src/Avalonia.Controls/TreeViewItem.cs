@@ -65,6 +65,13 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<TreeViewItem>(IsOffscreenBehavior.FromClip);
             RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
+            IsExpandedProperty.Changed.AddClassHandler<TreeViewItem, bool>((x, e) => x.OnIsExpandedChanged(e));
+        }
+
+        private void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs<bool> args)
+        {
+            TreeViewOwner?.RaiseEvent(new TreeViewItemExpansionChangedEventArgs(TreeView.ExpansionChangedEvent, this,
+                args.NewValue.Value));
         }
 
         /// <summary>
