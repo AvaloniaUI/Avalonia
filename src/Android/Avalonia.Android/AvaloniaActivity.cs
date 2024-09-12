@@ -155,7 +155,7 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
         base.OnDestroy();
     }
-        
+
     protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent? data)
     {
         base.OnActivityResult(requestCode, resultCode, data);

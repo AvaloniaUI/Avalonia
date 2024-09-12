@@ -24,9 +24,9 @@ namespace Avalonia.Controls
     [TemplatePart("PART_Popup",                   typeof(Popup))]
     [TemplatePart("PART_SecondColumnDivider",     typeof(Rectangle))]
     [TemplatePart("PART_SecondPickerHost",        typeof(Border))]
-    [TemplatePart("PART_ThirdColumnDivider",     typeof(Rectangle))]
-    [TemplatePart("PART_ThirdPickerHost",        typeof(Border))]
-    [TemplatePart("PART_FourthPickerHost",         typeof(Border))]
+    [TemplatePart("PART_ThirdColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("PART_ThirdPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FourthPickerHost",        typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {

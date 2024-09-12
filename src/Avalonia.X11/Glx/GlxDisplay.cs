@@ -166,16 +166,19 @@ namespace Avalonia.X11.Glx
                 rv = Create(_version.Value);
             }
             
-            foreach (var v in _probeProfiles)
+            if (rv == null)
             {
-                if (v.Type == GlProfileType.OpenGLES
-                    && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
-                    continue;
-                rv = Create(v);
-                if (rv != null)
+                foreach (var v in _probeProfiles)
                 {
-                    _version = v;
-                    break;
+                    if (v.Type == GlProfileType.OpenGLES
+                        && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
+                        continue;
+                    rv = Create(v);
+                    if (rv != null)
+                    {
+                        _version = v;
+                        break;
+                    }
                 }
             }
 

@@ -15,6 +15,11 @@ namespace Avalonia.Media
         bool TryGetStream([NotNullWhen(true)] out Stream? stream);
 
         /// <summary>
+        /// Gets the typographic family name.
+        /// </summary>
+        string TypographicFamilyName { get; }
+
+        /// <summary>
         /// Gets the localized family names.
         /// <para>Keys are culture identifiers.</para>
         /// </summary>

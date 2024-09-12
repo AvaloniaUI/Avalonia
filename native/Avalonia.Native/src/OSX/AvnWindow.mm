@@ -297,7 +297,10 @@
 {
     if (_parent == nullptr)
         return;
-    
+
+    if (_parent->View != nullptr)
+        [_parent->View setModifiers:NSEvent.modifierFlags];
+
     _parent->BringToFront();
     
     dispatch_async(dispatch_get_main_queue(), ^{
