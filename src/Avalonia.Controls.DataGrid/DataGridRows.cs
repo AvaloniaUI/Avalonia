@@ -425,7 +425,7 @@ namespace Avalonia.Controls
                 {
                     row.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                 }
-                UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsHeight);
+                UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsEstimatedHeight);
             }
 
             if (DisplayData.FirstScrollingSlot < slot && (DisplayData.LastScrollingSlot > slot || DisplayData.LastScrollingSlot == -1))
@@ -462,7 +462,7 @@ namespace Avalonia.Controls
                     ResetDisplayedRows();
                 }
                 NegVerticalOffset = 0;
-                UpdateDisplayedRows(slot, CellsHeight);
+                UpdateDisplayedRows(slot, CellsEstimatedHeight);
             }
             else if (DisplayData.LastScrollingSlot <= slot)
             {
@@ -502,11 +502,11 @@ namespace Avalonia.Controls
                 {
                     ResetDisplayedRows();
                 }
-                if (MathUtilities.GreaterThanOrClose(GetExactSlotElementHeight(slot), CellsHeight))
+                if (MathUtilities.GreaterThanOrClose(GetExactSlotElementHeight(slot), CellsEstimatedHeight))
                 {
                     // The entire row won't fit in the DataGrid so we start showing it from the top
                     NegVerticalOffset = 0;
-                    UpdateDisplayedRows(slot, CellsHeight);
+                    UpdateDisplayedRows(slot, CellsEstimatedHeight);
                 }
                 else
                 {
@@ -677,7 +677,7 @@ namespace Avalonia.Controls
                 {
                     if (DisplayData.GetDisplayedElement(slot) is DataGridRow row)
                     {
-                        row.UpdatePseudoClasses(); ;
+                        row.ApplyState();
                     }
                     slot = GetNextVisibleSlot(slot);
                 }
@@ -972,7 +972,7 @@ namespace Avalonia.Controls
 
             if (isDisplayed)
             {
-                double availableHeight = CellsHeight - heightAboveStartSlot;
+                double availableHeight = CellsEstimatedHeight - heightAboveStartSlot;
                 // Actually expand the displayed slots up to what we can display
                 for (int i = startSlot; (i <= endSlot) && (currentHeightChange < availableHeight); i++)
                 {
@@ -1513,7 +1513,7 @@ namespace Avalonia.Controls
 
             if (row.IsSelected || row.IsRecycled)
             {
-                row.UpdatePseudoClasses();
+                row.ApplyState();
             }
 
             // Show or hide RowDetails based on DataGrid settings
@@ -1645,7 +1645,7 @@ namespace Avalonia.Controls
             }
 
             DisplayData.ClearElements(recycle: true);
-            AvailableSlotElementRoom = CellsHeight;
+            AvailableSlotElementRoom = CellsEstimatedHeight;
         }
 
         /// <summary>
@@ -1662,7 +1662,7 @@ namespace Avalonia.Controls
                 return true;
             }
             else if (DisplayData.FirstScrollingSlot == -1 &&
-                     CellsHeight > 0 &&
+                     CellsEstimatedHeight > 0 &&
                      CellsWidth > 0)
             {
                 return true;
@@ -1716,7 +1716,7 @@ namespace Avalonia.Controls
                             // Figure out what row we've scrolled down to and update the value for NegVerticalOffset
                             NegVerticalOffset = 0;
                             //
-                            if (height > 2 * CellsHeight &&
+                            if (height > 2 * CellsEstimatedHeight &&
                                 (RowDetailsVisibilityMode != DataGridRowDetailsVisibilityMode.VisibleWhenSelected || RowDetailsTemplate == null))
                             {
                                 // Very large scroll occurred. Instead of determining the exact number of scrolled off rows,
@@ -1778,7 +1778,7 @@ namespace Avalonia.Controls
                         NegVerticalOffset = 0;
                         //
 
-                        if (height < -2 * CellsHeight &&
+                        if (height < -2 * CellsEstimatedHeight &&
                             (RowDetailsVisibilityMode != DataGridRowDetailsVisibilityMode.VisibleWhenSelected || RowDetailsTemplate == null))
                         {
                             // Very large scroll occurred. Instead of determining the exact number of scrolled off rows,
@@ -1838,7 +1838,7 @@ namespace Avalonia.Controls
                         // strategy. For most data, this should be unnoticeable.
                         ResetDisplayedRows();
                         NegVerticalOffset = 0;
-                        UpdateDisplayedRows(0, CellsHeight);
+                        UpdateDisplayedRows(0, CellsEstimatedHeight);
                         newFirstScrollingSlot = 0;
                     }
                 }
@@ -1857,7 +1857,7 @@ namespace Avalonia.Controls
                     NegVerticalOffset = 0;
                 }
 
-                UpdateDisplayedRows(newFirstScrollingSlot, CellsHeight);
+                UpdateDisplayedRows(newFirstScrollingSlot, CellsEstimatedHeight);
 
                 double firstElementHeight = GetExactSlotElementHeight(DisplayData.FirstScrollingSlot);
                 if (MathUtilities.GreaterThan(NegVerticalOffset, firstElementHeight))
@@ -1883,7 +1883,7 @@ namespace Avalonia.Controls
                     // We could be smarter about this, but it's not common so we wouldn't gain much from optimizing here
                     if (firstElementSlot != DisplayData.FirstScrollingSlot)
                     {
-                        UpdateDisplayedRows(firstElementSlot, CellsHeight);
+                        UpdateDisplayedRows(firstElementSlot, CellsEstimatedHeight);
                     }
                 }
 
@@ -1927,7 +1927,7 @@ namespace Avalonia.Controls
             Control element = DisplayData.GetDisplayedElement(slot);
             if (element is DataGridRow row)
             {
-                row.UpdatePseudoClasses();
+                row.ApplyState();
                 EnsureRowDetailsVisibility(row, raiseNotification: true, animate: true);
             }
             else
@@ -2011,7 +2011,7 @@ namespace Avalonia.Controls
             DisplayData.ClearElements(recycle);
 
             // Update the AvailableRowRoom since we're displaying 0 rows now
-            AvailableSlotElementRoom = CellsHeight;
+            AvailableSlotElementRoom = CellsEstimatedHeight;
             VisibleSlotCount = 0;
         }
 
@@ -2122,7 +2122,7 @@ namespace Avalonia.Controls
 
             int lastDisplayedScrollingRow = newLastDisplayedScrollingRow;
             int firstDisplayedScrollingRow = -1;
-            double displayHeight = CellsHeight;
+            double displayHeight = CellsEstimatedHeight;
             double deltaY = 0;
             int visibleScrollingRows = 0;
 
@@ -2633,7 +2633,7 @@ namespace Avalonia.Controls
                 }
                 if (isDisplayed)
                 {
-                    UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsHeight);
+                    UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsEstimatedHeight);
                 }
             }
             else
@@ -2692,7 +2692,7 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            UpdateDisplayedRows(newFirstScrollingSlot, CellsHeight);
+                            UpdateDisplayedRows(newFirstScrollingSlot, CellsEstimatedHeight);
                         }
                     }
                 }
@@ -2736,7 +2736,7 @@ namespace Avalonia.Controls
                             NegVerticalOffset = 0;
                             SetVerticalOffset(0);
                             int firstDisplayedRow = GetNextVisibleSlot(-1);
-                            UpdateDisplayedRows(firstDisplayedRow, CellsHeight);
+                            UpdateDisplayedRows(firstDisplayedRow, CellsEstimatedHeight);
                         }
                     }
                 }

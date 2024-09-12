@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -273,6 +274,64 @@ namespace Avalonia.Skia.UnitTests.Media
                     Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
 
                     Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Create_Synthetic_Typeface()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(new EmbeddedFontCollection(FontManager.SystemFontsKey,
+                        new Uri(s_fontUri, UriKind.Absolute)));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic, FontWeight.Bold),
+                        out var glyphTypeface));
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+
+                    Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+
+                    Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
+                }
+            }
+        }
+
+        [Win32Fact("Requires Windows Fonts")]
+        public void Should_Get_GlyphTypeface_By_Localized_FamilyName()
+        {
+            using (UnitTestApplication.Start(
+                       TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("微軟正黑體"), out var glyphTypeface));
+
+                    Assert.Equal("Microsoft JhengHei",glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_FontFeatures()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                     FontManager.Current.AddFontCollection(new InterFontCollection());
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("fonts:Inter#Inter"),
+                        out var glyphTypeface));
+
+                    Assert.Equal("Inter", glyphTypeface.FamilyName);
+
+                    var features = ((IGlyphTypeface2)glyphTypeface).SupportedFeatures;
+
+                    Assert.NotEmpty(features);
                 }
             }
         }

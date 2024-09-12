@@ -78,7 +78,7 @@ namespace Avalonia.Controls
         {
             var currentToolTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);
 
-            if (root == currentToolTip?.VisualRoot)
+            if (root == currentToolTip?.PopupHost?.HostedVisualTreeRoot)
             {
                 // Don't update while the pointer is over a tooltip
                 return;
@@ -221,7 +221,8 @@ namespace Avalonia.Controls
             {
                 ToolTip.SetIsOpen(control, true);
 
-                if (control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
+                // Value can be coerced back to false, need to double check.
+                if (ToolTip.GetIsOpen(control) && control.GetValue(ToolTip.ToolTipProperty) is { } tooltip)
                 {
                     tooltip.Closed += ToolTipClosed;
                     tooltip.PointerExited += ToolTipPointerExited;

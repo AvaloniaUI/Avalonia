@@ -1,6 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
@@ -138,6 +139,36 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         text(VerticalAlignment.Stretch, clip:false),
                         text(VerticalAlignment.Top, clip:false),
                         text(VerticalAlignment.Bottom, clip:false),
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Win32Fact("Has text")]
+        public async Task Should_Draw_Run_With_Background()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 50,
+                Child = new TextBlock
+                {
+                    FontFamily = new FontFamily("Courier New"),
+                    FontSize = 12,
+                    Foreground = Brushes.Black,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    TextWrapping = TextWrapping.NoWrap,
+                    Inlines = new InlineCollection
+                    {
+                        new Run
+                        {
+                            Text = "Neque porro quisquam",
+                            Background = Brushes.Red
+                        }
                     }
                 }
             };

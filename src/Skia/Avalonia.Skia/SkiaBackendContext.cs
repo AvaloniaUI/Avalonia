@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using SkiaSharp;
 
 namespace Avalonia.Skia;
 
@@ -58,6 +59,27 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
 
         throw new NotSupportedException(
             "Don't know how to create a Skia render target from any of provided surfaces");
+    }
+
+    public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling)
+    {
+        using (var gr = (_gpu as ISkiaGpuWithPlatformGraphicsContext)?.TryGetGrContext())
+        {
+            var createInfo = new SurfaceRenderTarget.CreateInfo
+            {
+                Width = pixelSize.Width,
+                Height = pixelSize.Height,
+                Dpi = new Vector(96 * scaling, 96 * scaling),
+                Format = null,
+                DisableTextLcdRendering = false,
+                GrContext = gr?.Value,
+                Gpu = _gpu,
+                DisableManualFbo = true,
+                Session = null
+            };
+
+            return new SurfaceRenderTarget(createInfo);
+        }
     }
 
     public bool IsLost => _gpu?.IsLost ?? false;

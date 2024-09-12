@@ -35,7 +35,7 @@ internal partial class ServerCompositionTarget
     public Rect SnapToDevicePixels(Rect rect) => SnapToDevicePixels(new(rect), Scaling).ToRect();
     public LtrbRect SnapToDevicePixels(LtrbRect rect) => SnapToDevicePixels(rect, Scaling);
         
-    private static LtrbRect SnapToDevicePixels(LtrbRect rect, double scale)
+    public static LtrbRect SnapToDevicePixels(LtrbRect rect, double scale)
     {
         return new LtrbRect(
             Math.Floor(rect.Left * scale) / scale,

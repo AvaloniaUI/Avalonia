@@ -7,6 +7,8 @@ namespace Avalonia.Platform
     {
         IWindowImpl CreateWindow();
 
+        ITopLevelImpl CreateEmbeddableTopLevel();
+        
         IWindowImpl CreateEmbeddableWindow();
 
         ITrayIconImpl? CreateTrayIcon();

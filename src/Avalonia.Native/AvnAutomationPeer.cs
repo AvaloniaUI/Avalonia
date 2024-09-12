@@ -7,6 +7,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Native.Interop;
 
 #nullable enable
@@ -56,6 +57,9 @@ namespace Avalonia.Native
             Node = node;
         }
 
+        public int IsInteropPeer() => (_inner is InteropAutomationPeer).AsComBool();
+        public IntPtr InteropPeer_GetNativeControlHandle() => ((InteropAutomationPeer)_inner).NativeControlHandle.Handle;
+        
         public IAvnAutomationPeer? RootPeer
         {
             get

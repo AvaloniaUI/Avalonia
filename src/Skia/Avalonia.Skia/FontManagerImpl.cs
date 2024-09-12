@@ -55,15 +55,14 @@ namespace Avalonia.Skia
 
             culture ??= CultureInfo.CurrentUICulture;
 
-            t_languageTagBuffer ??= new string[2];
-            t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
-            t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
+            t_languageTagBuffer ??= new string[1];
+            t_languageTagBuffer[0] = culture.Name;
 
             using var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
 
             if (skTypeface != null)
             {
-                fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight, fontStretch);
+                fontKey = new Typeface(skTypeface.FamilyName, (FontStyle)skTypeface.FontStyle.Slant, (FontWeight)skTypeface.FontStyle.Weight, (FontStretch)skTypeface.FontStyle.Width);
 
                 return true;
             }

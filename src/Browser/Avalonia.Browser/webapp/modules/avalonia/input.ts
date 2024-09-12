@@ -1,4 +1,5 @@
 import { CaretHelper } from "./caretHelper";
+import { JsExports } from "./jsExports";
 
 enum RawInputModifiers {
     None = 0,
@@ -54,7 +55,7 @@ export class InputHelper {
         this.clipboardState = ClipboardState.Ready;
     }
 
-    public static async readClipboardText(): Promise<string> {
+    public static async readClipboardText(globalThis: Window): Promise<string> {
         if (globalThis.navigator.clipboard.readText) {
             return await globalThis.navigator.clipboard.readText();
         } else {
@@ -72,23 +73,38 @@ export class InputHelper {
         }
     }
 
-    public static subscribeKeyEvents(
-        element: HTMLInputElement,
-        keyDownCallback: (code: string, key: string, modifiers: string) => boolean,
-        keyUpCallback: (code: string, key: string, modifiers: string) => boolean) {
+    public static async writeClipboardText(globalThis: Window, text: string): Promise<void> {
+        return await globalThis.navigator.clipboard.writeText(text);
+    }
+
+    public static subscribeInputEvents(element: HTMLInputElement, topLevelId: number) {
+        const keySub = this.subscribeKeyEvents(element, topLevelId);
+        const pointerSub = this.subscribePointerEvents(element, topLevelId);
+        const textSub = this.subscribeTextEvents(element, topLevelId);
+        const dndSub = this.subscribeDropEvents(element, topLevelId);
+        const paneSub = this.subscribeKeyboardGeometryChange(element, topLevelId);
+
+        return () => {
+            keySub();
+            pointerSub();
+            textSub();
+            dndSub();
+            paneSub();
+        };
+    }
+
+    public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
         const keyDownHandler = (args: KeyboardEvent) => {
-            if (keyDownCallback(args.code, args.key, this.getModifiers(args))) {
-                if (this.clipboardState !== ClipboardState.Pending) {
-                    args.preventDefault();
-                }
+            JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args));
+            if (this.clipboardState !== ClipboardState.Pending) {
+                args.preventDefault();
             }
         };
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
-            if (keyUpCallback(args.code, args.key, this.getModifiers(args))) {
-                args.preventDefault();
-            }
+            JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args));
+            args.preventDefault();
             if (this.rejectClipboard) {
                 this.rejectClipboard();
             }
@@ -104,14 +120,9 @@ export class InputHelper {
 
     public static subscribeTextEvents(
         element: HTMLInputElement,
-        beforeInputCallback: (args: InputEvent, start: number, end: number) => boolean,
-        compositionStartCallback: (args: CompositionEvent) => boolean,
-        compositionUpdateCallback: (args: CompositionEvent) => boolean,
-        compositionEndCallback: (args: CompositionEvent) => boolean) {
+        topLevelId: number) {
         const compositionStartHandler = (args: CompositionEvent) => {
-            if (compositionStartCallback(args)) {
-                args.preventDefault();
-            }
+            JsExports.InputHelper.OnCompositionStart(topLevelId);
         };
         element.addEventListener("compositionstart", compositionStartHandler);
 
@@ -128,23 +139,19 @@ export class InputHelper {
                 start = 2;
                 end = start + 2;
             }
-            if (beforeInputCallback(args, start, end)) {
-                args.preventDefault();
-            }
+
+            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
         };
         element.addEventListener("beforeinput", beforeInputHandler);
 
         const compositionUpdateHandler = (args: CompositionEvent) => {
-            if (compositionUpdateCallback(args)) {
-                args.preventDefault();
-            }
+            JsExports.InputHelper.OnCompositionUpdate(topLevelId, args.data);
         };
         element.addEventListener("compositionupdate", compositionUpdateHandler);
 
         const compositionEndHandler = (args: CompositionEvent) => {
-            if (compositionEndCallback(args)) {
-                args.preventDefault();
-            }
+            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.data);
+            args.preventDefault();
         };
         element.addEventListener("compositionend", compositionEndHandler);
 
@@ -157,34 +164,38 @@ export class InputHelper {
 
     public static subscribePointerEvents(
         element: HTMLInputElement,
-        pointerMoveCallback: (args: PointerEvent) => boolean,
-        pointerDownCallback: (args: PointerEvent) => boolean,
-        pointerUpCallback: (args: PointerEvent) => boolean,
-        pointerCancelCallback: (args: PointerEvent) => boolean,
-        wheelCallback: (args: WheelEvent) => boolean
+        topLevelId: number
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
-            pointerMoveCallback(args);
+            JsExports.InputHelper.OnPointerMove(
+                topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
+                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args), args);
             args.preventDefault();
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-            pointerDownCallback(args);
+            JsExports.InputHelper.OnPointerDown(
+                topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
+                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
             args.preventDefault();
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-            pointerUpCallback(args);
+            JsExports.InputHelper.OnPointerUp(
+                topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
+                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
             args.preventDefault();
         };
 
         const pointerCancelHandler = (args: PointerEvent) => {
-            pointerCancelCallback(args);
-            args.preventDefault();
+            JsExports.InputHelper.OnPointerCancel(
+                topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
+                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
         };
 
         const wheelHandler = (args: WheelEvent) => {
-            wheelCallback(args);
+            JsExports.InputHelper.OnWheel(
+                topLevelId, args.offsetX, args.offsetY, args.deltaX, args.deltaY, this.getModifiers(args));
             args.preventDefault();
         };
 
@@ -203,72 +214,59 @@ export class InputHelper {
         };
     }
 
-    public static subscribeInputEvents(
-        element: HTMLInputElement,
-        inputCallback: (value: string) => boolean
-    ) {
-        const inputHandler = (args: Event) => {
-            if (inputCallback((args as any).value)) {
-                args.preventDefault();
-            }
-        };
-        element.addEventListener("input", inputHandler);
-
-        return () => {
-            element.removeEventListener("input", inputHandler);
-        };
-    }
-
     public static subscribeDropEvents(
         element: HTMLInputElement,
-        dragEvent: (args: any) => boolean
+        topLevelId: number
     ) {
-        const dragHandler = (args: Event) => {
-            if (dragEvent(args as any)) {
-                args.preventDefault();
-            }
+        const handler = (args: DragEvent) => {
+            const dataObject = args.dataTransfer;
+            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, this.getModifiers(args), dataObject?.effectAllowed, dataObject);
         };
-        element.addEventListener("dragover", dragHandler);
-        element.addEventListener("dragenter", dragHandler);
-        element.addEventListener("dragleave", dragHandler);
-        element.addEventListener("drop", dragHandler);
+        const overAndDropHandler = (args: DragEvent) => {
+            args.preventDefault();
+            handler(args);
+        };
+        element.addEventListener("dragover", overAndDropHandler);
+        element.addEventListener("dragenter", handler);
+        element.addEventListener("dragleave", handler);
+        element.addEventListener("drop", overAndDropHandler);
 
         return () => {
-            element.removeEventListener("dragover", dragHandler);
-            element.removeEventListener("dragenter", dragHandler);
-            element.removeEventListener("dragleave", dragHandler);
-            element.removeEventListener("drop", dragHandler);
+            element.removeEventListener("dragover", overAndDropHandler);
+            element.removeEventListener("dragenter", handler);
+            element.removeEventListener("dragleave", handler);
+            element.removeEventListener("drop", overAndDropHandler);
         };
     }
 
-    public static getCoalescedEvents(pointerEvent: PointerEvent): PointerEvent[] {
-        return pointerEvent.getCoalescedEvents();
+    public static getCoalescedEvents(pointerEvent: PointerEvent): number[] {
+        return pointerEvent.getCoalescedEvents()
+            .flatMap(e => [e.offsetX, e.offsetY, e.pressure, e.tiltX, e.tiltY, e.twist]);
     }
 
     public static subscribeKeyboardGeometryChange(
         element: HTMLInputElement,
-        handler: (args: any) => boolean) {
+        topLevelId: number) {
         if ("virtualKeyboard" in navigator) {
             // (navigator as any).virtualKeyboard.overlaysContent = true;
-            (navigator as any).virtualKeyboard.addEventListener("geometrychange", (event: any) => {
+            const listener = (event: any) => {
                 const elementRect = element.getBoundingClientRect();
                 const keyboardRect = event.target.boundingRect as DOMRect;
-                handler({
-                    x: keyboardRect.x - elementRect.x,
-                    y: keyboardRect.y - elementRect.y,
-                    width: keyboardRect.width,
-                    height: keyboardRect.height
-                });
-            });
-        }
-    }
 
-    public static subscribeVisibilityChange(
-        handler: (state: boolean) => void): boolean {
-        document.addEventListener("visibilitychange", () => {
-            handler(document.visibilityState === "visible");
-        });
-        return document.visibilityState === "visible";
+                JsExports.InputHelper.OnKeyboardGeometryChange(
+                    topLevelId,
+                    keyboardRect.x - elementRect.x,
+                    keyboardRect.y - elementRect.y,
+                    keyboardRect.width,
+                    keyboardRect.height);
+            };
+            (navigator as any).virtualKeyboard.addEventListener("geometrychange", listener);
+            return () => {
+                (navigator as any).virtualKeyboard.removeEventListener("geometrychange", listener);
+            };
+        }
+
+        return () => {};
     }
 
     public static clearInput(inputElement: HTMLInputElement) {
@@ -316,7 +314,7 @@ export class InputHelper {
         inputElement.style.width = `${inputElement.scrollWidth}px`;
     }
 
-    private static getModifiers(args: KeyboardEvent): string {
+    private static getModifiers(args: KeyboardEvent | PointerEvent | WheelEvent | DragEvent): number {
         let modifiers = RawInputModifiers.None;
 
         if (args.ctrlKey) { modifiers |= RawInputModifiers.Control; }
@@ -324,7 +322,17 @@ export class InputHelper {
         if (args.shiftKey) { modifiers |= RawInputModifiers.Shift; }
         if (args.metaKey) { modifiers |= RawInputModifiers.Meta; }
 
-        return modifiers.toString();
+        const buttons = (args as PointerEvent).buttons;
+        if (buttons) {
+            if (buttons & 1) { modifiers |= RawInputModifiers.LeftMouseButton; }
+            if (buttons & 2) { modifiers |= (args.type === "pen" ? RawInputModifiers.PenBarrelButton : RawInputModifiers.RightMouseButton); }
+            if (buttons & 4) { modifiers |= RawInputModifiers.MiddleMouseButton; }
+            if (buttons & 8) { modifiers |= RawInputModifiers.XButton1MouseButton; }
+            if (buttons & 16) { modifiers |= RawInputModifiers.XButton2MouseButton; }
+            if (buttons & 32) { modifiers |= RawInputModifiers.PenEraser; }
+        }
+
+        return modifiers;
     }
 
     public static setPointerCapture(containerElement: HTMLInputElement, pointerId: number): void {

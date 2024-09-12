@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
 using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -19,6 +16,8 @@ namespace Avalonia.Win32
 {
     internal partial class WindowImpl
     {
+        private bool _killFocusRequested;
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We do .NET COM interop availability checks")]
@@ -128,6 +127,7 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_DPICHANGED:
+                    if (!_ignoreDpiChanges)
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
@@ -149,6 +149,7 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+                    break;
 
                 case WindowsMessage.WM_GETICON:
                     if (_iconImpl == null)
@@ -610,12 +611,7 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SHOWWINDOW:
-                    _shown = wParam != default;
-
-                    if (_isClientAreaExtended)
-                    {
-                        ExtendClientArea();
-                    }
+                    OnShowHideMessage(wParam != default);
                     break;
 
                 case WindowsMessage.WM_SIZE:
@@ -644,6 +640,8 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
+                        if (IsWindowVisible(_hwnd) && !_shown)
+                            _shown = true;
 
                         if (stateChanged)
                         {
@@ -653,14 +651,25 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
+                            if (windowState == WindowState.Maximized)
+                            {
+                                MaximizeWithoutCoveringTaskbar();
+                            }
+
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
                             {
-                                UpdateExtendMargins();
+                                ExtendClientArea();
 
                                 ExtendClientAreaToDecorationsChanged?.Invoke(true);
                             }
+                        }
+                        else if (windowState == WindowState.Maximized && _isClientAreaExtended)
+                        {
+                            ExtendClientArea();
+
+                            ExtendClientAreaToDecorationsChanged?.Invoke(true);
                         }
 
                         return IntPtr.Zero;
@@ -672,8 +681,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOVE:
                     {
-                        PositionChanged?.Invoke(new PixelPoint((short)(ToInt32(lParam) & 0xffff),
-                            (short)(ToInt32(lParam) >> 16)));
+                        PositionChanged?.Invoke(Position);
                         return IntPtr.Zero;
                     }
 
@@ -713,12 +721,20 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DISPLAYCHANGE:
                     {
-                        (Screen as ScreenImpl)?.InvalidateScreensCache();
+                        Screen?.OnChanged();
                         return IntPtr.Zero;
                     }
 
                 case WindowsMessage.WM_KILLFOCUS:
-                    LostFocus?.Invoke();
+                    if (Imm32InputMethod.Current.IsComposing)
+                    {
+                        _killFocusRequested = true;
+                    }
+                    else
+                    {
+                        LostFocus?.Invoke();
+                    }
+                   
                     break;
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
@@ -763,6 +779,13 @@ namespace Avalonia.Win32
                     {
                         Imm32InputMethod.Current.HandleCompositionEnd(timestamp);
 
+                        if (_killFocusRequested)
+                        {
+                            LostFocus?.Invoke();
+
+                            _killFocusRequested = false;
+                        }
+
                         return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
@@ -771,6 +794,17 @@ namespace Avalonia.Win32
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
                         return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
+                    }
+                    break;
+                case WindowsMessage.WM_WINDOWPOSCHANGED:
+                    var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
+                    if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                    {
+                        OnShowHideMessage(true);
+                    }
+                    else if ((winPos.flags & (uint)SetWindowPosFlags.SWP_HIDEWINDOW) != 0)
+                    {
+                        OnShowHideMessage(false);
                     }
                     break;
             }
@@ -817,6 +851,16 @@ namespace Avalonia.Win32
             }
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private void OnShowHideMessage(bool shown)
+        {
+            _shown = shown;
+
+            if (_isClientAreaExtended)
+            {
+                ExtendClientArea();
+            }
         }
 
         private Lazy<IReadOnlyList<RawPointerPoint>?>? CreateLazyIntermediatePoints(POINTER_INFO info)
@@ -911,7 +955,7 @@ namespace Avalonia.Win32
                     {
                         continue;
                     }
-                    // Skip poins older from previous WM_MOUSEMOVE point.
+                    // Skip points older from previous WM_MOUSEMOVE point.
                     if (historyInfo.time < prevMovePoint.time ||
                         (historyInfo.time == prevMovePoint.time &&
                             historyInfo.x == prevMovePoint.x &&

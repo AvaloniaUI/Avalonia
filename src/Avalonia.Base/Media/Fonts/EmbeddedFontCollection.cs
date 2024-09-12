@@ -45,30 +45,22 @@ namespace Avalonia.Media.Fonts
 
                 if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                 {
-                    if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
-                    {
-                        glyphTypefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
-
-                        if (_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, glyphTypefaces))
-                        {
-                            _fontFamilies.Add(new FontFamily(_key, glyphTypeface.FamilyName));
-                        }
-                    }
-
-                    var key = new FontCollectionKey(
-                           glyphTypeface.Style,
-                           glyphTypeface.Weight,
-                           glyphTypeface.Stretch);
-
-                    glyphTypefaces.TryAdd(key, glyphTypeface);
+                    AddGlyphTypeface(glyphTypeface);
                 }
             }
         }
 
-
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
+            var typeface = GetImplicitTypeface(new Typeface(familyName, style, weight, stretch), out familyName);
+
+            style = typeface.Style;
+
+            weight = typeface.Weight;
+
+            stretch = typeface.Stretch;
+
             var key = new FontCollectionKey(style, weight, stretch);
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
@@ -89,7 +81,7 @@ namespace Avalonia.Media.Fonts
                             fontSimulations |= FontSimulations.Oblique;
                         }
 
-                        if ((int)weight >= 600 && glyphTypeface2.Weight != weight)
+                        if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
                         {
                             fontSimulations |= FontSimulations.Bold;
                         }
@@ -113,9 +105,6 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
-            //Replace known typographic names
-            familyName = NormalizeFamilyName(familyName);
-
             //Try to find a partially matching font
             for (var i = 0; i < Count; i++)
             {
@@ -137,5 +126,43 @@ namespace Avalonia.Media.Fonts
         }
 
         public override IEnumerator<FontFamily> GetEnumerator() => _fontFamilies.GetEnumerator();
+
+        private void AddGlyphTypeface(IGlyphTypeface glyphTypeface)
+        {
+            if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+            {
+                //Add the TypographicFamilyName to the cache
+                if (!string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
+                {
+                    AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, glyphTypeface);
+                }
+
+                foreach (var kvp in glyphTypeface2.FamilyNames)
+                {
+                    AddGlyphTypefaceByFamilyName(kvp.Value, glyphTypeface);
+                }
+            }
+            else
+            {
+                AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
+            }
+
+            return;
+
+            void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+            {
+                var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
+                    x =>
+                    {
+                        _fontFamilies.Add(new FontFamily(_key, familyName));
+
+                        return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                    });
+
+                typefaces.TryAdd(
+                    new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch),
+                    glyphTypeface);
+            }
+        }
     }
 }

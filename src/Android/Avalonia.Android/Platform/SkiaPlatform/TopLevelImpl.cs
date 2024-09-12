@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
@@ -45,6 +44,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidInsetsManager? _insetsManager;
         private readonly ClipboardImpl _clipboard;
         private readonly AndroidLauncher? _launcher;
+        private readonly AndroidScreens? _screens;
         private ViewImpl _view;
         private WindowTransparencyLevel _transparencyLevel;
 
@@ -62,6 +62,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
             _clipboard = new ClipboardImpl(avaloniaView.Context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
+            _screens = new AndroidScreens(avaloniaView.Context);
 
             RenderScaling = _view.Scaling;
 
@@ -100,6 +101,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         internal InvalidationAwareSurfaceView InternalView => _view;
 
+        public double DesktopScaling => RenderScaling;
         public IPlatformHandle Handle => _view;
 
         public IEnumerable<object> Surfaces { get; }
@@ -399,6 +401,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _launcher;
             }
 
+            if (featureType == typeof(IScreenImpl))
+            {
+                return _screens;
+            }
+            
             return null;
         }
 
@@ -435,275 +442,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                 Input(args);
             }
-        }
-    }
-
-    internal class EditableWrapper : SpannableStringBuilder
-    {
-        private readonly AvaloniaInputConnection _inputConnection;
-
-        public EditableWrapper(AvaloniaInputConnection inputConnection)
-        {
-            _inputConnection = inputConnection;
-        }
-
-        public TextSelection CurrentSelection => new TextSelection(Selection.GetSelectionStart(this), Selection.GetSelectionEnd(this));
-        public TextSelection CurrentComposition => new TextSelection(BaseInputConnection.GetComposingSpanStart(this), BaseInputConnection.GetComposingSpanEnd(this));
-
-        public bool IgnoreChange { get; set; }
-
-        public override IEditable? Replace(int start, int end, ICharSequence? tb)
-        {
-            if (!IgnoreChange && start != end)
-            {
-                SelectSurroundingTextForDeletion(start, end);
-            }
-
-            return base.Replace(start, end, tb);
-        }
-
-        public override IEditable? Replace(int start, int end, ICharSequence? tb, int tbstart, int tbend)
-        {
-            if (!IgnoreChange && start != end)
-            {
-                SelectSurroundingTextForDeletion(start, end);
-            }
-
-            return base.Replace(start, end, tb, tbstart, tbend);
-        }
-
-        private void SelectSurroundingTextForDeletion(int start, int end)
-        {
-            _inputConnection.InputMethod.Client!.Selection = new TextSelection(start, end);
-        }
-    }
-
-    internal class AvaloniaInputConnection : BaseInputConnection
-    {
-        private readonly TopLevelImpl _toplevel;
-        private readonly IAndroidInputMethod _inputMethod;
-        private readonly EditableWrapper _editable;
-        private bool _commitInProgress;
-        private int _batchLevel = 0;
-
-        public AvaloniaInputConnection(TopLevelImpl toplevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
-        {
-            _toplevel = toplevel;
-            _inputMethod = inputMethod;
-            _editable = new EditableWrapper(this);
-        }
-
-        public int ExtractedTextToken { get; private set; }
-
-        public override IEditable Editable => _editable;
-
-        public EditableWrapper EditableWrapper => _editable;
-
-        public IAndroidInputMethod InputMethod => _inputMethod;
-
-        public TopLevelImpl Toplevel => _toplevel;
-
-        public bool IsInBatchEdit => _batchLevel > 0;
-
-        public override bool SetComposingRegion(int start, int end)
-        {
-            return base.SetComposingRegion(start, end);
-        }
-
-        public override bool SetComposingText(ICharSequence? text, int newCursorPosition)
-        {
-            if (InputMethod.Client is null || text is null)
-            {
-                return false;
-            }
-
-            BeginBatchEdit();
-            _editable.IgnoreChange = true;
-
-            try
-            {
-                if (_editable.CurrentComposition.Start > -1)
-                {
-                    // Select the composing region.
-                    InputMethod.Client.Selection = new TextSelection(_editable.CurrentComposition.Start, _editable.CurrentComposition.End);
-                }
-                var compositionText = text.SubSequence(0, text.Length());
-
-                if (_inputMethod.IsActive && !_commitInProgress)
-                {
-                    if (string.IsNullOrEmpty(compositionText))
-                    {
-                        if (_editable.CurrentComposition.Start > -1)
-                            _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-                    }
-                    else
-                        _toplevel.TextInput(compositionText);
-                }
-                base.SetComposingText(text, newCursorPosition);
-            }
-            finally
-            {
-                _editable.IgnoreChange = false;
-
-                EndBatchEdit();
-            }
-
-            return true;
-        }
-
-        public override bool BeginBatchEdit()
-        {
-            _batchLevel = Interlocked.Increment(ref _batchLevel);
-            return base.BeginBatchEdit();
-        }
-
-        public override bool EndBatchEdit()
-        {
-            _batchLevel = Interlocked.Decrement(ref _batchLevel);
-
-            _inputMethod.OnBatchEditedEnded();
-            return base.EndBatchEdit();
-        }
-
-        public override bool CommitText(ICharSequence? text, int newCursorPosition)
-        {
-            if (InputMethod.Client is null || text is null)
-            {
-                return false;
-            }
-
-            BeginBatchEdit();
-            _commitInProgress = true;
-
-            var composingRegion = _editable.CurrentComposition;
-
-            var ret = base.CommitText(text, newCursorPosition);
-
-            if(composingRegion.Start != -1)
-            {
-                InputMethod.Client.Selection = composingRegion;
-            }
-
-            var committedText = text.SubSequence(0, text.Length());
-
-            if (_inputMethod.IsActive)
-                if (string.IsNullOrEmpty(committedText))
-                    _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-                else
-                    _toplevel.TextInput(committedText);
-
-            _commitInProgress = false;
-            EndBatchEdit();
-
-            return true;
-        }
-
-        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
-        {
-            if (InputMethod.IsActive)
-            {
-                EditableWrapper.IgnoreChange = true;
-            }
-
-            if (InputMethod.IsActive)
-            {
-                var selection = _editable.CurrentSelection;
-
-                InputMethod.Client.Selection = new TextSelection(selection.Start - beforeLength, selection.End + afterLength);
-
-                InputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-
-                EditableWrapper.IgnoreChange = true;
-            }
-
-            return true;
-        }
-
-        public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)
-        {
-            switch (actionCode)
-            {
-                case ImeAction.Done:
-                    {
-                        _inputMethod.IMM.HideSoftInputFromWindow(_inputMethod.View.WindowToken, HideSoftInputFlags.ImplicitOnly);
-                        break;
-                    }
-                case ImeAction.Next:
-                    {
-                        FocusManager.GetFocusManager(_toplevel.InputRoot)?
-                            .TryMoveFocus(NavigationDirection.Next);
-                        break;
-                    }
-            }
-
-            return base.PerformEditorAction(actionCode);
-        }
-
-        public override ExtractedText? GetExtractedText(ExtractedTextRequest? request, [GeneratedEnum] GetTextFlags flags)
-        {
-            if (request == null)
-                return null;
-
-            ExtractedTextToken = request.Token;
-
-            var editable = Editable;
-
-            if (editable == null)
-            {
-                return null;
-            }
-
-            if (!_inputMethod.IsActive)
-            {
-                return null;
-            }
-
-            var selection = _editable.CurrentSelection;
-
-            ExtractedText extract = new ExtractedText
-            {
-                Flags = 0,
-                PartialStartOffset = -1,
-                PartialEndOffset = -1,
-                SelectionStart = selection.Start,
-                SelectionEnd = selection.End,
-                StartOffset = 0
-            };
-
-            if ((request.Flags & GetTextFlags.WithStyles) != 0)
-            {
-                extract.Text = new SpannableString(editable);
-            }
-            else
-            {
-                extract.Text = editable;
-            }
-
-            return extract;
-        }
-
-        public override bool PerformContextMenuAction(int id)
-        {
-            if (InputMethod.Client is not { } client) return false;
-
-            switch (id)
-            {
-                case global::Android.Resource.Id.SelectAll:
-                    client.ExecuteContextMenuAction(ContextMenuAction.SelectAll);
-                    return true;
-                case global::Android.Resource.Id.Cut:
-                    client.ExecuteContextMenuAction(ContextMenuAction.Cut);
-                    return true;
-                case global::Android.Resource.Id.Copy:
-                    client.ExecuteContextMenuAction(ContextMenuAction.Copy);
-                    return true;
-                case global::Android.Resource.Id.Paste:
-                    client.ExecuteContextMenuAction(ContextMenuAction.Paste);
-                    return true;
-                default:
-                    break;
-            }
-            return base.PerformContextMenuAction(id);
         }
     }
 }
