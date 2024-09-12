@@ -480,6 +480,11 @@
     _parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
 }
 
+- (void)setModifiers:(NSEventModifierFlags)modifierFlags
+{
+    _modifierState = [self getModifiers:modifierFlags];
+}
+
 - (void)flagsChanged:(NSEvent *)event
 {
     auto newModifierState = [self getModifiers:[event modifierFlags]];

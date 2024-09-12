@@ -16,7 +16,7 @@ public class XSharedDirectiveTests : XamlTestBase
                                         xmlns:sys="clr-namespace:System;assembly=netstandard"
                                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
                                     <Window.Resources>
-                                        <ColumnDefinitions x:Key="InplicitSharedResource">
+                                        <ColumnDefinitions x:Key="ImplicitSharedResource">
                                             <ColumnDefinition Width="150" />
                                             <ColumnDefinition Width="10" />
                                             <ColumnDefinition Width="Auto" />
