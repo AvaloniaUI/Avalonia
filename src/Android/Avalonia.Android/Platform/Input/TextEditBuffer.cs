@@ -23,7 +23,13 @@ namespace Avalonia.Android.Platform.Input
 
         public TextSelection Selection
         {
-            get => _textInputMethod.Client?.Selection ?? default; set
+            get
+            {
+                var selection = _textInputMethod.Client?.Selection ?? default;
+                return new TextSelection(Math.Min(selection.Start, selection.End), Math.Max(selection.Start, selection.End));
+            }
+
+            set
             {
                 if (_textInputMethod.Client is { } client)
                     client.Selection = value;
@@ -39,7 +45,7 @@ namespace Avalonia.Android.Platform.Input
                     var text = Text;
                     var start = Math.Clamp(v.Start, 0, text.Length);
                     var end = Math.Clamp(v.End, 0, text.Length);
-                    _composition = new TextSelection(start, end);
+                    _composition = new TextSelection(Math.Min(start, end), Math.Max(start, end));
                 }
                 else
                     _composition = null;
@@ -55,7 +61,9 @@ namespace Avalonia.Android.Platform.Input
                     return "";
                 }
 
-                return client.SurroundingText.Substring(Selection.Start, Selection.End - Selection.Start);
+                var selection = Selection;
+
+                return client.SurroundingText.Substring(selection.Start, selection.End - selection.Start);
             }
         }
 
@@ -71,9 +79,9 @@ namespace Avalonia.Android.Platform.Input
                 }
                 else
                 {
-                    var start = Selection.Start;
-                    Replace(start, Selection.End, value ?? "");
-                    Composition = new TextSelection(start, start + (value?.Length ?? 0));
+                    var selection = Selection;
+                    Replace(selection.Start, selection.End, value ?? "");
+                    Composition = new TextSelection(selection.Start, selection.Start + (value?.Length ?? 0));
                 }
             }
         }
