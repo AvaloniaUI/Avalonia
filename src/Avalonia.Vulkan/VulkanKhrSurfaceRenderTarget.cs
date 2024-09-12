@@ -7,7 +7,6 @@ namespace Avalonia.Vulkan;
 
 internal class VulkanKhrRenderTarget : IVulkanRenderTarget
 {
-    private VulkanKhrSurface _khrSurface;
     private readonly IVulkanPlatformGraphicsContext _context;
     private VulkanDisplay _display;
     private VulkanImage? _image;
@@ -18,8 +17,7 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
     public VulkanKhrRenderTarget(IVulkanKhrSurfacePlatformSurface surface, IVulkanPlatformGraphicsContext context)
     {
         _platformSurface = surface;
-        _khrSurface = new(context, surface);
-        _display = VulkanDisplay.CreateDisplay(context, _khrSurface);
+        _display = VulkanDisplay.CreateDisplay(context, surface);
         _context = context;
         IsRgba = _display.SurfaceFormat.format >= VkFormat.VK_FORMAT_R8G8B8A8_UNORM &&
                  _display.SurfaceFormat.format <= VkFormat.VK_FORMAT_R8G8B8A8_SRGB;
@@ -46,8 +44,6 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
         DestroyImage();
         _display?.Dispose();
         _display = null!;
-        _khrSurface?.Dispose();
-        _khrSurface = null!;
     }
 
 

@@ -31,6 +31,7 @@ namespace Avalonia.Skia
     public interface ISkiaGpuWithPlatformGraphicsContext : ISkiaGpu
     {
         IPlatformGraphicsContext? PlatformGraphicsContext { get; }
+        IScopedResource<GRContext>? TryGetGrContext();
     }
     
     public interface ISkiaSurface : IDisposable

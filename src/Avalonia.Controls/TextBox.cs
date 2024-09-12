@@ -411,6 +411,8 @@ namespace Avalonia.Controls
             var newValue = e.GetNewValue<int>();
             SetCurrentValue(SelectionStartProperty, newValue);
             SetCurrentValue(SelectionEndProperty, newValue);
+
+           _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
         }
 
         /// <summary>
@@ -1468,7 +1470,7 @@ namespace Avalonia.Controls
 
                                     SetCurrentValue(CaretIndexProperty, start);
 
-                                    _presenter.MoveCaretToTextPosition(start, true);
+                                    _presenter.MoveCaretToTextPosition(start);
                                 }
                             }
 

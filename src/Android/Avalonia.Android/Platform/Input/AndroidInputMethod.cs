@@ -82,21 +82,7 @@ namespace Avalonia.Android.Platform.Input
 
                 _imm.ShowSoftInput(_host, ShowFlags.Implicit);
 
-                var selection = Client.Selection;
-
-                _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
-
-                var surroundingText = _client.SurroundingText ?? "";
-
-                var extractedText = new ExtractedText
-                {
-                    Text = new Java.Lang.String(surroundingText),
-                    SelectionStart = selection.Start,
-                    SelectionEnd = selection.End,
-                    PartialEndOffset = surroundingText.Length
-                };
-
-                _imm.UpdateExtractedText(_host, _inputConnection?.ExtractedTextToken ?? 0, extractedText);
+                _inputConnection?.UpdateState();
 
                 _client.SurroundingTextChanged += _client_SurroundingTextChanged;
                 _client.SelectionChanged += _client_SelectionChanged;
@@ -150,27 +136,7 @@ namespace Avalonia.Android.Platform.Input
 
         private void OnSurroundingTextChanged()
         {
-            if (_client is null || _inputConnection is null || _inputConnection.IsInUpdate)
-            {
-                return;
-            }
-
-            if (_inputConnection.IsInMonitorMode)
-            {
-                var surroundingText = _client.SurroundingText ?? "";
-
-                var selection = _client.Selection;
-
-                var extractedText = new ExtractedText
-                {
-                    Text = new Java.Lang.String(surroundingText),
-                    SelectionStart = selection.Start,
-                    SelectionEnd = selection.End,
-                    PartialEndOffset = surroundingText.Length
-                };
-
-                _imm.UpdateExtractedText(_host, _inputConnection.ExtractedTextToken, extractedText);
-            }
+            _inputConnection?.UpdateState();
         }
 
         public void SetCursorRect(Rect rect)

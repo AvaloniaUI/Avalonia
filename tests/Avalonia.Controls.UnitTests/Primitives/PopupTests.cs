@@ -1206,6 +1206,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Custom_Placement_Callback_Is_Executed()
+        {
+            using (CreateServices())
+            {
+                var callbackExecuted = 0;
+                var popupContent = new Border { Width = 100, Height = 100 };
+                var popup = new Popup
+                {
+                    Child = popupContent,
+                    Placement = PlacementMode.Custom,
+                    HorizontalOffset = 42,
+                    VerticalOffset = 21
+                };
+                var popupParent = new Border { Child = popup };
+                var root = PreparedWindow(popupParent);
+
+                popup.CustomPopupPlacementCallback = (parameters) =>
+                {
+                    Assert.Equal(popupContent.Width, parameters.PopupSize.Width);
+                    Assert.Equal(popupContent.Height, parameters.PopupSize.Height);
+
+                    Assert.Equal(root.Width, parameters.AnchorRectangle.Width);
+                    Assert.Equal(root.Height, parameters.AnchorRectangle.Height);
+
+                    Assert.Equal(popup.HorizontalOffset, parameters.Offset.X);
+                    Assert.Equal(popup.VerticalOffset, parameters.Offset.Y);
+
+                    callbackExecuted++;
+
+                    parameters.Anchor = PopupAnchor.Top;
+                    parameters.Gravity = PopupGravity.Bottom;
+                };
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                popup.Open();
+                root.LayoutManager.ExecuteLayoutPass();
+
+                // Ideally, callback should be executed only once for this test.
+                // But currently PlacementTargetLayoutUpdated triggers second update either way.
+                Assert.Equal(2, callbackExecuted);
+            }
+        }
+
 
         private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
         {
