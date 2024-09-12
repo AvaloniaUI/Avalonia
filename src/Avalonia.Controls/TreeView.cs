@@ -52,18 +52,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
             ListBox.SelectionModeProperty.AddOwner<TreeView>();
-        
-        /// <summary>
-        /// Defines the <see cref="Expanded"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
-            RoutedEvent.Register<TreeView, RoutedEventArgs>(nameof(Expanded), RoutingStrategies.Bubble);
-        
-        /// <summary>
-        /// Defines the <see cref="Collapsed"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> CollapsedEvent =
-            RoutedEvent.Register<TreeView, RoutedEventArgs>(nameof(Collapsed), RoutingStrategies.Bubble);
 
         private static readonly IList Empty = Array.Empty<object>();
         private object? _selectedItem;
@@ -86,24 +74,6 @@ namespace Avalonia.Controls
         {
             add => AddHandler(SelectingItemsControl.SelectionChangedEvent, value);
             remove => RemoveHandler(SelectingItemsControl.SelectionChangedEvent, value);
-        }
-        
-        /// <summary>
-        /// Occurs after the <see cref="Expander"/> has opened to display both its header and content.
-        /// </summary>
-        public event EventHandler<RoutedEventArgs>? Expanded
-        {
-            add => AddHandler(ExpandedEvent, value);
-            remove => RemoveHandler(ExpandedEvent, value);
-        }
-        
-        /// <summary>
-        /// Occurs after the content area has closed and only the header is visible.
-        /// </summary>
-        public event EventHandler<RoutedEventArgs>? Collapsed
-        {
-            add => AddHandler(CollapsedEvent, value);
-            remove => RemoveHandler(CollapsedEvent, value);
         }
 
         /// <summary>
