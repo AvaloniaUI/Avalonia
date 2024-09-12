@@ -50,4 +50,11 @@ internal static partial class DomHelper
         (AvaloniaLocator.Current.GetService<IActivatableLifetime>() as BrowserActivatableLifetime)?.OnVisibilityStateChanged(visibilityState);
         return Task.CompletedTask;
     }
+
+    [JSExport]
+    public static Task ScreensChanged()
+    {
+        (AvaloniaLocator.Current.GetService<IScreenImpl>() as BrowserScreens)?.OnChanged();
+        return Task.CompletedTask;
+    }
 }

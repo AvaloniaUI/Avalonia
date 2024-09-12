@@ -160,7 +160,7 @@
       AnalyzerConfigFiles="@(EditorConfigFiles)"/>
   </Target>
   
-  <Target Name="InjectAvaloniaXamlOutput" DependsOnTargets="PrepareToCompileAvaloniaXaml" AfterTargets="CompileAvaloniaXaml" BeforeTargets="CopyFilesToOutputDirectory;BuiltProjectOutputGroup"
+  <Target Name="InjectAvaloniaXamlOutput" DependsOnTargets="PrepareToCompileAvaloniaXaml" AfterTargets="CompileAvaloniaXaml" BeforeTargets="CopyFilesToOutputDirectory;BuiltProjectOutputGroup;ComputeResolvedFilesToPublishList"
           Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
     <ItemGroup>
       <_AvaloniaXamlCompiledAssembly Include="@(IntermediateAssembly->Metadata('AvaloniaCompileOutput'))"/>

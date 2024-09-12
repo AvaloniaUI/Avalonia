@@ -273,7 +273,6 @@ namespace Avalonia.Controls.Primitives
                 {
                     _textBox.AddHandler(TextBox.TextChangingEvent, TextChanged, handledEventsToo: true);
                     _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
-                    _textBox.AddHandler(LostFocusEvent, TextBoxLostFocus, handledEventsToo: true);
                     _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
                     _textBox.AddHandler(Gestures.HoldingEvent, TextBoxHolding, handledEventsToo: true);
 
@@ -289,7 +288,6 @@ namespace Avalonia.Controls.Primitives
                     _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
                     _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
                     _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
-                    _textBox.RemoveHandler(LostFocusEvent, TextBoxLostFocus);
                     _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
 
                     _textBox.PropertyChanged -= TextBoxPropertyChanged;
@@ -388,11 +386,6 @@ namespace Avalonia.Controls.Primitives
                 MoveHandlesToSelection();
                 EnsureVisible();
             }
-        }
-
-        private void TextBoxLostFocus(object? sender, RoutedEventArgs e)
-        {
-            ShowHandles = false;
         }
 
         private void TextBoxKeyDown(object? sender, KeyEventArgs e)
