@@ -22,7 +22,6 @@ namespace Avalonia.Win32
         {
             // Popups are always shown non-activated.
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
-
         }
 
         protected override bool ShouldTakeFocusOnClick => false;
@@ -150,28 +149,6 @@ namespace Avalonia.Win32
             _dropShadowHint = enabled;
 
             EnableBoxShadow(Handle.Handle, enabled);
-        }
-
-        public void TakeFocus()
-        {
-            var parent = _parent;
-
-            while (parent != null)
-            {
-                if (parent is PopupImpl pi)
-                    parent = pi._parent;
-                else
-                    break;
-            }
-
-            if (parent == null)
-                return;
-
-            var focusOwner = UnmanagedMethods.GetFocus();
-            if (focusOwner != IntPtr.Zero &&
-                UnmanagedMethods.GetAncestor(focusOwner, UnmanagedMethods.GetAncestorFlags.GA_ROOT)
-                == parent.Handle?.Handle)
-                UnmanagedMethods.SetFocus(parent.Handle.Handle);
         }
 
         public IPopupPositioner PopupPositioner { get; }

@@ -316,7 +316,6 @@ namespace Avalonia.Controls
                 {
                     IsLightDismissEnabled = true,
                     OverlayDismissEventPassThrough = true,
-                    TakesFocusFromNativeControl = Popup.GetTakesFocusFromNativeControl(this),
                 };
 
                 _popup.Opened += PopupOpened;
