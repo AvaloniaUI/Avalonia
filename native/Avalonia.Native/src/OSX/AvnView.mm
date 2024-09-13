@@ -297,22 +297,7 @@
                             )
             )
             )
-    {
-        WindowBaseImpl* windowBase = dynamic_cast<WindowBaseImpl*>(_parent.getRaw());
-        
-        if(windowBase != nullptr){
-            WindowBaseImpl* parent = windowBase->Parent;
-            
-            if(parent != nullptr){
-                auto parentWindow = parent->Window;
-                
-                [parentWindow makeFirstResponder:parent->View];
-            }
-        } else{
-            [self becomeFirstResponder];
-        }
-    }
-       
+        [self becomeFirstResponder];
 
     if(_parent != nullptr)
     {
