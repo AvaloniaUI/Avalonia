@@ -20,12 +20,13 @@ namespace Avalonia.Diagnostics.ViewModels
             _valueFrame = valueFrame;
             IsVisible = true;
 
-            Description = (_valueFrame.Type, _valueFrame.Description) switch
+            var source = SourceToString(_valueFrame.Source);
+            Description = (_valueFrame.Type, source) switch
             {
-                (IValueFrameDiagnostic.FrameType.Local, _) => "Local Values " + _valueFrame.Description,
-                (IValueFrameDiagnostic.FrameType.Template, _) => "Template " + _valueFrame.Description,
-                (IValueFrameDiagnostic.FrameType.Theme, _) => "Theme " + _valueFrame.Description,
-                (_, {Length:>0}) => _valueFrame.Description,
+                (IValueFrameDiagnostic.FrameType.Local, _) => "Local Values " + source,
+                (IValueFrameDiagnostic.FrameType.Template, _) => "Template " + source,
+                (IValueFrameDiagnostic.FrameType.Theme, _) => "Theme " + source,
+                (_, {Length:>0}) => source,
                 _ => _valueFrame.Priority.ToString()
             };
 
@@ -112,6 +113,41 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             return false;
+        }
+
+        private string? SourceToString(object? source)
+        {
+            if (source is Style style)
+            {
+                StyleBase? currentStyle = style;
+                var selectors = new Stack<string>();
+
+                while (currentStyle is not null)
+                {
+                    if (currentStyle is Style { Selector: { } selector })
+                    {
+                        selectors.Push(selector.ToString());
+                    }
+                    if (currentStyle is ControlTheme theme)
+                    {
+                        selectors.Push("Theme " + theme.TargetType?.Name);
+                    }
+
+                    currentStyle = currentStyle.Parent as StyleBase;
+                }
+
+                return string.Concat(selectors).Replace("^", "");
+            }
+            else if (source is ControlTheme controlTheme)
+            {
+                return controlTheme.TargetType?.Name;
+            }
+            else if (source is StyledElement styledElement)
+            {
+                return styledElement.StyleKey?.Name;
+            }
+
+            return null;
         }
     }
 }
