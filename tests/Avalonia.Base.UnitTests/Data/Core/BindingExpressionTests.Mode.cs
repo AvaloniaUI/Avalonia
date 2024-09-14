@@ -70,6 +70,31 @@ public partial class BindingExpressionTests
     }
 
     [Fact]
+    public void OneTime_Binding_Waits_For_DataContext_Without_Property_Path()
+    {
+        var target = CreateTarget<string?, string?>(
+            x => x,
+            mode: BindingMode.OneTime);
+
+        target.DataContext = "foo";
+
+        Assert.Equal("foo", target.String);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Waits_For_DataContext_Without_Property_Path_With_StringFormat()
+    {
+        var target = CreateTarget<string?, string?>(
+            x => x,
+            mode: BindingMode.OneTime,
+            stringFormat: "bar: {0}");
+
+        target.DataContext = "foo";
+
+        Assert.Equal("bar: foo", target.String);
+    }
+
+    [Fact]
     public void OneWayToSource_Binding_Updates_Source_When_Target_Changes()
     {
         var data = new ViewModel();
