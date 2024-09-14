@@ -14,7 +14,10 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
+        private const uint ZeroWidthSpace = '\u200b';
+
         private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
+
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var textSpan = text.Span;
@@ -67,6 +70,16 @@ namespace Avalonia.Skia
                     var glyphIndex = (ushort)sourceInfo.Codepoint;
 
                     var glyphCluster = (int)(sourceInfo.Cluster);
+
+                    if (glyphIndex == 0)
+                    {
+                        var codepoint = Codepoint.ReadAt(textSpan, glyphCluster, out _);
+
+                        if (codepoint.GeneralCategory == GeneralCategory.Control)
+                        {
+                            glyphIndex = options.Typeface.GetGlyph(ZeroWidthSpace);
+                        }
+                    }
 
                     var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
