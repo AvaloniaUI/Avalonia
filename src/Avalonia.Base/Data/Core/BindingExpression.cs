@@ -231,6 +231,11 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
 
         if (nodeIndex == _nodes.Count - 1)
         {
+            // If the binding source is a data context without any path and is currently null, treat it as an invalid
+            // value. This allows bindings to DataContext and DataContext.Property to share the same behavior.
+            if (value is null && _nodes[nodeIndex] is DataContextNodeBase)
+                value = AvaloniaProperty.UnsetValue;
+
             // The leaf node has changed. If the binding mode is not OneWayToSource, publish the
             // value to the target.
             if (_mode != BindingMode.OneWayToSource)
