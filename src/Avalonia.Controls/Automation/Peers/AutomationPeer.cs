@@ -255,7 +255,7 @@ namespace Avalonia.Automation.Peers
         protected abstract string GetClassNameCore();
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
-        protected abstract string? GetHelpTextCore();
+        protected virtual string? GetHelpTextCore() => null;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();
