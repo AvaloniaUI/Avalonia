@@ -122,7 +122,7 @@ namespace Avalonia.Automation.Peers
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                result = ToolTip.GetTip(Owner)?.ToString();
+                result = ToolTip.GetTip(Owner) as string;
             }
 
             return result;          
