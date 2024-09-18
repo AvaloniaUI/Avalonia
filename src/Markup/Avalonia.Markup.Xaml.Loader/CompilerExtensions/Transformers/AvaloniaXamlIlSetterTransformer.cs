@@ -80,9 +80,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             var valueProperty = on.Children
                 .OfType<XamlAstXamlPropertyValueNode>()
-                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value" && p.Values.Count == 1 && p.Values[0] is XamlAstTextNode);
-            var textValue = valueProperty?.Values.FirstOrDefault() as XamlAstTextNode
-                            ?? on.Children.OfType<XamlAstTextNode>().FirstOrDefault();
+                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value");
+
+            XamlAstTextNode? textValue = null;
+
+            if (valueProperty is not null)
+            {
+                if (valueProperty.Values.Count == 1)
+                    textValue = valueProperty.Values[0] as XamlAstTextNode;
+            }
+            else
+            {
+                var nonPropertyChildren = on.Children
+                    .Where(child => child is not XamlAstXamlPropertyValueNode)
+                    .ToArray();
+
+                if (nonPropertyChildren.Length == 1)
+                    textValue = nonPropertyChildren[0] as XamlAstTextNode;
+            }
+
             if (textValue is not null
                 && XamlTransformHelpers.TryGetCorrectlyTypedValue(context, textValue,
                     propType, out _))
