@@ -485,6 +485,15 @@
     _modifierState = [self getModifiers:modifierFlags];
 }
 
+- (void)resetPressedMouseButtons
+{
+    _isLeftPressed = false;
+    _isRightPressed = false;
+    _isMiddlePressed = false;
+    _isXButton1Pressed = false;
+    _isXButton2Pressed = false;
+}
+
 - (void)flagsChanged:(NSEvent *)event
 {
     auto newModifierState = [self getModifiers:[event modifierFlags]];
