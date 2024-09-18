@@ -495,7 +495,7 @@ namespace Avalonia
             _visualRoot = e.Root;
             if (_visualParent is null)
             {
-                throw new InvalidOperationException("Visual was attached to the root without being added to the visual parent first.")
+                throw new InvalidOperationException("Visual was attached to the root without being added to the visual parent first.");
             }
 
             if (RenderTransform is IMutableTransform mutableTransform)
