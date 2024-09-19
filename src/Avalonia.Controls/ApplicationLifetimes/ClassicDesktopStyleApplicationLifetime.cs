@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Collections;
@@ -184,7 +183,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
                 // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
                 // owners.
-                foreach (var w in Windows.ToArray())
+                foreach (var w in new List<Window>(_windows))
                 {
                     if (w.Owner is null)
                     {
@@ -192,11 +191,16 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     }
                 }
 
-                if (!force && Windows.Count > 0)
+                if (!force)
                 {
-                    e.Cancel = true;
-                    shutdownCancelled = true;
-                    return false;
+                    if (ShutdownMode == ShutdownMode.OnMainWindowClose ?
+                            MainWindow?.IsVisible == true :
+                            Windows.Count > 0)
+                    {
+                        e.Cancel = true;
+                        shutdownCancelled = true;
+                        return false;
+                    }
                 }
 
                 var args = new ControlledApplicationLifetimeExitEventArgs(exitCode);
