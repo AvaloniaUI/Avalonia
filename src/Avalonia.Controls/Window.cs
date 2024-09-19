@@ -1054,9 +1054,11 @@ namespace Avalonia.Controls
 
         private protected sealed override void HandleClosed()
         {
-            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
+            _shown = false;
 
             base.HandleClosed();
+
+            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             Owner = null;
         }
