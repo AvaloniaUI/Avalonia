@@ -32,8 +32,10 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
             if (Opacity == 0)
                 return;
-            var canvas = (IDrawingContextImplWithEffects)context.Canvas;
-            
+
+            var canvas = context.Canvas;
+            var canvasWithEffects = canvas as IDrawingContextImplWithEffects;
+
             var currentTransformedClip = parentTransformedClip.HasValue
                 ? parentTransformedClip.Value.Intersect(_combinedTransformedClipBounds)
                 : _combinedTransformedClipBounds;
@@ -62,8 +64,9 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (applyRenderOptions)
                 canvas.PushRenderOptions(RenderOptions);
-            if (Effect != null)
-                canvas.PushEffect(Effect);
+           
+            if (canvasWithEffects != null && Effect != null)
+                    canvasWithEffects.PushEffect(Effect);
             
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity, ClipToBounds ? boundsRect : null);
@@ -86,9 +89,10 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopClip();
             if (Opacity != 1)
                 canvas.PopOpacity();
-            
-            if (Effect != null)
-                canvas.PopEffect();
+           
+            if (canvasWithEffects != null && Effect != null)
+                canvasWithEffects.PopEffect();
+
             if(applyRenderOptions)
                 canvas.PopRenderOptions();
         }
