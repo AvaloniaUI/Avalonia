@@ -32,7 +32,7 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
             if (Opacity == 0)
                 return;
-            var canvas = context.Canvas;
+            var canvas = (IDrawingContextImplWithEffects)context.Canvas;
             
             var currentTransformedClip = parentTransformedClip.HasValue
                 ? parentTransformedClip.Value.Intersect(_combinedTransformedClipBounds)

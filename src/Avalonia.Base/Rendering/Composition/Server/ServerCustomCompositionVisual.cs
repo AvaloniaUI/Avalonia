@@ -73,7 +73,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
 
     protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
     {
-        ctx.Canvas.AutoFlush = true;
+        //ctx.Canvas.AutoFlush = true;
         using var context = new ImmediateDrawingContext(ctx.Canvas, GlobalTransformMatrix, false);
         try
         {
@@ -85,6 +85,6 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
                 ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnRender)} {{0}}", e);
         }
 
-        ctx.Canvas.AutoFlush = false;
+        //ctx.Canvas.AutoFlush = false;
     }
 }

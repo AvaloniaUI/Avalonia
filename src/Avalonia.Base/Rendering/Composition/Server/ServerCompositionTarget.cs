@@ -213,9 +213,9 @@ namespace Avalonia.Rendering.Composition.Server
                 if (useLayerClip)
                     context.PushLayer(DirtyRects.CombinedRect.ToRectUnscaled());
 
-                using (var proxy = new CompositorDrawingContextProxy(context))
+                //using (var proxy = new CompositorDrawingContextProxy(context))
                 {
-                    var ctx = new ServerVisualRenderContext(proxy, DirtyRects, false);
+                    var ctx = new ServerVisualRenderContext(context, DirtyRects, false);
                     root.Render(ctx, null);
                 }
 
