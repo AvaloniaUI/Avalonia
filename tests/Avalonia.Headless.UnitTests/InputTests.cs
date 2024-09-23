@@ -58,6 +58,19 @@ public class InputTests
 
         Assert.True(buttonClicked);
     }
+    
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
+    public void Change_Window_Position()
+    {
+        var newWindowPosition = new PixelPoint(100, 150);
+        _window.Position = newWindowPosition;
+        _window.Show();
+        Assert.Equal(_window.Position, newWindowPosition);
+    }
 
 #if NUNIT
     [TearDown]
