@@ -1203,7 +1203,7 @@ namespace Avalonia.Skia
             {
                 //align content
                 var alignmentOffset = TileBrushCalculator.CalculateTranslate(tileBrush.AlignmentX, tileBrush.AlignmentY,
-                    contentBounds, destinationRect, tileBrush.Stretch == Stretch.None ? Vector.One : scale);
+                    sourceRect, destinationRect, tileBrush.Stretch == Stretch.None ? Vector.One : scale);
 
                 brushTransform *= Matrix.CreateTranslation(alignmentOffset);
             }
@@ -1247,6 +1247,12 @@ namespace Avalonia.Skia
             if (tileBrush.TileMode != TileMode.None)
             {
                 paintTransform = paintTransform.PreConcat(transform.ToSKMatrix());
+            }
+            else
+            {
+                paintTransform =
+                    paintTransform.PreConcat(SKMatrix.CreateTranslation((float)destinationRect.Left,
+                        (float)destinationRect.Top));
             }
 
             using (var shader = picture.ToShader(tileX, tileY, paintTransform,
