@@ -106,6 +106,13 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
         _shown = true;
         [Window setCollectionBehavior:collectionBehavior];
+        
+        // Ensure that we call needsDisplay = YES so that AvnView.updateLayer is called after the
+        // window is shown: if the client is pumping messages during the window creation/show
+        // process, it's possible that updateLayer gets called after the window is created but
+        // before it's is shown.
+        [View.layer setNeedsDisplay];
+        
         return S_OK;
     }
 }
