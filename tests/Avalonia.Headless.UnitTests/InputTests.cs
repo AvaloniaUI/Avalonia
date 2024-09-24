@@ -69,7 +69,7 @@ public class InputTests
         var newWindowPosition = new PixelPoint(100, 150);
         _window.Position = newWindowPosition;
         _window.Show();
-        Assert.Equal(_window.Position, newWindowPosition);
+        Assert.True(_window.Position == newWindowPosition);
     }
 
 #if NUNIT
