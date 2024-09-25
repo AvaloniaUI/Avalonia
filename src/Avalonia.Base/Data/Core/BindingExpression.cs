@@ -507,8 +507,10 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         Debug.Assert(_mode is BindingMode.TwoWay or BindingMode.OneWayToSource);
         Debug.Assert(UpdateSourceTrigger is UpdateSourceTrigger.PropertyChanged);
 
-        if (e.Property == TargetProperty)
-            WriteValueToSource(e.NewValue);
+        // The value must be read from the target object instead of using the value from the event
+        // because the value may have changed again between the time the event was raised and now.
+        if (e.Property == TargetProperty && TryGetTarget(out var target))
+            WriteValueToSource(target.GetValue(TargetProperty));
     }
 
     private object? ConvertFallback(object? fallback, string fallbackName)
