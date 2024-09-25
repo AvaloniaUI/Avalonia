@@ -31,6 +31,17 @@ namespace Avalonia.Data
         }
 
         /// <summary>
+        /// Gets or sets the amount of time, in milliseconds, to wait before updating the binding 
+        /// source after the value on the target changes.
+        /// </summary>
+        /// <remarks>
+        /// There is no delay when the source is updated via <see cref="UpdateSourceTrigger.LostFocus"/> 
+        /// or <see cref="BindingExpressionBase.UpdateSource"/>. Nor is there a delay when 
+        /// <see cref="BindingMode.OneWayToSource"/> is active and a new source object is provided.
+        /// </remarks>
+        public int Delay { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
         public IValueConverter? Converter { get; set; }
