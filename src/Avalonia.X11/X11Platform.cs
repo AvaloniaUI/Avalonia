@@ -370,6 +370,8 @@ namespace Avalonia
         /// </summary>
         public bool? UseRetainedFramebuffer { get; set; }
 
+        public bool? UseXShmFramebuffer { get; set; }
+
         public X11PlatformOptions()
         {
             try

@@ -26,6 +26,7 @@ using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
 using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.X11.XShmExtensions;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -195,6 +196,13 @@ namespace Avalonia.X11
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
+
+            if (_platform.Options.UseXShmFramebuffer is true)
+            {
+                var x11ShmFramebufferSurface = new X11ShmFramebufferSurface(this, _x11.DeferredDisplay, _handle, _renderHandle);
+                _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
+                surfaces.Insert(0, x11ShmFramebufferSurface);
+            }
             
             if (egl != null)
                 surfaces.Insert(0,
@@ -611,6 +619,12 @@ namespace Avalonia.X11
                     return;
                 HandleKeyEvent(ref ev);
             }
+            else if (ev.type == XEventName.XShmCompletionEvent)
+            {
+                // Because the XShmCompletionEvent only occurs when the XShmPutImage is called, and the XShmPutImage only be called when use X11ShmFramebufferSurface, so we can safely assume that the _x11ShmFramebufferSurface is not null.
+                Debug.Assert(_x11ShmFramebufferSurface!=null, "If application can receive the XShmCompletionEvent, that the _x11ShmFramebufferSurface must not be null.");
+                _x11ShmFramebufferSurface?.OnXShmCompletionEvent(ref ev);
+            }
         }
 
         private Thickness? GetFrameExtents()
@@ -798,6 +812,7 @@ namespace Avalonia.X11
             new PixelSize(MaxWindowDimension, MaxWindowDimension));
         
         private double _scaling = 1;
+        private X11ShmFramebufferSurface? _x11ShmFramebufferSurface;
 
         private void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {
