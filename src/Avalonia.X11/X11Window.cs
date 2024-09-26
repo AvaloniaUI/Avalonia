@@ -219,7 +219,7 @@ namespace Avalonia.X11
                         return;
                     }
 
-                    var x11ShmFramebufferSurface = new X11ShmFramebufferSurface(this, _x11.DeferredDisplay, _handle, _renderHandle);
+                    var x11ShmFramebufferSurface = new X11ShmFramebufferSurface(this, _x11.DeferredDisplay, _handle, _renderHandle,visual,depth);
                     _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
                     surfaces.Insert(0, x11ShmFramebufferSurface);
                 }

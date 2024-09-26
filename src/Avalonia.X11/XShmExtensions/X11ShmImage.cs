@@ -14,12 +14,14 @@ namespace Avalonia.X11.XShmExtensions;
 
 class X11ShmFramebufferContext
 {
-    public X11ShmFramebufferContext(X11Window x11Window, IntPtr display, IntPtr windowXId, IntPtr renderHandle)
+    public X11ShmFramebufferContext(X11Window x11Window, IntPtr display, IntPtr windowXId, IntPtr renderHandle, IntPtr visual, int depth)
     {
         X11Window = x11Window;
         Display = display;
         WindowXId = windowXId;
         RenderHandle = renderHandle;
+        Visual = visual;
+        Depth = depth;
 
         X11ShmImageManager = new X11ShmImageManager(this);
     }
@@ -31,15 +33,17 @@ class X11ShmFramebufferContext
     public IntPtr WindowXId { get; }
 
     public IntPtr RenderHandle { get; }
+    public IntPtr Visual { get; }
+    public int Depth { get; }
 
     public X11ShmImageManager X11ShmImageManager { get; }
 }
 
 internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
 {
-    public X11ShmFramebufferSurface(X11Window x11Window, IntPtr display, IntPtr windowHandle, IntPtr renderHandle)
+    public X11ShmFramebufferSurface(X11Window x11Window, IntPtr display, IntPtr windowHandle, IntPtr renderHandle, IntPtr visual, int depth)
     {
-        _context = new X11ShmFramebufferContext(x11Window, display, windowHandle, renderHandle);
+        _context = new X11ShmFramebufferContext(x11Window, display, windowHandle, renderHandle, visual, depth);
     }
 
     private readonly X11ShmFramebufferContext _context;
@@ -58,7 +62,7 @@ internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
     }
 }
 
-internal class X11ShmImage:IDisposable
+internal class X11ShmImage : IDisposable
 {
     /// <summary>
     /// Returns false if we haven't got a completion event since the last Present, can call ProcessPendingEvents here
