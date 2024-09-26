@@ -20,6 +20,9 @@ internal unsafe class XShm
     public static extern int XShmAttach(IntPtr display, XShmSegmentInfo* shminfo);
 
     [DllImport("libXext.so.6", SetLastError = true)]
+    public static extern int XShmDetach(IntPtr display, XShmSegmentInfo* shminfo);
+
+    [DllImport("libXext.so.6", SetLastError = true)]
     public static extern IntPtr XShmCreateImage(IntPtr display, IntPtr visual, uint depth, int format, IntPtr data,
         XShmSegmentInfo* shminfo, uint width, uint height);
 }

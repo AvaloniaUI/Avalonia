@@ -105,17 +105,24 @@ internal unsafe class X11ShmImage : IDisposable
         var depth = context.Depth;
         Debug.Assert(depth is 32, "The PixelFormat must be Bgra8888, so that the depth should be 32.");
 
-        IntPtr data = 0;
+        IntPtr data = IntPtr.Zero;
 
-        var shmImage = (XImage*)XShmCreateImage(display, visual, (uint) depth, ZPixmap, data, pShmSegmentInfo,
+        var shmImage = (XImage*)XShmCreateImage(display, visual, (uint)depth, ZPixmap, data, pShmSegmentInfo,
             (uint)width, (uint)height);
         ShmImage = shmImage;
 
-        var mapLength = width * ByteSizeOfPixel * height;
-        var shmgetResult = shmget(IPC_PRIVATE, mapLength, IPC_CREAT | 0777);
-        pShmSegmentInfo->shmid = shmgetResult;
+        var mapLength = new IntPtr(width * ByteSizeOfPixel * height);
+        var shmid = shmget(IPC_PRIVATE, mapLength, IPC_CREAT | 0777);
+        pShmSegmentInfo->shmid = shmid;
 
-        var shmaddr = shmat(shmgetResult, IntPtr.Zero, 0);
+        var shmaddr = shmat(shmid, IntPtr.Zero, 0);
+
+        if(shmaddr == new IntPtr(-1))
+        {
+            shmctl(shmid, IPC_RMID, IntPtr.Zero);
+            throw new InvalidOperationException("Failed to shmat");
+        }
+
         pShmSegmentInfo->shmaddr = (char*)shmaddr.ToPointer();
         shmImage->data = data = shmaddr;
 
@@ -126,7 +133,6 @@ internal unsafe class X11ShmImage : IDisposable
 
     public XImage* ShmImage { get; set; }
     public XShmSegmentInfo* PShmSegmentInfo { get; }
-    public XShmSegmentInfo ShmSegmentInfo => *PShmSegmentInfo;
     public IntPtr ShmAddr => new IntPtr(PShmSegmentInfo->shmaddr);
 
     public const int ByteSizeOfPixel = 4;
@@ -137,8 +143,11 @@ internal unsafe class X11ShmImage : IDisposable
 
     public void Dispose()
     {
-        //XShmAttach(display, pShmSegmentInfo);
-        // shmget
+        var context = ShmImageManager.Context;
+        XShmDetach(context.Display, PShmSegmentInfo);
+
+        shmdt(ShmAddr);
+        shmctl(PShmSegmentInfo->shmid, IPC_RMID, IntPtr.Zero);
 
         Marshal.FreeHGlobal(new IntPtr(PShmSegmentInfo));
     }
