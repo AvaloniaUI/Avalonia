@@ -168,6 +168,36 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ToggleModifier_And_Range_Should_Select_Second_Range()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Gap", "Boo", "Far", "Faz" },
+                    SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
+                };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
+                // Select first range
+                _helper.Click(target.Presenter.Panel.Children[0]);
+                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
+
+                // Select second range
+                _helper.Click(target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
+                _helper.Click(target.Presenter.Panel.Children[6], modifiers: KeyModifiers.Control | KeyModifiers.Shift);
+
+                Assert.Equal(new[] { "Foo", "Bar", "Baz", "Boo", "Far", "Faz" }, target.SelectedItems);
+            }
+        }
+
+        [Fact]
         public void Should_Ctrl_Select_Correct_Item_When_Duplicate_Items_Are_Present()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

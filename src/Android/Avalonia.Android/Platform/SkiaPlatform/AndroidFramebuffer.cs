@@ -6,7 +6,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class AndroidFramebuffer : ILockedFramebuffer
+    unsafe class AndroidFramebuffer : ILockedFramebuffer
     {
         private IntPtr _window;
 
@@ -24,7 +24,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 bottom = ANativeWindow_getHeight(_window)
             };
             Size = new PixelSize(rc.right, rc.bottom);
-            ANativeWindow_lock(_window, out buffer, ref rc);
+            ANativeWindow_lock(_window, &buffer, &rc);
 
             Format = buffer.format == AndroidPixelFormat.WINDOW_FORMAT_RGB_565
                 ? PixelFormat.Rgb565 : PixelFormat.Rgba8888;
@@ -61,7 +61,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal static extern void ANativeWindow_unlockAndPost(IntPtr window);
 
         [DllImport("android")]
-        internal static extern int ANativeWindow_lock(IntPtr window, out ANativeWindow_Buffer outBuffer, ref ARect inOutDirtyBounds);
+        internal static extern int ANativeWindow_lock(IntPtr window, ANativeWindow_Buffer* outBuffer, ARect* inOutDirtyBounds);
         public enum AndroidPixelFormat
         {
             WINDOW_FORMAT_RGBA_8888 = 1,

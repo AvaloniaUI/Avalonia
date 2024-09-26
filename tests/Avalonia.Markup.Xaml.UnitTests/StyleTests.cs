@@ -1,8 +1,7 @@
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.PropertyStore;
+using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -12,13 +11,34 @@ namespace Avalonia.Markup.Xaml.UnitTests
     public class StyleTests : XamlTestBase
     {
         [Fact]
-        public void Binding_Should_Be_Assigned_To_Setter_Value_Instead_Of_Bound()
+        public void Binding_As_Attribute_Should_Be_Assigned_To_Setter_Value_Instead_Of_Bound()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
             {
                 var xaml = "<Style Selector='Button' xmlns='https://github.com/avaloniaui'><Setter Property='Content' Value='{Binding}'/></Style>";
                 var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var setter = (Setter)(style.Setters.First());
+
+                Assert.IsType<Binding>(setter.Value);
+            }
+        }
+
+        [Theory]
+        [InlineData(nameof(ContentControl.Content))] // standard property
+        [InlineData(nameof(Layoutable.Margin))] // primitive property which can be directly parsed
+        public void Binding_As_Element_Should_Be_Assigned_To_Setter_Value(string propertyName)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
+            {
+                var style = (Style)AvaloniaRuntimeXamlLoader.Load(
+                    $"""
+                     <Style Selector="Button" xmlns="https://github.com/avaloniaui">
+                         <Setter Property="{propertyName}">
+                             <Binding />
+                         </Setter>
+                     </Style>
+                     """);
+                var setter = (Setter)style.Setters.First();
 
                 Assert.IsType<Binding>(setter.Value);
             }

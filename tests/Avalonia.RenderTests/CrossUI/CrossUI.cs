@@ -193,6 +193,9 @@ public interface ICrossStreamGeometryContextImplProvider
 
 public interface ICrossDrawingContext
 {
+    void PushTransform(Matrix  matrix);
+    void Pop();
+    void DrawLine(CrossPen pen, Point p1, Point p2);
     void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc);
     void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geometry);
     void DrawImage(CrossImage image, Rect rc);

@@ -310,8 +310,9 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             var fieldName = PropertyBackingFieldName(prop);
             return client
                     .AddMembers(DeclareField(prop.Type, fieldName))
-                    .AddMembers(PropertyDeclaration(propType, prop.Name)
-                        .AddModifiers(prop.Internal ? SyntaxKind.InternalKeyword : SyntaxKind.PublicKeyword)
+                    .AddMembers(PropertyDeclaration(propType, prop.ClientName ?? prop.Name)
+                        .AddModifiers(
+                            prop.Private ? SyntaxKind.PrivateKeyword : prop.Internal ? SyntaxKind.InternalKeyword : SyntaxKind.PublicKeyword)
                         .AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
                                 Block(ReturnStatement(IdentifierName(fieldName)))),

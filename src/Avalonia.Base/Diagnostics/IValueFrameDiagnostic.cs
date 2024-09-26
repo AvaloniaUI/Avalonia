@@ -19,8 +19,8 @@ public interface IValueFrameDiagnostic
         Style,
         Template
     }
-    
-    string? Description { get; }
+
+    object? Source { get; } 
     FrameType Type { get; }
     bool IsActive { get; }
     BindingPriority Priority { get; }

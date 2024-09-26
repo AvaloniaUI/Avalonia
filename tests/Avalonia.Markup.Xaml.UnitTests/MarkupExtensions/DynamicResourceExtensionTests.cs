@@ -991,18 +991,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
     }
 
-    public class TrackingResourceProvider : IResourceProvider
+    public class TrackingResourceProvider : ResourceProvider
     {
-        public IResourceHost Owner { get; private set; }
-        public bool HasResources => true;
+        public override bool HasResources => true;
         public List<object> RequestedResources { get; } = new List<object>();
-
-        public event EventHandler OwnerChanged { add { } remove { } }
-
-        public void AddOwner(IResourceHost owner) => Owner = owner;
-        public void RemoveOwner(IResourceHost owner) => Owner = null;
-
-        public bool TryGetResource(object key, ThemeVariant themeVariant, out object value)
+        public override bool TryGetResource(object key, ThemeVariant themeVariant, out object value)
         {
             RequestedResources.Add(key);
             value = key;
