@@ -9,6 +9,9 @@ using Avalonia.Platform;
 
 using ShmSeg = System.UInt64;
 using static Avalonia.X11.XLib;
+using static Avalonia.X11.LibC;
+using static Avalonia.X11.XShmExtensions.XShm;
+using System.Runtime.InteropServices;
 
 namespace Avalonia.X11.XShmExtensions;
 
@@ -33,6 +36,25 @@ class X11ShmFramebufferContext
     public IntPtr RenderHandle { get; }
     public IntPtr Visual { get; }
     public int Depth { get; }
+
+    public void OnXShmCompletion(ShmSeg shmseg)
+    {
+        if (_shmImageDictionary.Remove(shmseg, out var image))
+        {
+
+        }
+        else
+        {
+            // Unexpected case, all the X11ShmImage should be registered in the dictionary
+        }
+    }
+
+    public void RegisterX11ShmImage(X11ShmImage image)
+    {
+        _shmImageDictionary[image.ShmSeg] = image;
+    }
+
+    private readonly Dictionary<ShmSeg, X11ShmImage> _shmImageDictionary = new Dictionary<ShmSeg, X11ShmImage>();
 }
 
 internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
@@ -54,22 +76,76 @@ internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
         var p = &@event;
         var xShmCompletionEvent = (XShmCompletionEvent*)p;
         ShmSeg shmseg = xShmCompletionEvent->shmseg;
-        //_context.X11ShmImageManager.OnXShmCompletion(shmseg);
+        _context.OnXShmCompletion(shmseg);
     }
 }
 
-internal class X11ShmImage : IDisposable
+internal unsafe class X11ShmImage : IDisposable
 {
+    public X11ShmImage(PixelSize size, X11ShmImageManager x11ShmImageManager)
+    {
+        _x11ShmImageManager = x11ShmImageManager;
+        // The XShmSegmentInfo struct will store in XImage, and it must pin the address.
+        IntPtr pXShmSegmentInfo = Marshal.AllocHGlobal(Marshal.SizeOf<XShmSegmentInfo>());
+        var pShmSegmentInfo = (XShmSegmentInfo*)pXShmSegmentInfo;
+        PShmSegmentInfo = pShmSegmentInfo;
+
+        var context = x11ShmImageManager.Context;
+        var display = context.Display;
+        var visual = context.Visual;
+
+        const int ZPixmap = 2;
+
+        var width = size.Width;
+        var height = size.Height;
+
+        Size = size;
+
+        var depth = context.Depth;
+        IntPtr data = 0;
+
+        var shmImage = (XImage*)XShmCreateImage(display, visual, (uint) depth, ZPixmap, data, pShmSegmentInfo,
+            (uint)width, (uint)height);
+        ShmImage = shmImage;
+
+        var mapLength = width * 4 * height;
+        var shmgetResult = shmget(IPC_PRIVATE, mapLength, IPC_CREAT | 0777);
+        pShmSegmentInfo->shmid = shmgetResult;
+
+        var shmaddr = shmat(shmgetResult, IntPtr.Zero, 0);
+        pShmSegmentInfo->shmaddr = (char*)shmaddr.ToPointer();
+        shmImage->data = data = shmaddr;
+
+        XShmAttach(display, pShmSegmentInfo);
+    }
+
+    private readonly X11ShmImageManager _x11ShmImageManager;
+
+    public XImage* ShmImage { get; set; }
+    public XShmSegmentInfo* PShmSegmentInfo { get; }
+    public XShmSegmentInfo ShmSegmentInfo => *PShmSegmentInfo;
+    public IntPtr ShmAddr => new IntPtr(ShmSegmentInfo.shmaddr);
+
     /// <summary>
     /// Returns false if we haven't got a completion event since the last Present, can call ProcessPendingEvents here
     /// </summary>
-    public bool IsReady { get; }
+    public bool IsReady { get; set; }
 
     public PixelSize Size { get; }
 
+    public ShmSeg ShmSeg { get; }
+
+    public void Reuse()
+    {
+        _x11ShmImageManager.TryReuse(this);
+    }
+
     public void Dispose()
     {
+        //XShmAttach(display, pShmSegmentInfo);
+        // shmget
 
+        Marshal.FreeHGlobal(new IntPtr(PShmSegmentInfo));
     }
 }
 
@@ -77,10 +153,10 @@ internal class X11ShmImageManager : IDisposable
 {
     public X11ShmImageManager(X11ShmFramebufferContext context)
     {
-        _context = context;
+        Context = context;
     }
 
-    private readonly X11ShmFramebufferContext _context;
+    public X11ShmFramebufferContext Context { get; }
 
     public Queue<X11ShmImage> AvailableQueue = new();
 
@@ -107,10 +183,13 @@ internal class X11ShmImageManager : IDisposable
         else
         {
             // Check presentationQueue.Count < swapchainSize ?
-            image = new X11ShmImage();
+            image = new X11ShmImage(size, this);
         }
 
         LastSize = size;
+
+        image.IsReady = false;
+        PresentationQueue.Enqueue(image);
 
         return image;
     }
@@ -123,20 +202,37 @@ internal class X11ShmImageManager : IDisposable
         }
     }
 
-    public void OnXShmCompletion(ShmSeg shmseg)
+    public void TryReuse(X11ShmImage image)
     {
+        if (_isDisposed)
+        {
+            image.Dispose();
+            return;
+        }
+
+        if (image.Size != LastSize)
+        {
+            image.Dispose();
+            return;
+        }
+
+        if (PresentationQueue.Contains(image))
+        {
+            image.IsReady = true;
+        }
+        else
+        {
+            image.Dispose();
+        }
     }
 
     public void Dispose()
     {
-
+        _isDisposed = true;
     }
+
+    private bool _isDisposed;
 }
-
-//class DeferredDisplayEvents
-//{
-
-//}
 
 class X11ShmLockedFramebuffer : ILockedFramebuffer
 {
@@ -148,7 +244,8 @@ class X11ShmLockedFramebuffer : ILockedFramebuffer
 
     public void Dispose()
     {
-        _ = _context;
+        // Send XShmImage and register it to handle the XShmCompletionEvent
+        _context.RegisterX11ShmImage(X11ShmImage);
     }
 
     private readonly X11ShmFramebufferContext _context;
