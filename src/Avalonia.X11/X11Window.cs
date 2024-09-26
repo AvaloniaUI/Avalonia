@@ -22,6 +22,7 @@ using Avalonia.Threading;
 using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
+using static Avalonia.X11.XShmExtensions.XShm;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
 using Avalonia.Dialogs;
@@ -199,9 +200,29 @@ namespace Avalonia.X11
 
             if (_platform.Options.UseXShmFramebuffer is true)
             {
-                var x11ShmFramebufferSurface = new X11ShmFramebufferSurface(this, _x11.DeferredDisplay, _handle, _renderHandle);
-                _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
-                surfaces.Insert(0, x11ShmFramebufferSurface);
+                TryInsertX11ShmFramebufferSurface();
+
+                void TryInsertX11ShmFramebufferSurface()
+                {
+                    var status = XShmQueryExtension(_x11.DeferredDisplay);
+                    if (status == 0)
+                    {
+                        // XShmQueryExtension failed
+                        return;
+                    }
+
+                    status = XShmQueryVersion(_x11.DeferredDisplay, out var major, out var minor, out var pixmaps);
+                    
+                    if (status == 0)
+                    {
+                        // XShmQueryExtension failed
+                        return;
+                    }
+
+                    var x11ShmFramebufferSurface = new X11ShmFramebufferSurface(this, _x11.DeferredDisplay, _handle, _renderHandle);
+                    _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
+                    surfaces.Insert(0, x11ShmFramebufferSurface);
+                }
             }
             
             if (egl != null)
