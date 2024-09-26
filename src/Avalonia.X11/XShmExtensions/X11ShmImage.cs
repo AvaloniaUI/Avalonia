@@ -7,25 +7,32 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 
+using ShmSeg = System.UInt64;
+using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11.XShmExtensions;
 
 class X11ShmFramebufferContext
 {
-    public X11ShmFramebufferContext(X11Window x11Window, IntPtr display, IntPtr windowHandle, IntPtr renderHandle)
+    public X11ShmFramebufferContext(X11Window x11Window, IntPtr display, IntPtr windowXId, IntPtr renderHandle)
     {
         X11Window = x11Window;
         Display = display;
-        WindowHandle = windowHandle;
+        WindowXId = windowXId;
         RenderHandle = renderHandle;
+
+        X11ShmImageManager = new X11ShmImageManager(this);
     }
 
     public X11Window X11Window { get; }
 
     public IntPtr Display { get; }
 
-    public IntPtr WindowHandle { get; }
+    public IntPtr WindowXId { get; }
 
     public IntPtr RenderHandle { get; }
+
+    public X11ShmImageManager X11ShmImageManager { get; }
 }
 
 internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
@@ -42,29 +49,112 @@ internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
         return new X11ShmImageSwapchain(_context);
     }
 
-    public void OnXShmCompletionEvent(ref XEvent ev)
+    public unsafe void OnXShmCompletionEvent(XEvent @event)
     {
-        
+        var p = &@event;
+        var xShmCompletionEvent = (XShmCompletionEvent*)p;
+        ShmSeg shmseg = xShmCompletionEvent->shmseg;
+        _context.X11ShmImageManager.OnXShmCompletion(shmseg);
     }
 }
 
-internal class X11ShmImage
+internal class X11ShmImage:IDisposable
 {
     /// <summary>
     /// Returns false if we haven't got a completion event since the last Present, can call ProcessPendingEvents here
     /// </summary>
     public bool IsReady { get; }
+
+    public PixelSize Size { get; }
+
+    public void Dispose()
+    {
+        
+    }
 }
 
 internal class X11ShmImageManager
 {
+    public X11ShmImageManager(X11ShmFramebufferContext context)
+    {
+        _context = context;
+    }
 
+    private readonly X11ShmFramebufferContext _context;
+
+    public Queue<X11ShmImage> AvailableQueue = new();
+
+    public Queue<X11ShmImage> PresentationQueue = new();
+
+    public PixelSize? LastSize { get; private set; }
+
+    public X11ShmImage GetOrCreateImage(PixelSize size)
+    {
+        DrainPresentationQueue();
+
+        if (LastSize != size)
+        {
+            foreach (var x11ShmImage in AvailableQueue)
+            {
+                x11ShmImage.Dispose();
+            }
+            AvailableQueue.Clear();
+        }
+
+        if (AvailableQueue.TryDequeue(out var image))
+        {
+        }
+        else
+        {
+            // Check presentationQueue.Count < swapchainSize ?
+            image = new X11ShmImage();
+        }
+
+        LastSize = size;
+
+        return image;
+    }
+
+    public void DrainPresentationQueue()
+    {
+        while (PresentationQueue.Count > 0 && PresentationQueue.Peek().IsReady)
+        {
+            AvailableQueue.Enqueue(PresentationQueue.Dequeue());
+        }
+    }
+
+    public void OnXShmCompletion(ShmSeg shmseg)
+    {
+    }
 }
 
 //class DeferredDisplayEvents
 //{
 
 //}
+
+class X11ShmLockedFramebuffer : ILockedFramebuffer
+{
+    public X11ShmLockedFramebuffer(X11ShmImage shmImage, X11ShmFramebufferContext context)
+    {
+        _context = context;
+        X11ShmImage = shmImage;
+    }
+
+    public void Dispose()
+    {
+        _ = _context;
+    }
+
+    private readonly X11ShmFramebufferContext _context;
+
+    public IntPtr Address { get; }
+    public PixelSize Size { get; }
+    public int RowBytes { get; }
+    public Vector Dpi { get; }
+    public PixelFormat Format { get; }
+    public X11ShmImage X11ShmImage { get; }
+}
 
 internal class X11ShmImageSwapchain : IFramebufferRenderTarget
 {
@@ -75,21 +165,8 @@ internal class X11ShmImageSwapchain : IFramebufferRenderTarget
 
     private readonly X11ShmFramebufferContext _context;
 
-    private Queue<X11ShmImage> _availableQueue = new();
-    private Queue<X11ShmImage> _presentationQueue = new();
-    private PixelSize? _lastSize;
-
     public void Dispose()
     {
-
-    }
-
-    private void DrainPresentationQueue()
-    {
-        while (_presentationQueue.Count > 0 && _presentationQueue.Peek().IsReady)
-        {
-            _availableQueue.Enqueue(_presentationQueue.Dequeue());
-        }
     }
 
     public ILockedFramebuffer Lock()
@@ -102,6 +179,16 @@ internal class X11ShmImageSwapchain : IFramebufferRenderTarget
          5) else synchronously wait for the first image from _presentationQueue and use it
          6) return a framebuffer associated with chosen image
          */
-        throw new NotImplementedException();
+        var display = _context.Display;
+        var xid = _context.WindowXId;
+        XLockDisplay(display);
+        XGetGeometry(display, xid, out var root, out var x, out var y, out var width, out var height,
+            out var bw, out var d);
+        XUnlockDisplay(display);
+
+        var size = new PixelSize(width, height);
+        var shmImage = _context.X11ShmImageManager.GetOrCreateImage(size);
+
+        return new X11ShmLockedFramebuffer(shmImage,_context);
     }
 }

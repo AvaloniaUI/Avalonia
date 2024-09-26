@@ -623,7 +623,7 @@ namespace Avalonia.X11
             {
                 // Because the XShmCompletionEvent only occurs when the XShmPutImage is called, and the XShmPutImage only be called when use X11ShmFramebufferSurface, so we can safely assume that the _x11ShmFramebufferSurface is not null.
                 Debug.Assert(_x11ShmFramebufferSurface!=null, "If application can receive the XShmCompletionEvent, that the _x11ShmFramebufferSurface must not be null.");
-                _x11ShmFramebufferSurface?.OnXShmCompletionEvent(ref ev);
+                _x11ShmFramebufferSurface?.OnXShmCompletionEvent(ev);
             }
         }
 
