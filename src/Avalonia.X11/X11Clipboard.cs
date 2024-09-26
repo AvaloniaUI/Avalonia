@@ -306,8 +306,6 @@ namespace Avalonia.X11
             return StoreAtomsInClipboardManager(data);
         }
 
-        public Task SetDataObjectAsync(IDataObject data, bool copy) => throw new PlatformNotSupportedException();
-
         public async Task<string[]> GetFormatsAsync()
         {
             if (!HasOwner)
@@ -337,5 +335,9 @@ namespace Avalonia.X11
             
             return await SendDataRequest(formatAtom);
         }
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
 }

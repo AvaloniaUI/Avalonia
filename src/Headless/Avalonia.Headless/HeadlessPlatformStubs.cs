@@ -35,11 +35,10 @@ namespace Avalonia.Headless
             return Task.Run(() => _text = null);
         }
 
-        public Task SetDataObjectAsync(IDataObject data) =>
-            SetDataObjectAsync(data, false);
-
-        public Task SetDataObjectAsync(IDataObject data, bool copy) =>
-            Task.Run(() => _data = data);
+        public Task SetDataObjectAsync(IDataObject data)
+        {
+            return Task.Run(() => _data = data);
+        }
 
         public Task<string[]> GetFormatsAsync()
         {
@@ -63,6 +62,10 @@ namespace Avalonia.Headless
         {
             return await Task.Run(() => _data);
         }
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
 
     internal class HeadlessCursorFactoryStub : ICursorFactory

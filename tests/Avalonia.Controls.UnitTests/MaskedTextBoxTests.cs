@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -13,8 +12,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -990,14 +987,12 @@ namespace Avalonia.Controls.UnitTests
 
             public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
-            public Task SetDataObjectAsync(IDataObject data, bool copy) => Task.CompletedTask;
-
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
             public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
 
-
-           
+            public Task FlushAsync() =>
+                Task.CompletedTask;
         }
 
         private class TestTopLevel : TopLevel

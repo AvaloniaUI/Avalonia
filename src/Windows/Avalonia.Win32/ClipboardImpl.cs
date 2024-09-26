@@ -81,10 +81,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public async Task SetDataObjectAsync(IDataObject data) =>
-            await SetDataObjectAsync(data, false);
-
-        public async Task SetDataObjectAsync(IDataObject data, bool copy)
+        public async Task SetDataObjectAsync(IDataObject data)
         {
             Dispatcher.UIThread.VerifyAccess();
             using var wrapper = new DataObject(data);
@@ -103,18 +100,6 @@ namespace Avalonia.Win32
 
                 await Task.Delay(OleRetryDelay);
             }
-
-            if (copy)
-            {
-                // OleSetClipboard and OleFlushClipboard both modify the clipboard
-                // and cause notifications to be sent to clipboard listeners. We sleep a bit here to
-                // mitigate issues with clipboard listeners (like TS) corrupting the clipboard contents
-                // as a result of these two calls being back to back.
-                await Task.Delay(OleFlushDelay);
-
-                await FlushAsync();
-            }
-
         }
 
         public async Task<string[]> GetFormatsAsync()
@@ -168,8 +153,10 @@ namespace Avalonia.Win32
         /// <summary>
         /// Permanently renders the contents of the last IDataObject that was set onto the clipboard.
         /// </summary>
-        private static async Task FlushAsync()
+        public async Task FlushAsync()
         {
+            await Task.Delay(OleFlushDelay);
+
             // Retry OLE operations several times as mitigation for clipboard locking issues in TS sessions.
 
             int i = OleRetryCount;

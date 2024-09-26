@@ -155,9 +155,6 @@ namespace Avalonia.Native
             return Task.CompletedTask;
         }
 
-        ///
-        public Task SetDataObjectAsync(IDataObject data, bool copy) => throw new PlatformNotSupportedException();
-
         public Task<string[]> GetFormatsAsync()
         {
             return Task.FromResult(GetFormats().ToArray());
@@ -174,6 +171,10 @@ namespace Avalonia.Native
             using (var n = _native.GetBytes(format))
                 return n.Bytes;
         }
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
     
     class ClipboardDataObject : IDataObject, IDisposable

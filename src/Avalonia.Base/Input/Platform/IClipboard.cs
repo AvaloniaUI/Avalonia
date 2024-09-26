@@ -32,13 +32,10 @@ namespace Avalonia.Input.Platform
         Task SetDataObjectAsync(IDataObject data);
 
         /// <summary>
-        /// Places a specified data object on the system Clipboard and accepts a Boolean parameter that indicates whether the data object should be left on the Clipboard when the application exits.
+        /// Permanently adds the data that is on the Clipboard so that it is available after the data's original application closes.
         /// </summary>
-        /// <param name="data">A data object (an object that implements <see cref="IDataObject"/>) to place on the system Clipboard.</param>
-        /// <param name="copy"><c>true</c> to leave the data on the system Clipboard when the application exits; false to clear the data from the system Clipboard when the application exits.</param>
-        /// <exception cref="System.ArgumentNullException"><paramref name="data"/> is null.</exception>
-        Task SetDataObjectAsync(IDataObject data, bool copy);
-
+        /// <returns></returns>
+        Task FlushAsync();
 
         /// <summary>
         /// Get list of available Clipboard format.
