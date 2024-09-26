@@ -80,6 +80,12 @@ internal class X11ShmImageManager : IDisposable
     public void Dispose()
     {
         _isDisposed = true;
+
+        foreach (var x11ShmImage in AvailableQueue)
+        {
+            x11ShmImage.Dispose();
+        }
+        AvailableQueue.Clear();
     }
 
     private bool _isDisposed;
