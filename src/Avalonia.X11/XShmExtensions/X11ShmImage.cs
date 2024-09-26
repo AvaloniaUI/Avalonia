@@ -41,7 +41,7 @@ class X11ShmFramebufferContext
     {
         if (_shmImageDictionary.Remove(shmseg, out var image))
         {
-
+            image.ShmImageManager.OnXShmCompletion(image);
         }
         else
         {
@@ -84,7 +84,7 @@ internal unsafe class X11ShmImage : IDisposable
 {
     public X11ShmImage(PixelSize size, X11ShmImageManager x11ShmImageManager)
     {
-        _x11ShmImageManager = x11ShmImageManager;
+        ShmImageManager = x11ShmImageManager;
         // The XShmSegmentInfo struct will store in XImage, and it must pin the address.
         IntPtr pXShmSegmentInfo = Marshal.AllocHGlobal(Marshal.SizeOf<XShmSegmentInfo>());
         var pShmSegmentInfo = (XShmSegmentInfo*)pXShmSegmentInfo;
@@ -119,7 +119,7 @@ internal unsafe class X11ShmImage : IDisposable
         XShmAttach(display, pShmSegmentInfo);
     }
 
-    private readonly X11ShmImageManager _x11ShmImageManager;
+    public X11ShmImageManager ShmImageManager { get; }
 
     public XImage* ShmImage { get; set; }
     public XShmSegmentInfo* PShmSegmentInfo { get; }
@@ -129,11 +129,6 @@ internal unsafe class X11ShmImage : IDisposable
     public PixelSize Size { get; }
 
     public ShmSeg ShmSeg => PShmSegmentInfo->shmseg;
-
-    public void Reuse()
-    {
-        _x11ShmImageManager.TryReuse(this);
-    }
 
     public void Dispose()
     {
@@ -186,11 +181,17 @@ internal class X11ShmImageManager : IDisposable
 
         LastSize = size;
 
+        _presentationCount++;
+
         return image;
     }
 
-    public void TryReuse(X11ShmImage image)
+    private int _presentationCount;
+
+    public void OnXShmCompletion(X11ShmImage image)
     {
+        _presentationCount--;
+
         if (_isDisposed)
         {
             image.Dispose();
