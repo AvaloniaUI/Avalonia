@@ -1374,11 +1374,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Should_Ignore_Null_Terminator()
+        [Theory]
+        [InlineData("\0", 0.0)]
+        [InlineData("\0\0\0", 0.0)]
+        [InlineData("\0A\0\0", 7.201171875)]
+        [InlineData("\0AA\0AA\0", 28.8046875)]
+        public void Should_Ignore_Null_Terminator(string text, double width)
         {
-            var text = "\x0";
-
             using (Start())
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
@@ -1393,7 +1395,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.NotNull(textLine);
 
-                Assert.Equal(0, textLine.Width);
+                Assert.Equal(width, textLine.Width);
             }
         }
 

@@ -9,7 +9,7 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public class TextCharacters : TextRun
     {
-        private static char[] ZeroWidthSpace = ['\u200b'];
+        private static char ZeroWidthSpace = '\u200b';
 
         /// <summary>
         /// Constructs a run for text content from a string.
@@ -84,16 +84,21 @@ namespace Avalonia.Media.TextFormatting
             var previousGlyphTypeface = previousProperties?.CachedGlyphTypeface;
             var textSpan = text.Span;
 
-            //Read first codepoint
-            var firstCodepoint = Codepoint.ReadAt(textSpan, 0, out _);
+            var count = 0;
+            var codepoints = new CodepointEnumerator(textSpan);
 
-            //Detect null terminator
-            if (firstCodepoint.Value == 0)
+            while(codepoints.MoveNext(out var firstCodepoint) && firstCodepoint.Value == 0)
             {
-                return new UnshapedTextRun(ZeroWidthSpace.AsMemory(), defaultProperties, biDiLevel);
+                count++;
             }
 
-            if (TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, out var count))
+            //Detect null terminator
+            if (count > 0)
+            {
+                return new UnshapedTextRun(new string(ZeroWidthSpace, count).AsMemory(), defaultProperties, biDiLevel);
+            }
+
+            if (TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, out count))
             {
                 return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(defaultTypeface),
                     biDiLevel);
@@ -187,6 +192,12 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentCodepoint = currentGrapheme.FirstCodepoint;
                 var currentScript = currentCodepoint.Script;
+
+                if(currentCodepoint.Value == 0)
+                {
+                    //Do not include null terminators
+                    break;
+                }
 
                 if (!currentCodepoint.IsWhiteSpace
                     && defaultGlyphTypeface != null
