@@ -37,8 +37,11 @@ class X11ShmLockedFramebuffer : ILockedFramebuffer
         var exposeWidth = Size.Width;
         var exposeHeight = Size.Height;
 
-        XLib.XPutImage(display, xid, gc, X11ShmImage.ShmImage, exposeX, exposeY, exposeX, exposeY, (uint)exposeWidth, (uint)exposeHeight);
+        XShm.XShmPutImage(display, xid, gc, X11ShmImage.ShmImage, exposeX, exposeY, exposeX, exposeY, (uint)exposeWidth, (uint)exposeHeight,
+            send_event: true);
 
         XLib.XFreeGC(display, gc);
+
+        X11ShmDebugLogger.WriteLine($"[X11ShmLockedFramebuffer] SendRender");
     }
 }
