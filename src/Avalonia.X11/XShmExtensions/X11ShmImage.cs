@@ -108,7 +108,7 @@ internal unsafe class X11ShmImage : IDisposable
             (uint)width, (uint)height);
         ShmImage = shmImage;
 
-        var mapLength = width * 4 * height;
+        var mapLength = width * ByteSizeOfPixel * height;
         var shmgetResult = shmget(IPC_PRIVATE, mapLength, IPC_CREAT | 0777);
         pShmSegmentInfo->shmid = shmgetResult;
 
@@ -125,6 +125,8 @@ internal unsafe class X11ShmImage : IDisposable
     public XShmSegmentInfo* PShmSegmentInfo { get; }
     public XShmSegmentInfo ShmSegmentInfo => *PShmSegmentInfo;
     public IntPtr ShmAddr => new IntPtr(PShmSegmentInfo->shmaddr);
+
+    public const int ByteSizeOfPixel = 4;
 
     public PixelSize Size { get; }
 
@@ -225,18 +227,34 @@ class X11ShmLockedFramebuffer : ILockedFramebuffer
 
     public void Dispose()
     {
-        // Send XShmImage and register it to handle the XShmCompletionEvent
-        _context.RegisterX11ShmImage(X11ShmImage);
+        SendRender();
     }
 
     private readonly X11ShmFramebufferContext _context;
 
-    public IntPtr Address { get; }
-    public PixelSize Size { get; }
-    public int RowBytes { get; }
-    public Vector Dpi { get; }
-    public PixelFormat Format { get; }
+    public IntPtr Address => X11ShmImage.ShmAddr;
+    public PixelSize Size => X11ShmImage.Size;
+    public int RowBytes => X11ShmImage.Size.Width * X11ShmImage.ByteSizeOfPixel;
+    public Vector Dpi => new Vector(96, 96);
+    public PixelFormat Format => PixelFormat.Bgra8888;
     public X11ShmImage X11ShmImage { get; }
+
+    private unsafe void SendRender()
+    {
+        // Send XShmImage and register it to handle the XShmCompletionEvent
+        _context.RegisterX11ShmImage(X11ShmImage);
+        var display = _context.Display;
+        var xid = _context.RenderHandle;
+        var gc = XCreateGC(display, xid, 0, IntPtr.Zero);
+        var exposeX = 0;
+        var exposeY = 0;
+        var exposeWidth = Size.Width;
+        var exposeHeight = Size.Height;
+
+        XPutImage(display, xid, gc, X11ShmImage.ShmImage, exposeX, exposeY, exposeX, exposeY, (uint)exposeWidth, (uint)exposeHeight);
+
+        XFreeGC(display, gc);
+    }
 }
 
 internal class X11ShmImageSwapchain : IFramebufferRenderTarget
