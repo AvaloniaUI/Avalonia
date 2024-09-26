@@ -20,6 +20,7 @@
     <InternalsVisibleTo Include="Avalonia.Markup.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Diagnostics, PublicKey=$(AvaloniaPublicKey)"/>
+    <InternalsVisibleTo Include="AvaloniaUI.DiagnosticsSupport.Avalonia, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.LeakTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Headless, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Native, PublicKey=$(AvaloniaPublicKey)" />

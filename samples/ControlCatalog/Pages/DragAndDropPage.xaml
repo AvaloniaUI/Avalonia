@@ -1,6 +1,16 @@
 <UserControl x:Class="ControlCatalog.Pages.DragAndDropPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <UserControl.Styles>
+    <Style Selector="Border.draggable">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="Padding" Value="16" />
+    </Style>
+  </UserControl.Styles>
+
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Example of Drag+Drop capabilities</TextBlock>
 
@@ -8,21 +18,15 @@
       <StackPanel Margin="8"
                   MaxWidth="160">
         <Border Name="DragMeText"
-                Padding="16"
-                BorderBrush="{DynamicResource SystemAccentColor}"
-                BorderThickness="2">
+                Classes="draggable">
           <TextBlock Name="DragStateText" TextWrapping="Wrap">Drag Me (text)</TextBlock>
         </Border>
         <Border Name="DragMeFiles"
-                Padding="16"
-                BorderBrush="{DynamicResource SystemAccentColor}"
-                BorderThickness="2">
+                Classes="draggable">
           <TextBlock Name="DragStateFiles" TextWrapping="Wrap">Drag Me (files)</TextBlock>
         </Border>
         <Border Name="DragMeCustom"
-                Padding="16"
-                BorderBrush="{DynamicResource SystemAccentColor}"
-                BorderThickness="2">
+                Classes="draggable">
           <TextBlock Name="DragStateCustom" TextWrapping="Wrap">Drag Me (custom)</TextBlock>
         </Border>
       </StackPanel>

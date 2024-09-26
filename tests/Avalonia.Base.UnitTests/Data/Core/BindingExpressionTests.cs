@@ -33,6 +33,7 @@ public abstract partial class BindingExpressionTests
             RelativeSource? relativeSource,
             Optional<TIn> source,
             object? targetNullValue,
+            string? stringFormat,
             UpdateSourceTrigger updateSourceTrigger)
         {
             var target = new TargetClass { DataContext = dataContext };
@@ -66,6 +67,7 @@ public abstract partial class BindingExpressionTests
                 mode: mode,
                 targetNullValue: targetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
+                stringFormat: stringFormat,
                 updateSourceTrigger: updateSourceTrigger);
 
             target.GetValueStore().AddBinding(targetProperty, bindingExpression);
@@ -87,6 +89,7 @@ public abstract partial class BindingExpressionTests
             RelativeSource? relativeSource,
             Optional<TIn> source,
             object? targetNullValue,
+            string? stringFormat,
             UpdateSourceTrigger updateSourceTrigger)
         {
             var target = new TargetClass { DataContext = dataContext };
@@ -112,6 +115,7 @@ public abstract partial class BindingExpressionTests
                 mode: mode,
                 targetNullValue: targetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
+                stringFormat: stringFormat,
                 updateSourceTrigger: updateSourceTrigger);
             target.GetValueStore().AddBinding(targetProperty, bindingExpression);
             return (target, bindingExpression);
@@ -129,7 +133,8 @@ public abstract partial class BindingExpressionTests
         BindingMode mode = BindingMode.OneWay,
         RelativeSource? relativeSource = null,
         Optional<TIn> source = default,
-        object? targetNullValue = null)
+        object? targetNullValue = null,
+        string? stringFormat = null)
             where TIn : class?
     {
         var (target, _) = CreateTargetAndExpression(
@@ -143,7 +148,8 @@ public abstract partial class BindingExpressionTests
             mode,
             relativeSource,
             source,
-            targetNullValue);
+            targetNullValue,
+            stringFormat);
         return target;
     }
 
@@ -158,6 +164,7 @@ public abstract partial class BindingExpressionTests
         BindingMode mode = BindingMode.OneWay,
         RelativeSource? relativeSource = null,
         object? targetNullValue = null,
+        string? stringFormat = null,
         UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
             where TIn : class?
     {
@@ -173,6 +180,7 @@ public abstract partial class BindingExpressionTests
             relativeSource,
             source,
             targetNullValue,
+            stringFormat,
             updateSourceTrigger);
         return target;
     }
@@ -189,6 +197,7 @@ public abstract partial class BindingExpressionTests
         RelativeSource? relativeSource = null,
         Optional<TIn> source = default,
         object? targetNullValue = null,
+        string? stringFormat = null,
         UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.PropertyChanged)
             where TIn : class?
     {
@@ -213,6 +222,7 @@ public abstract partial class BindingExpressionTests
             relativeSource,
             source,
             targetNullValue,
+            stringFormat,
             updateSourceTrigger);
     }
 
@@ -228,6 +238,7 @@ public abstract partial class BindingExpressionTests
         RelativeSource? relativeSource,
         Optional<TIn> source,
         object? targetNullValue,
+        string? stringFormat,
         UpdateSourceTrigger updateSourceTrigger)
             where TIn : class?;
 

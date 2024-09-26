@@ -160,7 +160,7 @@
       AnalyzerConfigFiles="@(EditorConfigFiles)"/>
   </Target>
   
-  <Target Name="InjectAvaloniaXamlOutput" DependsOnTargets="PrepareToCompileAvaloniaXaml" AfterTargets="CompileAvaloniaXaml" BeforeTargets="CopyFilesToOutputDirectory;BuiltProjectOutputGroup"
+  <Target Name="InjectAvaloniaXamlOutput" DependsOnTargets="PrepareToCompileAvaloniaXaml" AfterTargets="CompileAvaloniaXaml" BeforeTargets="CopyFilesToOutputDirectory;BuiltProjectOutputGroup;ComputeResolvedFilesToPublishList"
           Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
     <ItemGroup>
       <_AvaloniaXamlCompiledAssembly Include="@(IntermediateAssembly->Metadata('AvaloniaCompileOutput'))"/>
@@ -174,6 +174,12 @@
       <_AvaloniaXamlCompiledSymbols Include="@(_DebugSymbolsIntermediatePath->Metadata('AvaloniaCompileOutput'))"/>
       <_DebugSymbolsIntermediatePath Remove="@(_DebugSymbolsIntermediatePath)"/>
       <_DebugSymbolsIntermediatePath Include="@(_AvaloniaXamlCompiledSymbols)"/>
+      
+      <!-- ClickOnce takes a copy of @(IntermediateAssembly) during the evaluation phase -->
+      <_DeploymentManifestEntryPoint Remove="@(_DeploymentManifestEntryPoint)" />
+      <_DeploymentManifestEntryPoint Include="@(_AvaloniaXamlCompiledAssembly)">
+        <TargetPath>$(TargetFileName)</TargetPath>
+      </_DeploymentManifestEntryPoint>
     </ItemGroup>
   </Target>
 

@@ -667,6 +667,31 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("TwoWay", source.Foo);
         }
 
+        [Fact]
+        public void Target_Undoing_Property_Change_During_TwoWay_Binding_Does_Not_Cause_StackOverflow()
+        {
+            var source = new TestStackOverflowViewModel { BoolValue = true };
+            var target = new TwoWayBindingTest();
+
+            source.ResetSetterInvokedCount();
+
+            // The AlwaysFalse property is set to false in the PropertyChanged callback. Ensure
+            // that binding it to an initial `true` value with a two-way binding does not cause a
+            // stack overflow.
+            target.Bind(
+                TwoWayBindingTest.AlwaysFalseProperty,
+                new Binding(nameof(TestStackOverflowViewModel.BoolValue))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+
+            target.DataContext = source;
+
+            Assert.Equal(1, source.SetterInvokedCount);
+            Assert.False(source.BoolValue);
+            Assert.False(target.AlwaysFalse);
+        }
+
         private class StyledPropertyClass : AvaloniaObject
         {
             public static readonly StyledProperty<double> DoubleValueProperty =
@@ -725,9 +750,23 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public const int MaxInvokedCount = 1000;
 
+            private bool _boolValue;
             private double _value;
 
             public event PropertyChangedEventHandler PropertyChanged;
+
+            public bool BoolValue
+            {
+                get => _boolValue;
+                set
+                {
+                    if (_boolValue != value)
+                    {
+                        _boolValue = value;
+                        SetterInvokedCount++;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BoolValue)));
+                    }
+                } }
 
             public double Value
             {
@@ -754,19 +793,37 @@ namespace Avalonia.Markup.UnitTests.Data
                     }
                 }
             }
+
+            public void ResetSetterInvokedCount() => SetterInvokedCount = 0;
         }
 
         private class TwoWayBindingTest : Control
         {
+            public static readonly StyledProperty<bool> AlwaysFalseProperty =
+                AvaloniaProperty.Register<StyledPropertyClass, bool>(nameof(AlwaysFalse));
             public static readonly StyledProperty<string> TwoWayProperty =
                 AvaloniaProperty.Register<TwoWayBindingTest, string>(
                     "TwoWay",
                     defaultBindingMode: BindingMode.TwoWay);
 
+            public bool AlwaysFalse
+            {
+                get => GetValue(AlwaysFalseProperty);
+                set => SetValue(AlwaysFalseProperty, value);
+            }
+
             public string TwoWay
             {
                 get => GetValue(TwoWayProperty);
                 set => SetValue(TwoWayProperty, value);
+            }
+
+            protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+            {
+                base.OnPropertyChanged(change);
+
+                if (change.Property == AlwaysFalseProperty)
+                    SetCurrentValue(AlwaysFalseProperty, false);
             }
         }
 

@@ -493,6 +493,10 @@ namespace Avalonia
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Attached to visual tree");
 
             _visualRoot = e.Root;
+            if (_visualParent is null)
+            {
+                throw new InvalidOperationException("Visual was attached to the root without being added to the visual parent first.");
+            }
 
             if (RenderTransform is IMutableTransform mutableTransform)
             {
@@ -505,14 +509,14 @@ namespace Avalonia
                 AttachToCompositor(compositingRenderer.Compositor);
             }
             InvalidateMirrorTransform();
-            UpdateIsEffectivelyVisible(_visualParent!.IsEffectivelyVisible);
+            UpdateIsEffectivelyVisible(_visualParent.IsEffectivelyVisible);
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
             
-            _visualRoot.Renderer.RecalculateChildren(_visualParent!);
+            _visualRoot.Renderer.RecalculateChildren(_visualParent);
             
-            if (ZIndex != 0 && _visualParent is { })
+            if (ZIndex != 0)
                 _visualParent.HasNonUniformZIndexChildren = true;
             
             var visualChildren = VisualChildren;

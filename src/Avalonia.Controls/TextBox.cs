@@ -411,6 +411,8 @@ namespace Avalonia.Controls
             var newValue = e.GetNewValue<int>();
             SetCurrentValue(SelectionStartProperty, newValue);
             SetCurrentValue(SelectionEndProperty, newValue);
+
+           _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
         }
 
         /// <summary>

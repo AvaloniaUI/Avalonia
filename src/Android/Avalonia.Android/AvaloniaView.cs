@@ -66,7 +66,9 @@ namespace Avalonia.Android
 
         public override bool DispatchKeyEvent(KeyEvent? e)
         {
-            return _view.View.DispatchKeyEvent(e);
+            if (!_view.View.DispatchKeyEvent(e))
+                return base.DispatchKeyEvent(e);
+            return true;
         }
 
         [SupportedOSPlatform("android24.0")]
