@@ -124,7 +124,7 @@ internal unsafe class X11ShmImage : IDisposable
     public XImage* ShmImage { get; set; }
     public XShmSegmentInfo* PShmSegmentInfo { get; }
     public XShmSegmentInfo ShmSegmentInfo => *PShmSegmentInfo;
-    public IntPtr ShmAddr => new IntPtr(ShmSegmentInfo.shmaddr);
+    public IntPtr ShmAddr => new IntPtr(PShmSegmentInfo->shmaddr);
 
     /// <summary>
     /// Returns false if we haven't got a completion event since the last Present, can call ProcessPendingEvents here
@@ -133,7 +133,7 @@ internal unsafe class X11ShmImage : IDisposable
 
     public PixelSize Size { get; }
 
-    public ShmSeg ShmSeg { get; }
+    public ShmSeg ShmSeg => PShmSegmentInfo->shmseg;
 
     public void Reuse()
     {
