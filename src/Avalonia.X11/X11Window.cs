@@ -204,6 +204,12 @@ namespace Avalonia.X11
 
                 void TryInsertX11ShmFramebufferSurface()
                 {
+                    if (depth != 32)
+                    {
+                        // If the depth is not 32, we should do some conversion to make the XShmPutImage work. But the conversion is slowly, so we should not use XShmPutImage when the depth is not 32.
+                        return;
+                    }
+
                     var status = XShmQueryExtension(_x11.DeferredDisplay);
                     if (status == 0)
                     {

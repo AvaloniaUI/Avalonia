@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,6 +103,8 @@ internal unsafe class X11ShmImage : IDisposable
         Size = size;
 
         var depth = context.Depth;
+        Debug.Assert(depth is 32, "The PixelFormat must be Bgra8888, so that the depth should be 32.");
+
         IntPtr data = 0;
 
         var shmImage = (XImage*)XShmCreateImage(display, visual, (uint) depth, ZPixmap, data, pShmSegmentInfo,
