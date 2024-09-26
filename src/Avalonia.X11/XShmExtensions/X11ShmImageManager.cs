@@ -34,6 +34,10 @@ internal class X11ShmImageManager : IDisposable
                 image.Dispose();
                 image = null;
             }
+            else
+            {
+                X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] Get X11ShmImage from AvailableQueue.");
+            }
         }
         else
         {
@@ -46,6 +50,7 @@ internal class X11ShmImageManager : IDisposable
         LastSize = size;
 
         _presentationCount++;
+        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] PresentationCount={_presentationCount}");
 
         return image;
     }
@@ -55,6 +60,7 @@ internal class X11ShmImageManager : IDisposable
     public void OnXShmCompletion(X11ShmImage image)
     {
         _presentationCount--;
+        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][OnXShmCompletion] PresentationCount={_presentationCount}");
 
         if (_isDisposed)
         {

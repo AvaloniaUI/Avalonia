@@ -17,11 +17,13 @@ internal class X11ShmImageSwapchain : IFramebufferRenderTarget
 
     public void Dispose()
     {
+        X11ShmDebugLogger.WriteLine($"[X11ShmImageSwapchain] Dispose");
         X11ShmImageManager.Dispose();
     }
 
     public ILockedFramebuffer Lock()
     {
+        X11ShmDebugLogger.WriteLine($"[X11ShmImageSwapchain] Lock");
         /*
          1) gets the current window geometry, if it doesn't match the lastSize disposes images and clears queues
          2) calls DrainPresentationQueue();

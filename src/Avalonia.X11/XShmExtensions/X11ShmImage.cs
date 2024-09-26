@@ -56,6 +56,8 @@ internal unsafe class X11ShmImage : IDisposable
         shmImage->data = data = shmaddr;
 
         XShmAttach(display, pShmSegmentInfo);
+
+        X11ShmDebugLogger.WriteLine($"[X11ShmImage] CreateX11ShmImage Size={Size} shmid={shmid:X} shmaddr={shmaddr}");
     }
 
     public X11ShmImageManager ShmImageManager { get; }
@@ -79,5 +81,7 @@ internal unsafe class X11ShmImage : IDisposable
         shmctl(PShmSegmentInfo->shmid, IPC_RMID, IntPtr.Zero);
 
         Marshal.FreeHGlobal(new IntPtr(PShmSegmentInfo));
+
+        X11ShmDebugLogger.WriteLine($"[X11ShmImage] Dispose");
     }
 }

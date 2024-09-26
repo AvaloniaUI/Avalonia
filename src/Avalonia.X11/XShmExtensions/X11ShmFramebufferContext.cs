@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using ShmSeg = System.UInt64;
+
 namespace Avalonia.X11.XShmExtensions;
 
 class X11ShmFramebufferContext
@@ -25,7 +27,7 @@ class X11ShmFramebufferContext
     public IntPtr Visual { get; }
     public int Depth { get; }
 
-    public void OnXShmCompletion(UInt64 shmseg)
+    public void OnXShmCompletion(ShmSeg shmseg)
     {
         if (_shmImageDictionary.Remove(shmseg, out var image))
         {
@@ -34,6 +36,7 @@ class X11ShmFramebufferContext
         else
         {
             // Unexpected case, all the X11ShmImage should be registered in the dictionary
+            X11ShmDebugLogger.WriteLine($"[X11ShmFramebufferContext][OnXShmCompletion] [Warn] Can not find shmseg={shmseg} in Dictionary!!!");
         }
     }
 
@@ -42,5 +45,5 @@ class X11ShmFramebufferContext
         _shmImageDictionary[image.ShmSeg] = image;
     }
 
-    private readonly Dictionary<UInt64, X11ShmImage> _shmImageDictionary = new Dictionary<UInt64, X11ShmImage>();
+    private readonly Dictionary<ShmSeg, X11ShmImage> _shmImageDictionary = new Dictionary<ShmSeg, X11ShmImage>();
 }
