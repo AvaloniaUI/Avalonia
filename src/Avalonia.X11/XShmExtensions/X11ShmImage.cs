@@ -22,8 +22,6 @@ class X11ShmFramebufferContext
         RenderHandle = renderHandle;
         Visual = visual;
         Depth = depth;
-
-        X11ShmImageManager = new X11ShmImageManager(this);
     }
 
     public X11Window X11Window { get; }
@@ -35,8 +33,6 @@ class X11ShmFramebufferContext
     public IntPtr RenderHandle { get; }
     public IntPtr Visual { get; }
     public int Depth { get; }
-
-    public X11ShmImageManager X11ShmImageManager { get; }
 }
 
 internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
@@ -58,7 +54,7 @@ internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
         var p = &@event;
         var xShmCompletionEvent = (XShmCompletionEvent*)p;
         ShmSeg shmseg = xShmCompletionEvent->shmseg;
-        _context.X11ShmImageManager.OnXShmCompletion(shmseg);
+        //_context.X11ShmImageManager.OnXShmCompletion(shmseg);
     }
 }
 
@@ -73,11 +69,11 @@ internal class X11ShmImage : IDisposable
 
     public void Dispose()
     {
-        
+
     }
 }
 
-internal class X11ShmImageManager
+internal class X11ShmImageManager : IDisposable
 {
     public X11ShmImageManager(X11ShmFramebufferContext context)
     {
@@ -130,6 +126,11 @@ internal class X11ShmImageManager
     public void OnXShmCompletion(ShmSeg shmseg)
     {
     }
+
+    public void Dispose()
+    {
+
+    }
 }
 
 //class DeferredDisplayEvents
@@ -165,12 +166,16 @@ internal class X11ShmImageSwapchain : IFramebufferRenderTarget
     public X11ShmImageSwapchain(X11ShmFramebufferContext context)
     {
         _context = context;
+        X11ShmImageManager = new X11ShmImageManager(context);
     }
+
+    public X11ShmImageManager X11ShmImageManager { get; }
 
     private readonly X11ShmFramebufferContext _context;
 
     public void Dispose()
     {
+        X11ShmImageManager.Dispose();
     }
 
     public ILockedFramebuffer Lock()
@@ -191,8 +196,8 @@ internal class X11ShmImageSwapchain : IFramebufferRenderTarget
         XUnlockDisplay(display);
 
         var size = new PixelSize(width, height);
-        var shmImage = _context.X11ShmImageManager.GetOrCreateImage(size);
+        var shmImage = X11ShmImageManager.GetOrCreateImage(size);
 
-        return new X11ShmLockedFramebuffer(shmImage,_context);
+        return new X11ShmLockedFramebuffer(shmImage, _context);
     }
 }
