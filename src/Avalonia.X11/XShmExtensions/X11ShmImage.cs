@@ -126,11 +126,6 @@ internal unsafe class X11ShmImage : IDisposable
     public XShmSegmentInfo ShmSegmentInfo => *PShmSegmentInfo;
     public IntPtr ShmAddr => new IntPtr(PShmSegmentInfo->shmaddr);
 
-    /// <summary>
-    /// Returns false if we haven't got a completion event since the last Present, can call ProcessPendingEvents here
-    /// </summary>
-    public bool IsReady { get; set; }
-
     public PixelSize Size { get; }
 
     public ShmSeg ShmSeg => PShmSegmentInfo->shmseg;
@@ -160,14 +155,10 @@ internal class X11ShmImageManager : IDisposable
 
     public Queue<X11ShmImage> AvailableQueue = new();
 
-    public Queue<X11ShmImage> PresentationQueue = new();
-
     public PixelSize? LastSize { get; private set; }
 
     public X11ShmImage GetOrCreateImage(PixelSize size)
     {
-        DrainPresentationQueue();
-
         if (LastSize != size)
         {
             foreach (var x11ShmImage in AvailableQueue)
@@ -179,27 +170,23 @@ internal class X11ShmImageManager : IDisposable
 
         if (AvailableQueue.TryDequeue(out var image))
         {
+            if (image.Size != size)
+            {
+                image.Dispose();
+                image = null;
+            }
         }
         else
         {
             // Check presentationQueue.Count < swapchainSize ?
-            image = new X11ShmImage(size, this);
+            image = null;
         }
+
+        image ??= new X11ShmImage(size, this);
 
         LastSize = size;
 
-        image.IsReady = false;
-        PresentationQueue.Enqueue(image);
-
         return image;
-    }
-
-    public void DrainPresentationQueue()
-    {
-        while (PresentationQueue.Count > 0 && PresentationQueue.Peek().IsReady)
-        {
-            AvailableQueue.Enqueue(PresentationQueue.Dequeue());
-        }
     }
 
     public void TryReuse(X11ShmImage image)
@@ -216,14 +203,7 @@ internal class X11ShmImageManager : IDisposable
             return;
         }
 
-        if (PresentationQueue.Contains(image))
-        {
-            image.IsReady = true;
-        }
-        else
-        {
-            image.Dispose();
-        }
+        AvailableQueue.Enqueue(image);
     }
 
     public void Dispose()
