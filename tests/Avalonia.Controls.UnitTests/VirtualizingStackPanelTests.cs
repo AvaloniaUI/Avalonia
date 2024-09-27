@@ -30,6 +30,13 @@ namespace Avalonia.Controls.UnitTests
                 [!Layoutable.HeightProperty] = new Binding("Height"),
             });
 
+        private static FuncDataTemplate<ItemWithWidth> CanvasWithWidthTemplate = new((_, _) =>
+            new Canvas
+            {
+                Height = 100,
+                [!Layoutable.WidthProperty] = new Binding("Width"),
+            });
+
         [Fact]
         public void Creates_Initial_Items()
         {
@@ -1193,6 +1200,58 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ScrollIntoView_Correctly_Scrolls_Right_To_A_Page_Of_Smaller_Items()
+        {
+            using var app = App();
+
+            // First 10 items have width of 20, next 10 have width of 10.
+            var items = Enumerable.Range(0, 20).Select(x => new ItemWithWidth(x, ((29 - x) / 10) * 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithWidthTemplate, orientation: Orientation.Horizontal);
+
+            // Scroll the last item into view.
+            target.ScrollIntoView(19);
+
+            // At the time of the scroll, the average item width is 20, so the requested item
+            // should be placed at 380 (19 * 20) which therefore results in an extent of 390 to
+            // accommodate the item width of 10. This is obviously not a perfect answer, but
+            // it's the best we can do without knowing the actual item widths.
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
+            Assert.Equal(new Rect(380, 0, 10, 100), container.Bounds);
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
+            Assert.Equal(new Size(390, 100), scroll.Extent);
+            Assert.Equal(new Vector(290, 0), scroll.Offset);
+
+            // Items 10-19 should be visible.
+            AssertRealizedItems(target, itemsControl, 10, 10);
+        }
+
+        [Fact]
+        public void ScrollIntoView_Correctly_Scrolls_Right_To_A_Page_Of_Larger_Items()
+        {
+            using var app = App();
+
+            // First 10 items have width of 10, next 10 have width of 20.
+            var items = Enumerable.Range(0, 20).Select(x => new ItemWithWidth(x, ((x / 10) + 1) * 10));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithWidthTemplate, orientation: Orientation.Horizontal);
+
+            // Scroll the last item into view.
+            target.ScrollIntoView(19);
+
+            // At the time of the scroll, the average item width is 10, so the requested item
+            // should be placed at 190 (19 * 10) which therefore results in an extent of 210 to
+            // accommodate the item width of 20. This is obviously not a perfect answer, but
+            // it's the best we can do without knowing the actual item widths.
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
+            Assert.Equal(new Rect(190, 0, 20, 100), container.Bounds);
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
+            Assert.Equal(new Size(210, 100), scroll.Extent);
+            Assert.Equal(new Vector(110, 0), scroll.Offset);
+
+            // Items 15-19 should be visible.
+            AssertRealizedItems(target, itemsControl, 15, 5);
+        }
+
+        [Fact]
         public void Extent_And_Offset_Should_Be_Updated_When_Containers_Resize()
         {
             using var app = App();
@@ -1348,21 +1407,24 @@ namespace Avalonia.Controls.UnitTests
         private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateTarget(
             IEnumerable<object>? items = null,
             Optional<IDataTemplate?> itemTemplate = default,
-            IEnumerable<Style>? styles = null)
+            IEnumerable<Style>? styles = null,
+            Orientation orientation = Orientation.Vertical)
         {
             return CreateTarget<ItemsControl>(
                 items: items, 
                 itemTemplate: itemTemplate, 
-                styles: styles);
+                styles: styles,
+                orientation: orientation);
         }
 
         private static (VirtualizingStackPanel, ScrollViewer, T) CreateTarget<T>(
             IEnumerable<object>? items = null,
             Optional<IDataTemplate?> itemTemplate = default,
-            IEnumerable<Style>? styles = null)
+            IEnumerable<Style>? styles = null,
+            Orientation orientation = Orientation.Vertical)
                 where T : ItemsControl, new()
         {
-            var (target, scroll, itemsControl) = CreateUnrootedTarget<T>(items, itemTemplate);
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<T>(items, itemTemplate, orientation);
             var root = CreateRoot(itemsControl, styles: styles);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -1372,7 +1434,8 @@ namespace Avalonia.Controls.UnitTests
 
         private static (VirtualizingStackPanel, ScrollViewer, T) CreateUnrootedTarget<T>(
             IEnumerable<object>? items = null,
-            Optional<IDataTemplate?> itemTemplate = default)
+            Optional<IDataTemplate?> itemTemplate = default,
+            Orientation orientation = Orientation.Vertical)
                 where T : ItemsControl, new()
         {
             var target = new VirtualizingStackPanel();
@@ -1390,6 +1453,12 @@ namespace Avalonia.Controls.UnitTests
                 Content = presenter,
                 Template = ScrollViewerTemplate(),
             };
+
+            if (orientation == Orientation.Horizontal)
+            {
+                scroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                scroll.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            }
 
             var itemsControl = new T
             {
@@ -1476,6 +1545,25 @@ namespace Avalonia.Controls.UnitTests
             {
                 get => _height;
                 set => SetField(ref _height, value);
+            }
+        }
+
+        private class ItemWithWidth : NotifyingBase
+        {
+            private double _width;
+
+            public ItemWithWidth(int index, double width = 10)
+            {
+                Caption = $"Item {index}";
+                Width = width;
+            }
+
+            public string Caption { get; set; }
+
+            public double Width
+            {
+                get => _width;
+                set => SetField(ref _width, value);
             }
         }
 
