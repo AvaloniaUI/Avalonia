@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -1282,6 +1283,8 @@ namespace Avalonia.Base.UnitTests.Input
             Button expected;
             bool executed = false;
 
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var top = new StackPanel
             {
                 [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
@@ -1303,6 +1306,12 @@ namespace Avalonia.Base.UnitTests.Input
                     }
                 }
             };
+
+            var testRoot = new TestRoot(top);
+
+            top.ApplyTemplate();
+
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
             var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next) as Button;
 

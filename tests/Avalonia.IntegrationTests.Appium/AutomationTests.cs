@@ -1,20 +1,13 @@
-﻿using OpenQA.Selenium.Appium;
-using Xunit;
+﻿using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class AutomationTests
+    public class AutomationTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public AutomationTests(DefaultAppFixture fixture)
+            : base(fixture, "Automation")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Automation");
-            tab.Click();
         }
 
         [Fact]
@@ -22,15 +15,15 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // AutomationID can be specified by the Name or AutomationProperties.AutomationId
             // properties, with the latter taking precedence.
-            var byName = _session.FindElementByAccessibilityId("TextBlockWithName");
-            var byAutomationId = _session.FindElementByAccessibilityId("TextBlockWithNameAndAutomationId");
+            var byName = Session.FindElementByAccessibilityId("TextBlockWithName");
+            var byAutomationId = Session.FindElementByAccessibilityId("TextBlockWithNameAndAutomationId");
         }
 
         [Fact]
         public void LabeledBy()
         {
-            var label = _session.FindElementByAccessibilityId("TextBlockAsLabel");
-            var labeledTextBox = _session.FindElementByAccessibilityId("LabeledByTextBox");
+            var label = Session.FindElementByAccessibilityId("TextBlockAsLabel");
+            var labeledTextBox = Session.FindElementByAccessibilityId("LabeledByTextBox");
 
             Assert.Equal("Label for TextBox", label.Text);
             Assert.Equal("Label for TextBox", labeledTextBox.GetName());

@@ -7,6 +7,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Native.Interop;
 
 #nullable enable
@@ -38,6 +39,7 @@ namespace Avalonia.Native
         public IAvnString ClassName => _inner.GetClassName().ToAvnString();
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
         public IAvnString Name => _inner.GetName().ToAvnString();
+        public IAvnString HelpText => _inner.GetHelpText().ToAvnString();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
         public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
 
@@ -56,6 +58,9 @@ namespace Avalonia.Native
             Node = node;
         }
 
+        public int IsInteropPeer() => (_inner is InteropAutomationPeer).AsComBool();
+        public IntPtr InteropPeer_GetNativeControlHandle() => ((InteropAutomationPeer)_inner).NativeControlHandle.Handle;
+        
         public IAvnAutomationPeer? RootPeer
         {
             get

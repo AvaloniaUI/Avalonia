@@ -11,11 +11,14 @@
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
     <None Remove="Fonts\DejaVuSans.ttf" />
+    <None Remove="Fonts\Manrope-Light.ttf" />
     <EmbeddedResource Include="Fonts\DejaVuSans.ttf" />
+    <EmbeddedResource Include="Fonts\Manrope-Light.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>

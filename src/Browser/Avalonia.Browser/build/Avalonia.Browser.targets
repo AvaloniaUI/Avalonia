@@ -6,6 +6,7 @@
   <ItemGroup>
     <!-- So we can access Emscripten APIs -->
     <EmccExportedRuntimeMethod Include="GL" />
+    <EmccExportedRuntimeMethod Include="PThread" Condition="'$(WasmEnableThreads)' == 'true'" />
   </ItemGroup>
   
   <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->

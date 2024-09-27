@@ -4,6 +4,7 @@
     <SupportedOSPlatformVersion>$(AvsMinSupportedAndroidVersion)</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AndroidResgenNamespace>Avalonia.Android.Internal</AndroidResgenNamespace>
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
@@ -17,4 +18,8 @@
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
+  <Import Project="..\..\..\build\SourceGenerators.props" />
+  <ItemGroup>
+    <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />
+  </ItemGroup>
 </Project>

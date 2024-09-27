@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
@@ -65,7 +67,7 @@ namespace Avalonia.X11
             }
 
             properties = new FramebufferLockProperties(framebufferValid);
-            return _fb.Lock(new Vector(96, 96), Blit);
+            return _fb!.Lock(new Vector(96, 96), Blit);
         }
 
         public IFramebufferRenderTarget CreateFramebufferRenderTarget()

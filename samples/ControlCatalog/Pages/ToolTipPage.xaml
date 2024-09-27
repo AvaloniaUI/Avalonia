@@ -5,31 +5,24 @@
                 Spacing="4">
         <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
 
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto"
-              ColumnDefinitions="Auto,Auto"
-              Margin="0,16,0,0"
-              HorizontalAlignment="Center">
+        <UniformGrid Columns="2"
+                     Margin="0,16,0,0"
+                     HorizontalAlignment="Center">
             <ToggleSwitch Margin="5" 
-                    HorizontalAlignment="Center"
-                    IsChecked="{Binding Path=(ToolTip.ServiceEnabled), RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    Content="Enable ToolTip service" />
-            <Border Grid.Column="0"
-                    Grid.Row="1"
-                    Background="{DynamicResource SystemAccentColor}"
+                          HorizontalAlignment="Center"
+                          IsChecked="{Binding Path=(ToolTip.ServiceEnabled), RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          Content="Enable ToolTip service" />
+            <ToggleSwitch Margin="5"
+                          IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
+                          HorizontalAlignment="Center"
+                          Content="ToolTip Open" />
+            <Border Background="{DynamicResource SystemAccentColor}"
                     Margin="5"
                     Padding="50"
                     ToolTip.Tip="This is a ToolTip">
                 <TextBlock>Hover Here</TextBlock>
             </Border>
-            <ToggleSwitch Grid.Column="1"
-                      Margin="5"
-                      Grid.Row="0"
-                      IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
-                      HorizontalAlignment="Center"
-                      Content="ToolTip Open" />
             <Border Name="Border"
-                    Grid.Column="1"
-                    Grid.Row="1"
                     Background="{DynamicResource SystemAccentColor}"
                     Margin="5"
                     Padding="50"
@@ -42,8 +35,15 @@
                 </ToolTip.Tip>
                 <TextBlock>ToolTip bottom placement</TextBlock>
             </Border>
-            <Border Grid.Row="2"
-                    Background="{DynamicResource SystemAccentColor}"
+            <Border Background="{DynamicResource SystemAccentColor}"
+                    Margin="5"
+                    Padding="50"
+                    ToolTip.Placement="Custom"
+                    ToolTip.CustomPopupPlacementCallback="CustomPlacementCallback"
+                    ToolTip.Tip="Custom positioned tooltip">
+              <TextBlock>ToolTip custom placement</TextBlock>
+            </Border>
+            <Border Background="{DynamicResource SystemAccentColor}"
                     Margin="5"
                     Padding="50"
                     ToolTip.Tip="Hello"
@@ -67,8 +67,7 @@
               <TextBlock>Moving offset</TextBlock>
             </Border>
 
-            <Button Grid.Row="2" Grid.Column="1"
-                    IsEnabled="False"
+            <Button IsEnabled="False"
                     ToolTip.ShowOnDisabled="True"
                     ToolTip.Tip="This control is disabled"
                     Margin="5"
@@ -76,13 +75,20 @@
               <TextBlock>ToolTip on a disabled control</TextBlock>
             </Button>
 
-          <Border Grid.Row="3"
-                  Background="{DynamicResource SystemAccentColor}"
+          <Border Background="{DynamicResource SystemAccentColor}"
                   Margin="5"
                   Padding="50"
                   ToolTip.Tip="Outer tooltip">
             <TextBlock Background="{StaticResource SystemAccentColorDark1}" Padding="10" ToolTip.Tip="Inner tooltip" VerticalAlignment="Center">Nested ToolTips</TextBlock>
           </Border>
-        </Grid>
+
+          <Border Background="{DynamicResource SystemAccentColor}"
+                  Margin="5"
+                  Padding="50"
+                  ToolTip.ToolTipOpening="ToolTipOpening"
+                  ToolTip.Tip="Should never be visible">
+            <TextBlock VerticalAlignment="Center">ToolTip replaced on the fly</TextBlock>
+          </Border>
+        </UniformGrid>
     </StackPanel>
 </UserControl>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
@@ -15,9 +16,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class AvaloniaXamlIlLanguageParseIntrinsics
     {
-        public static bool TryConvert(AstTransformationContext context, IXamlAstValueNode node, string text, IXamlType type, AvaloniaXamlIlWellKnownTypes types, out IXamlAstValueNode result)
+        public static bool TryConvert(
+            AstTransformationContext context,
+            IXamlAstValueNode node,
+            string text,
+            IXamlType type,
+            AvaloniaXamlIlWellKnownTypes types,
+            [NotNullWhen(true)] out IXamlAstValueNode? result)
         {
-            bool ReturnOnParseError(string title, out IXamlAstValueNode result)
+            bool ReturnOnParseError(string title, out IXamlAstValueNode? result)
             {
                 context.ReportDiagnostic(new XamlDiagnostic(
                     AvaloniaXamlDiagnosticCodes.AvaloniaIntrinsicsError,
@@ -50,7 +57,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
 
                 result = new XamlStaticOrTargetedReturnMethodCallNode(node,
-                    type.FindMethod("FromTicks", type, false, types.Long),
+                    type.GetMethod("FromTicks", type, false, types.Long),
                     new[] { new XamlConstantNode(node, types.Long, timeSpan.Ticks) });
                 return true;
             }
@@ -165,6 +172,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             if (type.Equals(types.Color))
             {
+                text = text.Trim();
                 if (!Color.TryParse(text, out Color color))
                 {
                     return ReturnOnParseError($"Unable to parse \"{text}\" as a color", out result);
@@ -272,7 +280,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     if (property.PropertyType == types.TextTrimming && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
                     {
-                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter!, Enumerable.Empty<IXamlAstValueNode>());
 
                         return true;
                     }
@@ -285,7 +293,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     if (property.PropertyType == types.TextDecorationCollection && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
                     {
-                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter!, Enumerable.Empty<IXamlAstValueNode>());
 
                         return true;
                     }
@@ -298,7 +306,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     if (property.PropertyType == types.WindowTransparencyLevel && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
                     {
-                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter!, Enumerable.Empty<IXamlAstValueNode>());
 
                         return true;
                     }
@@ -309,7 +317,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var uriText = text.Trim();
 
-                var kind = ((!uriText?.StartsWith("/") == true) ? UriKind.RelativeOrAbsolute : UriKind.Relative);
+                var kind = !uriText.StartsWith("/") ? UriKind.RelativeOrAbsolute : UriKind.Relative;
 
                 if (string.IsNullOrWhiteSpace(uriText) || !Uri.TryCreate(uriText, kind, out var _))
                 {
@@ -373,12 +381,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     {
                         if (attribute.Properties.TryGetValue("Separators", out var separatorsArray))
                         {
-                            separators = ((Array)separatorsArray)?.OfType<string>().ToArray();
+                            separators = ((Array?)separatorsArray)?.OfType<string>().ToArray();
                         }
 
                         if (attribute.Properties.TryGetValue("SplitOptions", out var splitOptionsObj))
                         {
-                            splitOptions = (StringSplitOptions)splitOptionsObj;
+                            splitOptions = (StringSplitOptions)splitOptionsObj!;
                         }
                     }
 
@@ -403,7 +411,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         return false;
                     }
 
-                    nodes[index] = itemNode;
+                    nodes[index] = itemNode!;
                 }
 
                 foreach (var element in nodes)
@@ -440,7 +448,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return false;
         }
 
-        private static IXamlType GetElementType(IXamlType type, XamlTypeWellKnownTypes types)
+        private static IXamlType? GetElementType(IXamlType type, XamlTypeWellKnownTypes types)
         {
             if (type.IsArray)
             {

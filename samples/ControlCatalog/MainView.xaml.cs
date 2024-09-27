@@ -25,16 +25,6 @@ namespace ControlCatalog
             
             var sideBar = this.Get<TabControl>("Sidebar");
 
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
-            {
-                var tabItems = (sideBar.Items as IList);
-                tabItems?.Add(new TabItem()
-                {
-                    Header = "Screens",
-                    Content = new ScreenPage()
-                });
-            }
-
             var themes = this.Get<ComboBox>("Themes");
             themes.SelectedItem = App.CurrentTheme;
             themes.SelectionChanged += (sender, e) =>

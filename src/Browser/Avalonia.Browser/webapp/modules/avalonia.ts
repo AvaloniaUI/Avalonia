@@ -6,7 +6,12 @@ import { NativeControlHost } from "./avalonia/nativeControlHost";
 import { NavigationHelper } from "./avalonia/navigationHelper";
 import { GeneralHelpers } from "./avalonia/generalHelpers";
 import { TimerHelper } from "./avalonia/timer";
-import { CanvasFactory } from "./avalonia/surfaces/surfaceFactory";
+import { CanvasSurface } from "./avalonia/rendering/canvasSurface";
+import { WebRenderTargetRegistry } from "./avalonia/rendering/webRenderTargetRegistry";
+import { WebRenderTarget } from "./avalonia/rendering/webRenderTarget";
+import { SoftwareRenderTarget } from "./avalonia/rendering/softwareRenderTarget";
+import { WebGlRenderTarget } from "./avalonia/rendering/webGlRenderTarget";
+import { ScreenHelper } from "./avalonia/screens";
 
 async function registerServiceWorker(path: string, scope: string | undefined) {
     if ("serviceWorker" in navigator) {
@@ -16,13 +21,18 @@ async function registerServiceWorker(path: string, scope: string | undefined) {
 
 export {
     Caniuse,
-    CanvasFactory,
     InputHelper,
     AvaloniaDOM,
     StreamHelper,
     NativeControlHost,
     NavigationHelper,
     GeneralHelpers,
+    ScreenHelper,
     TimerHelper,
+    WebRenderTarget,
+    CanvasSurface,
+    WebRenderTargetRegistry,
+    SoftwareRenderTarget,
+    WebGlRenderTarget,
     registerServiceWorker
 };

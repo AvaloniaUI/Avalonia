@@ -75,10 +75,15 @@ namespace Avalonia.Skia
                 currentX += advance;
             }
 
+            if (runBounds.Left < 0)
+            {
+                runBounds = runBounds.Translate(new Vector(-runBounds.Left, 0));
+            }
+
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
             BaselineOrigin = baselineOrigin;
-            Bounds = runBounds;
+            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, 0));
         }
 
         public IGlyphTypeface GlyphTypeface => _glyphTypefaceImpl;

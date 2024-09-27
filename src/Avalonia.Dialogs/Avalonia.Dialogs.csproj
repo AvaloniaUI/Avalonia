@@ -16,7 +16,8 @@
 
   <ItemGroup>
     <!-- For managed dialogs dev testing -->
-    <InternalsVisibleTo Include="ControlCatalog, PublicKey=$(AvaloniaPublicKey)" />    
+    <InternalsVisibleTo Include="ControlCatalog, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 
   <Import Project="..\..\build\DevAnalyzers.props" />

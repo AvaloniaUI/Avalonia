@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -6,17 +8,17 @@ using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
-/// <summary>
-
-/// </summary>
 internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
     IDrawingContextWithAcrylicLikeSupport, IDrawingContextImplWithEffects
 {
     private readonly IDrawingContextImpl _impl;
+    private static readonly ThreadSafeObjectPool<Stack<Matrix>> s_transformStackPool = new();
+    private Stack<Matrix>? _transformStack = s_transformStackPool.Get();
 
     public CompositorDrawingContextProxy(IDrawingContextImpl impl)
     {
@@ -27,28 +29,45 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
     {
         Flush();
         _commands.Dispose();
+        if (_transformStack != null)
+        {
+            Debug.Assert(_transformStack.Count == 0);
+            _transformStack.Clear();
+        }
+
+        s_transformStackPool.ReturnAndSetNull(ref _transformStack);
     }
 
     public Matrix? PostTransform { get; set; }
-    Matrix _transform;
+    
+    // Transform that was most recently passed to set_Transform or restored by a PopXXX operation
+    // We use it to report the transform that would correspond to the current state if all commands were executed
+    Matrix _reportedTransform = Matrix.Identity;
+    
+    // Transform that was most recently passed to SetImplTransform or restored by a PopXXX operation
+    // We use it to save the effective transform before executing a Push operation
+    Matrix _effectiveTransform = Matrix.Identity;
 
     public Matrix Transform
     {
-        get => _transform;
+        get => _reportedTransform;
         set
         {
-            _transform = value;
+            _reportedTransform = value;
             SetTransform(value);
         }
     }
 
     void SetImplTransform(Matrix m)
     {
-        _transform = m;
+        _effectiveTransform = m;
         if (PostTransform.HasValue)
             m = m * PostTransform.Value;
         _impl.Transform = m;
     }
+
+    void SaveTransform() => _transformStack!.Push(_effectiveTransform);
+    void RestoreTransform() => _reportedTransform = _effectiveTransform = _transformStack!.Pop();
 
     public void Clear(Color color)
     {
@@ -142,8 +161,11 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
 
     public void PopClip()
     {
-        if (!TryDiscard(PendingCommandType.PushClip)) 
+        if (!TryDiscardOrFlush(PendingCommandType.PushClip))
+        {
             _impl.PopClip();
+            RestoreTransform();
+        }
     }
 
     public void PushLayer(Rect bounds)
@@ -173,8 +195,11 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
 
     public void PopOpacity()
     {
-        if (!TryDiscard(PendingCommandType.PushOpacity)) 
+        if (!TryDiscardOrFlush(PendingCommandType.PushOpacity))
+        {
             _impl.PopOpacity();
+            RestoreTransform();
+        }
     }
 
     public void PushOpacityMask(IBrush mask, Rect bounds)
@@ -195,8 +220,11 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
 
     public void PopOpacityMask()
     {
-        if (!TryDiscard(PendingCommandType.PushOpacityMask)) 
+        if (!TryDiscardOrFlush(PendingCommandType.PushOpacityMask))
+        {
             _impl.PopOpacityMask();
+            RestoreTransform();
+        }
     }
 
     public void PushGeometryClip(IGeometryImpl clip)
@@ -213,8 +241,11 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
 
     public void PopGeometryClip()
     {
-        if (!TryDiscard(PendingCommandType.PushGeometryClip)) 
+        if (!TryDiscardOrFlush(PendingCommandType.PushGeometryClip))
+        {
             _impl.PopGeometryClip();
+            RestoreTransform();
+        }
     }
     
     public void PushRenderOptions(RenderOptions renderOptions)
@@ -231,8 +262,11 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
 
     public void PopRenderOptions()
     {
-        if (!TryDiscard(PendingCommandType.PushRenderOptions)) 
+        if (!TryDiscardOrFlush(PendingCommandType.PushRenderOptions))
+        {
             _impl.PopRenderOptions();
+            RestoreTransform();
+        }
     }
 
     public object? GetFeature(Type t)
@@ -265,7 +299,11 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
 
     public void PopEffect()
     {
-        if (!TryDiscard(PendingCommandType.PushEffect) && _impl is IDrawingContextImplWithEffects effects) 
-            effects.PopEffect();
+        if (!TryDiscardOrFlush(PendingCommandType.PushEffect))
+        {
+            if (_impl is IDrawingContextImplWithEffects effects)
+                effects.PopEffect();
+            RestoreTransform();
+        }
     }
 }

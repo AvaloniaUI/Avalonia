@@ -18,6 +18,7 @@ namespace Avalonia.Controls.Primitives
         Day,
         Hour,
         Minute,
+        Second,
         TimePeriod //AM or PM
     }
 
@@ -516,6 +517,8 @@ namespace Avalonia.Controls.Primitives
                     return new TimeSpan(value, 0, 0).ToString(ItemFormat);
                 case DateTimePickerPanelType.Minute:
                     return new TimeSpan(0, value, 0).ToString(ItemFormat);
+                case DateTimePickerPanelType.Second:
+                    return new TimeSpan(0, 0, value).ToString(ItemFormat);
                 case DateTimePickerPanelType.TimePeriod:
                     return value == MinimumValue ? TimeUtils.GetAMDesignator() : TimeUtils.GetPMDesignator();
                 default:

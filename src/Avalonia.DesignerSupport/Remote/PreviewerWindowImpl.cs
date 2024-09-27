@@ -83,7 +83,6 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public IScreenImpl Screen { get; } = new ScreenStub();
         public Action GotInputWhenDisabled { get; set; }        
         
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
@@ -102,7 +101,12 @@ namespace Avalonia.DesignerSupport.Remote
             {
                 return new NoopStorageProvider();
             }
-            
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return new ScreenStub();
+            }
+
             return base.TryGetFeature(featureType);
         }
         

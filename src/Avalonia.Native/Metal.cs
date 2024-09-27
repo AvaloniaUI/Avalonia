@@ -50,11 +50,11 @@ class MetalDevice : IMetalDevice
 
 class MetalPlatformSurface : IMetalPlatformSurface
 {
-    private readonly IAvnWindowBase _window;
+    private readonly IAvnTopLevel _topLevel;
 
-    public MetalPlatformSurface(IAvnWindowBase window)
+    public MetalPlatformSurface(IAvnTopLevel topLevel)
     {
-        _window = window;
+        _topLevel = topLevel;
     }
     public IMetalPlatformSurfaceRenderTarget CreateMetalRenderTarget(IMetalDevice device)
     {
@@ -62,7 +62,7 @@ class MetalPlatformSurface : IMetalPlatformSurface
             throw new RenderTargetNotReadyException();
         
         var dev = (MetalDevice)device;
-        var target = _window.CreateMetalRenderTarget(dev.Native);
+        var target = _topLevel.CreateMetalRenderTarget(dev.Native);
         return new MetalRenderTarget(target);
     }
 }

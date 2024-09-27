@@ -90,6 +90,8 @@ namespace Avalonia.UnitTests
             return result.Object;
         }
 
+        public void ExecuteInitialLayoutPass() => LayoutManager.ExecuteInitialLayoutPass();
+
         public void Invalidate(Rect rect)
         {
         }

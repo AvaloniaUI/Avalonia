@@ -7,17 +7,11 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class ListBoxTests
+    public class ListBoxTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public ListBoxTests(DefaultAppFixture fixture)
+            : base(fixture, "ListBox")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("ListBox");
-            tab.Click();
         }
 
         [Fact]
@@ -49,7 +43,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.False(item2.Selected);
             Assert.False(item4.Selected);
             
-            new Actions(_session)
+            new Actions(Session)
                 .Click(item2)
                 .KeyDown(Keys.Control)
                 .Click(item4)
@@ -73,7 +67,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.False(item3.Selected);
             Assert.False(item4.Selected);
 
-            new Actions(_session)
+            new Actions(Session)
                 .Click(item2)
                 .KeyDown(Keys.Shift)
                 .Click(item4)
@@ -96,8 +90,8 @@ namespace Avalonia.IntegrationTests.Appium
 
         private AppiumWebElement GetTarget()
         {
-            _session.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
-            return _session.FindElementByAccessibilityId("BasicListBox");
+            Session.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
+            return Session.FindElementByAccessibilityId("BasicListBox");
         }
     }
 }

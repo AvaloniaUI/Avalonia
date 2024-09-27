@@ -13,8 +13,11 @@ namespace Avalonia.Android
     internal abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, INativePlatformHandleSurface
     {
         bool _invalidateQueued;
+        private bool _isDisposed;
         readonly object _lock = new object();
         private readonly Handler _handler;
+
+        internal event EventHandler? SurfaceWindowCreated;
 
         IntPtr IPlatformHandle.Handle => Holder?.Surface?.Handle is { } handle ?
             AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle) :
@@ -39,7 +42,7 @@ namespace Avalonia.Android
                     return;
                 _handler.Post(() =>
                 {
-                    if (Holder?.Surface?.IsValid != true)
+                    if (_isDisposed || Holder?.Surface?.IsValid != true)
                         return;
                     try
                     {
@@ -53,6 +56,11 @@ namespace Avalonia.Android
             }
         }
 
+        internal new void Dispose()
+        {
+            _isDisposed = true;
+        }
+
         public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
             Log.Info("AVALONIA", "Surface Changed");
@@ -62,6 +70,7 @@ namespace Avalonia.Android
         public void SurfaceCreated(ISurfaceHolder holder)
         {
             Log.Info("AVALONIA", "Surface Created");
+            SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
             DoDraw();
         }
 
