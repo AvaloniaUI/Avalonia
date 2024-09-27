@@ -1451,7 +1451,6 @@ namespace Avalonia.Controls.UnitTests
             {
                 Name = "PART_ScrollViewer",
                 Content = presenter,
-                Template = ScrollViewerTemplate(),
             };
 
             if (orientation == Orientation.Horizontal)
@@ -1459,6 +1458,8 @@ namespace Avalonia.Controls.UnitTests
                 scroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
                 scroll.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
             }
+
+            scroll.Template = ScrollViewerTemplate();
 
             var itemsControl = new T
             {
