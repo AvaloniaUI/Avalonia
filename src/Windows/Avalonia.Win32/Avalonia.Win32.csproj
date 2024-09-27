@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
     <!-- We still keep BinaryFormatter for WinForms compatibility. -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>

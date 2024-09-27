@@ -19,4 +19,10 @@
     <WarningsAsErrors Condition="'$(IsAotCompatible)' == 'true'">$(WarningsAsErrors);IL3050;IL3051;IL3052;IL3053;IL3054;IL3055;IL3056</WarningsAsErrors>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0')) AND '$(EnableRuntimeMarshalling)' != 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);CA1420;CA1421</WarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0')) AND '$(EnableRuntimeMarshalling)' != 'true'">
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute" />
+  </ItemGroup>
 </Project>
