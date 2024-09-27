@@ -1,41 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ControlCatalog.Pages.ProgressBarPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h2">A progress bar control</TextBlock>
-    <StackPanel Spacing="5">
-      <StackPanel Orientation="Horizontal" Spacing="5">
-        <TextBlock VerticalAlignment="Center">Maximum</TextBlock>
-        <NumericUpDown x:Name="maximum" Value="100" VerticalAlignment="Center"/>
-      </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="5">
-        <TextBlock VerticalAlignment="Center">Minimum</TextBlock>
-        <NumericUpDown x:Name="minimum" Value="0" VerticalAlignment="Center"/>
-      </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="5">
-        <TextBlock VerticalAlignment="Center">Progress Text Format</TextBlock>
-        <TextBox x:Name="stringFormat" Text="{}{0:0}%" VerticalAlignment="Center"/>
-      </StackPanel>
-      <CheckBox x:Name="showProgress" Margin="10,16,0,0" Content="Show Progress Text" />
-      <CheckBox x:Name="isIndeterminate" Margin="10,16,0,0" Content="Toggle Indeterminate" />
-      <StackPanel Orientation="Horizontal" Margin="0,16,0,0" HorizontalAlignment="Center" Spacing="16">
-        <StackPanel Spacing="16">
-          <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #hprogress.Value}" 
-                       Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}" ProgressTextFormat="{Binding #stringFormat.Text}"/>
-        </StackPanel>
-        <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical" 
-                     Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}" ProgressTextFormat="{Binding #stringFormat.Text}"/>
-      </StackPanel>
-      <StackPanel Margin="16">
-        <Slider Name="hprogress" Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}" Value="40" />
-        <Slider Name="vprogress" Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}" Value="60" />
-      </StackPanel>
 
       <StackPanel Spacing="10">
-        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" 
-                     Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}"/>
+        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
         <ProgressBar VerticalAlignment="Center" Value="5" Maximum="10" />
         <ProgressBar VerticalAlignment="Center" Value="50" />
         <ProgressBar VerticalAlignment="Center" Value="50" Minimum="25" Maximum="75" />
       </StackPanel>
     </StackPanel>
-  </StackPanel>
 </UserControl>

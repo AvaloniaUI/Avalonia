@@ -49,8 +49,7 @@ namespace Avalonia.UnitTests
             else
                 source.RaiseEvent(e);
 
-            _pointer.Capture(null);
-            _pointer.CaptureGestureRecognizer(null);
+           Cancel();
         }
 
         public void Tap(Interactive target, Point position = default,  KeyModifiers modifiers = default)
@@ -66,6 +65,7 @@ namespace Avalonia.UnitTests
         {
             _pointer.Capture(null);
             _pointer.CaptureGestureRecognizer(null);
+            _pointer.IsGestureRecognitionSkipped = false;
         }
     }
 }

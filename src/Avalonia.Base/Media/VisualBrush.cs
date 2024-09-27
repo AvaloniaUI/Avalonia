@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Collections.Pooled;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -56,37 +57,71 @@ namespace Avalonia.Media
             
             using var recorder = new RenderDataDrawingContext(null);
             ImmediateRenderer.Render(recorder, Visual, Visual.Bounds);
-            return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), false);
+            return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), true);
         }
         
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);
 
-        private InlineDictionary<Compositor, CompositionRenderDataSceneBrushContent?> _renderDataDictionary;
-
-        private protected override void OnReferencedFromCompositor(Compositor c)
+        class RenderDataItem(CompositionRenderData data, Rect rect) : IDisposable
         {
-            _renderDataDictionary.Add(c, CreateServerContent(c));
-            base.OnReferencedFromCompositor(c);
+            public CompositionRenderData Data { get; } = data;
+            public Rect Rect { get; } = rect;
+            public bool IsDirty;
+            public void Dispose() => Data?.Dispose();
         }
-
+        
+        private InlineDictionary<Compositor, RenderDataItem?> _renderDataDictionary;
+        
         protected override void OnUnreferencedFromCompositor(Compositor c)
         {
             if (_renderDataDictionary.TryGetAndRemoveValue(c, out var content))
-                content?.RenderData.Dispose();
+                content?.Dispose();
             base.OnUnreferencedFromCompositor(c);
         }
         
         private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
             base.SerializeChanges(c, writer);
-            if (_renderDataDictionary.TryGetValue(c, out var content))
-                writer.WriteObject(content);
-            else
-                writer.WriteObject(null);
+            CompositionRenderDataSceneBrushContent.Properties? content = null;
+            if (IsOnCompositor(c)) // Should always be true here, but just in case do this check
+            {
+                _renderDataDictionary.TryGetValue(c, out var data);
+                if (data == null || data.IsDirty)
+                {
+                    var created = CreateServerContent(c);
+                    // Dispose the old render list _after_ creating a new one to avoid unnecessary detach/attach
+                    // sequence for referenced resources
+                    if (data != null) 
+                        data.Dispose();
+                    
+                    _renderDataDictionary[c] = data = created;
+                }
+
+                if (data != null)
+                    content = new(data.Data.Server, data.Rect, true);
+            }
+            
+            writer.WriteObject(content);
         }
         
-        CompositionRenderDataSceneBrushContent? CreateServerContent(Compositor c)
+        void InvalidateContent()
+        {
+            foreach(var item in _renderDataDictionary)
+                if (item.Value != null)
+                    item.Value.IsDirty = true;
+            RegisterForSerialization();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            // We are supposed to be only calling this when content is actually changed,
+            // but instead we are calling this on brush property change for backwards compat with 0.10.x
+            InvalidateContent();
+            base.OnPropertyChanged(change);
+        }
+
+        RenderDataItem? CreateServerContent(Compositor c)
         {
             if (Visual == null)
                 return null;
@@ -99,10 +134,8 @@ namespace Avalonia.Media
             var renderData = recorder.GetRenderResults();
             if (renderData == null)
                 return null;
-            
-            return new CompositionRenderDataSceneBrushContent(
-                (ServerCompositionSimpleContentBrush)((ICompositionRenderResource<IBrush>)this).GetForCompositor(c),
-                renderData, new(Visual.Bounds.Size), false);
+
+            return new(renderData, new(Visual.Bounds.Size));
         }
     }
 }

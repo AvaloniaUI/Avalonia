@@ -14,5 +14,16 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         /// <param name="notification">The notification to be displayed.</param>
         void Show(INotification notification);
+
+        /// <summary>
+        /// Closes a notification.
+        /// </summary>
+        /// <param name="notification">The notification to be closed.</param>
+        void Close(INotification notification);
+
+        /// <summary>
+        /// Closes all notifications.
+        /// </summary>
+        void CloseAll();
     }
 }

@@ -18,7 +18,7 @@ internal static unsafe class PixelFormatTranscoder
         AlphaFormat destAlphaFormat)
     {
         var pixelCount = srcSize.Width * srcSize.Height;
-        var bufferSize = pixelCount * Marshal.SizeOf<Rgba8888Pixel>();
+        var bufferSize = pixelCount * sizeof(Rgba8888Pixel);
         using var blob = new UnmanagedBlob(bufferSize);
       
         var pixels = new Span<Rgba8888Pixel>((void*)blob.Address, pixelCount);

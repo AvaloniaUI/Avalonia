@@ -27,4 +27,5 @@ internal static class TrimmingMessages
     public const string XamlTypeResolvedRequiresUnreferenceCodeMessage = "XamlTypeResolver might require unreferenced code.";
 
     public const string IgnoreNativeAotSupressWarningMessage = "This method is not supported by NativeAOT.";
+    public const string DesignTimeSupressWarningMessage = "This method is design time only.";
 }

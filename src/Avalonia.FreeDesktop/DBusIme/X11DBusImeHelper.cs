@@ -12,6 +12,8 @@ namespace Avalonia.FreeDesktop.DBusIme
             {
                 ["fcitx"] = static conn =>
                     new DBusInputMethodFactory<FcitxX11TextInputMethod>(_ => new FcitxX11TextInputMethod(conn)),
+                ["fcitx5"] = static conn =>
+                    new DBusInputMethodFactory<FcitxX11TextInputMethod>(_ => new FcitxX11TextInputMethod(conn)),
                 ["ibus"] = static conn =>
                     new DBusInputMethodFactory<IBusX11TextInputMethod>(_ => new IBusX11TextInputMethod(conn))
             };
@@ -37,7 +39,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             var factory = DetectInputMethod();
             if (factory is not null)
             {
-                var conn = DBusHelper.TryInitialize();
+                var conn = DBusHelper.DefaultConnection;
                 if (conn is not null)
                 {
                     AvaloniaLocator.CurrentMutable.Bind<IX11InputMethodFactory>().ToConstant(factory(conn));

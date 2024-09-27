@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
@@ -251,6 +252,125 @@ namespace Avalonia.Media.Fonts
                         return true;
                     }
                 }
+            }
+
+            return false;
+        }
+
+        internal static Typeface GetImplicitTypeface(Typeface typeface, out string normalizedFamilyName)
+        {
+            normalizedFamilyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
+
+            //Return early if no separator is present.
+            if (!normalizedFamilyName.Contains(' '))
+            {
+                return typeface;
+            }
+
+            var style = typeface.Style;
+            var weight = typeface.Weight;
+            var stretch = typeface.Stretch;
+
+            if(TryGetStyle(ref normalizedFamilyName, out var foundStyle))
+            {
+                style = foundStyle;
+            }
+
+            if(TryGetWeight(ref normalizedFamilyName, out var foundWeight))
+            {
+                weight = foundWeight;
+            }
+
+            if(TryGetStretch(ref normalizedFamilyName, out var foundStretch))
+            {
+                stretch = foundStretch;
+            }
+
+            //Preserve old font source
+            return new Typeface(typeface.FontFamily, style, weight, stretch);
+
+        }
+
+        internal static bool TryGetWeight(ref string familyName, out FontWeight weight)
+        {
+            weight = FontWeight.Normal;
+
+            var tokenizer = new StringTokenizer(familyName, ' ');
+
+            tokenizer.ReadString();
+
+            while (tokenizer.TryReadString(out var weightString))
+            {
+                if (new StringTokenizer(weightString).TryReadInt32(out _))
+                {
+                    continue;
+                }
+
+                if (!Enum.TryParse(weightString, true, out weight))
+                {
+                    continue;
+                }
+
+                familyName = familyName.Replace(" " + weightString, "").TrimEnd();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetStyle(ref string familyName, out FontStyle style)
+        {
+            style = FontStyle.Normal;
+
+            var tokenizer = new StringTokenizer(familyName, ' ');
+
+            tokenizer.ReadString();
+
+            while (tokenizer.TryReadString(out var styleString))
+            {
+                //Do not try to parse an integer
+                if (new StringTokenizer(styleString).TryReadInt32(out _))
+                {
+                    continue;
+                }
+
+                if (!Enum.TryParse(styleString, true, out style))
+                {
+                    continue;
+                }
+
+                familyName = familyName.Replace(" " + styleString, "").TrimEnd();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetStretch(ref string familyName, out FontStretch stretch)
+        {
+            stretch = FontStretch.Normal;
+
+            var tokenizer = new StringTokenizer(familyName, ' ');
+
+            tokenizer.ReadString();
+
+            while (tokenizer.TryReadString(out var stretchString))
+            {
+                if (new StringTokenizer(stretchString).TryReadInt32(out _))
+                {
+                    continue;
+                }
+
+                if (!Enum.TryParse(stretchString, true, out stretch))
+                {
+                    continue;
+                }
+
+                familyName = familyName.Replace(" " + stretchString, "").TrimEnd();
+
+                return true;
             }
 
             return false;

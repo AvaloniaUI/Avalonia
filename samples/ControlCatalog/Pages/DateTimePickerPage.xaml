@@ -77,6 +77,23 @@
         </Panel>
       </StackPanel>
       
+      <TextBlock FontSize="18">A TimePicker with seconds enabled.</TextBlock>
+      <StackPanel Orientation="Vertical">
+        <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
+                BorderThickness="1" Padding="15">
+          <TimePicker UseSeconds="True" />
+        </Border>
+        <Panel Background="{DynamicResource CatalogBaseLowColor}">
+          <TextBlock Padding="15">
+            <TextBlock.Text>
+              <x:String>
+                &lt;TimePicker UseSeconds="True" /&gt;
+              </x:String>
+            </TextBlock.Text>
+          </TextBlock>
+        </Panel>
+      </StackPanel>
+      
       <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
               BorderThickness="1" Padding="15">
         <TimePicker>
@@ -85,8 +102,8 @@
           </DataValidationErrors.Error>
         </TimePicker>
       </Border>
-
-      <TextBlock FontSize="18">A TimePicker with minute increments specified.</TextBlock>
+      
+      <TextBlock FontSize="18">A TimePicker with minute increment specified.</TextBlock>
       <StackPanel Orientation="Vertical">
         <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                 BorderThickness="1" Padding="15">
@@ -96,7 +113,24 @@
           <TextBlock Padding="15">
             <TextBlock.Text>
               <x:String>
-                &lt;TimePicker MinuteIncrement="15" /&gt;
+                &lt;TimePicker MinuteIncrement="15" SecondIncrement="30" /&gt;
+              </x:String>
+            </TextBlock.Text>
+          </TextBlock>
+        </Panel>
+      </StackPanel>
+
+      <TextBlock FontSize="18">A TimePicker with seconds enabled and minute &amp; second increments specified.</TextBlock>
+      <StackPanel Orientation="Vertical">
+        <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
+                BorderThickness="1" Padding="15">
+          <TimePicker UseSeconds="True" MinuteIncrement="15" SecondIncrement="30" />
+        </Border>
+        <Panel Background="{DynamicResource CatalogBaseLowColor}">
+          <TextBlock Padding="15">
+            <TextBlock.Text>
+              <x:String>
+                &lt;TimePicker UseSeconds="True" MinuteIncrement="15" SecondIncrement="30" /&gt;
               </x:String>
             </TextBlock.Text>
           </TextBlock>
@@ -131,6 +165,40 @@
             <TextBlock.Text>
               <x:String>
                 &lt;TimePicker ClockIdentifier="24HourClock" /&gt;
+              </x:String>
+            </TextBlock.Text>
+          </TextBlock>
+        </Panel>
+      </StackPanel>
+      
+      <TextBlock FontSize="18">A TimePicker using a 12-hour clock and seconds.</TextBlock>
+      <StackPanel Orientation="Vertical">
+        <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
+                BorderThickness="1" Padding="15">
+          <TimePicker ClockIdentifier="12HourClock" UseSeconds="True" />
+        </Border>
+        <Panel Background="{DynamicResource CatalogBaseLowColor}">
+          <TextBlock Padding="15">
+            <TextBlock.Text>
+              <x:String>
+                &lt;TimePicker ClockIdentifier="12HourClock" UseSeconds="True" /&gt;
+              </x:String>
+            </TextBlock.Text>
+          </TextBlock>
+        </Panel>
+      </StackPanel>
+
+      <TextBlock FontSize="18">A TimePicker using a 24-hour clock and seconds.</TextBlock>
+      <StackPanel Orientation="Vertical">
+        <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
+                BorderThickness="1" Padding="15">
+          <TimePicker ClockIdentifier="24HourClock" UseSeconds="True" />
+        </Border>
+        <Panel Background="{DynamicResource CatalogBaseLowColor}">
+          <TextBlock Padding="15">
+            <TextBlock.Text>
+              <x:String>
+                &lt;TimePicker ClockIdentifier="24HourClock" UseSeconds="True" /&gt;
               </x:String>
             </TextBlock.Text>
           </TextBlock>

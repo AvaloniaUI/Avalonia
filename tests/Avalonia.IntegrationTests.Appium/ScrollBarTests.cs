@@ -4,23 +4,17 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class ScrollBarTests
+    public class ScrollBarTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public ScrollBarTests(DefaultAppFixture fixture)
+            : base(fixture, "ScrollBar")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("ScrollBar");
-            tab.Click();
         }
 
         [Fact]
         public void ScrollBar_Increases_Value_By_LargeChange_When_IncreaseButton_Is_Clicked()
         {
-            var button = _session.FindElementByAccessibilityId("MyScrollBar");
+            var button = Session.FindElementByAccessibilityId("MyScrollBar");
             Assert.True(double.Parse(button.Text) == 20);
 
             button.Click();

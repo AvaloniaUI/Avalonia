@@ -1,5 +1,7 @@
 ﻿using System;
-using System.Windows.Input;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Controls.UnitTests.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -9,7 +11,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 using MouseButton = Avalonia.Input.MouseButton;
@@ -19,7 +20,7 @@ namespace Avalonia.Controls.UnitTests
     public class ButtonTests : ScopedTestBase
     {
         private MouseTestHelper _helper = new MouseTestHelper();
-        
+
         [Fact]
         public void Button_Is_Disabled_When_Command_Is_Disabled()
         {
@@ -100,6 +101,9 @@ namespace Avalonia.Controls.UnitTests
                 DataContext = new object(),
                 [!Button.CommandProperty] = new Binding("Command"),
             };
+            var root = new TestRoot { Child = target };
+
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
@@ -141,9 +145,9 @@ namespace Avalonia.Controls.UnitTests
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
-            
+
             using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
-            
+
             var root = new Window() { HitTesterOverride = renderer.Object };
             var target = new Button()
             {
@@ -188,7 +192,7 @@ namespace Avalonia.Controls.UnitTests
             target.Click += (s, e) => clicked = true;
 
             RaisePointerEntered(target);
-            RaisePointerMove(target, new Point(50,50));
+            RaisePointerMove(target, new Point(50, 50));
             RaisePointerPressed(target, 1, MouseButton.Left, new Point(50, 50));
             RaisePointerExited(target);
 
@@ -210,9 +214,9 @@ namespace Avalonia.Controls.UnitTests
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
                     new Visual[] { r } : new Visual[0]);
-            
+
             using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
-            
+
             var root = new Window() { HitTesterOverride = renderer.Object };
             var target = new Button()
             {
@@ -298,16 +302,104 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Raises_Click_When_AccessKey_Raised()
         {
-            var command = new TestCommand(p => p is bool value && value);
-            var target = new Button { Command = command };
+            var raised = 0;
+            var ah = new AccessKeyHandler();
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah));
 
+            var impl = CreateMockTopLevelImpl();
+            var command = new TestCommand(p => p is bool value && value, _ => raised++);
+
+            Button target;
+            var root = new TestTopLevel(impl.Object)
+            {
+                Template = CreateTemplate(),
+                Content = target = new Button
+                {
+                    Content = "_A",
+                    Command = command,
+                    Template = new FuncControlTemplate<Button>((parent, scope) =>
+                    {
+                        return new ContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(Button.ContentProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(Button.ContentProperty),
+                            RecognizesAccessKey = true,
+                        }.RegisterInNameScope(scope);
+                    })
+                },
+            };
+
+            root.ApplyTemplate();
+            root.Presenter.UpdateChild();
+            target.ApplyTemplate();
+            target.Presenter.UpdateChild();
+
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+            var accessKey = Key.A;
             target.CommandParameter = true;
-            Assert.True(target.IsEffectivelyEnabled);
+
+            RaiseAccessKey(root, accessKey);
+
+            Assert.Equal(1, raised);
 
             target.CommandParameter = false;
-            Assert.False(target.IsEffectivelyEnabled);
+
+            RaiseAccessKey(root, accessKey);
+
+            Assert.Equal(1, raised);
+
+            static FuncControlTemplate<TestTopLevel> CreateTemplate()
+            {
+                return new FuncControlTemplate<TestTopLevel>((x, scope) =>
+                    new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [~ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty),
+                        [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(ContentControl.ContentTemplateProperty)
+                    }.RegisterInNameScope(scope));
+            }
+
+            static Mock<ITopLevelImpl> CreateMockTopLevelImpl(bool setupProperties = false)
+            {
+                var topLevel = new Mock<ITopLevelImpl>();
+                if (setupProperties)
+                    topLevel.SetupAllProperties();
+                topLevel.Setup(x => x.RenderScaling).Returns(1);
+                topLevel.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+                return topLevel;
+            }
+
+            static void RaiseAccessKey(IInputElement target, Key accessKey)
+            {
+                KeyDown(target, Key.LeftAlt);
+                KeyDown(target, accessKey, KeyModifiers.Alt);
+                KeyUp(target, accessKey, KeyModifiers.Alt);
+                KeyUp(target, Key.LeftAlt);
+            }
+
+            static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            {
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = key,
+                    KeyModifiers = modifiers,
+                });
+            }
+
+            static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            {
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyUpEvent,
+                    Key = key,
+                    KeyModifiers = modifiers,
+                });
+            }
         }
-        
+
         [Fact]
         public void Button_Invokes_Doesnt_Execute_When_Button_Disabled()
         {
@@ -321,7 +413,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(0, raised);
         }
-        
+
         [Fact]
         public void Button_IsDefault_Works()
         {
@@ -331,13 +423,13 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Button();
                 var window = new Window { Content = target };
                 window.Show();
-                
+
                 target.Click += (s, e) => ++raised;
 
                 target.IsDefault = false;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
                 Assert.Equal(0, raised);
-                
+
                 target.IsDefault = true;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
                 Assert.Equal(1, raised);
@@ -345,18 +437,18 @@ namespace Avalonia.Controls.UnitTests
                 target.IsDefault = false;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
                 Assert.Equal(1, raised);
-                
+
                 target.IsDefault = true;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
                 Assert.Equal(2, raised);
-                
+
                 window.Content = null;
                 // To check if handler was raised on the button, when it's detached, we need to pass it as a source manually.
                 window.RaiseEvent(CreateKeyDownEvent(Key.Enter, target));
                 Assert.Equal(2, raised);
             }
         }
-        
+
         [Fact]
         public void Button_IsCancel_Works()
         {
@@ -366,13 +458,13 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Button();
                 var window = new Window { Content = target };
                 window.Show();
-                
+
                 target.Click += (s, e) => ++raised;
 
                 target.IsCancel = false;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
                 Assert.Equal(0, raised);
-                
+
                 target.IsCancel = true;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
                 Assert.Equal(1, raised);
@@ -380,20 +472,76 @@ namespace Avalonia.Controls.UnitTests
                 target.IsCancel = false;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
                 Assert.Equal(1, raised);
-                
+
                 target.IsCancel = true;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
                 Assert.Equal(2, raised);
-                
+
                 window.Content = null;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Escape, target));
                 Assert.Equal(2, raised);
             }
         }
 
+        [Fact]
+        public void Button_CommandParameter_Does_Not_Change_While_Execution()
+        {
+            var target = new Button();
+            object lastParamenter = "A";
+            var generator = new Random();
+            var onlyOnce = false;
+            var command = new TestCommand(parameter =>
+            {
+                if (!onlyOnce)
+                {
+                    onlyOnce = true;
+                    target.CommandParameter = generator.Next();
+                }
+                lastParamenter = parameter;
+                return true;
+            },
+            parameter =>
+            {
+                Assert.Equal(lastParamenter, parameter);
+            });
+            target.CommandParameter = lastParamenter;
+            target.Command = command;
+            var root = new TestRoot { Child = target };
+
+            (target as IClickableControl).RaiseClick();
+        }
+
+        [Fact]
+        void Should_Not_Fire_Click_Event_On_Space_Key_When_It_Is_Not_Focus()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var target = new TextBox();
+                var button = new Button()
+                {
+                    Content = target,
+                };
+
+                var window = new Window { Content = button };
+                window.Show();
+
+                button.Click += (s, e) => ++raised;
+                target.Focus();
+                target.RaiseEvent(CreateKeyDownEvent(Key.Space));
+                target.RaiseEvent(CreateKeyUpEvent(Key.Space));
+                Assert.Equal(0, raised);
+            }
+        }
+
         private KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
+        }
+
+        private KeyEventArgs CreateKeyUpEvent(Key key, Interactive source = null)
+        {
+            return new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = key, Source = source };
         }
 
         private void RaisePointerPressed(Button button, int clickCount, MouseButton mouseButton, Point position)
@@ -421,50 +569,20 @@ namespace Avalonia.Controls.UnitTests
             _helper.Move(button, pos);
         }
 
-        private class TestCommand : ICommand
+
+
+        private class TestTopLevel : TopLevel
         {
-            private readonly Func<object, bool> _canExecute;
-            private readonly Action<object> _execute;
-            private EventHandler _canExecuteChanged;
-            private bool _enabled = true;
+            private readonly ILayoutManager _layoutManager;
+            public bool IsClosed { get; private set; }
 
-            public TestCommand(bool enabled = true)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+                : base(impl)
             {
-                _enabled = enabled;
-                _canExecute = _ => _enabled;
-                _execute = _ => { };
+                _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
-            {
-                _canExecute = canExecute;
-                _execute = execute ?? (_ => { });
-            }
-
-            public bool IsEnabled
-            {
-                get { return _enabled; }
-                set
-                {
-                    if (_enabled != value)
-                    {
-                        _enabled = value;
-                        _canExecuteChanged?.Invoke(this, EventArgs.Empty);
-                    }
-                }
-            }
-
-            public int SubscriptionCount { get; private set; }
-
-            public event EventHandler CanExecuteChanged
-            {
-                add { _canExecuteChanged += value; ++SubscriptionCount; }
-                remove { _canExecuteChanged -= value; --SubscriptionCount; }
-            }
-
-            public bool CanExecute(object parameter) => _canExecute(parameter);
-
-            public void Execute(object parameter) => _execute(parameter);
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
     }
 }

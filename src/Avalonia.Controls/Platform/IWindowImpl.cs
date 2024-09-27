@@ -152,6 +152,6 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="windows">A span of windows to get their z-order</param>
         /// <param name="zOrder">Span to be filled with associated window z-order</param>
-        internal void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder);
+        void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder);
     }
 }

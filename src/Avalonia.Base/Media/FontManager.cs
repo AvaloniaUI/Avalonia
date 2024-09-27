@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
+using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -96,11 +98,11 @@ namespace Avalonia.Media
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
 
-            if (fontFamily.Key is FontFamilyKey)
+            if (fontFamily.Key != null)
             {
                 if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
-                    for (int i = 0; i < compositeKey.Keys.Count; i++)
+                    for (var i = 0; i < compositeKey.Keys.Count; i++)
                     {
                         var key = compositeKey.Keys[i];
 
@@ -115,7 +117,9 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, fontFamily.FamilyNames.PrimaryFamilyName, out glyphTypeface))
+                    var familyName = fontFamily.FamilyNames.PrimaryFamilyName;
+
+                    if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, familyName, out glyphTypeface))
                     {
                         return true;
                     }
@@ -125,7 +129,9 @@ namespace Avalonia.Media
             }
             else
             {
-                if (SystemFonts.TryGetGlyphTypeface(fontFamily.FamilyNames.PrimaryFamilyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+                var familyName = fontFamily.FamilyNames.PrimaryFamilyName;
+
+                if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {
                     return true;
                 }
@@ -144,13 +150,20 @@ namespace Avalonia.Media
         {
             var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-            if (TryGetFontCollection(source, out var fontCollection) &&
-                fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+            if (TryGetFontCollection(source, out var fontCollection))
             {
-                if (glyphTypeface.FamilyName.Contains(familyName))
+                if (fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch,
+                        out glyphTypeface))
                 {
                     return true;
                 }
+
+                var logger = Logger.TryGet(LogEventLevel.Debug, "FontManager");
+
+                logger?.Log(this,
+                    $"Font family '{familyName}' could not be found. Present font families: [{string.Join(",", fontCollection)}]");
+
+                return false;
             }
 
             glyphTypeface = null;

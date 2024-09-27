@@ -1403,74 +1403,75 @@ namespace Avalonia.Controls
             // Indicate that filtering is ongoing
             _filterInAction = true;
 
-            if (_items == null)
+            try
             {
-                ClearView();
-                return;
+                if (_items == null)
+                {
+                    ClearView();
+                    return;
+                }
+
+                // Cache the current text value
+                string text = Text ?? string.Empty;
+
+                // Determine if any filtering mode is on
+                bool stringFiltering = TextFilter != null;
+                bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
+
+                List<object> items = _items;
+
+                // cache properties
+                var textFilter = TextFilter;
+                var itemFilter = ItemFilter;
+                var _newViewItems = new Collection<object>();
+
+                // if the mode is objectFiltering and itemFilter is null, we throw an exception
+                if (objectFiltering && itemFilter is null)
+                {
+                    throw new Exception(
+                        "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+                }
+
+                foreach (object item in items)
+                {
+                    // Exit the fitter when requested if cancellation is requested
+                    if (_cancelRequested)
+                    {
+                        return;
+                    }
+
+                    bool inResults = !(stringFiltering || objectFiltering);
+
+                    if (!inResults)
+                    {
+                        if (stringFiltering)
+                        {
+                            inResults = textFilter!(text, FormatValue(item));
+                        }
+                        else if (objectFiltering)
+                        {
+                            inResults = itemFilter!(text, item);
+                        }
+                    }
+
+                    if (inResults)
+                    {
+                        _newViewItems.Add(item);
+                    }
+                }
+
+                _view?.Clear();
+                _view?.AddRange(_newViewItems);
+
+                // Clear the evaluator to discard a reference to the last item
+                _valueBindingEvaluator?.ClearDataContext();
             }
-
-            // Cache the current text value
-            string text = Text ?? string.Empty;
-
-            // Determine if any filtering mode is on
-            bool stringFiltering = TextFilter != null;
-            bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
-            
-            List<object> items = _items;
-
-            // cache properties
-            var textFilter = TextFilter;
-            var itemFilter = ItemFilter;
-            var _newViewItems = new Collection<object>();
-            
-            // if the mode is objectFiltering and itemFilter is null, we throw an exception
-            if (objectFiltering && itemFilter is null)
+            finally
             {
                 // indicate that filtering is not ongoing anymore
                 _filterInAction = false;
                 _cancelRequested = false;
-                
-                throw new Exception(
-                    "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
             }
-
-            foreach (object item in items)
-            {
-                // Exit the fitter when requested if cancellation is requested
-                if (_cancelRequested)
-                {
-                    return;
-                }
-
-                bool inResults = !(stringFiltering || objectFiltering);
-
-                if (!inResults)
-                {
-                    if (stringFiltering)
-                    {
-                        inResults = textFilter!(text, FormatValue(item));
-                    }
-                    else if (objectFiltering)
-                    {
-                        inResults = itemFilter!(text, item);
-                    }
-                }
-
-                if (inResults)
-                {
-                    _newViewItems.Add(item);
-                }
-            }
-
-            _view?.Clear();
-            _view?.AddRange(_newViewItems);
-
-            // Clear the evaluator to discard a reference to the last item
-            _valueBindingEvaluator?.ClearDataContext();
-
-            // indicate that filtering is not ongoing anymore
-            _filterInAction = false;
-            _cancelRequested = false;
         }
 
         /// <summary>
