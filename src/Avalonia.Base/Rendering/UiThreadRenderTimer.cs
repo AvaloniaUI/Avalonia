@@ -13,6 +13,7 @@ namespace Avalonia.Rendering;
 /// <summary>
 /// Render timer that ticks on UI thread. Useful for debugging or bootstrapping on new platforms 
 /// </summary>
+[PrivateApi]
 public class UiThreadRenderTimer : DefaultRenderTimer
 {
     private readonly Stopwatch _clock = Stopwatch.StartNew();
@@ -39,6 +40,7 @@ public class UiThreadRenderTimer : DefaultRenderTimer
             _tick = tick;
             _timer.Tick += OnTick;
             _timer.Interval = Interval;
+            Interval = TimeSpan.FromSeconds(1.0 / _parent.FramesPerSecond);
             _timer.Start();
         }
 
@@ -48,7 +50,7 @@ public class UiThreadRenderTimer : DefaultRenderTimer
             var nextTickAt = tickedAt + Interval;
             try
             {
-                _tick?.Invoke(tickedAt);
+                _tick(tickedAt);
             }
             finally
             {
@@ -62,7 +64,7 @@ public class UiThreadRenderTimer : DefaultRenderTimer
         }
 
         private static readonly TimeSpan s_minInterval = TimeSpan.FromMilliseconds(1);
-        private TimeSpan Interval => TimeSpan.FromSeconds(1.0 / _parent.FramesPerSecond);
+        private TimeSpan Interval { get; }
 
         public void Dispose() => _timer.Stop();
     }
