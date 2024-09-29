@@ -27,6 +27,12 @@ class X11ShmFramebufferContext
     public int Depth { get; }
     public bool ShouldRenderOnUiThread { get; }
 
+    /// <summary>
+    /// The maximum number of XShmSwapchain frame count.
+    /// </summary>
+    /// Set to 3 without any specific reason... But 2 is too small
+    public int MaxXShmSwapchainFrameCount => 3;
+
     public void OnXShmCompletion(ShmSeg shmseg)
     {
         X11ShmDebugLogger.WriteLine($"[X11ShmFramebufferContext] OnXShmCompletion");
