@@ -29,6 +29,7 @@ class X11ShmFramebufferContext
 
     public void OnXShmCompletion(ShmSeg shmseg)
     {
+        X11ShmDebugLogger.WriteLine($"[X11ShmFramebufferContext] OnXShmCompletion");
         if (_shmImageDictionary.Remove(shmseg, out var image))
         {
             image.ShmImageManager.OnXShmCompletion(image);
