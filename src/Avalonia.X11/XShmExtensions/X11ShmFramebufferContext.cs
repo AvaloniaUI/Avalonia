@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using Avalonia.Logging;
 using ShmSeg = System.UInt64;
 
 namespace Avalonia.X11.XShmExtensions;
@@ -42,7 +42,7 @@ class X11ShmFramebufferContext
         else
         {
             // Unexpected case, all the X11ShmImage should be registered in the dictionary
-            X11ShmDebugLogger.WriteLine($"[X11ShmFramebufferContext][OnXShmCompletion] [Warn] Can not find shmseg={shmseg} in Dictionary!!!");
+            Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?.Log(this, $"[X11ShmFramebufferContext][OnXShmCompletion] [Warn] Can not find shmseg={shmseg} in Dictionary!!!");
         }
     }
 
