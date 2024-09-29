@@ -225,7 +225,9 @@ namespace Avalonia.X11
                         return;
                     }
 
-                    var x11ShmFramebufferSurface = new X11ShmFramebufferSurface(this, _x11.DeferredDisplay, _handle, _renderHandle,visual,depth);
+                    // The reason for using `_x11.Display` instead of `_x11.DeferredDisplay` is that XSHM requires pushing to a Display that can receive Events, in order to obtain the XShmCompletionEvent when rendering is complete.
+                    var x11ShmFramebufferSurface =
+                        new X11ShmFramebufferSurface(this, _x11.Display, _handle, _renderHandle, visual, depth);
                     _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
                     surfaces.Insert(0, x11ShmFramebufferSurface);
                 }
