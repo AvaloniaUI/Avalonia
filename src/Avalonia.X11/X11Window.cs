@@ -228,7 +228,7 @@ namespace Avalonia.X11
                     // The reason for using `_x11.Display` instead of `_x11.DeferredDisplay` is that XSHM requires pushing to a Display that can receive Events, in order to obtain the XShmCompletionEvent when rendering is complete.
                     // Do not use `_renderHandle`, because the `_renderHandle` was introduced to fix gl, and the XShm should receive the events from the `_handle`. In other words, the XShm should only be use when disable the gl, which means the `_renderHandle` is equal to `_handle`.
                     var x11ShmFramebufferSurface =
-                        new X11ShmFramebufferSurface(this, _x11.Display, _handle, visual, depth);
+                        new X11ShmFramebufferSurface(this, _x11.Display, _handle, visual, depth, platform.Options.ShouldRenderOnUIThread);
                     _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
                     surfaces.Insert(0, x11ShmFramebufferSurface);
                 }
