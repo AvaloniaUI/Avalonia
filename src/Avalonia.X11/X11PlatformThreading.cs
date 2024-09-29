@@ -126,7 +126,6 @@ namespace Avalonia.X11
                     return;
                 
                 XNextEvent(_display, out var xev);
-                Console.WriteLine($"[XNextEvent] {xev.type}");
                 if(XFilterEvent(ref xev, IntPtr.Zero))
                     continue;
 
