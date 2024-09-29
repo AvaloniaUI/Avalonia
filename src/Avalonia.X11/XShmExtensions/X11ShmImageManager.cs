@@ -71,6 +71,7 @@ internal class X11ShmImageManager : IDisposable
 #nullable disable
 
         var currentPresentationCount = Interlocked.Increment(ref _presentationCount);
+        _ = currentPresentationCount;
         X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] PresentationCount={currentPresentationCount}");
 
         return image;
@@ -81,6 +82,7 @@ internal class X11ShmImageManager : IDisposable
     public void OnXShmCompletion(X11ShmImage image)
     {
         var currentPresentationCount = Interlocked.Decrement(ref _presentationCount);
+        _ = currentPresentationCount;
         X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][OnXShmCompletion] PresentationCount={currentPresentationCount}");
 
         if (_isDisposed)
