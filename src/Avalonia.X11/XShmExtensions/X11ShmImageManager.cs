@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Avalonia.Logging;
 
 namespace Avalonia.X11.XShmExtensions;
 
@@ -27,17 +25,7 @@ internal class X11ShmImageManager : IDisposable
         {
             if (LastSize != size)
             {
-                foreach (var x11ShmImage in AvailableQueue)
-                {
-                    x11ShmImage.Dispose();
-                }
-#if NET6_0_OR_GREATER
-                AvailableQueue.Clear();
-#else
-                while (AvailableQueue.TryDequeue(out _))
-                {
-                }
-#endif
+                ClearAvailableQueue();
             }
 
             LastSize = size;
@@ -120,18 +108,15 @@ internal class X11ShmImageManager : IDisposable
 
         lock (_lock)
         {
-            foreach (var x11ShmImage in AvailableQueue)
-            {
-                x11ShmImage.Dispose();
-            }
+            ClearAvailableQueue();
+        }
+    }
 
-#if NET6_0_OR_GREATER
-            AvailableQueue.Clear();
-#else
-            while (AvailableQueue.TryDequeue(out _))
-            {
-            }
-#endif
+    private void ClearAvailableQueue()
+    {
+        while (AvailableQueue.TryDequeue(out var x11ShmImage))
+        {
+            x11ShmImage.Dispose();
         }
     }
 
