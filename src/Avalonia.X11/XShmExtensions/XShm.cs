@@ -13,6 +13,9 @@ internal unsafe class XShm
     public static extern int XShmQueryVersion(IntPtr display, out int major, out int minor, out bool pixmaps);
 
     [DllImport("libXext.so.6", SetLastError = true)]
+    public static extern int XShmGetEventBase(IntPtr display);
+
+    [DllImport("libXext.so.6", SetLastError = true)]
     public static extern int XShmPutImage(IntPtr display, IntPtr drawable, IntPtr gc, XImage* image, int src_x, int src_y,
         int dst_x, int dst_y, uint src_width, uint src_height, bool send_event);
 

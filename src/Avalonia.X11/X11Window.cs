@@ -649,12 +649,9 @@ namespace Avalonia.X11
                     return;
                 HandleKeyEvent(ref ev);
             }
-            else if (ev.type == XEventName.XShmCompletionEvent)
+            else if ((int) ev.type == _x11ShmFramebufferSurface?.XShmCompletionType)
             {
-                // Because the XShmCompletionEvent only occurs when the XShmPutImage is called, and the XShmPutImage only be called when use X11ShmFramebufferSurface, so we can safely assume that the _x11ShmFramebufferSurface is not null.
-                Debug.Assert(_x11ShmFramebufferSurface != null,
-                    "If application can receive the XShmCompletionEvent, that the _x11ShmFramebufferSurface must not be null.");
-                _x11ShmFramebufferSurface?.OnXShmCompletionEvent(ev);
+                _x11ShmFramebufferSurface.OnXShmCompletionEvent(ev);
             }
         }
 

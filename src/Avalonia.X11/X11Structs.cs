@@ -773,7 +773,6 @@ namespace Avalonia.X11 {
 		ClientMessage		= 33,
 		MappingNotify		= 34,
         GenericEvent = 35,
-        XShmCompletionEvent = 65,
         LASTEvent
 	}
 
