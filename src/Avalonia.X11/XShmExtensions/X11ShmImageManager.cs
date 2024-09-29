@@ -15,28 +15,33 @@ internal class X11ShmImageManager : IDisposable
 
     public X11ShmFramebufferContext Context { get; }
 
-    private ConcurrentQueue<X11ShmImage> AvailableQueue { get; } = new();
+    private Queue<X11ShmImage> AvailableQueue { get; } = new Queue<X11ShmImage>();
 
     public PixelSize? LastSize { get; private set; }
 
+    private readonly object _lock = new();
+
     public X11ShmImage GetOrCreateImage(PixelSize size)
     {
-        if (LastSize != size)
+        lock (_lock)
         {
-            foreach (var x11ShmImage in AvailableQueue)
+            if (LastSize != size)
             {
-                x11ShmImage.Dispose();
-            }
+                foreach (var x11ShmImage in AvailableQueue)
+                {
+                    x11ShmImage.Dispose();
+                }
 #if NET6_0_OR_GREATER
-            AvailableQueue.Clear();
+                AvailableQueue.Clear();
 #else
-            while (AvailableQueue.TryDequeue(out _))
-            {
-            }
+                while (AvailableQueue.TryDequeue(out _))
+                {
+                }
 #endif
-        }
+            }
 
-        LastSize = size;
+            LastSize = size;
+        }
 
         if (Context.ShouldRenderOnUiThread)
         {
@@ -50,17 +55,21 @@ internal class X11ShmImageManager : IDisposable
 
 #nullable enable
         X11ShmImage? image = null;
-        while (AvailableQueue.TryDequeue(out image))
+        lock (_lock)
         {
-            if (image.Size != size)
+            while (AvailableQueue.TryDequeue(out image))
             {
-                image.Dispose();
-                image = null;
-            }
-            else
-            {
-                X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] Get X11ShmImage from AvailableQueue.");
-                break;
+                if (image.Size != size)
+                {
+                    image.Dispose();
+                    image = null;
+                }
+                else
+                {
+                    X11ShmDebugLogger.WriteLine(
+                        $"[X11ShmImageManager][GetOrCreateImage] Get X11ShmImage from AvailableQueue.");
+                    break;
+                }
             }
         }
 
@@ -72,7 +81,8 @@ internal class X11ShmImageManager : IDisposable
 
         var currentPresentationCount = Interlocked.Increment(ref _presentationCount);
         _ = currentPresentationCount;
-        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] PresentationCount={currentPresentationCount}");
+        X11ShmDebugLogger.WriteLine(
+            $"[X11ShmImageManager][GetOrCreateImage] PresentationCount={currentPresentationCount}");
 
         return image;
     }
@@ -83,7 +93,8 @@ internal class X11ShmImageManager : IDisposable
     {
         var currentPresentationCount = Interlocked.Decrement(ref _presentationCount);
         _ = currentPresentationCount;
-        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][OnXShmCompletion] PresentationCount={currentPresentationCount}");
+        X11ShmDebugLogger.WriteLine(
+            $"[X11ShmImageManager][OnXShmCompletion] PresentationCount={currentPresentationCount}");
 
         if (_isDisposed)
         {
@@ -91,31 +102,37 @@ internal class X11ShmImageManager : IDisposable
             return;
         }
 
-        if (image.Size != LastSize)
+        lock (_lock)
         {
-            image.Dispose();
-            return;
-        }
+            if (image.Size != LastSize)
+            {
+                image.Dispose();
+                return;
+            }
 
-        AvailableQueue.Enqueue(image);
+            AvailableQueue.Enqueue(image);
+        }
     }
 
     public void Dispose()
     {
         _isDisposed = true;
 
-        foreach (var x11ShmImage in AvailableQueue)
+        lock (_lock)
         {
-            x11ShmImage.Dispose();
-        }
+            foreach (var x11ShmImage in AvailableQueue)
+            {
+                x11ShmImage.Dispose();
+            }
 
 #if NET6_0_OR_GREATER
-        AvailableQueue.Clear();
+            AvailableQueue.Clear();
 #else
-        while (AvailableQueue.TryDequeue(out _))
-        {
-        }
+            while (AvailableQueue.TryDequeue(out _))
+            {
+            }
 #endif
+        }
     }
 
     private bool _isDisposed;
