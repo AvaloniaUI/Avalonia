@@ -30,8 +30,7 @@ class X11ShmFramebufferContext
     /// <summary>
     /// The maximum number of XShmSwapchain frame count.
     /// </summary>
-    /// Set to 3 without any specific reason... But 2 is too small
-    public int MaxXShmSwapchainFrameCount => 3;
+    public int MaxXShmSwapchainFrameCount => 2;
 
     public void OnXShmCompletion(ShmSeg shmseg)
     {

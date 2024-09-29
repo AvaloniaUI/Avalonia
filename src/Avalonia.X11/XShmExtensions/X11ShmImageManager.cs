@@ -35,7 +35,21 @@ internal class X11ShmImageManager : IDisposable
 #endif
         }
 
-        if (AvailableQueue.TryDequeue(out var image))
+        LastSize = size;
+
+        if (Context.ShouldRenderOnUiThread)
+        {
+            // If the render thread and the UI thread are the same, then synchronous waiting cannot be performed here. This is because synchronous waiting would block the UI thread, preventing it from receiving subsequent render completion events, and ultimately causing the UI thread to become unresponsive.
+        }
+        else if (_presentationCount > Context.MaxXShmSwapchainFrameCount)
+        {
+            // Specifically, allowing one additional frame beyond the maximum render limit is beneficial. This is because at any given moment, one frame might be in the process of being returned, and another might be currently rendering. Therefore, adding an extra frame in preparation for rendering can maximize rendering efficiency.
+            SpinWait.SpinUntil(() => _presentationCount <= Context.MaxXShmSwapchainFrameCount);
+        }
+
+#nullable enable
+        X11ShmImage? image = null;
+        while (AvailableQueue.TryDequeue(out image))
         {
             if (image.Size != size)
             {
@@ -45,17 +59,15 @@ internal class X11ShmImageManager : IDisposable
             else
             {
                 X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] Get X11ShmImage from AvailableQueue.");
+                break;
             }
         }
-        else
+
+        if (image is null)
         {
-            // Check presentationQueue.Count < swapchainSize ?
-            image = null;
+            image = new X11ShmImage(size, this);
         }
-
-        image ??= new X11ShmImage(size, this);
-
-        LastSize = size;
+#nullable disable
 
         var currentPresentationCount = Interlocked.Increment(ref _presentationCount);
         X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] PresentationCount={currentPresentationCount}");
