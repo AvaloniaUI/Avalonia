@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Avalonia.X11.XShmExtensions;
 
@@ -12,7 +14,7 @@ internal class X11ShmImageManager : IDisposable
 
     public X11ShmFramebufferContext Context { get; }
 
-    public Queue<X11ShmImage> AvailableQueue = new();
+    private ConcurrentQueue<X11ShmImage> AvailableQueue { get; } = new();
 
     public PixelSize? LastSize { get; private set; }
 
@@ -49,8 +51,8 @@ internal class X11ShmImageManager : IDisposable
 
         LastSize = size;
 
-        _presentationCount++;
-        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] PresentationCount={_presentationCount}");
+        var currentPresentationCount = Interlocked.Increment(ref _presentationCount);
+        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][GetOrCreateImage] PresentationCount={currentPresentationCount}");
 
         return image;
     }
@@ -59,8 +61,8 @@ internal class X11ShmImageManager : IDisposable
 
     public void OnXShmCompletion(X11ShmImage image)
     {
-        _presentationCount--;
-        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][OnXShmCompletion] PresentationCount={_presentationCount}");
+        var currentPresentationCount = Interlocked.Decrement(ref _presentationCount);
+        X11ShmDebugLogger.WriteLine($"[X11ShmImageManager][OnXShmCompletion] PresentationCount={currentPresentationCount}");
 
         if (_isDisposed)
         {
