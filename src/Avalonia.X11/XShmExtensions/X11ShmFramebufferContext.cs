@@ -7,12 +7,11 @@ namespace Avalonia.X11.XShmExtensions;
 
 class X11ShmFramebufferContext
 {
-    public X11ShmFramebufferContext(X11Window x11Window, IntPtr display, IntPtr windowXId, IntPtr renderHandle, IntPtr visual, int depth)
+    public X11ShmFramebufferContext(X11Window x11Window, IntPtr display, IntPtr windowXId, IntPtr visual, int depth)
     {
         X11Window = x11Window;
         Display = display;
         WindowXId = windowXId;
-        RenderHandle = renderHandle;
         Visual = visual;
         Depth = depth;
     }
@@ -23,7 +22,6 @@ class X11ShmFramebufferContext
 
     public IntPtr WindowXId { get; }
 
-    public IntPtr RenderHandle { get; }
     public IntPtr Visual { get; }
     public int Depth { get; }
 

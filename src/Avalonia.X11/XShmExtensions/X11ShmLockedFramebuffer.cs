@@ -30,7 +30,7 @@ class X11ShmLockedFramebuffer : ILockedFramebuffer
         // Send XShmImage and register it to handle the XShmCompletionEvent
         _context.RegisterX11ShmImage(X11ShmImage);
         var display = _context.Display;
-        var xid = _context.RenderHandle;
+        var xid = _context.WindowXId;
         var gc = XLib.XCreateGC(display, xid, 0, IntPtr.Zero);
         var exposeX = 0;
         var exposeY = 0;

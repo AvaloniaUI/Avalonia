@@ -7,9 +7,9 @@ namespace Avalonia.X11.XShmExtensions;
 
 internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
 {
-    public X11ShmFramebufferSurface(X11Window x11Window, IntPtr display, IntPtr windowHandle, IntPtr renderHandle, IntPtr visual, int depth)
+    public X11ShmFramebufferSurface(X11Window x11Window, IntPtr display, IntPtr windowHandle, IntPtr visual, int depth)
     {
-        _context = new X11ShmFramebufferContext(x11Window, display, windowHandle, renderHandle, visual, depth);
+        _context = new X11ShmFramebufferContext(x11Window, display, windowHandle, visual, depth);
     }
 
     private readonly X11ShmFramebufferContext _context;
