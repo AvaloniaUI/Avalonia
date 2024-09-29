@@ -26,7 +26,13 @@ internal class X11ShmImageManager : IDisposable
             {
                 x11ShmImage.Dispose();
             }
+#if NET6_0_OR_GREATER
             AvailableQueue.Clear();
+#else
+            while (AvailableQueue.TryDequeue(out _))
+            {
+            }
+#endif
         }
 
         if (AvailableQueue.TryDequeue(out var image))
@@ -87,7 +93,14 @@ internal class X11ShmImageManager : IDisposable
         {
             x11ShmImage.Dispose();
         }
+
+#if NET6_0_OR_GREATER
         AvailableQueue.Clear();
+#else
+        while (AvailableQueue.TryDequeue(out _))
+        {
+        }
+#endif
     }
 
     private bool _isDisposed;
