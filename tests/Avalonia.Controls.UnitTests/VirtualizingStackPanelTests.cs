@@ -198,6 +198,68 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Updates_Elements_On_Item_Moved()
+        {
+            // Arrange
+
+            using var app = App();
+
+            var actualItems = new AvaloniaList<string>(Enumerable
+                .Range(0, 100)
+                .Select(x => $"Item {x}"));
+
+            var (target, _, itemsControl) = CreateTarget(items: actualItems);
+
+            var expectedRealizedElementContents = new[] { 1, 2, 0, 3, 4, 5, 6, 7, 8, 9 }
+                .Select(x => $"Item {x}");
+
+            // Act
+
+            actualItems.Move(0, 2);
+            Layout(target);
+
+            // Assert
+
+            var actualRealizedElementContents = target
+                .GetRealizedElements()
+                .Cast<ContentPresenter>()
+                .Select(x => x.Content);
+
+            Assert.Equivalent(expectedRealizedElementContents, actualRealizedElementContents);
+        }
+
+        [Fact]
+        public void Updates_Elements_On_Item_Range_Moved()
+        {
+            // Arrange
+
+            using var app = App();
+
+            var actualItems = new AvaloniaList<string>(Enumerable
+                .Range(0, 100)
+                .Select(x => $"Item {x}"));
+
+            var (target, _, itemsControl) = CreateTarget(items: actualItems);
+
+            var expectedRealizedElementContents = new[] { 2, 0, 1, 3, 4, 5, 6, 7, 8, 9 }
+                .Select(x => $"Item {x}");
+
+            // Act
+
+            actualItems.MoveRange(0, 2, 3);
+            Layout(target);
+
+            // Assert
+
+            var actualRealizedElementContents = target
+                .GetRealizedElements()
+                .Cast<ContentPresenter>()
+                .Select(x => x.Content);
+
+            Assert.Equivalent(expectedRealizedElementContents, actualRealizedElementContents);
+        }
+
+        [Fact]
         public void Updates_Elements_On_Item_Remove()
         {
             using var app = App();

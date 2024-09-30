@@ -139,10 +139,35 @@ namespace Avalonia.Controls.Selection
                         break;
                     }
                 case NotifyCollectionChangedAction.Replace:
-                case NotifyCollectionChangedAction.Move:
                     {
+                        if (e.OldStartingIndex < 0)
+                        {
+                            goto case NotifyCollectionChangedAction.Reset;
+                        }
+
                         var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
                         var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
+                        shiftIndex = removeChange.ShiftIndex;
+                        shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
+                        removed = removeChange.RemovedItems;
+                        break;
+                    }
+                case NotifyCollectionChangedAction.Move:
+                    {
+                        if (e.OldStartingIndex < 0)
+                        {
+                            goto case NotifyCollectionChangedAction.Reset;
+                        }
+
+                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                        var insertIndex = e.NewStartingIndex;
+
+                        if (e.NewStartingIndex > e.OldStartingIndex)
+                        {
+                            insertIndex -= e.OldItems!.Count - 1;
+                        }
+
+                        var addChange = OnItemsAdded(insertIndex, e.NewItems!);
                         shiftIndex = removeChange.ShiftIndex;
                         shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
                         removed = removeChange.RemovedItems;
