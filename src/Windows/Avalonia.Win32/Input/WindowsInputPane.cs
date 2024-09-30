@@ -18,9 +18,10 @@ internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
     // GUID: 5752238B-24F0-495A-82F1-2FD593056796
     private static readonly Guid SID_IFrameworkInputPane  = new(0x5752238B, 0x24F0, 0x495A, 0x82, 0xF1, 0x2F, 0xD5, 0x93, 0x05, 0x67, 0x96);
 
-    private readonly WindowImpl _windowImpl;
+    private WindowImpl _windowImpl;
     private IFrameworkInputPane? _inputPane;
     private readonly uint _cookie;
+    private bool _disposed;
 
     private WindowsInputPane(WindowImpl windowImpl)
     {
@@ -72,6 +73,10 @@ internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+            return; 
+        _disposed = true;
+        _windowImpl = null!;
         if (_inputPane is not null)
         {
             if (_cookie != 0)
@@ -82,6 +87,8 @@ internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
             _inputPane.Dispose();
             _inputPane = null;
         }
+        // Suppress finalization.
+        GC.SuppressFinalize(this);
     }
 
     private class Handler : CallbackBase, IFrameworkInputPaneHandler
