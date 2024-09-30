@@ -347,13 +347,9 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            if (_wordSelectionStart == -1 || index < SelectionStart || index > SelectionEnd)
-                            {
-                                SetCurrentValue(SelectionStartProperty, index);
-                                SetCurrentValue(SelectionEndProperty, index);
-
-                                _wordSelectionStart = -1;
-                            }
+                            SetCurrentValue(SelectionStartProperty, index);
+                            SetCurrentValue(SelectionEndProperty, index);
+                            _wordSelectionStart = -1;
                         }
 
                         break;

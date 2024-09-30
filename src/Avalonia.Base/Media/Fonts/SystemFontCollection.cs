@@ -82,7 +82,7 @@ namespace Avalonia.Media.Fonts
             if (createdKey != key)
             {
                 //Try to find nearest match if possible
-                if (!TryGetNearestMatch(glyphTypefaces, key, out var nearestMatch))
+                if (TryGetNearestMatch(glyphTypefaces, key, out var nearestMatch))
                 {
                     glyphTypeface = nearestMatch;
                 }

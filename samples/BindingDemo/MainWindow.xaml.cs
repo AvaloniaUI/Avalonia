@@ -9,6 +9,7 @@ namespace BindingDemo
     {
         public MainWindow()
         {
+            Resources["SharedItem"] = new MainWindowViewModel.TestItem() { StringValue = "shared" };
             this.InitializeComponent();
             this.DataContext = new MainWindowViewModel();
             this.AttachDevTools();
