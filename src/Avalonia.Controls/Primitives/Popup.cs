@@ -22,6 +22,9 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class Popup : Control, IPopupHostProvider
     {
+        /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(WindowManagerAddShadowHint), false);
 
@@ -89,9 +92,21 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
+        /// <summary>
+        /// Defines the <see cref="CustomPopupPlacementCallback"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+            AvaloniaProperty.Register<Popup, CustomPopupPlacementCallback?>(nameof(CustomPopupPlacementCallback));
+        
+        /// <summary>
+        /// Defines the <see cref="OverlayDismissEventPassThrough"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
+        /// <summary>
+        /// Defines the <see cref="OverlayInputPassThroughElement"/> property.
+        /// </summary>
         public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
             AvaloniaProperty.Register<Popup, IInputElement?>(nameof(OverlayInputPassThroughElement));
 
@@ -291,6 +306,15 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(PlacementTargetProperty);
             set => SetValue(PlacementTargetProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a delegate handler method that positions the Popup control, when <see cref="Placement"/> is set to <see cref="PlacementMode.Custom"/>.
+        /// </summary>
+        public CustomPopupPlacementCallback? CustomPopupPlacementCallback
+        {
+            get => GetValue(CustomPopupPlacementCallbackProperty);
+            set => SetValue(CustomPopupPlacementCallbackProperty, value);
         }
 
         /// <summary>
@@ -650,14 +674,15 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateHostPosition(IPopupHost popupHost, Control placementTarget)
         {
-            popupHost.ConfigurePosition(
+            popupHost.ConfigurePosition(new PopupPositionRequest(
                 placementTarget,
                 Placement,
                 new Point(HorizontalOffset, VerticalOffset),
                 PlacementAnchor,
                 PlacementGravity,
                 PlacementConstraintAdjustment,
-                PlacementRect ?? new Rect(default, placementTarget.Bounds.Size));
+                PlacementRect ?? new Rect(default, placementTarget.Bounds.Size),
+                CustomPopupPlacementCallback));
         }
 
         private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
@@ -698,14 +723,15 @@ namespace Avalonia.Controls.Primitives
                 var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<Control>();
                 if (placementTarget == null)
                     return;
-                _openState.PopupHost.ConfigurePosition(
+                _openState.PopupHost.ConfigurePosition(new PopupPositionRequest(
                     placementTarget,
                     Placement,
                     new Point(HorizontalOffset, VerticalOffset),
                     PlacementAnchor,
                     PlacementGravity,
                     PlacementConstraintAdjustment,
-                    PlacementRect);
+                    PlacementRect,
+                    CustomPopupPlacementCallback));
             }
         }
 

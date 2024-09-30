@@ -362,7 +362,8 @@ namespace Avalonia.Headless
 
         void IWindowImpl.Move(PixelPoint point)
         {
-
+            Position = point;
+            PositionChanged?.Invoke(point);
         }
 
         public IPopupImpl? CreatePopup()

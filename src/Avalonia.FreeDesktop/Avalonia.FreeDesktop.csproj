@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
   </PropertyGroup>
 
   <Import Project="../../build/TrimmingEnable.props" />
@@ -12,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.16.0" />
-    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.15" PrivateAssets="all" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.20.0" />
+    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.19" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

@@ -495,6 +495,31 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Fact]
+        public void Attempting_To_Open_Without_Items_Does_Not_Prevent_Future_Opening_With_Items()
+        {
+            RunTest((control, textbox) =>
+            {
+                // Allow the drop down to open without anything entered.
+                control.MinimumPrefixLength = 0;
+
+                // Clear the items.
+                var source = control.ItemsSource;
+                control.ItemsSource = null;
+                control.IsDropDownOpen = true;
+
+                // DropDown was not actually opened because there are no items.
+                Assert.False(control.IsDropDownOpen);
+
+                // Set the items and try to open the drop down again.
+                control.ItemsSource = source;
+                control.IsDropDownOpen = true;
+
+                // DropDown can now be opened.
+                Assert.True(control.IsDropDownOpen);
+            });
+        }
+
         /// <summary>
         /// Retrieves a defined predicate filter through a new AutoCompleteBox 
         /// control instance.

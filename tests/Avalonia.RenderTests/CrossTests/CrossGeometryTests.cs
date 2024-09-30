@@ -141,6 +141,36 @@ public class CrossGeometryTests : CrossTestBase
             $"{nameof(Should_Render_PolyLineSegment_With_Strokeless_Lines)}");
     }
 
+    [CrossFact]
+    public void Should_Render_PolyBezierSegment_With_Strokeless_Lines()
+    {
+        var brush = new CrossSolidColorBrush(Colors.Blue);
+        var pen = new CrossPen()
+        {
+            Brush = new CrossSolidColorBrush(Colors.Red),
+            Thickness = 8
+        };
+        var figure = new CrossPathFigure()
+        {
+            Start = new Point(10, 100),
+            Closed = false,
+            Segments =
+            {
+                new CrossPathSegment.PolyBezierSegment([new(0, 0), new(200, 0), new(300, 100), new(300, 0), new(500, 0), new(600,100)], false)
+            }
+        };
+        var geometry = new CrossPathGeometry { Figures = { figure } };
+
+        var control = new CrossFuncControl(ctx => ctx.DrawGeometry(brush, pen, geometry))
+        {
+            Width = 700,
+            Height = 400,
+        };
+
+        RenderAndCompare(control,
+            $"{nameof(Should_Render_PolyBezierSegment_With_Strokeless_Lines)}");
+    }
+
     // Skip the test for now
 #if !AVALONIA_SKIA
     [CrossTheory,

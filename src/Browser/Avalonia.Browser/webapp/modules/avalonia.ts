@@ -11,6 +11,7 @@ import { WebRenderTargetRegistry } from "./avalonia/rendering/webRenderTargetReg
 import { WebRenderTarget } from "./avalonia/rendering/webRenderTarget";
 import { SoftwareRenderTarget } from "./avalonia/rendering/softwareRenderTarget";
 import { WebGlRenderTarget } from "./avalonia/rendering/webGlRenderTarget";
+import { ScreenHelper } from "./avalonia/screens";
 
 async function registerServiceWorker(path: string, scope: string | undefined) {
     if ("serviceWorker" in navigator) {
@@ -26,6 +27,7 @@ export {
     NativeControlHost,
     NavigationHelper,
     GeneralHelpers,
+    ScreenHelper,
     TimerHelper,
     WebRenderTarget,
     CanvasSurface,

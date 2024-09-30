@@ -159,6 +159,7 @@ public abstract record class CrossPathSegment(bool IsStroked)
     public record CubicBezier(Point Point1, Point Point2, Point Point3, bool IsStroked) : CrossPathSegment(IsStroked);
     public record QuadraticBezier(Point Point1, Point Point2, bool IsStroked) : CrossPathSegment(IsStroked);
     public record PolyLine(IEnumerable<Point> Points, bool IsStroked) : CrossPathSegment(IsStroked);
+    public record PolyBezierSegment(IEnumerable<Point> Points, bool IsStroked) : CrossPathSegment(IsStroked);
 }
 
 public class CrossDrawingBrush : CrossTileBrush
@@ -192,6 +193,9 @@ public interface ICrossStreamGeometryContextImplProvider
 
 public interface ICrossDrawingContext
 {
+    void PushTransform(Matrix  matrix);
+    void Pop();
+    void DrawLine(CrossPen pen, Point p1, Point p2);
     void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc);
     void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geometry);
     void DrawImage(CrossImage image, Rect rc);

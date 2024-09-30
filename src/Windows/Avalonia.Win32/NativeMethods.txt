@@ -1,7 +1,6 @@
 EnumDisplayMonitors
-EnumDisplayMonitors
 GetMonitorInfo
-MONITORINFOEX
+MONITORINFOEXW
 EnumDisplaySettings
 GetDisplayConfigBufferSizes
 QueryDisplayConfig
