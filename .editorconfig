@@ -177,6 +177,8 @@ dotnet_diagnostic.CA1828.severity = warning
 dotnet_diagnostic.CA1829.severity = warning
 #CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
 dotnet_diagnostic.CA1847.severity = warning
+# CA1851: Possible multiple enumerations of IEnumerable collection
+dotnet_diagnostic.CA1851.severity = warning
 #CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
 dotnet_diagnostic.CA1854.severity = warning
 #CA2211:Non-constant fields should not be visible

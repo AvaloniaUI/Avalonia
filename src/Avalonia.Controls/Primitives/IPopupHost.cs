@@ -98,5 +98,10 @@ namespace Avalonia.Controls.Primitives
         /// Hides the popup.
         /// </summary>
         void Hide();
+
+        /// <summary>
+        /// Takes focus from any currently focused native control.
+        /// </summary>
+        void TakeFocus();
     }
 }
