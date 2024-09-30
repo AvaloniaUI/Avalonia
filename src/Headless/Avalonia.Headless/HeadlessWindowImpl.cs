@@ -443,5 +443,9 @@ namespace Avalonia.Headless
                     zOrder[i] = headlessWindowImpl._zOrder;
             }
         }
+
+        public void TakeFocus() 
+        {
+        }
     }
 }
