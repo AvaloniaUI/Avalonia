@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Logging;
 using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer.Output
@@ -47,9 +48,9 @@ namespace Avalonia.LinuxFramebuffer.Output
                     {
                         _fb.BlitToDevice();
                     }
-                    catch
+                    catch(Exception e)
                     {
-                        // TODO: Log
+                        Logger.TryGet(LogEventLevel.Fatal, "FBDEV")?.Log(this, "Unable to update framebuffer: " + e);
                     }
 
                     _transferCompleted.Set();
