@@ -173,8 +173,9 @@ namespace Avalonia.Controls.Primitives
                 var selectionEnd = _textBox.SelectionEnd;
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
+                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                if (_presenter.TextLayout.HitTestTextRange(start, length) is IReadOnlyList<Rect> { Count: > 0 } rects)
+                if (rects.Count > 0)
                 {
                     var first = rects[0];
                     var last = rects[rects.Count -1];
