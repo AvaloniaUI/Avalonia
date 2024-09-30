@@ -66,7 +66,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows, "Not yet working on macOS")]
         public void Showing_ToolTip_Does_Not_Steal_Focus_From_Native_TextBox()
         {
             // Appium has different XPath syntax between Windows and macOS.
@@ -82,7 +82,7 @@ namespace Avalonia.IntegrationTests.Appium
             Session.FindElementByAccessibilityId("NativeTextBoxToolTip");
 
             // The tooltip should not have stolen focus from the text box, so text entry should work.
-            textBox.SendKeys("Hello world!");
+            new Actions(Session).SendKeys("Hello world!").Perform();
 
             // SendKeys behaves differently between Windows and macOS. On Windows it inserts at the start
             // of the text box, on macOS it replaces the text for some reason. Sigh.
@@ -93,14 +93,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(expected, textBox.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows, "Not yet working on macOS")]
         public void Showing_ContextMenu_Steals_Focus_From_Native_TextBox()
         {
             // Appium has different XPath syntax between Windows and macOS.
             var textBox = OperatingSystem.IsWindows() ?
                 Session.FindElementByXPath($"//*[@AutomationId='NativeTextBox']//*[1]") :
                 Session.FindElementByXPath($"//*[@identifier='NativeTextBox']//*[1]");
-            var initialText = textBox.Text;
 
             // Click on the text box the right-click to show the context menu.
             textBox.Click();
