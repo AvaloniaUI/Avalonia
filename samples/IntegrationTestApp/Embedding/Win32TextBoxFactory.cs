@@ -24,7 +24,7 @@ internal class Win32TextBoxFactory : INativeTextBoxFactory
         public Win32TextBox(IPlatformHandle parent)
         {
             var handle = CreateWindowEx(0, "EDIT",
-                @"Native text box",
+                string.Empty,
                 (uint)(WinApi.WindowStyles.WS_CHILD | WinApi.WindowStyles.WS_VISIBLE | WinApi.WindowStyles.WS_BORDER),
                 0, 0, 1, 1,
                 parent.Handle,
@@ -44,6 +44,17 @@ internal class Win32TextBoxFactory : INativeTextBoxFactory
         }
 
         public IPlatformHandle Handle { get; }
+
+        public string Text
+        {
+            get
+            {
+                var sb = new StringBuilder(256);
+                GetWindowText(Handle.Handle, sb, sb.Capacity);
+                return sb.ToString();
+            }
+            set => SetWindowText(Handle.Handle, value);
+        }
 
         public event EventHandler? ContextMenuRequested;
         public event EventHandler? Hovered;

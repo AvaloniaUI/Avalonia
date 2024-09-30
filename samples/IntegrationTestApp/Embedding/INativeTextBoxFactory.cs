@@ -6,6 +6,7 @@ namespace IntegrationTestApp.Embedding;
 internal interface INativeTextBoxImpl
 {
     IPlatformHandle Handle { get; }
+    string Text { get; set; }
     event EventHandler? ContextMenuRequested;
     event EventHandler? Hovered;
     event EventHandler? PointerExited;

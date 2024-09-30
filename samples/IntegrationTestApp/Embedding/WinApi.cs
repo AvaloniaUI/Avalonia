@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace IntegrationTestApp.Embedding;
 
@@ -78,6 +79,10 @@ internal class WinApi
     [DllImport("kernel32.dll")]
     public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+
     [DllImport("user32.dll", SetLastError = true)]
     public static extern IntPtr CreateWindowEx(
         int dwExStyle,
@@ -95,6 +100,9 @@ internal class WinApi
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    public static extern bool SetWindowText(IntPtr hwnd, String lpString);
 
     [DllImport("user32.dll")]
     public static extern bool TrackMouseEvent(ref TRACKMOUSEEVENT lpEventTrack);

@@ -2,6 +2,7 @@
 using Avalonia.Platform;
 using Avalonia.Threading;
 using MonoMac.AppKit;
+using MonoMac.Foundation;
 
 namespace IntegrationTestApp.Embedding;
 
@@ -30,7 +31,13 @@ internal class MacOSTextBoxFactory : INativeTextBoxFactory
             };
         }
 
-        public IPlatformHandle Handle { get; }
+        public new IPlatformHandle Handle { get; }
+
+        public string Text
+        {
+            get => TextStorage.Value;
+            set => TextStorage.Replace(new NSRange(0, TextStorage.Length), value);
+        }
 
         public event EventHandler? ContextMenuRequested;
         public event EventHandler? Hovered;
