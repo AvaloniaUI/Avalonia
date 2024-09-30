@@ -73,6 +73,11 @@ namespace Avalonia.Controls.Primitives
             _shown = false;
         }
 
+        public void TakeFocus()
+        {
+            // Nothing to do here: overlay popups are implemented inside the window.
+        }
+
         /// <inheritdoc />
         [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
