@@ -22,10 +22,12 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
         [FieldOffset(0)] public ulong u64;
     }
 
+    private const int CLOCK_MONOTONIC = 1;
     private const int EPOLLIN = 1;
     private const int EPOLL_CTL_ADD = 1;
     private const int O_NONBLOCK = 2048;
     private const int O_CLOEXEC = 0x80000;
+    private const int EPOLL_CLOEXEC = 0x80000;
 
     [StructLayout(LayoutKind.Sequential)]
     private struct epoll_event
@@ -35,7 +37,7 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
     }
 
     [DllImport("libc")]
-    private extern static int epoll_create1(int size);
+    private extern static int epoll_create1(int flags);
 
     [DllImport("libc")]
     private extern static int epoll_ctl(int epfd, int op, int fd, ref epoll_event __event);
@@ -91,7 +93,7 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
 
         _mainThread = Thread.CurrentThread;
 
-        _epoll = epoll_create1(0);
+        _epoll = epoll_create1(EPOLL_CLOEXEC);
         if (_epoll == -1)
             throw new Win32Exception("epoll_create1 failed");
 
@@ -108,10 +110,10 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
         if (epoll_ctl(_epoll, EPOLL_CTL_ADD, _sigread, ref ev) == -1)
             throw new Win32Exception("Unable to attach signal pipe to epoll");
 
-        _timerfd = timerfd_create(1, O_NONBLOCK | O_CLOEXEC);
+        _timerfd = timerfd_create(CLOCK_MONOTONIC, O_NONBLOCK | O_CLOEXEC);
         ev.data.u32 = (int)EventCodes.Timer;
         if (epoll_ctl(_epoll, EPOLL_CTL_ADD, _timerfd, ref ev) == -1)
-            throw new Win32Exception("Unable to attach signal pipe to epoll");
+            throw new Win32Exception("Unable to attach timer fd to epoll");
     }
 
     private bool CheckSignaled()
