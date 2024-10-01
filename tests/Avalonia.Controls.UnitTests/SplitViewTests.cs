@@ -280,5 +280,25 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(splitView.IsPaneOpen);
         }
+
+        [Fact]
+        public void With_Default_IsPaneOpen_Value_Should_Have_Closed_Pseudo_Class_Set()
+        {
+            // Testing this control Pseudo Classes requires placing the SplitView on a window
+            // prior to asserting them, because some of the pseudo classes are set either when
+            // the template is applied or the control is attached to the visual tree
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow
+                .With(globalClock: new MockGlobalClock()));
+            var wnd = new Window
+            {
+                Width = 1280,
+                Height = 720
+            };
+            var splitView = new SplitView();
+            wnd.Content = splitView;
+            wnd.Show();
+
+            Assert.Contains(splitView.Classes, ":closed".Equals);
+        }
     }
 }
