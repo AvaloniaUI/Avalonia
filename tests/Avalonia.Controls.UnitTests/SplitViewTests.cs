@@ -1,5 +1,7 @@
-﻿using Avalonia.Input;
+﻿using Avalonia.Animation;
+using Avalonia.Input;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -65,7 +67,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SplitView_TemplateSettings_Are_Correct_For_Display_Modes()
         {
-            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow
+                .With(globalClock: new MockGlobalClock()));
             var wnd = new Window
             {
                 Width = 1280,
