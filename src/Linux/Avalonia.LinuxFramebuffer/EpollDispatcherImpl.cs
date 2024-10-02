@@ -54,6 +54,7 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
     [DllImport("libc")]
     private extern static IntPtr read(int fd, void* buf, IntPtr count);
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     struct timespec
     {
         public IntPtr tv_sec;
@@ -65,6 +66,7 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
         public timespec it_interval; // Interval for periodic timer
         public timespec it_value; // Initial expiration
     };
+#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
 
     [DllImport("libc")]
     private extern static int timerfd_create(int clockid, int flags);
