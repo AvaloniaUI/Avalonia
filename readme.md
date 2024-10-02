@@ -1,7 +1,5 @@
-
-![Star Banner](https://github.com/AvaloniaUI/Avalonia/assets/552074/0f7f683f-2ddd-401f-ba28-3f703cc78ee0)
-![Header](https://github.com/AvaloniaUI/Avalonia/assets/552074/d8388fc4-469e-47c5-926d-faf25233ad4e)
-
+[![Star_Banner@3x](https://github.com/user-attachments/assets/99f4a267-79d2-432b-8f8c-bd3745a98a60)](https://github.com/sponsors/AvaloniaUI)
+[![Star_Banner@3x](https://github.com/user-attachments/assets/14a6e1cb-180d-4bfd-884a-835c8b5083d0)](https://avaloniaui.net)
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
  [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
@@ -47,7 +45,7 @@ Install-Package Avalonia.Desktop
 ```
 
 ## Showcase
-[![Showcase_Banner@3x](https://github.com/AvaloniaUI/Avalonia/assets/552074/8a0af0e9-e45e-442c-830d-4af3767d6469)](https://avaloniaui.net/showcase)
+[![Showcase_Banner@3x](https://github.com/user-attachments/assets/99a17692-765c-4728-a3a6-f5e86f95e71c)](https://avaloniaui.net/showcase)
 
 See what others have built with Avalonia UI on our [Showcase](https://avaloniaui.net/Showcase). We welcome submissions! 
 
@@ -108,7 +106,6 @@ We have a range of [support plans available](https://avaloniaui.net/support) for
 
 *Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
 
-## Avalonia XPF
+## Avalonia XPF - Our cross-platform WPF
 Unleash the full potential of your existing WPF apps with our cross-platform UI framework, enabling WPF apps to run on macOS and Linux without requiring expensive and risky rewrites.
-
-[![GH_Banner](https://user-images.githubusercontent.com/552074/218457976-92e76834-9e22-4e35-acfa-aa50281bc0f9.png)](https://avaloniaui.net/xpf)
+[![GH_Banner](https://github.com/user-attachments/assets/91e7748c-2877-46ce-8b12-164fcf442f76)](https://avaloniaui.net/xpf)
