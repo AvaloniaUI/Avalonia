@@ -128,7 +128,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
         {
             fixed (byte* ptr = bytes)
             {
-                using var uriString = _native.ReadBookmarkFromBytes(ptr, bytes.Length);
+                using var uriString = _native.ReadBookmarkFromBytes(ptr, bytes!.Length);
                 return uriString is not null && Uri.TryCreate(uriString.String, UriKind.Absolute, out var uri) ?
                     uri :
                     null;

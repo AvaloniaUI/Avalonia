@@ -228,7 +228,10 @@ namespace Avalonia.X11.NativeDialogs
 
         private static void UpdateParent(IntPtr chooser, IWindowImpl parentWindow)
         {
-            var xid = parentWindow.Handle.Handle;
+            if (parentWindow.Handle is not { } handle)
+                return;
+
+            var xid = handle.Handle;
             gtk_widget_realize(chooser);
             var window = gtk_widget_get_window(chooser);
             var parent = GetForeignWindow(xid);
