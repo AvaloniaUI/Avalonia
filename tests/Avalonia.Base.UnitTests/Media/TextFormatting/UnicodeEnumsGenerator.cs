@@ -347,9 +347,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 
                 WritePropertyValueAlias(writer, unicodeDataEntries.LineBreakClasses, "LineBreakClass", "Unknown");
 
-                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BiDiPairedBracketType", "None");
+                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BidiPairedBracketType", "None");
                 
-                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BiDiClass", "LeftToRight");
+                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BidiClass", "LeftToRight");
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
