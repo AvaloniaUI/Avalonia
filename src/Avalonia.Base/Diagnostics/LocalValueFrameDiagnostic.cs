@@ -9,8 +9,8 @@ internal class LocalValueFrameDiagnostic : IValueFrameDiagnostic
     {
         Values = values;
     }
-    
-    public string? Description => null;
+
+    public object? Source => null;
     public IValueFrameDiagnostic.FrameType Type => IValueFrameDiagnostic.FrameType.Local;
     public bool IsActive => true;
     public BindingPriority Priority => BindingPriority.LocalValue;

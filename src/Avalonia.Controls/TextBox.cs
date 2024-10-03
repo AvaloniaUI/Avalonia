@@ -411,6 +411,8 @@ namespace Avalonia.Controls
             var newValue = e.GetNewValue<int>();
             SetCurrentValue(SelectionStartProperty, newValue);
             SetCurrentValue(SelectionEndProperty, newValue);
+
+           _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
         }
 
         /// <summary>
@@ -566,19 +568,29 @@ namespace Avalonia.Controls
         }
 
         private static string? CoerceText(AvaloniaObject sender, string? value)
-        {
-            var textBox = (TextBox)sender;
+            => ((TextBox)sender).CoerceText(value);
 
+        /// <summary>
+        /// Coerces the current text.
+        /// </summary>
+        /// <param name="value">The initial text.</param>
+        /// <returns>A coerced text.</returns>
+        /// <remarks>
+        /// This method also manages the internal undo/redo state whenever the text changes:
+        /// if overridden, ensure that the base is called or undo/redo won't work correctly.
+        /// </remarks>
+        protected virtual string? CoerceText(string? value)
+        {
             // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
-            // since intial state would never be no text and you'd always have to make a text 
+            // since initial state would never be no text and you'd always have to make a text
             // change before undo would be available
             // The undo/redo stacks were also cleared at this point, which also doesn't make sense
             // as it is still valid to want to undo a programmatic text set
             // So we snapshot text now BEFORE the change so we can always revert
             // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
-            if (!textBox._isUndoingRedoing)
+            if (!_isUndoingRedoing)
             {
-                textBox.SnapshotUndoRedo();
+                SnapshotUndoRedo();
             }
 
             return value;

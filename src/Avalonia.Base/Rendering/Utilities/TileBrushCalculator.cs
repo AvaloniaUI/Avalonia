@@ -130,29 +130,35 @@ namespace Avalonia.Rendering.Utilities
             AlignmentY alignmentY,
             Rect sourceRect,
             Rect destinationRect,
-            Vector scale)
+            Vector scale) => CalculateTranslate(alignmentX, alignmentY,
+            sourceRect.Size * scale, destinationRect.Size);
+        
+        public static Vector CalculateTranslate(
+            AlignmentX alignmentX,
+            AlignmentY alignmentY,
+            Size sourceSize,
+            Size destinationSize)
         {
             var x = 0.0;
             var y = 0.0;
-            var size = sourceRect.Size * scale;
 
             switch (alignmentX)
             {
                 case AlignmentX.Center:
-                    x += (destinationRect.Width - size.Width) / 2;
+                    x += (destinationSize.Width - sourceSize.Width) / 2;
                     break;
                 case AlignmentX.Right:
-                    x += destinationRect.Width - size.Width;
+                    x += destinationSize.Width - sourceSize.Width;
                     break;
             }
 
             switch (alignmentY)
             {
                 case AlignmentY.Center:
-                    y += (destinationRect.Height - size.Height) / 2;
+                    y += (destinationSize.Height - sourceSize.Height) / 2;
                     break;
                 case AlignmentY.Bottom:
-                    y += destinationRect.Height - size.Height;
+                    y += destinationSize.Height - sourceSize.Height;
                     break;
             }
 

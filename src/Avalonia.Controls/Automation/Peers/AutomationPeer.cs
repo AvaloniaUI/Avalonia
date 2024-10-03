@@ -112,6 +112,11 @@ namespace Avalonia.Automation.Peers
         /// Gets text that describes the element that is associated with this automation peer.
         /// </summary>
         public string GetName() => GetNameCore() ?? string.Empty;
+        
+        /// <summary>
+        /// Gets text that provides help for the element that is associated with this automation peer.
+        /// </summary>
+        public string GetHelpText() => GetHelpTextCore() ?? string.Empty;
 
         /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
@@ -250,6 +255,7 @@ namespace Avalonia.Automation.Peers
         protected abstract string GetClassNameCore();
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
+        protected virtual string? GetHelpTextCore() => null;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();

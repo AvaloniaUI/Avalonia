@@ -49,6 +49,12 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
     }
 
     public override string Description => "MultiBinding";
+    internal UntypedBindingExpressionBase?[] Expressions => _expressions;
+    internal IMultiValueConverter? Converter => _converter;
+    internal CultureInfo? ConverterCulture => _converterCulture;
+    internal object? ConverterParameter => _converterParameter;
+    internal object? FallbackValue => _fallbackValue;
+    internal object? TargetNullValue => _targetNullValue;
 
     protected override void StartCore()
     {

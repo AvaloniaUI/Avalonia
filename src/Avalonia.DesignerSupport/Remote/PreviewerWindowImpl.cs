@@ -37,13 +37,12 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public double DesktopScaling => 1.0;
+        public override double DesktopScaling => 1.0;
         public PixelPoint Position { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public Func<WindowCloseReason, bool> Closing { get; set; }
-        public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Size MaxAutoSizeHint { get; } = new Size(4096, 4096);
