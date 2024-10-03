@@ -439,6 +439,16 @@
     return pt;
 }
 
+- (NSView*) findRootView:(NSView*)view
+{
+    while (true) {
+        auto parent = [view superview];
+        if(parent == nil)
+            return view;
+        view = parent;
+    }
+}
+
 - (void)sendEvent:(NSEvent *_Nonnull)event
 {
     [super sendEvent:event];
@@ -453,7 +463,15 @@
                 AvnView* view = _parent->View;
                 NSPoint windowPoint = [event locationInWindow];
                 NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
-
+                
+                auto targetView = [[self findRootView:view] hitTest: windowPoint];
+                if(targetView)
+                {
+                    auto targetViewClass = [targetView className];
+                    if([targetViewClass containsString: @"_NSThemeWidget"])
+                        return;
+                }
+                
                 if (!NSPointInRect(viewPoint, view.bounds))
                 {
                     auto avnPoint = [AvnView toAvnPoint:windowPoint];
