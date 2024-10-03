@@ -136,7 +136,7 @@ namespace Avalonia.IntegrationTests.Appium
         /// <returns>
         /// An object which when disposed will cause the newly opened window to close.
         /// </returns>
-        public static IDisposable OpenWindowWithClick(this AppiumWebElement element)
+        public static IDisposable OpenWindowWithClick(this AppiumWebElement element, TimeSpan? delay = null)
         {
             var session = element.WrappedDriver;
 
@@ -147,6 +147,9 @@ namespace Avalonia.IntegrationTests.Appium
                 var oldChildWindows = session.FindElements(By.XPath("//Window"));
 
                 element.Click();
+
+                if (delay is not null)
+                    Thread.Sleep((int)delay.Value.TotalMilliseconds);
 
                 var newHandle = session.WindowHandles.Except(oldHandles).SingleOrDefault();
 
@@ -167,6 +170,7 @@ namespace Avalonia.IntegrationTests.Appium
                     // that a child window was opened. These don't appear in session.WindowHandles
                     // so we have to use an XPath query to get hold of it.
                     var newChildWindows = session.FindElements(By.XPath("//Window"));
+                    var pageSource = session.PageSource;
                     var childWindow = Assert.Single(newChildWindows.Except(oldChildWindows));
 
                     return Disposable.Create(() =>

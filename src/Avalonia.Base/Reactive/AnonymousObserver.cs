@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using static Avalonia.Reactive.AnonymousObserverNonGenericHelper;
 
 namespace Avalonia.Reactive;
 
@@ -10,8 +10,6 @@ namespace Avalonia.Reactive;
 /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
 public class AnonymousObserver<T> : IObserver<T>
 {
-    private static readonly Action<Exception> ThrowsOnError = ex => throw ex;
-    private static readonly Action NoOpCompleted = () => { };  
     private readonly Action<T> _onNext;
     private readonly Action<Exception> _onError;
     private readonly Action _onCompleted;

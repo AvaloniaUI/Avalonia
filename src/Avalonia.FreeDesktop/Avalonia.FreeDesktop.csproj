@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
   </PropertyGroup>
 
   <Import Project="../../build/TrimmingEnable.props" />

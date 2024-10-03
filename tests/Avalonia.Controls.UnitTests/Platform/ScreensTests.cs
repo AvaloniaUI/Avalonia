@@ -67,6 +67,7 @@ public class ScreensTests : ScopedTestBase
 
         var screen = screens.GetScreen(1);
 
+        Assert.NotNull(screen);
         Assert.Equal(1, screen.Generation);
         Assert.Equal(new IntPtr(1), screen.TryGetPlatformHandle()!.Handle);
 
@@ -131,6 +132,8 @@ public class ScreensTests : ScopedTestBase
 
         var hasChangedTimes = 0;
         var screen = screens.GetScreen(2);
+        Assert.NotNull(screen);
+
         screens.Changed = () =>
         {
             Assert.True(screen.Generation < 0);
@@ -155,7 +158,7 @@ public class ScreensTests : ScopedTestBase
             OnChanged();
         }
 
-        public TestScreen GetScreen(int key) => TryGetScreen(key, out var screen) ? screen : null;
+        public TestScreen? GetScreen(int key) => TryGetScreen(key, out var screen) ? screen : null;
 
         protected override int GetScreenCount() => _count;
 
