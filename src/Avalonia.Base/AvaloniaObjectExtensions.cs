@@ -18,7 +18,10 @@ namespace Avalonia
         /// <returns>An <see cref="IBinding"/>.</returns>
         public static IBinding ToBinding<T>(this IObservable<T> source)
         {
-            return new BindingAdaptor(source.Select(x => (object?)x));
+            return new BindingAdaptor(
+                typeof(T).IsValueType
+                    ? source.Select(x => (object?)x)
+                    : (IObservable<object?>)source);
         }
 
         /// <summary>
