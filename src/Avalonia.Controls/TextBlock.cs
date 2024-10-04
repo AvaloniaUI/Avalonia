@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
@@ -727,8 +728,6 @@ namespace Avalonia.Controls
             return new Size(width, TextLayout.Height).Inflate(padding);
         }
 
-        List<Control> _embeddedControlRunControls = new();
-
         protected override Size ArrangeOverride(Size finalSize)
         {
             var scale = LayoutHelper.GetLayoutScale(this);
@@ -746,10 +745,21 @@ namespace Avalonia.Controls
             {
                 var currentY = padding.Top;
 
-                foreach (var cont in _embeddedControlRunControls)
+                foreach (var visual in VisualChildren)
                 {
-                    cont.Arrange(
-                       new Rect(-cont.Bounds.Width, -cont.Bounds.Height, cont.Bounds.Width, cont.Bounds.Height));
+                    if (visual is Control control)
+                    {
+                        if (control.Bounds.Width != 0 && control.Bounds.Height != 0)
+                        {
+                            if (control.Bounds.Width + control.Bounds.Position.X > this.Bounds.Width)
+                            {
+                                control.IsVisible = false;
+                            }
+                            control.IsVisible = true;
+                        }
+                        /*visual.Arrange(
+                            new Rect(-visual.Bounds.Width, -cont.Bounds.Height, cont.Bounds.Width, cont.Bounds.Height));*/
+                    }
                 }
 
                 foreach (var textLine in TextLayout.TextLines)
@@ -766,8 +776,6 @@ namespace Avalonia.Controls
                                 control.Arrange(
                                     new Rect(new Point(currentX, currentY),
                                     new Size(control.DesiredSize.Width, textLine.Height)));
-                                if (!_embeddedControlRunControls.Contains(control))
-                                    _embeddedControlRunControls.Add(control);
                             }
 
                             currentX += drawable.Size.Width;
@@ -956,6 +964,6 @@ namespace Avalonia.Controls
 
                 return new TextEndOfParagraph();
             }
-         }
+        }
     }
 }
