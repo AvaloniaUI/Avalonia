@@ -15,5 +15,6 @@
         <embedding:NativeTextBox Name="NativeTextBoxInPopup" Width="200" Height="23"/>
       </Popup>
     </StackPanel>
+    <Button Name="Reset" Click="Reset_Click">Reset</Button>
   </StackPanel>
 </UserControl>
