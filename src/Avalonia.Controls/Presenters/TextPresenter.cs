@@ -473,7 +473,7 @@ namespace Avalonia.Controls.Presenters
             _caretBlink = false;
             RemoveTextSelectionCanvas();
             _caretTimer?.Stop();
-            InvalidateVisual();
+            InvalidateTextLayout();
         }
 
         internal void CaretChanged()
