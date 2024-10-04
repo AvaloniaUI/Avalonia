@@ -1552,6 +1552,47 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(oldCaretY, caretY);
         }
 
+        [Fact]
+        public void Losing_Focus_Should_Not_Reset_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                };
+
+                target1.ApplyTemplate();
+
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                target2.ApplyTemplate();
+
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                var root = new TestRoot() { Child = sp };
+
+                target1.SelectionStart = 0;
+                target1.SelectionEnd = 4;
+
+                target1.Focus();
+
+                Assert.True(target1.IsFocused);
+
+                Assert.Equal("1234", target1.SelectedText);            
+
+                target2.Focus();
+
+                Assert.Equal("1234", target1.SelectedText);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),

@@ -386,7 +386,7 @@ namespace Avalonia.Controls.Presenters
             var selectionEnd = SelectionEnd;
             var selectionBrush = SelectionBrush;
 
-            if (selectionStart != selectionEnd && selectionBrush != null)
+            if (TextSelectionHandleCanvas != null && selectionStart != selectionEnd && selectionBrush != null)
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
@@ -552,7 +552,7 @@ namespace Avalonia.Controls.Presenters
             }
             else
             {
-                if (length > 0 && SelectionForegroundBrush != null)
+                if (TextSelectionHandleCanvas != null && length > 0 && SelectionForegroundBrush != null)
                 {
                     textStyleOverrides = new[]
                     {

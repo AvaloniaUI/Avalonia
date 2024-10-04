@@ -991,7 +991,6 @@ namespace Avalonia.Controls
             if ((ContextFlyout == null || !ContextFlyout.IsOpen) &&
                 (ContextMenu == null || !ContextMenu.IsOpen))
             {
-                ClearSelection();
                 SetCurrentValue(RevealPasswordProperty, false);
             }
 
