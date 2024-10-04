@@ -161,11 +161,19 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
             return UnmanagedMethods.DefWindowProc(hwnd, msg, w, l);
         });
         UnmanagedMethods.SetTimer(dw.Handle, IntPtr.Zero, 1000, null);
-        while (!cts.IsCancellationRequested)
+
+        var result = 0;
+        while (!cts.IsCancellationRequested
+               && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
         {
-            UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
             lock (_shared.SyncRoot)
                 UnmanagedMethods.DispatchMessage(ref msg);
+        }
+
+        if (result < 0)
+        {
+            Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
+                ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
         }
     }
 
