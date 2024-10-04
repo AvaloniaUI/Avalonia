@@ -727,6 +727,8 @@ namespace Avalonia.Controls
             return new Size(width, TextLayout.Height).Inflate(padding);
         }
 
+        List<Control> _embeddedControlRunControls = new();
+
         protected override Size ArrangeOverride(Size finalSize)
         {
             var scale = LayoutHelper.GetLayoutScale(this);
@@ -741,8 +743,14 @@ namespace Avalonia.Controls
             }
 
             if (HasComplexContent)
-            {             
+            {
                 var currentY = padding.Top;
+
+                foreach (var cont in _embeddedControlRunControls)
+                {
+                    cont.Arrange(
+                       new Rect(-cont.Bounds.Width, -cont.Bounds.Height, cont.Bounds.Width, cont.Bounds.Height));
+                }
 
                 foreach (var textLine in TextLayout.TextLines)
                 {
@@ -758,6 +766,8 @@ namespace Avalonia.Controls
                                 control.Arrange(
                                     new Rect(new Point(currentX, currentY),
                                     new Size(control.DesiredSize.Width, textLine.Height)));
+                                if (!_embeddedControlRunControls.Contains(control))
+                                    _embeddedControlRunControls.Add(control);
                             }
 
                             currentX += drawable.Size.Width;
