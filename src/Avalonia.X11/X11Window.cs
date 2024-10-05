@@ -1033,6 +1033,15 @@ namespace Avalonia.X11
         public void Show(bool activate, bool isDialog)
         {
             _wasMappedAtLeastOnce = true;
+            var data = new List<nint>();
+            if (activate)
+            {
+                data.Add(_x11.Atoms.WM_TAKE_FOCUS);
+            }
+            
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
+                PropertyMode.Replace, data.ToArray(), data.Count);
+            
             XMapWindow(_x11.Display, _handle);
             XFlush(_x11.Display);
         }
