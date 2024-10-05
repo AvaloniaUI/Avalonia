@@ -345,52 +345,52 @@ namespace Avalonia.Controls
         protected override void OnKeyDown(KeyEventArgs e)
         {
             var key = e.Key;
-            if (IsFocused)
+
+            if ((IsFocused && key == Key.Space) || key == Key.Enter)
             {
-                if (key == Key.Space || key == Key.Enter)
-                {
-                    _isKeyboardPressed = true;
-                    UpdatePseudoClasses();
-                }
+                _isKeyboardPressed = true;
+                UpdatePseudoClasses();
             }
+
             base.OnKeyDown(e);
         }
 
         /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (IsFocused && IsEffectivelyEnabled)
+            var key = e.Key;
+
+            if ((IsFocused && key == Key.Space) || key == Key.Enter)
             {
-                var key = e.Key;
+                _isKeyboardPressed = false;
+                UpdatePseudoClasses();
 
-                if (key == Key.Space || key == Key.Enter)
+                // Consider this a click on the primary button
+                if (IsEffectivelyEnabled)
                 {
-                    _isKeyboardPressed = false;
-                    UpdatePseudoClasses();
-
-                    // Consider this a click on the primary button
                     OnClickPrimary(null);
                     e.Handled = true;
                 }
-                else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)
-                         && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
-                {
-                    OpenFlyout();
-                    e.Handled = true;
-                }
-                else if (key == Key.F4)
-                {
-                    OpenFlyout();
-                    e.Handled = true;
-                }
-                else if (e.Key == Key.Escape && _isFlyoutOpen)
-                {
-                    // If Flyout doesn't have focusable content, close the flyout here
-                    // This is the same behavior as Button
-                    CloseFlyout();
-                    e.Handled = true;
-                }
             }
+            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled
+                     && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
+            {
+                OpenFlyout();
+                e.Handled = true;
+            }
+            else if (key == Key.F4 && IsEffectivelyEnabled)
+            {
+                OpenFlyout();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape && _isFlyoutOpen)
+            {
+                // If Flyout doesn't have focusable content, close the flyout here
+                // This is the same behavior as Button
+                CloseFlyout();
+                e.Handled = true;
+            }
+
             base.OnKeyUp(e);
         }
 
