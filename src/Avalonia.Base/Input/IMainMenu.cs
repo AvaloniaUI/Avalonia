@@ -24,11 +24,6 @@ namespace Avalonia.Input
         void Open();
 
         /// <summary>
-        /// Indicating whether the menu is Visible
-        /// </summary>
-        bool IsVisible { get; }
-
-        /// <summary>
         /// Occurs when the main menu closes.
         /// </summary>
         event EventHandler<RoutedEventArgs>? Closed;
