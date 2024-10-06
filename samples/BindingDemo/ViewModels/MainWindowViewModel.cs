@@ -115,5 +115,24 @@ namespace BindingDemo.ViewModels
         {
             return BooleanFlag;
         }
+
+        // Nested class, jsut so we can test it in XAML
+        public class TestItem : ViewModelBase
+        {
+            private string _stringValue = "String Value";
+            private string _detail;
+
+            public string StringValue
+            {
+                get { return _stringValue; }
+                set { this.RaiseAndSetIfChanged(ref this._stringValue, value); }
+            }
+
+            public string Detail
+            {
+                get { return _detail; }
+                set { this.RaiseAndSetIfChanged(ref this._detail, value); }
+            }
+        }
     }
 }

@@ -20,5 +20,6 @@ namespace Avalonia.Automation.Peers
         protected override void SetFocusCore() { }
         protected override bool ShowContextMenuCore() => false;
         protected internal override bool TrySetParent(AutomationPeer? parent) => false;
+                
     }
 }

@@ -149,6 +149,11 @@
     return [super accessibilityTitle];
 }
 
+- (NSString *)accessibilityHelp
+{
+    return GetNSStringAndRelease(_peer->GetHelpText()); 
+}
+
 - (id)accessibilityValue
 {
     if (_peer->IsRangeValueProvider())
