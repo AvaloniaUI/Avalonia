@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
@@ -743,24 +742,10 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
-                var currentY = padding.Top;
+                //Clear visual children before complex run arrangement
+                VisualChildren.Clear();
 
-                foreach (var visual in VisualChildren)
-                {
-                    if (visual is Control control)
-                    {
-                        if (control.Bounds.Width != 0 && control.Bounds.Height != 0)
-                        {
-                            if (control.Bounds.Width + control.Bounds.Position.X > this.Bounds.Width)
-                            {
-                                control.IsVisible = false;
-                            }
-                            control.IsVisible = true;
-                        }
-                        /*visual.Arrange(
-                            new Rect(-visual.Bounds.Width, -cont.Bounds.Height, cont.Bounds.Width, cont.Bounds.Height));*/
-                    }
-                }
+                var currentY = padding.Top;
 
                 foreach (var textLine in TextLayout.TextLines)
                 {
@@ -773,6 +758,17 @@ namespace Avalonia.Controls
                             if (drawable is EmbeddedControlRun controlRun
                                 && controlRun.Control is Control control)
                             {
+                                //Add again to prevent clipping
+                                //Fixes: #17194
+                                foreach (var inline in Inlines!)
+                                {
+                                    if (inline is InlineUIContainer UIContainer)
+                                    {
+                                        if (!VisualChildren.Contains(UIContainer.Child))
+                                            VisualChildren.Add(UIContainer.Child);
+                                    }
+                                }
+
                                 control.Arrange(
                                     new Rect(new Point(currentX, currentY),
                                     new Size(control.DesiredSize.Width, textLine.Height)));
