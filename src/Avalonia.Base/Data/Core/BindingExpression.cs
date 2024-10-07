@@ -231,6 +231,11 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
 
         if (nodeIndex == _nodes.Count - 1)
         {
+            // If the binding source is a data context without any path and is currently null, treat it as an invalid
+            // value. This allows bindings to DataContext and DataContext.Property to share the same behavior.
+            if (value is null && _nodes[nodeIndex] is DataContextNodeBase)
+                value = AvaloniaProperty.UnsetValue;
+
             // The leaf node has changed. If the binding mode is not OneWayToSource, publish the
             // value to the target.
             if (_mode != BindingMode.OneWayToSource)
@@ -507,8 +512,10 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         Debug.Assert(_mode is BindingMode.TwoWay or BindingMode.OneWayToSource);
         Debug.Assert(UpdateSourceTrigger is UpdateSourceTrigger.PropertyChanged);
 
-        if (e.Property == TargetProperty)
-            WriteValueToSource(e.NewValue);
+        // The value must be read from the target object instead of using the value from the event
+        // because the value may have changed again between the time the event was raised and now.
+        if (e.Property == TargetProperty && TryGetTarget(out var target))
+            WriteValueToSource(target.GetValue(TargetProperty));
     }
 
     private object? ConvertFallback(object? fallback, string fallbackName)
