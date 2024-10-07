@@ -58,6 +58,28 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public async Task EffectiveViewportChanged_Should_Not_Be_Raised_Twice_If_Subcribed_In_AttachedToVisualTree()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas();
+                var raised = 0;
+
+                target.AttachedToVisualTree += (_, _) =>
+                {
+                    target.EffectiveViewportChanged += (_, _) => ++raised;
+                };
+
+                root.Child = target;
+
+                await ExecuteInitialLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
+
+        [Fact]
         public async Task Parent_Affects_EffectiveViewport()
         {
             await RunOnUIThread.Execute(async () =>
