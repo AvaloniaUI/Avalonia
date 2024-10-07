@@ -1438,7 +1438,10 @@ namespace Avalonia.Controls.UnitTests
             Orientation orientation = Orientation.Vertical)
                 where T : ItemsControl, new()
         {
-            var target = new VirtualizingStackPanel();
+            var target = new VirtualizingStackPanel
+            {
+                Orientation = orientation,
+            };
 
             items ??= new ObservableCollection<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
 
