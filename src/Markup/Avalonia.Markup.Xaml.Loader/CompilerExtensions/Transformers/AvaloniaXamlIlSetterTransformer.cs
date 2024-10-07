@@ -60,6 +60,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
                         new XamlAstClrTypeReference(on, targetType, false), property.Values[0]);
 
+                    if (avaloniaPropertyNode is IXamlIlAvaloniaClassPropertyNode && HasComplexActivator(styleParent!))
+                    {
+                        throw new XamlStyleTransformException($"Cannot set Classes Binding property '{propertyName}' because the style has an activator."
+                            , node);
+                    }
+
                     property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
                 }
 
@@ -137,6 +143,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return node;
+
+            // Check that the style has selector activator and complexity
+            bool HasComplexActivator(AvaloniaXamlIlTargetTypeMetadataNode style)
+            {
+                if (style.Value is XamlAstObjectNode valueNode &&
+                    valueNode.Children
+                        .FirstOrDefault(n => n is XamlAstXamlPropertyValueNode
+                            { 
+                                Property: XamlAstClrProperty{ Name : "Selector" }
+                            }) is XamlAstXamlPropertyValueNode { Values.Count : >= 1  } selectorNone
+                    )
+                {
+                    return selectorNone.Values.Count > 1 ||
+                        (selectorNone.Values[0] is not XamlIlTypeSelector);
+                }
+                return false;
+            }
+
         }
 
         class SetterValueProperty : XamlAstClrProperty
