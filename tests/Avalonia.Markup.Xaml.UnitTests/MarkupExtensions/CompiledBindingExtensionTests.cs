@@ -2176,7 +2176,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void ResolvesElemementNameDataContextTypeBasedOnContext()
+        public void ResolvesElementNameDataContextTypeBasedOnContext()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -2203,7 +2203,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void ResolvesElemementNameDataContextTypeBasedOnContextShortSyntax()
+        public void ResolvesElementNameDataContextTypeBasedOnContextShortSyntax()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -2226,6 +2226,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.DataContext = dataContext;
 
                 Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void TypeCastWorksWithElementNameDataContext()
+        {
+            // By default, DataContext will infer DataType from the XAML context, which will be local:TestDataContext here.
+            // But developer should be able to re-define this type via type casing, if they know better.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:Name='MyWindow'>
+    <Panel>
+        <TextBlock Text='{CompiledBinding $parent.((Button)DataContext).Tag}' Name='textBlock' />
+    </Panel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var panelDataContext = new Button { Tag = "foo" };
+                ((Panel)window.Content!).DataContext = panelDataContext;
+
+                Assert.Equal(panelDataContext.Tag, textBlock.Text);
             }
         }
 
