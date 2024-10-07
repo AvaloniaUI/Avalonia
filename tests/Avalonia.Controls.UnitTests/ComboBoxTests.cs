@@ -517,5 +517,24 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(itemTemplate2, target.SelectionBoxItemTemplate);
         }
+
+        [Fact]
+        public void DisplayMemberBinding_Is_Not_Applied_To_SelectionBoxItem_Without_Selection()
+        {
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding(),
+                ItemsSource = new[] { "foo", "bar" }
+            };
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectionBoxItem);
+
+            target.SelectedItem = "foo";
+            Assert.NotNull(target.SelectionBoxItem);
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectionBoxItem);
+        }
     }
 }
