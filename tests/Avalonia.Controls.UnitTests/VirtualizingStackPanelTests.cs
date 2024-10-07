@@ -52,7 +52,7 @@ namespace Avalonia.Controls.UnitTests
         public void Initializes_Initial_Control_Items()
         {
             using var app = App();
-            var items = Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10});
+            var items = Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10 });
             var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: null);
 
             Assert.Equal(1000, scroll.Extent.Height);
@@ -499,7 +499,7 @@ namespace Avalonia.Controls.UnitTests
         public void NthChild_Selector_Works()
         {
             using var app = App();
-            
+
             var style = new Style(x => x.OfType<ContentPresenter>().NthChild(5, 0))
             {
                 Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
@@ -507,9 +507,9 @@ namespace Avalonia.Controls.UnitTests
 
             var (target, _, _) = CreateTarget(styles: new[] { style });
             var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
-            
+
             Assert.Equal(10, realized.Count);
-            
+
             for (var i = 0; i < 10; ++i)
             {
                 var container = realized[i];
@@ -544,7 +544,7 @@ namespace Avalonia.Controls.UnitTests
                 var expectedBackground = (i == 4 || i == 9) ? Brushes.Red : null;
 
                 Assert.Equal(i, index);
-                Assert.Equal(expectedBackground, ((Canvas) container.Child!).Background);
+                Assert.Equal(expectedBackground, ((Canvas)container.Child!).Background);
             }
         }
 
@@ -597,7 +597,7 @@ namespace Avalonia.Controls.UnitTests
                 var expectedBackground = (i == 0 || i == 5) ? Brushes.Red : null;
 
                 Assert.Equal(i, index);
-                Assert.Equal(expectedBackground, ((Canvas) container.Child!).Background);
+                Assert.Equal(expectedBackground, ((Canvas)container.Child!).Background);
             }
         }
 
@@ -769,7 +769,7 @@ namespace Avalonia.Controls.UnitTests
                 Layout(target);
 
                 Assert.True(
-                    target.FirstRealizedIndex >= index, 
+                    target.FirstRealizedIndex >= index,
                     $"{target.FirstRealizedIndex} is not greater or equal to {index}");
 
                 if (scroll.Offset.Y + scroll.Viewport.Height == scroll.Extent.Height)
@@ -808,7 +808,7 @@ namespace Avalonia.Controls.UnitTests
                 index = target.FirstRealizedIndex;
             }
         }
-        
+
         [Fact]
         public void Scrolling_Up_To_Smaller_Element_Does_Not_Cause_Jump()
         {
@@ -835,12 +835,12 @@ namespace Avalonia.Controls.UnitTests
                 Layout(target);
 
                 Assert.True(
-                    target.FirstRealizedIndex <= index, 
+                    target.FirstRealizedIndex <= index,
                     $"{target.FirstRealizedIndex} is not less than {index}");
                 Assert.True(
                     index - target.FirstRealizedIndex <= 1,
                     $"FirstIndex changed from {index} to {target.FirstRealizedIndex}");
-                
+
                 index = target.FirstRealizedIndex;
             }
         }
@@ -853,7 +853,7 @@ namespace Avalonia.Controls.UnitTests
             var (_, _, itemsControl) = CreateUnrootedTarget<ItemsControl>();
             var container = new Decorator { Margin = new Thickness(100) };
             var root = new TestRoot(true, container);
-            
+
             root.LayoutManager.ExecuteInitialLayoutPass();
 
             container.Child = itemsControl;
@@ -896,7 +896,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Null(firstItem.Parent);
             Assert.Null(firstItem.VisualParent);
-            Assert.Empty(itemsControl.ItemsPanelRoot!.Children);            
+            Assert.Empty(itemsControl.ItemsPanelRoot!.Children);
         }
 
         [Fact]
@@ -1045,7 +1045,7 @@ namespace Avalonia.Controls.UnitTests
         public void Can_Bind_Item_IsVisible()
         {
             using var app = App();
-            var style = CreateIsVisibleBindingStyle();            
+            var style = CreateIsVisibleBindingStyle();
             var items = Enumerable.Range(0, 100).Select(x => new ItemWithIsVisible(x)).ToList();
             var (target, scroll, itemsControl) = CreateTarget(items: items, styles: new[] { style });
             var container = target.ContainerFromIndex(2)!;
@@ -1411,8 +1411,8 @@ namespace Avalonia.Controls.UnitTests
             Orientation orientation = Orientation.Vertical)
         {
             return CreateTarget<ItemsControl>(
-                items: items, 
-                itemTemplate: itemTemplate, 
+                items: items,
+                itemTemplate: itemTemplate,
                 styles: styles,
                 orientation: orientation);
         }
@@ -1438,7 +1438,10 @@ namespace Avalonia.Controls.UnitTests
             Orientation orientation = Orientation.Vertical)
                 where T : ItemsControl, new()
         {
-            var target = new VirtualizingStackPanel();
+            var target = new VirtualizingStackPanel
+            {
+                Orientation = orientation,
+            };
 
             items ??= new ObservableCollection<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
 
@@ -1473,7 +1476,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static TestRoot CreateRoot(
-            Control? child, 
+            Control? child,
             Size? clientSize = null,
             IEnumerable<Style>? styles = null)
         {
@@ -1539,10 +1542,10 @@ namespace Avalonia.Controls.UnitTests
                 Caption = $"Item {index}";
                 Height = height;
             }
-            
+
             public string Caption { get; set; }
-            
-            public double Height 
+
+            public double Height
             {
                 get => _height;
                 set => SetField(ref _height, value);
