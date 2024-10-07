@@ -156,7 +156,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(14, textLine.Length);
 
-                var second = textLine.TextRuns[1] as ShapedTextRun;
+                var second = textLine.TextRuns[0] as ShapedTextRun;
 
                 Assert.NotNull(second);
 
