@@ -1561,6 +1561,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Text = "1234",
+                    ClearSelectionOnLostFocus = false
                 };
 
                 target1.ApplyTemplate();

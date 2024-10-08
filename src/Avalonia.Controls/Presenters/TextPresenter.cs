@@ -17,6 +17,9 @@ namespace Avalonia.Controls.Presenters
 {
     public class TextPresenter : Control
     {
+        public static readonly StyledProperty<bool> ShowSelectionHighlightProperty =
+            AvaloniaProperty.Register<TextPresenter, bool>(nameof(ShowSelectionHighlight), defaultValue: true);
+
         public static readonly StyledProperty<int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
 
@@ -119,6 +122,15 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(BackgroundProperty);
             set => SetValue(BackgroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines whether the TextPresenter shows a selection highlight.
+        /// </summary>
+        public bool ShowSelectionHighlight
+        {
+            get => GetValue(ShowSelectionHighlightProperty);
+            set => SetValue(ShowSelectionHighlightProperty, value);
         }
 
         /// <summary>
@@ -386,7 +398,7 @@ namespace Avalonia.Controls.Presenters
             var selectionEnd = SelectionEnd;
             var selectionBrush = SelectionBrush;
 
-            if (TextSelectionHandleCanvas != null && selectionStart != selectionEnd && selectionBrush != null)
+            if (ShowSelectionHighlight && selectionStart != selectionEnd && selectionBrush != null)
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
@@ -552,7 +564,7 @@ namespace Avalonia.Controls.Presenters
             }
             else
             {
-                if (TextSelectionHandleCanvas != null && length > 0 && SelectionForegroundBrush != null)
+                if (ShowSelectionHighlight && length > 0 && SelectionForegroundBrush != null)
                 {
                     textStyleOverrides = new[]
                     {
