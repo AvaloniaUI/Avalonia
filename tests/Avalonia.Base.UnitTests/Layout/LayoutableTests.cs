@@ -292,6 +292,30 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void LayoutManager_LayoutUpdated_Should_Not_Be_Subscribed_Twice_In_AttachedToVisualTree()
+        {
+            Border border1;
+            var layoutManager = new Mock<ILayoutManager>();
+            layoutManager.SetupAdd(m => m.LayoutUpdated += (_, _) => { });
+
+            _ = new TestRoot
+            {
+                Child = border1 = new Border(),
+                LayoutManager = layoutManager.Object,
+            };
+
+            var border2 = new Border();
+            border2.AttachedToVisualTree += (_, _) => border2.LayoutUpdated += (_, _) => { };
+
+            layoutManager.Invocations.Clear();
+            border1.Child = border2;
+
+            layoutManager.VerifyAdd(
+                x => x.LayoutUpdated += It.IsAny<EventHandler>(),
+                Times.Once);
+        }
+
+        [Fact]
         public void Making_Control_Invisible_Should_Invalidate_Parent_Measure()
         {
             Border child;
