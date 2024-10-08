@@ -52,7 +52,7 @@ public class InitializeComponentTests
         var generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version?.ToString();
 
         var code = generator
-            .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
+            .GenerateNamesSupportCode("SampleView", "Sample.App",  classInfo.XamlType, names)
             .Replace("\r", string.Empty);
 
         var expected = (await InitializeComponentCode.Load(expectation))

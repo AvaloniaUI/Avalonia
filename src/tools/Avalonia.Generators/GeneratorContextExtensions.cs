@@ -6,7 +6,6 @@ namespace Avalonia.Generators;
 internal static class GeneratorContextExtensions
 {
     private const string UnhandledErrorDescriptorId = "AXN0002";
-    private const string InvalidTypeDescriptorId = "AXN0001";
 
     public static string GetMsBuildProperty(
         this GeneratorExecutionContext context,
@@ -23,11 +22,6 @@ internal static class GeneratorContextExtensions
             "Please file an issue: https://github.com/avaloniaui/Avalonia",
             error.Message,
             error.ToString());
-
-    public static void ReportNameGeneratorInvalidType(this GeneratorExecutionContext context, string typeName) =>
-        context.Report(InvalidTypeDescriptorId,
-            $"Avalonia x:Name generator was unable to generate names for type '{typeName}'. " +
-            $"The type '{typeName}' does not exist in the assembly.");
 
     private static void Report(this GeneratorExecutionContext context, string id, string title, string? message = null, string? description = null) =>
         context.ReportDiagnostic(

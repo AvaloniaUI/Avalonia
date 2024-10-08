@@ -27,7 +27,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
                 return;
             }
 
-            var partials = generator.GenerateNameReferences(ResolveAdditionalFiles(context), context.CancellationToken);
+            var partials = generator.GenerateSupportClasses(ResolveAdditionalFiles(context), context.CancellationToken);
             foreach (var (fileName, content) in partials)
             {
                 if(context.CancellationToken.IsCancellationRequested)
@@ -77,10 +77,10 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
             options.AvaloniaNameGeneratorViewFileNamingStrategy,
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByPath),
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByNamespace),
-            new XamlXViewResolver(types, compiler, true,
-                type => context.ReportNameGeneratorInvalidType(type),
+            new XamlXViewResolver(types, compiler,
                 error => context.ReportNameGeneratorUnhandledError(error)),
             new XamlXNameResolver(options.AvaloniaNameGeneratorClassFieldModifier),
+            new XamlXClassResolver(),
             generator);
     }
 }

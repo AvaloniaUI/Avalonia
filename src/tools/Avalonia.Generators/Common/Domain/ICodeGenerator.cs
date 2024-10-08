@@ -5,5 +5,5 @@ namespace Avalonia.Generators.Common.Domain;
 
 internal interface ICodeGenerator
 {
-    string GenerateCode(string className, string nameSpace, IXamlType xamlType, IEnumerable<ResolvedName> names);
+    string GenerateCode(ResolvedView view, IEnumerable<ResolvedName> names);
 }

@@ -10,7 +10,7 @@ internal class OnlyPropertiesCodeGenerator : ICodeGenerator
     private string _generatorName = typeof(OnlyPropertiesCodeGenerator).FullName;
     private string _generatorVersion = typeof(OnlyPropertiesCodeGenerator).Assembly.GetName().Version.ToString();
 
-    public string GenerateCode(string className, string nameSpace, IXamlType xamlType, IEnumerable<ResolvedName> names)
+    public string GenerateCode(ResolvedView view, IEnumerable<ResolvedName> names)
     {
         var namedControls = names
             .Select(info => "        " +
@@ -24,9 +24,9 @@ internal class OnlyPropertiesCodeGenerator : ICodeGenerator
 
 using Avalonia.Controls;
 
-namespace {nameSpace}
+namespace {view.Namespace}
 {{
-    partial class {className}
+    partial class {view.Xaml} : global::{view.XamlType.FullName}
     {{
 {lines}
     }}

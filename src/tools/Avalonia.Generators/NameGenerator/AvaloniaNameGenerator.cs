@@ -12,49 +12,52 @@ internal class AvaloniaNameGenerator : INameGenerator
     private readonly ViewFileNamingStrategy _naming;
     private readonly IGlobPattern _pathPattern;
     private readonly IGlobPattern _namespacePattern;
-    private readonly IViewResolver _classes;
+    private readonly IViewResolver _views;
     private readonly INameResolver _names;
+    private readonly IClassResolver _classes;
     private readonly ICodeGenerator _code;
 
     public AvaloniaNameGenerator(
         ViewFileNamingStrategy naming,
         IGlobPattern pathPattern,
         IGlobPattern namespacePattern,
-        IViewResolver classes,
+        IViewResolver views,
         INameResolver names,
+        IClassResolver classes,
         ICodeGenerator code)
     {
         _naming = naming;
         _pathPattern = pathPattern;
         _namespacePattern = namespacePattern;
-        _classes = classes;
+        _views = views;
         _names = names;
+        _classes = classes;
         _code = code;
     }
 
-    public IEnumerable<GeneratedPartialClass> GenerateNameReferences(IEnumerable<AdditionalText> additionalFiles, CancellationToken cancellationToken)
+    public IEnumerable<GeneratedPartialClass> GenerateSupportClasses(IEnumerable<AdditionalText> additionalFiles, CancellationToken cancellationToken)
     {
-        var resolveViews =
-            from file in additionalFiles
-            let filePath = file.Path
-            where (filePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.EndsWith(".paml", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)) &&
-                  _pathPattern.Matches(filePath)
-            let xaml = file.GetText(cancellationToken)?.ToString()
-            where xaml != null
-            let view = _classes.ResolveView(xaml)
-            where view != null && _namespacePattern.Matches(view.Namespace)
-            select view;
+        var resolveViews = additionalFiles.Select(file => (file, filePath: file.Path))
+            .Where(t =>
+                (t.filePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) ||
+                 t.filePath.EndsWith(".paml", StringComparison.OrdinalIgnoreCase) ||
+                 t.filePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)) &&
+                _pathPattern.Matches(t.filePath))
+            .Select(t => t.file.GetText(cancellationToken)?.ToString())
+            .Where(xaml => xaml != null)
+            .Select(xaml => _views.ResolveView(xaml!))
+            .Where(view => view != null && _namespacePattern.Matches(view.Namespace))!
+            .ToArray<ResolvedView>();
 
-        var query =
-            from view in resolveViews
-            let names = _names.ResolveNames(view.Xaml)
-            let code = _code.GenerateCode(view.ClassName, view.Namespace, view.XamlType, names)
-            let fileName = ResolveViewFileName(view, _naming)
-            select new GeneratedPartialClass(fileName, code);
+        var xNameFiles = resolveViews
+            .Select(view => (view, names: _names.ResolveNames(view.Xaml)))
+            .Where(t => !t.view.HasClass || (t.view.IsStyledElement && t.names.Any()))
+            .Select(t => (
+                fileName: ResolveViewFileName(t.view, _naming),
+                code: _code.GenerateCode(t.view, t.names)))
+            .Select(t => new GeneratedPartialClass(t.fileName, t.code));
 
-        return query;
+        return xNameFiles;
     }
 
     private static string ResolveViewFileName(ResolvedView view, ViewFileNamingStrategy strategy) => strategy switch

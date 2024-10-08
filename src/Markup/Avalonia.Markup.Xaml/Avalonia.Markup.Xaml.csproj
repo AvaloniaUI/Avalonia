@@ -18,6 +18,7 @@
     <Compile Include="Data\DynamicResourceExpression.cs" />
     <Compile Include="EagerParentStackEnumerator.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="IComponentConnector.cs" />
     <Compile Include="MarkupExtension.cs" />
     <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
     <Compile Include="MarkupExtensions\CompiledBindings\CompiledBindingPath.cs" />

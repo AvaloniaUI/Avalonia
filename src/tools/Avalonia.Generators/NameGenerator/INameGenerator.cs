@@ -6,7 +6,7 @@ namespace Avalonia.Generators.NameGenerator;
 
 internal interface INameGenerator
 {
-    IEnumerable<GeneratedPartialClass> GenerateNameReferences(IEnumerable<AdditionalText> additionalFiles, CancellationToken cancellationToken);
+    IEnumerable<GeneratedPartialClass> GenerateSupportClasses(IEnumerable<AdditionalText> additionalFiles, CancellationToken cancellationToken);
 }
 
 internal record GeneratedPartialClass(string FileName, string Content);

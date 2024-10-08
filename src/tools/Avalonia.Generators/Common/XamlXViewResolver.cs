@@ -13,8 +13,6 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
 {
     private readonly RoslynTypeSystem _typeSystem;
     private readonly MiniCompiler _compiler;
-    private readonly bool _checkTypeValidity;
-    private readonly Action<string>? _onTypeInvalid;
     private readonly Action<Exception>? _onUnhandledError;
 
     private ResolvedView? _resolvedClass;
@@ -23,12 +21,8 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
     public XamlXViewResolver(
         RoslynTypeSystem typeSystem,
         MiniCompiler compiler,
-        bool checkTypeValidity = false,
-        Action<string>? onTypeInvalid = null,
         Action<Exception>? onUnhandledError = null)
     {
-        _checkTypeValidity = checkTypeValidity;
-        _onTypeInvalid = onTypeInvalid;
         _onUnhandledError = onUnhandledError;
         _typeSystem = typeSystem;
         _compiler = compiler;
@@ -61,10 +55,6 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
         if (node is not XamlAstObjectNode objectNode)
             return node;
 
-        var clrType = objectNode.Type.GetClrType();
-        if (!clrType.IsAvaloniaStyledElement())
-            return node;
-
         foreach (var child in objectNode.Children)
         {
             if (child is XamlAstXmlDirective directive &&
@@ -72,21 +62,16 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
                 directive.Namespace == XamlNamespaces.Xaml2006 &&
                 directive.Values[0] is XamlAstTextNode text)
             {
-                if (_checkTypeValidity)
-                {
-                    var existingType = _typeSystem.FindType(text.Text);
-                    if (existingType == null)
-                    {
-                        _onTypeInvalid?.Invoke(text.Text);
-                        return node;
-                    }
-                }
-
                 var split = text.Text.Split('.');
                 var nameSpace = string.Join(".", split.Take(split.Length - 1));
                 var className = split.Last();
 
-                _resolvedClass = new ResolvedView(className, clrType, nameSpace, _xaml!);
+                var clrType = objectNode.Type.GetClrType();
+                _resolvedClass = new ResolvedView(className, clrType, nameSpace, _xaml!)
+                {
+                    IsStyledElement = clrType.IsAvaloniaStyledElement(),
+                    HasClass = _typeSystem.FindType(text.Text) is not null
+                };
                 return node;
             }
         }

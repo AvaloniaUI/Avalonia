@@ -4,9 +4,13 @@ using Generators.Sandbox.ViewModels;
 
 namespace Generators.Sandbox;
 
-public class App : Application
+public partial class App : Application
 {
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+        Resources.MergedDictionaries.Add(new global::Sandbox.MyResources());
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {
