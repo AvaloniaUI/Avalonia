@@ -760,14 +760,7 @@ namespace Avalonia.Controls
                             {
                                 //Add again to prevent clipping
                                 //Fixes: #17194
-                                foreach (var inline in Inlines!)
-                                {
-                                    if (inline is InlineUIContainer UIContainer)
-                                    {
-                                        if (!VisualChildren.Contains(UIContainer.Child))
-                                            VisualChildren.Add(UIContainer.Child);
-                                    }
-                                }
+                                VisualChildren.Add(control);
 
                                 control.Arrange(
                                     new Rect(new Point(currentX, currentY),

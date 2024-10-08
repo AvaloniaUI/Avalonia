@@ -133,7 +133,7 @@
           <Run Text="ABC" FontFeatures="+c2sc, +smcp"/>
           <Run Text="DEF"/>
           <Run Text="0123" FontFeatures="frac"/>
-        </TextBlock>
+        </TextBlock> 
       </Border>
     </WrapPanel>
   </StackPanel>
