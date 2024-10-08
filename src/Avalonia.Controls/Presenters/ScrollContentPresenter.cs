@@ -658,6 +658,11 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
+            if(e.KeyModifiers != KeyModifiers.None && e.KeyModifiers != KeyModifiers.Shift)
+            {
+                base.OnPointerWheelChanged(e);
+                return;
+            }
             if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
             {
                 var scrollable = Child as ILogicalScrollable;
@@ -673,7 +678,7 @@ namespace Avalonia.Controls.Presenters
                 {
                     delta = new Vector(delta.Y, delta.X);
                 }
-                
+
                 if (Extent.Height > Viewport.Height)
                 {
                     double height = isLogical ? scrollable!.ScrollSize.Height : 50;
