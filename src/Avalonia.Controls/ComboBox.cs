@@ -471,7 +471,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                if(ItemTemplate is null && SelectionBoxItemTemplate is null && DisplayMemberBinding is { } binding)
+                if (item is not null && ItemTemplate is null && SelectionBoxItemTemplate is null && DisplayMemberBinding is { } binding)
                 {
                     var template = new FuncDataTemplate<object?>((_, _) =>
                     new TextBlock
