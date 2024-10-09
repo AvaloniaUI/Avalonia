@@ -811,6 +811,7 @@ namespace Avalonia.Controls
                 case nameof(TextDecorations):
                 case nameof(FontFeatures):
                 case nameof(Foreground):
+                case nameof(Bounds):
                     {
                         InvalidateTextLayout();
                         break;
