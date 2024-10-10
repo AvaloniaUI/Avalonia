@@ -135,6 +135,7 @@ namespace Avalonia.Layout
         private Rect? _previousArrange;
         private EventHandler<EffectiveViewportChangedEventArgs>? _effectiveViewportChanged;
         private EventHandler? _layoutUpdated;
+        private bool _isAttachingToVisualTree;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -164,7 +165,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r)
+                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.RegisterEffectiveViewportListener(this);
                 }
@@ -190,7 +191,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
                 }
@@ -735,9 +736,18 @@ namespace Avalonia.Layout
             InvalidateMeasure();
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTreeCore(e);
+            _isAttachingToVisualTree = true;
+            try
+            {
+                base.OnAttachedToVisualTreeCore(e);
+            }
+            finally
+            {
+                _isAttachingToVisualTree = false;
+            }
 
             if (e.Root is ILayoutRoot r)
             {
