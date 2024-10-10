@@ -733,7 +733,7 @@ namespace Avalonia.Controls
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
             //Fixes: #11019
-            if (finalSize.Width < _constraint.Width)
+            if (!MathUtilities.AreClose(finalSize.Width, _constraint.Width))
             {
                 _textLayout?.Dispose();
                 _textLayout = null;
@@ -811,7 +811,6 @@ namespace Avalonia.Controls
                 case nameof(TextDecorations):
                 case nameof(FontFeatures):
                 case nameof(Foreground):
-                case nameof(Bounds):
                     {
                         InvalidateTextLayout();
                         break;
