@@ -2202,15 +2202,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var xaml = @"
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:TestDataContext'
         x:Name='MyWindow'>
     <TextBlock Text='{CompiledBinding ElementName=MyWindow, Path=DataContext.StringProperty}' Name='textBlock' />
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>");
                 var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
@@ -2228,16 +2227,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public void ResolvesElementNameDataContextTypeBasedOnContextShortSyntax()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
+            { 
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:TestDataContext'
         x:Name='MyWindow'>
     <TextBlock Text='{CompiledBinding #MyWindow.DataContext.StringProperty}' Name='textBlock' />
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>");
                 var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
@@ -2258,7 +2256,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             // But developer should be able to re-define this type via type casing, if they know better.
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var xaml = @"
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -2267,8 +2265,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Panel>
         <TextBlock Text='{CompiledBinding $parent.((Button)DataContext).Tag}' Name='textBlock' />
     </Panel>
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>");
                 var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var panelDataContext = new Button { Tag = "foo" };
@@ -2283,7 +2280,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var xaml = @"
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -2292,8 +2289,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Panel>
         <TextBlock Text='{CompiledBinding $parent[Panel].DataContext.StringProperty}' Name='textBlock' />
     </Panel>
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>");
                 var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
@@ -2312,7 +2308,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var xaml = @"
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -2321,8 +2317,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Panel>
         <TextBlock Text='{CompiledBinding $parent.DataContext.StringProperty}' Name='textBlock' />
     </Panel>
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>");
                 var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
