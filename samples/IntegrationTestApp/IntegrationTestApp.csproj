@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);AVP1012</NoWarn>
+    <NoWarn>$(NoWarn);AVP1012;AVLN3001</NoWarn>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>

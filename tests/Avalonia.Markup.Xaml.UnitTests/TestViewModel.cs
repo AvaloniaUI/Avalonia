@@ -7,6 +7,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         private string _string;
         private int _integer;
         private TestViewModel _child;
+        private bool _boolean;
 
         public int Integer
         {
@@ -34,6 +35,16 @@ namespace Avalonia.Markup.Xaml.UnitTests
             set
             {
                 _child = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool Boolean
+        {
+            get => _boolean;
+            set
+            {
+                _boolean = value;
                 RaisePropertyChanged();
             }
         }

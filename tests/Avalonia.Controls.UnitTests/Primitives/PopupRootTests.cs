@@ -262,6 +262,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = CreateTarget(window, popupImpl.Object);
                 target.Content = child;
 
+                ((IPopupHost)target).ConfigurePosition(new PopupPositionRequest(window, PlacementMode.Top));
                 target.Show();
 
                 Assert.Equal(new Size(400, 1024), target.Bounds.Size);
@@ -290,6 +291,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Height = 100,
                 };
 
+                ((IPopupHost)target).ConfigurePosition(new PopupPositionRequest(window, PlacementMode.Top));
                 target.Show();
 
                 Assert.Equal(new Rect(0, 0, 400, 800), target.Bounds);
@@ -313,6 +315,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.Width = 400;
                 target.Height = 800;
 
+                ((IPopupHost)target).ConfigurePosition(new PopupPositionRequest(window, PlacementMode.Top));
                 target.Show();
 
                 Assert.Equal(400, target.Width);

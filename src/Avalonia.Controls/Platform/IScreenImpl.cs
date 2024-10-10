@@ -27,7 +27,8 @@ namespace Avalonia.Platform
         public override IPlatformHandle? TryGetPlatformHandle() => platformHandle;
 
         public override int GetHashCode() => platformHandle.GetHashCode();
-        public override bool Equals(object? obj)
+
+        public override bool Equals(Screen? obj)
         {
             return obj is PlatformScreen other && platformHandle.Equals(other.TryGetPlatformHandle()!);
         }

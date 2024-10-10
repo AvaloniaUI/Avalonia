@@ -108,6 +108,7 @@ namespace Avalonia.Rendering.Composition
             Dispatcher.VerifyAccess();
             if (_nextCommit == null)
             {
+                using var _ = NonPumpingLockHelper.Use();
                 _nextCommit = new ();
                 var pending = _pendingBatch;
                 if (pending != null)

@@ -22,6 +22,9 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class Popup : Control, IPopupHostProvider
     {
+        /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(WindowManagerAddShadowHint), false);
 
@@ -89,9 +92,21 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
+        /// <summary>
+        /// Defines the <see cref="CustomPopupPlacementCallback"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+            AvaloniaProperty.Register<Popup, CustomPopupPlacementCallback?>(nameof(CustomPopupPlacementCallback));
+        
+        /// <summary>
+        /// Defines the <see cref="OverlayDismissEventPassThrough"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
+        /// <summary>
+        /// Defines the <see cref="OverlayInputPassThroughElement"/> property.
+        /// </summary>
         public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
             AvaloniaProperty.Register<Popup, IInputElement?>(nameof(OverlayInputPassThroughElement));
 
@@ -118,6 +133,12 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
+
+        /// <summary>
+        /// Defines the <see cref="TakesFocusFromNativeControl"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> TakesFocusFromNativeControlProperty =
+            AvaloniaProperty.RegisterAttached<Popup, Control, bool>(nameof(TakesFocusFromNativeControl), true);
 
         private bool _isOpenRequested;
         private bool _ignoreIsOpenChanged;
@@ -288,6 +309,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets a delegate handler method that positions the Popup control, when <see cref="Placement"/> is set to <see cref="PlacementMode.Custom"/>.
+        /// </summary>
+        public CustomPopupPlacementCallback? CustomPopupPlacementCallback
+        {
+            get => GetValue(CustomPopupPlacementCallbackProperty);
+            set => SetValue(CustomPopupPlacementCallbackProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the event that closes the popup is passed
         /// through to the parent window.
         /// </summary>
@@ -338,6 +368,23 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(TopmostProperty);
             set => SetValue(TopmostProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the popup, on show, transfers focus from any
+        /// focused native control to Avalonia. The default is <c>true</c>.
+        /// </summary>
+        /// <remarks>
+        /// This property only applies to advanced native control embedding scenarios. By default,
+        /// if a popup is shown when a native control is focused, focus is transferred back to
+        /// Avalonia in order for the popup to receive input. If this property is set to
+        /// <c>false</c>, then the shown popup will not receive input until it receives an
+        /// interaction which explicitly focuses the popup, such as a mouse click.
+        /// </remarks>
+        public bool TakesFocusFromNativeControl
+        {
+            get => GetValue(TakesFocusFromNativeControlProperty);
+            set => SetValue(TakesFocusFromNativeControlProperty, value);
         }
 
         IPopupHost? IPopupHostProvider.PopupHost => Host;
@@ -496,6 +543,9 @@ namespace Avalonia.Controls.Primitives
 
             popupHost.Show();
 
+            if (TakesFocusFromNativeControl)
+                popupHost.TakeFocus();
+
             using (BeginIgnoringIsOpen())
             {
                 SetCurrentValue(IsOpenProperty, true);
@@ -510,6 +560,27 @@ namespace Avalonia.Controls.Primitives
         /// Closes the popup.
         /// </summary>
         public void Close() => CloseCore();
+
+        /// <summary>
+        /// Gets the value of the <see cref="TakesFocusFromNativeControl"/> attached property on the
+        /// specified control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        public static bool GetTakesFocusFromNativeControl(Control control)
+        {
+            return control.GetValue(TakesFocusFromNativeControlProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the <see cref="TakesFocusFromNativeControl"/> attached property on the
+        /// specified control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value of the TakesFocusFromNativeControl property.</param>
+        public static void SetTakesFocusFromNativeControl(Control control, bool value)
+        {
+            control.SetValue(TakesFocusFromNativeControlProperty, value);
+        }
 
         /// <summary>
         /// Measures the control.
@@ -603,14 +674,15 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateHostPosition(IPopupHost popupHost, Control placementTarget)
         {
-            popupHost.ConfigurePosition(
+            popupHost.ConfigurePosition(new PopupPositionRequest(
                 placementTarget,
                 Placement,
                 new Point(HorizontalOffset, VerticalOffset),
                 PlacementAnchor,
                 PlacementGravity,
                 PlacementConstraintAdjustment,
-                PlacementRect ?? new Rect(default, placementTarget.Bounds.Size));
+                PlacementRect ?? new Rect(default, placementTarget.Bounds.Size),
+                CustomPopupPlacementCallback));
         }
 
         private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
@@ -651,14 +723,15 @@ namespace Avalonia.Controls.Primitives
                 var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<Control>();
                 if (placementTarget == null)
                     return;
-                _openState.PopupHost.ConfigurePosition(
+                _openState.PopupHost.ConfigurePosition(new PopupPositionRequest(
                     placementTarget,
                     Placement,
                     new Point(HorizontalOffset, VerticalOffset),
                     PlacementAnchor,
                     PlacementGravity,
                     PlacementConstraintAdjustment,
-                    PlacementRect);
+                    PlacementRect,
+                    CustomPopupPlacementCallback));
             }
         }
 

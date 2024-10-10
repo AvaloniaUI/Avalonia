@@ -39,6 +39,7 @@ namespace Avalonia.Native
         public IAvnString ClassName => _inner.GetClassName().ToAvnString();
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
         public IAvnString Name => _inner.GetName().ToAvnString();
+        public IAvnString HelpText => _inner.GetHelpText().ToAvnString();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
         public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
 

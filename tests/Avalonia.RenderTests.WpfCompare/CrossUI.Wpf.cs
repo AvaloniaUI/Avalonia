@@ -296,7 +296,22 @@ namespace Avalonia.RenderTests.WpfCompare
                 return new DrawingImage(ConvertDrawing(di.Drawing));
             throw new NotSupportedException();
         }
-    
+
+        public void PushTransform(Matrix matrix)
+        {
+            _ctx.PushTransform(new MatrixTransform(matrix.ToWpf()));
+        }
+
+        public void Pop()
+        {
+            _ctx.Pop();
+        }
+
+        public void DrawLine(CrossPen pen, Point p1, Point p2)
+        {
+            _ctx.DrawLine(ConvertPen(pen), p1.ToWpf(), p2.ToWpf());
+        }
+
         public void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc) => _ctx.DrawRectangle(ConvertBrush(brush), ConvertPen(pen), rc.ToWpf());
         public void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geo) => 
             _ctx.DrawGeometry(ConvertBrush(brush), ConvertPen(pen), ConvertGeometry(geo));

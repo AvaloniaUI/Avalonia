@@ -28,6 +28,7 @@ internal class InteropAutomationPeer : AutomationPeer
     protected override string GetClassNameCore() => throw new NotImplementedException();
     protected override AutomationPeer? GetLabeledByCore() => throw new NotImplementedException();
     protected override string? GetNameCore() => throw new NotImplementedException();
+    protected override string? GetHelpTextCore() => throw new NotImplementedException();
     protected override IReadOnlyList<AutomationPeer> GetOrCreateChildrenCore() => throw new NotImplementedException();
     protected override AutomationPeer? GetParentCore() => _parent;
     protected override bool HasKeyboardFocusCore() => throw new NotImplementedException();

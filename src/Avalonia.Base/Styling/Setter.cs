@@ -75,6 +75,9 @@ namespace Avalonia.Styling
             if (Property.IsDirect && instance.HasActivator)
                 throw new InvalidOperationException(
                     $"Cannot set direct property '{Property}' in '{instance.Source}' because the style has an activator.");
+            if (Property.IsClassesBindingProperty(out var classPropertyName) && instance.HasActivator)
+                throw new InvalidOperationException(
+                        $"Cannot set Class Binding property '(Classes.{classPropertyName})' in '{instance.Source}' because the style has an activator.");
 
             if (Value is IBinding2 binding)
                 return SetBinding((StyleInstance)instance, ao, binding);

@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
@@ -28,9 +26,9 @@ namespace Avalonia.X11
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, X11PlatformThreading.EventHandler> Windows =
+        public Dictionary<IntPtr, X11PlatformThreading.EventHandler> Windows { get; } =
             new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
-        public XI2Manager XI2;
+        public XI2Manager XI2 { get; private set; }
         public X11Info Info { get; private set; }
         public X11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }

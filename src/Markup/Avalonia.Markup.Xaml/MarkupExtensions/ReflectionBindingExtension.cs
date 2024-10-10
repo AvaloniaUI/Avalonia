@@ -38,7 +38,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 RelativeSource = RelativeSource,
                 DefaultAnchor = new WeakReference(serviceProvider.GetDefaultAnchor()),
                 TargetNullValue = TargetNullValue,
-                NameScope = new WeakReference<INameScope?>(serviceProvider.GetService<INameScope>())
+                NameScope = new WeakReference<INameScope?>(serviceProvider.GetService<INameScope>()),
+                UpdateSourceTrigger = UpdateSourceTrigger,
             };
         }
 
@@ -67,5 +68,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public RelativeSource? RelativeSource { get; set; }
 
         public object? TargetNullValue { get; set; } = AvaloniaProperty.UnsetValue;
+        
+        /// <summary>
+        /// Gets or sets a value that determines the timing of binding source updates for
+        /// <see cref="BindingMode.TwoWay"/> and <see cref="BindingMode.OneWayToSource"/> bindings.
+        /// </summary>
+        public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
     }
 }

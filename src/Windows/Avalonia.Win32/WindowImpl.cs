@@ -20,13 +20,10 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.OpenGl.Angle;
-using Avalonia.Win32.WinRT;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using System.Diagnostics;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Threading;
-using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 using static Avalonia.Controls.Win32Properties;
 using Avalonia.Logging;
 
@@ -83,7 +80,7 @@ namespace Avalonia.Win32
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly WindowsInputPane? _inputPane;
+        private WindowsInputPane? _inputPane;
         private WndProc _wndProcDelegate;
         private string? _className;
         private IntPtr _hwnd;
@@ -613,6 +610,8 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
+            _inputPane?.Dispose();
+            _inputPane = null;
             if (_hwnd != IntPtr.Zero)
             {
                 // Detect if we are being closed programmatically - this would mean that WM_CLOSE was not called
