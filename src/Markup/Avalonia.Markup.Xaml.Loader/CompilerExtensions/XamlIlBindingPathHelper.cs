@@ -303,17 +303,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         break;
                     case BindingExpressionGrammar.AncestorNode ancestor:
                         var styledElement = context.GetAvaloniaTypes().StyledElement;
-                        var specificAncestorTypeFilter = !(ancestor.Namespace is null && ancestor.TypeName is null) ? GetType(ancestor.Namespace, ancestor.TypeName) : null;
+                        var ancestorTypeFilter = !(ancestor.Namespace is null && ancestor.TypeName is null) ? GetType(ancestor.Namespace, ancestor.TypeName) : null;
 
                         var ancestorNode = context
                             .ParentNodes()
                             .OfType<XamlAstConstructableObjectNode>()
                             .Where(x => styledElement.IsAssignableFrom(x.Type.GetClrType()))
                             .Skip(1)
-                            .Where(x => specificAncestorTypeFilter is not null
-                                ? specificAncestorTypeFilter.IsAssignableFrom(x.Type.GetClrType()) : true)
+                            .Where(x => ancestorTypeFilter is not null
+                                ? ancestorTypeFilter.IsAssignableFrom(x.Type.GetClrType()) : true)
                             .ElementAtOrDefault(ancestor.Level);
-                        var ancestorType = ancestorNode?.Type.GetClrType();
 
                         IXamlType? dataContextType = null;
                         if (ancestorNode is not null)
@@ -333,15 +332,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
                         }
 
-                        if (ancestorType is null)
+                        // We need actual ancestor for a correct DataContextType,
+                        // but since in current design bindings do a double-work by enumerating the tree,
+                        // we want to keep original ancestor type filter, if it was present.
+                        var bindingAncestorType = ancestorTypeFilter is not null
+                            ? ancestorTypeFilter
+                            : ancestorNode?.Type.GetClrType();
+
+                        if (bindingAncestorType is null)
                         {
-                            if (specificAncestorTypeFilter is not null)
-                                ancestorType = specificAncestorTypeFilter;
-                            else
-                                throw new XamlX.XamlTransformException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
+                            throw new XamlX.XamlTransformException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
                         }
 
-                        nodes.Add(new FindAncestorPathElementNode(ancestorType, ancestor.Level, dataContextType));
+                        nodes.Add(new FindAncestorPathElementNode(bindingAncestorType, ancestor.Level, dataContextType));
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
                         IXamlType? elementType = null, dataType = null;

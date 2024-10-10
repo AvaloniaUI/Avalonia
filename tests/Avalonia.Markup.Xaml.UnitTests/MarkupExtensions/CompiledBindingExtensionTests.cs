@@ -1283,6 +1283,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportsParentInPathWithTypeAndLevelFilter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border x:Name='p2'>
+        <Border x:Name='p1'>
+            <Button x:Name='p0'>
+                <TextBlock x:Name='textBlock' Text='{CompiledBinding $parent[Control;1].Name}' />
+            </Button>
+        </Border>
+    </Border>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                Assert.Equal("p1", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void SupportConverterWithParameter()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
