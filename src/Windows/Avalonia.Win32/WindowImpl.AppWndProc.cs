@@ -149,6 +149,18 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+                    else
+                    {
+                        // In case parent is on another screen with different scaling, window will have header scaled with
+                        // parent's scaling factor, so need to update frame
+                        SetWindowPos(hWnd,
+                            IntPtr.Zero, 0, 0, 0, 0,
+                            SetWindowPosFlags.SWP_FRAMECHANGED |
+                            SetWindowPosFlags.SWP_NOSIZE |
+                            SetWindowPosFlags.SWP_NOMOVE |
+                            SetWindowPosFlags.SWP_NOZORDER |
+                            SetWindowPosFlags.SWP_NOACTIVATE);
+                    }
                     break;
 
                 case WindowsMessage.WM_GETICON:
