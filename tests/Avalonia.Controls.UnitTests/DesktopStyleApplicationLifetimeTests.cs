@@ -288,6 +288,11 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
+            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screens = new Mock<IScreenImpl>();
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+            windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
+            
             var services = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
 

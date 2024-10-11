@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Primitives
         private Point _lastRequestedPosition;
         private PopupPositionRequest? _popupPositionRequest;
         private Size _popupSize;
-        private bool _shown, _needsUpdate;
+        private bool _needsUpdate;
 
         public OverlayPopupHost(OverlayLayer overlayLayer)
         {
@@ -63,14 +63,12 @@ namespace Avalonia.Controls.Primitives
         public void Show()
         {
             _overlayLayer.Children.Add(this);
-            _shown = true;
         }
 
         /// <inheritdoc />
         public void Hide()
         {
             _overlayLayer.Children.Remove(this);
-            _shown = false;
         }
 
         public void TakeFocus()
@@ -78,7 +76,6 @@ namespace Avalonia.Controls.Primitives
             // Nothing to do here: overlay popups are implemented inside the window.
         }
 
-        /// <inheritdoc />
         [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,

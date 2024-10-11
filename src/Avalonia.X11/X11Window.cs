@@ -1497,8 +1497,8 @@ namespace Avalonia.X11
 
             var indexInWindowsSpan = new Dictionary<IntPtr, int>();
             for (var i = 0; i < windows.Length; i++)
-                if (windows[i].PlatformImpl is { } platformImpl)
-                    indexInWindowsSpan[platformImpl.Handle.Handle] = i;
+                if (windows[i].PlatformImpl is { Handle: { } handle })
+                    indexInWindowsSpan[handle.Handle] = i;
 
             foreach (var window in windows)
             {
