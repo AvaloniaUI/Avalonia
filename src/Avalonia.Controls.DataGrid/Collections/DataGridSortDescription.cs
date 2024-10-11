@@ -187,8 +187,10 @@ namespace Avalonia.Collections
                 else if (type.IsAssignableTo(typeof(IComparable)))
                     return Comparer<object>.Create((x, y) => (x as IComparable)!.CompareTo(y));
                 else
-#endif
+                    return Comparer<object>.Create((x, y) => 0); //avoid using reflection to avoid crash on AOT
+#else
                     return (typeof(Comparer<>).MakeGenericType(type).GetProperty("Default")).GetValue(null, null) as IComparer;
+#endif
             }
 
             private Type GetPropertyType(object o)
